@@ -489,6 +489,15 @@ window.SelHub = window.SelHub || {
     color: 'amber',
     category: 'responsible-decision-making',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _decT = (ctx && ctx.theme) || {};
+      var _decHC = !!_decT.isContrast, _decL = !_decHC && !_decT.isDark;
+      var _dec_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc','#334155':'#e2e8f0'}, _dec_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#15803d':'#000000','#334155':'#000000','#ffffff':'#000000','#fffbeb':'#000000','#f1f5f9':'#000000'};
+      var _dec_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#818cf8':'#4338ca','#f87171':'#dc2626','#fbbf24':'#854d0e'}, _dec_FGH = {'#94a3b8':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#60a5fa':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#fb923c':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#78350f':'#ffff00','#475569':'#ffff00'};
+      var _dec_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1'}, _dec_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#cbd5e1':'#ffff00'};
+      var _decBg = function(h){ return _decHC ? (_dec_BGH[h]||h) : (_decL ? (_dec_BGL[h]||h) : h); };
+      var _decFg = function(h){ return _decHC ? (_dec_FGH[h]||h) : (_decL ? (_dec_FGL[h]||h) : h); };
+      var _decBd = function(h){ return _decHC ? (_dec_BDH[h]||h) : (_decL ? (_dec_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -611,7 +620,7 @@ window.SelHub = window.SelHub || {
         if (streak >= 3) tryAwardBadge('streak_3');
       }
 
-      var ACCENT = '#f59e0b';
+      var ACCENT = _decFg('#f59e0b');
       var ACCENT_DIM = '#f59e0b22';
       var ACCENT_MED = '#f59e0b44';
 
@@ -643,7 +652,7 @@ window.SelHub = window.SelHub || {
             role: 'tab',
             style: {
               padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
-              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : '#94a3b8',
+              background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _decFg('#94a3b8'),
               transition: 'all 0.15s'
             }
           }, t.label);
@@ -651,16 +660,16 @@ window.SelHub = window.SelHub || {
         // Sound toggle
         h('button', { 'aria-label': 'Toggle sound',
           onClick: function() { upd('soundEnabled', !soundEnabled); },
-          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' },
+          style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8') },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badge counter
         h('button', { 'aria-label': 'Toggle panel',
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' }
+          style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8'), position: 'relative' }
         },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', {             style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: '#0f172a', borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+          Object.keys(earnedBadges).length > 0 && h('span', {             style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _decFg('#0f172a'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
           }, Object.keys(earnedBadges).length)
         )
       );
@@ -676,7 +685,7 @@ window.SelHub = window.SelHub || {
           realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
           compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral Compass \u2014 quick gut-check',                  hint: 'Three-question test: would I tell my grandmother? would I want it on the front page? does it match who I say I am? Imperfect but fast. Used by ethics boards, journalists, military codes \u2014 and you, in 30 seconds.' },
           advisor:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\u2728',         title: 'AI Advisor \u2014 a sounding board, not the boss',     hint: 'Type the situation; the AI walks the framework with you. Use it to see angles you missed, not to outsource the call. Final decisions still go through YOUR values + your context, not a model\u2019s training data.' },
-          progress:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Progress \u2014 patterns over time',                   hint: 'Which decisions did you regret? Which felt right? Track over weeks: most patterns repeat. Spotting your patterns turns reactive choices into deliberate ones. Self-knowledge IS the upgrade.' }
+          progress:    { accent: _decFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Progress \u2014 patterns over time',                   hint: 'Which decisions did you regret? Which felt right? Track over weeks: most patterns repeat. Spotting your patterns turns reactive choices into deliberate ones. Self-knowledge IS the upgrade.' }
         };
         var meta = TAB_META[activeTab] || TAB_META.decision;
         return h('div', {
@@ -693,7 +702,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: _decFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -707,11 +716,11 @@ window.SelHub = window.SelHub || {
             onClick: function() { upd('showBadgePopup', null); }
           },
             h('div', {
-              style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', animation: 'fadeIn 0.3s', maxWidth: 300 }
+              style: { background: _decBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', animation: 'fadeIn 0.3s', maxWidth: 300 }
             },
               h('div', { style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
-              h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
-              h('div', { style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
+              h('div', { style: { fontSize: 18, fontWeight: 700, color: _decFg('#f1f5f9'), marginBottom: 6 } }, popBadge.name),
+              h('div', { style: { fontSize: 12, color: _decFg('#94a3b8') } }, popBadge.desc)
             )
           );
         }
@@ -723,19 +732,19 @@ window.SelHub = window.SelHub || {
           onClick: function() { upd('showBadgesPanel', false); }
         },
           h('div', {             onClick: function(e) { e.stopPropagation(); },
-            style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' }
+            style: { background: _decBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' }
           },
-            h('h3', { style: { textAlign: 'center', color: '#f1f5f9', marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', color: _decFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
                 return h('div', {
                   key: b.id,
-                  style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : '#334155'), textAlign: 'center', opacity: earned ? 1 : 0.5 }
+                  style: { padding: 12, borderRadius: 10, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : _decBg('#334155')), textAlign: 'center', opacity: earned ? 1 : 0.5 }
                 },
                   h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? '#f1f5f9' : '#94a3b8', marginTop: 4 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 11, fontWeight: 600, color: earned ? '#f1f5f9' : _decFg('#94a3b8'), marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 10, color: _decFg('#94a3b8'), marginTop: 2 } }, b.desc)
                 );
               })
             )
@@ -760,12 +769,12 @@ window.SelHub = window.SelHub || {
         ];
 
         dtContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF33 Decision Tree'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDF33 Decision Tree'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'Walk through a structured decision-making process step by step.'
           ),
           // Scenario counter
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Scenario ' + ((dtIdx % dtScenarios.length) + 1) + ' of ' + dtScenarios.length +
             (dtCompleted > 0 ? ' \u00B7 ' + dtCompleted + ' completed' : '')
           ),
@@ -781,31 +790,31 @@ window.SelHub = window.SelHub || {
                 h('div', {
                   style: {
                     width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                    background: done ? '#22c55e' : current ? ACCENT : '#334155',
-                    color: done || current ? '#fff' : '#94a3b8', fontWeight: 600, transition: 'all 0.2s'
+                    background: done ? _decFg('#22c55e') : current ? ACCENT : _decBg('#334155'),
+                    color: done || current ? _decFg('#fff') : _decFg('#94a3b8'), fontWeight: 600, transition: 'all 0.2s'
                   }
                 }, done ? '\u2713' : st.icon),
-                i < dtSteps.length - 1 && h('div', { style: { width: 16, height: 2, background: done ? '#22c55e' : '#334155' } })
+                i < dtSteps.length - 1 && h('div', { style: { width: 16, height: 2, background: done ? _decFg('#22c55e') : _decBg('#334155') } })
               );
             })
           ),
 
           // Step 0: Read the scenario
-          dtStep === 0 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          dtStep === 0 && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curDt.title),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 16 } }, curDt.situation),
+            h('p', { style: { fontSize: 14, color: _decFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 16 } }, curDt.situation),
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'I’ve read it',
                 onClick: function() { upd('dtStep', 1); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'I\'ve read it \u2192')
             )
           ),
 
           // Step 1: Identify values at stake
-          dtStep === 1 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          dtStep === 1 && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDC9C What values are at stake?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Select all the values that are involved in this decision:'),
+            h('p', { style: { color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Select all the values that are involved in this decision:'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
               ['honesty', 'kindness', 'fairness', 'loyalty', 'courage', 'respect', 'responsibility', 'safety', 'inclusion', 'integrity', 'compassion', 'independence', 'generosity', 'self-care'].map(function(v) {
                 var selected = dtValues.indexOf(v) >= 0;
@@ -818,14 +827,14 @@ window.SelHub = window.SelHub || {
                     if (soundEnabled) sfxClick();
                   },
                   style: {
-                    padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (selected ? ACCENT : '#334155'),
-                    background: selected ? ACCENT_DIM : 'transparent', color: selected ? ACCENT : '#94a3b8',
+                    padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (selected ? ACCENT : _decBg('#334155')),
+                    background: selected ? ACCENT_DIM : 'transparent', color: selected ? ACCENT : _decFg('#94a3b8'),
                     fontSize: 12, cursor: 'pointer', fontWeight: selected ? 600 : 400
                   }
                 }, v);
               })
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+            h('p', { style: { color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
               'The scenario involves: ' + curDt.values.join(', ')
             ),
             h('div', { style: { textAlign: 'center' } },
@@ -834,19 +843,19 @@ window.SelHub = window.SelHub || {
                   if (dtValues.length === 0) { addToast('Select at least one value!', 'info'); return; }
                   upd('dtStep', 2); if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Options \u2192')
             )
           ),
 
           // Step 2: Consider options
-          dtStep === 2 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          dtStep === 2 && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDD00 What are your options?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Think about what you could do. Here are some possibilities:'),
+            h('p', { style: { color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Think about what you could do. Here are some possibilities:'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
               curDt.options.map(function(opt, i) {
                 return h('div', {                   key: i,
-                  style: { padding: '12px 16px', borderRadius: 10, background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }
+                  style: { padding: '12px 16px', borderRadius: 10, background: _decBg('#1e293b'), border: '1px solid #334155', color: _decFg('#e2e8f0'), fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }
                 },
                   h('span', { style: { color: ACCENT, fontWeight: 700, fontSize: 14 } }, String.fromCharCode(65 + i) + '.'),
                   opt
@@ -856,15 +865,15 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Next: Choose',
                 onClick: function() { upd('dtStep', 3); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Choose \u2192')
             )
           ),
 
           // Step 3: Make your choice
-          dtStep === 3 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          dtStep === 3 && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\u2705 What would you choose?'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } }, 'Pick the option that best aligns with the values you identified:'),
+            h('p', { style: { color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Pick the option that best aligns with the values you identified:'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
               curDt.options.map(function(opt, i) {
                 var isChosen = dtChoice === i;
@@ -872,12 +881,12 @@ window.SelHub = window.SelHub || {
                   key: i,
                   onClick: function() { upd('dtChoice', i); if (soundEnabled) sfxClick(); },
                   style: {
-                    padding: '12px 16px', borderRadius: 10, border: '2px solid ' + (isChosen ? ACCENT : '#334155'),
-                    background: isChosen ? ACCENT_DIM : '#1e293b', color: '#e2e8f0', fontSize: 13, cursor: 'pointer',
+                    padding: '12px 16px', borderRadius: 10, border: '2px solid ' + (isChosen ? ACCENT : _decBg('#334155')),
+                    background: isChosen ? ACCENT_DIM : _decBg('#1e293b'), color: _decFg('#e2e8f0'), fontSize: 13, cursor: 'pointer',
                     textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8
                   }
                 },
-                  h('span', { style: { color: isChosen ? ACCENT : '#94a3b8', fontWeight: 700, fontSize: 14 } }, String.fromCharCode(65 + i) + '.'),
+                  h('span', { style: { color: isChosen ? ACCENT : _decFg('#94a3b8'), fontWeight: 700, fontSize: 14 } }, String.fromCharCode(65 + i) + '.'),
                   opt
                 );
               })
@@ -885,15 +894,15 @@ window.SelHub = window.SelHub || {
             dtChoice != null && h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Next: Reflect',
                 onClick: function() { upd('dtStep', 4); if (soundEnabled) sfxThink(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Reflect \u2192')
             )
           ),
 
           // Step 4: Reflect with AI
-          dtStep === 4 && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          dtStep === 4 && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 14, marginBottom: 6, fontWeight: 700 } }, '\uD83D\uDCAD Reflect on your choice'),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+            h('p', { style: { color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
               'You chose: "' + curDt.options[dtChoice] + '". Why? What might happen as a result?'
             ),
             h('textarea', {
@@ -902,7 +911,7 @@ window.SelHub = window.SelHub || {
               'aria-label': 'Decision tree reflection',
               placeholder: band === 'elementary' ? 'I chose this because... (Tip: don\'t share personal info like your full name, address, or school)' : 'I chose this because... The consequences might be... It connects to the values of... (Tip: keep it general — don\'t share personal info like names, addresses, or contact details)',
               rows: 4,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
             }),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
               // Get AI analysis
@@ -957,7 +966,7 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: dtAiLoad,
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: dtAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: dtAiLoad ? 'default' : 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: dtAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: dtAiLoad ? 'default' : 'pointer' }
               }, dtAiLoad ? 'Analyzing...' : '\u2728 Get Feedback'),
               // Complete
               h('button', { 'aria-label': 'Complete & Next',
@@ -974,14 +983,14 @@ window.SelHub = window.SelHub || {
                   upd({ dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
                   ctx.announceToSR && ctx.announceToSR('Decision tree completed, next scenario loaded');
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#15803d'), color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\u2705 Complete & Next')
             ),
             // AI Response
             (_decisionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
-            dtAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144', marginTop: 16 } },
-              h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Decision Analysis'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, dtAiResp)
+            dtAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144', marginTop: 16 } },
+              h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Decision Analysis'),
+              h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, dtAiResp)
             )
           ),
 
@@ -992,7 +1001,7 @@ window.SelHub = window.SelHub || {
                 upd({ dtIdx: dtIdx + 1, dtStep: 0, dtValues: [], dtChoice: null, dtReflection: '', dtAiResp: null });
                 if (soundEnabled) sfxClick();
               },
-              style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+              style: { background: 'none', border: 'none', color: _decFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
             }, 'Skip to another scenario \u2192')
           )
         );
@@ -1007,66 +1016,66 @@ window.SelHub = window.SelHub || {
         var curEd = edScenarios[edIdx % edScenarios.length];
 
         edContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2696\uFE0F Ethical Dilemmas'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\u2696\uFE0F Ethical Dilemmas'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'No clear right answer \u2014 weigh competing values and defend your reasoning.'
           ),
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Dilemma ' + ((edIdx % edScenarios.length) + 1) + ' of ' + edScenarios.length +
             (edCompleted > 0 ? ' \u00B7 ' + edCompleted + ' explored' : '')
           ),
           // Dilemma card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curEd.title),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } }, curEd.dilemma),
+            h('p', { style: { fontSize: 14, color: _decFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 14 } }, curEd.dilemma),
             // Values in tension
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 10 } },
-              h('div', { style: { padding: '8px 14px', borderRadius: 10, background: '#3b82f622', border: '1px solid #3b82f644', color: '#60a5fa', fontSize: 12, fontWeight: 600 } }, curEd.valueA),
-              h('span', { style: { color: '#94a3b8', fontSize: 16, fontWeight: 700 } }, 'vs'),
-              h('div', { style: { padding: '8px 14px', borderRadius: 10, background: '#ef444422', border: '1px solid #ef444444', color: '#f87171', fontSize: 12, fontWeight: 600 } }, curEd.valueB)
+              h('div', { style: { padding: '8px 14px', borderRadius: 10, background: '#3b82f622', border: '1px solid #3b82f644', color: _decFg('#60a5fa'), fontSize: 12, fontWeight: 600 } }, curEd.valueA),
+              h('span', { style: { color: _decFg('#94a3b8'), fontSize: 16, fontWeight: 700 } }, 'vs'),
+              h('div', { style: { padding: '8px 14px', borderRadius: 10, background: '#ef444422', border: '1px solid #ef444444', color: _decFg('#f87171'), fontSize: 12, fontWeight: 600 } }, curEd.valueB)
             )
           ),
           // Arguments for each side
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 } },
             h('div', null,
-              h('label', { style: { display: 'block', fontSize: 11, fontWeight: 600, color: '#60a5fa', marginBottom: 4 } }, 'Argument for: ' + curEd.valueA),
+              h('label', { style: { display: 'block', fontSize: 11, fontWeight: 600, color: _decFg('#60a5fa'), marginBottom: 4 } }, 'Argument for: ' + curEd.valueA),
               h('textarea', {
                 value: edSideA,
                 onChange: function(e) { upd('edSideA', e.target.value); },
                 'aria-label': 'Arguments for side A',
                 placeholder: 'Why might this value matter more here? (Tip: don\'t share personal info like names or contact details)',
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #3b82f644', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #3b82f644', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
             ),
             h('div', null,
-              h('label', { style: { display: 'block', fontSize: 11, fontWeight: 600, color: '#f87171', marginBottom: 4 } }, 'Argument for: ' + curEd.valueB),
+              h('label', { style: { display: 'block', fontSize: 11, fontWeight: 600, color: _decFg('#f87171'), marginBottom: 4 } }, 'Argument for: ' + curEd.valueB),
               h('textarea', {
                 value: edSideB,
                 onChange: function(e) { upd('edSideB', e.target.value); },
                 'aria-label': 'Arguments for side B',
                 placeholder: 'Why might this value matter more here? (Tip: don\'t share personal info like names or contact details)',
                 rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ef444444', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #ef444444', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
             )
           ),
           // Your verdict
           h('div', { style: { marginBottom: 16 } },
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 } }, 'Your verdict \u2014 what would you do and why?'),
+            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: _decFg('#e2e8f0'), marginBottom: 6 } }, 'Your verdict \u2014 what would you do and why?'),
             h('textarea', {
               value: edVerdict,
               onChange: function(e) { upd('edVerdict', e.target.value); },
               'aria-label': 'Your verdict',
               placeholder: 'I would lean toward... because... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
               rows: 3,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             })
           ),
           // Think about it
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
             h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Think about it'),
-            h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic' } }, curEd.thinkAbout)
+            h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.6, fontStyle: 'italic' } }, curEd.thinkAbout)
           ),
           // Actions
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 } },
@@ -1123,7 +1132,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: edAiLoad,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: edAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: edAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: edAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: edAiLoad ? 'default' : 'pointer' }
             }, edAiLoad ? 'Thinking...' : '\u2728 Explore This Dilemma'),
             // Next
             h('button', { 'aria-label': 'Complete & Next',
@@ -1138,13 +1147,13 @@ window.SelHub = window.SelHub || {
                 upd({ edIdx: edIdx + 1, edSideA: '', edSideB: '', edVerdict: '', edAiResp: null });
                 ctx.announceToSR && ctx.announceToSR('Next dilemma loaded');
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Complete & Next \u2192')
           ),
           // AI Response
-          edAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144' } },
-            h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Ethical Analysis'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, edAiResp)
+          edAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144' } },
+            h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Ethical Analysis'),
+            h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, edAiResp)
           )
         );
       }
@@ -1158,23 +1167,23 @@ window.SelHub = window.SelHub || {
         var curCs = csScenarios[csIdx % csScenarios.length];
 
         csContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD17 Consequence Map'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD17 Consequence Map'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'Trace the ripple effects of a choice across time and people.'
           ),
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Scenario ' + ((csIdx % csScenarios.length) + 1) + ' of ' + csScenarios.length +
             (csCompleted > 0 ? ' \u00B7 ' + csCompleted + ' mapped' : '')
           ),
           // Action card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('h4', { style: { color: ACCENT, fontSize: 15, marginBottom: 8, fontWeight: 700 } }, curCs.title),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, curCs.action),
+            h('p', { style: { fontSize: 14, color: _decFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 10 } }, curCs.action),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               curCs.affectedPeople.map(function(p) {
                 return h('span', {
                   key: p,
-                  style: { fontSize: 10, color: '#94a3b8', background: '#1e293b', padding: '3px 8px', borderRadius: 6 }
+                  style: { fontSize: 10, color: _decFg('#94a3b8'), background: _decBg('#1e293b'), padding: '3px 8px', borderRadius: 6 }
                 }, '\uD83D\uDC64 ' + p);
               })
             )
@@ -1183,7 +1192,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 } },
             // Short-term
             h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#fbbf24', marginBottom: 4 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#fbbf24'), marginBottom: 4 } },
                 '\u26A1', curCs.categories[0]
               ),
               h('textarea', {
@@ -1192,12 +1201,12 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Short-term consequences',
                 placeholder: 'What happens ' + curCs.categories[0] + '? Who is affected and how?',
                 rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fbbf2444', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fbbf2444', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
             ),
             // Medium-term
             h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#fb923c', marginBottom: 4 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#fb923c'), marginBottom: 4 } },
                 '\uD83D\uDD52', curCs.categories[1]
               ),
               h('textarea', {
@@ -1206,12 +1215,12 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Medium-term consequences',
                 placeholder: 'What happens ' + curCs.categories[1] + '? How do things change?',
                 rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fb923c44', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #fb923c44', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
             ),
             // Long-term
             h('div', null,
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#f87171', marginBottom: 4 } },
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: _decFg('#f87171'), marginBottom: 4 } },
                 '\uD83C\uDF0D', curCs.categories[2]
               ),
               h('textarea', {
@@ -1220,7 +1229,7 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Long-term consequences',
                 placeholder: 'What happens ' + curCs.categories[2] + '? What lasting effects might there be?',
                 rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #f8717144', background: '#1e293b', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                style: { width: '100%', padding: 10, borderRadius: 10, border: '1px solid #f8717144', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
               })
             )
           ),
@@ -1240,14 +1249,14 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Consequence map saved');
               },
               disabled: csSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? '#22c55e' : ACCENT, color: csSaved ? '#fff' : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: csSaved ? _decFg('#22c55e') : ACCENT, color: csSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: csSaved ? 'default' : 'pointer' }
             }, csSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Map'),
             csSaved && h('button', { 'aria-label': 'Next Scenario',
               onClick: function() {
                 upd({ csIdx: csIdx + 1, csShort: '', csMid: '', csLong: '', csSaved: false });
                 if (soundEnabled) sfxClick();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -1262,11 +1271,11 @@ window.SelHub = window.SelHub || {
         var curBias = biases[biasIdx % biases.length];
 
         biasContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83E\uDDE0 Bias Check'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83E\uDDE0 Bias Check'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'Learn to recognize the thinking traps that lead to bad decisions.'
           ),
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Bias ' + ((biasIdx % biases.length) + 1) + ' of ' + biases.length +
             (biasViewed > 0 ? ' \u00B7 ' + biasViewed + ' studied' : '')
           ),
@@ -1282,41 +1291,41 @@ window.SelHub = window.SelHub || {
               tryAwardBadge('first_bias');
               if (newViewed >= biases.length) tryAwardBadge('bias_all');
             },
-            style: { padding: 30, borderRadius: 14, background: '#0f172a', border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center', marginBottom: 16 },
+            style: { padding: 30, borderRadius: 14, background: _decBg('#0f172a'), border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center', marginBottom: 16 },
             role: 'button', tabIndex: 0
           },
             h('div', { style: { fontSize: 40, marginBottom: 8 } }, curBias.icon),
-            h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, curBias.simple),
-            h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'Tap to learn about this thinking trap')
+            h('div', { style: { fontSize: 18, fontWeight: 700, color: _decFg('#f1f5f9'), marginBottom: 4 } }, curBias.simple),
+            h('div', { style: { fontSize: 12, color: _decFg('#94a3b8') } }, 'Tap to learn about this thinking trap')
           ),
           // Revealed bias detail
-          biasRevealed && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          biasRevealed && h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
               h('span', { style: { fontSize: 32 } }, curBias.icon),
               h('div', null,
-                h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, curBias.name),
+                h('div', { style: { fontSize: 16, fontWeight: 700, color: _decFg('#f1f5f9') } }, curBias.name),
                 h('div', { style: { fontSize: 12, color: ACCENT } }, curBias.simple)
               )
             ),
             // What is it?
             h('div', { style: { marginBottom: 14 } },
-              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What is it?'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.desc)
+              h('p', { style: { fontSize: 10, color: _decFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What is it?'),
+              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.7 } }, curBias.desc)
             ),
             // Example
             h('div', { style: { marginBottom: 14 } },
-              h('p', { style: { fontSize: 10, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Example'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, curBias.example)
+              h('p', { style: { fontSize: 10, color: _decFg('#60a5fa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Example'),
+              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } }, curBias.example)
             ),
             // Self-check question
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 14 } },
+            h('div', { style: { padding: 14, borderRadius: 10, background: _decBg('#1e293b'), border: '1px solid #334155', marginBottom: 14 } },
               h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Ask yourself'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, curBias.question)
+              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.6 } }, curBias.question)
             ),
             // Antidote
             h('div', { style: { padding: 14, borderRadius: 10, background: '#22c55e11', border: '1px solid #22c55e33' } },
-              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Antidote'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, curBias.antidote)
+              h('p', { style: { fontSize: 10, color: _decFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Antidote'),
+              h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.6 } }, curBias.antidote)
             )
           ),
           // Reflection area (after reveal)
@@ -1327,7 +1336,7 @@ window.SelHub = window.SelHub || {
               'aria-label': 'Bias reflection',
               placeholder: 'Can you think of a time this bias affected YOUR thinking?',
               rows: 3,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             })
           ),
           // Next bias
@@ -1338,7 +1347,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
                 ctx.announceToSR && ctx.announceToSR('Next bias loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Bias \u2192')
           ),
           // Skip
@@ -1348,7 +1357,7 @@ window.SelHub = window.SelHub || {
                 upd({ biasIdx: biasIdx + 1, biasRevealed: false, biasReflection: '' });
                 if (soundEnabled) sfxClick();
               },
-              style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+              style: { background: 'none', border: 'none', color: _decFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
             }, 'Skip to another bias \u2192')
           )
         );
@@ -1375,29 +1384,29 @@ window.SelHub = window.SelHub || {
         }
 
         vsContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDCCF Values Sort'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDCCF Values Sort'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'Rank these values from MOST to LEAST important for this situation. There are no wrong answers!'
           ),
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Context ' + ((vsIdx % vsSorts.length) + 1) + ' of ' + vsSorts.length +
             (vsCompleted > 0 ? ' \u00B7 ' + vsCompleted + ' completed' : '')
           ),
           // Context card
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
             h('p', { style: { fontSize: 11, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What matters most when...'),
-            h('p', { style: { fontSize: 16, color: '#f1f5f9', fontWeight: 700 } }, curVs.context + '?')
+            h('p', { style: { fontSize: 16, color: _decFg('#f1f5f9'), fontWeight: 700 } }, curVs.context + '?')
           ),
           // Ranking list
           h('div', { style: { marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 } },
             ranking.map(function(val, i) {
-              var medalColors = ['#f59e0b', '#94a3b8', '#cd7f32', '#94a3b8', '#475569', '#334155'];
+              var medalColors = [_decFg('#f59e0b'), _decFg('#94a3b8'), '#cd7f32', _decFg('#94a3b8'), _decFg('#475569'), _decBg('#334155')];
               var medalLabels = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
               return h('div', {
                 key: val,
                 style: {
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10,
-                  background: '#1e293b', border: '1px solid ' + (i === 0 ? '#f59e0b44' : '#334155'),
+                  background: _decBg('#1e293b'), border: '1px solid ' + (i === 0 ? '#f59e0b44' : _decBg('#334155')),
                   transition: 'all 0.15s'
                 }
               },
@@ -1405,17 +1414,17 @@ window.SelHub = window.SelHub || {
                 h('div', {                   style: { width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, background: medalColors[i] + '33', color: medalColors[i], flexShrink: 0 }
                 }, medalLabels[i]),
                 // Value name
-                h('span', { style: { flex: 1, color: '#e2e8f0', fontSize: 14, fontWeight: i === 0 ? 700 : 500 } }, val),
+                h('span', { style: { flex: 1, color: _decFg('#e2e8f0'), fontSize: 14, fontWeight: i === 0 ? 700 : 500 } }, val),
                 // Move buttons
                 h('button', { 'aria-label': 'Move buttons',
                   onClick: function() { moveValue(i, i - 1); },
                   disabled: i === 0,
-                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === 0 ? '#1e293b' : '#334155', color: i === 0 ? '#334155' : '#e2e8f0', cursor: i === 0 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === 0 ? _decBg('#1e293b') : _decBg('#334155'), color: i === 0 ? _decBg('#334155') : _decFg('#e2e8f0'), cursor: i === 0 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
                 }, '\u25B2'),
                 h('button', { 'aria-label': 'Values sort saved',
                   onClick: function() { moveValue(i, i + 1); },
                   disabled: i === ranking.length - 1,
-                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === ranking.length - 1 ? '#1e293b' : '#334155', color: i === ranking.length - 1 ? '#334155' : '#e2e8f0', cursor: i === ranking.length - 1 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+                  style: { width: 28, height: 28, borderRadius: 6, border: 'none', background: i === ranking.length - 1 ? _decBg('#1e293b') : _decBg('#334155'), color: i === ranking.length - 1 ? _decBg('#334155') : _decFg('#e2e8f0'), cursor: i === ranking.length - 1 ? 'default' : 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }
                 }, '\u25BC')
               );
             })
@@ -1435,20 +1444,20 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Values sort saved');
               },
               disabled: vsSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? '#22c55e' : ACCENT, color: vsSaved ? '#fff' : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: vsSaved ? _decFg('#22c55e') : ACCENT, color: vsSaved ? _decFg('#fff') : '#0f172a', fontWeight: 600, fontSize: 13, cursor: vsSaved ? 'default' : 'pointer' }
             }, vsSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Ranking'),
             vsSaved && h('button', { 'aria-label': 'Next Context',
               onClick: function() {
                 upd({ vsIdx: vsIdx + 1, vsRanking: [], vsSaved: false });
                 if (soundEnabled) sfxClick();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Context \u2192')
           ),
           // Reflection prompt
-          vsSaved && h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED } },
+          vsSaved && h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED } },
             h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Reflect'),
-            h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+            h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.6 } },
               'You ranked "' + ranking[0] + '" as most important and "' + ranking[ranking.length - 1] + '" as least. Would someone else rank them the same way? Why might their ranking be different?'
             )
           )
@@ -1465,25 +1474,25 @@ window.SelHub = window.SelHub || {
         var curRw = rwCases[rwIdx % rwCases.length];
 
         rwContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDF0D Real-World Decisions'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDF0D Real-World Decisions'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 12 } },
             'Study real decisions that changed history. What would YOU have done?'
           ),
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Case ' + ((rwIdx % rwCases.length) + 1) + ' of ' + rwCases.length +
             (rwCompleted > 0 ? ' \u00B7 ' + rwCompleted + ' analyzed' : '')
           ),
           // Case card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #3b82f644', marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid #3b82f644', marginBottom: 16 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-              h('h4', { style: { color: '#60a5fa', fontSize: 16, fontWeight: 700, margin: 0 } }, curRw.title),
-              h('span', { style: { fontSize: 11, color: '#94a3b8', background: '#1e293b', padding: '2px 8px', borderRadius: 6 } }, curRw.year)
+              h('h4', { style: { color: _decFg('#60a5fa'), fontSize: 16, fontWeight: 700, margin: 0 } }, curRw.title),
+              h('span', { style: { fontSize: 11, color: _decFg('#94a3b8'), background: _decBg('#1e293b'), padding: '2px 8px', borderRadius: 6 } }, curRw.year)
             ),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, curRw.summary),
+            h('p', { style: { fontSize: 14, color: _decFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 12 } }, curRw.summary),
             // The decision
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #3b82f633', marginBottom: 12 } },
-              h('p', { style: { fontSize: 10, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'The Decision'),
-              h('p', { style: { fontSize: 13, color: '#f1f5f9', fontWeight: 600 } }, curRw.decision)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _decBg('#1e293b'), border: '1px solid #3b82f633', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: _decFg('#60a5fa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'The Decision'),
+              h('p', { style: { fontSize: 13, color: _decFg('#f1f5f9'), fontWeight: 600 } }, curRw.decision)
             ),
             // Values tested
             h('div', { style: { marginBottom: 12 } },
@@ -1491,21 +1500,21 @@ window.SelHub = window.SelHub || {
             ),
             // Impact
             h('div', { style: { padding: 12, borderRadius: 10, background: '#22c55e11', border: '1px solid #22c55e33' } },
-              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What Happened'),
-              h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, curRw.impact)
+              h('p', { style: { fontSize: 10, color: _decFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What Happened'),
+              h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.6 } }, curRw.impact)
             )
           ),
           // Reflection question
-          h('div', { style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
             h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Your Turn'),
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 10 } }, curRw.question),
+            h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.6, fontStyle: 'italic', marginBottom: 10 } }, curRw.question),
             h('textarea', {
               value: rwReflection,
               onChange: function(e) { upd('rwReflection', e.target.value); },
               'aria-label': 'Real-world decision reflection',
               placeholder: 'What would you have done? What makes this decision so hard? (Tip: don\'t share personal info like names, addresses, or your school)',
               rows: 4,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#0f172a'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             })
           ),
           // Actions
@@ -1561,7 +1570,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: rwAiLoad,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rwAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: rwAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: rwAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: rwAiLoad ? 'default' : 'pointer' }
             }, rwAiLoad ? 'Analyzing...' : '\u2728 Discuss With AI'),
             // Complete & Next
             h('button', { 'aria-label': 'Complete & Next',
@@ -1576,13 +1585,13 @@ window.SelHub = window.SelHub || {
                 upd({ rwIdx: rwIdx + 1, rwReflection: '', rwAiResp: null });
                 ctx.announceToSR && ctx.announceToSR('Next case loaded');
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _decBg('#334155'), color: _decFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Complete & Next \u2192')
           ),
           // AI Response
-          rwAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144' } },
-            h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Historical Analysis'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, rwAiResp)
+          rwAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144' } },
+            h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Historical Analysis'),
+            h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, rwAiResp)
           )
         );
       }
@@ -1613,8 +1622,8 @@ window.SelHub = window.SelHub || {
         var scoreRange = maxScore - Math.min(scores.U, scores.D, scores.V, scores.C);
 
         compassContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83E\uDDED Moral Compass'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83E\uDDED Moral Compass'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             allAnswered && !mcDone
               ? 'All questions answered! See your results below.'
               : mcDone
@@ -1625,10 +1634,10 @@ window.SelHub = window.SelHub || {
           // Progress bar
           !mcDone && h('div', { style: { marginBottom: 16 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-              h('span', { style: { fontSize: 11, color: '#94a3b8' } }, answeredCount + ' of ' + mcStatements.length),
+              h('span', { style: { fontSize: 11, color: _decFg('#94a3b8') } }, answeredCount + ' of ' + mcStatements.length),
               h('span', { style: { fontSize: 11, color: ACCENT } }, Math.round((answeredCount / mcStatements.length) * 100) + '%')
             ),
-            h('div', { style: { height: 6, borderRadius: 3, background: '#334155', overflow: 'hidden' } },
+            h('div', { style: { height: 6, borderRadius: 3, background: _decBg('#334155'), overflow: 'hidden' } },
               h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((answeredCount / mcStatements.length) * 100) + '%', transition: 'width 0.3s' } })
             )
           ),
@@ -1639,16 +1648,16 @@ window.SelHub = window.SelHub || {
               var answered = mcAnswers[s.id];
               return h('div', {
                 key: s.id,
-                style: { padding: '14px 16px', borderRadius: 12, background: '#0f172a', border: '1px solid ' + (answered ? '#22c55e44' : '#334155') }
+                style: { padding: '14px 16px', borderRadius: 12, background: _decBg('#0f172a'), border: '1px solid ' + (answered ? '#22c55e44' : _decBg('#334155')) }
               },
-                h('p', { style: { fontSize: 13, color: '#e2e8f0', marginBottom: 10, lineHeight: 1.5 } },
-                  h('span', { style: { color: '#94a3b8', fontWeight: 700, marginRight: 6 } }, (i + 1) + '.'),
+                h('p', { style: { fontSize: 13, color: _decFg('#e2e8f0'), marginBottom: 10, lineHeight: 1.5 } },
+                  h('span', { style: { color: _decFg('#94a3b8'), fontWeight: 700, marginRight: 6 } }, (i + 1) + '.'),
                   s.text
                 ),
                 h('div', { style: { display: 'flex', gap: 6 } },
                   ['agree', 'sometimes', 'disagree'].map(function(choice) {
                     var isSelected = answered === choice;
-                    var colors = { agree: '#22c55e', sometimes: '#f59e0b', disagree: '#ef4444' };
+                    var colors = { agree: _decFg('#22c55e'), sometimes: _decFg('#f59e0b'), disagree: _decFg('#ef4444') };
                     var labels = { agree: 'Agree', sometimes: 'It Depends', disagree: 'Disagree' };
                     return h('button', { 
                       key: choice,
@@ -1660,9 +1669,9 @@ window.SelHub = window.SelHub || {
                       },
                       style: {
                         flex: 1, padding: '6px 10px', borderRadius: 8, fontSize: 11, fontWeight: isSelected ? 700 : 500, cursor: 'pointer',
-                        border: '1px solid ' + (isSelected ? colors[choice] : '#334155'),
+                        border: '1px solid ' + (isSelected ? colors[choice] : _decBg('#334155')),
                         background: isSelected ? colors[choice] + '22' : 'transparent',
-                        color: isSelected ? colors[choice] : '#94a3b8'
+                        color: isSelected ? colors[choice] : _decFg('#94a3b8')
                       }
                     }, labels[choice]);
                   })
@@ -1684,15 +1693,15 @@ window.SelHub = window.SelHub || {
                 if (celebrate) celebrate();
                 ctx.announceToSR && ctx.announceToSR('Moral compass results ready');
               },
-              style: { padding: '14px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+              style: { padding: '14px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #ef4444)', color: _decFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
             }, '\uD83E\uDDED Reveal My Moral Compass')
           ),
 
           // Results
           mcDone && h('div', null,
             // Framework bars
-            h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('h4', { style: { color: '#f1f5f9', fontSize: 14, marginBottom: 12, textAlign: 'center' } }, 'Your Ethical Framework Profile'),
+            h('div', { style: { padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('h4', { style: { color: _decFg('#f1f5f9'), fontSize: 14, marginBottom: 12, textAlign: 'center' } }, 'Your Ethical Framework Profile'),
               ['U', 'D', 'V', 'C'].map(function(tag) {
                 var fw = COMPASS_FRAMEWORKS[tag];
                 var pct = totalScore > 0 ? Math.round((scores[tag] / (mcStatements.filter(function(s) { return s.tag === tag; }).length * 2)) * 100) : 0;
@@ -1701,18 +1710,18 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       h('span', { style: { fontSize: 16 } }, fw.icon),
-                      h('span', { style: { fontSize: 12, fontWeight: isDominant ? 700 : 500, color: isDominant ? fw.color : '#94a3b8' } }, fw.name)
+                      h('span', { style: { fontSize: 12, fontWeight: isDominant ? 700 : 500, color: isDominant ? fw.color : _decFg('#94a3b8') } }, fw.name)
                     ),
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: fw.color } }, pct + '%')
                   ),
-                  h('div', { style: { height: 10, borderRadius: 5, background: '#334155', overflow: 'hidden' } },
+                  h('div', { style: { height: 10, borderRadius: 5, background: _decBg('#334155'), overflow: 'hidden' } },
                     h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', style: { height: '100%', borderRadius: 5, background: fw.color, width: pct + '%', transition: 'width 0.5s' } })
                   )
                 );
               })
             ),
             // Dominant framework explanation
-            dominant.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + COMPASS_FRAMEWORKS[dominant[0]].color + '44', marginBottom: 16 } },
+            dominant.length > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid ' + COMPASS_FRAMEWORKS[dominant[0]].color + '44', marginBottom: 16 } },
               h('p', { style: { fontSize: 10, color: COMPASS_FRAMEWORKS[dominant[0]].color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } },
                 dominant.length > 1 ? 'Your blend' : 'Your primary framework'
               ),
@@ -1723,7 +1732,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 24 } }, fw.icon),
                     h('span', { style: { fontSize: 15, fontWeight: 700, color: fw.color } }, fw.name)
                   ),
-                  h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, fw.desc)
+                  h('p', { style: { fontSize: 12, color: _decFg('#e2e8f0'), lineHeight: 1.7 } }, fw.desc)
                 );
               })
             ),
@@ -1759,12 +1768,12 @@ window.SelHub = window.SelHub || {
                   });
                 },
                 disabled: mcAiLoad,
-                style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: mcAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: mcAiLoad ? 'default' : 'pointer' }
+                style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: mcAiLoad ? _decBg('#334155') : '#6366f1', color: _decFg('#fff'), fontWeight: 600, fontSize: 13, cursor: mcAiLoad ? 'default' : 'pointer' }
               }, mcAiLoad ? 'Analyzing your ethics...' : '\u2728 Get Personalized Analysis')
             ),
-            mcAiResp && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144', marginBottom: 16 } },
-              h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, '\u2728 Your Moral Profile'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, mcAiResp)
+            mcAiResp && h('div', { style: { padding: 20, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid #6366f144', marginBottom: 16 } },
+              h('p', { style: { fontSize: 10, color: _decFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, '\u2728 Your Moral Profile'),
+              h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, mcAiResp)
             ),
             // Retake
             h('div', { style: { textAlign: 'center' } },
@@ -1773,7 +1782,7 @@ window.SelHub = window.SelHub || {
                   upd({ mcAnswers: {}, mcDone: false, mcAiResp: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+                style: { background: 'none', border: 'none', color: _decFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
               }, 'Retake the assessment')
             )
           )
@@ -1786,11 +1795,11 @@ window.SelHub = window.SelHub || {
       var advContent = null;
       if (activeTab === 'advisor') {
         advContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2728 Decision Advisor'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\u2728 Decision Advisor'),
+          h('p', { style: { textAlign: 'center', color: _decFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             'Describe a real decision you\'re facing and get structured thinking tools to help.'
           ),
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('textarea', {
               value: advPrompt,
               onChange: function(e) { upd('advPrompt', e.target.value); },
@@ -1799,7 +1808,7 @@ window.SelHub = window.SelHub || {
                 ? 'Tell me about something you need to decide. For example: "I can\'t decide if I should try out for the play or join soccer..." (Tip: don\'t share personal info like your full name, address, or school)'
                 : 'Describe a decision you\'re facing. Include what makes it hard — the competing values, the people involved, the pressure you feel... (Tip: keep it general — don\'t share personal info like full names, addresses, contact details, or your school)',
               rows: 5,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _decBg('#1e293b'), color: _decFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
             h('button', {
               onClick: function() {
@@ -1857,15 +1866,15 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: advLoading,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: advLoading ? '#334155' : ACCENT, color: advLoading ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 13, cursor: advLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: advLoading ? _decBg('#334155') : ACCENT, color: advLoading ? _decFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: advLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
             },
               advLoading ? 'Thinking...' : h(Sparkles, { size: 14 }), advLoading ? null : ' Analyze My Decision'
             )
           ),
           // AI Response
-          advResponse && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
+          advResponse && h('div', { style: { padding: 20, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
             h('p', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Decision Framework'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, advResponse)
+            h('div', { style: { fontSize: 13, color: _decFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, advResponse)
           )
         );
       }
@@ -1877,48 +1886,48 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'progress') {
         var totalActs = dtCompleted + edCompleted + csCompleted + biasViewed + vsCompleted + rwCompleted;
         var stats = [
-          { label: 'Decision Trees', value: dtCompleted, icon: '\uD83C\uDF33', color: '#f59e0b' },
-          { label: 'Ethical Dilemmas', value: edCompleted, icon: '\u2696\uFE0F', color: '#8b5cf6' },
-          { label: 'Consequence Maps', value: csCompleted, icon: '\uD83D\uDD17', color: '#ef4444' },
-          { label: 'Biases Studied', value: biasViewed, icon: '\uD83E\uDDE0', color: '#3b82f6' },
-          { label: 'Values Sorted', value: vsCompleted, icon: '\uD83C\uDCCF', color: '#22c55e' },
-          { label: 'Real-World Cases', value: rwCompleted, icon: '\uD83C\uDF0D', color: '#60a5fa' }
+          { label: 'Decision Trees', value: dtCompleted, icon: '\uD83C\uDF33', color: _decFg('#f59e0b') },
+          { label: 'Ethical Dilemmas', value: edCompleted, icon: '\u2696\uFE0F', color: _decFg('#8b5cf6') },
+          { label: 'Consequence Maps', value: csCompleted, icon: '\uD83D\uDD17', color: _decFg('#ef4444') },
+          { label: 'Biases Studied', value: biasViewed, icon: '\uD83E\uDDE0', color: _decFg('#3b82f6') },
+          { label: 'Values Sorted', value: vsCompleted, icon: '\uD83C\uDCCF', color: _decFg('#22c55e') },
+          { label: 'Real-World Cases', value: rwCompleted, icon: '\uD83C\uDF0D', color: _decFg('#60a5fa') }
         ];
 
         progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _decFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
           // Total
-          h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: _decBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-            h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
+            h('div', { style: { fontSize: 13, color: _decFg('#94a3b8') } }, 'Total Activities Completed')
           ),
           // Stats grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
               return h('div', {
                 key: s.label,
-                style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' }
+                style: { padding: 16, borderRadius: 12, background: _decBg('#1e293b'), border: '1px solid ' + s.color + '44', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24 } }, s.icon),
                 h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
+                h('div', { style: { fontSize: 11, color: _decFg('#94a3b8') } }, s.label)
               );
             })
           ),
           // Recent practice log
           practiceLog.length > 0 && h('div', null,
-            h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
+            h('h4', { style: { fontSize: 14, color: _decFg('#f1f5f9'), marginBottom: 8 } }, 'Recent Practice'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               practiceLog.slice(-8).reverse().map(function(entry, i) {
                 var icons = { decision: '\uD83C\uDF33', dilemma: '\u2696\uFE0F', consequence: '\uD83D\uDD17', bias: '\uD83E\uDDE0', values: '\uD83C\uDCCF', realworld: '\uD83C\uDF0D', advisor: '\u2728' };
                 var labels = { decision: 'Decision Tree', dilemma: 'Ethical Dilemma', consequence: 'Consequence Map', bias: 'Bias Check', values: 'Values Sort', realworld: 'Real-World Case', advisor: 'AI Advisor' };
                 return h('div', {
                   key: i,
-                  style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
+                  style: { padding: '8px 12px', borderRadius: 8, background: _decBg('#0f172a'), display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
                 },
                   h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
-                  h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
-                  h('span', { style: { marginLeft: 'auto', color: '#94a3b8', fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
+                  h('span', { style: { color: _decFg('#e2e8f0'), fontWeight: 500 } }, labels[entry.type] || entry.type),
+                  h('span', { style: { marginLeft: 'auto', color: _decFg('#94a3b8'), fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
                 );
               })
             )
@@ -1935,13 +1944,13 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         printContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _decFg('#78350f'), lineHeight: 1.65 } },
             h('strong', null, '\uD83D\uDDA8 Decision template. '),
             'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
             h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _decFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -1950,40 +1959,40 @@ window.SelHub = window.SelHub || {
             '#dec-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'dec-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+          h('div', { id: 'dec-print-region', style: { padding: 18, borderRadius: 12, background: _decBg('#ffffff'), color: _decFg('#0f172a'), border: '1px solid #e2e8f0' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
-              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Decision Worksheet'),
-              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Structured decision-making')
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _decFg('#0f172a') } }, 'My Decision Worksheet'),
+              h('div', { style: { fontSize: 11, color: _decFg('#475569') } }, 'Structured decision-making')
             ),
 
-            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#78350f' } },
+            h('div', { style: { padding: 10, background: _decBg('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _decFg('#78350f') } },
               h('strong', null, 'How to use: '),
               'fill the worksheet by hand on a single decision. Doing this slowly is the work. "Sleeping on it" \u00b7 "talking it through with one person you trust" \u00b7 "writing it out" all live here.'
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '1. The decision in one sentence'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '1. The decision in one sentence'),
               h('div', { style: { height: 40, borderBottom: '1px solid #cbd5e1' } })
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '2. Why this matters to me (values at stake)'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '2. Why this matters to me (values at stake)'),
               h('div', { style: { height: 50, borderBottom: '1px solid #cbd5e1' } })
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '3. The options I can see'),
-              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 6, fontStyle: 'italic' } }, 'Force yourself to list at least 3, even if the third feels silly. The third option is often where the wise answer hides.'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '3. The options I can see'),
+              h('div', { style: { fontSize: 11.5, color: _decFg('#475569'), marginBottom: 6, fontStyle: 'italic' } }, 'Force yourself to list at least 3, even if the third feels silly. The third option is often where the wise answer hides.'),
               [1, 2, 3].map(function(i) { return h('div', { key: i, style: { height: 28, borderBottom: '1px solid #cbd5e1', marginBottom: 4 } }); })
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '4. Consequences across time'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '4. Consequences across time'),
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
                 h('thead', null, h('tr', null,
-                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Option'),
-                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Short term'),
-                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, 'Long term')
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: _decBg('#f1f5f9'), textAlign: 'left' } }, 'Option'),
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: _decBg('#f1f5f9'), textAlign: 'left' } }, 'Short term'),
+                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: _decBg('#f1f5f9'), textAlign: 'left' } }, 'Long term')
                 )),
                 h('tbody', null,
                   [1, 2, 3].map(function(i) {
@@ -1998,14 +2007,14 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '5. Whose voices should be in the room?'),
-              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4, fontStyle: 'italic' } }, 'A trusted adult, a friend who knows your context, the person most affected, your own future self looking back.'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '5. Whose voices should be in the room?'),
+              h('div', { style: { fontSize: 11.5, color: _decFg('#475569'), marginBottom: 4, fontStyle: 'italic' } }, 'A trusted adult, a friend who knows your context, the person most affected, your own future self looking back.'),
               h('div', { style: { height: 50, borderBottom: '1px solid #cbd5e1' } })
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '6. Bias check'),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.6 } },
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '6. Bias check'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: _decFg('#0f172a'), lineHeight: 1.6 } },
                 h('li', null, 'Am I deciding fast because I am uncomfortable, or because the situation actually requires speed?'),
                 h('li', null, 'Am I weighing the short term more than the long term because the short term is louder?'),
                 h('li', null, 'Whose approval am I trying to win? Is that approval worth the cost?'),
@@ -2014,19 +2023,19 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
-              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '7. My choice and my first step'),
-              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4 } }, 'Choice:'),
+              h('div', { style: { fontSize: 12, color: _decFg('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '7. My choice and my first step'),
+              h('div', { style: { fontSize: 11.5, color: _decFg('#475569'), marginBottom: 4 } }, 'Choice:'),
               h('div', { style: { height: 32, borderBottom: '1px solid #cbd5e1', marginBottom: 8 } }),
-              h('div', { style: { fontSize: 11.5, color: '#475569', marginBottom: 4 } }, 'First step within 24 hours:'),
+              h('div', { style: { fontSize: 11.5, color: _decFg('#475569'), marginBottom: 4 } }, 'First step within 24 hours:'),
               h('div', { style: { height: 32, borderBottom: '1px solid #cbd5e1' } })
             ),
 
-            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: '#78350f', lineHeight: 1.55 } },
+            h('div', { style: { padding: 10, background: _decBg('#fffbeb'), border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: _decFg('#78350f'), lineHeight: 1.55 } },
               h('strong', null, 'A decision is not final until it is in motion. '),
               'Naming a first step within 24 hours converts deliberation into action. If 24 hours pass without movement, you have actually decided not to.'
             ),
 
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _decFg('#475569'), lineHeight: 1.5 } },
               'Sources: Kahneman, D. (2011), Thinking, Fast and Slow \u00b7 Heath, C. & Heath, D. (2013), Decisive \u00b7 Linehan, M. (DBT pros and cons skill). Printed from AlloFlow SEL Hub.'
             )
           )

@@ -627,6 +627,15 @@ window.SelHub = window.SelHub || {
     color: 'pink',
     category: 'responsible-decision-making',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _jouT = (ctx && ctx.theme) || {};
+      var _jouHC = !!_jouT.isContrast, _jouL = !_jouHC && !_jouT.isDark;
+      var _jou_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _jou_BGH = {'#1e293b':'#000000','#0f172a':'#000000'};
+      var _jou_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b'}, _jou_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#f59e0b':'#ffff00','#22c55e':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00'};
+      var _jou_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _jou_BDH = {'#1e293b':'#ffff00','#334155':'#ffff00','#475569':'#ffff00'};
+      var _jouBg = function(h){ return _jouHC ? (_jou_BGH[h]||h) : (_jouL ? (_jou_BGL[h]||h) : h); };
+      var _jouFg = function(h){ return _jouHC ? (_jou_FGH[h]||h) : (_jouL ? (_jou_FGL[h]||h) : h); };
+      var _jouBd = function(h){ return _jouHC ? (_jou_BDH[h]||h) : (_jouL ? (_jou_BDL[h]||h) : h); };
       return (function() {
         var React = ctx.React;
         var h = React.createElement;
@@ -753,12 +762,12 @@ window.SelHub = window.SelHub || {
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
               style: {
                 padding: '10px 14px', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500,
-                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : '#94a3b8', transition: 'all 0.15s',
+                background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _jouFg('#94a3b8'), transition: 'all 0.15s',
                 borderBottom: isActive ? '2px solid ' + ACCENT : '2px solid transparent', borderRadius: 0
               }
             }, t.icon + ' ' + t.label);
           }),
-          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _jouFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
         // ══════════════════════════════════════════════════════
@@ -769,7 +778,7 @@ window.SelHub = window.SelHub || {
             checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 daily 1-minute pulse',                       hint: 'Mood + intensity + brief context. The act of LOGGING shifts behavior even before you analyze the data \u2014 self-monitoring (Latham 1981) is one of the most-replicated effects in behavior science.' },
             journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 expressive writing as research',           hint: 'Pennebaker 1986: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism: turning chaos into narrative gives the brain handles.' },
             calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 streaks + heat map',                       hint: 'Visual streak ladders harness consistency-bias: missing one day stings; missing two stings less. Don\u2019t miss twice. Pattern visibility \u2014 when do you tend to skip? \u2014 is the diagnostic, not the goal.' },
-            insights: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
+            insights: { accent: _jouFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
             badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Self-determination theory (Deci + Ryan 1985): autonomy + competence + relatedness drive intrinsic motivation. Badges acknowledge competence without coercing \u2014 you set the streak, the system just notices.' }
           };
           var meta = TAB_META[activeTab] || TAB_META.checkin;
@@ -787,7 +796,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: _jouFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })();
@@ -800,11 +809,11 @@ window.SelHub = window.SelHub || {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
             badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
-              h('div', { style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+              h('div', { style: { background: _jouBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
                 h('div', { style: { fontSize: 48, marginBottom: 8 } }, popBadge.icon),
                 h('div', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4, fontWeight: 700 } }, 'Badge Earned!'),
-                h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, popBadge.name),
-                h('div', { style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
+                h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9'), marginBottom: 4 } }, popBadge.name),
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, popBadge.desc)
               )
             );
           }
@@ -821,19 +830,19 @@ window.SelHub = window.SelHub || {
           var energyLabels = ['Exhausted', 'Tired', 'Okay', 'Energized', 'Supercharged'];
 
           checkinContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _jouFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? '\uD83D\uDE42 How Are You Feeling?' : '\uD83D\uDE42 Daily Mood Check-In'
             ),
-            streak > 0 && h('div', { style: { textAlign: 'center', marginBottom: 12, fontSize: 12, color: '#f59e0b' } },
+            streak > 0 && h('div', { style: { textAlign: 'center', marginBottom: 12, fontSize: 12, color: _jouFg('#f59e0b') } },
               '\uD83D\uDD25 ' + streak + '-day streak!'
             ),
-            checkedInToday && h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: '#22c55e22', border: '1px solid #22c55e44', marginBottom: 16, fontSize: 12, color: '#22c55e' } },
+            checkedInToday && h('div', { style: { textAlign: 'center', padding: 12, borderRadius: 10, background: '#22c55e22', border: '1px solid #22c55e44', marginBottom: 16, fontSize: 12, color: _jouFg('#22c55e') } },
               '\u2705 You already checked in today! You can still add another entry.'
             ),
 
             // Mood selector
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'Pick the face that matches how you feel:' : 'Select your current mood:'
               ),
               h('div', { style: { display: 'flex', justifyContent: 'center', gap: 10 } },
@@ -848,19 +857,19 @@ window.SelHub = window.SelHub || {
                     style: {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '10px 12px',
                       borderRadius: 12, border: isSelected ? '2px solid ' + m.color : '2px solid #334155',
-                      background: isSelected ? m.color + '22' : '#1e293b', cursor: 'pointer', transition: 'all 0.15s',
+                      background: isSelected ? m.color + '22' : _jouBg('#1e293b'), cursor: 'pointer', transition: 'all 0.15s',
                       transform: isSelected ? 'scale(1.1)' : 'scale(1)'
                     }
                   },
                     h('span', { style: { fontSize: 28 } }, m.emoji),
-                    h('span', { style: { fontSize: 10, color: isSelected ? m.color : '#94a3b8', fontWeight: 600 } }, m.label)
+                    h('span', { style: { fontSize: 10, color: isSelected ? m.color : _jouFg('#94a3b8'), fontWeight: 600 } }, m.label)
                   );
                 })
               ),
 
               // Sub-emotion picker (appears when a mood is selected)
-              ciMood != null && SUB_EMOTIONS[ciMood] && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+              ciMood != null && SUB_EMOTIONS[ciMood] && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 12, background: _jouBg('#0f172a'), border: '1px solid #334155' } },
+                h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
                   band === 'elementary' ? 'Can you pick a more specific feeling? (optional)' : 'More specifically, you feel... (optional)'
                 ),
                 h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
@@ -878,19 +887,19 @@ window.SelHub = window.SelHub || {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                         padding: '8px 14px', borderRadius: 10,
                         border: isSel ? '2px solid ' + col : '1px solid #334155',
-                        background: isSel ? col + '22' : '#1e293b',
+                        background: isSel ? col + '22' : _jouBg('#1e293b'),
                         cursor: 'pointer', transition: 'all 0.15s'
                       }
                     },
                       h('span', { style: { fontSize: 20 } }, sub.emoji),
-                      h('span', { style: { fontSize: 10, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, sub.label)
+                      h('span', { style: { fontSize: 10, color: isSel ? col : _jouFg('#94a3b8'), fontWeight: 600 } }, sub.label)
                     );
                   })
                 ),
 
                 // ── Emotion Vocabulary Builder (expanded sub-emotions) ──
                 ciSubEmotion && EXPANDED_EMOTIONS[ciMood] && h('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #334155' } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
+                  h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 8, textAlign: 'center', fontWeight: 500 } },
                     band === 'elementary' ? '\uD83D\uDCDA Can you get even more specific? Build your feelings vocabulary!' : '\uD83D\uDCDA Expand your emotion vocabulary \u2014 pick a more precise word:'
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' } },
@@ -908,12 +917,12 @@ window.SelHub = window.SelHub || {
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                           padding: '6px 10px', borderRadius: 10,
                           border: isSel ? '2px solid ' + col : '1px solid #334155',
-                          background: isSel ? col + '22' : '#1e293b',
+                          background: isSel ? col + '22' : _jouBg('#1e293b'),
                           cursor: 'pointer', transition: 'all 0.15s', minWidth: 60
                         }
                       },
                         h('span', { style: { fontSize: 18 } }, exp.emoji),
-                        h('span', { style: { fontSize: 11, color: isSel ? col : '#94a3b8', fontWeight: 600 } }, exp.label)
+                        h('span', { style: { fontSize: 11, color: isSel ? col : _jouFg('#94a3b8'), fontWeight: 600 } }, exp.label)
                       );
                     })
                   ),
@@ -927,10 +936,10 @@ window.SelHub = window.SelHub || {
                     if (ciExpandedEmotion) pending[ciExpandedEmotion] = true;
                     usedWords.forEach(function(w) { pending[w] = true; });
                     var displayCount = Object.keys(pending).length;
-                    return h('div', { style: { marginTop: 10, textAlign: 'center', fontSize: 11, color: '#94a3b8' } },
+                    return h('div', { style: { marginTop: 10, textAlign: 'center', fontSize: 11, color: _jouFg('#94a3b8') } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
                       '\uD83D\uDCDA Your Emotion Vocabulary: ' + displayCount + ' word' + (displayCount !== 1 ? 's' : '') + ' used',
-                      displayCount >= 10 && h('span', { style: { color: '#22c55e', marginLeft: 6, fontWeight: 600 } }, '\u2605 Wordsmith!')
+                      displayCount >= 10 && h('span', { style: { color: _jouFg('#22c55e'), marginLeft: 6, fontWeight: 600 } }, '\u2605 Wordsmith!')
                     );
                   })()
                 )
@@ -939,25 +948,25 @@ window.SelHub = window.SelHub || {
 
             // Energy slider
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'How much energy do you have?' : 'Energy level:'
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 50 } }, '\uD83D\uDCA4 Low'),
+                h('span', { style: { fontSize: 11, color: _jouFg('#94a3b8'), minWidth: 50 } }, '\uD83D\uDCA4 Low'),
                 h('input', {
                   type: 'range', min: 1, max: 5, value: ciEnergy,
                   'aria-label': 'Energy level',
                   onChange: function(e) { upd('ciEnergy', parseInt(e.target.value)); },
                   style: { flex: 1, accentColor: ACCENT }
                 }),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 50, textAlign: 'right' } }, '\u26A1 High')
+                h('span', { style: { fontSize: 11, color: _jouFg('#94a3b8'), minWidth: 50, textAlign: 'right' } }, '\u26A1 High')
               ),
               h('div', { style: { textAlign: 'center', fontSize: 11, color: ACCENT, marginTop: 4 } }, energyLabels[ciEnergy - 1])
             ),
 
             // Thoughts input
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'What\u2019s on your mind right now?' : 'What\u2019s on your mind?'
               ),
               h('textarea', {
@@ -966,13 +975,13 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('ciThoughts', e.target.value); },
                 placeholder: band === 'elementary' ? 'I feel this way because... Don\'t share personal info (like your full name).' : 'Describe what\u2019s going on... Don\'t share personal info (names, school, etc.).',
                 rows: 3,
-                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
               })
             ),
 
             // Trigger tags
             h('div', { style: { marginBottom: 18 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? 'What is this about? (pick any that fit)' : 'Context / triggers (select all that apply):'
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
@@ -987,7 +996,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       padding: '6px 14px', borderRadius: 20, border: isOn ? '1px solid ' + ACCENT : '1px solid #334155',
-                      background: isOn ? ACCENT_DIM : '#1e293b', color: isOn ? ACCENT : '#94a3b8',
+                      background: isOn ? ACCENT_DIM : _jouBg('#1e293b'), color: isOn ? ACCENT : _jouFg('#94a3b8'),
                       fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s'
                     }
                   }, tag);
@@ -997,7 +1006,7 @@ window.SelHub = window.SelHub || {
 
             // Gratitude prompt
             h('div', { style: { marginBottom: 20 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } },
                 band === 'elementary' ? '\uD83D\uDE4F One thing I\u2019m grateful for today:' : '\uD83D\uDE4F One thing I\u2019m grateful for today...'
               ),
               h('input', {
@@ -1005,7 +1014,7 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Gratitude entry',
                 onChange: function(e) { upd('ciGratitude', e.target.value); },
                 placeholder: band === 'elementary' ? 'I\u2019m thankful for... Don\'t share personal info (like full names).' : 'Something I appreciate... Don\'t share personal info (names, school, etc.).',
-                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, boxSizing: 'border-box' }
+                style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, boxSizing: 'border-box' }
               })
             ),
 
@@ -1050,7 +1059,7 @@ window.SelHub = window.SelHub || {
               disabled: ciMood == null,
               style: {
                 width: '100%', padding: '14px 24px', borderRadius: 12, border: 'none',
-                background: ciMood != null ? ACCENT : '#334155', color: '#fff', fontWeight: 700,
+                background: ciMood != null ? ACCENT : '#334155', color: _jouFg('#fff'), fontWeight: 700,
                 fontSize: 14, cursor: ciMood != null ? 'pointer' : 'not-allowed', transition: 'all 0.15s'
               }
             }, '\uD83D\uDCBE Save Check-In'),
@@ -1058,17 +1067,17 @@ window.SelHub = window.SelHub || {
             // ── Coping Strategy Cards (shown after save) ──
             showCoping && COPING_STRATEGIES[showCoping] && h('div', { style: { marginTop: 20 } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
-                h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9' } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: _jouFg('#f1f5f9') } },
                   showCoping <= 1 ? '\uD83D\uDC9C Please Reach Out' :
                   showCoping <= 2 ? '\uD83E\uDDE1 Suggested Coping Strategies' :
                   '\u2728 Keep the Momentum Going'
                 ),
                 h('button', { 'aria-label': 'You are not alone. These resources are here for you.',
                   onClick: function() { upd('showCoping', false); },
-                  style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
+                  style: { background: 'none', border: 'none', color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
                 }, '\u2715')
               ),
-              showCoping <= 1 && h('div', { style: { fontSize: 12, color: '#ef4444', marginBottom: 10, fontWeight: 600 } },
+              showCoping <= 1 && h('div', { style: { fontSize: 12, color: _jouFg('#ef4444'), marginBottom: 10, fontWeight: 600 } },
                 'You are not alone. These resources are here for you.'
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1086,14 +1095,14 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                      borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: '#0f172a',
+                      borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'),
                       cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s'
                     }
                   },
                     h('span', { style: { fontSize: 24, flexShrink: 0 } }, strat.icon),
                     h('div', null,
-                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, strat.title),
-                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, strat.desc)
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: _jouFg('#f1f5f9'), marginBottom: 2 } }, strat.title),
+                      h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), lineHeight: 1.4 } }, strat.desc)
                     )
                   );
                 })
@@ -1103,19 +1112,19 @@ window.SelHub = window.SelHub || {
             // ══════════════════════════════════════════════════
             // ── Mood Playlist Generator (shown after save) ──
             // ══════════════════════════════════════════════════
-            showCoping && MOOD_PLAYLIST[showCoping] && h('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155' } },
+            showCoping && MOOD_PLAYLIST[showCoping] && h('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9' } },
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: _jouFg('#f1f5f9') } },
                   MOOD_PLAYLIST[showCoping].headerIcon + ' ' + MOOD_PLAYLIST[showCoping].header
                 ),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } },
+                h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } },
                   countPlaylistCompleted(playlistCompleted) + ' activities completed'
                 )
               ),
-              showCoping <= 1 && h('div', { style: { fontSize: 12, color: '#ef4444', marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: '#ef444422', fontWeight: 600, lineHeight: 1.5 } },
+              showCoping <= 1 && h('div', { style: { fontSize: 12, color: _jouFg('#ef4444'), marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: '#ef444422', fontWeight: 600, lineHeight: 1.5 } },
                 '\u26A0\uFE0F If you are in crisis, please reach out to a trusted adult, call 988, or text HOME to 741741. This feeling is temporary.'
               ),
-              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 12 } },
                 band === 'elementary' ? 'Try some of these activities to feel even better:' : 'Suggested activities based on your mood:'
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1126,7 +1135,7 @@ window.SelHub = window.SelHub || {
                     style: {
                       display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
                       borderRadius: 12, border: isDone ? '1px solid #22c55e44' : '1px solid #334155',
-                      background: isDone ? '#22c55e11' : '#1e293b', transition: 'all 0.2s'
+                      background: isDone ? '#22c55e11' : _jouBg('#1e293b'), transition: 'all 0.2s'
                     }
                   },
                     h('button', { 
@@ -1149,15 +1158,15 @@ window.SelHub = window.SelHub || {
                       style: {
                         width: 24, height: 24, borderRadius: 6, flexShrink: 0,
                         border: isDone ? '2px solid #22c55e' : '2px solid #475569',
-                        background: isDone ? '#22c55e' : 'transparent',
+                        background: isDone ? _jouFg('#22c55e') : 'transparent',
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: 14, fontWeight: 700, padding: 0
+                        color: _jouFg('#fff'), fontSize: 14, fontWeight: 700, padding: 0
                       }
                     }, isDone ? '\u2713' : ''),
                     h('span', { style: { fontSize: 20, flexShrink: 0 } }, act.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontSize: 12, fontWeight: 600, color: isDone ? '#22c55e' : '#f1f5f9', marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
-                      h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, act.desc)
+                      h('div', { style: { fontSize: 12, fontWeight: 600, color: isDone ? _jouFg('#22c55e') : _jouFg('#f1f5f9'), marginBottom: 2, textDecoration: isDone ? 'line-through' : 'none' } }, act.label),
+                      h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), lineHeight: 1.4 } }, act.desc)
                     )
                   );
                 })
@@ -1187,8 +1196,8 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: !letterMode && !letterViewingPast ? '1px solid ' + ACCENT : '1px solid #334155',
-                background: !letterMode && !letterViewingPast ? ACCENT_DIM : '#1e293b',
-                color: !letterMode && !letterViewingPast ? ACCENT : '#94a3b8'
+                background: !letterMode && !letterViewingPast ? ACCENT_DIM : _jouBg('#1e293b'),
+                color: !letterMode && !letterViewingPast ? ACCENT : _jouFg('#94a3b8')
               }
             }, '\u270D\uFE0F Free Write'),
             h('button', { 'aria-label': 'Letter to Future Self',
@@ -1196,8 +1205,8 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: letterMode === 'future' ? '1px solid #22c55e' : '1px solid #334155',
-                background: letterMode === 'future' ? '#22c55e22' : '#1e293b',
-                color: letterMode === 'future' ? '#22c55e' : '#94a3b8'
+                background: letterMode === 'future' ? '#22c55e22' : _jouBg('#1e293b'),
+                color: letterMode === 'future' ? _jouFg('#22c55e') : _jouFg('#94a3b8')
               }
             }, '\uD83D\uDD2E Letter to Future Self'),
             h('button', { 'aria-label': 'Letter to Past Self',
@@ -1205,8 +1214,8 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: letterMode === 'past' ? '1px solid #f59e0b' : '1px solid #334155',
-                background: letterMode === 'past' ? '#f59e0b22' : '#1e293b',
-                color: letterMode === 'past' ? '#f59e0b' : '#94a3b8'
+                background: letterMode === 'past' ? '#f59e0b22' : _jouBg('#1e293b'),
+                color: letterMode === 'past' ? _jouFg('#f59e0b') : _jouFg('#94a3b8')
               }
             }, '\uD83D\uDC8C Letter to Past Self'),
             letterEntries.length > 0 && h('button', { 'aria-label': 'My Letters ( )',
@@ -1214,8 +1223,8 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 border: letterViewingPast ? '1px solid #8b5cf6' : '1px solid #334155',
-                background: letterViewingPast ? '#8b5cf622' : '#1e293b',
-                color: letterViewingPast ? '#8b5cf6' : '#94a3b8'
+                background: letterViewingPast ? '#8b5cf622' : _jouBg('#1e293b'),
+                color: letterViewingPast ? _jouFg('#8b5cf6') : _jouFg('#94a3b8')
               }
             }, '\u2709\uFE0F My Letters (' + letterEntries.length + ')')
           );
@@ -1224,7 +1233,7 @@ window.SelHub = window.SelHub || {
           var letterContent = null;
           if (letterMode === 'future' || letterMode === 'past') {
             var isFuture = letterMode === 'future';
-            var letterColor = isFuture ? '#22c55e' : '#f59e0b';
+            var letterColor = isFuture ? _jouFg('#22c55e') : _jouFg('#f59e0b');
             var letterPromptText = isFuture
               ? (band === 'elementary'
                 ? 'Write a letter to the you of the future! What do you want to remember? What are you hoping for?'
@@ -1239,12 +1248,12 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: letterColor, marginBottom: 6 } },
                   isFuture ? 'Letter to Your Future Self' : 'Letter to Your Past Self'
                 ),
-                h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } }, letterPromptText)
+                h('p', { style: { fontSize: 12, color: _jouFg('#94a3b8'), lineHeight: 1.5 } }, letterPromptText)
               ),
 
               // Date picker for future letters
               isFuture && h('div', { style: { marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8, fontWeight: 600 } }, 'When should future-you read this?'),
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), marginBottom: 8, fontWeight: 600 } }, 'When should future-you read this?'),
                 h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                   LETTER_TIME_OPTIONS.map(function(opt) {
                     var isActive = letterTimePeriod === opt.id;
@@ -1254,8 +1263,8 @@ window.SelHub = window.SelHub || {
                       style: {
                         padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                         border: isActive ? '2px solid ' + letterColor : '1px solid #334155',
-                        background: isActive ? letterColor + '22' : '#1e293b',
-                        color: isActive ? letterColor : '#94a3b8'
+                        background: isActive ? letterColor + '22' : _jouBg('#1e293b'),
+                        color: isActive ? letterColor : _jouFg('#94a3b8')
                       }
                     }, opt.label);
                   })
@@ -1269,7 +1278,7 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('letterText', e.target.value); },
                 placeholder: isFuture ? 'Dear future me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)' : 'Dear younger me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
                 rows: 10,
-                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
               h('button', { 'aria-label': '1month',
@@ -1302,7 +1311,7 @@ window.SelHub = window.SelHub || {
                 disabled: !letterText.trim(),
                 style: {
                   width: '100%', padding: '14px 24px', borderRadius: 12, border: 'none',
-                  background: letterText.trim() ? letterColor : '#334155', color: '#fff', fontWeight: 700,
+                  background: letterText.trim() ? letterColor : '#334155', color: _jouFg('#fff'), fontWeight: 700,
                   fontSize: 14, cursor: letterText.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.15s'
                 }
               }, isFuture ? '\uD83D\uDD12 Seal & Save Letter' : '\uD83D\uDCBE Save Letter')
@@ -1315,11 +1324,11 @@ window.SelHub = window.SelHub || {
             letterViewerContent = h('div', null,
               letterEntries.slice().reverse().map(function(letter, i) {
                 var isFutureLetter = letter.type === 'future';
-                var letterCol = isFutureLetter ? '#22c55e' : '#f59e0b';
+                var letterCol = isFutureLetter ? _jouFg('#22c55e') : _jouFg('#f59e0b');
                 var canRead = !isFutureLetter || !letter.readDate || Date.now() >= letter.readDate;
                 var readDateStr = letter.readDate ? new Date(letter.readDate).toLocaleDateString() : null;
 
-                return h('div', { key: i, style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + letterCol + '33', marginBottom: 12 } },
+                return h('div', { key: i, style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid ' + letterCol + '33', marginBottom: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                       h('span', { style: { fontSize: 18 } }, isFutureLetter ? '\uD83D\uDD2E' : '\uD83D\uDC8C'),
@@ -1327,17 +1336,17 @@ window.SelHub = window.SelHub || {
                         isFutureLetter ? 'To Future Self' : 'To Past Self'
                       )
                     ),
-                    h('span', { style: { fontSize: 10, color: '#94a3b8' } }, new Date(letter.timestamp).toLocaleDateString())
+                    h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, new Date(letter.timestamp).toLocaleDateString())
                   ),
-                  isFutureLetter && readDateStr && h('div', { style: { fontSize: 10, color: canRead ? '#22c55e' : '#f59e0b', marginBottom: 8, fontStyle: 'italic' } },
+                  isFutureLetter && readDateStr && h('div', { style: { fontSize: 10, color: canRead ? _jouFg('#22c55e') : _jouFg('#f59e0b'), marginBottom: 8, fontStyle: 'italic' } },
                     canRead ? '\uD83D\uDD13 Unlocked! (scheduled for ' + readDateStr + ')' : '\uD83D\uDD12 Sealed until ' + readDateStr
                   ),
                   canRead
-                    ? h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 } }, letter.text)
-                    : h('div', { style: { padding: 20, textAlign: 'center', borderRadius: 10, background: '#1e293b' } },
+                    ? h('p', { style: { fontSize: 13, color: _jouFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: 0 } }, letter.text)
+                    : h('div', { style: { padding: 20, textAlign: 'center', borderRadius: 10, background: _jouBg('#1e293b') } },
                         h('div', { style: { fontSize: 28, marginBottom: 8 } }, '\uD83D\uDD12'),
-                        h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'This letter is sealed until ' + readDateStr + '.'),
-                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, 'Be patient \u2014 future you will appreciate the wait!')
+                        h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'This letter is sealed until ' + readDateStr + '.'),
+                        h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginTop: 4 } }, 'Be patient \u2014 future you will appreciate the wait!')
                       )
                 );
               })
@@ -1345,7 +1354,7 @@ window.SelHub = window.SelHub || {
           }
 
           journalContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? '\u270D\uFE0F Write About Your Feelings' : '\u270D\uFE0F Free-Write Journal'
             ),
 
@@ -1362,17 +1371,17 @@ window.SelHub = window.SelHub || {
             (!jViewingPast ? h('div', null,
 
               // Prompt carousel
-              h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
+              h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
                 h('div', { style: { fontSize: 10, color: ACCENT, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, 'Writing Prompt'),
-                h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.5, marginBottom: 12, fontStyle: 'italic' } }, '\u201C' + currentPrompt + '\u201D'),
+                h('p', { style: { fontSize: 14, color: _jouFg('#e2e8f0'), lineHeight: 1.5, marginBottom: 12, fontStyle: 'italic' } }, '\u201C' + currentPrompt + '\u201D'),
                 h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
                   h('button', { 'aria-label': 'Prev',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx - 1 + prompts.length) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
                   }, '\u2190 Prev'),
                   h('button', { 'aria-label': 'Next',
                     onClick: function() { upd('jPromptIdx', (jPromptIdx + 1) % prompts.length); if (soundEnabled) sfxClick(); },
-                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+                    style: { padding: '4px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
                   }, 'Next \u2192')
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -1388,7 +1397,7 @@ window.SelHub = window.SelHub || {
                 onChange: function(e) { upd('jText', e.target.value); },
                 placeholder: band === 'elementary' ? 'Start writing here... You can use the prompt above or write about anything! Don\'t share personal info (like your full name).' : 'Write freely. Use the prompt above as a starting point, or write about whatever is on your mind... Don\'t share personal info (names, school, etc.).',
                 rows: 8,
-                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: '#0f172a', color: '#e2e8f0', fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
+                style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
               h('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
@@ -1410,7 +1419,7 @@ window.SelHub = window.SelHub || {
                   disabled: !jText.trim(),
                   style: {
                     flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none',
-                    background: jText.trim() ? ACCENT : '#334155', color: '#fff', fontWeight: 700,
+                    background: jText.trim() ? ACCENT : '#334155', color: _jouFg('#fff'), fontWeight: 700,
                     fontSize: 13, cursor: jText.trim() ? 'pointer' : 'not-allowed'
                   }
                 }, '\uD83D\uDCBE Save Entry'),
@@ -1428,16 +1437,16 @@ window.SelHub = window.SelHub || {
                   onClick: function() { upd('jViewingPast', false); if (soundEnabled) sfxClick(); },
                   style: { background: 'none', border: 'none', color: ACCENT, fontSize: 14, cursor: 'pointer', marginRight: 8 }
                 }, '\u2190'),
-                h('h3', { style: { color: '#f1f5f9', fontSize: 16, margin: 0 } }, 'Past Journal Entries (' + journalEntries.length + ')')
+                h('h3', { style: { color: _jouFg('#f1f5f9'), fontSize: 16, margin: 0 } }, 'Past Journal Entries (' + journalEntries.length + ')')
               ),
               journalEntries.slice().reverse().map(function(entry, i) {
-                return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 10 } },
+                return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 10 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                     h('span', { style: { fontSize: 10, color: ACCENT, fontWeight: 600 } }, new Date(entry.timestamp).toLocaleDateString()),
-                    h('span', { style: { fontSize: 10, color: '#94a3b8' } }, new Date(entry.timestamp).toLocaleTimeString())
+                    h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, new Date(entry.timestamp).toLocaleTimeString())
                   ),
-                  h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginBottom: 6 } }, 'Prompt: \u201C' + entry.prompt + '\u201D'),
-                  h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
+                  h('p', { style: { fontSize: 11, color: _jouFg('#94a3b8'), fontStyle: 'italic', marginBottom: 6 } }, 'Prompt: \u201C' + entry.prompt + '\u201D'),
+                  h('p', { style: { fontSize: 13, color: _jouFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, entry.text)
                 );
               })
             ))
@@ -1497,7 +1506,7 @@ window.SelHub = window.SelHub || {
                   borderRadius: '50%', fontSize: 11, fontWeight: isToday ? 700 : 400, position: 'relative',
                   background: moodObj ? moodObj.color + '33' : 'transparent',
                   border: isToday ? '2px solid ' + ACCENT : '1px solid transparent',
-                  color: moodObj ? moodObj.color : '#94a3b8'
+                  color: moodObj ? moodObj.color : _jouFg('#94a3b8')
                 },
                 title: moodObj ? moodObj.label + ' (' + moods.length + ' check-in' + (moods.length > 1 ? 's' : '') + ')' : 'No check-in'
               },
@@ -1510,7 +1519,7 @@ window.SelHub = window.SelHub || {
           var weeklySummary = getWeeklySummary(checkIns);
 
           calendarContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCC5 Mood Calendar'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCC5 Mood Calendar'),
 
             // Month navigation
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
@@ -1522,9 +1531,9 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
               }, '\u2190'),
-              h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, MONTH_NAMES[calMonth] + ' ' + calYear),
+              h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, MONTH_NAMES[calMonth] + ' ' + calYear),
               h('button', { 'aria-label': 'Next month',
                 onClick: function() {
                   var nm = calMonth + 1;
@@ -1533,7 +1542,7 @@ window.SelHub = window.SelHub || {
                   upd({ calMonth: nm, calYear: ny });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: '#1e293b', color: '#94a3b8', fontSize: 14, cursor: 'pointer' }
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #334155', background: _jouBg('#1e293b'), color: _jouFg('#94a3b8'), fontSize: 14, cursor: 'pointer' }
               }, '\u2192')
             ),
 
@@ -1542,17 +1551,17 @@ window.SelHub = window.SelHub || {
               MOODS.map(function(m) {
                 return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 4 } },
                   h('div', { style: { width: 10, height: 10, borderRadius: '50%', background: m.color } }),
-                  h('span', { style: { fontSize: 10, color: '#94a3b8' } }, m.label)
+                  h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, m.label)
                 );
               })
             ),
 
             // Calendar grid
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
               // Day headers
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(7, minmax(32px, 1fr))', gap: 4, marginBottom: 8, overflowX: 'auto' } },
                 DAY_HEADERS.map(function(dh) {
-                  return h('div', { key: dh, style: { textAlign: 'center', fontSize: 10, color: '#94a3b8', fontWeight: 600, padding: 4 } }, dh);
+                  return h('div', { key: dh, style: { textAlign: 'center', fontSize: 10, color: _jouFg('#94a3b8'), fontWeight: 600, padding: 4 } }, dh);
                 })
               ),
               // Day cells
@@ -1562,12 +1571,12 @@ window.SelHub = window.SelHub || {
             ),
 
             // Monthly Stats
-            h('div', { style: { padding: 14, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
+            h('div', { style: { padding: 14, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 8 } }, 'Monthly Stats'),
               h('div', { style: { display: 'flex', justifyContent: 'space-around' } },
                 h('div', { style: { textAlign: 'center' } },
-                  h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, Object.keys(monthMoodMap).length),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Days Tracked')
+                  h('div', { style: { fontSize: 20, fontWeight: 700, color: _jouFg('#f1f5f9') } }, Object.keys(monthMoodMap).length),
+                  h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Days Tracked')
                 ),
                 h('div', { style: { textAlign: 'center' } },
                   (function() {
@@ -1578,20 +1587,20 @@ window.SelHub = window.SelHub || {
                     var avgM = countM > 0 ? Math.round(totalM / countM * 10) / 10 : 0;
                     var avgObj = avgM > 0 ? MOODS.find(function(m) { return m.id === Math.round(avgM); }) : null;
                     return [
-                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? avgObj.color : '#94a3b8' } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
-                      h('div', { key: 'lbl', style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
+                      h('div', { key: 'avg', style: { fontSize: 20, fontWeight: 700, color: avgObj ? avgObj.color : _jouFg('#94a3b8') } }, avgM > 0 ? avgM.toFixed(1) : '\u2014'),
+                      h('div', { key: 'lbl', style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                     ];
                   })()
                 ),
                 h('div', { style: { textAlign: 'center' } },
-                  h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } },
+                  h('div', { style: { fontSize: 20, fontWeight: 700, color: _jouFg('#f1f5f9') } },
                     (function() {
                       var c = 0;
                       Object.keys(monthMoodMap).forEach(function(k) { c += monthMoodMap[k].length; });
                       return c;
                     })()
                   ),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check-Ins')
+                  h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Check-Ins')
                 )
               )
             ),
@@ -1606,33 +1615,33 @@ window.SelHub = window.SelHub || {
                 })(),
                 h('div', { style: { display: 'flex', justifyContent: 'space-around', marginBottom: 12 } },
                   h('div', { style: { textAlign: 'center' } },
-                    h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgMood.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Mood')
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, weeklySummary.avgMood.toFixed(1)),
+                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Mood')
                   ),
                   h('div', { style: { textAlign: 'center' } },
-                    h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9' } }, weeklySummary.avgEnergy.toFixed(1)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Energy')
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: _jouFg('#f1f5f9') } }, weeklySummary.avgEnergy.toFixed(1)),
+                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, 'Avg Energy')
                   ),
                   h('div', { style: { textAlign: 'center' } },
-                    h('div', { style: { fontSize: 16, fontWeight: 700, color: weeklySummary.trajectory === 'improving' ? '#22c55e' : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
+                    h('div', { style: { fontSize: 16, fontWeight: 700, color: weeklySummary.trajectory === 'improving' ? _jouFg('#22c55e') : weeklySummary.trajectory === 'declining' ? '#f97316' : '#eab308' } },
                       weeklySummary.trajectory === 'improving' ? '\u2197\uFE0F' : weeklySummary.trajectory === 'declining' ? '\u2198\uFE0F' : '\u2192\uFE0F'
                     ),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
+                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, weeklySummary.trajectory.charAt(0).toUpperCase() + weeklySummary.trajectory.slice(1))
                   )
                 ),
                 weeklySummary.topTriggers.length > 0 && h('div', { style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Top triggers:'),
+                  h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginBottom: 4 } }, 'Top triggers:'),
                   h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                     weeklySummary.topTriggers.map(function(t) {
-                      return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: '#1e293b', color: ACCENT, fontSize: 11, fontWeight: 500 } }, t);
+                      return h('span', { key: t, style: { padding: '3px 10px', borderRadius: 12, background: _jouBg('#1e293b'), color: ACCENT, fontSize: 11, fontWeight: 500 } }, t);
                     })
                   )
                 ),
-                h('div', { style: { padding: 10, borderRadius: 10, background: '#0f172a', marginTop: 8 } },
-                  h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, weeklySummary.encouragement)
+                h('div', { style: { padding: 10, borderRadius: 10, background: _jouBg('#0f172a'), marginTop: 8 } },
+                  h('p', { style: { fontSize: 12, color: _jouFg('#e2e8f0'), lineHeight: 1.5, margin: 0, fontStyle: 'italic' } }, weeklySummary.encouragement)
                 )
               ) :
-              h('div', { style: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 } },
+              h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), textAlign: 'center', padding: 12 } },
                 'Check in at least 3 times this week to see your summary!'
               )
             ),
@@ -1663,7 +1672,7 @@ window.SelHub = window.SelHub || {
                     sections: sections
                   });
                 },
-                style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
               }, '🖨 Print my weekly summary')
             ) : null
           );
@@ -1709,26 +1718,26 @@ window.SelHub = window.SelHub || {
           checkIns.forEach(function(ci) { moodDist[ci.mood] = (moodDist[ci.mood] || 0) + 1; });
 
           insightsContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Mood Insights'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Mood Insights'),
 
-            checkIns.length === 0 ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
+            checkIns.length === 0 ? h('div', { style: { textAlign: 'center', padding: 40, color: _jouFg('#94a3b8') } },
               h('div', { style: { fontSize: 40, marginBottom: 12 } }, '\uD83D\uDCCA'),
               h('p', { style: { fontSize: 13 } }, 'No data yet! Complete your first check-in to see insights here.')
             ) :
 
             h('div', null,
               // Streak counter
-              h('div', { style: { textAlign: 'center', padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-                h('div', { style: { fontSize: 32, fontWeight: 700, color: streak > 0 ? '#f59e0b' : '#94a3b8' } },
+              h('div', { style: { textAlign: 'center', padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+                h('div', { style: { fontSize: 32, fontWeight: 700, color: streak > 0 ? _jouFg('#f59e0b') : _jouFg('#94a3b8') } },
                   streak > 0 ? '\uD83D\uDD25 ' + streak : '0'
                 ),
-                h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'Day Streak'),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, checkIns.length + ' total check-ins')
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8') } }, 'Day Streak'),
+                h('div', { style: { fontSize: 11, color: _jouFg('#94a3b8'), marginTop: 4 } }, checkIns.length + ' total check-ins')
               ),
 
               // 7-day mood trend
-              h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 12 } }, 'Last 7 Days'),
+              h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 12 } }, 'Last 7 Days'),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: 100, paddingBottom: 4 } },
                   last7.map(function(day, i) {
                     var barH = day.mood > 0 ? (day.mood / 5 * 80) : 4;
@@ -1737,34 +1746,34 @@ window.SelHub = window.SelHub || {
                     return h('div', { key: i, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, gap: 4 } },
                       day.mood > 0 && h('span', { style: { fontSize: 16 } }, moodObj ? moodObj.emoji : ''),
                       h('div', { style: { width: 24, height: barH, borderRadius: 6, background: barColor, transition: 'height 0.3s' } }),
-                      h('span', { style: { fontSize: 10, color: '#94a3b8' } }, day.label)
+                      h('span', { style: { fontSize: 10, color: _jouFg('#94a3b8') } }, day.label)
                     );
                   })
                 )
               ),
 
               // Mood distribution
-              h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } }, 'Mood Distribution'),
+              h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 10 } }, 'Mood Distribution'),
                 MOODS.map(function(m) {
                   var count = moodDist[m.id] || 0;
                   var pct = checkIns.length > 0 ? Math.round(count / checkIns.length * 100) : 0;
                   return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     h('span', { style: { fontSize: 18, width: 28, textAlign: 'center' } }, m.emoji),
-                    h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: '#1e293b', overflow: 'hidden' } },
+                    h('div', { style: { flex: 1, height: 16, borderRadius: 8, background: _jouBg('#1e293b'), overflow: 'hidden' } },
                       h('div', { style: { width: pct + '%', height: '100%', borderRadius: 8, background: m.color, transition: 'width 0.3s' } })
                     ),
-                    h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 40, textAlign: 'right' } }, count + ' (' + pct + '%)')
+                    h('span', { style: { fontSize: 11, color: _jouFg('#94a3b8'), minWidth: 40, textAlign: 'right' } }, count + ' (' + pct + '%)')
                   );
                 })
               ),
 
               // Trigger frequency
-              sortedTriggers.length > 0 && h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } }, 'Most Common Triggers'),
+              sortedTriggers.length > 0 && h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+                h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 10 } }, 'Most Common Triggers'),
                 sortedTriggers.map(function(tag) {
                   return h('div', { key: tag, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1e293b' } },
-                    h('span', { style: { fontSize: 13, color: '#e2e8f0' } }, tag),
+                    h('span', { style: { fontSize: 13, color: _jouFg('#e2e8f0') } }, tag),
                     h('span', { style: { fontSize: 12, color: ACCENT, fontWeight: 600 } }, triggerFreq[tag] + 'x')
                   );
                 })
@@ -1776,9 +1785,9 @@ window.SelHub = window.SelHub || {
                 if (!patterns) {
                   var needed = 5 - checkIns.length;
                   if (needed > 0) {
-                    return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                      h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 8 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
-                      h('div', { style: { textAlign: 'center', padding: 12, fontSize: 12, color: '#94a3b8' } },
+                    return h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+                      h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 8 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
+                      h('div', { style: { textAlign: 'center', padding: 12, fontSize: 12, color: _jouFg('#94a3b8') } },
                         'Need ' + needed + ' more check-in' + (needed !== 1 ? 's' : '') + ' to unlock pattern analysis!'
                       )
                     );
@@ -1788,17 +1797,17 @@ window.SelHub = window.SelHub || {
                 // Badge: mood_detective on first view of patterns
                 if (!earnedBadges['mood_detective']) tryAwardBadge('mood_detective');
 
-                return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #8b5cf644', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 12, color: '#8b5cf6', fontWeight: 700, marginBottom: 12 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
+                return h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #8b5cf644', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, color: _jouFg('#8b5cf6'), fontWeight: 700, marginBottom: 12 } }, '\uD83D\uDD0E Mood Pattern Analysis'),
                   h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                     patterns.map(function(p, idx) {
-                      return h('div', { key: idx, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
+                      return h('div', { key: idx, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: _jouBg('#1e293b'), border: '1px solid #334155' } },
                         h('span', { style: { fontSize: 18, flexShrink: 0, marginTop: 2 } }, p.icon),
-                        h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0 } }, p.text)
+                        h('p', { style: { fontSize: 12, color: _jouFg('#e2e8f0'), lineHeight: 1.5, margin: 0 } }, p.text)
                       );
                     })
                   ),
-                  h('div', { style: { marginTop: 10, fontSize: 10, color: '#94a3b8', textAlign: 'center', fontStyle: 'italic' } },
+                  h('div', { style: { marginTop: 10, fontSize: 10, color: _jouFg('#94a3b8'), textAlign: 'center', fontStyle: 'italic' } },
                     'Based on ' + checkIns.length + ' check-ins. More data = better patterns!'
                   )
                 );
@@ -1809,8 +1818,8 @@ window.SelHub = window.SelHub || {
                 var vocabWords = getEmotionWordsList(checkIns);
                 var vocabCount = vocabWords.length;
                 if (vocabCount === 0) return null;
-                return h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #334155', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 10 } },
+                return h('div', { style: { padding: 16, borderRadius: 14, background: _jouBg('#0f172a'), border: '1px solid #334155', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 12, color: _jouFg('#94a3b8'), fontWeight: 600, marginBottom: 10 } },
                     '\uD83D\uDCDA Emotion Vocabulary (' + vocabCount + ' word' + (vocabCount !== 1 ? 's' : '') + ')'
                   ),
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -1818,14 +1827,14 @@ window.SelHub = window.SelHub || {
                       return h('span', { key: word, style: { padding: '4px 10px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 11, fontWeight: 500 } }, word);
                     })
                   ),
-                  vocabCount >= 10 && h('div', { style: { marginTop: 8, fontSize: 11, color: '#22c55e', fontWeight: 600, textAlign: 'center' } },
+                  vocabCount >= 10 && h('div', { style: { marginTop: 8, fontSize: 11, color: _jouFg('#22c55e'), fontWeight: 600, textAlign: 'center' } },
                     '\u2605 Emotion Wordsmith! You\u2019ve used 10+ feeling words.'
                   ),
                   vocabCount < 10 && h('div', { style: { marginTop: 8 } },
-                    h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: '#1e293b', overflow: 'hidden' } },
+                    h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: _jouBg('#1e293b'), overflow: 'hidden' } },
                       h('div', { style: { width: Math.round(vocabCount / 10 * 100) + '%', height: '100%', borderRadius: 3, background: ACCENT, transition: 'width 0.3s' } })
                     ),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: 4 } },
+                    h('div', { style: { fontSize: 10, color: _jouFg('#94a3b8'), textAlign: 'center', marginTop: 4 } },
                       vocabCount + '/10 words toward Emotion Wordsmith badge'
                     )
                   )
@@ -1837,7 +1846,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
                 (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiInsight ? h('div', null,
-                  h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, aiInsight),
+                  h('p', { style: { fontSize: 13, color: _jouFg('#e2e8f0'), lineHeight: 1.6 } }, aiInsight),
                   callTTS && h('button', { 'aria-label': 'Read aloud',
                     onClick: function() { speak(aiInsight); },
                     style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer' }
@@ -1909,7 +1918,7 @@ window.SelHub = window.SelHub || {
                   disabled: aiLoading || checkIns.length < 2,
                   style: {
                     padding: '10px 20px', borderRadius: 10, border: 'none',
-                    background: checkIns.length >= 2 ? ACCENT : '#334155', color: '#fff',
+                    background: checkIns.length >= 2 ? ACCENT : '#334155', color: _jouFg('#fff'),
                     fontWeight: 600, fontSize: 12, cursor: checkIns.length >= 2 ? 'pointer' : 'not-allowed'
                   }
                 }, aiLoading ? '\u23F3 Analyzing patterns...' : '\u2728 Generate Insight')
@@ -1926,12 +1935,12 @@ window.SelHub = window.SelHub || {
           var earnedCount = Object.keys(earnedBadges).length;
 
           badgesContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
-            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: '#94a3b8' } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
+            h('div', { style: { textAlign: 'center', marginBottom: 16, fontSize: 12, color: _jouFg('#94a3b8') } },
               earnedCount + ' of ' + BADGES.length + ' earned'
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 20 } },
-              h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: '#1e293b', overflow: 'hidden' } },
+              h('div', { style: { width: '100%', height: 8, borderRadius: 4, background: _jouBg('#1e293b'), overflow: 'hidden' } },
                 h('div', { style: { width: Math.round(earnedCount / BADGES.length * 100) + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
               )
             ),
@@ -1940,14 +1949,14 @@ window.SelHub = window.SelHub || {
                 var earned = !!earnedBadges[b.id];
                 return h('div', { key: b.id, style: {
                   padding: 16, borderRadius: 14, textAlign: 'center',
-                  background: earned ? '#0f172a' : '#0f172a88',
+                  background: earned ? _jouBg('#0f172a') : '#0f172a88',
                   border: '1px solid ' + (earned ? ACCENT_MED : '#334155'),
                   opacity: earned ? 1 : 0.5,
                   transition: 'all 0.2s'
                 } },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, b.icon),
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? '#f1f5f9' : '#94a3b8', marginBottom: 2 } }, b.name),
-                  h('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#475569', lineHeight: 1.4 } }, b.desc),
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: earned ? _jouFg('#f1f5f9') : _jouFg('#94a3b8'), marginBottom: 2 } }, b.name),
+                  h('div', { style: { fontSize: 10, color: earned ? _jouFg('#94a3b8') : '#475569', lineHeight: 1.4 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: ACCENT, marginTop: 4 } }, '\u2713 ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
               })

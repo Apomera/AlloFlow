@@ -605,6 +605,15 @@ window.SelHub = window.SelHub || {
     status: 'beta',
 
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _cftT = (ctx && ctx.theme) || {};
+      var _cftHC = !!_cftT.isContrast, _cftL = !_cftHC && !_cftT.isDark;
+      var _cft_BGL = {'#1e293b':'#ffffff','#451a03':'#fff7ed','#0f172a':'#f8fafc'}, _cft_BGH = {'#1e293b':'#000000','#451a03':'#000000','#0f172a':'#000000','#14b8a6':'#000000','#0c4a6e':'#000000'};
+      var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00'};
+      var _cft_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cft_BDH = {'#f59e0b':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#92400e':'#ffff00','#14b8a6':'#ffff00','#0369a1':'#ffff00','#0891b2':'#ffff00','#475569':'#ffff00'};
+      var _cftBg = function(h){ return _cftHC ? (_cft_BGH[h]||h) : (_cftL ? (_cft_BGL[h]||h) : h); };
+      var _cftFg = function(h){ return _cftHC ? (_cft_FGH[h]||h) : (_cftL ? (_cft_FGL[h]||h) : h); };
+      var _cftBd = function(h){ return _cftHC ? (_cft_BDH[h]||h) : (_cftL ? (_cft_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var callGemini = ctx.callGemini;
@@ -1027,15 +1036,15 @@ window.SelHub = window.SelHub || {
           h('div', {
             role: 'note',
             'aria-label': 'Early preview notice',
-            style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.12)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.6 }
+            style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.12)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _cftFg('#fef3c7'), lineHeight: 1.6 }
           },
             h('strong', null, '🚧 Early preview. '),
             'This tool currently has one scenario. More scenes coming. Treat what you find here as a sample, not the complete experience.'
           ),
           h('div', { style: { textAlign: 'center', marginBottom: 18 } },
             h('div', { style: { fontSize: 48, marginBottom: 4 } }, '🎭'),
-            h('h2', { style: { fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 4 } }, 'Conflict Theater'),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', margin: 0, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } },
+            h('h2', { style: { fontSize: 22, fontWeight: 800, color: _cftFg('#f1f5f9'), marginBottom: 4 } }, 'Conflict Theater'),
+            h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: 0, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } },
               'Pick a conflict to mediate. Each scenario has two AI characters with their own personalities, moods, and reasons. Practice acknowledging feelings, making space, naming harm, and proposing repair.'
             )
           ),
@@ -1050,26 +1059,26 @@ window.SelHub = window.SelHub || {
                 role: 'listitem',
                 'aria-label': 'Pick scenario: ' + sc.title + (hasWarning ? ' (content warning)' : ''),
                 onClick: function() { startScenario(sc.id); announceSR('Selected scenario: ' + sc.title); },
-                style: { textAlign: 'left', padding: 12, borderRadius: 12, border: '1px solid ' + (hasWarning ? '#92400e' : '#334155'), background: '#1e293b', color: '#e2e8f0', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }
+                style: { textAlign: 'left', padding: 12, borderRadius: 12, border: '1px solid ' + (hasWarning ? '#92400e' : '#334155'), background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#f1f5f9', flex: 1 } }, sc.title),
-                  h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, sceneObj.label)
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9'), flex: 1 } }, sc.title),
+                  h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, sceneObj.label)
                 ),
                 h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 18 } },
                   charsInScenario.map(function(c) {
                     return h('span', { key: c.id, title: c.name, 'aria-label': c.name }, c.avatar);
                   })
                 ),
-                h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: 0, lineHeight: 1.5 } }, sc.setup.length > 140 ? sc.setup.slice(0, 140) + '...' : sc.setup),
-                hasWarning && h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, marginTop: 4 } }, '⚠️ Content warning')
+                h('p', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.5 } }, sc.setup.length > 140 ? sc.setup.slice(0, 140) + '...' : sc.setup),
+                hasWarning && h('div', { style: { fontSize: 10, color: _cftFg('#fbbf24'), fontWeight: 700, marginTop: 4 } }, '⚠️ Content warning')
               );
             })
           ),
-          h('p', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
+          h('p', { style: { fontSize: 10, color: _cftFg('#64748b'), textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
           // Cross-session memory control: forget characters' memory of you
           Object.keys(memory).length > 0 && h('div', { style: { textAlign: 'center', marginTop: 16, paddingTop: 14, borderTop: '1px solid #1e293b' } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } },
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), marginBottom: 6 } },
               'Characters remember ' + Object.keys(memory).length + ' past conversation' + (Object.keys(memory).length === 1 ? '' : 's') + ' with you.'
             ),
             h('button', {
@@ -1078,7 +1087,7 @@ window.SelHub = window.SelHub || {
                 var ok = (typeof window.confirm === 'function') ? window.confirm('Make all characters forget your past conversations? This cannot be undone.') : true;
                 if (ok) { upd('memory', {}); announceSR('All character memories cleared.'); }
               },
-              style: { padding: '4px 10px', background: 'transparent', color: '#64748b', border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
+              style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
             }, '🧹 Reset all character memory')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1095,28 +1104,28 @@ window.SelHub = window.SelHub || {
             h('button', {
               'aria-label': 'Back to scenario list',
               onClick: function() { upd({ mode: 'select' }); },
-              style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer', marginBottom: 12 }
+              style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer', marginBottom: 12 }
             }, '← All scenarios'),
-            h('h2', { style: { fontSize: 20, fontWeight: 800, color: '#f1f5f9', margin: '0 0 4px' } }, scenario.title),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, scene.label)
+            h('h2', { style: { fontSize: 20, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '0 0 4px' } }, scenario.title),
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, scene.label)
           ),
           // Per-scenario content warning if present
-          scenario.contentWarning && h('div', { style: { background: '#451a03', border: '1px solid #92400e', borderRadius: 12, padding: 14, marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, '⚠️ Content warning'),
-            h('p', { style: { fontSize: 12, color: '#fde68a', margin: 0, lineHeight: 1.6 } }, scenario.contentWarning)
+          scenario.contentWarning && h('div', { style: { background: _cftBg('#451a03'), border: '1px solid #92400e', borderRadius: 12, padding: 14, marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#fbbf24'), marginBottom: 6 } }, '⚠️ Content warning'),
+            h('p', { style: { fontSize: 12, color: _cftFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, scenario.contentWarning)
           ),
           // General safety reminder
-          h('div', { style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14, fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } },
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14, fontSize: 11, color: _cftFg('#94a3b8'), lineHeight: 1.6 } },
             'Conflict Theater scenarios are realistic. If you are in active distress today, choose a different scenario or come back later. The crisis safety net is at the bottom of every screen.'
           ),
           // Setup
-          h('div', { style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 6 } }, 'The setup'),
-            h('p', { style: { fontSize: 13, color: '#cbd5e1', margin: 0, lineHeight: 1.6 } }, scenario.setup)
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#e2e8f0'), marginBottom: 6 } }, 'The setup'),
+            h('p', { style: { fontSize: 13, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.6 } }, scenario.setup)
           ),
           // Characters in play
-          h('div', { style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 18 } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, 'You\'ll be talking with'),
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 18 } },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#e2e8f0'), marginBottom: 8 } }, 'You\'ll be talking with'),
             charsInPlay.map(function(c) {
               var role = scenario.characterRoles[c.id] || '';
               var mem = memory[c.id];
@@ -1128,13 +1137,13 @@ window.SelHub = window.SelHub || {
                   : h('div', { style: { fontSize: 28, lineHeight: 1, flexShrink: 0, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, c.avatar),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
-                    h('span', { style: { fontSize: 12, fontWeight: 700, color: '#f1f5f9' } }, c.name + ' (' + c.age + ')'),
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#f1f5f9') } }, c.name + ' (' + c.age + ')'),
                     mem && h('span', { 'aria-label': 'You have talked with ' + c.name + ' before', title: 'Last interaction: ' + (mem.lastInteraction || '').slice(0, 10) + ' (relationship score ' + (mem.relationshipScore >= 0 ? '+' : '') + (mem.relationshipScore || 0) + ')', style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: mem.relationshipScore >= 0 ? '#134e4a' : '#7f1d1d', color: mem.relationshipScore >= 0 ? '#86efac' : '#fca5a5', fontWeight: 700 } }, '🌱 You\'ve met before')
                   ),
-                  role && h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 2, fontStyle: 'italic' } }, role),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, c.backstory),
-                  mem && mem.memoryNote && h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginTop: 4, padding: '6px 8px', background: '#0f172a', borderLeft: '2px solid #14b8a6', borderRadius: 4 } },
-                    h('span', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, display: 'block', marginBottom: 2 } }, c.name + ' remembers'),
+                  role && h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), marginBottom: 2, fontStyle: 'italic' } }, role),
+                  h('div', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), lineHeight: 1.5 } }, c.backstory),
+                  mem && mem.memoryNote && h('div', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), lineHeight: 1.5, marginTop: 4, padding: '6px 8px', background: _cftBg('#0f172a'), borderLeft: '2px solid #14b8a6', borderRadius: 4 } },
+                    h('span', { style: { fontSize: 9, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, display: 'block', marginBottom: 2 } }, c.name + ' remembers'),
                     h('span', { style: { fontStyle: 'italic' } }, '"' + mem.memoryNote + '"')
                   )
                 )
@@ -1146,7 +1155,7 @@ window.SelHub = window.SelHub || {
               'aria-label': 'Start scenario',
               autoFocus: true,
               onClick: function() { upd({ mode: 'scene' }); announceSR('Scene started. ' + charsInPlay.map(function(c){ return c.name; }).join(' and ') + ' appear.'); },
-              style: { padding: '12px 32px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
+              style: { padding: '12px 32px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
             }, 'Start →')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1158,9 +1167,9 @@ window.SelHub = window.SelHub || {
       // ──────────────────────────────────────────────────────────
       if (mode === 'ending') {
         var endingMeta = {
-          'resolved': { icon: '🌱', label: 'Restorative repair', color: '#22c55e', summary: 'You acknowledged feelings, made space, named the harm specifically, and helped them get to a repair. That’s rare and hard.' },
-          'partial': { icon: '🌤️', label: 'Partial — unfinished', color: '#eab308', summary: 'You moved things, but it’s not done. Sometimes that’s realistic. Try again with a different approach if you want.' },
-          'deepened': { icon: '⛈️', label: 'Conflict deepened', color: '#ef4444', summary: 'It got worse. That happens. The thing to learn from is which moves shut things down vs opened them. Try again.' }
+          'resolved': { icon: '🌱', label: 'Restorative repair', color: _cftFg('#22c55e'), summary: 'You acknowledged feelings, made space, named the harm specifically, and helped them get to a repair. That’s rare and hard.' },
+          'partial': { icon: '🌤️', label: 'Partial — unfinished', color: _cftFg('#eab308'), summary: 'You moved things, but it’s not done. Sometimes that’s realistic. Try again with a different approach if you want.' },
+          'deepened': { icon: '⛈️', label: 'Conflict deepened', color: _cftFg('#ef4444'), summary: 'It got worse. That happens. The thing to learn from is which moves shut things down vs opened them. Try again.' }
         };
         var em = endingMeta[endingType] || endingMeta.partial;
         var principleList = ['acknowledged', 'madeSpace', 'identifiedHarm', 'proposedRepair', 'namedNeed'];
@@ -1170,23 +1179,23 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: 20 } },
             h('div', { style: { fontSize: 56, marginBottom: 8 } }, em.icon),
             h('h3', { style: { fontSize: 20, fontWeight: 800, color: em.color, marginBottom: 8 } }, em.label),
-            h('p', { style: { fontSize: 13, color: '#cbd5e1', margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, em.summary)
+            h('p', { style: { fontSize: 13, color: _cftFg('#cbd5e1'), margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, em.summary)
           ),
           // Harmony final
-          h('div', { style: { padding: 14, background: '#1e293b', border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Final harmony'),
+          h('div', { style: { padding: 14, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Final harmony'),
             h('div', { className: 'ct-meter-track' },
-              h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmony >= 75 ? '#22c55e' : harmony >= 40 ? '#eab308' : '#ef4444' } })
+              h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmony >= 75 ? _cftFg('#22c55e') : harmony >= 40 ? _cftFg('#eab308') : _cftFg('#ef4444') } })
             ),
-            h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 6 } }, Math.round(harmony) + ' / 100')
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), marginTop: 6 } }, Math.round(harmony) + ' / 100')
           ),
           // Principles touched
-          h('div', { style: { padding: 14, background: '#1e293b', border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Restorative principles you touched'),
+          h('div', { style: { padding: 14, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Restorative principles you touched'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               principleList.map(function(p) {
                 var hit = !!principlesUsed[p];
-                return h('div', { key: p, style: { fontSize: 12, color: hit ? '#86efac' : '#64748b', display: 'flex', alignItems: 'center', gap: 8 } },
+                return h('div', { key: p, style: { fontSize: 12, color: hit ? '#86efac' : _cftFg('#64748b'), display: 'flex', alignItems: 'center', gap: 8 } },
                   h('span', { 'aria-hidden': 'true' }, hit ? '✓' : '·'),
                   h('span', null, principleLabels[p])
                 );
@@ -1195,8 +1204,8 @@ window.SelHub = window.SelHub || {
           ),
           // What each character will remember (memory generation is async — show
           // loading until it arrives, then the actual note)
-          h('div', { style: { padding: 14, background: '#1e293b', border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'What they\'ll carry forward'),
+          h('div', { style: { padding: 14, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'What they\'ll carry forward'),
             scenario.characterIds.map(function(cid) {
               var ch = CAST[cid];
               if (!ch) return null;
@@ -1209,19 +1218,19 @@ window.SelHub = window.SelHub || {
                   ? h('img', { src: portraitUrl, alt: ch.name, style: { width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 } })
                   : h('span', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, ch.avatar),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, ch.name + ' will remember:'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: _cftFg('#e2e8f0'), marginBottom: 2 } }, ch.name + ' will remember:'),
                   thisSessionNote
-                    ? h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } }, '"' + mem.memoryNote + '"')
-                    : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, ch.name + ' is still thinking about this conversation...')
+                    ? h('div', { style: { fontSize: 12, color: _cftFg('#cbd5e1'), lineHeight: 1.5, fontStyle: 'italic' } }, '"' + mem.memoryNote + '"')
+                    : h('div', { style: { fontSize: 11, color: _cftFg('#64748b'), fontStyle: 'italic' } }, ch.name + ' is still thinking about this conversation...')
                 )
               );
             })
           ),
           // Coach overlay
-          scenario.coachingNotes && scenario.coachingNotes.length > 0 && h('div', { style: { padding: 14, background: '#0c4a6e', border: '1px solid #0369a1', borderRadius: 12, marginBottom: 16 } },
-            h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Coach notes'),
+          scenario.coachingNotes && scenario.coachingNotes.length > 0 && h('div', { style: { padding: 14, background: _cftBg('#0c4a6e'), border: '1px solid #0369a1', borderRadius: 12, marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: _cftFg('#7dd3fc'), fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Coach notes'),
             scenario.coachingNotes.map(function(n, i) {
-              return h('p', { key: i, style: { fontSize: 12, color: '#e0f2fe', margin: '0 0 6px 0', lineHeight: 1.5 } }, '• ' + n);
+              return h('p', { key: i, style: { fontSize: 12, color: _cftFg('#e0f2fe'), margin: '0 0 6px 0', lineHeight: 1.5 } }, '• ' + n);
             })
           ),
           // Buttons
@@ -1229,7 +1238,7 @@ window.SelHub = window.SelHub || {
             h('button', {
               'aria-label': 'Try again with different choices',
               onClick: resetScenario,
-              style: { padding: '10px 20px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
             }, '↺ Try again'),
             // Compare-to-previous: only show if there are 2+ attempts of THIS scenario
             (function() {
@@ -1238,7 +1247,7 @@ window.SelHub = window.SelHub || {
               return h('button', {
                 'aria-label': 'Compare this attempt to the previous one',
                 onClick: function() { upd('mode', 'compare'); announceSR('Comparing this attempt to previous attempt.'); },
-                style: { padding: '10px 20px', background: '#0f172a', color: '#a5f3fc', border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#a5f3fc'), border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '⇆ Compare to previous');
             })(),
             h('button', {
@@ -1260,12 +1269,12 @@ window.SelHub = window.SelHub || {
                   ]
                 });
               },
-              style: { padding: '10px 20px', background: '#0f172a', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '🖨 Print transcript'),
             h('button', {
               'aria-label': 'Back to opt-in',
               onClick: function() { upd({ mode: 'select' }); },
-              style: { padding: '10px 20px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '← Exit')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1281,58 +1290,58 @@ window.SelHub = window.SelHub || {
         var prevAttempt = sameScenarioRuns[sameScenarioRuns.length - 2];
         if (!thisAttempt || !prevAttempt) {
           // Defensive: shouldn't reach here, but render a fallback.
-          return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto', textAlign: 'center', color: '#94a3b8' } },
+          return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto', textAlign: 'center', color: _cftFg('#94a3b8') } },
             h('p', null, 'Need at least two attempts to compare. Try the scenario again first.'),
-            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
+            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: _cftBg('#14b8a6'), color: _cftFg('#fff'), border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
           );
         }
-        var endingColor = function(end) { return end === 'resolved' ? '#22c55e' : end === 'partial' ? '#eab308' : '#ef4444'; };
+        var endingColor = function(end) { return end === 'resolved' ? _cftFg('#22c55e') : end === 'partial' ? _cftFg('#eab308') : _cftFg('#ef4444'); };
         var endingIcon = function(end) { return end === 'resolved' ? '🌱' : end === 'partial' ? '🌤️' : '⛈️'; };
         function _renderColumn(att, label) {
           var transcript = (att.dialogue || []).map(function(m, i) {
             var who, color;
-            if (m.speaker === 'student') { who = 'You'; color = '#14b8a6'; }
-            else { var c = CAST[m.speaker]; who = c ? c.name : m.speaker; color = '#cbd5e1'; }
-            return h('div', { key: i, style: { fontSize: 11, lineHeight: 1.5, marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid ' + (m.speaker === 'student' ? '#14b8a6' : '#475569') } },
+            if (m.speaker === 'student') { who = 'You'; color = _cftBg('#14b8a6'); }
+            else { var c = CAST[m.speaker]; who = c ? c.name : m.speaker; color = _cftFg('#cbd5e1'); }
+            return h('div', { key: i, style: { fontSize: 11, lineHeight: 1.5, marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid ' + (m.speaker === 'student' ? _cftBg('#14b8a6') : '#475569') } },
               h('span', { style: { fontWeight: 700, color: color, fontSize: 10, display: 'block', marginBottom: 1 } }, who),
-              h('span', { style: { color: '#e2e8f0' } }, m.text)
+              h('span', { style: { color: _cftFg('#e2e8f0') } }, m.text)
             );
           });
           var principleList = ['acknowledged', 'madeSpace', 'identifiedHarm', 'proposedRepair', 'namedNeed'];
           var principleLabels = { acknowledged: 'Acknowledged feelings', madeSpace: 'Made space', identifiedHarm: 'Named harm', proposedRepair: 'Proposed repair', namedNeed: 'Named a need' };
-          return h('div', { style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 } },
+          return h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 } },
             // Header
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 8, borderBottom: '1px solid #334155' } },
               h('span', { style: { fontSize: 24 } }, endingIcon(att.ending)),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
+                h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: endingColor(att.ending), textTransform: 'capitalize' } }, att.ending),
-                h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Harmony: ' + Math.round(att.harmony) + ' / 100')
+                h('div', { style: { fontSize: 10, color: _cftFg('#64748b') } }, 'Harmony: ' + Math.round(att.harmony) + ' / 100')
               )
             ),
             // Principles touched
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
               principleList.map(function(p) {
                 var hit = !!(att.principlesUsed && att.principlesUsed[p]);
-                return h('span', { key: p, title: principleLabels[p], style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: hit ? '#134e4a' : '#0f172a', color: hit ? '#86efac' : '#475569', fontWeight: 600 } },
+                return h('span', { key: p, title: principleLabels[p], style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: hit ? '#134e4a' : _cftBg('#0f172a'), color: hit ? '#86efac' : '#475569', fontWeight: 600 } },
                   (hit ? '✓ ' : '· ') + principleLabels[p]
                 );
               })
             ),
             // Transcript scroll
-            h('div', { style: { maxHeight: 380, overflowY: 'auto', paddingRight: 4 } }, transcript.length ? transcript : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, '(no dialogue)'))
+            h('div', { style: { maxHeight: 380, overflowY: 'auto', paddingRight: 4 } }, transcript.length ? transcript : h('div', { style: { fontSize: 11, color: _cftFg('#64748b'), fontStyle: 'italic' } }, '(no dialogue)'))
           );
         }
         return h('div', { style: { padding: 16, maxWidth: 1000, margin: '0 auto' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 12, flexWrap: 'wrap' } },
             h('div', null,
-              h('h3', { style: { fontSize: 18, fontWeight: 800, color: '#f1f5f9', margin: '0 0 2px' } }, 'Comparing attempts'),
-              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, scenario.title)
+              h('h3', { style: { fontSize: 18, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '0 0 2px' } }, 'Comparing attempts'),
+              h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8') } }, scenario.title)
             ),
             h('button', {
               'aria-label': 'Back to outcome',
               onClick: function() { upd('mode', 'ending'); },
-              style: { padding: '6px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
+              style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
             }, '← Back to outcome')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 12 } },
@@ -1340,8 +1349,8 @@ window.SelHub = window.SelHub || {
             _renderColumn(thisAttempt, 'This attempt')
           ),
           // Quick delta summary
-          h('div', { style: { padding: 12, background: '#1e293b', border: '1px solid #334155', borderRadius: 10, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
-            h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Delta'),
+          h('div', { style: { padding: 12, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 10, fontSize: 11, color: _cftFg('#cbd5e1'), lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Delta'),
             (function() {
               var dh = Math.round(thisAttempt.harmony) - Math.round(prevAttempt.harmony);
               var prevP = Object.keys(prevAttempt.principlesUsed || {}).length;
@@ -1362,7 +1371,7 @@ window.SelHub = window.SelHub || {
       // ──────────────────────────────────────────────────────────
 
       var characters = scenario.characterIds.map(function(cid) { return CAST[cid]; });
-      var harmonyColor = harmony >= 75 ? '#22c55e' : harmony >= 40 ? '#eab308' : '#ef4444';
+      var harmonyColor = harmony >= 75 ? _cftFg('#22c55e') : harmony >= 40 ? _cftFg('#eab308') : _cftFg('#ef4444');
 
       // Crisis surface (Tier 3) — prominent, inside the scene
       var crisisSurface = (_userTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources)
@@ -1402,8 +1411,8 @@ window.SelHub = window.SelHub || {
         }
         return h('div', { style: Object.assign({ position: 'absolute', top: 70, textAlign: 'center', pointerEvents: 'none' }, sideStyle) },
           portraitNode,
-          h('div', { style: { fontSize: 11, fontWeight: 700, color: url ? '#f1f5f9' : '#1e293b', marginTop: 4, textShadow: url ? '0 1px 3px rgba(0,0,0,0.6)' : 'none' } }, c.name),
-          isLoading && !url && h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, 'sketching...')
+          h('div', { style: { fontSize: 11, fontWeight: 700, color: url ? _cftFg('#f1f5f9') : _cftBg('#1e293b'), marginTop: 4, textShadow: url ? '0 1px 3px rgba(0,0,0,0.6)' : 'none' } }, c.name),
+          isLoading && !url && h('div', { style: { fontSize: 9, color: _cftFg('#64748b'), marginTop: 2 } }, 'sketching...')
         );
       }
 
@@ -1415,19 +1424,19 @@ window.SelHub = window.SelHub || {
       );
 
       // Harmony meter + per-character mood pips
-      var meters = h('div', { style: { display: 'flex', gap: 12, marginBottom: 12, padding: 12, background: '#1e293b', border: '1px solid #334155', borderRadius: 10 } },
+      var meters = h('div', { style: { display: 'flex', gap: 12, marginBottom: 12, padding: 12, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 10 } },
         h('div', { style: { flex: 1 } },
-          h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Harmony'),
+          h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Harmony'),
           h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-valuenow': Math.round(harmony), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Harmony meter' },
             h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmonyColor } })
           ),
-          h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, Math.round(harmony) + ' / 100')
+          h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), marginTop: 4 } }, Math.round(harmony) + ' / 100')
         ),
         characters.map(function(c) {
           var mood = charMoods[c.id] || 'calm';
           return h('div', { key: c.id, style: { textAlign: 'center', minWidth: 70 } },
-            h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, c.name),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', textTransform: 'capitalize' } }, mood)
+            h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, c.name),
+            h('div', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), textTransform: 'capitalize' } }, mood)
           );
         })
       );
@@ -1435,29 +1444,29 @@ window.SelHub = window.SelHub || {
       // Dialogue history
       var dialogueView = h('div', { role: 'log', 'aria-live': 'polite', 'aria-busy': loading ? 'true' : 'false', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: 240, overflowY: 'auto', padding: 8 } },
         dialogue.length === 0
-          ? h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic', textAlign: 'center', padding: 20 } }, 'Open the conversation. What would you say?')
+          ? h('div', { style: { fontSize: 12, color: _cftFg('#64748b'), fontStyle: 'italic', textAlign: 'center', padding: 20 } }, 'Open the conversation. What would you say?')
           : dialogue.map(function(m, i) {
               var who, bubbleClass;
               if (m.speaker === 'student') { who = 'You'; bubbleClass = 'ct-bubble ct-bubble-student'; }
               else { var c = CAST[m.speaker]; who = c ? c.name : m.speaker; bubbleClass = 'ct-bubble'; }
               return h('div', { key: i, style: { display: 'flex', flexDirection: 'column', alignItems: m.speaker === 'student' ? 'flex-end' : 'flex-start', gap: 2 } },
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600, padding: '0 6px' } }, who + (m.bodyLanguage ? ' · ' + m.bodyLanguage : '')),
+                h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 600, padding: '0 6px' } }, who + (m.bodyLanguage ? ' · ' + m.bodyLanguage : '')),
                 h('div', { className: bubbleClass }, m.text)
               );
             })
       );
 
       // Coach hint card (dismissible)
-      var coachHintCard = (coachHint && !coachHintDismissed) ? h('div', { role: 'note', 'aria-label': 'Coach hint', style: { padding: '10px 14px', marginBottom: 8, background: '#0c4a6e', border: '1px solid #0369a1', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+      var coachHintCard = (coachHint && !coachHintDismissed) ? h('div', { role: 'note', 'aria-label': 'Coach hint', style: { padding: '10px 14px', marginBottom: 8, background: _cftBg('#0c4a6e'), border: '1px solid #0369a1', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10 } },
         h('span', { 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, '💡'),
         h('div', { style: { flex: 1 } },
-          h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 } }, 'Coach has a thought'),
-          h('div', { style: { fontSize: 12, color: '#e0f2fe', lineHeight: 1.5 } }, coachHint)
+          h('div', { style: { fontSize: 10, color: _cftFg('#7dd3fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 } }, 'Coach has a thought'),
+          h('div', { style: { fontSize: 12, color: _cftFg('#e0f2fe'), lineHeight: 1.5 } }, coachHint)
         ),
         h('button', {
           'aria-label': 'Dismiss coach hint',
           onClick: function() { upd('coachHintDismissed', true); },
-          style: { padding: '2px 8px', background: 'transparent', color: '#7dd3fc', border: '1px solid #0369a1', borderRadius: 6, fontSize: 10, cursor: 'pointer', flexShrink: 0 }
+          style: { padding: '2px 8px', background: 'transparent', color: _cftFg('#7dd3fc'), border: '1px solid #0369a1', borderRadius: 6, fontSize: 10, cursor: 'pointer', flexShrink: 0 }
         }, 'Got it')
       ) : null;
 
@@ -1468,10 +1477,10 @@ window.SelHub = window.SelHub || {
           return h('button', { key: opt.id,
             role: 'radio', 'aria-checked': on ? 'true' : 'false',
             onClick: function() { upd('addressing', opt.id); },
-            style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? '#14b8a6' : '#475569'), background: on ? '#134e4a' : 'transparent', color: on ? '#ccfbf1' : '#94a3b8', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+            style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? _cftBg('#14b8a6') : '#475569'), background: on ? '#134e4a' : 'transparent', color: on ? '#ccfbf1' : _cftFg('#94a3b8'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
           }, opt.name);
         }),
-        h('label', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8', cursor: 'pointer' } },
+        h('label', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: _cftFg('#94a3b8'), cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: ttsEnabled, onChange: function(e) { upd('ttsEnabled', e.target.checked); }, 'aria-label': 'Enable voice' }),
           'Voice'
         )
@@ -1487,13 +1496,13 @@ window.SelHub = window.SelHub || {
           'aria-label': 'Your message',
           rows: 2,
           disabled: loading,
-          style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
+          style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
         }),
         h('button', {
           'aria-label': loading ? 'Waiting' : 'Send message',
           onClick: function() { if (studentInput.trim() && !loading) sendTurn(); },
           disabled: loading || !studentInput.trim(),
-          style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: loading || !studentInput.trim() ? '#334155' : '#14b8a6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
+          style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: loading || !studentInput.trim() ? '#334155' : _cftBg('#14b8a6'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
         }, loading ? '⋯' : '↑')
       );
 
@@ -1501,7 +1510,7 @@ window.SelHub = window.SelHub || {
         h('button', {
           'aria-label': 'Exit scene',
           onClick: function() { upd({ mode: 'opt-in' }); },
-          style: { padding: '6px 14px', background: 'transparent', color: '#64748b', border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
+          style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
         }, '← Exit')
       );
 

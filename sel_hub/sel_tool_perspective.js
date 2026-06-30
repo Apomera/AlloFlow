@@ -868,6 +868,15 @@ window.SelHub = window.SelHub || {
     color: 'violet',
     category: 'social-awareness',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _pspT = (ctx && ctx.theme) || {};
+      var _pspHC = !!_pspT.isContrast, _pspL = !_pspHC && !_pspT.isDark;
+      var _psp_BGL = {'#334155':'#e2e8f0','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _psp_BGH = {'#334155':'#000000','#0f172a':'#000000','#1e293b':'#000000','#b45309':'#000000'};
+      var _psp_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#c4b5fd':'#5b21b6','#e2e8f0':'#1e293b','#818cf8':'#4338ca'}, _psp_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#c4b5fd':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#3b82f6':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#818cf8':'#ffff00','#0f172a':'#ffff00','#8b5cf6':'#ffff00','#e879f9':'#ffff00','#22d3ee':'#ffff00','#fb923c':'#ffff00','#6366f1':'#ffff00'};
+      var _psp_BDL = {'#334155':'#e2e8f0'}, _psp_BDH = {'#334155':'#ffff00'};
+      var _pspBg = function(h){ return _pspHC ? (_psp_BGH[h]||h) : (_pspL ? (_psp_BGL[h]||h) : h); };
+      var _pspFg = function(h){ return _pspHC ? (_psp_FGH[h]||h) : (_pspL ? (_psp_FGL[h]||h) : h); };
+      var _pspBd = function(h){ return _pspHC ? (_psp_BDH[h]||h) : (_pspL ? (_psp_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var Sparkles = ctx.icons.Sparkles;
@@ -1011,7 +1020,7 @@ window.SelHub = window.SelHub || {
         if (streak >= 3) tryAwardBadge('streak_3');
       }
 
-      var ACCENT = '#8b5cf6';
+      var ACCENT = _pspFg('#8b5cf6');
       var ACCENT_DIM = '#8b5cf622';
       var ACCENT_MED = '#8b5cf644';
 
@@ -1045,18 +1054,18 @@ window.SelHub = window.SelHub || {
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
               background: isActive ? ACCENT : 'transparent',
-              color: isActive ? '#fff' : '#94a3b8',
+              color: isActive ? _pspFg('#fff') : _pspFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
         }),
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _pspFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? ACCENT_DIM : 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? ACCENT_DIM : 'transparent', color: _pspFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
 
@@ -1065,7 +1074,7 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           scenarios: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 step into another\u2019s shoes',         hint: 'Theory of mind: separating what YOU know from what THEY know develops fully ~age 4 (Sally-Anne test). Practice keeps it sharp into adulthood. The skill that makes friendships, IEPs, and leadership possible.' },
           swap:      { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD04', title: 'Viewpoint Swap \u2014 same scene, two narrators',           hint: 'The Rashomon effect: same event, irreconcilable accounts. Both are usually \u201Ctrue\u201D from the narrator\u2019s vantage. Hearing both sides isn\u2019t neutrality \u2014 it\u2019s the basic move that prevents stuck conflicts.' },
-          stories:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCD6', title: 'Empathy Stories \u2014 narrative builds the muscle',        hint: 'Reading literary fiction (Kidd + Castano 2013) measurably improves theory-of-mind scores. Genre fiction doesn\u2019t. Why: literary characters require you to fill in interiors. The brain treats it as social practice.' },
+          stories:   { accent: _pspFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCD6', title: 'Empathy Stories \u2014 narrative builds the muscle',        hint: 'Reading literary fiction (Kidd + Castano 2013) measurably improves theory-of-mind scores. Genre fiction doesn\u2019t. Why: literary characters require you to fill in interiors. The brain treats it as social practice.' },
           exercises: { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDC5F', title: 'Exercises \u2014 perspective sprints',                       hint: 'Quick reps: walking-in-shoes prompts, age-shift, role-shift, time-shift. Iyengar 2013: deliberate cognitive flexibility practice transfers to harder real-world disagreements months later.' },
           biases:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83E\uDDD0', title: 'Bias Explorer \u2014 the lenses you don\u2019t see',         hint: 'Confirmation, fundamental attribution error, in-group favoritism, halo effect, just-world. Kahneman + Tversky 1974-2011: knowing the bias is necessary; assuming you\u2019re above it is itself a bias. Friends help.' },
           empathy:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDDFA', title: 'Empathy Map \u2014 think/feel/say/do',                       hint: 'IDEO design tool, also a perspective-taking scaffold. For a chosen person, fill 4 quadrants: what they think, feel, say, do. Splits cognitive (think/say) from affective (feel/do) empathy \u2014 different brain systems.' },
@@ -1091,7 +1100,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: _pspFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -1108,9 +1117,9 @@ window.SelHub = window.SelHub || {
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
-              h('p', { style: { fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { fontSize: 11, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
+              h('h3', { style: { margin: '0 0 8px 0', color: _pspFg('#f1f5f9'), fontSize: 20 } }, popBadge.name),
+              h('p', { style: { margin: 0, color: _pspFg('#94a3b8'), fontSize: 13 } }, popBadge.desc),
               h('p', { style: { margin: '12px 0 0 0', color: ACCENT, fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
@@ -1122,22 +1131,22 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { minHeight: '100%' } },
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
+            h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
                 return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
-                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : '#1e293b', border: '1px solid ' + (earned ? ACCENT : '#334155'), opacity: earned ? 1 : 0.4 }
+                  style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#0c1631' : _pspBg('#1e293b'), border: '1px solid ' + (earned ? ACCENT : _pspBg('#334155')), opacity: earned ? 1 : 0.4 }
                 },
                   h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#94a3b8' } }, badge.name),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _pspFg('#e2e8f0') : _pspFg('#94a3b8') } }, badge.name),
+                  h('div', { style: { fontSize: 11, color: _pspFg('#94a3b8'), marginTop: 2 } }, badge.desc)
                 );
               })
             ),
             h('button', { 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
-              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+              style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
             }, 'Close')
           )
         );
@@ -1156,20 +1165,20 @@ window.SelHub = window.SelHub || {
           var isRevealed = scenRevealed[revKey];
           return h('div', {
             key: ci,
-            style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid ' + (isRevealed ? ACCENT_MED : '#334155'), marginBottom: 10 }
+            style: { padding: 16, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid ' + (isRevealed ? ACCENT_MED : _pspBg('#334155')), marginBottom: 10 }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { style: { fontSize: 28 } }, char.emoji),
               h('div', null,
-                h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 14 } }, char.name),
-                h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, char.question)
+                h('div', { style: { fontWeight: 700, color: _pspFg('#f1f5f9'), fontSize: 14 } }, char.name),
+                h('div', { style: { fontSize: 12, color: _pspFg('#94a3b8'), fontStyle: 'italic' } }, char.question)
               )
             ),
             // Feeling tags
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
               char.feelings.map(function(f) {
                 return h('span', {                   key: f,
-                  style: { padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: ACCENT_DIM, color: '#c4b5fd', border: '1px solid ' + ACCENT_MED }
+                  style: { padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: ACCENT_DIM, color: _pspFg('#c4b5fd'), border: '1px solid ' + ACCENT_MED }
                 }, f);
               })
             ),
@@ -1186,33 +1195,33 @@ window.SelHub = window.SelHub || {
                   var allRevealed = current.characters.every(function(c, i) { return newRevealed[current.id + '_' + i]; });
                   if (allRevealed) tryAwardBadge('all_characters');
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal Perspective')
             :
-              h('div', { style: { padding: 12, borderRadius: 8, background: '#1e293b', border: '1px solid ' + ACCENT_MED, fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } },
+              h('div', { style: { padding: 12, borderRadius: 8, background: _pspBg('#1e293b'), border: '1px solid ' + ACCENT_MED, fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.6 } },
                 char.best
               )
           );
         });
 
         scenContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDFAD How Do They Feel?' : '\uD83C\uDFAD Scenario Theater'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read the story, then explore how each person might feel.' :
             band === 'middle' ? 'Read the scenario and consider each character\'s inner experience.' :
             'Analyze the emotional and social dynamics of each character.'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
             'Scenarios completed: ' + scenCompleted
           ),
           // Story card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
               current.title + ' \u2014 Scenario ' + ((scenIdx % scenList.length) + 1) + ' of ' + scenList.length
             ),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, current.story)
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, current.story)
           ),
           // Character cards
           h('div', null, charCards),
@@ -1233,7 +1242,7 @@ window.SelHub = window.SelHub || {
                 if (celebrate) celebrate();
                 ctx.announceToSR && ctx.announceToSR('Next scenario loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -1248,17 +1257,17 @@ window.SelHub = window.SelHub || {
         var curSwap = swapList[swapIdx % swapList.length];
 
         swapContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD04 Viewpoint Swap'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD04 Viewpoint Swap'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'See the same situation through different eyes!' :
             'Same situation, different perspectives. Notice how the same event means different things to different people.'
           ),
           // Situation
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } },
               curSwap.title + ' \u2014 ' + ((swapIdx % swapList.length) + 1) + ' of ' + swapList.length
             ),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6 } }, curSwap.situation)
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.6 } }, curSwap.situation)
           ),
           // Perspective toggle
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 16 } },
@@ -1268,20 +1277,20 @@ window.SelHub = window.SelHub || {
                 key: pi,
                 onClick: function() { upd('swapViewIdx', pi); if (soundEnabled) sfxSwap(); },
                 style: {
-                  padding: '10px 20px', borderRadius: 10, border: '2px solid ' + (isActive ? ACCENT : '#334155'),
-                  background: isActive ? ACCENT_DIM : '#1e293b', color: isActive ? '#c4b5fd' : '#94a3b8',
+                  padding: '10px 20px', borderRadius: 10, border: '2px solid ' + (isActive ? ACCENT : _pspBg('#334155')),
+                  background: isActive ? ACCENT_DIM : _pspBg('#1e293b'), color: isActive ? _pspFg('#c4b5fd') : _pspFg('#94a3b8'),
                   fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s'
                 }
               }, p.emoji + ' ' + p.name);
             })
           ),
           // Current perspective
-          h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
               h('span', { style: { fontSize: 32 } }, curSwap.perspectives[swapViewIdx].emoji),
-              h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15 } }, curSwap.perspectives[swapViewIdx].name + '\'s Perspective')
+              h('div', { style: { fontWeight: 700, color: _pspFg('#f1f5f9'), fontSize: 15 } }, curSwap.perspectives[swapViewIdx].name + '\'s Perspective')
             ),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } },
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } },
               '"' + curSwap.perspectives[swapViewIdx].view + '"'
             )
           ),
@@ -1290,14 +1299,14 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Reveal the Insight',
                 onClick: function() { upd('swapRevealed', true); if (soundEnabled) sfxReveal(); awardXP(10); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal the Insight')
             )
           :
             h('div', null,
-              h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16 } },
-                h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'The Insight'),
-                h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curSwap.insight)
+              h('div', { style: { padding: 16, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid #22c55e44', marginBottom: 16 } },
+                h('p', { style: { fontSize: 10, color: _pspFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'The Insight'),
+                h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curSwap.insight)
               ),
               h('div', { style: { textAlign: 'center' } },
                 h('button', { 'aria-label': 'Next Swap',
@@ -1315,7 +1324,7 @@ window.SelHub = window.SelHub || {
                     if (celebrate) celebrate();
                     ctx.announceToSR && ctx.announceToSR('Next viewpoint swap loaded');
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Next Swap \u2192')
               )
             )
@@ -1331,28 +1340,28 @@ window.SelHub = window.SelHub || {
         var curEm = emList[emIdx % emList.length];
 
         emContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDDFA\uFE0F Empathy Map'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDDFA\uFE0F Empathy Map'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             band === 'elementary' ? 'Imagine you are this person. What might they think, feel, say, and do?' :
             'Step into this person\'s experience. Map their inner world across four dimensions.'
           ),
           // Person card
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16, textAlign: 'center' } },
             h('span', { style: { fontSize: 36 } }, curEm.emoji),
-            h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 15 } }, curEm.name),
-            h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.5 } }, curEm.context)
+            h('h4', { style: { margin: '8px 0 4px 0', color: _pspFg('#f1f5f9'), fontSize: 15 } }, curEm.name),
+            h('p', { style: { fontSize: 13, color: _pspFg('#94a3b8'), lineHeight: 1.5 } }, curEm.context)
           ),
           // Empathy map grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 } },
             [
-              { key: 'emThink', label: '\uD83D\uDCAD Think', placeholder: 'What thoughts are going through their mind?', val: emThink, color: '#3b82f6' },
-              { key: 'emFeel', label: '\u2764\uFE0F Feel', placeholder: 'What emotions are they experiencing?', val: emFeel, color: '#ef4444' },
-              { key: 'emSay', label: '\uD83D\uDDE3\uFE0F Say', placeholder: 'What might they say out loud (or not say)?', val: emSay, color: '#22c55e' },
-              { key: 'emDo', label: '\uD83D\uDCAA Do', placeholder: 'What actions might they take?', val: emDo, color: '#f59e0b' }
+              { key: 'emThink', label: '\uD83D\uDCAD Think', placeholder: 'What thoughts are going through their mind?', val: emThink, color: _pspFg('#3b82f6') },
+              { key: 'emFeel', label: '\u2764\uFE0F Feel', placeholder: 'What emotions are they experiencing?', val: emFeel, color: _pspFg('#ef4444') },
+              { key: 'emSay', label: '\uD83D\uDDE3\uFE0F Say', placeholder: 'What might they say out loud (or not say)?', val: emSay, color: _pspFg('#22c55e') },
+              { key: 'emDo', label: '\uD83D\uDCAA Do', placeholder: 'What actions might they take?', val: emDo, color: _pspFg('#f59e0b') }
             ].map(function(field) {
               return h('div', {
                 key: field.key,
-                style: { padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid ' + field.color + '44' }
+                style: { padding: 12, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid ' + field.color + '44' }
               },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: field.color, marginBottom: 6 } }, field.label),
                 h('textarea', {
@@ -1361,7 +1370,7 @@ window.SelHub = window.SelHub || {
                   onChange: function(e) { upd(field.key, e.target.value); if (emSaved) upd('emSaved', false); },
                   placeholder: field.placeholder,
                   rows: 3,
-                  style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                  style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: _pspBg('#0f172a'), color: _pspFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
                 })
               );
             })
@@ -1386,7 +1395,7 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Empathy map saved');
               },
               disabled: emSaved,
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: emSaved ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: emSaved ? 'default' : 'pointer', opacity: emSaved ? 0.5 : 1 }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: emSaved ? _pspBg('#334155') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: emSaved ? 'default' : 'pointer', opacity: emSaved ? 0.5 : 1 }
             }, emSaved ? '\u2705 Saved' : '\uD83D\uDCBE Save Map'),
             h('button', { 'aria-label': 'Next Person',
               onClick: function() {
@@ -1398,7 +1407,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
                 ctx.announceToSR && ctx.announceToSR('New empathy map prompt loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Person \u2192')
           )
         );
@@ -1413,27 +1422,27 @@ window.SelHub = window.SelHub || {
         var curHf = hfList[hfIdx % hfList.length];
 
         hfContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDD0D Hidden Feelings'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD0D Hidden Feelings'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Sometimes what people say isn\'t what they really feel. Can you spot the hidden feeling?' :
             'What someone says on the surface often masks what they feel underneath. Decode the real emotion.'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
             'Score: ' + hfCorrect + '/' + hfTotal + (hfStreak >= 2 ? '  \uD83D\uDD25 Streak: ' + hfStreak : '')
           ),
           // Situation
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
               'Situation ' + ((hfIdx % hfList.length) + 1) + ' of ' + hfList.length
             ),
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, curHf.situation),
-            h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-              h('p', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 } }, 'What they said:'),
-              h('p', { style: { fontSize: 15, color: '#f1f5f9', fontStyle: 'italic', lineHeight: 1.5 } }, curHf.said)
+            h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 12 } }, curHf.situation),
+            h('div', { style: { padding: 14, borderRadius: 10, background: _pspBg('#1e293b'), border: '1px solid #334155' } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#94a3b8'), textTransform: 'uppercase', marginBottom: 4, fontWeight: 700 } }, 'What they said:'),
+              h('p', { style: { fontSize: 15, color: _pspFg('#f1f5f9'), fontStyle: 'italic', lineHeight: 1.5 } }, curHf.said)
             )
           ),
           // Options
-          h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8, textAlign: 'center' } },
+          h('p', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#94a3b8'), marginBottom: 8, textAlign: 'center' } },
             band === 'elementary' ? 'What are they REALLY feeling?' : 'What\'s the hidden emotion?'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
@@ -1441,8 +1450,8 @@ window.SelHub = window.SelHub || {
               var isChosen = hfChoice === opt;
               var isCorrect = hfRevealed && opt === curHf.realFeeling;
               var isWrong = hfRevealed && isChosen && opt !== curHf.realFeeling;
-              var bg = isCorrect ? '#22c55e33' : isWrong ? '#ef444433' : isChosen ? ACCENT_DIM : '#1e293b';
-              var bdr = isCorrect ? '#22c55e' : isWrong ? '#ef4444' : isChosen ? ACCENT : '#334155';
+              var bg = isCorrect ? '#22c55e33' : isWrong ? '#ef444433' : isChosen ? ACCENT_DIM : _pspBg('#1e293b');
+              var bdr = isCorrect ? _pspFg('#22c55e') : isWrong ? _pspFg('#ef4444') : isChosen ? ACCENT : _pspBg('#334155');
               return h('button', {
                 key: opt,
                 onClick: function() {
@@ -1469,16 +1478,16 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '12px 8px', borderRadius: 10, border: '2px solid ' + bdr,
-                  background: bg, color: '#f1f5f9', fontWeight: 600, fontSize: 13,
+                  background: bg, color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13,
                   cursor: hfRevealed ? 'default' : 'pointer', textTransform: 'capitalize'
                 }
               }, (isCorrect ? '\u2705 ' : isWrong ? '\u274C ' : '') + opt);
             })
           ),
           // Explanation
-          hfRevealed && h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Why ' + curHf.realFeeling + '?'),
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curHf.explanation)
+          hfRevealed && h('div', { style: { padding: 16, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid #22c55e44', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Why ' + curHf.realFeeling + '?'),
+            h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curHf.explanation)
           ),
           // Next
           hfRevealed && h('div', { style: { textAlign: 'center' } },
@@ -1488,7 +1497,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
                 ctx.announceToSR && ctx.announceToSR('Next hidden feeling loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next \u2192')
           )
         );
@@ -1500,11 +1509,11 @@ window.SelHub = window.SelHub || {
       var coachContent = null;
       if (activeTab === 'coach') {
         coachContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u2728 Perspective Coach'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\u2728 Perspective Coach'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             'Describe a situation and I\'ll help you see it from different perspectives.'
           ),
-          h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('textarea', {
               value: aiPrompt,
               'aria-label': 'Ask the perspective AI coach',
@@ -1513,7 +1522,7 @@ window.SelHub = window.SelHub || {
                 ? 'Tell me about a time when someone didn\'t understand how you felt, or you didn\'t understand how they felt...'
                 : 'Describe a social situation where people might see things differently — a conflict, a misunderstanding, a moment where perspectives diverged...',
               rows: 4,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 10 }
             }),
             h('button', { 
               onClick: function() {
@@ -1551,16 +1560,16 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: aiLoading,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: aiLoading ? '#334155' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: aiLoading ? _pspBg('#334155') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: aiLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
             },
               aiLoading ? 'Thinking...' : h(Sparkles, { size: 14 }), aiLoading ? null : ' Explore Perspectives'
             )
           ),
           // AI Response
           h('div', { role: 'region', 'aria-label': 'Perspective analysis', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
-            aiResponse && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
-              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Perspective Analysis'),
-              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, aiResponse)
+            aiResponse && h('div', { style: { padding: 20, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Perspective Analysis'),
+              h('div', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, aiResponse)
             )
           )
         );
@@ -1575,18 +1584,18 @@ window.SelHub = window.SelHub || {
         var curJournal = jPrompts[journalIdx % jPrompts.length];
 
         journalContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCD4 Perspective Journal'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCD4 Perspective Journal'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             'Reflect on how you see the world — and how others see it differently.'
           ),
           // Prompt counter
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Prompt ' + ((journalIdx % jPrompts.length) + 1) + ' of ' + jPrompts.length +
             (journalDone > 0 ? ' \u00B7 ' + journalDone + ' completed' : '')
           ),
           // Prompt card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, '\u201C' + curJournal.prompt + '\u201D'),
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } }, '\u201C' + curJournal.prompt + '\u201D'),
             // Skip button
             h('div', { style: { textAlign: 'right', marginTop: 8 } },
               h('button', { 'aria-label': 'Skip to another prompt',
@@ -1594,7 +1603,7 @@ window.SelHub = window.SelHub || {
                   upd({ journalIdx: journalIdx + 1, journalText: '', journalAiResp: null, journalSaved: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+                style: { background: 'none', border: 'none', color: _pspFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
               }, 'Skip to another prompt \u2192')
             )
           ),
@@ -1610,10 +1619,10 @@ window.SelHub = window.SelHub || {
                 ? 'Write your reflection here... Try to consider multiple perspectives and explain your reasoning.'
                 : 'Write your reflection here... Push yourself to examine assumptions, consider systemic factors, and articulate nuance.',
               rows: 6,
-              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6 }
+              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6 }
             }),
             // Word count
-            h('div', { style: { textAlign: 'right', color: '#94a3b8', fontSize: 11, marginTop: 4 } },
+            h('div', { style: { textAlign: 'right', color: _pspFg('#94a3b8'), fontSize: 11, marginTop: 4 } },
               (journalText.trim() ? journalText.trim().split(/\s+/).length : 0) + ' words'
             )
           ),
@@ -1658,7 +1667,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: journalAiLoad || journalText.trim().split(/\s+/).length < 10,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalAiLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: journalAiLoad ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalAiLoad ? _pspBg('#334155') : _pspFg('#6366f1'), color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: journalAiLoad ? 'default' : 'pointer' }
             }, journalAiLoad ? 'Reading...' : '\u2728 Get Feedback'),
             // Save & Next
             h('button', { 'aria-label': 'Feedback',
@@ -1675,13 +1684,13 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Journal entry saved');
               },
               disabled: journalSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalSaved ? '#22c55e' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: journalSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: journalSaved ? _pspFg('#22c55e') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: journalSaved ? 'default' : 'pointer' }
             }, journalSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Entry')
           ),
           // AI Feedback display
-          journalAiResp && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, '\u2728 Feedback'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, journalAiResp)
+          journalAiResp && h('div', { style: { padding: 20, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid #6366f144', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#818cf8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, '\u2728 Feedback'),
+            h('div', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, journalAiResp)
           ),
           // Next prompt (after saving)
           journalSaved && h('div', { style: { textAlign: 'center' } },
@@ -1691,7 +1700,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
                 ctx.announceToSR && ctx.announceToSR('New journal prompt loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Prompt \u2192')
           )
         );
@@ -1706,21 +1715,21 @@ window.SelHub = window.SelHub || {
         var curRespond = rScenarios[respondIdx % rScenarios.length];
 
         respondContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, '\u270D\uFE0F What Would You Do?'),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\u270D\uFE0F What Would You Do?'),
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             'Read the situation, decide your response, and see how it scores on empathy and perspective-awareness.'
           ),
           // Scenario counter
-          h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             'Scenario ' + ((respondIdx % rScenarios.length) + 1) + ' of ' + rScenarios.length +
             (respondDone > 0 ? ' \u00B7 ' + respondDone + ' completed' : '')
           ),
           // Scenario card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #f59e0b44', marginBottom: 16 } },
-            h('h4', { style: { color: '#f59e0b', fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curRespond.title),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, curRespond.situation),
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid #f59e0b44', marginBottom: 16 } },
+            h('h4', { style: { color: _pspFg('#f59e0b'), fontSize: 15, marginBottom: 10, fontWeight: 700 } }, curRespond.title),
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 12 } }, curRespond.situation),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('span', { style: { fontSize: 10, color: '#94a3b8', background: '#1e293b', padding: '3px 8px', borderRadius: 6 } }, '\uD83D\uDC65 ' + curRespond.stakeholders)
+              h('span', { style: { fontSize: 10, color: _pspFg('#94a3b8'), background: _pspBg('#1e293b'), padding: '3px 8px', borderRadius: 6 } }, '\uD83D\uDC65 ' + curRespond.stakeholders)
             ),
             // Skip
             h('div', { style: { textAlign: 'right', marginTop: 8 } },
@@ -1729,13 +1738,13 @@ window.SelHub = window.SelHub || {
                   upd({ respondIdx: respondIdx + 1, respondText: '', respondAiResp: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
+                style: { background: 'none', border: 'none', color: _pspFg('#94a3b8'), fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
               }, 'Skip to another scenario \u2192')
             )
           ),
           // Response area
           h('div', { style: { marginBottom: 16 } },
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 } },
+            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: _pspFg('#e2e8f0'), marginBottom: 6 } },
               band === 'elementary' ? 'What would you do? Why?' : 'What would you do? Explain your reasoning and consider how your choice affects everyone involved.'
             ),
             h('textarea', {
@@ -1746,9 +1755,9 @@ window.SelHub = window.SelHub || {
                 ? 'I would... because...'
                 : 'I would... My reasoning is... This might affect [the people involved] by...',
               rows: 5,
-              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6 }
+              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6 }
             }),
-            h('div', { style: { textAlign: 'right', color: '#94a3b8', fontSize: 11, marginTop: 4 } },
+            h('div', { style: { textAlign: 'right', color: _pspFg('#94a3b8'), fontSize: 11, marginTop: 4 } },
               (respondText.trim() ? respondText.trim().split(/\s+/).length : 0) + ' words'
             )
           ),
@@ -1803,13 +1812,13 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: respondAiLoad || respondText.trim().split(/\s+/).length < 8,
-              style: { padding: '12px 28px', borderRadius: 10, border: 'none', background: respondAiLoad ? '#334155' : '#f59e0b', color: respondAiLoad ? '#94a3b8' : '#0f172a', fontWeight: 700, fontSize: 14, cursor: respondAiLoad ? 'default' : 'pointer' }
+              style: { padding: '12px 28px', borderRadius: 10, border: 'none', background: respondAiLoad ? _pspBg('#334155') : _pspFg('#f59e0b'), color: respondAiLoad ? _pspFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 14, cursor: respondAiLoad ? 'default' : 'pointer' }
             }, respondAiLoad ? 'Evaluating...' : '\uD83C\uDFAF Submit My Response')
           ),
           // Evaluation display
-          respondAiResp && h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, '\uD83C\uDFAF Evaluation'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, respondAiResp)
+          respondAiResp && h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#1e293b'), border: '1px solid #f59e0b44', marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#f59e0b'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, fontWeight: 700 } }, '\uD83C\uDFAF Evaluation'),
+            h('div', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, respondAiResp)
           ),
           // Next scenario
           respondAiResp && h('div', { style: { textAlign: 'center' } },
@@ -1819,7 +1828,7 @@ window.SelHub = window.SelHub || {
                 if (soundEnabled) sfxClick();
                 ctx.announceToSR && ctx.announceToSR('New scenario loaded');
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Scenario \u2192')
           )
         );
@@ -1834,24 +1843,24 @@ window.SelHub = window.SelHub || {
         var curStory = storyList[storyIdx % storyList.length];
 
         storiesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } },
             '\uD83D\uDCD6 Empathy Stories'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Read a story, then see it through different eyes.' :
             band === 'middle' ? 'Every story has more than one side. Explore them all.' :
             'Narrative vignettes told from multiple perspectives. Notice whose story you default to.'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
             'Story ' + ((storyIdx % storyList.length) + 1) + ' of ' + storyList.length +
             (storyDone > 0 ? ' \u00B7 ' + storyDone + ' explored' : '')
           ),
           // Story intro
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } },
               curStory.title
             ),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curStory.intro)
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curStory.intro)
           ),
           // Perspective tabs
           h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16, flexWrap: 'wrap' } },
@@ -1861,20 +1870,20 @@ window.SelHub = window.SelHub || {
                 key: pi,
                 onClick: function() { upd('storyPerspIdx', pi); if (soundEnabled) sfxSwap(); },
                 style: {
-                  padding: '8px 16px', borderRadius: 10, border: '2px solid ' + (isActive ? ACCENT : '#334155'),
-                  background: isActive ? ACCENT_DIM : '#1e293b', color: isActive ? '#c4b5fd' : '#94a3b8',
+                  padding: '8px 16px', borderRadius: 10, border: '2px solid ' + (isActive ? ACCENT : _pspBg('#334155')),
+                  background: isActive ? ACCENT_DIM : _pspBg('#1e293b'), color: isActive ? _pspFg('#c4b5fd') : _pspFg('#94a3b8'),
                   fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.2s'
                 }
               }, p.emoji + ' ' + p.name);
             })
           ),
           // Current perspective text
-          h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
               h('span', { style: { fontSize: 28 } }, curStory.perspectives[storyPerspIdx % curStory.perspectives.length].emoji),
-              h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 14 } }, curStory.perspectives[storyPerspIdx % curStory.perspectives.length].name)
+              h('div', { style: { fontWeight: 700, color: _pspFg('#f1f5f9'), fontSize: 14 } }, curStory.perspectives[storyPerspIdx % curStory.perspectives.length].name)
             ),
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, fontStyle: 'italic' } },
+            h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.8, fontStyle: 'italic' } },
               '\u201C' + curStory.perspectives[storyPerspIdx % curStory.perspectives.length].text + '\u201D'
             )
           ),
@@ -1887,14 +1896,14 @@ window.SelHub = window.SelHub || {
                   if (soundEnabled) sfxReveal();
                   awardXP(10);
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal Reflection')
             )
           :
             h('div', null,
-              h('div', { style: { padding: 16, borderRadius: 12, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16 } },
-                h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Reflection'),
-                h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curStory.reflection)
+              h('div', { style: { padding: 16, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid #22c55e44', marginBottom: 16 } },
+                h('p', { style: { fontSize: 10, color: _pspFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Reflection'),
+                h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curStory.reflection)
               ),
               h('div', { style: { textAlign: 'center' } },
                 h('button', { 'aria-label': 'Next Story',
@@ -1912,7 +1921,7 @@ window.SelHub = window.SelHub || {
                     if (celebrate) celebrate();
                     ctx.announceToSR && ctx.announceToSR('Next empathy story loaded');
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Next Story \u2192')
               )
             )
@@ -1937,8 +1946,8 @@ window.SelHub = window.SelHub || {
               key: m.id,
               onClick: function() { upd('exerciseMode', m.id); if (soundEnabled) sfxClick(); },
               style: {
-                padding: '7px 14px', borderRadius: 8, border: '2px solid ' + (isActive ? '#22c55e' : '#334155'),
-                background: isActive ? '#22c55e22' : '#1e293b', color: isActive ? '#22c55e' : '#94a3b8',
+                padding: '7px 14px', borderRadius: 8, border: '2px solid ' + (isActive ? _pspFg('#22c55e') : _pspBg('#334155')),
+                background: isActive ? '#22c55e22' : _pspBg('#1e293b'), color: isActive ? _pspFg('#22c55e') : _pspFg('#94a3b8'),
                 fontWeight: 600, fontSize: 11, cursor: 'pointer'
               }
             }, m.label);
@@ -1953,10 +1962,10 @@ window.SelHub = window.SelHub || {
           var curWalk = walkList[walkIdx % walkList.length];
 
           exerciseBody = h('div', null,
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
               h('span', { style: { fontSize: 36 } }, curWalk.emoji),
-              h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 15 } }, curWalk.person),
-              h('p', { style: { fontSize: 13, color: '#94a3b8', lineHeight: 1.6 } }, curWalk.prompt)
+              h('h4', { style: { margin: '8px 0 4px 0', color: _pspFg('#f1f5f9'), fontSize: 15 } }, curWalk.person),
+              h('p', { style: { fontSize: 13, color: _pspFg('#94a3b8'), lineHeight: 1.6 } }, curWalk.prompt)
             ),
             h('textarea', {
               value: walkText,
@@ -1964,9 +1973,9 @@ window.SelHub = window.SelHub || {
               onChange: function(e) { upd('walkText', e.target.value); upd('walkSaved', false); },
               placeholder: 'Write from this person\u2019s perspective. Describe their day, their feelings, their challenges...',
               rows: 6,
-              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 8 }
+              style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 8 }
             }),
-            h('div', { style: { textAlign: 'right', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+            h('div', { style: { textAlign: 'right', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
               (walkText.trim() ? walkText.trim().split(/\s+/).length : 0) + ' words'
             ),
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
@@ -1983,14 +1992,14 @@ window.SelHub = window.SelHub || {
                   addToast('Perspective saved!', 'success');
                 },
                 disabled: walkSaved,
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: walkSaved ? '#22c55e' : ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: walkSaved ? 'default' : 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: walkSaved ? _pspFg('#22c55e') : ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: walkSaved ? 'default' : 'pointer' }
               }, walkSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save'),
               h('button', { 'aria-label': 'Next Person',
                 onClick: function() {
                   upd({ walkIdx: walkIdx + 1, walkText: '', walkSaved: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Next Person \u2192')
             )
           );
@@ -2003,10 +2012,10 @@ window.SelHub = window.SelHub || {
           var gradeHint = curSE.gradeHint[band] || curSE.gradeHint.elementary;
 
           exerciseBody = h('div', null,
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #3b82f644', marginBottom: 16 } },
-              h('h4', { style: { color: '#3b82f6', fontSize: 15, marginBottom: 8, textAlign: 'center' } }, curSE.title),
-              h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, textAlign: 'center' } }, curSE.event),
-              h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } }, gradeHint)
+            h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid #3b82f644', marginBottom: 16 } },
+              h('h4', { style: { color: _pspFg('#3b82f6'), fontSize: 15, marginBottom: 8, textAlign: 'center' } }, curSE.title),
+              h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7, marginBottom: 10, textAlign: 'center' } }, curSE.event),
+              h('p', { style: { fontSize: 11, color: _pspFg('#94a3b8'), fontStyle: 'italic', textAlign: 'center' } }, gradeHint)
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 } },
               curSE.characters.map(function(charName, ci) {
@@ -2014,9 +2023,9 @@ window.SelHub = window.SelHub || {
                 var charText = (sameEventTexts[textKey]) || '';
                 return h('div', {
                   key: ci,
-                  style: { padding: 12, borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+                  style: { padding: 12, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid #334155' }
                 },
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3b82f6', marginBottom: 6 } }, '\uD83D\uDC64 ' + charName),
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#3b82f6'), marginBottom: 6 } }, '\uD83D\uDC64 ' + charName),
                   h('textarea', {
                     value: charText,
                     'aria-label': 'Character perspective response',
@@ -2027,7 +2036,7 @@ window.SelHub = window.SelHub || {
                     },
                     placeholder: 'Write from ' + charName + '\u2019s perspective...',
                     rows: 3,
-                    style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+                    style: { width: '100%', padding: 8, borderRadius: 8, border: '1px solid #334155', background: _pspBg('#0f172a'), color: _pspFg('#f1f5f9'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
                   })
                 );
               })
@@ -2052,14 +2061,14 @@ window.SelHub = window.SelHub || {
                   addToast('Multi-perspective writing saved!', 'success');
                   if (celebrate) celebrate();
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save All Perspectives'),
               h('button', { 'aria-label': 'Next Event',
                 onClick: function() {
                   upd({ sameEventIdx: sameEventIdx + 1, sameEventTexts: {} });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Next Event \u2192')
             )
           );
@@ -2071,11 +2080,11 @@ window.SelHub = window.SelHub || {
           var curBYJ = byjList[byjIdx % byjList.length];
 
           exerciseBody = h('div', null,
-            h('div', { style: { padding: 16, borderRadius: 14, background: '#0f172a', border: '1px solid #f59e0b44', marginBottom: 16 } },
-              h('p', { style: { fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'What You See'),
-              h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.surface)
+            h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid #f59e0b44', marginBottom: 16 } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#f59e0b'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'What You See'),
+              h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBYJ.surface)
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 12, fontStyle: 'italic' } },
+            h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 12, fontStyle: 'italic' } },
               'What is your first assumption about this person?'
             ),
             !byjRevealed ?
@@ -2090,18 +2099,18 @@ window.SelHub = window.SelHub || {
                     logPractice('exercise', curBYJ.id);
                     if (newExDone >= 3) tryAwardBadge('empathy_builder');
                   },
-                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#b45309', color: '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                  style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#b45309'), color: _pspFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
                 }, '\uD83D\uDD13 Reveal the Full Story')
               )
             :
               h('div', null,
-                h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #22c55e44', marginBottom: 12 } },
-                  h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'The Full Story'),
-                  h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.reveal)
+                h('div', { style: { padding: 16, borderRadius: 14, background: _pspBg('#1e293b'), border: '1px solid #22c55e44', marginBottom: 12 } },
+                  h('p', { style: { fontSize: 10, color: _pspFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700, textAlign: 'center' } }, 'The Full Story'),
+                  h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBYJ.reveal)
                 ),
-                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-                  h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'The Lesson'),
-                  h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBYJ.lesson)
+                h('div', { style: { padding: 14, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+                  h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'The Lesson'),
+                  h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBYJ.lesson)
                 ),
                 h('div', { style: { textAlign: 'center' } },
                   h('button', { 'aria-label': 'Next Scenario',
@@ -2109,7 +2118,7 @@ window.SelHub = window.SelHub || {
                       upd({ byjIdx: byjIdx + 1, byjRevealed: false });
                       if (soundEnabled) sfxClick();
                     },
-                    style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                    style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                   }, 'Next Scenario \u2192')
                 )
               )
@@ -2117,10 +2126,10 @@ window.SelHub = window.SelHub || {
         }
 
         exercisesContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } },
             '\uD83D\uDC5F Perspective-Taking Exercises'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
             'Practice seeing the world through someone else\u2019s eyes.'
           ),
           exModeBar,
@@ -2139,15 +2148,15 @@ window.SelHub = window.SelHub || {
         var isBiasExplored = !!biasExplored[biasExKey];
 
         biasContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } },
             '\uD83E\uDDD0 Cognitive Bias Explorer'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
             band === 'elementary' ? 'Our brains play tricks on us sometimes! Learn to catch common thinking mistakes.' :
             band === 'middle' ? 'Cognitive biases are shortcuts your brain takes that can lead you astray. Learn to spot them.' :
             'Explore the cognitive biases that shape perception, judgment, and decision-making \u2014 often without awareness.'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
             'Bias ' + ((biasIdx % biasList.length) + 1) + ' of ' + biasList.length +
             ' \u00B7 ' + Object.keys(biasExplored).length + ' explored'
           ),
@@ -2161,33 +2170,33 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd('biasIdx', bi); if (soundEnabled) sfxClick(); },
                 title: b.name,
                 style: {
-                  width: 28, height: 28, borderRadius: '50%', border: '2px solid ' + (isCur ? ACCENT : explored ? '#22c55e44' : '#334155'),
-                  background: explored ? '#22c55e22' : '#1e293b', color: isCur ? '#fff' : '#94a3b8',
+                  width: 28, height: 28, borderRadius: '50%', border: '2px solid ' + (isCur ? ACCENT : explored ? '#22c55e44' : _pspBg('#334155')),
+                  background: explored ? '#22c55e22' : _pspBg('#1e293b'), color: isCur ? _pspFg('#fff') : _pspFg('#94a3b8'),
                   fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
                 }
               }, explored ? '\u2713' : String(bi + 1));
             })
           ),
           // Bias card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { textAlign: 'center', marginBottom: 12 } },
               h('span', { style: { fontSize: 40 } }, curBias.emoji),
-              h('h4', { style: { margin: '8px 0 4px 0', color: '#f1f5f9', fontSize: 17 } }, curBias.name)
+              h('h4', { style: { margin: '8px 0 4px 0', color: _pspFg('#f1f5f9'), fontSize: 17 } }, curBias.name)
             ),
             // Definition
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 12 } },
-              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What Is It?'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.definition)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _pspBg('#1e293b'), border: '1px solid #334155', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'What Is It?'),
+              h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBias.definition)
             ),
             // Example
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 12 } },
-              h('p', { style: { fontSize: 10, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Everyday Example'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.example)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _pspBg('#1e293b'), border: '1px solid #3b82f644', marginBottom: 12 } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#3b82f6'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'Everyday Example'),
+              h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBias.example)
             ),
             // How to catch yourself
-            h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #22c55e44' } },
-              h('p', { style: { fontSize: 10, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'How to Catch Yourself'),
-              h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } }, curBias.catchYourself)
+            h('div', { style: { padding: 12, borderRadius: 10, background: _pspBg('#1e293b'), border: '1px solid #22c55e44' } },
+              h('p', { style: { fontSize: 10, color: _pspFg('#22c55e'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4, fontWeight: 700 } }, 'How to Catch Yourself'),
+              h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7 } }, curBias.catchYourself)
             )
           ),
           // Mark explored & navigate
@@ -2207,16 +2216,16 @@ window.SelHub = window.SelHub || {
                   if (newCount >= biasList.length) tryAwardBadge('bias_master');
                   addToast('Bias explored! ' + newCount + '/' + biasList.length, 'success');
                 },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\u2705 Mark as Explored')
             :
-              h('span', { style: { padding: '10px 20px', borderRadius: 10, background: '#22c55e22', color: '#22c55e', fontWeight: 600, fontSize: 13, border: '1px solid #22c55e44' } }, '\u2713 Explored'),
+              h('span', { style: { padding: '10px 20px', borderRadius: 10, background: '#22c55e22', color: _pspFg('#22c55e'), fontWeight: 600, fontSize: 13, border: '1px solid #22c55e44' } }, '\u2713 Explored'),
             h('button', { 'aria-label': 'Next Bias',
               onClick: function() {
                 upd('biasIdx', biasIdx + 1);
                 if (soundEnabled) sfxClick();
               },
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Bias \u2192')
           )
         );
@@ -2231,20 +2240,20 @@ window.SelHub = window.SelHub || {
         var curGJ = gjPrompts[guidedJIdx % gjPrompts.length];
 
         guidedJContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _pspFg('#f1f5f9'), fontSize: 18 } },
             '\uD83D\uDCDD Perspective Journal'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
             'Guided reflections on perspective-taking, assumptions, and empathy. Your entries are saved with timestamps.'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 16 } },
+          h('p', { style: { textAlign: 'center', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
             'Prompt ' + ((guidedJIdx % gjPrompts.length) + 1) + ' of ' + gjPrompts.length +
             (guidedJDone > 0 ? ' \u00B7 ' + guidedJDone + ' entries saved' : '')
           ),
           // Prompt card
-          h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid #6366f144', marginBottom: 16 } },
-            h('h4', { style: { color: '#818cf8', fontSize: 14, marginBottom: 8, fontWeight: 700 } }, curGJ.title),
-            h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, '\u201C' + curGJ.prompt + '\u201D')
+          h('div', { style: { padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid #6366f144', marginBottom: 16 } },
+            h('h4', { style: { color: _pspFg('#818cf8'), fontSize: 14, marginBottom: 8, fontWeight: 700 } }, curGJ.title),
+            h('p', { style: { fontSize: 14, color: _pspFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } }, '\u201C' + curGJ.prompt + '\u201D')
           ),
           // Writing area
           h('textarea', {
@@ -2253,9 +2262,9 @@ window.SelHub = window.SelHub || {
             onChange: function(e) { upd('guidedJText', e.target.value); upd('guidedJSaved', false); },
             placeholder: 'Write your reflection here. Be honest \u2014 this is for you...',
             rows: 7,
-            style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 4 }
+            style: { width: '100%', padding: 14, borderRadius: 12, border: '1px solid #334155', background: _pspBg('#1e293b'), color: _pspFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6, marginBottom: 4 }
           }),
-          h('div', { style: { textAlign: 'right', color: '#94a3b8', fontSize: 11, marginBottom: 12 } },
+          h('div', { style: { textAlign: 'right', color: _pspFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
             (guidedJText.trim() ? guidedJText.trim().split(/\s+/).length : 0) + ' words'
           ),
           // Buttons
@@ -2280,19 +2289,19 @@ window.SelHub = window.SelHub || {
                 ctx.announceToSR && ctx.announceToSR('Guided journal entry saved');
               },
               disabled: guidedJSaved,
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: guidedJSaved ? '#22c55e' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 13, cursor: guidedJSaved ? 'default' : 'pointer' }
+              style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: guidedJSaved ? _pspFg('#22c55e') : _pspFg('#6366f1'), color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: guidedJSaved ? 'default' : 'pointer' }
             }, guidedJSaved ? '\u2705 Saved!' : '\uD83D\uDCBE Save Entry'),
             !guidedJShowFU && guidedJSaved ?
               h('button', { 'aria-label': 'Show Follow-Up Question',
                 onClick: function() { upd('guidedJShowFU', true); if (soundEnabled) sfxReveal(); },
-                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 10, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Show Follow-Up Question')
             : null
           ),
           // Follow-up question
-          guidedJShowFU && h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Follow-Up Question'),
-            h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, fontStyle: 'italic' } }, curGJ.followUp)
+          guidedJShowFU && h('div', { style: { padding: 14, borderRadius: 12, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+            h('p', { style: { fontSize: 10, color: _pspFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, 'Follow-Up Question'),
+            h('p', { style: { fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.7, fontStyle: 'italic' } }, curGJ.followUp)
           ),
           // Next prompt
           guidedJSaved && h('div', { style: { textAlign: 'center', marginBottom: 16 } },
@@ -2301,24 +2310,24 @@ window.SelHub = window.SelHub || {
                 upd({ guidedJIdx: guidedJIdx + 1, guidedJText: '', guidedJSaved: false, guidedJShowFU: false });
                 if (soundEnabled) sfxClick();
               },
-              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: _pspBg('#334155'), color: _pspFg('#f1f5f9'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, 'Next Prompt \u2192')
           ),
           // Saved entries list
           guidedJEntries.length > 0 && h('div', { style: { marginTop: 8 } },
-            h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, '\uD83D\uDCDA Saved Entries (' + guidedJEntries.length + ')'),
+            h('h4', { style: { fontSize: 14, color: _pspFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCDA Saved Entries (' + guidedJEntries.length + ')'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               guidedJEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
                 var dateStr = new Date(entry.time).toLocaleString();
                 return h('div', {
                   key: i,
-                  style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' }
+                  style: { padding: 12, borderRadius: 10, background: _pspBg('#0f172a'), border: '1px solid #334155' }
                 },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
-                    h('span', { style: { fontSize: 12, fontWeight: 700, color: '#818cf8' } }, entry.prompt),
-                    h('span', { style: { fontSize: 10, color: '#94a3b8' } }, dateStr)
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#818cf8') } }, entry.prompt),
+                    h('span', { style: { fontSize: 10, color: _pspFg('#94a3b8') } }, dateStr)
                   ),
-                  h('p', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.5, margin: 0 } },
+                  h('p', { style: { fontSize: 12, color: _pspFg('#94a3b8'), lineHeight: 1.5, margin: 0 } },
                     entry.text.length > 120 ? entry.text.slice(0, 120) + '...' : entry.text
                   )
                 );
@@ -2335,61 +2344,61 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'progress') {
         var totalActs = scenCompleted + swapCompleted + emCompleted + hfTotal + journalDone + respondDone + storyDone + exerciseDone + biasDone + guidedJDone;
         var stats = [
-          { label: 'Scenarios Explored', value: scenCompleted, icon: '\uD83C\uDFAD', color: '#8b5cf6' },
-          { label: 'Viewpoints Swapped', value: swapCompleted, icon: '\uD83D\uDD04', color: '#3b82f6' },
-          { label: 'Empathy Stories', value: storyDone, icon: '\uD83D\uDCD6', color: '#e879f9' },
-          { label: 'Exercises Done', value: exerciseDone, icon: '\uD83D\uDC5F', color: '#22d3ee' },
-          { label: 'Biases Explored', value: biasDone, icon: '\uD83E\uDDD0', color: '#fb923c' },
-          { label: 'Empathy Maps Created', value: emCompleted, icon: '\uD83D\uDDFA\uFE0F', color: '#22c55e' },
-          { label: 'Hidden Feelings Found', value: hfCorrect + '/' + hfTotal, icon: '\uD83D\uDD0D', color: '#f59e0b' },
-          { label: 'Journal Entries', value: journalDone + guidedJDone, icon: '\uD83D\uDCD4', color: '#6366f1' },
-          { label: 'Responses Submitted', value: respondDone, icon: '\u270D\uFE0F', color: '#f59e0b' }
+          { label: 'Scenarios Explored', value: scenCompleted, icon: '\uD83C\uDFAD', color: _pspFg('#8b5cf6') },
+          { label: 'Viewpoints Swapped', value: swapCompleted, icon: '\uD83D\uDD04', color: _pspFg('#3b82f6') },
+          { label: 'Empathy Stories', value: storyDone, icon: '\uD83D\uDCD6', color: _pspFg('#e879f9') },
+          { label: 'Exercises Done', value: exerciseDone, icon: '\uD83D\uDC5F', color: _pspFg('#22d3ee') },
+          { label: 'Biases Explored', value: biasDone, icon: '\uD83E\uDDD0', color: _pspFg('#fb923c') },
+          { label: 'Empathy Maps Created', value: emCompleted, icon: '\uD83D\uDDFA\uFE0F', color: _pspFg('#22c55e') },
+          { label: 'Hidden Feelings Found', value: hfCorrect + '/' + hfTotal, icon: '\uD83D\uDD0D', color: _pspFg('#f59e0b') },
+          { label: 'Journal Entries', value: journalDone + guidedJDone, icon: '\uD83D\uDCD4', color: _pspFg('#6366f1') },
+          { label: 'Responses Submitted', value: respondDone, icon: '\u270D\uFE0F', color: _pspFg('#f59e0b') }
         ];
 
         progressContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _pspFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Your Progress'),
           // Total
-          h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: '#0f172a', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+          h('div', { style: { textAlign: 'center', padding: 20, borderRadius: 14, background: _pspBg('#0f172a'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
             h('div', { style: { fontSize: 40, fontWeight: 700, color: ACCENT } }, totalActs),
-            h('div', { style: { fontSize: 13, color: '#94a3b8' } }, 'Total Activities Completed')
+            h('div', { style: { fontSize: 13, color: _pspFg('#94a3b8') } }, 'Total Activities Completed')
           ),
           // Stats grid
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
             stats.map(function(s) {
               return h('div', {
                 key: s.label,
-                style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid ' + s.color + '44', textAlign: 'center' }
+                style: { padding: 16, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid ' + s.color + '44', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 24 } }, s.icon),
                 h('div', { style: { fontSize: 22, fontWeight: 700, color: s.color, margin: '4px 0' } }, s.value),
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, s.label)
+                h('div', { style: { fontSize: 11, color: _pspFg('#94a3b8') } }, s.label)
               );
             })
           ),
           // Hidden feelings accuracy
-          hfTotal > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
+          hfTotal > 0 && h('div', { style: { padding: 16, borderRadius: 12, background: _pspBg('#1e293b'), border: '1px solid #f59e0b44', marginBottom: 16 } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 8 } },
-              h('span', { style: { fontSize: 12, fontWeight: 700, color: '#f1f5f9' } }, 'Hidden Feelings Accuracy'),
-              h('span', { style: { fontSize: 12, fontWeight: 700, color: '#f59e0b' } }, Math.round((hfCorrect / hfTotal) * 100) + '%')
+              h('span', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#f1f5f9') } }, 'Hidden Feelings Accuracy'),
+              h('span', { style: { fontSize: 12, fontWeight: 700, color: _pspFg('#f59e0b') } }, Math.round((hfCorrect / hfTotal) * 100) + '%')
             ),
-            h('div', { style: { height: 8, borderRadius: 4, background: '#334155', overflow: 'hidden' } },
-              h('div', { style: { height: '100%', borderRadius: 4, background: '#b45309', width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
+            h('div', { style: { height: 8, borderRadius: 4, background: _pspBg('#334155'), overflow: 'hidden' } },
+              h('div', { style: { height: '100%', borderRadius: 4, background: _pspBg('#b45309'), width: Math.round((hfCorrect / hfTotal) * 100) + '%', transition: 'width 0.3s' } })
             )
           ),
           // Recent practice log
           practiceLog.length > 0 && h('div', null,
-            h('h4', { style: { fontSize: 14, color: '#f1f5f9', marginBottom: 8 } }, 'Recent Practice'),
+            h('h4', { style: { fontSize: 14, color: _pspFg('#f1f5f9'), marginBottom: 8 } }, 'Recent Practice'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               practiceLog.slice(-8).reverse().map(function(entry, i) {
                 var icons = { scenario: '\uD83C\uDFAD', swap: '\uD83D\uDD04', empathy: '\uD83D\uDDFA\uFE0F', hidden: '\uD83D\uDD0D', coach: '\u2728', journal: '\uD83D\uDCD4', respond: '\u270D\uFE0F', story: '\uD83D\uDCD6', exercise: '\uD83D\uDC5F', bias: '\uD83E\uDDD0', guidedJ: '\uD83D\uDCDD' };
                 var labels = { scenario: 'Scenario', swap: 'Viewpoint Swap', empathy: 'Empathy Map', hidden: 'Hidden Feeling', coach: 'AI Coach', journal: 'Journal Entry', respond: 'What Would You Do?', story: 'Empathy Story', exercise: 'Exercise', bias: 'Bias Explorer', guidedJ: 'Perspective Journal' };
                 return h('div', {
                   key: i,
-                  style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
+                  style: { padding: '8px 12px', borderRadius: 8, background: _pspBg('#0f172a'), display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }
                 },
                   h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
-                  h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
-                  h('span', { style: { marginLeft: 'auto', color: '#94a3b8', fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
+                  h('span', { style: { color: _pspFg('#e2e8f0'), fontWeight: 500 } }, labels[entry.type] || entry.type),
+                  h('span', { style: { marginLeft: 'auto', color: _pspFg('#94a3b8'), fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
                 );
               })
             )
