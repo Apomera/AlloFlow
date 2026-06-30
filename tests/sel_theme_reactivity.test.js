@@ -83,6 +83,11 @@ const CASES = [
   { id: 'griefloss', base: 'dark', bg: '_griBg', reg: 'griefLoss' },
   { id: 'stressbucket', base: 'dark', bg: '_sbkBg', reg: 'stressBucket' },
   { id: 'strengths', base: 'dark', bg: '_strBg' },
+  { id: 'howl', base: 'dark', bg: '_howBg', reg: 'howlTracker' },
+  { id: 'coping', base: 'dark', bg: '_copBg' },
+  { id: 'mindfulness', base: 'dark', bg: '_minBg' },
+  { id: 'advocacy', base: 'dark', bg: '_advBg' },
+  { id: 'disabilityvoices', base: 'dark', bg: '_disBg', reg: 'disabilityVoices' },
 ];
 
 // dark SURFACE hexes that, in a dark-base tool, MUST be wrapped in _xxBg() (else they stay dark

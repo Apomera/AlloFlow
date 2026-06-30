@@ -224,6 +224,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     color: 'pink',
     category: 'care-of-self',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _disT = (ctx && ctx.theme) || {};
+      var _disHC = !!_disT.isContrast, _disL = !_disHC && !_disT.isDark;
+      var _dis_BGL = {}, _dis_BGH = {'#f472b6':'#000000'};
+      var _dis_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#e2e8f0':'#1e293b'}, _dis_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00'};
+      var _dis_BDL = {'#334155':'#e2e8f0'}, _dis_BDH = {'#f472b6':'#ffff00','#334155':'#ffff00'};
+      var _disBg = function(h){ return _disHC ? (_dis_BGH[h]||h) : (_disL ? (_dis_BGL[h]||h) : h); };
+      var _disFg = function(h){ return _disHC ? (_dis_FGH[h]||h) : (_disL ? (_dis_FGL[h]||h) : h); };
+      var _disBd = function(h){ return _disHC ? (_dis_BDH[h]||h) : (_disL ? (_dis_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -257,7 +266,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           }
         },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.06)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14, flexShrink: 0 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.06)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _disFg('#cbd5e1'), fontSize: 14, flexShrink: 0 } }, '← Back'),
           // Circular accent hero badge — same vocabulary as the rest
           // of the design system. 56px hero size matches School
           // Behavior Toolkit + TypingPractice drill-intro.
@@ -273,17 +282,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           }, '🎙️'),
           h('div', { style: { flex: 1, minWidth: 240 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
-              h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Disability Voices'),
+              h('h2', { style: { margin: 0, color: _disFg('#f9a8d4'), fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Disability Voices'),
               // Meta-count chip showing total voices + reading entries
               h('span', { style: {
                 padding: '2px 8px', borderRadius: 999,
                 background: 'rgba(244,114,182,0.12)',
                 border: '1px solid rgba(244,114,182,0.40)',
-                color: '#f9a8d4', fontSize: 10, fontWeight: 700,
+                color: _disFg('#f9a8d4'), fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
               } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings · ' + ORGANIZATIONS.length + ' orgs')
             ),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
+            h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), lineHeight: 1.55 } },
               'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. The people the field has been done to.')
           )
         );
@@ -316,7 +325,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 padding: '10px 14px 12px',
                 border: 'none',
                 background: active ? 'rgba(244,114,182,0.10)' : 'transparent',
-                color: active ? '#f9a8d4' : '#94a3b8',
+                color: active ? _disFg('#f9a8d4') : _disFg('#94a3b8'),
                 fontSize: 12,
                 fontWeight: active ? 800 : 600,
                 cursor: 'pointer',
@@ -335,7 +344,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               active ? h('span', { 'aria-hidden': 'true',
                 style: {
                   position: 'absolute', left: 6, right: 6, bottom: 0,
-                  height: 2, background: '#f472b6', borderRadius: '2px 2px 0 0'
+                  height: 2, background: _disBg('#f472b6'), borderRadius: '2px 2px 0 0'
                 }
               }) : null
             );
@@ -351,7 +360,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(244,114,182,0.30)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Eight named autistic and disabled advocates. Each entry shows the person\'s role, a documented quote, the context the quote came from, and an on-record citation so students can read further. Identity-first language follows community-consensus norms (Kenny 2016; Bury 2020; Taboas 2023).')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -380,7 +389,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   }, v.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: v.color, lineHeight: 1.2, marginBottom: 4 } }, v.name),
-                    h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55 } }, v.role)
+                    h('div', { style: { fontSize: 11, color: _disFg('#94a3b8'), lineHeight: 1.55 } }, v.role)
                   )
                 ),
                 // Quote block
@@ -393,13 +402,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   }
                 },
                   h('span', { style: { color: v.color, fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"'),
-                  h('span', { style: { fontSize: 13, color: '#e2e8f0', fontStyle: 'italic', lineHeight: 1.6 } }, v.quote),
+                  h('span', { style: { fontSize: 13, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote),
                   h('span', { style: { color: v.color, fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"')
                 ),
                 // Context
-                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, v.context),
+                h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, v.context),
                 // Source
-                h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                h('div', { style: { fontSize: 10, color: _disFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
                   '📚 ', v.source)
               );
             })
@@ -410,7 +419,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               marginTop: 14, padding: '12px 14px', borderRadius: 10,
               background: 'rgba(167,139,250,0.06)',
               border: '1px solid rgba(167,139,250,0.20)',
-              color: '#cbd5e1', fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
+              color: _disFg('#cbd5e1'), fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
             }
           },
             '💡 If you are studying behavior science, ABA, school psychology, or special education, the most important continuing-education you can do is read the people the work has been done to. Start with In My Language (free on YouTube), Milton 2012 (open access), and the Sins Invalid primer. The science is the science; the application is a relationship.')
@@ -431,7 +440,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(34,197,94,0.20)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Curated reading and viewing for going deeper. Many available at public libraries; the videos and one paper are free online. Tap the bookmark to mark something for yourself.')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -450,10 +459,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 }
               },
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', lineHeight: 1.3, marginBottom: 3 } }, r.title),
-                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _disFg('#e2e8f0'), lineHeight: 1.3, marginBottom: 3 } }, r.title),
+                  h('div', { style: { fontSize: 11, color: _disFg('#94a3b8'), marginBottom: 6 } },
                     r.author + ' · ' + r.year + ' · ' + r.format),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, r.why)
+                  h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.55 } }, r.why)
                 ),
                 h('button', {
                   onClick: function() { toggleMarked(key); },
@@ -463,7 +472,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                     flexShrink: 0,
                     background: isMarked ? 'rgba(34,197,94,0.16)' : 'rgba(255,255,255,0.04)',
                     border: '1px solid ' + (isMarked ? '#22c55e' : '#334155'),
-                    color: isMarked ? '#86efac' : '#94a3b8',
+                    color: isMarked ? '#86efac' : _disFg('#94a3b8'),
                     padding: '6px 10px',
                     borderRadius: 8,
                     fontSize: 12,
@@ -485,7 +494,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(34,211,238,0.20)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Organizations and movements students can follow, support, or read for ongoing work. Mix of national + Maine-local. Each entry has scope, what they do, and the publicly-listed website (search the name to find current URL).')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -515,15 +524,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                         padding: '1px 7px', borderRadius: 999,
                         background: o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)',
                         border: '1px solid ' + (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)'),
-                        color: o.maine ? '#7dd3fc' : '#94a3b8',
+                        color: o.maine ? '#7dd3fc' : _disFg('#94a3b8'),
                         fontSize: 9, fontWeight: 700,
                         fontFamily: 'ui-monospace, Menlo, monospace',
                         textTransform: 'uppercase', letterSpacing: '0.04em'
                       } }, o.maine ? '🦞 Maine' : o.scope)
                     ),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, o.what),
+                    h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 6 } }, o.what),
                     h('div', { style: {
-                      fontSize: 10, color: '#94a3b8', fontStyle: 'italic',
+                      fontSize: 10, color: _disFg('#94a3b8'), fontStyle: 'italic',
                       paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)',
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } },
@@ -537,7 +546,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             marginTop: 14, padding: '12px 14px', borderRadius: 10,
             background: 'rgba(167,139,250,0.06)',
             border: '1px solid rgba(167,139,250,0.20)',
-            color: '#cbd5e1', fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
+            color: _disFg('#cbd5e1'), fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
           } },
             '💡 Following a few of these on social media is one of the easier continuing-education paths. National orgs (ASAN, Sins Invalid, AWN, CommunicationFIRST) are active on Bluesky and Mastodon. Disability Rights Maine and the Maine DD Council post events relevant to families and staff serving Mainers with disabilities. Show up to one virtual event per month and the field changes for you fast.')
         );
@@ -552,8 +561,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', marginBottom: 6 } }, 'Why this tool exists in SEL Hub, not in BehaviorLab'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Why this tool exists in SEL Hub, not in BehaviorLab'),
+            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'BehaviorLab teaches operant conditioning through a Skinner-box simulation — pigeons, levers, food pellets. The science is real and worth learning. But putting named real autistic adults inside that visual frame would be exactly what the disability community has documented as harmful: depicting persons alongside animal-conditioning imagery, as if the work flows naturally from rats and pigeons to people. Disability Voices was moved here so the framing centers personhood, not behavioral subjects. Skinner-box imagery has no place alongside named autistic adults.')
           ),
           h('div', {
@@ -563,8 +572,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', marginBottom: 6 } }, 'On identity-first language'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'On identity-first language'),
+            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'This tool uses identity-first language ("autistic person," "disabled person") rather than person-first ("person with autism," "person with a disability"). This follows the consensus of the autistic adult community as documented in peer-reviewed research (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). Some individuals prefer person-first; honor any specific person\'s preference when known.')
           ),
           h('div', {
@@ -574,8 +583,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', marginBottom: 6 } }, 'Sourcing standard'),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Sourcing standard'),
+            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'Every quote in this tool is verifiable in the cited source. No attributed quotes are paraphrased. Where context is provided, it is consistent with the cited primary source. Mel Baggs is the only listed person not living; their work continues to teach.')
           )
         );
@@ -587,7 +596,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       else if (view === 'about') content = renderAbout();
       else content = renderHome();
 
-      return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: '#e2e8f0', fontFamily: 'inherit' } },
+      return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
         header(),
         navTabs(),
         content
