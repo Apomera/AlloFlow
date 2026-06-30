@@ -6596,7 +6596,7 @@ Return ONLY JSON:
                 warnLog("[Re-fix] AI re-verification returned null for section " + (ci + 1) + "; not committing new HTML.");
                 addToast(t("toasts.re_fix_verification_unavailable_kept"), "warning");
               } else {
-                const newScore = reAxe ? _computeHeadline(reAi.score || 0, reAxe.score || 0) : reAi.score;
+                const newScore = _computeHeadline(typeof reAi.score === "number" ? reAi.score : null, reAxe && typeof reAxe.score === "number" ? reAxe.score : null);
                 setPdfFixResult((prev) => ({
                   ...prev,
                   accessibleHtml: result.html,

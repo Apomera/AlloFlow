@@ -8239,7 +8239,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             warnLog('[Re-fix] AI re-verification returned null for section ' + (ci + 1) + '; not committing new HTML.');
                                             addToast(t('toasts.re_fix_verification_unavailable_kept'), 'warning');
                                           } else {
-                                            const newScore = reAxe ? _computeHeadline((reAi.score || 0), (reAxe.score || 0)) : reAi.score; // weakest-layer-governs (shared)
+                                            // Per-operand null (not `|| 0`): a degraded re-audit returns reAi.score=null; `null||0` would fabricate a 0.
+                                            const newScore = _computeHeadline((typeof reAi.score === 'number') ? reAi.score : null, (reAxe && typeof reAxe.score === 'number') ? reAxe.score : null);
                                             setPdfFixResult(prev => ({
                                               ...prev,
                                               accessibleHtml: result.html,
