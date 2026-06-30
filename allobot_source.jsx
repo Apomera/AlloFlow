@@ -282,6 +282,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const effectiveMood = internalMood || mood;
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
+  const [accPop, setAccPop] = useState(false);
+  const prevMoodRef = useRef('idle');
   const [isSquashed, setIsSquashed] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [isPoofing, setIsPoofing] = useState(false);
@@ -396,24 +398,43 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [position]);
   useEffect(() => {
-      if (isSleeping) {
-          setBlinkScale(1);
-          return;
-      }
-      let timer;
+      // Blink is a JS timer (not CSS), so it must honor the motion toggle itself:
+      // freeze eyes open when sleeping, the app reduce-motion toggle, or the OS
+      // prefers-reduced-motion is set. Reactive via a matchMedia change listener.
+      const mq = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')) || null;
+      let timer, innerTimer;
       const scheduleBlink = () => {
           const delay = 3000 + Math.random() * 3000;
           timer = setTimeout(() => {
               setBlinkScale(0.1);
-              setTimeout(() => {
+              innerTimer = setTimeout(() => {
                   setBlinkScale(1);
                   scheduleBlink();
               }, 150);
           }, delay);
       };
-      scheduleBlink();
-      return () => clearTimeout(timer);
-  }, [isSleeping]);
+      const start = () => {
+          clearTimeout(timer); clearTimeout(innerTimer);
+          if (isSleeping || disableAnimations || (mq && mq.matches)) { setBlinkScale(1); return; }
+          scheduleBlink();
+      };
+      start();
+      if (mq && mq.addEventListener) mq.addEventListener('change', start);
+      return () => {
+          clearTimeout(timer); clearTimeout(innerTimer);
+          if (mq && mq.removeEventListener) mq.removeEventListener('change', start);
+      };
+  }, [isSleeping, disableAnimations]);
+  useEffect(() => {
+      // One-shot accessory "pop" when generation finishes (thinking -> not thinking).
+      const prev = prevMoodRef.current;
+      prevMoodRef.current = effectiveMood;
+      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping && !disableAnimations) {
+          setAccPop(true);
+          const t = setTimeout(() => setAccPop(false), 650);
+          return () => clearTimeout(t);
+      }
+  }, [effectiveMood, isSleeping, disableAnimations]);
   useEffect(() => {
       if (!isTalking) {
           setViseme('neutral');
@@ -1543,6 +1564,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 .animate-allobot-float { animation: allobotFloat 4s ease-in-out infinite; }
 .animate-allobot-perk { animation: allobotPerk 7s ease-in-out infinite; }
 .animate-allobot-twinkle { animation: allobotTwinkle 3s ease-in-out infinite; }
+/* Bespoke signatures (rotate around the element's own base). */
+@keyframes allobotTick { to { transform: rotate(360deg); } }
+@keyframes allobotSway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+.animate-allobot-tick { transform-box: fill-box; transform-origin: center bottom; animation: allobotTick 6s steps(12) infinite; }
+.animate-allobot-sway { transform-box: fill-box; transform-origin: center bottom; animation: allobotSway 3.5s ease-in-out infinite; }
+/* State-reactive: accessory "works" while generating, then a one-shot pop when done.
+   Targets the animate-allobot-* wrappers, so the reduce-motion [class*="animate-"]
+   override below still wins and disables these too. */
+@keyframes allobotWorking { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
+.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
+.allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -2088,7 +2121,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                 </g>
                 {effectiveAccessory && (
-                    <g id="accessories">
+                    <g id="accessories" className={effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : undefined)}>
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
@@ -2352,7 +2385,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                         {effectiveAccessory === 'persona-masks' && (
                             <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)">
-                            <g className="animate-allobot-float" style={{ animationDelay: '0s' }}>
+                            <g className="animate-allobot-sway" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="rotate(-8 8 26)">
                                     <path d="M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.3" />
@@ -2430,7 +2463,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <circle cx="0" cy="0" r="13" fill="#E2E8F0" stroke="#334155" strokeWidth="2.2" />
                                     <circle cx="0" cy="0" r="10" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="0.8" />
                                     <g stroke="#94A3B8" strokeWidth="0.8"><line x1="0" y1="-9" x2="0" y2="-7.5" /><line x1="9" y1="0" x2="7.5" y2="0" /><line x1="0" y1="9" x2="0" y2="7.5" /><line x1="-9" y1="0" x2="-7.5" y2="0" /></g>
-                                    <line x1="0" y1="0" x2="0" y2="-7" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" />
+                                    <g className="animate-allobot-tick"><line x1="0" y1="0" x2="0" y2="-7" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" /></g>
                                     <line x1="0" y1="0" x2="4.5" y2="3" stroke="#334155" strokeWidth="1.4" strokeLinecap="round" />
                                     <circle cx="0" cy="0" r="1.3" fill="#334155" />
                                 </g>
@@ -2445,8 +2478,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <path d="M22 24 Q50 30 78 24" stroke="#FCD34D" strokeWidth="3" fill="none" />
                                 <ellipse cx="50" cy="13" rx="4" ry="2" fill="#2DD4BF" opacity="0.5" />
                                 <circle cx="38" cy="21" r="2.6" fill="#FCD34D" stroke="#A16207" strokeWidth="0.7" />
-                                <path d="M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="1" />
-                                <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
+                                <g className="animate-allobot-sway">
+                                    <path d="M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="1" />
+                                    <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
+                                </g>
                             </g>
                             </g>
                         )}
