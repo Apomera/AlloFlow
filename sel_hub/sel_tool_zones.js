@@ -35236,6 +35236,15 @@ window.SelHub = window.SelHub || {
     color: 'emerald',
     category: 'self-awareness',
     render: function(ctx) {
+      // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      var _zoT = (ctx && ctx.theme) || {};
+      var _zoHC = !!_zoT.isContrast, _zoL = !_zoHC && !_zoT.isDark;
+      var _zo_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#451a03':'#fff7ed'}, _zo_BGH = {'#334155':'#000000','#1e293b':'#000000','#7c3aed':'#000000','#0f172a':'#000000','#fff':'#000000','#5eead4':'#000000','#042f2e':'#000000','#7f1d1d':'#000000','#451a03':'#000000','#1e1b4b':'#000000','#7c2d12':'#000000'};
+      var _zo_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fde047':'#a16207','#fbbf24':'#854d0e','#5eead4':'#0f766e','#fde68a':'#92400e','#a7f3d0':'#047857','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#c4b5fd':'#5b21b6','#fbcfe8':'#9d174d','#a5b4fc':'#3730a3','#e0e7ff':'#3730a3','#86efac':'#166534','#7dd3fc':'#075985'}, _zo_FGH = {'#3b82f6':'#ffff00','#ef4444':'#ffff00','#eab308':'#ffff00','#22c55e':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#7c3aed':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#8b5cf6':'#ffff00','#334155':'#ffff00','#fde047':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#0f172a':'#ffff00','#fde68a':'#ffff00','#64748b':'#ffff00','#a7f3d0':'#ffff00','#fecaca':'#ffff00','#fed7aa':'#ffff00','#c7d2fe':'#ffff00','#c4b5fd':'#ffff00','#fbcfe8':'#ffff00','#a5b4fc':'#ffff00','#e0e7ff':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00'};
+      var _zo_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _zo_BDH = {'#7c3aed':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#38bdf8':'#ffff00'};
+      var _zoBg = function(h){ return _zoHC ? (_zo_BGH[h]||h) : (_zoL ? (_zo_BGL[h]||h) : h); };
+      var _zoFg = function(h){ return _zoHC ? (_zo_FGH[h]||h) : (_zoL ? (_zo_FGL[h]||h) : h); };
+      var _zoBd = function(h){ return _zoHC ? (_zo_BDH[h]||h) : (_zoL ? (_zo_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -35374,7 +35383,7 @@ window.SelHub = window.SelHub || {
             kind: 'blue_heavy',
             count: counts.blue,
             total: total,
-            color: '#3b82f6',
+            color: _zoFg('#3b82f6'),
             emoji: '💙',
             headline: band === 'elementary'
               ? 'You’ve been feeling low-energy a lot lately.'
@@ -35392,7 +35401,7 @@ window.SelHub = window.SelHub || {
             kind: 'red_heavy',
             count: counts.red,
             total: total,
-            color: '#ef4444',
+            color: _zoFg('#ef4444'),
             emoji: '🔥',
             headline: band === 'elementary'
               ? 'You’ve been feeling really big feelings a lot.'
@@ -35410,7 +35419,7 @@ window.SelHub = window.SelHub || {
             kind: 'yellow_heavy',
             count: counts.yellow,
             total: total,
-            color: '#eab308',
+            color: _zoFg('#eab308'),
             emoji: '⚡',
             headline: band === 'elementary'
               ? 'Lots of bouncy / wiggly / nervous feelings lately.'
@@ -35428,7 +35437,7 @@ window.SelHub = window.SelHub || {
             kind: 'green_heavy',
             count: counts.green,
             total: total,
-            color: '#22c55e',
+            color: _zoFg('#22c55e'),
             emoji: '✅',
             headline: band === 'elementary'
               ? 'Nice — you’ve been feeling regulated and ready.'
@@ -35482,7 +35491,7 @@ window.SelHub = window.SelHub || {
             style: {
               padding: '7px 12px', borderRadius: 8, border: hc ? (isActive ? '2px solid #ffff00' : '1px solid #ffff00') : 'none', cursor: 'pointer',
               background: isActive ? (hc ? '#000000' : '#7c3aed') : 'transparent',
-              color: hc ? '#ffff00' : (isActive ? '#fff' : '#94a3b8'),
+              color: hc ? '#ffff00' : (isActive ? '#fff' : _zoFg('#94a3b8')),
               fontWeight: isActive ? 700 : 500, fontSize: 12,
               whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
             }
@@ -35492,13 +35501,13 @@ window.SelHub = window.SelHub || {
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badges button
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
+          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
 
@@ -35514,22 +35523,22 @@ window.SelHub = window.SelHub || {
           scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 zone-spotting practice',                hint: 'Read the situation; pick the likely zone for each character. Builds the noticing skill on lower-stakes others before applying it to higher-stakes self. Same skill, easier reps.' },
           toolbox:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDDF0', title: 'My Toolbox \u2014 your personalized strategies',         hint: 'Each zone gets its own toolkit. What worked for YOU last week, in YOUR body. Pre-commit to specific moves so they\u2019re ready when you\u2019re activated \u2014 implementation intentions (Gollwitzer 1999).' },
           history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'History \u2014 your patterns over time',                hint: 'Which days drift to yellow? Which class periods? After lunch vs before? Patterns you can SHOW someone (counselor, parent, teacher) are 10\u00d7 more useful than \u201CI just feel off sometimes.\u201D' },
-          wheel:        { accent: '#fde047', soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDFA1', title: 'Zone Wheel \u2014 4 quadrants visualized',                hint: 'Click any quadrant to explore the zone. Blue (low energy), Green (calm baseline), Yellow (elevated), Red (out of control). No zone is "bad" \u2014 all are valid signals.' },
+          wheel:        { accent: _zoFg('#fde047'), soft: 'rgba(253,224,71,0.14)',  icon: '\uD83C\uDFA1', title: 'Zone Wheel \u2014 4 quadrants visualized',                hint: 'Click any quadrant to explore the zone. Blue (low energy), Green (calm baseline), Yellow (elevated), Red (out of control). No zone is "bad" \u2014 all are valid signals.' },
           checkin_flow: { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\u2728', title: 'In-the-Moment \u2014 4-step adaptive check-in',           hint: 'Body cues \u2192 thought cues \u2192 predicted zone \u2192 strategy. The body knows first; the words name it second; the action regulates.' },
           pulse:        { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83D\uDC93', title: 'Pulse \u2014 1-tap zone vote',                            hint: 'Use throughout the day. Last 20 stored locally. Patterns become visible after a week of pulsing.' },
-          compass:      { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83E\uDDED', title: 'Day Compass \u2014 zone-by-hour visualization',           hint: '24-hour clock. Tap an hour to log your zone. See typical daily fluctuations.' },
-          body_mapper:  { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: 'Body Mapper Pro \u2014 zone heat map on silhouette',     hint: 'Pick zone + intensity, see body heat map. Click any region for what to look for.' },
+          compass:      { accent: _zoFg('#fbbf24'), soft: 'rgba(251,191,36,0.14)',  icon: '\uD83E\uDDED', title: 'Day Compass \u2014 zone-by-hour visualization',           hint: '24-hour clock. Tap an hour to log your zone. See typical daily fluctuations.' },
+          body_mapper:  { accent: _zoFg('#ef4444'), soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: 'Body Mapper Pro \u2014 zone heat map on silhouette',     hint: 'Pick zone + intensity, see body heat map. Click any region for what to look for.' },
           sorter:       { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)',  icon: '\uD83E\uDDE9', title: 'Sorter Game \u2014 drag scenarios into zones',             hint: '12 scenarios. Tap and place into the correct zone bucket. Builds reading nuance through reps.' },
-          zone_quiz:    { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', icon: '\u26A1', title: 'Zone Quiz \u2014 rapid-fire scenario reading',            hint: 'Read the situation, predict the zone, get the explanation. Streak tracking. Some are ambiguous on purpose.' },
+          zone_quiz:    { accent: _zoFg('#a78bfa'), soft: 'rgba(167,139,250,0.14)', icon: '\u26A1', title: 'Zone Quiz \u2014 rapid-fire scenario reading',            hint: 'Read the situation, predict the zone, get the explanation. Streak tracking. Some are ambiguous on purpose.' },
           matcher:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83C\uDFAF', title: 'Strategy Matcher \u2014 filter to what fits',              hint: 'Pick zone, intensity, visibility, movement constraints. Library narrows to strategies designed for THIS state.' },
           coreg_helper: { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDD1D', title: 'Help a Friend \u2014 coregulation wizard',                hint: 'Notice cues \u2192 predict their zone \u2192 get a support guide. Your job is presence, not fixing.' },
           descriptors:  { accent: '#c084fc', soft: 'rgba(192,132,252,0.14)', icon: '\uD83D\uDCDA', title: 'Descriptors Library \u2014 300+ specific states',         hint: 'Browse specific emotional states + body signals + behaviors mapped to Zones. Includes neurodivergent-validated entries.' },
           triggers:     { accent: '#fb923c', soft: 'rgba(251,146,60,0.14)',  icon: '\u26A0\uFE0F', title: 'Triggers \u2014 what shifts your zone + how to handle',   hint: '151 common triggers across school/peer/family/sensory/internal/trauma. Each has early warnings, prevention, in-moment, recovery.' },
-          plans:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83D\uDCCB', title: 'My Plans \u2014 pre-built scenario plans',                hint: '80+ pre-built plans for specific situations. Customize for your life. Includes people-to-call and crisis escalation.' },
-          classroom:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDFEB', title: 'Classroom Toolkit \u2014 for teachers',                   hint: 'Zones-aligned activities for educators \u2014 morning meetings, transitions, regulation environment, crisis protocols.' },
+          plans:        { accent: _zoFg('#fbbf24'), soft: 'rgba(251,191,36,0.14)',  icon: '\uD83D\uDCCB', title: 'My Plans \u2014 pre-built scenario plans',                hint: '80+ pre-built plans for specific situations. Customize for your life. Includes people-to-call and crisis escalation.' },
+          classroom:    { accent: _zoFg('#22c55e'), soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDFEB', title: 'Classroom Toolkit \u2014 for teachers',                   hint: 'Zones-aligned activities for educators \u2014 morning meetings, transitions, regulation environment, crisis protocols.' },
           parent:       { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67', title: 'Parent Guide \u2014 Zones at home',                hint: 'Guides for caregivers using Zones at home. Honest about parent dysregulation. Scripts, self-care, when to seek help.' },
-          limits:       { accent: '#94a3b8', soft: 'rgba(148,163,184,0.14)', icon: '⚖️', title: 'Limits & Alternatives: honest about the framework', hint: 'Where Zones falls short, and other regulation frameworks worth knowing. For educators and older students. Use Zones as one tool among many, not a complete curriculum.' },
-          zone_history: { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF21\uFE0F', title: 'Heatmap \u2014 8 weeks of zone patterns',                hint: 'Calendar visualization: dominant zone per day. Patterns to look for: days, time-of-day, sleep correlation.' }
+          limits:       { accent: _zoFg('#94a3b8'), soft: 'rgba(148,163,184,0.14)', icon: '⚖️', title: 'Limits & Alternatives: honest about the framework', hint: 'Where Zones falls short, and other regulation frameworks worth knowing. For educators and older students. Use Zones as one tool among many, not a complete curriculum.' },
+          zone_history: { accent: _zoFg('#fbbf24'), soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF21\uFE0F', title: 'Heatmap \u2014 8 weeks of zone patterns',                hint: 'Calendar visualization: dominant zone per day. Patterns to look for: days, time-of-day, sleep correlation.' }
         };
         var meta = TAB_META[activeTab] || TAB_META.checkin;
         return h('div', {
@@ -35546,7 +35555,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('p', { style: { margin: '3px 0 0', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -35574,10 +35583,10 @@ window.SelHub = window.SelHub || {
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
-              h('p', { style: { fontSize: 11, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
-              h('h3', { style: { margin: '0 0 8px 0', color: '#f1f5f9', fontSize: 20 } }, popBadge.name),
-              h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 13 } }, popBadge.desc),
-              h('p', { style: { margin: '12px 0 0 0', color: '#7c3aed', fontSize: 12, fontWeight: 700 } }, '+25 XP')
+              h('p', { style: { fontSize: 11, color: _zoFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
+              h('h3', { style: { margin: '0 0 8px 0', color: _zoFg('#f1f5f9'), fontSize: 20 } }, popBadge.name),
+              h('p', { style: { margin: 0, color: _zoFg('#94a3b8'), fontSize: 13 } }, popBadge.desc),
+              h('p', { style: { margin: '12px 0 0 0', color: _zoFg('#7c3aed'), fontSize: 12, fontWeight: 700 } }, '+25 XP')
             )
           );
         }
@@ -35589,7 +35598,7 @@ window.SelHub = window.SelHub || {
       var badgesPanel = null;
       if (showBadgesPanel) {
         badgesPanel = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _zoFg('#f1f5f9'), fontSize: 18 } },
             '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
@@ -35600,20 +35609,20 @@ window.SelHub = window.SelHub || {
                 title: badge.name + ': ' + badge.desc,
                 style: {
                   textAlign: 'center', padding: 12, borderRadius: 12,
-                  background: earned ? '#1e1b4b' : '#1e293b',
+                  background: earned ? _zoBg('#1e1b4b') : _zoBg('#1e293b'),
                   border: '1px solid ' + (earned ? '#7c3aed' : '#334155'),
                   opacity: earned ? 1 : 0.4
                 }
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#94a3b8' } }, badge.name),
-                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, badge.desc)
+                h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? _zoFg('#e2e8f0') : _zoFg('#94a3b8') } }, badge.name),
+                h('div', { style: { fontSize: 11, color: _zoFg('#94a3b8'), marginTop: 2 } }, badge.desc)
               );
             })
           ),
           h('button', { 'aria-label': 'Close',
             onClick: function() { upd('showBadgesPanel', false); },
-            style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }
+            style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _zoBg('#334155'), color: _zoFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
           }, 'Close')
         );
       }
@@ -35629,12 +35638,12 @@ window.SelHub = window.SelHub || {
       var checkinContent = null;
       if (activeTab === 'checkin') {
         checkinContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 8, color: _zoFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? 'How are you feeling right now?' :
             band === 'middle' ? 'Check in with yourself \u2014 what zone are you in?' :
             'Emotional self-assessment \u2014 identify your current state'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 24 } },
+          h('p', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 24 } },
             'Tap the zone that best matches how you feel'
           ),
 
@@ -35655,7 +35664,7 @@ window.SelHub = window.SelHub || {
                 style: {
                   padding: 16, borderRadius: 14,
                   border: isSelected ? '3px solid ' + zone.color : '2px solid #334155',
-                  background: isSelected ? zone.color + '18' : '#1e293b',
+                  background: isSelected ? zone.color + '18' : _zoBg('#1e293b'),
                   cursor: 'pointer', textAlign: 'left',
                   transform: isSelected ? 'scale(1.03)' : 'none',
                   transition: 'all 0.2s', position: 'relative'
@@ -35666,7 +35675,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: 28 } }, zone.emoji),
                   h('div', null,
                     h('div', { style: { fontWeight: 700, color: zone.color, fontSize: 14 } }, zone.label),
-                    h('div', { style: { fontSize: 11, color: '#94a3b8' } }, zone.feeling)
+                    h('div', { style: { fontSize: 11, color: _zoFg('#94a3b8') } }, zone.feeling)
                   )
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
@@ -35680,7 +35689,7 @@ window.SelHub = window.SelHub || {
                 // Body cues
                 h('div', { style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 } },
                   zone.bodyAreas.slice(0, 2).map(function(area) {
-                    return h('span', { key: area, style: { fontSize: 11, padding: '1px 6px', borderRadius: 6, background: '#334155', color: '#94a3b8' } }, area);
+                    return h('span', { key: area, style: { fontSize: 11, padding: '1px 6px', borderRadius: 6, background: _zoBg('#334155'), color: _zoFg('#94a3b8') } }, area);
                   })
                 )
               );
@@ -35691,20 +35700,20 @@ window.SelHub = window.SelHub || {
           selectedZone && h('div', { style: { marginTop: 20 } },
             // Intensity slider
             h('div', { style: { marginBottom: 16 } },
-              h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: '#cbd5e1', marginBottom: 8 } },
+              h('label', { style: { display: 'block', fontSize: 12, fontWeight: 600, color: _zoFg('#cbd5e1'), marginBottom: 8 } },
                 band === 'elementary' ? 'How much are you feeling it? (1 = a little, 10 = a LOT)' :
                 band === 'middle' ? 'Rate the intensity (1 = mild, 10 = extreme)' :
                 'Intensity rating (1 = barely perceptible, 10 = overwhelming)'
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 24 } }, '1'),
+                h('span', { style: { fontSize: 11, color: _zoFg('#94a3b8'), minWidth: 24 } }, '1'),
                 h('input', {
                   type: 'range', min: 1, max: 10, value: intensityLevel,
                   onChange: function(e) { upd('intensityLevel', parseInt(e.target.value)); },
                   'aria-label': 'Intensity level',
                   style: { flex: 1, accentColor: ZONES.find(function(z) { return z.id === selectedZone; }).color }
                 }),
-                h('span', { style: { fontSize: 11, color: '#94a3b8', minWidth: 24, textAlign: 'right' } }, '10'),
+                h('span', { style: { fontSize: 11, color: _zoFg('#94a3b8'), minWidth: 24, textAlign: 'right' } }, '10'),
                 h('span', {
                   style: {
                     fontSize: 20, fontWeight: 700, minWidth: 40, textAlign: 'center',
@@ -35722,7 +35731,7 @@ window.SelHub = window.SelHub || {
               onChange: function(e) { upd('checkInNote', e.target.value); },
               'aria-label': 'Check-in notes',
               rows: 3,
-              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: '#1e293b', color: '#f1f5f9', fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
+              style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _zoBg('#1e293b'), color: _zoFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
             // Save button
             h('button', { 'aria-label': 'Save button',
@@ -35769,13 +35778,13 @@ window.SelHub = window.SelHub || {
                   }
                 }
               },
-              style: { marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+              style: { marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, '\u2705 Save Check-In'),
 
             // Quick navigate to strategies
             selectedZone !== 'green' && h('button', { 'aria-label': 'Need help calming down? Try a breathing exercise',
               onClick: function() { upd('activeTab', 'breathe'); },
-              style: { marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+              style: { marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\uD83C\uDF2C\uFE0F Need help calming down? Try a breathing exercise')
           ),
 
@@ -35788,10 +35797,10 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
               h('div', { style: { fontSize: 22, flexShrink: 0 }, 'aria-hidden': 'true' }, '\uD83D\uDD14'),
               h('div', { style: { flex: 1 } },
-                h('p', { style: { margin: 0, color: '#a78bfa', fontSize: 13, fontWeight: 700 } },
+                h('p', { style: { margin: 0, color: _zoFg('#a78bfa'), fontSize: 13, fontWeight: 700 } },
                   band === 'elementary' ? 'Check in again in 10 minutes?' : 'Re-check in 10 minutes?'
                 ),
-                h('p', { style: { margin: '4px 0 10px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.4 } },
+                h('p', { style: { margin: '4px 0 10px', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.4 } },
                   band === 'elementary'
                     ? 'After you try a strategy, come back and see how you feel. It helps you learn what works for YOU.'
                     : 'After trying a strategy, a quick re-check tells you whether it actually helped. Building self-awareness is the whole point.'
@@ -35803,12 +35812,12 @@ window.SelHub = window.SelHub || {
                       upd({ reCheckAt: Date.now() + 10 * 60 * 1000, lastSaveTs: 0, lastSaveZone: null });
                       announceToSR('Re-check timer set for 10 minutes');
                     },
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' },
                     'aria-label': 'Set 10-minute re-check timer'
                   }, '\uD83D\uDD14 Set 10-min timer'),
                   h('button', {
                     onClick: function() { upd({ lastSaveTs: 0, lastSaveZone: null }); },
-                    style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+                    style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' },
                     'aria-label': 'Dismiss re-check offer'
                   }, 'Not this time')
                 )
@@ -35824,18 +35833,18 @@ window.SelHub = window.SelHub || {
       var exploreContent = null;
       if (activeTab === 'explore') {
         exploreContent = h('div', { style: { padding: 20 } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 20, color: '#f1f5f9', fontSize: 18 } }, 'Explore the Zones'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 20, color: _zoFg('#f1f5f9'), fontSize: 18 } }, 'Explore the Zones'),
           ZONES.map(function(zone) {
             var descriptors = zone.descriptors[band] || zone.descriptors.elementary;
             var strategies = zone.strategies[band] || zone.strategies.elementary;
             return h('div', {               key: zone.id,
-              style: { marginBottom: 16, padding: 20, borderRadius: 14, border: '2px solid ' + zone.color + '44', background: '#1e293b' }
+              style: { marginBottom: 16, padding: 20, borderRadius: 14, border: '2px solid ' + zone.color + '44', background: _zoBg('#1e293b') }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
                 h('span', { style: { fontSize: 32 } }, zone.emoji),
                 h('div', { style: { flex: 1 } },
                   h('h4', { style: { margin: 0, color: zone.color, fontSize: 16 } }, zone.label),
-                  h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8' } }, zone.feeling)
+                  h('p', { style: { margin: 0, fontSize: 12, color: _zoFg('#94a3b8') } }, zone.feeling)
                 ),
                 // Read aloud button (elementary)
                 band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -35846,7 +35855,7 @@ window.SelHub = window.SelHub || {
               ),
               // Body cues
               h('div', { style: { marginBottom: 12 } },
-                h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 } },
+                h('p', { style: { fontSize: 12, fontWeight: 700, color: _zoFg('#cbd5e1'), marginBottom: 6 } },
                   band === 'elementary' ? 'Your body might feel:' : 'Body cues:'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -35857,7 +35866,7 @@ window.SelHub = window.SelHub || {
               ),
               // Descriptors
               h('div', { style: { marginBottom: 12 } },
-                h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 } },
+                h('p', { style: { fontSize: 12, fontWeight: 700, color: _zoFg('#cbd5e1'), marginBottom: 6 } },
                   band === 'elementary' ? 'You might feel:' : 'Associated states:'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -35868,19 +35877,19 @@ window.SelHub = window.SelHub || {
               ),
               // Strategies (with type badges and add-to-toolbox)
               h('div', null,
-                h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 6 } },
+                h('p', { style: { fontSize: 12, fontWeight: 700, color: _zoFg('#cbd5e1'), marginBottom: 6 } },
                   band === 'elementary' ? 'Things to try:' : 'Regulation strategies:'
                 ),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                   strategies.map(function(s, i) {
-                    var typeColors = { movement: '#22c55e', breathing: '#3b82f6', sensory: '#eab308', cognitive: '#8b5cf6', social: '#f97316', creative: '#ec4899' };
+                    var typeColors = { movement: _zoFg('#22c55e'), breathing: _zoFg('#3b82f6'), sensory: _zoFg('#eab308'), cognitive: _zoFg('#8b5cf6'), social: '#f97316', creative: '#ec4899' };
                     var isInToolbox = myToolbox.some(function(t) { return t.text === s.text; });
                     return h('div', {                       key: i,
-                      style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: '#0f172a', border: '1px solid #1e293b' }
+                      style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, background: _zoBg('#0f172a'), border: '1px solid #1e293b' }
                     },
                       h('span', { style: { fontSize: 16 } }, s.icon),
-                      h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0' } }, s.text),
-                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || '#94a3b8') + '22', color: typeColors[s.type] || '#94a3b8', fontWeight: 600 } }, s.type),
+                      h('span', { style: { flex: 1, fontSize: 12, color: _zoFg('#e2e8f0') } }, s.text),
+                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || _zoFg('#94a3b8')) + '22', color: typeColors[s.type] || _zoFg('#94a3b8'), fontWeight: 600 } }, s.type),
                       h('button', { 'aria-label': isInToolbox ? '\u2705' : '+',
                         onClick: function() {
                           if (isInToolbox) {
@@ -35898,7 +35907,7 @@ window.SelHub = window.SelHub || {
                           }
                         },
                         title: isInToolbox ? 'Remove from toolbox' : 'Add to my toolbox',
-                        style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: isInToolbox ? '#7c3aed' : '#334155', color: isInToolbox ? '#fff' : '#94a3b8', cursor: 'pointer', fontSize: 11, flexShrink: 0 }
+                        style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: isInToolbox ? '#7c3aed' : '#334155', color: isInToolbox ? '#fff' : _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 11, flexShrink: 0 }
                       }, isInToolbox ? '\u2705' : '+')
                     );
                   })
@@ -35930,7 +35939,7 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { role: 'region', 'aria-label': 'AI counselor advice', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
                 aiAdvice && h('div', {
-                  style: { marginTop: 12, padding: 12, borderRadius: 10, background: zone.color + '11', border: '1px solid ' + zone.color + '33', fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 }
+                  style: { marginTop: 12, padding: 12, borderRadius: 10, background: zone.color + '11', border: '1px solid ' + zone.color + '33', fontSize: 12, color: _zoFg('#e2e8f0'), lineHeight: 1.6 }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
                     h('span', { 'aria-hidden': 'true' }, '\u2728'),
@@ -35952,10 +35961,10 @@ window.SelHub = window.SelHub || {
         // Pattern selection
         if (!breathingPattern) {
           breatheContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: _zoFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? 'Let\'s Breathe Together!' : 'Guided Breathing Exercises'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'Pick a breathing pattern to try!' : 'Choose a pattern to calm your nervous system'
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
@@ -35969,7 +35978,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: {
                     display: 'flex', alignItems: 'center', gap: 16, padding: 20, borderRadius: 14,
-                    border: '1px solid #334155', background: '#1e293b', cursor: 'pointer', textAlign: 'left',
+                    border: '1px solid #334155', background: _zoBg('#1e293b'), cursor: 'pointer', textAlign: 'left',
                     transition: 'transform 0.15s'
                   },
                   onMouseEnter: function(e) { e.currentTarget.style.transform = 'translateY(-2px)'; },
@@ -35977,11 +35986,11 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { style: { fontSize: 36 } }, '\uD83C\uDF2C\uFE0F'),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15, marginBottom: 4 } }, pat.name),
-                    h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 6, lineHeight: 1.4 } }, pat.desc),
+                    h('div', { style: { fontWeight: 700, color: _zoFg('#f1f5f9'), fontSize: 15, marginBottom: 4 } }, pat.name),
+                    h('div', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 6, lineHeight: 1.4 } }, pat.desc),
                     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                      h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: '#334155', color: '#94a3b8' } }, pat.cycles + ' cycles'),
-                      h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: '#334155', color: '#94a3b8' } }, '~' + totalTime + 's'),
+                      h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: _zoBg('#334155'), color: _zoFg('#94a3b8') } }, pat.cycles + ' cycles'),
+                      h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: _zoBg('#334155'), color: _zoFg('#94a3b8') } }, '~' + totalTime + 's'),
                       pat.bestFor.map(function(zoneId) {
                         var z = ZONES.find(function(zz) { return zz.id === zoneId; });
                         return z && h('span', { key: zoneId, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: z.color + '22', color: z.color } }, 'Good for ' + z.label);
@@ -35992,7 +36001,7 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Completed count
-            breathingComplete > 0 && h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginTop: 16 } },
+            breathingComplete > 0 && h('p', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 12, marginTop: 16 } },
               '\uD83E\uDDD8 You\'ve completed ' + breathingComplete + ' breathing exercise' + (breathingComplete > 1 ? 's' : '') + '!'
             )
           );
@@ -36012,8 +36021,8 @@ window.SelHub = window.SelHub || {
             else circleSize = 120;
 
             breatheContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
-              h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, currentPattern.name),
-              h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+              h('h3', { style: { color: _zoFg('#f1f5f9'), fontSize: 18, marginBottom: 4 } }, currentPattern.name),
+              h('p', { style: { color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
                 isComplete ? 'Exercise complete!' : 'Cycle ' + (breathingCycle + 1) + ' of ' + currentPattern.cycles
               ),
 
@@ -36035,7 +36044,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', null,
                     h('div', { style: { fontSize: 14, fontWeight: 700, color: currentStep.color } }, currentStep.label),
-                    h('div', { style: { fontSize: 32, fontWeight: 700, color: '#f1f5f9', marginTop: 4 } }, breathingTimer || stepDuration)
+                    h('div', { style: { fontSize: 32, fontWeight: 700, color: _zoFg('#f1f5f9'), marginTop: 4 } }, breathingTimer || stepDuration)
                   )
                 )
               ),
@@ -36043,18 +36052,18 @@ window.SelHub = window.SelHub || {
               // Completion message
               isComplete && h('div', { style: { padding: 30 } },
                 h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
-                h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 16 } },
+                h('p', { style: { fontWeight: 700, color: _zoFg('#22c55e'), fontSize: 16 } },
                   band === 'elementary' ? 'Great breathing!' : 'Well done!'
                 ),
-                h('p', { style: { color: '#94a3b8', fontSize: 13 } },
+                h('p', { style: { color: _zoFg('#94a3b8'), fontSize: 13 } },
                   band === 'elementary' ? 'Your body should feel calmer now.' :
                   'Notice how your body feels different from when you started.'
                 )
               ),
 
               // Progress bar
-              h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b', marginBottom: 20, overflow: 'hidden' } },
-                h('div', { style: { height: '100%', width: progressPct + '%', background: isComplete ? '#22c55e' : '#7c3aed', borderRadius: 3, transition: 'width 0.5s' } })
+              h('div', { style: { height: 6, borderRadius: 3, background: _zoBg('#1e293b'), marginBottom: 20, overflow: 'hidden' } },
+                h('div', { style: { height: '100%', width: progressPct + '%', background: isComplete ? _zoFg('#22c55e') : '#7c3aed', borderRadius: 3, transition: 'width 0.5s' } })
               ),
 
               // Controls
@@ -36105,13 +36114,13 @@ window.SelHub = window.SelHub || {
                       tick();
                     }
                   },
-                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: breathingActive ? '#ef4444' : '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: breathingActive ? _zoFg('#ef4444') : '#7c3aed', color: _zoFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, breathingActive ? '\u23F8 Pause' : '\u25B6 Start'),
                 h('button', { 'aria-label': 'Try Another',
                   onClick: function() {
                     upd({ breathingPattern: null, breathingActive: false, breathingStep: 0, breathingCycle: 0, breathingTimer: 0 });
                   },
-                  style: { padding: '12px 24px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '12px 24px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, fontSize: 14, cursor: 'pointer' }
                 }, isComplete ? 'Try Another' : '\u2190 Back')
               )
             );
@@ -36133,20 +36142,20 @@ window.SelHub = window.SelHub || {
           var scanSelection = bodySelections[scanArea.id] || {};
 
           bodyContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
-            h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } },
+            h('h3', { style: { color: _zoFg('#f1f5f9'), fontSize: 18, marginBottom: 4 } },
               band === 'elementary' ? 'Body Scan' : 'Guided Body Scan'
             ),
-            h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 8 } },
+            h('p', { style: { color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 8 } },
               'Area ' + (bodyScanStep + 1) + ' of ' + BODY_MAP_AREAS.length
             ),
             // Progress
-            h('div', { style: { height: 4, borderRadius: 2, background: '#1e293b', marginBottom: 24, overflow: 'hidden' } },
-              h('div', { style: { height: '100%', width: ((bodyScanStep + 1) / BODY_MAP_AREAS.length * 100) + '%', background: '#7c3aed', transition: 'width 0.3s' } })
+            h('div', { style: { height: 4, borderRadius: 2, background: _zoBg('#1e293b'), marginBottom: 24, overflow: 'hidden' } },
+              h('div', { style: { height: '100%', width: ((bodyScanStep + 1) / BODY_MAP_AREAS.length * 100) + '%', background: _zoBg('#7c3aed'), transition: 'width 0.3s' } })
             ),
             // Current area
             h('div', { style: { fontSize: 48, marginBottom: 8 } }, scanArea.emoji),
-            h('h4', { style: { color: '#f1f5f9', fontSize: 20, marginBottom: 12 } }, scanArea.label),
-            h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 20 } },
+            h('h4', { style: { color: _zoFg('#f1f5f9'), fontSize: 20, marginBottom: 12 } }, scanArea.label),
+            h('p', { style: { color: _zoFg('#94a3b8'), fontSize: 13, marginBottom: 20 } },
               band === 'elementary' ? 'How does your ' + scanArea.label.toLowerCase() + ' feel right now?' :
               'Notice any sensations in your ' + scanArea.label.toLowerCase() + '. What do you feel?'
             ),
@@ -36164,7 +36173,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: {
                     padding: '8px 16px', borderRadius: 20, border: isChosen ? '2px solid #7c3aed' : '1px solid #334155',
-                    background: isChosen ? '#7c3aed22' : '#1e293b', color: isChosen ? '#c4b5fd' : '#94a3b8',
+                    background: isChosen ? '#7c3aed22' : _zoBg('#1e293b'), color: isChosen ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'),
                     cursor: 'pointer', fontWeight: isChosen ? 700 : 500, fontSize: 13
                   }
                 }, sens);
@@ -36177,15 +36186,15 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '8px 16px', borderRadius: 20, border: (scanSelection.sensation === 'nothing') ? '2px solid #22c55e' : '1px solid #334155',
-                  background: (scanSelection.sensation === 'nothing') ? '#22c55e22' : '#1e293b',
-                  color: (scanSelection.sensation === 'nothing') ? '#22c55e' : '#94a3b8',
+                  background: (scanSelection.sensation === 'nothing') ? '#22c55e22' : _zoBg('#1e293b'),
+                  color: (scanSelection.sensation === 'nothing') ? _zoFg('#22c55e') : _zoFg('#94a3b8'),
                   cursor: 'pointer', fontSize: 13
                 }
               }, band === 'elementary' ? 'Nothing / I\'m fine here' : 'Neutral / No sensation')
             ),
             // Zone association (which zone does this feel like?)
             scanSelection.sensation && scanSelection.sensation !== 'nothing' && h('div', { style: { marginBottom: 20 } },
-              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } },
+              h('p', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 8 } },
                 band === 'elementary' ? 'What color zone does this feel like?' : 'Which zone does this sensation align with?'
               ),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
@@ -36203,7 +36212,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: {
                       width: 48, height: 48, borderRadius: 12, border: isChosen ? '3px solid ' + zone.color : '1px solid #334155',
-                      background: isChosen ? zone.color + '33' : '#1e293b', cursor: 'pointer',
+                      background: isChosen ? zone.color + '33' : _zoBg('#1e293b'), cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24
                     }
                   }, h('span', { 'aria-hidden': 'true' }, zone.emoji));
@@ -36214,7 +36223,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
               bodyScanStep > 0 && h('button', { 'aria-label': 'Back',
                 onClick: function() { upd('bodyScanStep', bodyScanStep - 1); },
-                style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
+                style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back'),
               h('button', { 'aria-label': 'Body Map',
                 onClick: function() {
@@ -36228,17 +36237,17 @@ window.SelHub = window.SelHub || {
                     upd('bodyScanStep', bodyScanStep + 1);
                   }
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, cursor: 'pointer' }
               }, scanIsLast ? '\u2705 Finish Scan' : 'Next \u2192')
             )
           );
         } else {
           // Body map overview
           bodyContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
+            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: _zoFg('#f1f5f9'), fontSize: 18 } },
               band === 'elementary' ? 'Where Do You Feel It?' : 'Body Map'
             ),
-            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+            h('p', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
               band === 'elementary' ? 'Our feelings live in our bodies! Tap a body part to say how it feels.' :
               'Emotions create physical sensations. Map where you feel them.'
             ),
@@ -36250,7 +36259,7 @@ window.SelHub = window.SelHub || {
               },
               style: {
                 display: 'block', margin: '0 auto 24px', padding: '12px 28px', borderRadius: 10,
-                border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer'
+                border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer'
               }
             }, '\uD83E\uDDD1 Start Guided Body Scan'),
             // Quick-tap body map
@@ -36261,15 +36270,15 @@ window.SelHub = window.SelHub || {
                 return h('div', {
                   key: area.id,
                   style: {
-                    padding: 12, borderRadius: 12, background: '#1e293b',
+                    padding: 12, borderRadius: 12, background: _zoBg('#1e293b'),
                     border: '1px solid ' + (zoneObj ? zoneObj.color + '66' : '#334155'),
                     textAlign: 'center'
                   }
                 },
                   h('div', { style: { fontSize: 24, marginBottom: 4 } }, area.emoji),
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9' } }, area.label),
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: _zoFg('#f1f5f9') } }, area.label),
                   selection && selection.sensation && h('div', {
-                    style: { fontSize: 10, marginTop: 4, padding: '2px 8px', borderRadius: 6, background: (zoneObj ? zoneObj.color : '#94a3b8') + '22', color: zoneObj ? zoneObj.color : '#94a3b8', display: 'inline-block' }
+                    style: { fontSize: 10, marginTop: 4, padding: '2px 8px', borderRadius: 6, background: (zoneObj ? zoneObj.color : _zoFg('#94a3b8')) + '22', color: zoneObj ? zoneObj.color : _zoFg('#94a3b8'), display: 'inline-block' }
                   }, selection.sensation)
                 );
               })
@@ -36287,25 +36296,25 @@ window.SelHub = window.SelHub || {
         var currentScenario = useAiScenario ? aiScenario : scenarios[scenarioIdx % scenarios.length];
 
         scenarioContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: '#f1f5f9', fontSize: 18 } }, 'Zone Scenario Practice'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _zoFg('#f1f5f9'), fontSize: 18 } }, 'Zone Scenario Practice'),
           // Score + streak
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16 } },
-            h('span', { style: { fontSize: 12, color: '#94a3b8' } }, 'Score: ' + scenarioScore.correct + '/' + scenarioScore.total),
-            h('span', { style: { fontSize: 12, color: scenarioStreak >= 3 ? '#f59e0b' : '#94a3b8' } },
+            h('span', { style: { fontSize: 12, color: _zoFg('#94a3b8') } }, 'Score: ' + scenarioScore.correct + '/' + scenarioScore.total),
+            h('span', { style: { fontSize: 12, color: scenarioStreak >= 3 ? '#f59e0b' : _zoFg('#94a3b8') } },
               '\uD83D\uDD25 Streak: ' + scenarioStreak + (scenarioBestStreak > 0 ? ' (best: ' + scenarioBestStreak + ')' : '')
             )
           ),
 
           // Scenario card
-          h('div', { style: { padding: 24, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 20, textAlign: 'center' } },
-            h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+          h('div', { style: { padding: 24, borderRadius: 14, background: _zoBg('#1e293b'), border: '1px solid #334155', marginBottom: 20, textAlign: 'center' } },
+            h('p', { style: { fontSize: 11, color: _zoFg('#94a3b8'), marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
               useAiScenario ? 'AI-Generated Scenario' : 'Scenario ' + ((scenarioIdx % scenarios.length) + 1) + ' of ' + scenarios.length
             ),
-            h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 1.6, fontWeight: 500 } }, currentScenario.text),
+            h('p', { style: { fontSize: 16, color: _zoFg('#f1f5f9'), lineHeight: 1.6, fontWeight: 500 } }, currentScenario.text),
             // Read aloud (elementary)
             band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { readAloud(currentScenario.text); },
-              style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
+              style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 12 }
             }, '\uD83D\uDD0A Read Aloud')
           ),
 
@@ -36345,7 +36354,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: {
                   padding: '14px 12px', borderRadius: 10, border: '2px solid ' + zone.color + '44',
-                  background: '#0f172a', color: zone.color, fontWeight: 700, fontSize: 14,
+                  background: _zoBg('#0f172a'), color: zone.color, fontWeight: 700, fontSize: 14,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   transition: 'transform 0.1s'
                 },
@@ -36367,19 +36376,19 @@ window.SelHub = window.SelHub || {
             }
           },
             h('p', { style: { fontSize: 24, marginBottom: 8 } }, scenarioFeedback === 'correct' ? '\u2705' : '\uD83D\uDCA1'),
-            h('p', { style: { fontWeight: 700, color: scenarioFeedback === 'correct' ? '#22c55e' : '#f59e0b', marginBottom: 4 } },
+            h('p', { style: { fontWeight: 700, color: scenarioFeedback === 'correct' ? _zoFg('#22c55e') : '#f59e0b', marginBottom: 4 } },
               scenarioFeedback === 'correct'
                 ? (scenarioStreak >= 3 ? '\uD83D\uDD25 ' + scenarioStreak + ' in a row!' : 'Great job!')
                 : 'Not quite \u2014 this is a ' + ZONES.find(function(z) { return z.id === currentScenario.correctZone; }).label + ' situation.'
             ),
             // Explanation for wrong answer
-            scenarioFeedback !== 'correct' && scenarioAnswer && h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } },
+            scenarioFeedback !== 'correct' && scenarioAnswer && h('p', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 8 } },
               'You chose ' + ZONES.find(function(z) { return z.id === scenarioAnswer; }).label + '. ' +
               (band === 'elementary' ? 'Think about how this person would feel in their body.' :
                band === 'middle' ? 'Consider the intensity and type of emotion in this situation.' :
                'Reflect on the arousal level and valence of the emotional response.')
             ),
-            h('p', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: 1.5 } }, currentScenario.followUp),
+            h('p', { style: { fontSize: 13, color: _zoFg('#cbd5e1'), marginBottom: 16, lineHeight: 1.5 } }, currentScenario.followUp),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
               h('button', { 'aria-label': 'Next Scenario',
                 onClick: function() {
@@ -36390,7 +36399,7 @@ window.SelHub = window.SelHub || {
                     aiScenario: null
                   });
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, cursor: 'pointer' }
               }, 'Next Scenario \u2192')
             )
           ),
@@ -36424,7 +36433,7 @@ window.SelHub = window.SelHub || {
                 });
               },
               disabled: aiScenarioLoading,
-              style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #7c3aed44', background: 'transparent', color: '#a78bfa', fontWeight: 600, fontSize: 12, cursor: aiScenarioLoading ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }
+              style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #7c3aed44', background: 'transparent', color: _zoFg('#a78bfa'), fontWeight: 600, fontSize: 12, cursor: aiScenarioLoading ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }
             },
               Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
               aiScenarioLoading ? 'Generating...' : 'Generate AI Scenario'
@@ -36438,7 +36447,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var toolboxContent = null;
       if (activeTab === 'toolbox') {
-        var typeColors = { movement: '#22c55e', breathing: '#3b82f6', sensory: '#eab308', cognitive: '#8b5cf6', social: '#f97316', creative: '#ec4899' };
+        var typeColors = { movement: _zoFg('#22c55e'), breathing: _zoFg('#3b82f6'), sensory: _zoFg('#eab308'), cognitive: _zoFg('#8b5cf6'), social: '#f97316', creative: '#ec4899' };
         var typeIcons = { movement: '\uD83C\uDFC3', breathing: '\uD83C\uDF2C\uFE0F', sensory: '\uD83D\uDC40', cognitive: '\uD83E\uDDE0', social: '\uD83D\uDDE3\uFE0F', creative: '\uD83C\uDFA8' };
 
         // 5-4-3-2-1 grounding exercise
@@ -36451,51 +36460,51 @@ window.SelHub = window.SelHub || {
         ];
 
         toolboxContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
+          h('h3', { style: { textAlign: 'center', marginBottom: 8, color: _zoFg('#f1f5f9'), fontSize: 18 } },
             '\uD83E\uDDF0 My Toolbox'
           ),
-          h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
+          h('p', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Your favorite ways to feel better!' : 'Your saved strategies and regulation tools'
           ),
 
           // Quick tools section
           h('div', { style: { marginBottom: 24 } },
-            h('h4', { style: { fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } }, 'Quick Tools'),
+            h('h4', { style: { fontSize: 13, color: _zoFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } }, 'Quick Tools'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
               // Breathing shortcut
               h('button', { 'aria-label': 'Breathing',
                 onClick: function() { upd('activeTab', 'breathe'); if (soundEnabled) sfxClick(); },
-                style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', cursor: 'pointer', textAlign: 'center' }
+                style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: _zoBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 28, marginBottom: 6 } }, '\uD83C\uDF2C\uFE0F'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#3b82f6' } }, 'Breathing'),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Guided exercises')
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _zoFg('#3b82f6') } }, 'Breathing'),
+                h('div', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, 'Guided exercises')
               ),
               // Body scan shortcut
               h('button', { 'aria-label': 'Body Scan',
                 onClick: function() { upd({ activeTab: 'body', bodyScanActive: true, bodyScanStep: 0 }); if (soundEnabled) sfxClick(); },
-                style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: '#1e293b', cursor: 'pointer', textAlign: 'center' }
+                style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: _zoBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
                 h('div', { style: { fontSize: 28, marginBottom: 6 } }, '\uD83E\uDDD1'),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#8b5cf6' } }, 'Body Scan'),
-                h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Check your body')
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: _zoFg('#8b5cf6') } }, 'Body Scan'),
+                h('div', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, 'Check your body')
               )
             )
           ),
 
           // 5-4-3-2-1 Grounding Exercise
-          h('div', { style: { marginBottom: 24, padding: 20, borderRadius: 14, border: '1px solid #334155', background: '#1e293b' } },
+          h('div', { style: { marginBottom: 24, padding: 20, borderRadius: 14, border: '1px solid #334155', background: _zoBg('#1e293b') } },
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
-              h('h4', { style: { margin: 0, fontSize: 14, color: '#f1f5f9' } }, '\u270B 5-4-3-2-1 Grounding'),
-              groundingComplete > 0 && h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'Completed ' + groundingComplete + 'x')
+              h('h4', { style: { margin: 0, fontSize: 14, color: _zoFg('#f1f5f9') } }, '\u270B 5-4-3-2-1 Grounding'),
+              groundingComplete > 0 && h('span', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, 'Completed ' + groundingComplete + 'x')
             ),
-            h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } },
+            h('p', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 16 } },
               band === 'elementary' ? 'Use your senses to feel calm and safe!' : 'A sensory grounding technique to bring you back to the present moment.'
             ),
             !groundingActive
               ? h('button', { 'aria-label': 'Start Grounding Exercise',
                   onClick: function() { upd({ groundingActive: true, groundingStep: 0, groundingInputs: {} }); if (soundEnabled) sfxClick(); },
-                  style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, cursor: 'pointer', width: '100%' }
+                  style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, cursor: 'pointer', width: '100%' }
                 }, 'Start Grounding Exercise')
               : h('div', null,
                   // Progress
@@ -36513,9 +36522,9 @@ window.SelHub = window.SelHub || {
                     var inputs = groundingInputs[groundingStep] || [];
                     return h('div', { style: { textAlign: 'center' } },
                       h('div', { style: { fontSize: 36, marginBottom: 8 } }, step.emoji),
-                      h('div', { style: { fontSize: 24, fontWeight: 800, color: '#7c3aed', marginBottom: 4 } }, step.count),
-                      h('p', { style: { fontSize: 14, color: '#f1f5f9', fontWeight: 600, marginBottom: 4 } }, step.sense),
-                      h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, step.prompt),
+                      h('div', { style: { fontSize: 24, fontWeight: 800, color: _zoFg('#7c3aed'), marginBottom: 4 } }, step.count),
+                      h('p', { style: { fontSize: 14, color: _zoFg('#f1f5f9'), fontWeight: 600, marginBottom: 4 } }, step.sense),
+                      h('p', { style: { fontSize: 12, color: _zoFg('#94a3b8'), marginBottom: 16 } }, step.prompt),
                       // Input fields
                       Array.from({ length: step.count }, function(_, i) {
                         return h('input', {
@@ -36531,14 +36540,14 @@ window.SelHub = window.SelHub || {
                             newInputs[groundingStep] = arr;
                             upd('groundingInputs', newInputs);
                           },
-                          style: { display: 'block', width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13, marginBottom: 6, boxSizing: 'border-box' }
+                          style: { display: 'block', width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _zoBg('#0f172a'), color: _zoFg('#f1f5f9'), fontSize: 13, marginBottom: 6, boxSizing: 'border-box' }
                         });
                       }),
                       // Navigation
                       h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 } },
                         groundingStep > 0 && h('button', { 'aria-label': 'Back',
                           onClick: function() { upd('groundingStep', groundingStep - 1); },
-                          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', cursor: 'pointer' }
+                          style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), cursor: 'pointer' }
                         }, '\u2190 Back'),
                         h('button', { 'aria-label': groundingStep >= groundingSteps.length - 1 ? '\u2705 Done!' : 'Next \u2192',
                           onClick: function() {
@@ -36555,7 +36564,7 @@ window.SelHub = window.SelHub || {
                               if (soundEnabled) sfxClick();
                             }
                           },
-                          style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontWeight: 700, cursor: 'pointer' }
+                          style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, cursor: 'pointer' }
                         }, groundingStep >= groundingSteps.length - 1 ? '\u2705 Done!' : 'Next \u2192')
                       )
                     );
@@ -36564,11 +36573,11 @@ window.SelHub = window.SelHub || {
           ),
 
           // Saved strategies
-          h('h4', { style: { fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } },
+          h('h4', { style: { fontSize: 13, color: _zoFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } },
             'Saved Strategies (' + myToolbox.length + ')'
           ),
           myToolbox.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: 32, color: '#94a3b8', background: '#1e293b', borderRadius: 14 } },
+            ? h('div', { style: { textAlign: 'center', padding: 32, color: _zoFg('#94a3b8'), background: _zoBg('#1e293b'), borderRadius: 14 } },
                 h('p', { style: { fontSize: 28, marginBottom: 8 } }, '\uD83E\uDDF0'),
                 h('p', { style: { fontWeight: 600, fontSize: 13 } }, 'Your toolbox is empty'),
                 h('p', { style: { fontSize: 11 } }, 'Go to the Explore tab and tap + on strategies you like!')
@@ -36585,18 +36594,18 @@ window.SelHub = window.SelHub || {
                     ),
                     inType.map(function(s, i) {
                       return h('div', {                         key: i,
-                        style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#1e293b', border: '1px solid #334155' }
+                        style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' }
                       },
                         h('span', { style: { fontSize: 18 } }, s.icon),
-                        h('span', { style: { flex: 1, fontSize: 12, color: '#e2e8f0' } }, s.text),
-                        h('div', { style: { width: 8, height: 8, borderRadius: 4, background: s.zoneColor || '#94a3b8', flexShrink: 0 } }),
+                        h('span', { style: { flex: 1, fontSize: 12, color: _zoFg('#e2e8f0') } }, s.text),
+                        h('div', { style: { width: 8, height: 8, borderRadius: 4, background: s.zoneColor || _zoFg('#94a3b8'), flexShrink: 0 } }),
                         h('button', { 'aria-label': 'My Check-In History',
                           onClick: function() {
                             var newToolbox = myToolbox.filter(function(t) { return t.text !== s.text; });
                             upd('myToolbox', newToolbox);
                             addToast('Removed from toolbox', 'info');
                           },
-                          style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: '#334155', color: '#94a3b8', cursor: 'pointer', fontSize: 10, flexShrink: 0 }
+                          style: { padding: '3px 8px', borderRadius: 6, border: 'none', background: _zoBg('#334155'), color: _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 10, flexShrink: 0 }
                         }, '\u2715')
                       );
                     })
@@ -36614,7 +36623,7 @@ window.SelHub = window.SelHub || {
         var log = checkInLog || [];
         var pattern = analyzeRecentPattern(log);
         historyContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
-          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, 'My Check-In History'),
+          h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _zoFg('#f1f5f9'), fontSize: 18 } }, 'My Check-In History'),
 
           // Pattern surfacing callout (v3) — gentle observation when a cluster is clear
           pattern && h('div', {
@@ -36631,8 +36640,8 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 26, flexShrink: 0 }, 'aria-hidden': 'true' }, pattern.emoji),
               h('div', { style: { flex: 1 } },
                 h('p', { style: { margin: 0, color: pattern.color, fontSize: 14, fontWeight: 800, lineHeight: 1.25 } }, pattern.headline),
-                h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, pattern.body),
-                h('p', { style: { margin: '8px 0 0', color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } },
+                h('p', { style: { margin: '6px 0 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, pattern.body),
+                h('p', { style: { margin: '8px 0 0', color: _zoFg('#94a3b8'), fontSize: 10, fontStyle: 'italic' } },
                   pattern.count + ' of your last ' + pattern.total + ' check-ins were in the ' + pattern.zone.charAt(0).toUpperCase() + pattern.zone.slice(1) + ' Zone.'
                 )
               )
@@ -36640,15 +36649,15 @@ window.SelHub = window.SelHub || {
           ),
 
           log.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
+            ? h('div', { style: { textAlign: 'center', padding: 40, color: _zoFg('#94a3b8') } },
                 h('p', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDCDD'),
                 h('p', { style: { fontWeight: 600 } }, 'No check-ins yet'),
                 h('p', { style: { fontSize: 12 } }, 'Go to the Check-In tab to log your first zone!')
               )
             : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 16 } },
                 // Zone distribution bar chart
-                h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' }, role: 'figure', 'aria-label': 'Zone Distribution chart' },
-                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#cbd5e1' } }, 'Zone Distribution'),
+                h('div', { style: { padding: 16, borderRadius: 14, background: _zoBg('#1e293b'), border: '1px solid #334155' }, role: 'figure', 'aria-label': 'Zone Distribution chart' },
+                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: _zoFg('#cbd5e1') } }, 'Zone Distribution'),
                   h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 12 } },
                     ZONES.map(function(zone) {
                       var count = log.filter(function(e) { return e.zone === zone.id; }).length;
@@ -36669,20 +36678,20 @@ window.SelHub = window.SelHub || {
                             }
                           })
                         ),
-                        h('div', { style: { fontSize: 11, fontWeight: 600, color: '#e2e8f0' } }, zone.label.replace(' Zone', '')),
+                        h('div', { style: { fontSize: 11, fontWeight: 600, color: _zoFg('#e2e8f0') } }, zone.label.replace(' Zone', '')),
                         h('div', { style: { fontSize: 14, fontWeight: 700, color: zone.color } }, count),
-                        h('div', { style: { fontSize: 10, color: '#cbd5e1' } }, pct + '%')
+                        h('div', { style: { fontSize: 10, color: _zoFg('#cbd5e1') } }, pct + '%')
                       );
                     })
                   ),
-                  h('p', { style: { textAlign: 'center', fontSize: 11, color: '#cbd5e1', margin: 0 } },
+                  h('p', { style: { textAlign: 'center', fontSize: 11, color: _zoFg('#cbd5e1'), margin: 0 } },
                     log.length + ' total check-in' + (log.length !== 1 ? 's' : '')
                   )
                 ),
 
                 // Intensity trend (last 10)
-                log.length >= 3 && h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
-                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#94a3b8' } }, 'Intensity Trend (recent)'),
+                log.length >= 3 && h('div', { style: { padding: 16, borderRadius: 14, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: _zoFg('#94a3b8') } }, 'Intensity Trend (recent)'),
                   h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 4, height: 60 } },
                     log.slice(-10).map(function(entry, i) {
                       var zone = ZONES.find(function(z) { return z.id === entry.zone; }) || ZONES[1];
@@ -36699,14 +36708,14 @@ window.SelHub = window.SelHub || {
                     })
                   ),
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                    h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Older'),
-                    h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Recent')
+                    h('span', { style: { fontSize: 11, color: _zoFg('#94a3b8') } }, 'Older'),
+                    h('span', { style: { fontSize: 11, color: _zoFg('#94a3b8') } }, 'Recent')
                   )
                 ),
 
                 // Zone transition patterns (last 8)
-                log.length >= 2 && h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
-                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: '#94a3b8' } }, 'Zone Flow'),
+                log.length >= 2 && h('div', { style: { padding: 16, borderRadius: 14, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+                  h('h4', { style: { margin: '0 0 12px 0', fontSize: 13, color: _zoFg('#94a3b8') } }, 'Zone Flow'),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
                     log.slice(-8).map(function(entry, i) {
                       var zone = ZONES.find(function(z) { return z.id === entry.zone; }) || ZONES[1];
@@ -36715,32 +36724,32 @@ window.SelHub = window.SelHub || {
                           title: zone.label,
                           style: { width: 28, height: 28, borderRadius: '50%', background: zone.color + '33', border: '2px solid ' + zone.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }
                         }, zone.emoji),
-                        i < Math.min(log.length, 8) - 1 && h('span', { style: { color: '#334155', fontSize: 14 } }, '\u2192')
+                        i < Math.min(log.length, 8) - 1 && h('span', { style: { color: _zoFg('#334155'), fontSize: 14 } }, '\u2192')
                       );
                     })
                   ),
-                  h('p', { style: { textAlign: 'center', fontSize: 10, color: '#94a3b8', marginTop: 8 } },
+                  h('p', { style: { textAlign: 'center', fontSize: 10, color: _zoFg('#94a3b8'), marginTop: 8 } },
                     band === 'elementary' ? 'This shows how your zones changed over time!' : 'Your emotional trajectory across recent check-ins'
                   )
                 ),
 
                 // Log entries (newest first)
-                h('h4', { style: { fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0' } }, 'Log Entries'),
+                h('h4', { style: { fontSize: 13, color: _zoFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em', margin: '8px 0' } }, 'Log Entries'),
                 log.slice().reverse().map(function(entry, i) {
                   var zone = ZONES.find(function(z) { return z.id === entry.zone; }) || ZONES[1];
                   var time = new Date(entry.timestamp);
                   return h('div', {
                     key: i,
-                    style: { display: 'flex', alignItems: 'flex-start', gap: 12, padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' }
+                    style: { display: 'flex', alignItems: 'flex-start', gap: 12, padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' }
                   },
                     h('span', { style: { fontSize: 24, flexShrink: 0 } }, zone.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
                         h('span', { style: { fontWeight: 700, color: zone.color, fontSize: 13 } }, zone.label),
                         entry.intensity && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: zone.color + '22', color: zone.color } }, 'Intensity: ' + entry.intensity + '/10'),
-                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+                        h('span', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
                       ),
-                      entry.note && h('p', { style: { margin: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, entry.note)
+                      entry.note && h('p', { style: { margin: 0, fontSize: 12, color: _zoFg('#cbd5e1'), lineHeight: 1.4 } }, entry.note)
                     )
                   );
                 })
@@ -36775,7 +36784,7 @@ window.SelHub = window.SelHub || {
                   ]
                 });
               },
-              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, '🖨 Print my zone history')
           ) : null
         );
@@ -36806,7 +36815,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var reCheckBanner = (reCheckAt && Date.now() >= reCheckAt) ? h('div', {
         role: 'region', 'aria-label': 'Re-check reminder',
-        style: { padding: '10px 14px', background: 'linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)', color: '#fff', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
+        style: { padding: '10px 14px', background: 'linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)', color: _zoFg('#fff'), display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
       },
         h('span', { style: { fontSize: 20 }, 'aria-hidden': 'true' }, '🔔'),
         h('div', { style: { flex: 1, minWidth: 200 } },
@@ -36825,12 +36834,12 @@ window.SelHub = window.SelHub || {
             upd({ activeTab: 'checkin', reCheckAt: 0 });
             announceToSR('Opening check-in tab');
           },
-          style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#fff', color: '#7c3aed', fontSize: 12, fontWeight: 800, cursor: 'pointer' },
+          style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: _zoBg('#fff'), color: _zoFg('#7c3aed'), fontSize: 12, fontWeight: 800, cursor: 'pointer' },
           'aria-label': 'Open check-in tab now'
         }, '🚦 Check in now'),
         h('button', {
           onClick: function() { upd({ reCheckAt: 0 }); },
-          style: { padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.5)', background: 'transparent', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+          style: { padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.5)', background: 'transparent', color: _zoFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' },
           'aria-label': 'Dismiss re-check reminder'
         }, 'Dismiss')
       ) : null;
@@ -36846,10 +36855,10 @@ if (activeTab === 'wheel') {
   var zwSelected = d.zwSelected || null;
   var zwSpin = !!d.zwSpin;
   var ZONE_INFO = [
-    { id: 'blue',   label: 'BLUE',   color: '#3b82f6', desc: 'Low energy — sad, tired, bored, sick, slow', sample: ['drained', 'flat', 'lonely', 'meh'] },
-    { id: 'green',  label: 'GREEN',  color: '#22c55e', desc: 'Calm and alert — ready, focused, present', sample: ['settled', 'curious', 'engaged', 'okay'] },
-    { id: 'yellow', label: 'YELLOW', color: '#fde047', desc: 'Elevated — anxious, frustrated, silly, wiggly, excited', sample: ['fidgety', 'anxious', 'amped', 'irritated'] },
-    { id: 'red',    label: 'RED',    color: '#ef4444', desc: 'Out of control — rage, panic, terror, meltdown', sample: ['rage', 'panic', 'overwhelm', 'shutdown'] }
+    { id: 'blue',   label: 'BLUE',   color: _zoFg('#3b82f6'), desc: 'Low energy — sad, tired, bored, sick, slow', sample: ['drained', 'flat', 'lonely', 'meh'] },
+    { id: 'green',  label: 'GREEN',  color: _zoFg('#22c55e'), desc: 'Calm and alert — ready, focused, present', sample: ['settled', 'curious', 'engaged', 'okay'] },
+    { id: 'yellow', label: 'YELLOW', color: _zoFg('#fde047'), desc: 'Elevated — anxious, frustrated, silly, wiggly, excited', sample: ['fidgety', 'anxious', 'amped', 'irritated'] },
+    { id: 'red',    label: 'RED',    color: _zoFg('#ef4444'), desc: 'Out of control — rage, panic, terror, meltdown', sample: ['rage', 'panic', 'overwhelm', 'shutdown'] }
   ];
   function _quadrantPath(idx) {
     var startAngle = idx * 90 - 90;
@@ -36862,13 +36871,13 @@ if (activeTab === 'wheel') {
     return 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + ' Z';
   }
   zoneWheelContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Zone Wheel: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Zone Wheel: '),
         '4 zones in a wheel — click any quadrant to explore. Blue (low energy), Green (calm baseline), Yellow (elevated/cautionary), Red (out of control). No zone is "bad" — they\'re all valid states. Green is the most ready-to-learn baseline.'
       )
     ),
-    h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, textAlign: 'center' } },
+    h('div', { style: { background: _zoBg('#0f172a'), borderRadius: 12, padding: 16, textAlign: 'center' } },
       h('svg', { width: 400, height: 400, viewBox: '0 0 400 400', style: { maxWidth: '100%', height: 'auto', margin: '0 auto', display: 'block' } },
         ZONE_INFO.map(function(z, i) {
           var isSel = zwSelected === z.id;
@@ -36889,17 +36898,17 @@ if (activeTab === 'wheel') {
         }),
         // center hub
         h('circle', { cx: 200, cy: 200, r: 40, fill: '#0f172a', stroke: '#475569', strokeWidth: 2 }),
-        h('text', { x: 200, y: 205, textAnchor: 'middle', fontSize: 12, fill: '#fbbf24', fontWeight: 700 }, 'Kuypers')
+        h('text', { x: 200, y: 205, textAnchor: 'middle', fontSize: 12, fill: _zoFg('#fbbf24'), fontWeight: 700 }, 'Kuypers')
       )
     ),
     zwSelected ? (function() {
       var z = ZONE_INFO.find(function(x) { return x.id === zwSelected; });
       return h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: z.color + '22', border: '2px solid ' + z.color } },
         h('h3', { style: { margin: 0, color: z.color, fontSize: 22, fontWeight: 800 } }, z.label + ' ZONE'),
-        h('p', { style: { margin: '6px 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.55 } }, z.desc),
+        h('p', { style: { margin: '6px 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.55 } }, z.desc),
         h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 } },
           z.sample.map(function(w, i) {
-            return h('span', { key: i, style: { padding: '4px 10px', borderRadius: 12, background: z.color + '33', color: '#fff', fontSize: 12, fontWeight: 600 } }, w);
+            return h('span', { key: i, style: { padding: '4px 10px', borderRadius: 12, background: z.color + '33', color: _zoFg('#fff'), fontSize: 12, fontWeight: 600 } }, w);
           })
         )
       );
@@ -36970,24 +36979,24 @@ if (activeTab === 'checkin_flow') {
     Object.keys(counts).forEach(function(k) { if (counts[k] > maxC) { max = k; maxC = counts[k]; } });
     return max;
   }
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   var ZONE_DESCS = { blue: 'low energy', green: 'calm + alert', yellow: 'elevated', red: 'overwhelmed' };
   checkinFlowContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'In-the-Moment Check-In: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'In-the-Moment Check-In: '),
         '4-step adaptive flow: notice body cues → notice thoughts → see predicted zone → pick a strategy. The body cues are the first step because the body often knows before the mind names it.'
       )
     ),
-    h('div', { style: { padding: 10, borderRadius: 10, background: '#0f172a', marginBottom: 14 } },
-      h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b', overflow: 'hidden' } },
+    h('div', { style: { padding: 10, borderRadius: 10, background: _zoBg('#0f172a'), marginBottom: 14 } },
+      h('div', { style: { height: 6, borderRadius: 3, background: _zoBg('#1e293b'), overflow: 'hidden' } },
         h('div', { style: { height: '100%', width: ((cfStep + 1) / 4 * 100) + '%', background: 'linear-gradient(90deg, #5eead4, #fbbf24)', transition: 'width 0.4s' } })
       ),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 4, textAlign: 'center' } }, 'Step ' + (cfStep + 1) + ' of 4')
+      h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginTop: 4, textAlign: 'center' } }, 'Step ' + (cfStep + 1) + ' of 4')
     ),
-    cfStep === 0 ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #5eead4' } },
-      h('h3', { style: { margin: 0, color: '#5eead4', fontSize: 18, fontWeight: 800 } }, 'What does your body feel?'),
-      h('p', { style: { margin: '6px 0 12px', color: '#94a3b8', fontSize: 12 } }, 'Tap all that apply. You can pick multiple.'),
+    cfStep === 0 ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #5eead4' } },
+      h('h3', { style: { margin: 0, color: _zoFg('#5eead4'), fontSize: 18, fontWeight: 800 } }, 'What does your body feel?'),
+      h('p', { style: { margin: '6px 0 12px', color: _zoFg('#94a3b8'), fontSize: 12 } }, 'Tap all that apply. You can pick multiple.'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         BODY_OPTIONS.map(function(b) {
           var on = cfBody.indexOf(b.id) !== -1;
@@ -36995,19 +37004,19 @@ if (activeTab === 'checkin_flow') {
               var n = on ? cfBody.filter(function(x) { return x !== b.id; }) : cfBody.concat([b.id]);
               upd({ cfBody: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[b.zone] : '#475569'), background: on ? ZONE_COLORS[b.zone] + '33' : '#0f172a', color: on ? '#fff' : '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[b.zone] : '#475569'), background: on ? ZONE_COLORS[b.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, b.label);
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
         h('button', { onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
           disabled: cfBody.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: cfBody.length === 0 ? '#334155' : '#5eead4', color: cfBody.length === 0 ? '#94a3b8' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: cfBody.length === 0 ? '#334155' : '#5eead4', color: cfBody.length === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Next →')
       )
-    ) : cfStep === 1 ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #a78bfa' } },
-      h('h3', { style: { margin: 0, color: '#a78bfa', fontSize: 18, fontWeight: 800 } }, 'What is the thought sound like?'),
-      h('p', { style: { margin: '6px 0 12px', color: '#94a3b8', fontSize: 12 } }, 'Pick what fits. Skip if nothing matches.'),
+    ) : cfStep === 1 ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #a78bfa' } },
+      h('h3', { style: { margin: 0, color: _zoFg('#a78bfa'), fontSize: 18, fontWeight: 800 } }, 'What is the thought sound like?'),
+      h('p', { style: { margin: '6px 0 12px', color: _zoFg('#94a3b8'), fontSize: 12 } }, 'Pick what fits. Skip if nothing matches.'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         THOUGHT_OPTIONS.map(function(t) {
           var on = cfThought.indexOf(t.id) !== -1;
@@ -37015,30 +37024,30 @@ if (activeTab === 'checkin_flow') {
               var n = on ? cfThought.filter(function(x) { return x !== t.id; }) : cfThought.concat([t.id]);
               upd({ cfThought: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[t.zone] : '#475569'), background: on ? ZONE_COLORS[t.zone] + '33' : '#0f172a', color: on ? '#fff' : '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[t.zone] : '#475569'), background: on ? ZONE_COLORS[t.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, t.label);
         })
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
         h('button', { onClick: function() { upd({ cfStep: 0 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
         h('button', { onClick: function() { upd({ cfStep: 2, cfPredicted: _predictZone() }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'See your zone →')
       )
     ) : cfStep === 2 ? h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[cfPredicted] + '22', border: '3px solid ' + ZONE_COLORS[cfPredicted] } },
       h('div', { style: { textAlign: 'center' } },
         h('div', { style: { color: ZONE_COLORS[cfPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'You appear to be in'),
         h('h2', { style: { margin: '6px 0 0', color: ZONE_COLORS[cfPredicted], fontSize: 36, fontWeight: 800 } }, (cfPredicted || 'green').toUpperCase() + ' ZONE'),
-        h('p', { style: { margin: '6px 0 14px', color: '#e2e8f0', fontSize: 14 } }, ZONE_DESCS[cfPredicted])
+        h('p', { style: { margin: '6px 0 14px', color: _zoFg('#e2e8f0'), fontSize: 14 } }, ZONE_DESCS[cfPredicted])
       ),
-      h('label', { style: { color: '#cbd5e1', fontSize: 13, fontWeight: 600 } }, 'Intensity (1-10): ' + cfIntensity),
+      h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 600 } }, 'Intensity (1-10): ' + cfIntensity),
       h('input', { type: 'range', min: 1, max: 10, value: cfIntensity,
         onChange: function(e) { upd({ cfIntensity: parseInt(e.target.value, 10) }); },
         style: { width: '100%', marginTop: 6 }
       }),
-      h('div', { style: { marginTop: 14, padding: '6px 10px', borderRadius: 6, background: '#0f172a', color: '#fde68a', fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } },
+      h('div', { style: { marginTop: 14, padding: '6px 10px', borderRadius: 6, background: _zoBg('#0f172a'), color: _zoFg('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } },
         cfPredicted === 'red' ? '⚠️ If this is a crisis, call/text 988 (Suicide & Crisis Lifeline) or text HOME to 741741. You\'re not alone.' :
         cfPredicted === 'green' ? '✨ You\'re regulated. This is a good moment to build a habit.' :
         cfPredicted === 'yellow' ? '✨ Catch this early — yellow becomes red if it builds.' :
@@ -37046,15 +37055,15 @@ if (activeTab === 'checkin_flow') {
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
         h('button', { onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
         h('button', { onClick: function() { upd({ cfStep: 3 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ZONE_COLORS[cfPredicted], color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ZONE_COLORS[cfPredicted], color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'See strategies →')
       )
-    ) : h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #fbbf24' } },
-      h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 18, fontWeight: 800 } }, 'Try one of these'),
-      h('p', { style: { margin: '4px 0 12px', color: '#94a3b8', fontSize: 12 } }, 'Tap a strategy to commit to it. You can revisit this check-in after.'),
+    ) : h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #fbbf24' } },
+      h('h3', { style: { margin: 0, color: _zoFg('#fbbf24'), fontSize: 18, fontWeight: 800 } }, 'Try one of these'),
+      h('p', { style: { margin: '4px 0 12px', color: _zoFg('#94a3b8'), fontSize: 12 } }, 'Tap a strategy to commit to it. You can revisit this check-in after.'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
         (typeof ZONE_STRATEGIES !== 'undefined' ?
           ZONE_STRATEGIES.filter(function(s) {
@@ -37070,19 +37079,19 @@ if (activeTab === 'checkin_flow') {
         ).map(function(s) {
           var sel = cfChosenStrategy === s.id;
           return h('button', { key: s.id, onClick: function() { upd({ cfChosenStrategy: s.id }); if (soundEnabled) sfxClick(); },
-            style: { padding: 12, borderRadius: 10, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: '#cbd5e1', cursor: 'pointer', textAlign: 'left' }
+            style: { padding: 12, borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: _zoFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' }
           },
-            h('div', { style: { color: '#f1f5f9', fontSize: 14, fontWeight: 700 } }, s.name),
-            h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 4, lineHeight: 1.4 } }, s.whatItDoes || (s.steps && s.steps[band] && s.steps[band][0]) || '')
+            h('div', { style: { color: _zoFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, s.name),
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginTop: 4, lineHeight: 1.4 } }, s.whatItDoes || (s.steps && s.steps[band] && s.steps[band][0]) || '')
           );
         })
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
         h('button', { onClick: function() { upd({ cfStep: 2 }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+          style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
         h('button', { onClick: function() { upd({ cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxCheckin(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Save & restart')
       )
     )
@@ -37098,7 +37107,7 @@ if (activeTab === 'body_mapper') {
   var bmZone = d.bmZone || 'yellow';
   var bmIntensity = d.bmIntensity != null ? d.bmIntensity : 5;
   var bmRegion = d.bmRegion || null;
-  var ZONE_PALETTE = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_PALETTE = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   // Per-zone region intensity recipe (which body parts light up most)
   var ZONE_BODY_PROFILE = {
     blue: { head: 0.7, chest: 0.4, stomach: 0.6, arms: 0.5, legs: 0.7, shoulders: 0.6 },
@@ -37120,7 +37129,7 @@ if (activeTab === 'body_mapper') {
   var bodySvg = h('svg', { width: 240, height: 380, viewBox: '0 0 200 360', style: { display: 'block', margin: '0 auto' } },
     // outline
     h('path', { d: 'M 100 30 Q 80 30 80 50 Q 80 70 95 80 L 95 90 L 70 95 Q 50 100 45 130 L 50 200 Q 55 230 65 235 L 60 320 Q 60 340 75 345 L 90 345 Q 95 345 95 340 L 95 250 Q 100 245 105 250 L 105 340 Q 105 345 110 345 L 125 345 Q 140 340 140 320 L 135 235 Q 145 230 150 200 L 155 130 Q 150 100 130 95 L 105 90 L 105 80 Q 120 70 120 50 Q 120 30 100 30 Z',
-      fill: '#1e293b', stroke: '#475569', strokeWidth: 1.5 }),
+      fill: _zoBg('#1e293b'), stroke: '#475569', strokeWidth: 1.5 }),
     // regions colored by intensity
     Object.keys(profile).map(function(rId) {
       var i = profile[rId] * (bmIntensity / 10);
@@ -37141,15 +37150,15 @@ if (activeTab === 'body_mapper') {
       }[rId];
       if (!coords) return null;
       var sel = bmRegion === rId;
-      var common = { key: rId, fill: color, stroke: sel ? '#fbbf24' : 'none', strokeWidth: sel ? 2 : 0, style: { cursor: 'pointer' }, onClick: function() { upd({ bmRegion: sel ? null : rId }); if (soundEnabled) sfxClick(); } };
+      var common = { key: rId, fill: color, stroke: sel ? _zoFg('#fbbf24') : 'none', strokeWidth: sel ? 2 : 0, style: { cursor: 'pointer' }, onClick: function() { upd({ bmRegion: sel ? null : rId }); if (soundEnabled) sfxClick(); } };
       if (coords.r) return h('circle', Object.assign({ cx: coords.x, cy: coords.y, r: coords.r }, common));
       return h('ellipse', Object.assign({ cx: coords.x, cy: coords.y, rx: coords.rx, ry: coords.ry }, common));
     })
   );
   bodyMapperContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Body Zone Mapper: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Body Zone Mapper: '),
         'Pick a zone + intensity and see where in the body it tends to show up. Click any region for what to look for. Different bodies have different patterns — this is a starting map, not a rule.'
       )
     ),
@@ -37157,24 +37166,24 @@ if (activeTab === 'body_mapper') {
       ['blue','green','yellow','red'].map(function(z) {
         var sel = bmZone === z;
         return h('button', { key: z, onClick: function() { upd({ bmZone: z, bmRegion: null }); if (soundEnabled) sfxClick(); },
-          style: { padding: '8px 16px', borderRadius: 8, border: '2px solid ' + (sel ? ZONE_PALETTE[z] : '#475569'), background: sel ? ZONE_PALETTE[z] + '33' : '#1e293b', color: sel ? '#fff' : '#cbd5e1', fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+          style: { padding: '8px 16px', borderRadius: 8, border: '2px solid ' + (sel ? ZONE_PALETTE[z] : '#475569'), background: sel ? ZONE_PALETTE[z] + '33' : _zoBg('#1e293b'), color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
         }, z);
       })
     ),
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 14 } },
-      h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Intensity in this zone: ' + bmIntensity + ' / 10'),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 14 } },
+      h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Intensity in this zone: ' + bmIntensity + ' / 10'),
       h('input', { type: 'range', min: 1, max: 10, value: bmIntensity,
         onChange: function(e) { upd({ bmIntensity: parseInt(e.target.value, 10) }); },
         style: { width: '100%' }
       })
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) 2fr', gap: 16 } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a' } }, bodySvg),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#0f172a') } }, bodySvg),
       h('div', null,
-        bmRegion ? h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-          h('h4', { style: { margin: 0, color: '#fde68a', fontSize: 17, fontWeight: 800 } }, REGION_INFO[bmRegion].name + ' — ' + bmZone.toUpperCase() + ' ZONE'),
-          h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.65 } }, REGION_INFO[bmRegion][bmZone])
-        ) : h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', color: '#94a3b8', fontSize: 13, lineHeight: 1.55 } },
+        bmRegion ? h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+          h('h4', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 17, fontWeight: 800 } }, REGION_INFO[bmRegion].name + ' — ' + bmZone.toUpperCase() + ' ZONE'),
+          h('p', { style: { margin: '8px 0 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.65 } }, REGION_INFO[bmRegion][bmZone])
+        ) : h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), color: _zoFg('#94a3b8'), fontSize: 13, lineHeight: 1.55 } },
           'Click any body region to see what it tends to feel like in the ' + bmZone.toUpperCase() + ' zone.'
         )
       )
@@ -37208,7 +37217,7 @@ if (activeTab === 'sorter') {
     { id: 's11',text: 'Kid in flow, building something with full focus', correct: 'green' },
     { id: 's12',text: 'Friend pacing, snapping at questions before presentation', correct: 'yellow' }
   ];
-  var ZONE_PALETTE = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_PALETTE = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   function _place(scenarioId, zoneId) {
     var s = ALL_SCENARIOS.find(function(x) { return x.id === scenarioId; });
     if (!s) return;
@@ -37222,30 +37231,30 @@ if (activeTab === 'sorter') {
   var unsorted = ALL_SCENARIOS.filter(function(s) { return !sortPlaced[s.id]; });
   var allDone = unsorted.length === 0;
   sorterContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Scenario Sorter: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Scenario Sorter: '),
         '12 scenarios. Tap a scenario, then tap the zone it best matches. Green check = right; red X = wrong. Score: ' + sortScore + ' / ' + (Object.keys(sortFeedback).length || 0)
       )
     ),
-    !allDone ? h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #475569', marginBottom: 14 } },
-      h('div', { style: { color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 } }, 'Pick a scenario to sort:'),
+    !allDone ? h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#0f172a'), border: '1px solid #475569', marginBottom: 14 } },
+      h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 } }, 'Pick a scenario to sort:'),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         unsorted.map(function(s) {
           var sel = d.sortCurrent === s.id;
           return h('button', { key: s.id, onClick: function() { upd({ sortCurrent: s.id }); if (soundEnabled) sfxClick(); },
-            style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#1e293b', color: '#cbd5e1', fontSize: 12, cursor: 'pointer', textAlign: 'left', maxWidth: 280 }
+            style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : _zoBg('#1e293b'), color: _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer', textAlign: 'left', maxWidth: 280 }
           }, s.text);
         })
       )
     ) : null,
-    !allDone && d.sortCurrent ? h('div', { style: { padding: 14, borderRadius: 10, background: '#1e293b', border: '2px solid #fbbf24', marginBottom: 14 } },
-      h('div', { style: { color: '#fde68a', fontSize: 14, marginBottom: 10, lineHeight: 1.5 } }, (ALL_SCENARIOS.find(function(x){return x.id===d.sortCurrent;}) || {}).text),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 6 } }, 'Which zone?'),
+    !allDone && d.sortCurrent ? h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), border: '2px solid #fbbf24', marginBottom: 14 } },
+      h('div', { style: { color: _zoFg('#fde68a'), fontSize: 14, marginBottom: 10, lineHeight: 1.5 } }, (ALL_SCENARIOS.find(function(x){return x.id===d.sortCurrent;}) || {}).text),
+      h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginBottom: 6 } }, 'Which zone?'),
       h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
         ['blue','green','yellow','red'].map(function(z) {
           return h('button', { key: z, onClick: function() { _place(d.sortCurrent, z); upd({ sortCurrent: null }); },
-            style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + ZONE_PALETTE[z], background: ZONE_PALETTE[z] + '33', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + ZONE_PALETTE[z], background: ZONE_PALETTE[z] + '33', color: _zoFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         })
       )
@@ -37253,24 +37262,24 @@ if (activeTab === 'sorter') {
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
       ['blue','green','yellow','red'].map(function(z) {
         var placedHere = ALL_SCENARIOS.filter(function(s) { return sortPlaced[s.id] === z; });
-        return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '2px dashed ' + ZONE_PALETTE[z], minHeight: 80 } },
+        return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '2px dashed ' + ZONE_PALETTE[z], minHeight: 80 } },
           h('div', { style: { color: ZONE_PALETTE[z], fontSize: 14, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, z + ' Zone'),
-          placedHere.length === 0 ? h('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic' } }, 'empty') :
+          placedHere.length === 0 ? h('div', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic' } }, 'empty') :
           placedHere.map(function(s) {
             var fb = sortFeedback[s.id];
-            return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 6, background: '#0f172a', marginBottom: 4, color: '#cbd5e1', fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 } },
+            return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 6, background: _zoBg('#0f172a'), marginBottom: 4, color: _zoFg('#cbd5e1'), fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 } },
               h('span', { style: { flex: 1 } }, s.text.length > 40 ? s.text.substring(0, 40) + '…' : s.text),
-              h('span', { style: { color: fb === 'correct' ? '#22c55e' : '#ef4444', fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
+              h('span', { style: { color: fb === 'correct' ? _zoFg('#22c55e') : _zoFg('#ef4444'), fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
             );
           })
         );
       })
     ),
-    allDone ? h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: '#042f2e', border: '2px solid #5eead4', textAlign: 'center' } },
-      h('h3', { style: { color: '#5eead4', fontSize: 24, margin: 0 } }, sortScore + ' / 12'),
-      h('p', { style: { color: '#a7f3d0', fontSize: 13, margin: '6px 0 12px' } }, sortScore === 12 ? 'Perfect! You read all 12 zones accurately.' : sortScore >= 9 ? 'Strong reading.' : 'Real practice — try again to refine your reading.'),
+    allDone ? h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: _zoBg('#042f2e'), border: '2px solid #5eead4', textAlign: 'center' } },
+      h('h3', { style: { color: _zoFg('#5eead4'), fontSize: 24, margin: 0 } }, sortScore + ' / 12'),
+      h('p', { style: { color: _zoFg('#a7f3d0'), fontSize: 13, margin: '6px 0 12px' } }, sortScore === 12 ? 'Perfect! You read all 12 zones accurately.' : sortScore >= 9 ? 'Strong reading.' : 'Real practice — try again to refine your reading.'),
       h('button', { onClick: function() { upd({ sortPlaced: {}, sortFeedback: {}, sortScore: 0, sortCurrent: null }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Play again')
     ) : null
   );
@@ -37283,7 +37292,7 @@ if (activeTab === 'sorter') {
 var zoneHistoryContent = null;
 if (activeTab === 'zone_history') {
   var checkins = d.checkins || [];
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   var today = new Date();
   var todayStr = today.toISOString().slice(0, 10);
   function _dateOffset(daysAgo) {
@@ -37309,42 +37318,42 @@ if (activeTab === 'zone_history') {
     return { date: ds, zone: dom, total: Object.values(counts).reduce(function(a, b) { return a + b; }, 0), isToday: ds === todayStr };
   });
   zoneHistoryContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Zone Heatmap: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Zone Heatmap: '),
         'Last 8 weeks of check-ins. Each square = a day; color = the dominant zone that day. Looking for patterns: which days are heavier? Around tests? Sundays? Before/after sleep? Show this to a counselor — patterns beat single moments.'
       )
     ),
-    total === 0 ? h('div', { style: { padding: 24, borderRadius: 12, background: '#0f172a', textAlign: 'center' } },
+    total === 0 ? h('div', { style: { padding: 24, borderRadius: 12, background: _zoBg('#0f172a'), textAlign: 'center' } },
       h('div', { style: { fontSize: 48 } }, '📊'),
-      h('p', { style: { color: '#94a3b8', fontSize: 13, lineHeight: 1.55, margin: '8px 0' } }, 'No check-ins yet. Tap "Check-In" or "In-the-Moment Check-In" to start tracking your zones over time.')
+      h('p', { style: { color: _zoFg('#94a3b8'), fontSize: 13, lineHeight: 1.55, margin: '8px 0' } }, 'No check-ins yet. Tap "Check-In" or "In-the-Moment Check-In" to start tracking your zones over time.')
     ) : h('div', null,
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10, marginBottom: 14 } },
         Object.keys(ZONE_COLORS).map(function(z) {
           var pct = total ? Math.round((zoneCounts[z] / total) * 100) : 0;
-          return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid ' + ZONE_COLORS[z] + '55' } },
+          return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#0f172a'), border: '1px solid ' + ZONE_COLORS[z] + '55' } },
             h('div', { style: { color: ZONE_COLORS[z], fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, z + ' zone'),
-            h('div', { style: { color: '#f1f5f9', fontSize: 24, fontWeight: 800, marginTop: 4 } }, pct + '%'),
-            h('div', { style: { color: '#94a3b8', fontSize: 11 } }, zoneCounts[z] + ' check-ins')
+            h('div', { style: { color: _zoFg('#f1f5f9'), fontSize: 24, fontWeight: 800, marginTop: 4 } }, pct + '%'),
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11 } }, zoneCounts[z] + ' check-ins')
           );
         })
       ),
-      h('div', { style: { padding: 14, borderRadius: 10, background: '#0f172a' } },
-        h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 } }, '8-week pattern'),
+      h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#0f172a') } },
+        h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 } }, '8-week pattern'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 4 } },
           days.map(function(day) {
             return h('div', { key: day.date, title: day.date + ': ' + (day.zone ? day.zone + ' zone' : 'no check-in'),
-              style: { aspectRatio: '1 / 1', borderRadius: 4, background: day.zone ? ZONE_COLORS[day.zone] : '#1e293b', border: day.isToday ? '2px solid #fbbf24' : '1px solid #334155', opacity: day.zone ? 0.85 : 0.3 }
+              style: { aspectRatio: '1 / 1', borderRadius: 4, background: day.zone ? ZONE_COLORS[day.zone] : _zoBg('#1e293b'), border: day.isToday ? '2px solid #fbbf24' : '1px solid #334155', opacity: day.zone ? 0.85 : 0.3 }
             });
           })
         ),
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 } },
-          h('div', { style: { color: '#64748b', fontSize: 10 } }, '8 weeks ago'),
+          h('div', { style: { color: _zoFg('#64748b'), fontSize: 10 } }, '8 weeks ago'),
           h('div', { style: { display: 'flex', gap: 4, alignItems: 'center' } },
-            h('span', { style: { color: '#64748b', fontSize: 10 } }, 'Zone:'),
+            h('span', { style: { color: _zoFg('#64748b'), fontSize: 10 } }, 'Zone:'),
             ['blue','green','yellow','red'].map(function(z) { return h('div', { key: z, style: { width: 12, height: 12, borderRadius: 3, background: ZONE_COLORS[z] } }); })
           ),
-          h('div', { style: { color: '#fbbf24', fontSize: 10 } }, 'Today')
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10 } }, 'Today')
         )
       )
     )
@@ -37361,9 +37370,9 @@ if (activeTab === 'matcher') {
   var smIntensity = d.smIntensity || 'moderate';
   var smVisibility = d.smVisibility || null;
   var smMovement = d.smMovement || null;
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   if (typeof ZONE_STRATEGIES === 'undefined' || !ZONE_STRATEGIES.length) {
-    strategyMatcherContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Strategy library loading...');
+    strategyMatcherContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Strategy library loading...');
   } else {
     var filtered = ZONE_STRATEGIES.filter(function(s) {
       if ((s.forZone || []).indexOf(smZone) === -1) return false;
@@ -37374,79 +37383,79 @@ if (activeTab === 'matcher') {
       return true;
     });
     strategyMatcherContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Strategy Matcher: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Strategy Matcher: '),
           'Pick your current zone + intensity. Optionally filter by visibility (subtle = can do at desk) and movement (still = no big motions). The library narrows to strategies designed for THIS state.'
         )
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
-        h('div', { style: { padding: 10, borderRadius: 10, background: '#1e293b' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Zone'),
+        h('div', { style: { padding: 10, borderRadius: 10, background: _zoBg('#1e293b') } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Zone'),
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             ['blue','green','yellow','red'].map(function(z) {
               var sel = smZone === z;
               return h('button', { key: z, onClick: function() { upd({ smZone: z }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? ZONE_COLORS[z] : '#475569'), background: sel ? ZONE_COLORS[z] + '33' : '#0f172a', color: sel ? '#fff' : '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? ZONE_COLORS[z] : '#475569'), background: sel ? ZONE_COLORS[z] + '33' : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
               }, z);
             })
           )
         ),
-        h('div', { style: { padding: 10, borderRadius: 10, background: '#1e293b' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Intensity'),
+        h('div', { style: { padding: 10, borderRadius: 10, background: _zoBg('#1e293b') } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Intensity'),
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             ['mild','moderate','crisis','any'].map(function(i) {
               var sel = smIntensity === i;
               return h('button', { key: i, onClick: function() { upd({ smIntensity: i }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
               }, i);
             })
           )
         ),
-        h('div', { style: { padding: 10, borderRadius: 10, background: '#1e293b' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Visibility'),
+        h('div', { style: { padding: 10, borderRadius: 10, background: _zoBg('#1e293b') } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Visibility'),
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             [{ id: null, label: 'any' }, { id: 'invisible', label: 'invisible' }, { id: 'subtle', label: 'subtle' }, { id: 'moderate', label: 'moderate' }, { id: 'visible', label: 'visible' }].map(function(v) {
               var sel = smVisibility === v.id;
               return h('button', { key: v.label, onClick: function() { upd({ smVisibility: v.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#a78bfa' : '#475569'), background: sel ? '#1e1b4b' : '#0f172a', color: sel ? '#c4b5fd' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, v.label);
             })
           )
         ),
-        h('div', { style: { padding: 10, borderRadius: 10, background: '#1e293b' } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Movement'),
+        h('div', { style: { padding: 10, borderRadius: 10, background: _zoBg('#1e293b') } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Movement'),
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             [{ id: null, label: 'any' }, { id: 'still', label: 'still' }, { id: 'small', label: 'small' }, { id: 'moderate', label: 'moderate' }, { id: 'full-body', label: 'full' }].map(function(m) {
               var sel = smMovement === m.id;
               return h('button', { key: m.label, onClick: function() { upd({ smMovement: m.id }); if (soundEnabled) sfxClick(); },
-                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a633' : '#0f172a', color: sel ? '#5eead4' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
+                style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a633' : '#0f172a', color: sel ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, m.label);
             })
           )
         )
       ),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 10 } }, filtered.length + ' strategies match your filter'),
+      h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginBottom: 10 } }, filtered.length + ' strategies match your filter'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
         filtered.slice(0, 24).map(function(s) {
-          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[smZone] } },
+          return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[smZone] } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
               s.icon ? h('span', { style: { fontSize: 18 } }, s.icon) : null,
-              h('h5', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, s.name)
+              h('h5', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, s.name)
             ),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (s.durationSec || '?') + 's · ' + (s.visibility || '?') + ' · ' + (s.movement || '?') + ' · ' + (s.noiseLevel || '?')),
-            s.whatItDoes ? h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, s.whatItDoes) : null,
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (s.durationSec || '?') + 's · ' + (s.visibility || '?') + ' · ' + (s.movement || '?') + ' · ' + (s.noiseLevel || '?')),
+            s.whatItDoes ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, s.whatItDoes) : null,
             s.steps && s.steps[band] ? h('details', { style: { marginTop: 6 } },
-              h('summary', { style: { cursor: 'pointer', color: '#5eead4', fontSize: 11, fontWeight: 600 } }, 'Steps'),
-              h('ol', { style: { margin: '4px 0 0 18px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+              h('summary', { style: { cursor: 'pointer', color: _zoFg('#5eead4'), fontSize: 11, fontWeight: 600 } }, 'Steps'),
+              h('ol', { style: { margin: '4px 0 0 18px', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } },
                 s.steps[band].map(function(stp, i) { return h('li', { key: i }, stp); })
               )
             ) : null,
-            s.zoneShift ? h('div', { style: { marginTop: 6, color: '#fbbf24', fontSize: 11, fontStyle: 'italic' } }, 'Shift: ' + s.zoneShift) : null
+            s.zoneShift ? h('div', { style: { marginTop: 6, color: _zoFg('#fbbf24'), fontSize: 11, fontStyle: 'italic' } }, 'Shift: ' + s.zoneShift) : null
           );
         })
       ),
-      filtered.length > 24 ? h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, padding: 12 } }, 'Showing first 24 of ' + filtered.length + '. Add filters to narrow.') : null
+      filtered.length > 24 ? h('div', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 11, padding: 12 } }, 'Showing first 24 of ' + filtered.length + '. Add filters to narrow.') : null
     );
   }
 }
@@ -37463,7 +37472,7 @@ if (activeTab === 'zone_quiz') {
   var qzStreak = d.qzStreak || 0;
   var qzCurrent = d.qzCurrent || null;
   var qzRevealed = d.qzRevealed || false;
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   // Pool of quick scenarios — pull from agent data if available else built-in
   function _pickQuestion() {
     if (typeof ZONE_SCENARIOS !== 'undefined' && ZONE_SCENARIOS.length) {
@@ -37491,42 +37500,42 @@ if (activeTab === 'zone_quiz') {
     if (correct) { if (soundEnabled) sfxCorrect(); } else { if (soundEnabled) sfxWrong(); }
   }
   zoneQuizContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Zone Quiz: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Zone Quiz: '),
         'Rapid-fire scenarios. Read the situation, predict the zone, get the explanation. Some scenarios are ambiguous on purpose — Zones is about reading nuance, not memorizing answers.'
       )
     ),
     h('div', { style: { display: 'flex', gap: 12, marginBottom: 14, justifyContent: 'center' } },
-      h('div', { style: { padding: '10px 16px', borderRadius: 8, background: '#0f172a', textAlign: 'center' } },
-        h('div', { style: { color: '#5eead4', fontSize: 20, fontWeight: 800 } }, qzScore + '/' + qzTotal),
-        h('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'correct')
+      h('div', { style: { padding: '10px 16px', borderRadius: 8, background: _zoBg('#0f172a'), textAlign: 'center' } },
+        h('div', { style: { color: _zoFg('#5eead4'), fontSize: 20, fontWeight: 800 } }, qzScore + '/' + qzTotal),
+        h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10 } }, 'correct')
       ),
-      h('div', { style: { padding: '10px 16px', borderRadius: 8, background: '#0f172a', textAlign: 'center' } },
-        h('div', { style: { color: '#fbbf24', fontSize: 20, fontWeight: 800 } }, qzStreak),
-        h('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'streak')
+      h('div', { style: { padding: '10px 16px', borderRadius: 8, background: _zoBg('#0f172a'), textAlign: 'center' } },
+        h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 20, fontWeight: 800 } }, qzStreak),
+        h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10 } }, 'streak')
       )
     ),
-    qzCurrent ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid ' + (qzRevealed ? ZONE_COLORS[qzCurrent.correct] : '#475569') } },
-      h('p', { style: { margin: 0, color: '#fde68a', fontSize: 16, lineHeight: 1.55, fontWeight: 600 } }, qzCurrent.story),
-      qzCurrent.cues && qzCurrent.cues.length ? h('div', { style: { marginTop: 10, color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'You notice: ' + qzCurrent.cues.join(', ')) : null,
+    qzCurrent ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid ' + (qzRevealed ? ZONE_COLORS[qzCurrent.correct] : '#475569') } },
+      h('p', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 16, lineHeight: 1.55, fontWeight: 600 } }, qzCurrent.story),
+      qzCurrent.cues && qzCurrent.cues.length ? h('div', { style: { marginTop: 10, color: _zoFg('#94a3b8'), fontSize: 11, fontStyle: 'italic' } }, 'You notice: ' + qzCurrent.cues.join(', ')) : null,
       !qzRevealed ? h('div', { style: { marginTop: 14 } },
-        h('div', { style: { color: '#cbd5e1', fontSize: 13, fontWeight: 600, marginBottom: 8 } }, 'Which zone?'),
+        h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 600, marginBottom: 8 } }, 'Which zone?'),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           ['blue','green','yellow','red'].map(function(z) {
             return h('button', { key: z, onClick: function() { _answer(z); },
-              style: { padding: '12px 20px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+              style: { padding: '12px 20px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 14, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
             }, z);
           })
         )
       ) : h('div', { style: { marginTop: 14 } },
         h('div', { style: { padding: '8px 12px', borderRadius: 6, background: ZONE_COLORS[qzCurrent.correct] + '22', border: '1px solid ' + ZONE_COLORS[qzCurrent.correct] } },
           h('div', { style: { color: ZONE_COLORS[qzCurrent.correct], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, 'Answer: ' + qzCurrent.correct + ' Zone'),
-          h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, qzCurrent.explanation)
+          h('p', { style: { margin: '6px 0 0', color: _zoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55 } }, qzCurrent.explanation)
         ),
-        qzCurrent.whatToDo ? h('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: '#042f2e', color: '#a7f3d0', fontSize: 12, lineHeight: 1.5 } }, '💡 ' + qzCurrent.whatToDo) : null,
+        qzCurrent.whatToDo ? h('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e'), color: _zoFg('#a7f3d0'), fontSize: 12, lineHeight: 1.5 } }, '💡 ' + qzCurrent.whatToDo) : null,
         h('button', { onClick: function() { upd({ qzCurrent: _pickQuestion(), qzRevealed: false }); if (soundEnabled) sfxClick(); },
-          style: { marginTop: 12, padding: '10px 22px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+          style: { marginTop: 12, padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Next →')
       )
     ) : null
@@ -37543,7 +37552,7 @@ if (activeTab === 'coreg_helper') {
   var crObserved = d.crObserved || [];
   var crPredicted = d.crPredicted || null;
   var crChosen = d.crChosen || null;
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   var OBSERVABLE_CUES = [
     { id: 'silent', label: 'They\'ve gone silent', zone: 'blue' },
     { id: 'withdrawn', label: 'They\'re isolating', zone: 'blue' },
@@ -37593,15 +37602,15 @@ if (activeTab === 'coreg_helper') {
     }
   };
   coregulationContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Helping a Friend: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Helping a Friend: '),
         '3-step wizard: notice cues → predict their zone → get a support guide. Coregulation = lending your calm to someone whose nervous system is overwhelmed. Your job is presence, not fixing.'
       )
     ),
-    crStep === 0 ? h('div', { style: { padding: 18, borderRadius: 12, background: '#1e293b', border: '2px solid #5eead4' } },
-      h('h3', { style: { margin: 0, color: '#5eead4', fontSize: 18, fontWeight: 800 } }, 'What do you notice about them?'),
-      h('p', { style: { margin: '4px 0 12px', color: '#94a3b8', fontSize: 12 } }, 'Tap all that apply.'),
+    crStep === 0 ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #5eead4' } },
+      h('h3', { style: { margin: 0, color: _zoFg('#5eead4'), fontSize: 18, fontWeight: 800 } }, 'What do you notice about them?'),
+      h('p', { style: { margin: '4px 0 12px', color: _zoFg('#94a3b8'), fontSize: 12 } }, 'Tap all that apply.'),
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         OBSERVABLE_CUES.map(function(c) {
           var on = crObserved.indexOf(c.id) !== -1;
@@ -37609,14 +37618,14 @@ if (activeTab === 'coreg_helper') {
               var n = on ? crObserved.filter(function(x) { return x !== c.id; }) : crObserved.concat([c.id]);
               upd({ crObserved: n }); if (soundEnabled) sfxClick();
             },
-            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[c.zone] : '#475569'), background: on ? ZONE_COLORS[c.zone] + '33' : '#0f172a', color: on ? '#fff' : '#cbd5e1', fontSize: 12, cursor: 'pointer' }
+            style: { padding: '8px 14px', borderRadius: 16, border: '1px solid ' + (on ? ZONE_COLORS[c.zone] : '#475569'), background: on ? ZONE_COLORS[c.zone] + '33' : '#0f172a', color: on ? '#fff' : _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, c.label);
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
         h('button', { onClick: function() { upd({ crStep: 1, crPredicted: _predictFromCues() }); if (soundEnabled) sfxClick(); },
           disabled: crObserved.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: crObserved.length === 0 ? '#334155' : '#5eead4', color: crObserved.length === 0 ? '#94a3b8' : '#0f172a', fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: crObserved.length === 0 ? '#334155' : '#5eead4', color: crObserved.length === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Get support guide →')
       )
     ) : (function() {
@@ -37626,29 +37635,29 @@ if (activeTab === 'coreg_helper') {
           h('div', { style: { color: ZONE_COLORS[crPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700 } }, 'They appear to be in'),
           h('h2', { style: { margin: '4px 0', color: ZONE_COLORS[crPredicted], fontSize: 28, fontWeight: 800, textTransform: 'uppercase' } }, crPredicted + ' Zone')
         ),
-        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: '#0f172a', marginBottom: 12 } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'First step (your body)'),
-          h('p', { style: { margin: 0, color: '#fde68a', fontSize: 13, lineHeight: 1.55, fontStyle: 'italic' } }, guide.first)
+        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#0f172a'), marginBottom: 12 } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'First step (your body)'),
+          h('p', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 13, lineHeight: 1.55, fontStyle: 'italic' } }, guide.first)
         ),
-        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: '#042f2e', marginBottom: 12 } },
-          h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✓ Do'),
-          h('ul', { style: { margin: '4px 0 0 18px', color: '#a7f3d0', fontSize: 12, lineHeight: 1.55 } },
+        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#042f2e'), marginBottom: 12 } },
+          h('div', { style: { color: _zoFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✓ Do'),
+          h('ul', { style: { margin: '4px 0 0 18px', color: _zoFg('#a7f3d0'), fontSize: 12, lineHeight: 1.55 } },
             guide.doList.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
           )
         ),
-        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: '#7f1d1d', marginBottom: 12 } },
-          h('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✗ Don\'t'),
-          h('ul', { style: { margin: '4px 0 0 18px', color: '#fed7aa', fontSize: 12, lineHeight: 1.55 } },
+        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#7f1d1d'), marginBottom: 12 } },
+          h('div', { style: { color: _zoFg('#fecaca'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✗ Don\'t'),
+          h('ul', { style: { margin: '4px 0 0 18px', color: _zoFg('#fed7aa'), fontSize: 12, lineHeight: 1.55 } },
             guide.dontList.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
           )
         ),
-        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: '#451a03', marginBottom: 12 } },
-          h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'When to escalate'),
-          h('p', { style: { margin: 0, color: '#fde68a', fontSize: 12, lineHeight: 1.55 } }, guide.escalate)
+        h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#451a03'), marginBottom: 12 } },
+          h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'When to escalate'),
+          h('p', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 12, lineHeight: 1.55 } }, guide.escalate)
         ),
         h('div', { style: { textAlign: 'center' } },
           h('button', { onClick: function() { upd({ crStep: 0, crObserved: [], crPredicted: null }); if (soundEnabled) sfxClick(); },
-            style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: '#5eead4', color: '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Start over')
         )
       );
@@ -37664,7 +37673,7 @@ var compassContent = null;
 if (activeTab === 'compass') {
   var compassToday = d.compassToday || {};  // hour -> zone
   var compassHour = d.compassHour != null ? d.compassHour : new Date().getHours();
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   function _setHour(hour, zone) {
     var n = Object.assign({}, compassToday);
     n[hour] = zone;
@@ -37685,18 +37694,18 @@ if (activeTab === 'compass') {
     return 'M ' + x1i + ' ' + y1i + ' L ' + x1o + ' ' + y1o + ' A ' + outerR + ' ' + outerR + ' 0 0 1 ' + x2o + ' ' + y2o + ' L ' + x2i + ' ' + y2i + ' A ' + innerR + ' ' + innerR + ' 0 0 0 ' + x1i + ' ' + y1i + ' Z';
   }
   compassContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Daily Zone Compass: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Daily Zone Compass: '),
         '24-hour clock. Tap an hour to log your zone. Over a day you\'ll see your zone fluctuations — when you tend to dip, when you tend to peak, when you\'re in flow. Patterns become visible over weeks.'
       )
     ),
-    h('div', { style: { textAlign: 'center', background: '#0f172a', borderRadius: 12, padding: 16 } },
+    h('div', { style: { textAlign: 'center', background: _zoBg('#0f172a'), borderRadius: 12, padding: 16 } },
       h('svg', { width: 320, height: 320, viewBox: '0 0 320 320', style: { maxWidth: '100%', display: 'block', margin: '0 auto' } },
         // 24 segments
         Array.from({ length: 24 }, function(_, hour) {
           var zone = compassToday[hour];
-          var fill = zone ? ZONE_COLORS[zone] : '#1e293b';
+          var fill = zone ? ZONE_COLORS[zone] : _zoBg('#1e293b');
           var sel = compassHour === hour;
           return h('path', { key: hour, d: _arcPath(hour, hour + 1, 70, 140), fill: fill, opacity: zone ? 0.8 : 0.3, stroke: sel ? '#fff' : '#0f172a', strokeWidth: sel ? 3 : 1, style: { cursor: 'pointer' },
             role: 'button', tabIndex: 0, 'aria-label': hour + ':00' + (zone ? ', ' + zone + ' zone' : ''), 'aria-pressed': sel ? 'true' : 'false',
@@ -37711,38 +37720,38 @@ if (activeTab === 'compass') {
           var rad = ang * Math.PI / 180;
           var lx = 160 + 155 * Math.cos(rad);
           var ly = 160 + 155 * Math.sin(rad);
-          return h('text', { key: 'h' + i, x: lx, y: ly, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: 10, fill: '#94a3b8' }, hour);
+          return h('text', { key: 'h' + i, x: lx, y: ly, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: 10, fill: _zoFg('#94a3b8') }, hour);
         }),
         // center label
-        h('circle', { cx: 160, cy: 160, r: 60, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
-        h('text', { x: 160, y: 155, textAnchor: 'middle', fontSize: 11, fill: '#fbbf24', fontWeight: 700 }, 'Today'),
-        h('text', { x: 160, y: 170, textAnchor: 'middle', fontSize: 24, fill: '#f1f5f9', fontWeight: 800 }, compassHour + ':00')
+        h('circle', { cx: 160, cy: 160, r: 60, fill: _zoBg('#1e293b'), stroke: '#475569', strokeWidth: 1 }),
+        h('text', { x: 160, y: 155, textAnchor: 'middle', fontSize: 11, fill: _zoFg('#fbbf24'), fontWeight: 700 }, 'Today'),
+        h('text', { x: 160, y: 170, textAnchor: 'middle', fontSize: 24, fill: _zoFg('#f1f5f9'), fontWeight: 800 }, compassHour + ':00')
       )
     ),
-    h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: '#1e293b' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'What zone are you in at ' + compassHour + ':00?'),
+    h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: _zoBg('#1e293b') } },
+      h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'What zone are you in at ' + compassHour + ':00?'),
       h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
         ['blue','green','yellow','red'].map(function(z) {
           var current = compassToday[compassHour] === z;
           return h('button', { key: z, onClick: function() { _setHour(compassHour, z); },
-            style: { padding: '10px 18px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: current ? ZONE_COLORS[z] + '44' : ZONE_COLORS[z] + '22', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '10px 18px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: current ? ZONE_COLORS[z] + '44' : ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         }),
         h('button', { onClick: function() { var n = Object.assign({}, compassToday); delete n[compassHour]; upd({ compassToday: n }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: '#0f172a', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
+          style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, 'Clear')
       )
     ),
-    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#1e293b' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Quick jump'),
+    h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: _zoBg('#1e293b') } },
+      h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Quick jump'),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         [{ name: 'Wake', h: 7 }, { name: 'School arrival', h: 8 }, { name: 'Lunch', h: 12 }, { name: 'After school', h: 15 }, { name: 'Dinner', h: 18 }, { name: 'Bedtime', h: 22 }].map(function(p) {
           return h('button', { key: p.name, onClick: function() { upd({ compassHour: p.h }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', fontSize: 11, cursor: 'pointer' }
+            style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, p.name);
         }),
         h('button', { onClick: function() { upd({ compassToday: {} }); if (soundEnabled) sfxClick(); },
-          style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #ef4444', background: '#7f1d1d', color: '#fecaca', fontSize: 11, cursor: 'pointer' }
+          style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #ef4444', background: _zoBg('#7f1d1d'), color: _zoFg('#fecaca'), fontSize: 11, cursor: 'pointer' }
         }, 'Reset day')
       )
     )
@@ -37758,7 +37767,7 @@ if (activeTab === 'pulse') {
   var pulseZone = d.pulseZone || null;
   var pulseNote = d.pulseNote || '';
   var pulseRecent = d.pulseRecent || [];
-  var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+  var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   function _pulse(z) {
     var newEntry = { zone: z, note: pulseNote, date: new Date().toISOString() };
     var newRecent = [newEntry].concat(pulseRecent.slice(0, 19));
@@ -37767,35 +37776,35 @@ if (activeTab === 'pulse') {
     addToast && addToast('Pulse logged: ' + z.toUpperCase() + ' Zone', 'info');
   }
   pulseContent = h('div', { style: { padding: '0 12px 24px' } },
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-      h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-        h('strong', { style: { color: '#fbbf24' } }, 'Pulse Check-In: '),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+      h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+        h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Pulse Check-In: '),
         '1-tap zone vote. Use throughout the day. Last 20 stored locally — patterns become visible after a week of pulsing.'
       )
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14 } },
       ['blue','green','yellow','red'].map(function(z) {
         return h('button', { key: z, onClick: function() { _pulse(z); },
-          style: { padding: 24, borderRadius: 12, border: '3px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }
+          style: { padding: 24, borderRadius: 12, border: '3px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 16, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }
         }, z);
       })
     ),
-    h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 14 } },
-      h('label', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Optional note (what triggered? what helped?)'),
+    h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 14 } },
+      h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Optional note (what triggered? what helped?)'),
       h('input', { type: 'text', value: pulseNote, placeholder: 'e.g., "test in math, used breath"',
         onChange: function(e) { upd({ pulseNote: e.target.value }); },
-        style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 13 }
+        style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 13 }
       })
     ),
-    pulseRecent.length ? h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b' } },
-      h('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'Last 20 pulses'),
+    pulseRecent.length ? h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b') } },
+      h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 } }, 'Last 20 pulses'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6 } },
         pulseRecent.map(function(e, i) {
           var dt = new Date(e.date);
           return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: ZONE_COLORS[e.zone] + '22', borderLeft: '3px solid ' + ZONE_COLORS[e.zone] } },
             h('div', { style: { color: ZONE_COLORS[e.zone], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, e.zone),
-            h('div', { style: { color: '#94a3b8', fontSize: 10 } }, dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + dt.toLocaleDateString()),
-            e.note ? h('div', { style: { color: '#cbd5e1', fontSize: 11, marginTop: 2, fontStyle: 'italic' } }, '"' + e.note + '"') : null
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10 } }, dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + dt.toLocaleDateString()),
+            e.note ? h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 11, marginTop: 2, fontStyle: 'italic' } }, '"' + e.note + '"') : null
           );
         })
       )
@@ -37810,13 +37819,13 @@ if (activeTab === 'pulse') {
 var descriptorsContent = null;
 if (activeTab === 'descriptors') {
   if (typeof ZONE_DESCRIPTORS === 'undefined' || !ZONE_DESCRIPTORS.length) {
-    descriptorsContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Descriptors library loading...');
+    descriptorsContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Descriptors library loading...');
   } else {
     var dlZone = d.dlZone || 'all';
     var dlIntensity = d.dlIntensity || 0;
     var dlSearch = (d.dlSearch || '').toLowerCase();
     var dlOpen = d.dlOpen || null;
-    var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+    var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
     var filtered = ZONE_DESCRIPTORS.filter(function(d2) {
       if (dlZone !== 'all' && d2.zone !== dlZone) return false;
       if (dlIntensity > 0 && d2.intensity !== dlIntensity) return false;
@@ -37826,9 +37835,9 @@ if (activeTab === 'descriptors') {
              (d2.shortDef || '').toLowerCase().indexOf(dlSearch) !== -1;
     });
     descriptorsContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Descriptors Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Descriptors Library: '),
           ZONE_DESCRIPTORS.length + ' specific emotional states + body signals + behaviors categorized into Zones across grade bands. Filter by zone, intensity, and search. Each has body cues, thought cues, triggers, and what it needs.'
         )
       ),
@@ -37836,7 +37845,7 @@ if (activeTab === 'descriptors') {
         ['all','blue','green','yellow','red'].map(function(z) {
           var sel = dlZone === z;
           return h('button', { key: z, onClick: function() { upd({ dlZone: z }); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 12px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? '#fbbf24' : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? '#fbbf24' : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '6px 12px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         })
       ),
@@ -37844,40 +37853,40 @@ if (activeTab === 'descriptors') {
         [0, 1, 2, 3, 4, 5].map(function(i) {
           var sel = dlIntensity === i;
           return h('button', { key: i, onClick: function() { upd({ dlIntensity: i }); if (soundEnabled) sfxClick(); },
-            style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? '#a78bfa' : '#475569'), background: sel ? '#1e1b4b' : '#0f172a', color: sel ? '#c4b5fd' : '#94a3b8', fontSize: 11, cursor: 'pointer' }
+            style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
           }, i === 0 ? 'all intensities' : 'intensity ' + i);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search descriptor...', value: d.dlSearch || '',
         onChange: function(e) { upd({ dlSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
-      h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, filtered.length + ' descriptors'),
+      h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginBottom: 8 } }, filtered.length + ' descriptors'),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
         filtered.slice(0, 80).map(function(de) {
           var isOpen = dlOpen === de.id;
-          return h('div', { key: de.id, style: { padding: 10, borderRadius: 8, background: '#1e293b', borderLeft: '3px solid ' + ZONE_COLORS[de.zone], border: '1px solid #334155', cursor: 'pointer' },
+          return h('div', { key: de.id, style: { padding: 10, borderRadius: 8, background: _zoBg('#1e293b'), borderLeft: '3px solid ' + ZONE_COLORS[de.zone], border: '1px solid #334155', cursor: 'pointer' },
             role: 'button', tabIndex: 0, 'aria-expanded': isOpen ? 'true' : 'false',
             onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ dlOpen: isOpen ? null : de.id }); if (soundEnabled) sfxClick(); } },
             onClick: function() { upd({ dlOpen: isOpen ? null : de.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
-              h('h5', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700, textTransform: 'capitalize' } }, de.word),
-              h('span', { style: { color: '#fbbf24', fontSize: 10 } }, '◉'.repeat(de.intensity) + '○'.repeat(5 - de.intensity))
+              h('h5', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700, textTransform: 'capitalize' } }, de.word),
+              h('span', { style: { color: _zoFg('#fbbf24'), fontSize: 10 } }, '◉'.repeat(de.intensity) + '○'.repeat(5 - de.intensity))
             ),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, de.category + ' · ' + de.zone),
-            h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.4 } }, de.shortDef),
-            isOpen ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: '#0f172a' } },
-              de.bodyCues && de.bodyCues.length ? h('div', { style: { color: '#fbbf24', fontSize: 10 } }, 'Body: ' + de.bodyCues.join(', ')) : null,
-              de.thoughtCues && de.thoughtCues.length ? h('div', { style: { color: '#a78bfa', fontSize: 10, marginTop: 2 } }, 'Thought: ' + de.thoughtCues.join(', ')) : null,
-              de.behaviorCues && de.behaviorCues.length ? h('div', { style: { color: '#5eead4', fontSize: 10, marginTop: 2 } }, 'Behavior: ' + de.behaviorCues.join(', ')) : null,
-              de.triggers && de.triggers.length ? h('div', { style: { color: '#fde68a', fontSize: 10, marginTop: 2 } }, 'Triggers: ' + de.triggers.join(', ')) : null,
-              de.whatItNeeds ? h('div', { style: { marginTop: 6, padding: '4px 6px', borderRadius: 4, background: '#042f2e', color: '#5eead4', fontSize: 11, lineHeight: 1.4 } }, '💡 ' + de.whatItNeeds) : null
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, de.category + ' · ' + de.zone),
+            h('p', { style: { margin: '6px 0 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.4 } }, de.shortDef),
+            isOpen ? h('div', { style: { marginTop: 8, padding: '6px 8px', borderRadius: 6, background: _zoBg('#0f172a') } },
+              de.bodyCues && de.bodyCues.length ? h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10 } }, 'Body: ' + de.bodyCues.join(', ')) : null,
+              de.thoughtCues && de.thoughtCues.length ? h('div', { style: { color: _zoFg('#a78bfa'), fontSize: 10, marginTop: 2 } }, 'Thought: ' + de.thoughtCues.join(', ')) : null,
+              de.behaviorCues && de.behaviorCues.length ? h('div', { style: { color: _zoFg('#5eead4'), fontSize: 10, marginTop: 2 } }, 'Behavior: ' + de.behaviorCues.join(', ')) : null,
+              de.triggers && de.triggers.length ? h('div', { style: { color: _zoFg('#fde68a'), fontSize: 10, marginTop: 2 } }, 'Triggers: ' + de.triggers.join(', ')) : null,
+              de.whatItNeeds ? h('div', { style: { marginTop: 6, padding: '4px 6px', borderRadius: 4, background: _zoBg('#042f2e'), color: _zoFg('#5eead4'), fontSize: 11, lineHeight: 1.4 } }, '💡 ' + de.whatItNeeds) : null
             ) : null
           );
         })
       ),
-      filtered.length > 80 ? h('div', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, padding: 12 } }, 'Showing first 80 of ' + filtered.length + '. Refine to narrow.') : null
+      filtered.length > 80 ? h('div', { style: { textAlign: 'center', color: _zoFg('#94a3b8'), fontSize: 11, padding: 12 } }, 'Showing first 80 of ' + filtered.length + '. Refine to narrow.') : null
     );
   }
 }
@@ -37888,11 +37897,11 @@ if (activeTab === 'descriptors') {
 var triggersContent = null;
 if (activeTab === 'triggers') {
   if (typeof ZONE_TRIGGERS === 'undefined' || !ZONE_TRIGGERS.length) {
-    triggersContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Triggers library loading...');
+    triggersContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Triggers library loading...');
   } else {
     var trCategory = d.trCategory || 'all';
     var trOpen = d.trOpen || null;
-    var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+    var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
     var cats = ['all','school','peer','family','sensory','internal','biological','environmental','tech','trauma'];
     var filtered = ZONE_TRIGGERS.filter(function(t) {
       if (trCategory !== 'all' && t.category !== trCategory) return false;
@@ -37900,9 +37909,9 @@ if (activeTab === 'triggers') {
       return true;
     });
     triggersContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Triggers Library: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Triggers Library: '),
           ZONE_TRIGGERS.length + ' common triggers categorized by domain — school, peer, family, sensory, internal, biological, tech, trauma. Each has early warning signs, prevention, in-moment, and recovery strategies.'
         )
       ),
@@ -37910,49 +37919,49 @@ if (activeTab === 'triggers') {
         cats.map(function(c) {
           var sel = trCategory === c;
           return h('button', { key: c, onClick: function() { upd({ trCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? '#fde68a' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(t) {
           var isOpen = trOpen === t.id;
-          return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[t.typicallyShiftsTo] } },
+          return h('div', { key: t.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[t.typicallyShiftsTo] } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
-              h('h4', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, t.trigger),
+              h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, t.trigger),
               h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[t.typicallyShiftsTo] + '33', color: ZONE_COLORS[t.typicallyShiftsTo], fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, t.typicallyShiftsTo)
             ),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, t.category),
-            t.whyItTriggers ? h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, t.whyItTriggers) : null,
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, t.category),
+            t.whyItTriggers ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, t.whyItTriggers) : null,
             h('button', { onClick: function() { upd({ trOpen: isOpen ? null : t.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : _zoFg('#3b82f6'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View strategies'),
             isOpen ? h('div', { style: { marginTop: 10 } },
-              t.earlyWarningSigns && t.earlyWarningSigns.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: '#451a03' } },
-                h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early warning signs'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#fde68a', fontSize: 11, lineHeight: 1.55 } },
+              t.earlyWarningSigns && t.earlyWarningSigns.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#451a03') } },
+                h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early warning signs'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#fde68a'), fontSize: 11, lineHeight: 1.55 } },
                   t.earlyWarningSigns.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              t.preventionStrategies && t.preventionStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: '#042f2e' } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Prevention'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#a7f3d0', fontSize: 11, lineHeight: 1.55 } },
+              t.preventionStrategies && t.preventionStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e') } },
+                h('div', { style: { color: _zoFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Prevention'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#a7f3d0'), fontSize: 11, lineHeight: 1.55 } },
                   t.preventionStrategies.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              t.inTheMomentStrategies && t.inTheMomentStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: '#1e1b4b' } },
-                h('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#c7d2fe', fontSize: 11, lineHeight: 1.55 } },
+              t.inTheMomentStrategies && t.inTheMomentStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#1e1b4b') } },
+                h('div', { style: { color: _zoFg('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#c7d2fe'), fontSize: 11, lineHeight: 1.55 } },
                   t.inTheMomentStrategies.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              t.recoveryStrategies && t.recoveryStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: '#1e293b', border: '1px solid #5eead4' } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Recovery'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+              t.recoveryStrategies && t.recoveryStrategies.length ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#1e293b'), border: '1px solid #5eead4' } },
+                h('div', { style: { color: _zoFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Recovery'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } },
                   t.recoveryStrategies.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              t.whenToSeekHelp ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#7c2d12', color: '#fed7aa', fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + t.whenToSeekHelp) : null
+              t.whenToSeekHelp ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: _zoBg('#7c2d12'), color: _zoFg('#fed7aa'), fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + t.whenToSeekHelp) : null
             ) : null
           );
         })
@@ -37967,12 +37976,12 @@ if (activeTab === 'triggers') {
 var plansContent = null;
 if (activeTab === 'plans') {
   if (typeof ZONE_PLANS === 'undefined' || !ZONE_PLANS.length) {
-    plansContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Plans library loading...');
+    plansContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Plans library loading...');
   } else {
     var plSearch = (d.plSearch || '').toLowerCase();
     var plFromZone = d.plFromZone || 'all';
     var plOpen = d.plOpen || null;
-    var ZONE_COLORS = { blue: '#3b82f6', green: '#22c55e', yellow: '#fde047', red: '#ef4444' };
+    var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
     var filtered = ZONE_PLANS.filter(function(p) {
       if (plFromZone !== 'all' && p.fromZone !== plFromZone) return false;
       if (p.forBand && p.forBand !== 'all' && p.forBand !== band) return false;
@@ -37980,9 +37989,9 @@ if (activeTab === 'plans') {
       return (p.scenario || '').toLowerCase().indexOf(plSearch) !== -1;
     });
     plansContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Personal Zone Plans: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Personal Zone Plans: '),
           ZONE_PLANS.length + ' pre-built plans for specific situations (test anxiety, panic, sibling fight, grief wave, etc.) — each with early warnings, prevention, in-moment, after, people-to-call, and crisis escalation. Customize for your life.'
         )
       ),
@@ -37990,47 +37999,47 @@ if (activeTab === 'plans') {
         ['all','blue','yellow','red'].map(function(z) {
           var sel = plFromZone === z;
           return h('button', { key: z, onClick: function() { upd({ plFromZone: z }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? '#fbbf24' : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? '#fbbf24' : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? '#fff' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, 'From ' + z);
         })
       ),
       h('input', { type: 'search', placeholder: '🔎 Search scenarios...', value: d.plSearch || '',
         onChange: function(e) { upd({ plSearch: e.target.value }); },
-        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, marginBottom: 14 }
+        style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), fontSize: 13, marginBottom: 14 }
       }),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(p) {
           var isOpen = plOpen === p.id;
-          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[p.fromZone] } },
+          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + ZONE_COLORS[p.fromZone] } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
-              h('h4', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, p.scenario),
+              h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.scenario),
               p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: ZONE_COLORS[p.fromZone], fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
             ),
             h('button', { onClick: function() { upd({ plOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#3b82f6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : _zoFg('#3b82f6'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open plan'),
             isOpen ? h('div', { style: { marginTop: 10 } },
               p.earlyWarnings && p.earlyWarnings.length ? h('div', { style: { marginBottom: 8 } },
-                h('div', { style: { color: '#fbbf24', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early warnings'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+                h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'Early warnings'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.55 } },
                   p.earlyWarnings.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
-              p.inMomentPlan ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: '#1e1b4b' } },
-                h('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
+              p.inMomentPlan ? h('div', { style: { marginBottom: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#1e1b4b') } },
+                h('div', { style: { color: _zoFg('#a78bfa'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
                 Object.keys(p.inMomentPlan).map(function(phase) {
                   var actions = p.inMomentPlan[phase];
                   return h('div', { key: phase, style: { marginBottom: 4 } },
-                    h('div', { style: { color: '#c4b5fd', fontSize: 10, fontWeight: 700 } }, phase.replace(/_/g, ' ')),
-                    h('ul', { style: { margin: '2px 0 0 18px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+                    h('div', { style: { color: _zoFg('#c4b5fd'), fontSize: 10, fontWeight: 700 } }, phase.replace(/_/g, ' ')),
+                    h('ul', { style: { margin: '2px 0 0 18px', color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.5 } },
                       actions.map(function(a, i) { return h('li', { key: i }, a); })
                     )
                   );
                 })
               ) : null,
-              p.peopleToCall && p.peopleToCall.length ? h('div', { style: { marginBottom: 8, color: '#fbbf24', fontSize: 11 } }, h('strong', null, 'People to reach: '), p.peopleToCall.join(' · ')) : null,
-              p.selfTalk ? h('div', { style: { marginBottom: 6, padding: '6px 10px', borderRadius: 6, background: '#042f2e', color: '#5eead4', fontSize: 11, fontStyle: 'italic' } }, '💗 ' + p.selfTalk) : null,
-              p.whenToEscalate ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: '#7c2d12', color: '#fed7aa', fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + p.whenToEscalate) : null
+              p.peopleToCall && p.peopleToCall.length ? h('div', { style: { marginBottom: 8, color: _zoFg('#fbbf24'), fontSize: 11 } }, h('strong', null, 'People to reach: '), p.peopleToCall.join(' · ')) : null,
+              p.selfTalk ? h('div', { style: { marginBottom: 6, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e'), color: _zoFg('#5eead4'), fontSize: 11, fontStyle: 'italic' } }, '💗 ' + p.selfTalk) : null,
+              p.whenToEscalate ? h('div', { style: { padding: '6px 10px', borderRadius: 6, background: _zoBg('#7c2d12'), color: _zoFg('#fed7aa'), fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + p.whenToEscalate) : null
             ) : null
           );
         })
@@ -38045,7 +38054,7 @@ if (activeTab === 'plans') {
 var classroomContent = null;
 if (activeTab === 'classroom') {
   if (typeof CLASSROOM_TOOLKIT === 'undefined' || !CLASSROOM_TOOLKIT.length) {
-    classroomContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Classroom toolkit loading...');
+    classroomContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Classroom toolkit loading...');
   } else {
     var clCategory = d.clCategory || 'all';
     var clOpen = d.clOpen || null;
@@ -38055,9 +38064,9 @@ if (activeTab === 'classroom') {
       return true;
     });
     classroomContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Classroom Toolkit: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Classroom Toolkit: '),
           CLASSROOM_TOOLKIT.length + ' Zones-aligned activities for teachers — morning meetings, transitions, whole-class regulation, environment design, crisis protocols, coregulation conferences, assessment alternatives. Realistic logistics, not maximalist.'
         )
       ),
@@ -38065,27 +38074,27 @@ if (activeTab === 'classroom') {
         cats.map(function(c) {
           var sel = clCategory === c;
           return h('button', { key: c, onClick: function() { upd({ clCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#0f172a', color: sel ? '#5eead4' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#0f172a', color: sel ? '#5eead4' : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(c) {
           var isOpen = clOpen === c.id;
-          return h('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-            h('h4', { style: { margin: 0, color: '#f1f5f9', fontSize: 13, fontWeight: 700 } }, c.name),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (c.category || '') + ' · ' + (c.forGrade || 'all') + ' · ' + (c.durationMin || '?') + ' min'),
+          return h('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+            h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, c.name),
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (c.category || '') + ' · ' + (c.forGrade || 'all') + ' · ' + (c.durationMin || '?') + ' min'),
             h('button', { onClick: function() { upd({ clOpen: isOpen ? null : c.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? '#94a3b8' : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? _zoFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View'),
             isOpen ? h('div', { style: { marginTop: 8 } },
-              c.materials && c.materials.length ? h('div', { style: { color: '#a78bfa', fontSize: 11, marginBottom: 6 } }, 'Materials: ' + c.materials.join(', ')) : null,
-              c.steps && c.steps.length ? h('ol', { style: { margin: '6px 0 0 18px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } },
+              c.materials && c.materials.length ? h('div', { style: { color: _zoFg('#a78bfa'), fontSize: 11, marginBottom: 6 } }, 'Materials: ' + c.materials.join(', ')) : null,
+              c.steps && c.steps.length ? h('ol', { style: { margin: '6px 0 0 18px', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.6 } },
                 c.steps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 3 } }, s); })
               ) : null,
-              c.whyItWorks ? h('p', { style: { margin: '8px 0', color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, '✨ ' + c.whyItWorks) : null,
-              c.classroomLogistics ? h('div', { style: { padding: '4px 8px', borderRadius: 6, background: '#0f172a', color: '#94a3b8', fontSize: 11, lineHeight: 1.5 } }, '🏫 ' + c.classroomLogistics) : null,
-              c.cautions ? h('div', { style: { marginTop: 6, color: '#fbbf24', fontSize: 11 } }, '⚠️ ' + c.cautions) : null
+              c.whyItWorks ? h('p', { style: { margin: '8px 0', color: _zoFg('#fde68a'), fontSize: 11, fontStyle: 'italic' } }, '✨ ' + c.whyItWorks) : null,
+              c.classroomLogistics ? h('div', { style: { padding: '4px 8px', borderRadius: 6, background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } }, '🏫 ' + c.classroomLogistics) : null,
+              c.cautions ? h('div', { style: { marginTop: 6, color: _zoFg('#fbbf24'), fontSize: 11 } }, '⚠️ ' + c.cautions) : null
             ) : null
           );
         })
@@ -38100,7 +38109,7 @@ if (activeTab === 'classroom') {
 var parentContent = null;
 if (activeTab === 'parent') {
   if (typeof PARENT_GUIDE === 'undefined' || !PARENT_GUIDE.length) {
-    parentContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#94a3b8' } }, 'Parent guide loading...');
+    parentContent = h('div', { style: { padding: 40, textAlign: 'center', color: _zoFg('#94a3b8') } }, 'Parent guide loading...');
   } else {
     var pgCategory = d.pgCategory || 'all';
     var pgOpen = d.pgOpen || null;
@@ -38110,9 +38119,9 @@ if (activeTab === 'parent') {
       return true;
     });
     parentContent = h('div', { style: { padding: '0 12px 24px' } },
-      h('div', { style: { padding: 12, borderRadius: 10, background: '#1e293b', marginBottom: 12 } },
-        h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 13, lineHeight: 1.55 } },
-          h('strong', { style: { color: '#fbbf24' } }, 'Parent Guide: '),
+      h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 12 } },
+        h('p', { style: { margin: 0, color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
+          h('strong', { style: { color: _zoFg('#fbbf24') } }, 'Parent Guide: '),
           PARENT_GUIDE.length + ' guides for parents/caregivers using Zones at home. Honest about parent dysregulation. Scripts, self-care for parent, when to seek help, what NOT to do.'
         )
       ),
@@ -38120,44 +38129,44 @@ if (activeTab === 'parent') {
         cats.map(function(c) {
           var sel = pgCategory === c;
           return h('button', { key: c, onClick: function() { upd({ pgCategory: c }); if (soundEnabled) sfxClick(); },
-            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#0f172a', color: sel ? '#fbcfe8' : '#cbd5e1', fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
+            style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#0f172a', color: sel ? _zoFg('#fbcfe8') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
       ),
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 } },
         filtered.map(function(p) {
           var isOpen = pgOpen === p.id;
-          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-            h('h4', { style: { margin: 0, color: '#fbcfe8', fontSize: 13, fontWeight: 700 } }, p.topic),
-            h('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · for ' + (p.forChildAge || 'any age')),
-            p.whatItIs ? h('p', { style: { margin: '6px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, p.whatItIs) : null,
+          return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+            h('h4', { style: { margin: 0, color: _zoFg('#fbcfe8'), fontSize: 13, fontWeight: 700 } }, p.topic),
+            h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · for ' + (p.forChildAge || 'any age')),
+            p.whatItIs ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, p.whatItIs) : null,
             h('button', { onClick: function() { upd({ pgOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
-              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#ec4899', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#ec4899', color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open'),
             isOpen ? h('div', { style: { marginTop: 8 } },
-              p.whyItHappens ? h('p', { style: { margin: '4px 0', color: '#fde68a', fontSize: 11, fontStyle: 'italic' } }, p.whyItHappens) : null,
-              p.whatToDoInMoment && p.whatToDoInMoment.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#042f2e' } },
-                h('div', { style: { color: '#5eead4', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#a7f3d0', fontSize: 11, lineHeight: 1.55 } },
+              p.whyItHappens ? h('p', { style: { margin: '4px 0', color: _zoFg('#fde68a'), fontSize: 11, fontStyle: 'italic' } }, p.whyItHappens) : null,
+              p.whatToDoInMoment && p.whatToDoInMoment.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e') } },
+                h('div', { style: { color: _zoFg('#5eead4'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'In the moment'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#a7f3d0'), fontSize: 11, lineHeight: 1.55 } },
                   p.whatToDoInMoment.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 2 } }, s); })
                 )
               ) : null,
-              p.whatNotToDoInMoment && p.whatNotToDoInMoment.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#7f1d1d' } },
-                h('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✗ Don\'t'),
-                h('ul', { style: { margin: '0 0 0 18px', color: '#fed7aa', fontSize: 11, lineHeight: 1.55 } },
+              p.whatNotToDoInMoment && p.whatNotToDoInMoment.length ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _zoBg('#7f1d1d') } },
+                h('div', { style: { color: _zoFg('#fecaca'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '✗ Don\'t'),
+                h('ul', { style: { margin: '0 0 0 18px', color: _zoFg('#fed7aa'), fontSize: 11, lineHeight: 1.55 } },
                   p.whatNotToDoInMoment.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ) : null,
               p.scripts && p.scripts.length ? h('div', { style: { marginTop: 6 } },
                 p.scripts.map(function(sc, i) {
-                  return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: '#1e1b4b', marginBottom: 4 } },
-                    h('div', { style: { color: '#a5b4fc', fontSize: 11, fontStyle: 'italic' } }, sc.situation),
-                    h('div', { style: { color: '#e0e7ff', fontSize: 12, marginTop: 2, fontWeight: 600 } }, '"' + sc.say + '"')
+                  return h('div', { key: i, style: { padding: '6px 8px', borderRadius: 6, background: _zoBg('#1e1b4b'), marginBottom: 4 } },
+                    h('div', { style: { color: _zoFg('#a5b4fc'), fontSize: 11, fontStyle: 'italic' } }, sc.situation),
+                    h('div', { style: { color: _zoFg('#e0e7ff'), fontSize: 12, marginTop: 2, fontWeight: 600 } }, '"' + sc.say + '"')
                   );
                 })
               ) : null,
-              p.selfCareForParent ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#1e293b', color: '#fbbf24', fontSize: 11, fontStyle: 'italic' } }, '🌿 For you: ' + p.selfCareForParent) : null,
-              p.whenToSeekHelp ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: '#7c2d12', color: '#fed7aa', fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + p.whenToSeekHelp) : null
+              p.selfCareForParent ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _zoBg('#1e293b'), color: _zoFg('#fbbf24'), fontSize: 11, fontStyle: 'italic' } }, '🌿 For you: ' + p.selfCareForParent) : null,
+              p.whenToSeekHelp ? h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: _zoBg('#7c2d12'), color: _zoFg('#fed7aa'), fontSize: 11, lineHeight: 1.5 } }, '⚠️ ' + p.whenToSeekHelp) : null
             ) : null
           );
         })
@@ -38173,34 +38182,34 @@ if (activeTab === 'parent') {
       var limitsContent = null;
       if (activeTab === 'limits') {
         limitsContent = h('div', { style: { padding: '4px 12px 28px', maxWidth: 760, margin: '0 auto' } },
-          h('p', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, margin: '4px 0 18px' } },
+          h('p', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, margin: '4px 0 18px' } },
             'Zones of Regulation is a useful shared vocabulary, not a complete or settled curriculum. This page is for educators and older students: where the framework falls short, and other regulation frameworks worth knowing. Being honest about the limits is what keeps the tool trustworthy.'
           ),
-          h('h3', { style: { color: '#f1f5f9', fontSize: 15, fontWeight: 800, margin: '0 0 10px' } }, '⚖️ Honest limitations'),
+          h('h3', { style: { color: _zoFg('#f1f5f9'), fontSize: 15, fontWeight: 800, margin: '0 0 10px' } }, '⚖️ Honest limitations'),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
             (ZONES_CRITIQUES || []).map(function(c, i) {
-              return h('div', { key: c.id || i, style: { background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid #f59e0b', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { color: '#fbbf24', fontSize: 13, fontWeight: 700, marginBottom: 6 } }, c.critique),
-                c.description ? h('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, c.description) : null,
-                c.whyItMatters ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#94a3b8' } }, 'Why it matters: '), c.whyItMatters) : null,
-                c.workAround ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#86efac' } }, 'What to do instead: '), c.workAround) : null,
-                c.research ? h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: 0 } }, c.research) : null
+              return h('div', { key: c.id || i, style: { background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '3px solid #f59e0b', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 13, fontWeight: 700, marginBottom: 6 } }, c.critique),
+                c.description ? h('p', { style: { color: _zoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, c.description) : null,
+                c.whyItMatters ? h('p', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: _zoFg('#94a3b8') } }, 'Why it matters: '), c.whyItMatters) : null,
+                c.workAround ? h('p', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: _zoFg('#86efac') } }, 'What to do instead: '), c.workAround) : null,
+                c.research ? h('p', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic', margin: 0 } }, c.research) : null
               );
             })
           ),
-          h('h3', { style: { color: '#f1f5f9', fontSize: 15, fontWeight: 800, margin: '22px 0 4px' } }, '🧭 Other frameworks worth knowing'),
-          h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: '0 0 10px', lineHeight: 1.5 } },
+          h('h3', { style: { color: _zoFg('#f1f5f9'), fontSize: 15, fontWeight: 800, margin: '22px 0 4px' } }, '🧭 Other frameworks worth knowing'),
+          h('p', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic', margin: '0 0 10px', lineHeight: 1.5 } },
             'Listing a framework is not a claim that its mechanism is proven. Some (such as polyvagal theory) are widely used but scientifically contested; they are included because educators encounter them.'
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
             (ALTERNATIVE_FRAMEWORKS || []).map(function(fw, i) {
-              return h('div', { key: fw.id || i, style: { background: '#1e293b', border: '1px solid #334155', borderLeft: '3px solid #38bdf8', borderRadius: 10, padding: '12px 14px' } },
-                h('div', { style: { color: '#7dd3fc', fontSize: 13, fontWeight: 700 } }, fw.name),
-                fw.origin ? h('div', { style: { color: '#64748b', fontSize: 11, marginBottom: 6 } }, fw.origin) : null,
-                fw.shortDesc ? h('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, fw.shortDesc) : null,
-                fw.comparedToZones ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#94a3b8' } }, 'Compared to Zones: '), fw.comparedToZones) : null,
-                fw.whenToUse ? h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: '#86efac' } }, 'When to use: '), fw.whenToUse) : null,
-                fw.research ? h('p', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', margin: 0 } }, fw.research) : null
+              return h('div', { key: fw.id || i, style: { background: _zoBg('#1e293b'), border: '1px solid #334155', borderLeft: '3px solid #38bdf8', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { color: _zoFg('#7dd3fc'), fontSize: 13, fontWeight: 700 } }, fw.name),
+                fw.origin ? h('div', { style: { color: _zoFg('#64748b'), fontSize: 11, marginBottom: 6 } }, fw.origin) : null,
+                fw.shortDesc ? h('p', { style: { color: _zoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, fw.shortDesc) : null,
+                fw.comparedToZones ? h('p', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: _zoFg('#94a3b8') } }, 'Compared to Zones: '), fw.comparedToZones) : null,
+                fw.whenToUse ? h('p', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, h('strong', { style: { color: _zoFg('#86efac') } }, 'When to use: '), fw.whenToUse) : null,
+                fw.research ? h('p', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic', margin: 0 } }, fw.research) : null
               );
             })
           )

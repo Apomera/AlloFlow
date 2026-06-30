@@ -88,6 +88,13 @@ const CASES = [
   { id: 'mindfulness', base: 'dark', bg: '_minBg' },
   { id: 'advocacy', base: 'dark', bg: '_advBg' },
   { id: 'disabilityvoices', base: 'dark', bg: '_disBg', reg: 'disabilityVoices' },
+  { id: 'zones', base: 'dark', bg: '_zoBg' },                          // inverse on top of its partial P
+  // restorativecircle is migrated (static invariant verifies its surfaces are wrapped), but its DEFAULT
+  // view renders no themed background, so the default-view diff can't see the flip → renderQuiet.
+  { id: 'restorativecircle', base: 'dark', bg: '_rcBg', reg: 'restorativeCircle', renderQuiet: true },
+  // emotions already carries a complete-enough ctx.theme P-palette + ST() (pre-existing) — render-only
+  // coverage; its light parity is existing-pattern work, not the _xxBg remap.
+  { id: 'emotions', partial: true },
 ];
 
 // dark SURFACE hexes that, in a dark-base tool, MUST be wrapped in _xxBg() (else they stay dark
@@ -160,7 +167,7 @@ describe.skipIf(!depsOk)('SEL Hub · tools render differently per ctx.theme (rea
         expect(render(rid, {}).length).toBeGreaterThan(500);
       });
 
-      it('light / dark / high-contrast produce three different renders', () => {
+      it.skipIf(c.renderQuiet)('light / dark / high-contrast produce three different renders', () => {
         const light = render(rid, {});
         const dark = render(rid, { isDark: true });
         const hc = render(rid, { isContrast: true });
@@ -169,7 +176,7 @@ describe.skipIf(!depsOk)('SEL Hub · tools render differently per ctx.theme (rea
         expect(light).not.toBe(hc);
       });
 
-      it('high-contrast engages the WCAG yellow/black scheme', () => {
+      it.skipIf(c.renderQuiet)('high-contrast engages the WCAG yellow/black scheme', () => {
         const hc = render(rid, { isContrast: true });
         // #ffff00 (yellow text) is the universal HC marker — present whenever themed text renders.
         // #000000 (black bg) only appears if the tool paints its own surface in the default view
@@ -184,6 +191,7 @@ describe.skipIf(!depsOk)('SEL Hub · tools render differently per ctx.theme (rea
 describe('SEL Hub · migrated tools have no unwrapped tinted-surface literals (ternary-completeness)', () => {
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const c of CASES) {
+    if (c.partial) continue; // own P-palette pattern, not the _xxC/_xxBg remap — render coverage only
     if (c.base === 'dark') {
       it(`${c.id}: dark surfaces in render body route through ${c.bg}() (no dark island in light mode)`, () => {
         const src = readFileSync(resolve(process.cwd(), 'sel_hub', `sel_tool_${c.id}.js`), 'utf8');
