@@ -3501,6 +3501,7 @@
           styleBlock,
 
           // SVG of the deck
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Tacoma flutter: wind ' + windSpeed + ' miles per hour, deck ' + (safe ? 'stable' : resonance ? 'in resonant flutter' : 'failing') + ', oscillation amplitude ' + amplitude.toFixed(0) + ' degrees.'),
           h('svg', { viewBox: '0 0 400 180', width: '100%', height: 180, role: 'img', 'aria-labelledby': 'flutterTitle flutterDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'flutterTitle' }, __alloT('stem.bridgelab.tacoma_narrows_flutter_animation', 'Tacoma Narrows flutter animation')),
             h('desc', { id: 'flutterDesc' }, 'A schematic bridge deck oscillating in wind. Amplitude grows with wind speed. At ' + windSpeed + ' miles per hour, the deck is ' + (safe ? 'stable' : resonance ? 'in resonant flutter' : 'failing') + '.'),
@@ -3602,6 +3603,7 @@
           styleBlock,
 
           // SVG of the bridge with pedestrians
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, 'Millennium bridge: ' + nPeds + ' pedestrians, ' + status + ', lateral amplitude ' + amplitude.toFixed(0) + ' pixels.'),
           h('svg', { viewBox: '0 0 400 160', width: '100%', height: 160, role: 'img', 'aria-labelledby': 'millTitle millDesc', style: { background: 'linear-gradient(180deg, #090e1a 0%, #030712 100%)', borderRadius: 12, border: '1px solid var(--allo-stem-border, #1e293b)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', overflow: 'hidden' } },
             h('title', { id: 'millTitle' }, __alloT('stem.bridgelab.millennium_bridge_pedestrian_synchroni', 'Millennium Bridge pedestrian synchronization animation')),
             h('desc', { id: 'millDesc' }, 'A schematic pedestrian bridge with ' + nPeds + ' people. Lateral amplitude is ' + amplitude.toFixed(0) + ' pixels — ' + status + '.'),
