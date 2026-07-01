@@ -212,6 +212,7 @@
   // write on every state change.
   var STORAGE_KEY = 'alloflow_allohaven_v1';
   var STUDENT_PROGRESS_SUMMARY_KEY = 'alloflow_student_progress_summary';
+  var STUDENT_ARTIFACTS_KEY = 'alloflow_student_artifacts';
   // STEM Lab's shared persistence key — used to read inherited theme from
   // Typing Practice (or any other tool that stamps state.theme there).
   var STEMLAB_STORAGE_KEY = 'alloflow_stemlab_v2';
@@ -252,6 +253,20 @@
       return (parsed && typeof parsed === 'object') ? parsed : null;
     } catch (e) {
       return null;
+    }
+  }
+
+  function readStudentArtifacts() {
+    try {
+      if (Array.isArray(window.__alloflowStudentArtifacts)) {
+        return window.__alloflowStudentArtifacts;
+      }
+      var raw = localStorage.getItem(STUDENT_ARTIFACTS_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
     }
   }
 
@@ -476,6 +491,9 @@
     // Cross-app student progress summary restored from the student project
     // file. Counts only; raw SEL reflection text is not rendered here.
     studentProgressSummary: null,
+    // Cross-app permanent student-authored products. Rendered read-only in
+    // AlloHaven; source modules own authoring and privacy choices.
+    studentArtifacts: [],
 
     // ── Tenure narrative cache (Phase Q) ──
     // AI-generated 2-3 paragraph narrative of the student's full
@@ -10367,6 +10385,13 @@
       } else if (!merged.studentProgressSummary || typeof merged.studentProgressSummary !== 'object') {
         merged.studentProgressSummary = null;
       }
+      var restoredStudentArtifacts = readStudentArtifacts();
+      if (Array.isArray(restoredStudentArtifacts)) {
+        merged.studentArtifacts = restoredStudentArtifacts;
+      }
+      if (!Array.isArray(merged.studentArtifacts)) {
+        merged.studentArtifacts = [];
+      }
       // Phase 2p.7 defensive normalization: backfill new fields onto
       // older saved state so post-update loads don\'t crash on undefined
       // access. These hits run once per session.
@@ -10501,6 +10526,21 @@
       window.addEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
       return function() {
         window.removeEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
+      };
+      // eslint-disable-next-line
+    }, []);
+
+    useEffect(function() {
+      function applyRestoredStudentArtifacts() {
+        var artifacts = readStudentArtifacts();
+        setStateField('studentArtifacts', Array.isArray(artifacts) ? artifacts : []);
+      }
+      applyRestoredStudentArtifacts();
+      window.addEventListener('alloflow-student-artifacts-restored', applyRestoredStudentArtifacts);
+      window.addEventListener('alloflow-student-artifacts-changed', applyRestoredStudentArtifacts);
+      return function() {
+        window.removeEventListener('alloflow-student-artifacts-restored', applyRestoredStudentArtifacts);
+        window.removeEventListener('alloflow-student-artifacts-changed', applyRestoredStudentArtifacts);
       };
       // eslint-disable-next-line
     }, []);
@@ -15844,6 +15884,12 @@
               style: secondaryBtnStyle(palette)
             }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
           })() : null,
+          (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0) ? h('button', {
+            onClick: function() { setStateField('activeModal', 'student-portfolio'); },
+            'aria-label': 'Open my portfolio, ' + state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's'),
+            title: 'My saved products',
+            style: secondaryBtnStyle(palette)
+          }, 'Portfolio - ' + state.studentArtifacts.length) : null,
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
             'aria-label': 'Open breathing pacer for self-care',
@@ -23260,6 +23306,194 @@
     // window into one celebratory retrospective. Heavy reuse of
     // computeTenureStats; renders nothing for genuinely-empty saves.
     // ─────────────────────────────────────────────────
+    function portfolioArtifactPacket(artifact) {
+      if (!artifact || typeof artifact !== 'object') return {};
+      if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+      if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+      return artifact;
+    }
+
+    function portfolioPrivacyLabel(mode) {
+      if (mode === 'full') return 'Full text shared';
+      if (mode === 'followup') return 'Follow-up requested';
+      if (mode === 'private') return 'Kept private';
+      if (mode === 'summary') return 'Summary only';
+      return 'Student selected';
+    }
+
+    function portfolioEscape(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+
+    function printPortfolioArtifact(artifact) {
+      var packet = portfolioArtifactPacket(artifact);
+      var items = Array.isArray(packet.items) ? packet.items : [];
+      var created = artifact.createdAt || packet.createdAt || new Date().toISOString();
+      var body = items.map(function(item, idx) {
+        var text = item.text || item.summary || 'No reflection text shared.';
+        return '<section style="border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin:0 0 12px;">'
+          + '<h2 style="font-size:16px;margin:0 0 4px;">' + (idx + 1) + '. ' + portfolioEscape(item.title || 'Portfolio item') + '</h2>'
+          + '<p style="margin:0 0 8px;color:#475569;font-size:12px;">' + portfolioEscape(item.toolLabel || artifact.sourceLabel || 'AlloFlow') + ' | ' + portfolioEscape(item.privacyLabel || portfolioPrivacyLabel(item.privacy)) + '</p>'
+          + (item.followUpRequested ? '<p style="font-weight:700;color:#92400e;">Follow-up requested.</p>' : '')
+          + '<p style="white-space:pre-wrap;line-height:1.55;margin:0;">' + portfolioEscape(text) + '</p>'
+          + '</section>';
+      }).join('');
+      var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + portfolioEscape(artifact.title || 'Portfolio') + '</title></head>'
+        + '<body style="font-family:Arial,sans-serif;color:#0f172a;margin:28px;">'
+        + '<h1 style="margin:0 0 4px;">' + portfolioEscape(artifact.title || 'Student Portfolio Artifact') + '</h1>'
+        + '<p style="margin:0 0 16px;color:#475569;">' + portfolioEscape(artifact.sourceLabel || 'Student work') + ' | ' + portfolioEscape(new Date(created).toLocaleString()) + '</p>'
+        + body
+        + '<script>window.onload=function(){setTimeout(function(){window.print();},80);};<\/script>'
+        + '</body></html>';
+      var win = null;
+      try { win = window.open('', '_blank'); } catch (e) {}
+      if (!win) return;
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    }
+
+    function renderPortfolioShelfModal() {
+      if (state.activeModal !== 'student-portfolio') return null;
+      var artifacts = (Array.isArray(state.studentArtifacts) ? state.studentArtifacts : readStudentArtifacts()).slice();
+      artifacts.sort(function(a, b) {
+        return Date.parse((b && (b.createdAt || b.updatedAt)) || 0) - Date.parse((a && (a.createdAt || a.updatedAt)) || 0);
+      });
+      var formatDate = function(value) {
+        if (!value) return 'Saved product';
+        try { return new Date(value).toLocaleDateString(); } catch (e) { return 'Saved product'; }
+      };
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'My portfolio',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 178,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '760px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' } },
+            h('div', null,
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } }, 'My Portfolio'),
+              h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
+                'Read-only products created in other modules. Privacy choices come from the source module.')
+            ),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close portfolio',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, 'x')
+          ),
+          artifacts.length ? h('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: '12px' }
+          },
+            artifacts.map(function(artifact, idx) {
+              artifact = artifact || {};
+              var packet = portfolioArtifactPacket(artifact);
+              var items = Array.isArray(packet.items) ? packet.items : [];
+              var sourceLabel = artifact.sourceLabel || packet.sourceLabel || (artifact.source === 'sel_hub' ? 'SEL Hub' : 'Student work');
+              return h('section', {
+                key: artifact.id || ('portfolio-artifact-' + idx),
+                'aria-label': (artifact.title || 'Portfolio item') + ' from ' + sourceLabel,
+                style: {
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px',
+                  padding: '14px',
+                  color: palette.text
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '8px' } },
+                  h('div', { style: { minWidth: 0 } },
+                    h('h4', { style: { margin: 0, fontSize: '14px', fontWeight: 800, color: palette.text, overflowWrap: 'anywhere' } }, artifact.title || packet.title || 'Portfolio Item'),
+                    h('div', { style: { marginTop: '3px', fontSize: '11px', color: palette.textDim } }, sourceLabel + ' - ' + formatDate(artifact.createdAt || packet.createdAt))
+                  ),
+                  h('span', {
+                    style: {
+                      flex: '0 0 auto',
+                      padding: '4px 8px',
+                      borderRadius: '999px',
+                      border: '1px solid ' + palette.border,
+                      color: palette.textDim,
+                      fontSize: '10px',
+                      fontWeight: 800
+                    }
+                  }, artifact.privacy === 'student-controlled' ? 'Student controlled' : portfolioPrivacyLabel(artifact.privacy))
+                ),
+                h('p', { style: { margin: '0 0 10px', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
+                  artifact.summary || packet.summary || (items.length ? items.length + ' saved items' : 'Saved product')),
+                items.length ? h('ul', {
+                  role: 'list',
+                  style: { listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: '8px' }
+                },
+                  items.map(function(item, itemIdx) {
+                    var label = item.privacyLabel || portfolioPrivacyLabel(item.privacy);
+                    var text = item.text || item.summary || 'No reflection text shared.';
+                    return h('li', {
+                      key: (item.id || 'item') + '-' + itemIdx,
+                      role: 'listitem',
+                      style: {
+                        border: '1px solid ' + palette.border,
+                        borderRadius: '8px',
+                        padding: '10px',
+                        background: palette.bg
+                      }
+                    },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline', marginBottom: '4px' } },
+                        h('strong', { style: { fontSize: '12px', color: palette.text, overflowWrap: 'anywhere' } }, item.title || 'Portfolio entry'),
+                        h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? '#b91c1c' : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
+                      ),
+                      item.followUpRequested ? h('div', { style: { color: '#92400e', fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, 'Follow-up requested.') : null,
+                      h('p', { style: { margin: 0, color: palette.textDim, fontSize: '11.5px', lineHeight: '1.45', overflowWrap: 'anywhere' } }, text)
+                    );
+                  })
+                ) : null,
+                items.length ? h('button', {
+                  onClick: function() { printPortfolioArtifact(artifact); },
+                  'aria-label': 'Print ' + (artifact.title || packet.title || 'portfolio item'),
+                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                }, 'Print') : null
+              );
+            })
+          ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
+            'No portfolio products are loaded yet. Create one in a module such as SEL Hub, then save or load the student project file.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
+        )
+      );
+    }
+
     function renderStudentProgressModal() {
       if (state.activeModal !== 'student-progress') return null;
       var summary = state.studentProgressSummary || readStudentProgressSummary();
@@ -27076,6 +27310,7 @@
       renderGoalsListModal(),
       renderGoalBuilderModal(),
       renderAchievementsModal(),
+      renderPortfolioShelfModal(),
       renderStudentProgressModal(),
       renderTenureRecapModal(),
       renderCompanionSetupModal(),

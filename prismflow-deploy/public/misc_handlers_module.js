@@ -616,6 +616,16 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
                 } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
             }
+            // Student-authored permanent products (SEL Share Packets and future
+            // module exports). AlloHaven renders these read-only, so clear the
+            // slot on older files instead of showing stale artifacts from a
+            // previous project.
+            try {
+                const restoredStudentArtifacts = Array.isArray(rawData.studentArtifacts) ? rawData.studentArtifacts : [];
+                window.__alloflowStudentArtifacts = restoredStudentArtifacts;
+                try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(restoredStudentArtifacts)); } catch (e) {}
+                window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-restored'));
+            } catch (e) { warnLog && warnLog('Student artifacts restore failed:', e); }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's
             // feedback or a student's marks survive reload. Falls back to

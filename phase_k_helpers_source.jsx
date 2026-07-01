@@ -1075,6 +1075,9 @@ const executeSaveFile = async (deps) => {
       const selToolData = (typeof window !== 'undefined' && window.__alloflowSelToolData) || null;
       // Tool-created SEL reflection/checkpoint artifacts.
       const selSnapshots = (typeof window !== 'undefined' && window.__alloflowSelSnapshots) || null;
+      // Student-authored permanent products, such as SEL Share Packets.
+      // AlloHaven reads this as a read-only portfolio shelf.
+      const studentArtifacts = (typeof window !== 'undefined' && window.__alloflowStudentArtifacts) || null;
       const studentProgressSummary = buildStudentProgressSummary({
           history,
           studentResponses,
@@ -1137,6 +1140,7 @@ const executeSaveFile = async (deps) => {
               selToolData: selToolData,
               selSnapshots: selSnapshots,
               studentProgressSummary: studentProgressSummary,
+              studentArtifacts: Array.isArray(studentArtifacts) ? studentArtifacts : [],
               // Stickers (annotation overlays placed on the output area) ride
               // the project JSON so a teacher's feedback / a student's marks
               // survive save→load. Without this they're wiped on reload.
@@ -1235,6 +1239,7 @@ const executeSaveFile = async (deps) => {
               selToolData: selToolData,
               selSnapshots: selSnapshots,
               studentProgressSummary: studentProgressSummary,
+              studentArtifacts: Array.isArray(studentArtifacts) ? studentArtifacts : [],
               // See teacher-save above — stickers persist with the project so
               // a student's marks aren't wiped on reload.
               stickers: Array.isArray(stickers) ? stickers : [],
@@ -1255,7 +1260,7 @@ const executeSaveFile = async (deps) => {
       // unaffected (empty SEL data {} does not match).
       let outName = filename;
       const _hasVoice = dataStr.indexOf('data:audio') !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
-      const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr) || /"selSnapshots"\s*:\s*\[\s*\{/.test(dataStr);
+      const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr) || /"selSnapshots"\s*:\s*\[\s*\{/.test(dataStr) || /"studentArtifacts"\s*:\s*\[\s*\{/.test(dataStr);
       if (_hasVoice || _hasSelText) {
           const _msg = _hasVoice
               ? "This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?"
