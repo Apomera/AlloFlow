@@ -17668,6 +17668,181 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Render ──
         var dk = isDark; // shorthand
+        function hasQueenResources(cost) {
+          cost = cost || {};
+          return Object.keys(cost).every(function(k) { return (queenResources[k] || 0) >= cost[k]; });
+        }
+        function queenCostText(cost) {
+          cost = cost || {};
+          var names = { nectar: 'Nectar', pollen: 'Pollen', wax: 'Wax', royalJelly: 'Royal jelly' };
+          var keys = Object.keys(cost);
+          if (!keys.length) return 'Free';
+          return keys.map(function(k) { return (names[k] || k) + ' ' + cost[k]; }).join(' | ');
+        }
+        function queenPhasePreviewStyle(col, part) {
+          var cardDark = {
+            amber: 'bg-slate-800 border-amber-700/30',
+            red: 'bg-slate-800 border-red-700/30',
+            purple: 'bg-slate-800 border-purple-700/30'
+          };
+          var cardLight = {
+            amber: 'bg-white border-amber-200',
+            red: 'bg-white border-red-200',
+            purple: 'bg-white border-purple-200'
+          };
+          var textDark = {
+            amber: 'text-amber-300',
+            red: 'text-red-300',
+            purple: 'text-purple-300'
+          };
+          var textLight = {
+            amber: 'text-amber-700',
+            red: 'text-red-700',
+            purple: 'text-purple-700'
+          };
+          if (part === 'text') return (dk ? textDark : textLight)[col] || (dk ? 'text-slate-300' : 'text-slate-700');
+          return (dk ? cardDark : cardLight)[col] || (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200');
+        }
+        function manageBtnStyle(color) {
+          var dark = {
+            stone: 'bg-stone-900/30 text-stone-300 border-stone-700/40 hover:bg-stone-800/40',
+            indigo: 'bg-indigo-900/30 text-indigo-300 border-indigo-700/40 hover:bg-indigo-800/40',
+            red: 'bg-red-900/30 text-red-300 border-red-700/40 hover:bg-red-800/40',
+            purple: 'bg-purple-900/30 text-purple-300 border-purple-700/40 hover:bg-purple-800/40',
+            blue: 'bg-blue-900/30 text-blue-300 border-blue-700/40 hover:bg-blue-800/40',
+            amber: 'bg-amber-900/30 text-amber-300 border-amber-700/40 hover:bg-amber-800/40',
+            slate: 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+          };
+          var light = {
+            stone: 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100',
+            indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100',
+            red: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100',
+            purple: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100',
+            blue: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
+            amber: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100',
+            slate: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+          };
+          return (dk ? dark : light)[color] || (dk ? dark.slate : light.slate);
+        }
+        function droneDiffStyle(id) {
+          var dark = {
+            easy: 'bg-gradient-to-b from-green-800 to-green-900 text-green-200 border border-green-700/50 hover:from-green-700 hover:to-green-800',
+            normal: 'bg-gradient-to-b from-amber-800 to-amber-900 text-amber-200 border border-amber-700/50 hover:from-amber-700 hover:to-amber-800',
+            hard: 'bg-gradient-to-b from-red-800 to-red-900 text-red-200 border border-red-700/50 hover:from-red-700 hover:to-red-800'
+          };
+          var light = {
+            easy: 'bg-gradient-to-b from-green-50 to-green-100 text-green-800 border border-green-300 hover:from-green-100 hover:to-green-200',
+            normal: 'bg-gradient-to-b from-amber-50 to-amber-100 text-amber-800 border border-amber-300 hover:from-amber-100 hover:to-amber-200',
+            hard: 'bg-gradient-to-b from-red-50 to-red-100 text-red-800 border border-red-300 hover:from-red-100 hover:to-red-200'
+          };
+          return (dk ? dark : light)[id] || (dk ? dark.normal : light.normal);
+        }
+        function simCardStatus(id) {
+          if (id === 'beekeeper') {
+            if (!colonySurvived) return 'Review collapse and restart';
+            if (activeEvent) return 'Event waiting: ' + activeEvent.label;
+            if (varroaLevel >= 20) return 'Mites need attention';
+            if (honey < 15) return 'Honey stores are low';
+            return 'Day ' + day + ' | Health ' + colonyHealth + '%';
+          }
+          if (id === 'queen') {
+            if (queenGameActive) return 'Day ' + queenDay + ' | ' + queenPhase.toUpperCase() + ' | Score ' + queenScore;
+            return 'Command pheromones and comb';
+          }
+          if (droneFlightActive) return 'In flight | Score ' + ((_droneState.current && _droneState.current.score) || 0);
+          return droneHighScore > 0 ? 'High score ' + droneHighScore : 'Fly the nuptial route';
+        }
+        function renderBeePlayCoach() {
+          var title = '';
+          var body = '';
+          var chips = [];
+          var action = null;
+          var tone = 'amber';
+          if (viewMode === 'beekeeper') {
+            tone = 'amber';
+            chips = ['Day ' + day, actionPoints + '/3 actions', 'Health ' + colonyHealth + '%'];
+            if (!colonySurvived) {
+              title = 'Colony review';
+              body = 'Study the collapse notes below, then start a new colony with a sharper plan.';
+            } else if (activeEvent) {
+              title = 'Decision waiting';
+              body = activeEvent.label + ': read the event card below, then decide how the colony should respond.';
+            } else if (day === 0) {
+              title = 'Set up the apiary';
+              body = 'Pick bee stock and a site, then run the first day to see the colony economy start moving.';
+              action = { label: 'Start day 1', onClick: advanceDay };
+            } else if (varroaLevel >= 20) {
+              title = 'Mites are the priority';
+              body = 'Varroa is high enough to weaken brood and spread viruses. Open treatment before fast-forwarding.';
+              action = { label: 'Open treatment', onClick: treatVarroa };
+            } else if (diseaseRisk >= 35) {
+              title = 'Disease risk is rising';
+              body = 'Use hygiene, keep the hive ventilated, and avoid skipping too many days at once.';
+            } else if (honey < 15) {
+              title = 'Stores are getting thin';
+              body = 'Feed the colony or improve forage before winter or bad weather turns this into starvation.';
+              action = { label: 'Feed colony', onClick: feedBees };
+            } else {
+              title = 'Run the colony loop';
+              body = 'Inspect the hive, spend actions only when a number is drifting, then advance the season.';
+              action = { label: 'Next day', onClick: advanceDay };
+            }
+          } else if (viewMode === 'queen') {
+            tone = 'purple';
+            chips = queenGameActive
+              ? ['Day ' + queenDay, queenPhase.toUpperCase(), queenThreats.length + ' threats']
+              : ['Pheromones', 'Comb economy', 'Threat phases'];
+            if (!queenGameActive) {
+              title = 'Queen RTS briefing';
+              body = 'This mode works best as a short survival game: build comb, balance pheromones, and react to threats as phases change.';
+              action = { label: 'Begin reign', onClick: startQueenGame };
+            } else if (queenThreats.length > 0) {
+              title = 'Threats in the comb';
+              body = 'Raise alarm pheromone and build guard posts so workers can intercept attackers.';
+              action = { label: 'Signal alarm', onClick: function() { queenAction('alarm_signal'); } };
+            } else if (queenPhase === 'swarm' && queenPheromones.qmp < 45) {
+              title = 'Hold the colony together';
+              body = 'QMP is low during swarm phase. Emit QMP before half the workers decide to leave.';
+              action = { label: 'Emit QMP', onClick: function() { queenAction('emit_qmp'); } };
+            } else {
+              title = 'Grow the hive economy';
+              body = 'Use eggs and comb builds while resources are healthy, then advance one day and watch the resource loop.';
+              action = { label: 'Next queen day', onClick: advanceQueenDay };
+            }
+          } else {
+            tone = 'indigo';
+            chips = droneFlightActive
+              ? ['Energy ' + Math.round((_droneState.current && _droneState.current.energy) || 0), 'Pollen ' + (((_droneState.current || {}).pollenCollected) || 0) + '/5', 'Score ' + (((_droneState.current || {}).score) || 0)]
+              : ['Choose difficulty', 'Collect pollen', 'Find the queen'];
+            title = droneFlightActive ? 'Flight objective' : 'Drone flight briefing';
+            body = droneFlightActive
+              ? 'Stay low to pick up pollen, use thermals for altitude, avoid birds, then climb toward the golden queen signal.'
+              : 'Start on Easy first. The flight is playable when students know the loop: collect pollen, manage energy, and steer toward the DCA.';
+            if (!droneFlightActive) action = { label: 'Start easy flight', onClick: function() { startDroneFlight('easy'); } };
+          }
+          var toneCls = tone === 'purple'
+            ? (dk ? 'bg-purple-950/30 border-purple-700/40 text-purple-100' : 'bg-purple-50 border-purple-200 text-purple-950')
+            : tone === 'indigo'
+              ? (dk ? 'bg-indigo-950/30 border-indigo-700/40 text-indigo-100' : 'bg-indigo-50 border-indigo-200 text-indigo-950')
+              : (dk ? 'bg-amber-950/30 border-amber-700/40 text-amber-100' : 'bg-amber-50 border-amber-200 text-amber-950');
+          var chipCls = dk ? 'bg-slate-900/45 border-white/10 text-slate-200' : 'bg-white/75 border-slate-200 text-slate-700';
+          var actionCls = tone === 'purple'
+            ? 'bg-purple-600 hover:bg-purple-500 text-white'
+            : tone === 'indigo'
+              ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+              : 'bg-amber-600 hover:bg-amber-500 text-white';
+          return h('div', { className: 'rounded-xl border p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 ' + toneCls, role: 'region', 'aria-label': __alloT('stem.beehive.current_sim_goal', 'Current simulation goal') },
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'text-[11px] uppercase tracking-wide font-black opacity-70' }, __alloT('stem.beehive.play_focus', 'Play focus')),
+              h('div', { className: 'text-sm font-black mt-0.5' }, title),
+              h('p', { className: 'text-xs leading-relaxed mt-1 opacity-80' }, body),
+              h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
+                chips.map(function(chip) {
+                  return h('span', { key: chip, className: 'rounded-full border px-2 py-0.5 text-[10px] font-bold ' + chipCls }, chip);
+                }))),
+            action && h('button', { onClick: action.onClick, className: 'shrink-0 px-3 py-2 rounded-lg text-xs font-black shadow-sm transition-all hover:shadow-md ' + actionCls },
+              action.label));
+        }
         // DEBUG: Log render-time values that gate the canvas
         if (!window.__beehiveRenderLogged) window.__beehiveRenderLogged = 0;
         if (window.__beehiveRenderLogged < 3) {
@@ -17712,7 +17887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '⌨️'))),
 
           // ═══ MODE SELECTOR TABS ═══
-          h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), style: { background: 'var(--allo-stem-deeper, ' + (dk ? '#1e293b' : '#f1f5f9') + ')' }, role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), style: { background: 'var(--allo-stem-deeper, ' + (dk ? '#1e293b' : '#f1f5f9') + ')' }, role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
             [
               { id: 'beekeeper', icon: '🧑‍🌾', label: __alloT('stem.beehive.beekeeper', 'Beekeeper'), desc: __alloT('stem.beehive.manage_the_colony_from_outside', 'Manage the colony from outside') },
               { id: 'queen', icon: '👑', label: __alloT('stem.beehive.queen_rts', 'Queen RTS'), desc: __alloT('stem.beehive.command_the_hive_from_within', 'Command the hive from within') },
@@ -17721,22 +17896,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var active = viewMode === tab.id;
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
-                className: 'flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ' +
+                className: 'min-h-[68px] flex flex-col items-center justify-center gap-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all ' +
                   (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md border border-amber-200') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-600 hover:text-slate-800 hover:bg-white/60 border border-transparent')),
                 title: tab.desc
-              }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
+              },
+                h('span', { className: 'flex items-center gap-1.5' }, h('span', { 'aria-hidden': 'true' }, tab.icon), h('span', null, tab.label)),
+                h('span', { className: 'text-[10px] font-semibold leading-tight ' + (active ? (dk ? 'text-amber-100/80' : 'text-amber-700/80') : (dk ? 'text-slate-500' : 'text-slate-400')) }, simCardStatus(tab.id)));
             })),
+
+          renderBeePlayCoach(),
 
                     // Beekeeper canvas — height 500px; container is the fullscreen target
           viewMode === 'beekeeper' && h('div', {
               id: 'beehive-canvas-wrap',
-              className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'),
+              className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-amber-500/60' : 'border-amber-400'),
               // Hive-dark gradient instead of flat black: deep amber
               // brown at the top fading into charcoal, with a stronger
               // honey glow so the canvas reads as "looking into a
               // warm hollow" rather than a black slab.
               style: {
-                height: '500px',
+                height: 'clamp(430px, 52vw, 540px)',
                 background: 'linear-gradient(180deg,#3f2f18 0%,#1f160a 60%,#0c0905 100%)',
                 boxShadow: dk
                   ? '0 0 32px rgba(251,191,36,0.18), 0 0 0 1px rgba(251,191,36,0.18), inset 0 1px 0 rgba(251,191,36,0.20), 0 6px 22px rgba(0,0,0,0.55)'
@@ -17745,6 +17924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             },
             h('canvas', {
               ref: _cvRef,
+              'data-beehive-canvas': 'true',
               role: 'img',
               'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season] + '. Click parts of the scene: hive opens the inspector, beekeeper shows last action, sunflowers jump to pollination tab.',
               style: { width: '100%', height: '100%', display: 'block', cursor: beeView === 'scene' ? 'pointer' : 'default' },
@@ -17867,7 +18047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, __alloT('stem.beehive.drone_nuptial_flight', 'Drone Nuptial Flight')),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
                     __alloT('stem.beehive.experience_life_as_a_drone_bee_your_so', 'Experience life as a drone bee. Your sole purpose: fly to the Drone Congregation Area (DCA) at 200+ feet altitude and find a queen to mate with. You have 90 seconds of flight energy. Only 1 in 1,000 drones succeeds — can you?')),
-                  h('div', { className: 'grid grid-cols-3 gap-3 max-w-sm mx-auto text-center' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg mx-auto text-center' },
                     [['🎯', 'Find the DCA', 'Fly high and far'], ['👑', 'Locate Queen', 'Follow the golden glow'], ['📚', 'Learn Facts', 'Science appears as you fly']].map(function(g) {
                       return h('div', { key: g[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-indigo-700/30' : 'bg-white border-indigo-200') },
                         h('div', { className: 'text-lg' }, g[0]),
@@ -17876,23 +18056,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     })),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
                   // Difficulty selector
-                  h('div', { className: 'flex gap-2 justify-center' },
+                  h('div', { className: 'flex flex-col sm:flex-row gap-2 justify-center' },
                     [
                       { id: 'easy', label: __alloT('stem.beehive.easy', '🌱 Easy'), desc: __alloT('stem.beehive.150s_fewer_birds_closer_queen', '150s, fewer birds, closer queen'), col: 'green' },
                       { id: 'normal', label: __alloT('stem.beehive.normal', '🐝 Normal'), desc: __alloT('stem.beehive.110s_balanced_challenge', '110s, balanced challenge'), col: 'amber' },
                       { id: 'hard', label: __alloT('stem.beehive.hard', '🔥 Hard'), desc: __alloT('stem.beehive.75s_more_birds_distant_queen', '75s, more birds, distant queen'), col: 'red' }
                     ].map(function(diff) {
                       return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
-                        className: 'px-4 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 ' +
-                          (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50 hover:from-' + diff.col + '-700 hover:to-' + diff.col + '-800'
-                               : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300 hover:from-' + diff.col + '-100 hover:to-' + diff.col + '-200'),
+                        className: 'px-4 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 ' + droneDiffStyle(diff.id),
                         title: diff.desc
                       },
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
                   h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!')))
-              : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
+              : h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
                   h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
                   h('canvas', { ref: _droneOverlayCvRef, style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'block' } }),
                   // Stop button overlay
@@ -17917,7 +18095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
                     __alloT('stem.beehive.you_are_the_queen_control_your_colony_', 'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.')),
                   // Pheromone cards
-                  h('div', { className: 'grid grid-cols-4 gap-2 max-w-lg mx-auto text-center' },
+                  h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-lg mx-auto text-center' },
                     [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
                       return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
                         h('div', { className: 'text-lg' }, p[0]),
@@ -17926,16 +18104,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     })),
                   // Phase progression explanation
                   h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.beehive.three_phases_of_your_reign', '📋 Three Phases of Your Reign')),
-                  h('div', { className: 'grid grid-cols-3 gap-2 max-w-lg mx-auto' },
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-lg mx-auto' },
                     [
                       { icon: '🏗️', phase: 'BUILD', days: 'Days 1-10', desc: __alloT('stem.beehive.establish_your_colony_build_structures', 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.'), col: 'amber' },
                       { icon: '⚔️', phase: 'DEFEND', days: 'Days 11-24', desc: __alloT('stem.beehive.threats_double_wasps_robber_bees_horne', 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.'), col: 'red' },
                       { icon: '🐝', phase: 'SWARM', days: 'Day 25+', desc: __alloT('stem.beehive.colony_wants_to_split_keep_qmp_above_4', 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.'), col: 'purple' }
                     ].map(function(ph) {
-                      return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + (dk ? 'bg-slate-800 border-' + ph.col + '-700/30' : 'bg-white border-' + ph.col + '-200') },
+                      return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + queenPhasePreviewStyle(ph.col) },
                         h('div', { className: 'flex items-center gap-1 mb-1' },
                           h('span', null, ph.icon),
-                          h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-' + ph.col + '-300' : 'text-' + ph.col + '-700') }, ph.phase)),
+                          h('span', { className: 'text-[11px] font-black ' + queenPhasePreviewStyle(ph.col, 'text') }, ph.phase)),
                         h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.days),
                         h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.desc));
                     })),
@@ -17953,33 +18131,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', null, ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'][Math.floor(((queenDay || 0) % 120) / 30)] || ''),
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   // Queen canvas
-                  h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '350px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
-                    h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': __alloT('stem.beehive.queen_defense_game_release_pheromones_', 'Queen defense game: release pheromones and build structures to protect the colony from threats'), style: { width: '100%', height: '100%', display: 'block' } })),
+                  h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
+                    h('canvas', { ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.queen_defense_game_release_pheromones_', 'Queen defense game: release pheromones and build structures to protect the colony from threats'), style: { width: '100%', height: '100%', display: 'block' } })),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                     h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Commands')),
-                    h('div', { className: 'grid grid-cols-3 gap-1.5' },
+                    h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-1.5' },
                       QUEEN_ACTIONS.map(function(qa) {
-                        return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, title: qa.desc,
-                          className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') },
+                        var affordable = hasQueenResources(qa.cost);
+                        var costText = queenCostText(qa.cost);
+                        return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, disabled: !affordable, title: qa.desc + ' (Cost: ' + costText + ')',
+                          'aria-label': qa.label + ': ' + qa.desc + '. Cost: ' + costText + (affordable ? '' : '. Not enough resources.'),
+                          className: 'text-left p-2 rounded-lg border transition-all ' + (affordable ? (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
-                            h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, qa.desc));
+                            h('span', { className: 'text-[11px] font-bold ' + (affordable ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, qa.label)),
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (affordable ? (dk ? 'text-slate-400' : 'text-slate-300') : '') }, qa.desc),
+                          h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold ' + (affordable ? (dk ? 'border-purple-600/40 text-purple-300 bg-purple-900/20' : 'border-purple-200 text-purple-700 bg-purple-50') : (dk ? 'border-slate-700 text-slate-500 bg-slate-800' : 'border-slate-200 text-slate-400 bg-white')) }, affordable ? costText : 'Need ' + costText));
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
                     h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')),
-                    h('div', { className: 'grid grid-cols-3 gap-1.5' },
+                    h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-1.5' },
                       Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
                         var st = QUEEN_STRUCTURE_TYPES[stId];
-                        var costStr = Object.keys(st.cost).map(function(k) { return k + ': ' + st.cost[k]; }).join(', ');
-                        return h('button', { key: stId, onClick: function() { buildQueenStructure(stId); }, title: st.desc + ' (Cost: ' + costStr + ')',
-                          className: 'text-left p-2 rounded-lg border transition-all ' + (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') },
+                        var costStr = queenCostText(st.cost);
+                        var canBuild = hasQueenResources(st.cost);
+                        return h('button', { key: stId, onClick: function() { buildQueenStructure(stId); }, disabled: !canBuild, title: st.desc + ' (Cost: ' + costStr + ')',
+                          'aria-label': st.label + ': ' + st.desc + '. Cost: ' + costStr + (canBuild ? '' : '. Not enough resources.'),
+                          className: 'text-left p-2 rounded-lg border transition-all ' + (canBuild ? (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
-                            h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, st.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, costStr || 'Free'));
+                            h('span', { className: 'text-[11px] font-bold ' + (canBuild ? (dk ? 'text-slate-200' : 'text-slate-800') : '') }, st.label)),
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (canBuild ? (dk ? 'text-slate-400' : 'text-slate-300') : '') }, st.desc),
+                          h('div', { className: 'inline-flex mt-1 rounded-full border px-1.5 py-0.5 text-[10px] font-bold ' + (canBuild ? (dk ? 'border-amber-600/40 text-amber-300 bg-amber-900/20' : 'border-amber-200 text-amber-700 bg-amber-50') : (dk ? 'border-slate-700 text-slate-500 bg-slate-800' : 'border-slate-200 text-slate-400 bg-white')) }, canBuild ? costStr : 'Need ' + costStr));
                       }))),
                   // Advance day + events
                   h('div', { className: 'flex gap-2' },
@@ -19071,7 +19256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', { onClick: function() { advanceDays(30); }, 'aria-label': __alloT('stem.beehive.advance_30_days_1_month', 'Advance 30 days (1 month)'), className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, __alloT('stem.beehive.30', '\u23ED +30'))
             ),
             // Management actions
-            h('div', { className: 'grid grid-cols-4 gap-1.5' },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
               [
                 { onClick: function() { smokeHive(); }, icon: '\uD83D\uDCA8', label: __alloT('stem.beehive.smoke', 'Smoke'), tip: __alloT('stem.beehive.smoke_the_hive_to_calm_bees_before_ope', 'Smoke the hive to calm bees before opening'), disabled: false, color: 'stone' },
                 { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, icon: '\uD83D\uDD2C', label: __alloT('stem.beehive.inspect', 'Inspect'), tip: __alloT('stem.beehive.open_hive_inspector_explore_bee_biolog', 'Open hive inspector — explore bee biology'), disabled: false, color: 'indigo' },
@@ -19092,7 +19277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ].map(function(btn) {
                 var enabled = !btn.disabled;
                 var bg = enabled
-                  ? (dk ? 'bg-' + btn.color + '-900/30 text-' + btn.color + '-300 border-' + btn.color + 'transition-colors -700/40 hover:bg-' + btn.color + '-800/40' : 'bg-' + btn.color + '-50 text-' + btn.color + 'transition-colors -700 hover:bg-' + btn.color + '-100 border border-' + btn.color + '-200')
+                  ? manageBtnStyle(btn.color)
                   : (dk ? 'bg-slate-800 text-slate-600 border-slate-700' : 'bg-slate-50 text-slate-300 border border-slate-100');
                 return h('button', { key: btn.label, onClick: btn.onClick, disabled: btn.disabled, title: btn.tip,
                   'aria-label': btn.label + ': ' + btn.tip,

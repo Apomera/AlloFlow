@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_tool_beehive.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_beehive.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_beehive.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Deep-dived Beehive playability across Beekeeper, Queen RTS, and Drone Flight: added mode status cards, play-focus guidance, clearer canvas frames, reliable static styling, responsive controls, and disabled/cost-aware Queen RTS actions. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_wave.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_wave.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_wave.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Continued STEM visual refinement with Wave Simulator polish: responsive canvas instrument frame, live wave HUD/readouts, cleaner mode controls, and improved parameter/metric panels. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_galaxy.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_galaxy.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_galaxy.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Continued STEM visual refinement with Galaxy Explorer viewport polish: renderer color/tone handling, deeper 3D frame, glass status/legend overlays, and readable inactive layer toggles. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_molecule.js`, `stem_lab/stem_tool_flightsim.js`, matching `prismflow-deploy/public/stem_lab/` copies, local ignored `prismflow-deploy/build/stem_lab/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Audited STEM Three.js/canvas-heavy tools and applied focused viewport refinements to Molecule Lab and Flight Sim: stronger 3D lighting/labels, polished molecule viewport chrome, and a cleaner glass cockpit control/status layer. |
@@ -56,6 +57,11 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check stem_lab\stem_tool_beehive.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_beehive.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_beehive.js` - passed after Beehive playability refinements.
+- Targeted jsdom/React server renders for Beehive passed for default Beekeeper, Queen intro, active Queen low-resource state, and Drone intro; confirmed play-focus guidance, Beekeeper canvas marker, Queen resource lockouts/cost chips, and Queen canvas marker render.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after Beehive refinements with no app-crash render failures across 113 STEM tools.
+- `git diff --check -- stem_lab\stem_tool_beehive.js prismflow-deploy\public\stem_lab\stem_tool_beehive.js prismflow-deploy\build\stem_lab\stem_tool_beehive.js` - passed.
+- Source, public, and ignored local build copies for `stem_tool_beehive.js` have matching SHA-256 hashes locally. Not deployed.
 - `node --check stem_lab\stem_tool_wave.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_wave.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_wave.js` - passed after Wave Simulator visual refinements.
 - One-off jsdom/React render of Wave Simulator - passed; confirmed the updated `Live wave` HUD, `data-wave-canvas` marker, Wave Equation panel, and Wavelength metric render.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed after Wave Simulator visual refinements with no app-crash render failures across 113 STEM tools.
