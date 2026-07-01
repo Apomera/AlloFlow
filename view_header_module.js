@@ -933,7 +933,7 @@ function HeaderBar(props) {
         /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-100 mt-1 leading-relaxed" }, t("toolbar.guided_mode_setup_desc") || "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.")
       ))
     )
-  ), "`r`n      ");
+  ));
 }
 
   window.AlloModules = window.AlloModules || {};

@@ -1025,6 +1025,7 @@ function HeaderBar(props) {
               </div>
             </div>
           </div>
-        )}`r`n      </header>
+        )}
+      </header>
   );
 }
