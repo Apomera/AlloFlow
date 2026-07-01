@@ -99,6 +99,103 @@
     });
   }
 
+  const SESSION_RESOURCE_SYNC_MAX_BYTES = 850 * 1024;
+  const SESSION_RESOURCE_STRING_MAX_CHARS = 120000;
+  const SESSION_BINARY_FIELD_RE = /(?:image|imageUrl|sceneImage|avatarUrl|audio|audioRecording|recording|blob|base64|dataUrl)$/i;
+
+  function estimateJsonBytes(value) {
+    try {
+      const json = JSON.stringify(value == null ? null : value);
+      if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(json).length;
+      return json.length;
+    } catch (e) {
+      return Infinity;
+    }
+  }
+
+  function trimSessionString(value) {
+    if (typeof value !== 'string') return value;
+    if (/^(data:|blob:)/i.test(value)) return null;
+    if (value.length <= SESSION_RESOURCE_STRING_MAX_CHARS) return value;
+    return value.slice(0, SESSION_RESOURCE_STRING_MAX_CHARS) + '\n\n[Trimmed for live session sync. Open the teacher pack for the full resource.]';
+  }
+
+  function sanitizeSessionValue(value, keyName) {
+    if (value == null) return value;
+    if (typeof value === 'string') {
+      if (SESSION_BINARY_FIELD_RE.test(String(keyName || '')) && value.length > 512) return null;
+      return trimSessionString(value);
+    }
+    if (Array.isArray(value)) return value.map(entry => sanitizeSessionValue(entry, keyName));
+    if (typeof value === 'object' && !(value instanceof Date)) {
+      const out = {};
+      Object.keys(value).forEach(key => {
+        const v = value[key];
+        if (v === undefined) return;
+        if (SESSION_BINARY_FIELD_RE.test(key) && (typeof v === 'string' || typeof v === 'object')) {
+          out[key] = null;
+          return;
+        }
+        out[key] = sanitizeSessionValue(v, key);
+      });
+      return out;
+    }
+    return value;
+  }
+
+  function compactSessionResource(item) {
+    const data = item && item.data && typeof item.data === 'object' ? item.data : {};
+    return stripUndefined({
+      id: item && item.id,
+      type: item && item.type,
+      title: (item && item.title) || data.title || data.main || 'Shared resource',
+      subtitle: (item && item.subtitle) || data.subtitle || data.gradeLevel || data.language || '',
+      syncTruncated: true,
+      syncNotice: 'This resource was too large for the live session document. Open the teacher device or exported pack for the full version.',
+    });
+  }
+
+  function prepareSessionResourcesForWrite(resources, options) {
+    const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
+    const source = Array.isArray(resources) ? resources : [];
+    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeSessionValue(item, 'resource')));
+    const kept = [];
+    let droppedCount = 0;
+
+    for (let i = cleaned.length - 1; i >= 0; i--) {
+      const candidate = [cleaned[i]].concat(kept);
+      if (estimateJsonBytes(candidate) <= maxBytes || kept.length === 0) {
+        kept.unshift(cleaned[i]);
+      } else {
+        droppedCount += 1;
+      }
+    }
+
+    while (kept.length > 1 && estimateJsonBytes(kept) > maxBytes) {
+      kept.shift();
+      droppedCount += 1;
+    }
+
+    if (kept.length === 1 && estimateJsonBytes(kept) > maxBytes) {
+      kept[0] = compactSessionResource(kept[0]);
+    }
+
+    if (estimateJsonBytes(kept) > maxBytes) {
+      droppedCount += kept.length;
+      kept.length = 0;
+    }
+
+    const byteLength = estimateJsonBytes(kept);
+    return {
+      resources: kept,
+      originalCount: source.length,
+      keptCount: kept.length,
+      droppedCount,
+      byteLength,
+      maxBytes,
+      overLimit: byteLength > maxBytes,
+    };
+  }
   // Parse JSON-stringified `data` and `gameData` fields on history items
   // returning from cloud. Tolerates malformed input (filters non-object
   // items, swallows JSON parse errors). Uses the global warnLog (set up
@@ -137,6 +234,8 @@
   window.stripUndefined = stripUndefined;
   window.sanitizeHistoryForCloud = sanitizeHistoryForCloud;
   window.hydrateHistory = hydrateHistory;
+  window.estimateJsonBytes = estimateJsonBytes;
+  window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
 
   // Trigger the monolith's swap-in of shim references.
   if (typeof window._upgradeFirestoreSync === 'function') {

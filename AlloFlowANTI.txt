@@ -154,10 +154,27 @@ window._upgradeAlloData = _upgradeAlloData;
 let stripUndefined = (obj) => obj;
 let sanitizeHistoryForCloud = (items) => items;
 let hydrateHistory = (items) => Array.isArray(items) ? items : [];
+let estimateJsonBytes = (value) => {
+    try { return JSON.stringify(value == null ? null : value).length; } catch (e) { return Infinity; }
+};
+let prepareSessionResourcesForWrite = (resources, options) => {
+    const source = Array.isArray(resources) ? resources : [];
+    return {
+        resources: source,
+        originalCount: source.length,
+        keptCount: source.length,
+        droppedCount: 0,
+        byteLength: estimateJsonBytes(source),
+        maxBytes: Number(options && options.maxBytes) || 850 * 1024,
+        overLimit: false,
+    };
+};
 function _upgradeFirestoreSync() {
     if (typeof window.stripUndefined === 'function') stripUndefined = window.stripUndefined;
     if (typeof window.sanitizeHistoryForCloud === 'function') sanitizeHistoryForCloud = window.sanitizeHistoryForCloud;
     if (typeof window.hydrateHistory === 'function') hydrateHistory = window.hydrateHistory;
+    if (typeof window.estimateJsonBytes === 'function') estimateJsonBytes = window.estimateJsonBytes;
+    if (typeof window.prepareSessionResourcesForWrite === 'function') prepareSessionResourcesForWrite = window.prepareSessionResourcesForWrite;
     console.log('[FirestoreSync] Monolith shim upgraded from CDN module.');
 }
 window._upgradeFirestoreSync = _upgradeFirestoreSync;
@@ -2434,13 +2451,28 @@ const SESSION_TIER1_LEAVES = new Set([
   // bridgeReactions = { uid: { emoji (enum), timestamp } } — pseudonymous uid + an emoji
   // reaction + time; no free text; Tier-1-safe on its own merits.
   'bridgePayload', 'bridgeReactions',
+  // Teacher-shared class resources for live sessions. This field is allowed only
+  // through writeToSession(), which routes arrays through prepareSessionResourcesForWrite
+  // to strip binary payloads and keep the session doc under Firestore's 1 MiB limit.
+  'resources',
 ]);
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
     return Promise.reject(new Error('writeToSession: invalid arguments'));
   }
+  let safePayload = payload;
+  if (Array.isArray(payload.resources)) {
+    const prepared = prepareSessionResourcesForWrite(payload.resources);
+    safePayload = { ...payload, resources: prepared.resources };
+    if (prepared.droppedCount > 0 || prepared.overLimit) {
+      warnLog(
+        `[Session Sync] Resource payload trimmed: kept ${prepared.keptCount}/${prepared.originalCount}, ${prepared.byteLength}/${prepared.maxBytes} bytes.`
+      );
+    }
+  }
+  safePayload = stripUndefined(safePayload);
   const violations = [];
-  Object.keys(payload).forEach(key => {
+  Object.keys(safePayload).forEach(key => {
     const leaf = key.split('.').pop();
     if (!SESSION_TIER1_LEAVES.has(leaf)) violations.push(key);
   });
@@ -2451,7 +2483,7 @@ const writeToSession = async (sessionRef, payload) => {
     );
     return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
   }
-  return updateDoc(sessionRef, payload);
+  return updateDoc(sessionRef, safePayload);
 };
 if (typeof window !== 'undefined') {
   window.__alloWriteToSession = writeToSession;
@@ -17053,9 +17085,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           try {
               const resourcesToUpload = history.filter(h => h.id);
               const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+              const prepared = prepareSessionResourcesForWrite(lightweightResources);
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              await updateDoc(sessionRef, stripUndefined({ resources: lightweightResources }));
-              debugLog("Session resources synced:", lightweightResources.length);
+              await writeToSession(sessionRef, { resources: prepared.resources });
+              debugLog("Session resources synced:", prepared.keptCount, "of", prepared.originalCount, "bytes", prepared.byteLength);
+              if (prepared.droppedCount > 0 || prepared.overLimit) {
+                  addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info');
+              }
           } catch (e) {
               warnLog("Failed to sync resources to session:", e);
           }
