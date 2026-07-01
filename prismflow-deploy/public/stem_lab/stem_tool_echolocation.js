@@ -55,6 +55,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     document.body.appendChild(lr);
   })();
 
+  (function() {
+    if (document.getElementById('allo-echolocation-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-echolocation-polish-css';
+    st.textContent = [
+      '.echo-focus-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);gap:12px}',
+      '.echo-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.echo-scene-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+      '.echo-canvas-shell{position:relative;border-radius:16px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.96),#050816);border:1px solid rgba(129,140,248,.45);box-shadow:0 16px 36px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.08)}',
+      '.echo-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
+      '.echo-control-chip{min-height:32px}',
+      '@media(max-width:760px){.echo-focus-grid,.echo-metric-grid{grid-template-columns:1fr!important}.echo-canvas-shell{padding:6px!important}.echo-canvas-toolbar{justify-content:flex-start!important}.echo-focus-subtitle{white-space:normal!important}}'
+    ].join('');
+    if (document.head) document.head.appendChild(st);
+  })();
+
 
   // ── MODULE-SCOPED CONSTANTS ──
 
@@ -1788,6 +1804,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         );
       }
 
+      function renderSonarFocus(speciesData, isFrugivore, sceneName) {
+        var st = sonarStateRef.current || {};
+        var caughtKey = isFrugivore ? 'fruitCollected' : 'mothsCaught';
+        var caught = d[caughtKey] || st[caughtKey] || 0;
+        var energy = Math.round(st.energy == null ? ENERGY_MAX : st.energy);
+        var clarity = Math.round(st.clarity || 0);
+        var nearest = st.nearestDist < 900 ? Math.round(st.nearestDist) + 'px' : t('stem.echolocation.listening', 'listening');
+        var cooldown = st.pulseCooldownTimer || 0;
+        var pulseReady = cooldown <= 0 && energy > 0;
+        var goalDone = caught >= 10;
+        var goalLabel = isFrugivore ? t('stem.echolocation.collect_fruit_route', 'Collect fruit route') : t('stem.echolocation.track_prey_route', 'Track prey route');
+        var nextStep = goalDone
+          ? t('stem.echolocation.goal_complete_try_a_harder_scene', 'Goal complete. Try a harder scene or map the cave.')
+          : energy <= 20
+            ? t('stem.echolocation.perch_to_refill_energy_then_pulse_again', 'Perch to refill energy, then pulse again.')
+            : pulseReady
+              ? t('stem.echolocation.send_a_pulse_then_chase_the_bright_echoes', 'Send a pulse, then chase the bright echoes.')
+              : t('stem.echolocation.follow_the_last_echo_while_the_pulse_recharges', 'Follow the last echo while the pulse recharges.');
+        var runProgress = Math.min(100, Math.max(caught * 10, sceneIdx === 0 && !isFrugivore ? clarity : 0));
+        var metricBg = isDark ? 'rgba(15,23,42,0.68)' : 'rgba(255,255,255,0.78)';
+        var metricBorder = isDark ? 'rgba(129,140,248,0.28)' : 'rgba(99,102,241,0.22)';
+        function metric(label, value, detail, color) {
+          return h('div', {
+            className: 'rounded-xl p-2 border',
+            style: { background: metricBg, borderColor: metricBorder, minHeight: 74 }
+          },
+            h('div', { className: 'text-[10px] font-bold uppercase', style: { color: isDark ? '#a5b4fc' : '#4338ca', letterSpacing: 0 } }, label),
+            h('div', { className: 'text-lg font-black', style: { color: color || (isDark ? '#f8fafc' : '#0f172a'), lineHeight: 1.1 } }, value),
+            h('div', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } }, detail)
+          );
+        }
+        return h('section', {
+          'data-echolocation-run-focus': 'true',
+          'aria-label': t('stem.echolocation.sonar_run_focus', 'Sonar run focus'),
+          className: 'echo-focus-grid rounded-2xl border p-3',
+          style: {
+            background: isDark
+              ? 'linear-gradient(135deg,rgba(30,41,59,0.96),rgba(49,46,129,0.72))'
+              : 'linear-gradient(135deg,#eef2ff,#f0fdfa)',
+            borderColor: isDark ? 'rgba(129,140,248,0.4)' : 'rgba(99,102,241,0.22)',
+            boxShadow: isDark ? '0 18px 34px rgba(0,0,0,0.22)' : '0 14px 32px rgba(79,70,229,0.12)'
+          }
+        },
+          h('div', null,
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+              h('span', {
+                className: 'px-2 py-1 rounded-full text-[11px] font-black',
+                style: {
+                  background: pulseReady ? 'rgba(16,185,129,0.18)' : 'rgba(245,158,11,0.18)',
+                  color: pulseReady ? (isDark ? '#86efac' : '#047857') : (isDark ? '#fde68a' : '#92400e'),
+                  border: '1px solid ' + (pulseReady ? 'rgba(16,185,129,0.34)' : 'rgba(245,158,11,0.34)')
+                }
+              }, pulseReady ? t('stem.echolocation.pulse_ready', 'Pulse ready') : t('stem.echolocation.pulse_recharging', 'Pulse recharging')),
+              h('span', {
+                className: 'echo-focus-subtitle text-[11px] font-bold',
+                style: { color: isDark ? '#c7d2fe' : '#3730a3', whiteSpace: 'nowrap' }
+              }, speciesData.name + ' - ' + sceneName)
+            ),
+            h('div', { className: 'text-base font-black', style: { color: isDark ? '#f8fafc' : '#111827' } }, goalLabel),
+            h('div', { className: 'text-xs mt-1', style: { color: isDark ? '#dbeafe' : '#334155' } }, nextStep),
+            h('div', {
+              className: 'mt-3 rounded-full overflow-hidden',
+              style: { height: 9, background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(99,102,241,0.16)' },
+              'aria-label': t('stem.echolocation.current_run_progress', 'Current run progress')
+            },
+              h('div', {
+                style: {
+                  width: runProgress + '%',
+                  height: '100%',
+                  background: goalDone ? '#10b981' : 'linear-gradient(90deg,#38bdf8,#8b5cf6,#22c55e)',
+                  boxShadow: '0 0 12px rgba(56,189,248,0.55)'
+                }
+              })
+            )
+          ),
+          h('div', null,
+            h('div', { className: 'echo-metric-grid' },
+              metric(t('stem.echolocation.energy_3', 'Energy'), energy + '%', energy <= 20 ? t('stem.echolocation.rest_on_a_surface', 'Rest on a surface') : t('stem.echolocation.enough_for_flight', 'Enough for flight'), energy <= 20 ? '#f97316' : '#10b981'),
+              metric(isFrugivore ? t('stem.echolocation.fruit', 'Fruit') : t('stem.echolocation.prey', 'Prey'), caught + '/10', goalDone ? t('stem.echolocation.route_complete', 'Route complete') : t('stem.echolocation.goal_target', 'Goal target'), goalDone ? '#10b981' : '#38bdf8'),
+              metric(t('stem.echolocation.nearest_echo', 'Nearest echo'), nearest, t('stem.echolocation.listen_then_commit', 'Listen, then commit'), '#8b5cf6')
+            ),
+            h('button', {
+              onClick: function() { emitSonarPulse(); },
+              disabled: !pulseReady,
+              className: 'mt-2 w-full rounded-xl px-3 py-2 text-xs font-black transition-colors',
+              style: {
+                background: pulseReady ? 'linear-gradient(90deg,#4f46e5,#0891b2)' : (isDark ? 'rgba(71,85,105,0.72)' : '#cbd5e1'),
+                color: pulseReady ? '#fff' : (isDark ? '#cbd5e1' : '#475569'),
+                cursor: pulseReady ? 'pointer' : 'not-allowed',
+                boxShadow: pulseReady ? '0 10px 20px rgba(79,70,229,0.24)' : 'none'
+              }
+            }, pulseReady ? t('stem.echolocation.emit_sonar_pulse_now', 'Emit sonar pulse') : t('stem.echolocation.wait_for_pulse_recharge', 'Wait for pulse recharge'))
+          )
+        );
+      }
+
       function renderSonarTab() {
         var sonarCanvasEl = h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization', 'Echolocation visualization'),
           ref: sonarCanvasRef,
@@ -1795,6 +1907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           height: 500,
           role: 'img',
           'aria-label': t('stem.echolocation.sonar_vision_simulator_use_arrow_keys_', 'Sonar vision simulator. Use arrow keys or WASD to move the bat. Press Space to emit a sonar pulse. Objects illuminate briefly when hit by sound waves.'),
+          'data-echolocation-canvas': 'true',
           tabIndex: 0,
           onKeyDown: function(e) {
             if (e.key === ' ' || e.key === 'Spacebar') {
@@ -1802,7 +1915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               emitSonarPulse();
             }
           },
-          style: { width: '100%', maxWidth: '800px', height: 'auto', borderRadius: '12px', display: 'block', border: '2px solid ' + (isDark ? '#312e81' : '#4338ca'), cursor: 'crosshair', background: '#0a0a1a' }
+          style: { width: '100%', maxWidth: 'none', height: 'auto', borderRadius: '12px', display: 'block', border: '1px solid rgba(199,210,254,0.28)', cursor: 'crosshair', background: '#0a0a1a', boxShadow: 'inset 0 0 40px rgba(14,165,233,0.08)' }
         });
 
         // Show species selection if not yet chosen
@@ -1840,7 +1953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             )
           ),
           // Scene selector
-          h('div', { className: 'flex flex-wrap gap-2 items-center' },
+          h('div', { className: 'echo-scene-row' },
             h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Scene:'),
             sceneNames.map(function(name, i) {
               var realIdx = sceneIndices[i];
@@ -1865,18 +1978,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
             }, t('stem.echolocation.add_object', '+ Add Object')) : null
           ),
+          renderSonarFocus(speciesData, isFrugivore, getActiveScene().name),
           // Controls hint
-          h('div', { className: 'flex flex-wrap gap-4 text-[11px] ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
-            h('span', null, t('stem.echolocation.a_d_steer', '\u2B05\uFE0F\u27A1\uFE0F A/D: Steer')),
-            h('span', null, t('stem.echolocation.w_flap_wings_thrust_up', '\u2B06\uFE0F W: Flap wings (thrust up)')),
-            h('span', null, t('stem.echolocation.s_dive', '\u2B07\uFE0F S: Dive')),
-            h('span', null, t('stem.echolocation.space_emit_sonar_pulse', 'SPACE: Emit sonar pulse')),
-            h('span', null, t('stem.echolocation.touch_ceiling_wall_perch_rest', 'Touch ceiling/wall: Perch & rest')),
+          h('div', { className: 'echo-scene-row text-[11px]', 'data-echolocation-controls': 'true' },
+            h('span', { className: 'echo-control-chip inline-flex items-center rounded-full px-3 py-1 font-bold border ' + (isDark ? 'bg-slate-900/55 border-indigo-500/30 text-indigo-200' : 'bg-white border-indigo-200 text-indigo-700') }, t('stem.echolocation.a_d_steer', '\u2B05\uFE0F\u27A1\uFE0F A/D: Steer')),
+            h('span', { className: 'echo-control-chip inline-flex items-center rounded-full px-3 py-1 font-bold border ' + (isDark ? 'bg-slate-900/55 border-indigo-500/30 text-indigo-200' : 'bg-white border-indigo-200 text-indigo-700') }, t('stem.echolocation.w_flap_wings_thrust_up', '\u2B06\uFE0F W: Flap wings')),
+            h('span', { className: 'echo-control-chip inline-flex items-center rounded-full px-3 py-1 font-bold border ' + (isDark ? 'bg-slate-900/55 border-indigo-500/30 text-indigo-200' : 'bg-white border-indigo-200 text-indigo-700') }, t('stem.echolocation.s_dive', '\u2B07\uFE0F S: Dive')),
+            h('span', { className: 'echo-control-chip inline-flex items-center rounded-full px-3 py-1 font-bold border ' + (isDark ? 'bg-slate-900/55 border-indigo-500/30 text-indigo-200' : 'bg-white border-indigo-200 text-indigo-700') }, t('stem.echolocation.space_emit_sonar_pulse', 'SPACE: Emit sonar')),
+            h('span', { className: 'echo-control-chip inline-flex items-center rounded-full px-3 py-1 font-bold border ' + (isDark ? 'bg-slate-900/55 border-amber-500/30 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800') }, t('stem.echolocation.touch_ceiling_wall_perch_rest', 'Perch: touch wall or ceiling')),
             h('button', {
               'aria-label': t('stem.echolocation.emit_sonar_pulse', 'Emit sonar pulse'),
               onClick: function() { emitSonarPulse(); },
-              className: 'transition-colors px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+              className: 'echo-control-chip transition-colors px-3 py-1 rounded-full font-bold bg-indigo-600 text-white hover:bg-indigo-500'
             }, t('stem.echolocation.emit_pulse', '\uD83E\uDD87 Emit Pulse'))
+          ),
+          h('div', { className: 'echo-canvas-toolbar', 'data-echolocation-canvas-toolbar': 'true' },
+            h('div', { className: 'text-xs font-black', style: { color: isDark ? '#dbeafe' : '#1e1b4b' } },
+              t('stem.echolocation.live_sonar_field', 'Live sonar field')),
+            h('div', { className: 'flex flex-wrap gap-2 text-[11px] font-bold' },
+              h('span', {
+                className: 'px-2 py-1 rounded-full',
+                style: {
+                  background: isDark ? 'rgba(14,165,233,0.16)' : '#e0f2fe',
+                  color: isDark ? '#bae6fd' : '#075985',
+                  border: '1px solid ' + (isDark ? 'rgba(56,189,248,0.28)' : '#bae6fd')
+                }
+              }, getActiveScene().name),
+              h('span', {
+                className: 'px-2 py-1 rounded-full',
+                style: {
+                  background: isDark ? 'rgba(139,92,246,0.16)' : '#f3e8ff',
+                  color: isDark ? '#ddd6fe' : '#6b21a8',
+                  border: '1px solid ' + (isDark ? 'rgba(167,139,250,0.3)' : '#e9d5ff')
+                }
+              }, speciesData.sonarType)
+            )
           ),
           // Canvas (wrapped) + goal banner overlay + fullscreen button
           // The student looks at the canvas while playing, not at the
@@ -1892,7 +2028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var clarity = Math.round(sonarStateRef.current.clarity || 0);
             var inCave = sceneIdx === 0 && !isFrugivore;
             var goalDone = caught >= 10;
-            return h('div', { id: 'echo-sonar-fs-wrap', style: { position: 'relative', background: '#0a0a1a' } },
+            return h('div', { id: 'echo-sonar-fs-wrap', className: 'echo-canvas-shell', 'data-echolocation-sim-surface': 'true', style: { position: 'relative' } },
               sonarCanvasEl,
               // Fullscreen toggle (top-right; doesn't overlap the goal
               // banner which is top-center). Uses the standard
