@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added recent-tool memory, quick-start chips, catalog result status, clear-filter controls, and global search behavior that clears hidden category filters. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Expanded the shared SEL Tool Shell beyond the first pilot tools to more core student-facing SEL tools for consistent navigation, save cues, and next-step guidance. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `phase_k_helpers_module.js`, `misc_handlers_module.js`, `prismflow-deploy/public/phase_k_helpers_module.js`, `prismflow-deploy/public/misc_handlers_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a Recent SEL work section plus snapshot save/load mirrors so saved reflections and recent activity are visible, resumable, and included in project files. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added needs-based SEL finder chips and friendlier search aliases so students can find tools by what they feel or need, not only by formal category names. |
@@ -72,6 +73,8 @@ Last updated: 2026-07-01 by Codex.
 - `node --check stem_lab\stem_lab_module.js`, `node --check prismflow-deploy\public\stem_lab\stem_lab_module.js`, and `node --check prismflow-deploy\build\stem_lab\stem_lab_module.js` - passed after active-tool breadcrumb pass.
 - Playwright preview against `http://127.0.0.1:4174/` with local STEM module interception - passed: Optics Lab shows the shared active-tool toolbar on desktop/mobile, and the `All tools` button returns to the 111-card catalog.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed after active-tool breadcrumb pass with no app-crash render failures across 113 STEM tools; existing MusicSynth AudioContext warning still prints in the Node smoke environment.
+- `node --check stem_lab\stem_lab_module.js`, `node --check prismflow-deploy\public\stem_lab\stem_lab_module.js`, and `node --check prismflow-deploy\build\stem_lab\stem_lab_module.js` - passed after STEM catalog recent/quick-start pass; hashes match across source, public, and build copies.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after STEM catalog recent/quick-start pass with no app-crash render failures across 113 STEM tools; existing MusicSynth AudioContext warning still prints in the Node smoke environment.
 - `node --check live_polling_module.js`, `node --check prismflow-deploy\public\live_polling_module.js`, and `node --check view_history_panel_module.js` - passed after live polling/history changes.
 - `npx vitest run tests/live_polling.test.js tests/history_panel_share.test.js tests/canvas_shell_live_controls.test.js --reporter=verbose` - passed 19 tests.
 - `npm run build` in `prismflow-deploy` - passed after syncing live polling and history panel public modules; postbuild reported zero external resource requests.
