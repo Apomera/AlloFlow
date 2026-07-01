@@ -17,6 +17,73 @@
       window.SelHub = {
         _registry: {},
         _order: [],
+        _standardShellTools: {
+          zones: {
+            time: '5-8 min',
+            purpose: 'Name your current zone and choose a regulation strategy that fits.',
+            next: 'Check your zone, choose one strategy, then save if you want to revisit it.'
+          },
+          coping: {
+            time: '3-10 min',
+            purpose: 'Choose a coping strategy and practice it once with a clear stopping point.',
+            next: 'Pick one body-based or grounding strategy, try it, then notice whether it helped.'
+          },
+          journal: {
+            time: '5-12 min',
+            purpose: 'Write a private reflection and notice patterns you may want to keep.',
+            next: 'Choose a prompt, write honestly, and save or export before closing.'
+          },
+          emotions: {
+            time: '4-8 min',
+            purpose: 'Build emotional vocabulary and name what you are feeling with more precision.',
+            next: 'Pick a feeling, rate its intensity, then choose one word that fits best.'
+          },
+          mindfulness: {
+            time: '2-10 min',
+            purpose: 'Pause, breathe, and practice attention without needing to write anything.',
+            next: 'Choose one short practice, follow it through, then notice what changed.'
+          },
+          thoughtRecord: {
+            time: '8-15 min',
+            purpose: 'Slow down a difficult thought and look for a more balanced view.',
+            next: 'Name the situation, rate the feeling, then test the thought against evidence.'
+          },
+          anxietyToolkit: {
+            time: '5-12 min',
+            purpose: 'Sort worry, reduce anxiety intensity, and choose a practical next step.',
+            next: 'Pick the worry that is loudest, try one strategy, then save the plan if it helps.'
+          },
+          sleep: {
+            time: '4-10 min',
+            purpose: 'Notice sleep barriers and choose one rest habit to try next.',
+            next: 'Check what is getting in the way, choose one small change, then revisit later.'
+          },
+          goals: {
+            time: '5-10 min',
+            purpose: 'Turn an intention into a concrete, realistic next action.',
+            next: 'Write one goal, choose a first step, and save the plan before closing.'
+          },
+          friendship: {
+            time: '5-10 min',
+            purpose: 'Think through friendship needs, belonging, and peer choices.',
+            next: 'Choose one friendship situation and identify one kind next move.'
+          },
+          conflict: {
+            time: '6-12 min',
+            purpose: 'Understand a conflict and prepare a repair-focused response.',
+            next: 'Name what happened, consider both sides, then choose one repair action.'
+          },
+          safety: {
+            time: '8-15 min',
+            purpose: 'Create a practical safety plan and identify trusted supports.',
+            next: 'Add warning signs, coping steps, and people to contact; save before closing.'
+          },
+          crisiscompanion: {
+            time: '3-10 min',
+            purpose: 'Use a structured support path when emotions feel urgent or unsafe.',
+            next: 'Choose the closest support option and involve a trusted adult or crisis service when needed.'
+          }
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -34,13 +101,178 @@
           return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
         },
         isRegistered: function(id) { return !!this._registry[id]; },
+        _wrapStandardToolShell: function(id, tool, content, ctx) {
+          if (!ctx || !ctx.React) return content;
+          var h = ctx.React.createElement;
+          var meta = (this._standardShellTools && this._standardShellTools[id]) || {};
+          var palette = (ctx.theme && ctx.theme.palette) || ctx.themePalette || {};
+          var isDark = !!((ctx.theme && ctx.theme.isDark) || ctx.isDark);
+          var title = tool.label || tool.title || tool.name || id;
+          var icon = tool.icon || '*';
+          var category = tool.category ? String(tool.category).replace(/[-_]/g, ' ') : 'SEL practice';
+          category = category.charAt(0).toUpperCase() + category.slice(1);
+          var surface = isDark ? '#111827' : '#f8fafc';
+          var headerBg = isDark ? '#0f172a' : '#ffffff';
+          var border = palette.border || (isDark ? '#334155' : '#e2e8f0');
+          var text = palette.text || (isDark ? '#f8fafc' : '#0f172a');
+          var muted = palette.textMuted || (isDark ? '#cbd5e1' : '#64748b');
+          var accent = palette.accent || '#7c3aed';
+          var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
+          if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
+          var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
+
+          function requestSave() {
+            if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
+              try { ctx.props.onExportRequested(); } catch (e) {}
+            } else {
+              try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested', { detail: { source: 'sel-tool-shell', toolId: id } })); } catch (e) {}
+            }
+            if (typeof ctx.addToast === 'function') ctx.addToast('Preparing to save your SEL work...', 'info');
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Save requested for ' + title);
+          }
+
+          function goBack() {
+            if (typeof ctx.setSelHubTool === 'function') ctx.setSelHubTool(null);
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Returned to tool grid');
+          }
+
+          function pill(label) {
+            return h('span', {
+              style: {
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: 28,
+                padding: '5px 9px',
+                borderRadius: 8,
+                border: '1px solid ' + border,
+                color: muted,
+                background: isDark ? '#0b1120' : '#f8fafc',
+                fontSize: 12,
+                fontWeight: 800,
+                whiteSpace: 'nowrap'
+              }
+            }, label);
+          }
+
+          return h('section', {
+            'data-sel-standard-shell': id,
+            style: {
+              background: surface,
+              color: text,
+              minHeight: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          },
+            h('div', {
+              style: {
+                background: headerBg,
+                borderBottom: '1px solid ' + border,
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 300px' } },
+                h('button', {
+                  type: 'button',
+                  onClick: goBack,
+                  'aria-label': 'Back to SEL tools',
+                  style: {
+                    minWidth: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    border: '1px solid ' + border,
+                    background: isDark ? '#111827' : '#ffffff',
+                    color: text,
+                    cursor: 'pointer',
+                    fontSize: 18,
+                    fontWeight: 900
+                  }
+                }, '\u2190'),
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    background: accent,
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 20,
+                    flex: '0 0 auto'
+                  }
+                }, icon),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { color: muted, fontSize: 12, fontWeight: 800, marginBottom: 2 } }, category),
+                  h('h3', { style: { margin: 0, color: text, fontSize: 20, lineHeight: 1.2, fontWeight: 900 } }, title)
+                )
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                pill(meta.time || 'SEL practice'),
+                pill('Private on this device'),
+                pill('Save before closing'),
+                h('button', {
+                  type: 'button',
+                  onClick: requestSave,
+                  'aria-label': 'Save or export SEL work now',
+                  style: {
+                    minHeight: 36,
+                    borderRadius: 8,
+                    border: '1px solid ' + accent,
+                    background: accent,
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    padding: '7px 12px'
+                  }
+                }, 'Save now')
+              )
+            ),
+            h('div', {
+              style: {
+                padding: '10px 16px',
+                display: 'flex',
+                gap: 14,
+                flexWrap: 'wrap',
+                borderBottom: '1px solid ' + border,
+                background: isDark ? '#111827' : '#f8fafc'
+              }
+            },
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Purpose'),
+                purpose
+              ),
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Next step'),
+                nextStep
+              )
+            ),
+            h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
+          );
+        },
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
+          var hasReact = ctx && ctx.React;
+          var useStandardShell = hasReact && tool.standardShell !== false;
+          var needsDarkShell = tool.lightBackground !== true && hasReact;
+          var renderCtx = ctx;
+          if (needsDarkShell && ctx) {
+            var shellTheme = Object.assign({}, ctx.theme || {}, { isDark: true });
+            renderCtx = Object.assign({}, ctx, { isDark: true, theme: shellTheme });
+          }
           var rendered;
-          try { rendered = tool.render(ctx); }
+          try { rendered = tool.render(renderCtx); }
           catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
+          var body = rendered;
           // ── WCAG dark-shell auto-wrap ──
           // Same vulnerability + fix as STEM Lab's host-level wrap. 69 of 70
           // SEL tools (audit May 2026) hardcode dark-mode text colors that
@@ -54,17 +286,20 @@
           //
           // Opt out by setting `lightBackground: true` in registerTool config
           // (intended for any future tool that genuinely needs a light surface).
-          if (tool.lightBackground === true) return rendered;
-          if (!ctx || !ctx.React) return rendered;
-          return ctx.React.createElement('div', {
-            style: {
-              background: '#0f172a',
-              color: '#e2e8f0',
-              borderRadius: 12,
-              minHeight: 'calc(100vh - 32px)'
-            },
-            'data-sel-tool-shell': id
-          }, rendered);
+          if (needsDarkShell) {
+            body = ctx.React.createElement('div', {
+              style: {
+                background: '#0f172a',
+                color: '#e2e8f0',
+                borderRadius: useStandardShell ? 8 : 12,
+                minHeight: useStandardShell ? 520 : 'calc(100vh - 32px)',
+                overflow: 'hidden'
+              },
+              'data-sel-tool-shell': id
+            }, rendered);
+          }
+          if (useStandardShell) return this._wrapStandardToolShell(id, tool, body, ctx);
+          return body;
         }
       };
     }
@@ -585,7 +820,17 @@
       var setPathwayProgress = _selPathwayProgress[1];
 
       // Tool snapshots (save/load)
-      var _selSnapshots = React.useState([]);
+      var _selSnapshots = React.useState(function () {
+        try {
+          if (typeof window !== 'undefined' && Array.isArray(window.__alloflowSelSnapshots)) {
+            return window.__alloflowSelSnapshots;
+          }
+        } catch (e) {}
+        try {
+          var raw = JSON.parse(localStorage.getItem('alloflow_sel_snapshots') || '[]');
+          return Array.isArray(raw) ? raw : [];
+        } catch (e) { return []; }
+      });
       var selSnapshots  = _selSnapshots[0];
       var setSelSnapshots = _selSnapshots[1];
 
@@ -607,6 +852,21 @@
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
+
+      var _viewportWidthState = React.useState(function() {
+        try { return window.innerWidth || 1024; } catch (e) { return 1024; }
+      });
+      var viewportWidth = _viewportWidthState[0];
+      var setViewportWidth = _viewportWidthState[1];
+      React.useEffect(function() {
+        function onResize() {
+          try { setViewportWidth(window.innerWidth || 1024); } catch (e) {}
+        }
+        window.addEventListener('resize', onResize);
+        return function() { window.removeEventListener('resize', onResize); };
+      }, []);
+      var isCompact = viewportWidth < 720;
+      var isMidWidth = viewportWidth < 980;
 
       // ── CHANGE 1: Ephemerality explainer state ──
       // Surfaces a first-run modal explaining that work is lost without Export.
@@ -635,15 +895,6 @@
       var _showForEducators = React.useState(false);
       var showForEducators = _showForEducators[0];
       var setShowForEducators = _showForEducators[1];
-
-      // Mark dirty when any persisted tool state changes (after first render).
-      React.useEffect(function() {
-        if (_firstRenderRef.current) {
-          _firstRenderRef.current = false;
-          return;
-        }
-        setIsDirty(true);
-      }, [selToolData, selSnapshots, selXp, selToolUsage]);
 
       // Listen for export events fired by either the parent app or our own
       // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
@@ -798,6 +1049,15 @@
       var _selToolUsage = React.useState(_selInitial.toolUsage || {});
       var selToolUsage = _selToolUsage[0]; var setSelToolUsage = _selToolUsage[1];
 
+      // Mark dirty when any persisted tool state changes (after first render).
+      React.useEffect(function() {
+        if (_firstRenderRef.current) {
+          _firstRenderRef.current = false;
+          return;
+        }
+        setIsDirty(true);
+      }, [selToolData, selSnapshots, selXp, selToolUsage]);
+
       // Mirror state changes to the window slot so the host save flow can
       // serialize it into the project JSON. The _ts stamp lets the host
       // skip emitting a SEL block when nothing has changed.
@@ -806,6 +1066,12 @@
           window.__alloflowSelEngagement = { streak: selStreak, toolUsage: selToolUsage, _ts: Date.now() };
         } catch (e) {}
       }, [selStreak, selToolUsage]);
+
+      // Persist tool snapshots locally and mirror them to the host save slot.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(selSnapshots || [])); } catch (e) {}
+        try { window.__alloflowSelSnapshots = Array.isArray(selSnapshots) ? selSnapshots : []; } catch (e) {}
+      }, [selSnapshots]);
 
       // Hot-reload from a project JSON load mid-session: misc_handlers
       // dispatches this event after writing window.__alloflowSelEngagement.
@@ -819,6 +1085,18 @@
         }
         window.addEventListener('alloflow-sel-engagement-restored', onRestore);
         return function () { window.removeEventListener('alloflow-sel-engagement-restored', onRestore); };
+      }, []);
+
+      // Same hot-reload path for saved tool snapshots.
+      React.useEffect(function () {
+        function onSnapshotRestore() {
+          try {
+            var w = window.__alloflowSelSnapshots;
+            if (Array.isArray(w)) setSelSnapshots(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore);
+        return function () { window.removeEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore); };
       }, []);
 
       var _activeStationId = React.useState(null);
@@ -938,6 +1216,24 @@
           try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
           return next;
         });
+      }
+
+      function openSelToolById(toolId, label) {
+        if (!toolId) return;
+        if (window.SelHub && window.SelHub.isRegistered(toolId)) {
+          trackToolOpen(toolId);
+          setSelHubTool(toolId);
+          announceToSR('Opened ' + (label || toolId));
+          if (activePathway && activePathway.tools && activePathway.tools.indexOf(toolId) >= 0) {
+            setPathwayProgress(function(prev) {
+              var n = Object.assign({}, prev);
+              n[toolId] = true;
+              return n;
+            });
+          }
+        } else if (typeof addToast === 'function') {
+          addToast((label || 'This SEL tool') + ' is loading...', 'info');
+        }
       }
 
       // Sync activeStation prop from parent (e.g. resource-history click).
@@ -1359,6 +1655,144 @@
         disabilityVoices: { tier: 'practice' }
       };
 
+      function _selShortDesc(tool) {
+        var desc = (tool && tool.desc) ? String(tool.desc).trim() : '';
+        if (!desc) return '';
+        var firstSentence = desc.match(/^.{1,150}?[.!?](?:\s|$)/);
+        if (firstSentence && firstSentence[0]) return firstSentence[0].trim();
+        if (desc.length <= 150) return desc;
+        return desc.slice(0, 147).replace(/\s+\S*$/, '') + '...';
+      }
+
+      var _selSearchAliasMap = {
+        zones: 'feeling feelings emotion emotions mood mad angry sad worried nervous calm red yellow green blue dysregulated overwhelmed',
+        emotions: 'feeling feelings emotion emotions mood identify name vocabulary faces sad mad worried happy',
+        coping: 'calm breathe breathing grounding panic anxious anxiety worried stress overwhelmed regulate body',
+        mindfulness: 'calm breathe breathing body scan mindful still focus quiet attention',
+        journal: 'write writing private reflect reflection feelings diary think process',
+        thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe',
+        anxietyToolkit: 'anxiety anxious worry worried panic nervous fear calm',
+        sleep: 'sleep tired rest exhausted bedtime phone night stress',
+        stressBucket: 'stress stressed pressure overwhelmed busy load capacity',
+        tipp: 'panic crisis intense emotion emergency calm body temperature breathing',
+        bigFeelings: 'anger angry mad rage upset conflict cool down',
+        sensoryRegulation: 'sensory noise light texture overload neurodivergent regulation',
+        friendship: 'friend friends lonely friendship peer belong',
+        conflict: 'conflict fight argument repair friend apologize',
+        conflicttheater: 'conflict fight argument repair friend mediation',
+        restorativeCircle: 'repair conflict harm apology restore relationship',
+        peersupport: 'listen listening friend help support peer adult',
+        sociallab: 'social roleplay conversation practice friend peer',
+        goals: 'goal goals plan motivation future',
+        decisions: 'decision decide choice choices problem solve',
+        ethicalReasoning: 'decision ethics right wrong dilemma values',
+        valuesCommittedAction: 'values purpose decision action committed',
+        advocacy: 'ask help need accommodation self advocate',
+        safety: 'safe safety plan help trusted adult',
+        crisiscompanion: 'crisis urgent unsafe self harm suicide help',
+        griefLoss: 'grief loss death missing sad',
+        digitalWellbeing: 'phone social media cyberbullying screen online chatbot'
+      };
+
+      function _selToolSearchText(tool) {
+        if (!tool) return '';
+        return [
+          tool.label || '',
+          tool.desc || '',
+          tool.recommendedRange || '',
+          _selSearchAliasMap[tool.id] || ''
+        ].join(' ').toLowerCase();
+      }
+
+      function _selToolMatchesSearch(tool, query) {
+        var q = String(query || '').toLowerCase().trim();
+        if (!q) return true;
+        var text = _selToolSearchText(tool);
+        if (text.indexOf(q) !== -1) return true;
+        var terms = q.split(/\s+/).filter(function(term) { return term.length > 1; });
+        if (terms.length === 0) return true;
+        var matches = 0;
+        terms.forEach(function(term) {
+          if (text.indexOf(term) !== -1) matches++;
+        });
+        return matches > 0 && matches >= Math.ceil(Math.min(terms.length, 3) / 2);
+      }
+
+      function _selGradePick() {
+        var band = gradeBand(gradeLevel);
+        var ids = band === 'elementary'
+          ? ['zones', 'emotions', 'coping', 'friendship']
+          : band === 'middle'
+            ? ['coping', 'journal', 'perspective', 'goals']
+            : ['thoughtRecord', 'valuesCommittedAction', 'advocacy', 'sleep'];
+        for (var i = 0; i < ids.length; i++) {
+          var found = _allSelTools.find(function(t) { return t.id === ids[i] && !t.category; });
+          if (found) return found;
+        }
+        return _allSelTools.find(function(t) { return t && !t.category; }) || null;
+      }
+
+      function _selToolById(toolId) {
+        if (!toolId) return null;
+        return _allSelTools.find(function(t) { return t.id === toolId && !t.category; }) || null;
+      }
+
+      function _selRelativeTime(ts) {
+        var n = Number(ts || 0);
+        if (!n) return '';
+        var diff = Math.max(0, Date.now() - n);
+        var mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' min ago';
+        var hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.floor(hours / 24);
+        if (days < 7) return days + (days === 1 ? ' day ago' : ' days ago');
+        try { return new Date(n).toLocaleDateString(); } catch (e) { return ''; }
+      }
+
+      function _selRecentWorkItems() {
+        var items = [];
+        (Array.isArray(selSnapshots) ? selSnapshots : []).forEach(function(snap) {
+          if (!snap) return;
+          var toolId = snap.tool || snap.toolId;
+          var tool = _selToolById(toolId);
+          items.push({
+            key: 'snap-' + (snap.id || toolId || items.length),
+            kind: 'Saved',
+            toolId: toolId,
+            icon: tool ? tool.icon : '\uD83D\uDCBE',
+            title: snap.label || (tool ? tool.label : 'Saved SEL work'),
+            detail: tool ? tool.label : 'SEL snapshot',
+            ts: snap.ts || snap.timestamp || 0
+          });
+        });
+        Object.keys(selToolUsage || {}).forEach(function(toolId) {
+          var usage = selToolUsage[toolId] || {};
+          var tool = _selToolById(toolId);
+          if (!tool || !usage.lastUsed) return;
+          items.push({
+            key: 'use-' + toolId,
+            kind: 'Opened',
+            toolId: toolId,
+            icon: tool.icon,
+            title: tool.label,
+            detail: (usage.count || 1) + ((usage.count || 1) === 1 ? ' visit' : ' visits'),
+            ts: usage.lastUsed || 0
+          });
+        });
+        items.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+        var seen = {};
+        var out = [];
+        items.forEach(function(item) {
+          var dedupeKey = item.kind + ':' + (item.toolId || item.title);
+          if (seen[dedupeKey] || out.length >= 4) return;
+          seen[dedupeKey] = true;
+          out.push(item);
+        });
+        return out;
+      }
+
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
@@ -1376,36 +1810,36 @@
       // ── Header bar (fixed: removed bogus role=button from non-interactive containers) ──
       var header = h('div', {
         role: 'banner',
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: isCompact ? 'wrap' : 'nowrap', padding: isCompact ? '12px 12px' : '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 8 : 12, minWidth: 0 } },
           selHubTool && h('button', {
             onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
             'aria-label': 'Back to tools',
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
-          h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
+          h('h2', { style: { margin: 0, fontSize: isCompact ? 18 : 20, fontWeight: 800, color: _t.headerText, whiteSpace: 'nowrap' } },
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
           h('span', {
-            style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
+            style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, position: 'relative' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 6 : 8, position: 'relative', flexWrap: 'wrap', justifyContent: isCompact ? 'flex-end' : 'flex-start', marginLeft: 'auto' } },
           // CHANGE 2: Unsaved-changes badge \u2014 dot only when dirty
           isDirty && h('div', { style: { position: 'relative' } },
             h('button', {
               onClick: function() { setShowDirtyTooltip(function(v) { return !v; }); },
               'aria-label': 'You have unsaved changes',
               title: 'Unsaved changes',
-              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
+              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: isCompact ? '4px 8px' : '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
             },
               h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' } }),
               h('span', null, 'Unsaved')
             ),
             showDirtyTooltip && h('div', {
               role: 'tooltip',
-              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 10, padding: 12, fontSize: 12, width: 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
+              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 8, padding: 12, fontSize: 12, width: isCompact ? 220 : 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
             },
               h('div', { style: { marginBottom: 8 } }, 'You have unsaved changes \u2014 tap Export now to save them'),
               h('button', {
@@ -1431,19 +1865,19 @@
             onClick: function() { setShowForEducators(true); announceToSR('For Educators guide opened'); },
             'aria-label': 'For Educators: how to use this Hub responsibly',
             title: 'For Educators',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }
-          }, '\uD83C\uDF93 ', h('span', null, 'For Educators')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, '\uD83C\uDF93 ', h('span', { style: { display: isCompact ? 'none' : 'inline' } }, 'For Educators')),
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'aria-label': 'Toggle theme (light / dark / high contrast)',
             title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
-          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { display: isCompact ? 'none' : 'inline', fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
             'aria-label': selXp + ' SEL experience points',
-            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
+            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
@@ -1524,6 +1958,7 @@
             window.__alloflowSelEngagement = null;
             window.__alloflowSelStations = null;
             window.__alloflowSelProgress = null;
+            window.__alloflowSelSnapshots = [];
           }
         } catch (e) {}
         setShowForEducators(false);
@@ -1571,6 +2006,33 @@
       // ══════════════════════════════════════════════════════════════
       var toolGrid = null;
       if (!selHubTool) {
+        var _recentSelTool = null;
+        if (!activePathway && !activeStation) {
+          var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
+          Object.keys(selToolUsage || {}).forEach(function(k) {
+            var u = selToolUsage[k];
+            if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
+          });
+          if (bestId) _recentSelTool = _allSelTools.find(function(t) { return t.id === bestId && !t.category; }) || null;
+        }
+        var _gradePick = _selGradePick();
+        var _startHereCards = [
+          { key: 'continue', icon: _recentSelTool ? _recentSelTool.icon : '\u21A9', label: 'Continue', desc: _recentSelTool ? _recentSelTool.label : 'Resume the last SEL tool you opened.', tool: _recentSelTool, disabled: !_recentSelTool },
+          { key: 'recommended', icon: _gradePick ? _gradePick.icon : '\u2728', label: 'Recommended', desc: _gradePick ? _gradePick.label + ' fits this grade band.' : 'Open a grade-friendly starting point.', tool: _gradePick, disabled: !_gradePick },
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm Down', desc: 'Try a quick regulation practice.', tool: _allSelTools.find(function(t) { return t.id === 'coping'; }) || _allSelTools.find(function(t) { return t.id === 'mindfulness'; }) },
+          { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a private reflection.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
+          { key: 'browse', icon: '\uD83D\uDD0D', label: 'Browse All', desc: 'Search or filter the full catalog.', browse: true, disabled: false }
+        ];
+        var _selNeedChips = [
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm my body', query: 'calm' },
+          { key: 'feelings', icon: '\uD83D\uDCAC', label: 'Name feelings', query: 'feelings' },
+          { key: 'stress', icon: '\uD83C\uDF2A', label: 'Stress or worry', query: 'stress worry' },
+          { key: 'friend', icon: '\uD83E\uDD1D', label: 'Friend conflict', query: 'friend conflict' },
+          { key: 'write', icon: '\uD83D\uDCD3', label: 'Write it out', query: 'write' },
+          { key: 'decision', icon: '\u2696\uFE0F', label: 'Make a decision', query: 'decision' },
+          { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' }
+        ];
+        var _recentWorkItems = (!activePathway && !activeStation) ? _selRecentWorkItems() : [];
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -1579,13 +2041,11 @@
             var catIdx = _allSelTools.indexOf(tool);
             for (var j = catIdx + 1; j < _allSelTools.length; j++) {
               if (_allSelTools[j].category) break;
-              if (_allSelTools[j].label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                  _allSelTools[j].desc.toLowerCase().indexOf(_searchLower) !== -1) return true;
+              if (_selToolMatchesSearch(_allSelTools[j], _searchLower)) return true;
             }
             return false;
           }
-          return tool.label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                 tool.desc.toLowerCase().indexOf(_searchLower) !== -1;
+          return _selToolMatchesSearch(tool, _searchLower);
         }) : _allSelTools;
 
         // Remove orphan category headers
@@ -1658,10 +2118,10 @@
           });
         }
 
-        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
+        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
           // Active pathway banner
           activePathway && h('div', {
-            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
           },
             h('div', null,
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7c3aed' } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
@@ -1680,7 +2140,7 @@
             var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
             return h('div', {
               role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
-              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { minWidth: 0, flex: 1 } },
@@ -1744,28 +2204,150 @@
               )
             );
           })(),
-          // \u2500\u2500 Daily Streak + Continue Where You Left Off \u2500\u2500
+          !activePathway && !activeStation && h('section', {
+            'aria-label': 'Start here',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Start here'),
+              h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Pick a quick route, or browse below.')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(3, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _startHereCards.map(function(card) {
+                var disabled = card.disabled || (!card.browse && !card.tool);
+                return h('button', {
+                  key: card.key,
+                  disabled: disabled,
+                  onClick: function() {
+                    if (card.browse) {
+                      setActivePathway(null);
+                      setActiveStationId(null);
+                      setSelCategoryFilter(null);
+                      setSelToolSearch('');
+                      announceToSR('Browsing all SEL tools');
+                      setTimeout(function() {
+                        var searchInput = document.getElementById('sel-tool-search-input');
+                        if (searchInput && searchInput.focus) searchInput.focus();
+                      }, 50);
+                    } else if (card.tool) {
+                      openSelToolById(card.tool.id, card.tool.label);
+                    }
+                  },
+                  'aria-label': card.label + ': ' + card.desc,
+                  style: {
+                    textAlign: 'left',
+                    padding: isCompact ? '10px 12px' : '12px',
+                    minHeight: isCompact ? 68 : 86,
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: disabled ? (isDark ? '#172033' : '#f1f5f9') : _t.bgCard,
+                    color: _t.text,
+                    opacity: disabled ? 0.55 : 1,
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    flexDirection: isCompact ? 'row' : 'column',
+                    alignItems: isCompact ? 'center' : 'flex-start',
+                    gap: isCompact ? 10 : 6,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: isCompact ? 20 : 22, flexShrink: 0 } }, card.icon),
+                  h('span', { style: { minWidth: 0 } },
+                    h('span', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: _t.text, marginBottom: 2 } }, card.label),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.35, color: _t.textMuted } }, card.desc)
+                  )
+                );
+              })
+            ),
+            h('div', {
+              role: 'note',
+              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
+            },
+              h('span', null, 'Private on this device. Save or export before closing if you want to keep your work.'),
+              h('button', {
+                onClick: function() {
+                  if (typeof props.onExportRequested === 'function') {
+                    try { props.onExportRequested(); } catch (e) {}
+                  } else {
+                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
+                  }
+                  if (typeof addToast === 'function') addToast('Preparing to save your SEL work...', 'info');
+                },
+                'aria-label': 'Save or export SEL work now',
+                style: { border: '1px solid #7c3aed', background: '#7c3aed', color: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
+              }, 'Save now')
+            )
+          ),
+          !activePathway && !activeStation && _recentWorkItems.length > 0 && h('section', {
+            'aria-label': 'Recent SEL work',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Recent SEL work'),
+              h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Saved here. Export to keep it after closing.')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _recentWorkItems.map(function(item) {
+                var canOpen = item.toolId && window.SelHub && window.SelHub.isRegistered(item.toolId);
+                var when = _selRelativeTime(item.ts);
+                return h('button', {
+                  key: item.key,
+                  disabled: !canOpen,
+                  onClick: function() {
+                    if (canOpen) openSelToolById(item.toolId, item.title);
+                  },
+                  'aria-label': item.kind + ' SEL work: ' + item.title + (when ? ', ' + when : '') + '. ' + (canOpen ? 'Open related tool.' : 'Related tool is still loading.'),
+                  title: item.detail || item.title,
+                  style: {
+                    minHeight: 72,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: _t.bgCard,
+                    color: _t.text,
+                    cursor: canOpen ? 'pointer' : 'default',
+                    opacity: canOpen ? 1 : 0.55,
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22, flexShrink: 0 } }, item.icon || '\uD83D\uDCBE'),
+                  h('span', { style: { minWidth: 0, flex: 1 } },
+                    h('span', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2, minWidth: 0 } },
+                      h('span', { style: { fontSize: 10, fontWeight: 900, color: '#7c3aed', textTransform: 'uppercase', flexShrink: 0 } }, item.kind),
+                      when && h('span', { style: { fontSize: 10, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, when)
+                    ),
+                    h('span', { style: { display: 'block', fontSize: 12, lineHeight: 1.25, fontWeight: 800, color: _t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.3, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 } }, item.detail)
+                  )
+                );
+              })
+            )
+          ),
+          // \u2500\u2500 Daily Streak \u2500\u2500
           // Pulls from localStorage-backed selStreak / selToolUsage.
           // Streak chip surfaces only when count >= 2 (avoids "1-day streak"
-          // noise on first visit). Continue card shows the most recently
-          // opened tool if it was used within the last 7 days AND the user
-          // isn't already in a pathway/station view.
+          // noise on first visit). Continue now lives in the Start here cards.
           (function () {
             var showStreak = (selStreak.count || 0) >= 2;
-            var continueTool = null;
-            if (!activePathway && !activeStation) {
-              var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
-              Object.keys(selToolUsage).forEach(function (k) {
-                var u = selToolUsage[k];
-                if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
-              });
-              if (bestId) {
-                continueTool = _allSelTools.find(function (t) { return t.id === bestId && !t.category; }) || null;
-              }
-            }
-            if (!showStreak && !continueTool) return null;
+            if (!showStreak) return null;
             return h('div', {
-              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
                 showStreak && h('div', {
@@ -1776,47 +2358,80 @@
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\uD83D\uDD25'),
                   h('span', { style: { fontSize: 12, fontWeight: 800, color: '#c2410c' } }, selStreak.count + '-day streak'),
                   (selStreak.longest > selStreak.count) && h('span', { style: { fontSize: 10, color: '#9a3412', fontWeight: 600 } }, '\u00B7 best ' + selStreak.longest)
-                ),
-                continueTool && h('div', { style: { fontSize: 12, color: _t.textMuted } },
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, '\uD83D\uDC4B Welcome back. '),
-                  'Continue with ',
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, continueTool.label),
-                  '?'
                 )
-              ),
-              continueTool && h('button', {
-                onClick: function () {
-                  trackToolOpen(continueTool.id);
-                  setSelHubTool(continueTool.id);
-                  announceToSR('Resumed ' + continueTool.label);
-                },
-                'aria-label': 'Continue with ' + continueTool.label,
-                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#b45309', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
-              },
-                h('span', { 'aria-hidden': 'true' }, continueTool.icon),
-                'Continue \u2192'
               )
             );
           })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
+              id: 'sel-tool-search-input',
               type: 'text',
-              placeholder: '\uD83D\uDD0D Search SEL tools...',
+              placeholder: '\uD83D\uDD0D Search feelings, friends, stress, goals...',
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
-              style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
+              style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
             })
           ),
+          !activePathway && !activeStation && h('div', {
+            role: 'group',
+            'aria-label': 'Find SEL tools by need',
+            style: { marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, color: _t.textMuted } }, 'I need...'),
+              _searchLower && h('button', {
+                onClick: function() { setSelToolSearch(''); setSelCategoryFilter(null); announceToSR('Cleared SEL search'); },
+                'aria-label': 'Clear SEL search',
+                style: { border: 'none', background: 'transparent', color: _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '4px 2px' }
+              }, 'Clear')
+            ),
+            h('div', { style: { display: 'flex', gap: 6, overflowX: isCompact ? 'auto' : 'visible', flexWrap: isCompact ? 'nowrap' : 'wrap', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
+              _selNeedChips.map(function(chip) {
+                var activeNeed = _searchLower === chip.query;
+                return h('button', {
+                  key: chip.key,
+                  onClick: function() {
+                    setActivePathway(null);
+                    setActiveStationId(null);
+                    setSelCategoryFilter(null);
+                    setSelToolSearch(activeNeed ? '' : chip.query);
+                    announceToSR(activeNeed ? 'Cleared SEL need filter' : 'Showing SEL tools for ' + chip.label);
+                  },
+                  'aria-label': (activeNeed ? 'Clear need filter: ' : 'Find tools for: ') + chip.label,
+                  'aria-pressed': activeNeed ? 'true' : 'false',
+                  style: {
+                    minHeight: 34,
+                    padding: '7px 10px',
+                    borderRadius: 8,
+                    border: '1px solid ' + (activeNeed ? '#7c3aed' : _t.border),
+                    background: activeNeed ? '#7c3aed' : _t.bgCard,
+                    color: activeNeed ? '#fff' : _t.text,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true' }, chip.icon),
+                  chip.label
+                );
+              })
+            )
+          ),
           // CASEL category filter chips
-          h('div', { role: 'group', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+          h('div', { role: 'group', 'aria-label': 'Filter SEL tools by category', style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
               'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
-              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }
+              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
             }, 'All'),
             SEL_CATEGORIES.map(function(cat) {
               var isActive = selCategoryFilter === cat.id;
@@ -1825,18 +2440,18 @@
                 onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
                 'aria-label': 'Filter: ' + cat.label,
                 'aria-pressed': isActive ? 'true' : 'false',
-                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4 }
+                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
               }, cat.icon + ' ' + cat.label);
             })
           ),
           // SEL Pathways — curated learning sequences (collapsed by default)
           !activePathway && h('details', {
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '\uD83D\uDEE4\uFE0F SEL Pathways \u2014 Curated Learning Sequences'),
-            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
               SEL_PATHWAYS.map(function(pw) {
                 return h('button', {
                   key: pw.id,
@@ -1849,7 +2464,7 @@
                     if (typeof addToast === 'function') addToast('\uD83D\uDEE4\uFE0F ' + pw.name + ' pathway started!', 'success');
                   },
                   'aria-label': pw.name + ': ' + pw.desc,
-                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
+                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                     h('span', { style: { fontSize: 16 } }, pw.icon),
@@ -1864,14 +2479,14 @@
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           !activeStation && !activePathway && h('details', {
             open: builderOpen || savedStations.length > 0,
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '📌 Custom SEL Stations — teacher-authored bundles'),
             h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
               // Saved stations list
-              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
                 savedStations.map(function (st) {
                   return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
@@ -1976,7 +2591,7 @@
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
                     registry.length === 0
                       ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
-                      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
+                        : h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
                             return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
@@ -1996,7 +2611,7 @@
                   // Quest presets + manual quest add
                   h('div', null,
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Quests (optional):'),
-                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 6 } },
+                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 6, marginBottom: 6 } },
                       QUEST_PRESETS.map(function (preset) {
                         return h('button', {
                           key: preset.name,
@@ -2049,7 +2664,7 @@
             )
           ),
           // Grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isCompact ? 10 : 16 } },
             _filteredTools.map(function(tool) {
               // Category header
               if (tool.category) {
@@ -2072,26 +2687,18 @@
                 pink: '#ec4899', red: '#ef4444'
               };
               var cardColor = colorMap[tool.color] || '#3b82f6';
+              var shortDesc = _selShortDesc(tool);
 
               return h('button', {
                 key: tool.id,
                 onClick: function() {
-                  if (isRegistered) {
-                    trackToolOpen(tool.id);
-                    setSelHubTool(tool.id);
-                    announceToSR('Opened ' + tool.label);
-                    // Track pathway progress
-                    if (activePathway && activePathway.tools.indexOf(tool.id) >= 0) {
-                      setPathwayProgress(function(prev) { var n = Object.assign({}, prev); n[tool.id] = true; return n; });
-                    }
-                  } else {
-                    if (typeof addToast === 'function') addToast(tool.label + ' is loading...', 'info');
-                  }
+                  openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : ''),
+                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : ''),
+                title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 16, borderRadius: 14, border: '1px solid ' + _t.border,
+                  padding: isCompact ? 14 : 16, borderRadius: 8, border: '1px solid ' + _t.border,
                   background: _t.bgCard,
                   cursor: isRegistered ? 'pointer' : 'default',
                   opacity: isRegistered ? 1 : 0.5,
@@ -2119,7 +2726,7 @@
                     return h('span', { 'aria-hidden': 'true', title: u.count + (u.count === 1 ? ' visit' : ' visits'), style: { fontSize: 9, color: cardColor, letterSpacing: '1px' } }, '•'.repeat(Math.min(u.count, 4)));
                   })()
                 ),
-                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
+                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, shortDesc),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
                 (function() {
                   if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
@@ -2165,7 +2772,7 @@
           _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: _t.textMuted } },
             h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
             h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'No tools match "' + selToolSearch + '"'),
-            h('p', { style: { fontSize: 12 } }, 'Try a different search term')
+            h('p', { style: { fontSize: 12 } }, 'Try calm, feelings, stress, friend, write, decision, or sleep.')
           )
         );
       }
@@ -2261,7 +2868,10 @@
           setToolSnapshots: setSelSnapshots,
           saveSnapshot: function(toolId, label, data) {
             setSelSnapshots(function(prev) {
-              return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
+              var ts = Date.now();
+              var next = (prev || []).concat([{ id: toolId + '-' + ts, tool: toolId, label: label, data: data, ts: ts }]);
+              next.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+              return next.slice(0, 30);
             });
           },
 
@@ -2279,7 +2889,7 @@
           // ── Theme ──
           isDark: isDark,
           isContrast: isContrast,
-          theme: _t,
+          themePalette: _t,
 
           // ── Full props passthrough ──
           props: props || {}

@@ -116,8 +116,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       var _beaHC = !!_beaT.isContrast, _beaL = !_beaHC && !_beaT.isDark;
       var _bea_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _bea_BGH = {'#0f172a':'#000000','#10b981':'#000000','#b45309':'#000000','#a855f7':'#000000','#1e293b':'#000000','#fff':'#000000'};
       var _bea_FGL = {'#cbd5e1':'#334155','#86efac':'#166534','#94a3b8':'#64748b','#a7f3d0':'#047857','#fde68a':'#92400e','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fecaca':'#b91c1c','#bfdbfe':'#1e40af','#fcd34d':'#78350f'}, _bea_FGH = {'#cbd5e1':'#ffff00','#86efac':'#ffff00','#94a3b8':'#ffff00','#a7f3d0':'#ffff00','#fff':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#bfdbfe':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
-      var _bea_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _bea_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#f59e0b':'#ffff00','#a855f7':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#cbd5e1':'#ffff00','#059669':'#ffff00'};
-      var _beaBg = function(h){ return _beaHC ? (_bea_BGH[h]||h) : (_beaL ? (_bea_BGL[h]||h) : h); };
+      var _bea_BGD = {'#10b981':'#047857'}, _bea_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _bea_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#10b981':'#ffff00','#f59e0b':'#ffff00','#a855f7':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#cbd5e1':'#ffff00','#059669':'#ffff00'};
+      var _beaBg = function(h){ return _beaHC ? (_bea_BGH[h]||h) : (_beaL ? (_bea_BGL[h]||h) : (_bea_BGD[h]||h)); };
       var _beaFg = function(h){ return _beaHC ? (_bea_FGH[h]||h) : (_beaL ? (_bea_FGL[h]||h) : h); };
       var _beaBd = function(h){ return _beaHC ? (_bea_BDH[h]||h) : (_beaL ? (_bea_BDL[h]||h) : h); };
       var React = ctx.React;

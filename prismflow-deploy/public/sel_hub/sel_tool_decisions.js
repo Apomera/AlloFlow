@@ -494,9 +494,9 @@ window.SelHub = window.SelHub || {
       var _decHC = !!_decT.isContrast, _decL = !_decHC && !_decT.isDark;
       var _dec_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc','#334155':'#e2e8f0'}, _dec_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#15803d':'#000000','#334155':'#000000','#ffffff':'#000000','#fffbeb':'#000000','#f1f5f9':'#000000'};
       var _dec_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#818cf8':'#4338ca','#f87171':'#b91c1c','#fbbf24':'#854d0e'}, _dec_FGH = {'#94a3b8':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#60a5fa':'#ffff00','#f87171':'#ffff00','#fbbf24':'#ffff00','#fb923c':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#ef4444':'#ffff00','#3b82f6':'#ffff00','#78350f':'#ffff00','#475569':'#ffff00'};
-      var _dec_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1'}, _dec_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#cbd5e1':'#ffff00'};
+      var _dec_FGD = {'#94a3b8':'#cbd5e1'}, _dec_BDL = {'#334155':'#e2e8f0','#0f172a':'#cbd5e1'}, _dec_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fcd34d':'#ffff00','#cbd5e1':'#ffff00'};
       var _decBg = function(h){ return _decHC ? (_dec_BGH[h]||h) : (_decL ? (_dec_BGL[h]||h) : h); };
-      var _decFg = function(h){ return _decHC ? (_dec_FGH[h]||h) : (_decL ? (_dec_FGL[h]||h) : h); };
+      var _decFg = function(h){ return _decHC ? (_dec_FGH[h]||h) : (_decL ? (_dec_FGL[h]||h) : (_dec_FGD[h]||h)); };
       var _decBd = function(h){ return _decHC ? (_dec_BDH[h]||h) : (_decL ? (_dec_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
@@ -790,7 +790,7 @@ window.SelHub = window.SelHub || {
                 h('div', {
                   style: {
                     width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                    background: done ? _decFg('#22c55e') : current ? ACCENT : _decBg('#334155'),
+                    background: done ? _decFg('#22c55e') : current ? '#b45309' : _decBg('#334155'),
                     color: done || current ? _decFg('#fff') : _decFg('#94a3b8'), fontWeight: 600, transition: 'all 0.2s'
                   }
                 }, done ? '\u2713' : st.icon),

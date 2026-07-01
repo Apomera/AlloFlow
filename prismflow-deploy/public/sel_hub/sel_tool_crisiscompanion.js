@@ -1516,7 +1516,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { addToast('Returning to SEL Hub menu'); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
                 'aria-label': 'Take me back to the SEL Hub menu without continuing',
-                style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
+                style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: _ccCDark ? '#e2e8f0' : SLATE_TEXT, border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
               }, '← Take me back to the menu')
             )
           )

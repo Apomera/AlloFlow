@@ -274,7 +274,7 @@ window.SelHub = window.SelHub || {
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
             );
           }),
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: AMBER, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );

@@ -377,7 +377,7 @@ window.SelHub = window.SelHub || {
             );
           }),
           // Progress badge
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD, fontWeight: 700, whiteSpace: 'nowrap', background: _gmC('#d1fae5'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _gmC('#d1fae5'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
             exploredCount + '/' + TABS.length
           ),
           // Sound toggle
@@ -486,7 +486,7 @@ window.SelHub = window.SelHub || {
                 upd({ brainFactIdx: prev, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[prev] = true; return o; })()) });
                 if (soundEnabled) sfxNeuron();
               },
-              style: { padding: '10px 20px', background: _gmC('#fff'), border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
+              style: { padding: '10px 20px', background: _gmC('#fff'), border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD_DARK, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
             }, '\u2190 Previous'),
             h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: _gmC('#475569'), fontWeight: 600, background: _gmC('#f0fdf4'), padding: '4px 12px', borderRadius: '8px' } },
               (brainFactIdx % facts.length + 1) + ' / ' + facts.length

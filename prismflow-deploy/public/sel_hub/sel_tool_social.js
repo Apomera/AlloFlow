@@ -833,8 +833,8 @@ window.SelHub = window.SelHub || {
       var _socHC = !!_socT.isContrast, _socL = !_socHC && !_socT.isDark;
       var _soc_BGL = {'#334155':'#e2e8f0','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _soc_BGH = {'#334155':'#000000','#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#8b5cf6':'#000000','#b45309':'#000000','#15803d':'#000000'};
       var _soc_FGL = {'#94a3b8':'#64748b','#38bdf8':'#0369a1','#f1f5f9':'#0f172a','#a78bfa':'#6d28d9','#e2e8f0':'#1e293b','#cbd5e1':'#334155'}, _soc_FGH = {'#94a3b8':'#ffff00','#38bdf8':'#ffff00','#f1f5f9':'#ffff00','#0ea5e9':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#06b6d4':'#ffff00','#10b981':'#ffff00','#d97706':'#ffff00','#ec4899':'#ffff00','#f472b6':'#ffff00','#475569':'#ffff00'};
-      var _soc_BDL = {'#334155':'#e2e8f0'}, _soc_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00'};
-      var _socBg = function(h){ return _socHC ? (_soc_BGH[h]||h) : (_socL ? (_soc_BGL[h]||h) : h); };
+      var _soc_BGD = {'#0ea5e9':'#0369a1'}, _soc_BDL = {'#334155':'#e2e8f0'}, _soc_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00'};
+      var _socBg = function(h){ return _socHC ? (_soc_BGH[h]||h) : (_socL ? (_soc_BGL[h]||h) : (_soc_BGD[h]||h)); };
       var _socFg = function(h){ return _socHC ? (_soc_FGH[h]||h) : (_socL ? (_soc_FGL[h]||h) : h); };
       var _socBd = function(h){ return _socHC ? (_soc_BDH[h]||h) : (_socL ? (_soc_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -1008,7 +1008,7 @@ window.SelHub = window.SelHub || {
             },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#0ea5e9' : 'transparent',
+              background: isActive ? _socBg('#0ea5e9') : 'transparent',
               color: isActive ? _socFg('#fff') : _socFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }

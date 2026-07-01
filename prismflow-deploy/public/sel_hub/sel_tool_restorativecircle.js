@@ -1101,7 +1101,7 @@ window.SelHub = window.SelHub || {
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
           h('div', { className: 'flex items-center gap-3' },
-            h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-amber-100 text-amber-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
+            h('button', Object.assign({ 'aria-label': 'Back to SEL tools', className: 'p-2 rounded-full hover:bg-amber-100 text-amber-800 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })),
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
