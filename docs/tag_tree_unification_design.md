@@ -197,6 +197,62 @@ attempt. It's cheap (1-2 seconds to run; pdf-lib only; no AlloFlow context). Add
 includes the explicit `page.node.set(StructParents, 0)` and a ParentTree.Nums shape exactly matching
 the failed attempt — that should narrow further.
 
+### Slice 1 per-leaf, attempt 2 — 2026-07-01 — CLEAN (all June hypotheses closed)
+
+**New diagnostic surface:** `dev-tools/debug/tag_tree_live_harness.cjs` runs the REAL
+`createTaggedPdf` (the built `doc_pipeline_module.js`, via the factory seam) in Node under jsdom +
+pdf-lib 1.17.1 in ~50ms, with a `PDFContext.prototype.assign/delete` LEDGER that records every
+object-number's life (kind + call stack) — the "instrument, don't iterate variants" capability the
+June investigation asked for, without Playwright. Its verdict covers: ledger-built-vs-saved
+StructElems, dangling refs in the saved tree, orphaned leaves, and (added after the first decode)
+CONTENT-STREAM checks — artifact-wrap coverage of the original content and MCR→BDC bidirectional
+consistency. Modes: baseline / `--experiment` / `--multi` / `--early-getpages` / `--out`.
+
+**The experiment:** per-leaf MCIDs for scanned pages rebuilt behind
+`fixResult._experimentPerLeafScanned` (set only by the harness + golden spec), deliberately WITHOUT
+the June attempt's two un-exonerated moves — `getPages()` stays in place and /K is retro-patched via
+`context.lookup().set()` (the proven variant-B pattern) instead of set at build time. New machinery:
+per-leaf `BDC (role, mcid) → invisible drawText → EMC` runs replace the OCR blob on planned pages
+(via `PDFOperator.of` — variant-H-shaped), the Stage-3 flat-/P is skipped for those pages, and the
+ParentTree slot maps mcid → leaf ref (array). Grouping/decorative roles (the `<main>` Sect leaf,
+NonStruct) make no content claim.
+
+**Results (harness + Playwright golden, 26/26):**
+- Single-page, multi-page, and `--early-getpages` (June hypothesis #1, the last un-exonerated
+  delta): ALL CLEAN — zero object loss, zero dangles, orphaned 0, every MCR has a matching BDC,
+  11 distinct MCIDs, no multi-claimed MCIDs (the ISO 32000 §14.7.4 violation of the shared-MCID-0
+  ship is GONE in experiment mode).
+- **Hypothesis #1 (moved getPages) is EXONERATED.** Every hypothesis from the June list is now
+  closed (A–I clean-room + real-orchestration + early-getPages).
+- **Mechanical conclusion:** with `useObjectStreams: false` (in the save path since 2026-04-23),
+  pdf-lib's writer serializes EVERY entry of `context.indirectObjects` — no GC exists. A registered
+  object cannot be absent from the saved bytes; only replacement (`assign` on the same ref) or
+  `context.delete` could remove one, and the live source contains neither (`PDFRef.of` / `.delete(`:
+  zero hits). The June "registered but absent" observation was therefore almost certainly a defect
+  in the attempt's own hand-rolled page-loop rewiring or its measurement — the same family as the
+  two REAL bugs the harness found (below) — not a pdf-lib serialization ghost.
+
+**Two production bugs found by the harness's content-stream decode (both FIXED):**
+1. **Artifact-split mis-count** — `_origContentCount` was captured BEFORE pdf-lib's first draw
+   triggers `page.node.normalize()`, which rewrites /Contents from `[orig]` to
+   `[q, orig, Q, drawStream]`. The Stage-3 split then put only the `q` stream inside `/Artifact`
+   and tagged the scanned IMAGE as `/P` MCID-0 text content (veraPDF §7.1) — silently, on every
+   single-content-stream scan since 2026-06-19. Fix: force `page.node.normalize()` (idempotent)
+   before counting.
+2. **`_builtCount` undercount** — the round-trip's content-loss guard summed only TOP-LEVEL refs
+   (~3 Sects) against a saved count of ALL StructElems (~20), so the "No structure lost at save"
+   ratio was always ≫1 and could NEVER detect the b0d24ae3 loss class it was tightened for (report
+   showed "3/20"). Fix: count built elements by enumerating the doc's own context for
+   /Type /StructElem — apples-to-apples with the saved-side tally (now 20/20, 19/19).
+
+**Ship posture:** the experiment flag stays DEFAULT OFF. The Playwright golden gained a per-leaf
+block (leaves > 0, orphaned = 0, distinct MCIDs > 3, multi-claimed = 0) so the gate covers the
+construction. Flip checklist for default-ON (scanned docs): (a) external validation of a per-leaf
+output through veraPDF/PAC (the CheerpJ spike or Aaron's PAC run), (b) a Canvas smoke of a real
+scanned remediation with the flag, (c) change `_perLeafExp` to default true for scanned docs and
+retire the shared-MCID-0 patch. Until then production keeps shared-MCID-0 + /ActualText (SR-correct,
+degenerate), now with the artifact split actually correct.
+
 ### Investigation update — 2026-06-07 evening (after Slices 1+2 shipped)
 
 The repro was extended with 4 more variants (D, E, F, G initially; later H, I). After Aaron asked

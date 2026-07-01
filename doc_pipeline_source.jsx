@@ -20007,6 +20007,11 @@ tr { page-break-inside: avoid; }
         return tryFlat();
       }
     };
+    // b0d24ae3 hypothesis-#1 hook (harness-only): the reverted June attempt moved
+    // doc.getPages() ABOVE the outline build and that reordering was never
+    // exonerated. This recreates exactly that page-cache-population timing so the
+    // instrumented harness can test it in isolation. No-op in production.
+    if (fixResult && fixResult._experimentEarlyGetPages) { try { doc.getPages(); } catch (_) {} }
     const structElemRefs = _buildOutlineStructElems();
     // ── Stage 4 prep: flat outline-items list for per-block role matching.
     // We rewalk the DOM here rather than plumb state out of
@@ -20101,6 +20106,19 @@ tr { page-break-inside: avoid; }
     // keeps Stage-3's existing /P MCID 0 wraps untouched. Worst case: PAC stops
     // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
     // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
+    // ── b0d24ae3 per-leaf experiment (DIAGNOSTIC — default OFF) ──
+    // fixResult._experimentPerLeafScanned is set ONLY by
+    // dev-tools/debug/tag_tree_live_harness.cjs. When on, the unify pass assigns each
+    // scanned leaf its OWN MCID (instead of the shared MCID 0) and records a per-page
+    // draw plan; the page loop then draws each leaf's text as its own BDC/EMC run and
+    // the Stage-3 wrap skips the flat /P for planned pages (ParentTree maps
+    // mcid → leaf). This re-creates the reverted b0d24ae3 attempt MINUS its two
+    // un-exonerated moves (early getPages(); build-time /K), inside the REAL
+    // orchestration, so the instrumented harness can observe the content loss —
+    // or prove this construction safe. Production behavior is byte-identical
+    // while the flag is absent.
+    const _perLeafExp = !!(fixResult && fixResult._experimentPerLeafScanned) && isScanned;
+    const _perLeafPlan = _perLeafExp ? new Map() : null; // pageIdx → [{ref, role, text, mcid}]
     if (isScanned && pages.length >= 1 && _unifiableLeafRefs.length > 0) {
       try {
         const _pageCount = pages.length;
@@ -20111,7 +20129,7 @@ tr { page-break-inside: avoid; }
           // Proportional page assignment; clamp to last page if rounding overshoots.
           const _pageIdx = Math.min(Math.floor(i / _leavesPerPage), _pageCount - 1);
           const _pageRef = pages[_pageIdx].ref;
-          const { ref } = _unifiableLeafRefs[i];
+          const { ref, role, text } = _unifiableLeafRefs[i];
           try {
             const leaf = context.lookup(ref);
             if (!leaf || typeof leaf.get !== 'function' || typeof leaf.set !== 'function') continue;
@@ -20119,16 +20137,28 @@ tr { page-break-inside: avoid; }
             // be setting /K on these today, but if a future change does we
             // preserve it).
             if (leaf.get(PDFName.of('K'))) continue;
+            let _mcid = 0;
+            if (_perLeafExp) {
+              // Grouping/decorative elements (the <main> Sect leaf, NonStruct chrome)
+              // make no content claim in per-leaf mode — drawing a Sect run would
+              // duplicate the entire document text inside one marked-content
+              // sequence (observed in the first harness decode).
+              if (role === 'Sect' || role === 'Document' || role === 'Art' || role === 'Part' || role === 'Div' || role === 'NonStruct') continue;
+              const _runs = _perLeafPlan.get(_pageIdx) || [];
+              _mcid = _runs.length;
+              _runs.push({ ref, role: role || 'P', text: text || '', mcid: _mcid });
+              _perLeafPlan.set(_pageIdx, _runs);
+            }
             const mcr = context.obj({
               Type: PDFName.of('MCR'),
               Pg: _pageRef,
-              MCID: PDFNumber.of(0),
+              MCID: PDFNumber.of(_mcid),
             });
             leaf.set(PDFName.of('K'), context.obj([mcr]));
             _unifyPatched++;
           } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
         }
-        const _sliceLabel = _pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)';
+        const _sliceLabel = _perLeafExp ? 'PER-LEAF EXPERIMENT' : (_pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)');
         warnLog('[Tag-Tree Unify ' + _sliceLabel + '] Patched ' + _unifyPatched + '/' + _leafCount + ' leaves across ' + _pageCount + ' page(s)');
       } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
     }
@@ -20303,6 +20333,16 @@ tr { page-break-inside: avoid; }
       let _origContentCount = 0;
       if (isScanned) {
         try {
+          // Force pdf-lib's page normalization BEFORE counting the original streams.
+          // The first drawText/pushOperators on a loaded page triggers page.node.normalize(),
+          // which rewrites /Contents from a bare ref (or [orig]) to [q, orig, Q, <draw stream>].
+          // Counting before that rewrite under-counted the original envelope by the q/Q guards,
+          // so the Stage-3 artifact split put ONLY pdf-lib's "q" stream inside /Artifact and
+          // tagged the scanned IMAGE as /P MCID-0 text content — the exact veraPDF §7.1 failure
+          // the split exists to prevent, shipped silently on every single-content-stream scan.
+          // normalize() is idempotent (guarded by node.normalized), so calling it here simply
+          // materializes the final pre-OCR shape early. (tag-tree harness find, 2026-07-01)
+          try { page.node.normalize(); } catch (_) {}
           const _rc0 = page.node.get(PDFName.of('Contents'));
           _origContentCount = (_rc0 && typeof _rc0.size === 'function') ? _rc0.size() : (_rc0 ? 1 : 0);
         } catch (_) { _origContentCount = 0; }
@@ -20383,7 +20423,41 @@ tr { page-break-inside: avoid; }
             if (!_drew) { try { warnLog('[createTaggedPdf] invisible OCR text layer drew nothing p' + (pi+1)); } catch(_) {} }
             return _drew;
           };
-          if (_perWord) {
+          if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
+            // ── b0d24ae3 PER-LEAF EXPERIMENT draw path (harness-only) ──
+            // Draw each planned leaf's text as its OWN marked-content run:
+            //   /<role> <</MCID n>> BDC → invisible drawText → EMC
+            // pushOperators + drawText interleave in content-stream order (proven
+            // by the _proto_mcid prototype and repro variants F/H). The Stage-3
+            // wrap below will keep the /Artifact wrap on the original image but
+            // skip the flat /P for this page (the runs carry their own tags).
+            const _PLx = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : null;
+            const _runs = _perLeafPlan.get(pi);
+            let _font = _uniFont || (await _getHelv());
+            const _fold = !_uniFont;
+            if (_PLx && _PLx.PDFOperator && _PLx.PDFOperatorNames && _font) {
+              const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\n'), (sz && sz.height ? sz.height : 792));
+              let _y = (sz && sz.height ? sz.height : 792) - 40;
+              const _step = Math.max(10, (_layout && _layout.lineHeight) || 12);
+              for (const _run of _runs) {
+                try {
+                  const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
+                    [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
+                  const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
+                  page.pushOperators(_bdc);
+                  const _txt = _fold ? _toWinAnsi(_run.text || '') : (_run.text || '');
+                  if (_txt.trim()) {
+                    try { page.drawText(_txt, { x: 36, y: _y, size: 4, font: _font, opacity: 0 }); _pageDrewAny = true; }
+                    catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_run.text || ''), { x: 36, y: _y, size: 4, font: _h, opacity: 0 }); _pageDrewAny = true; } } catch (_) {} }
+                  }
+                  page.pushOperators(_emc);
+                  _y -= _step; if (_y < 20) _y = (sz && sz.height ? sz.height : 792) - 40;
+                } catch (_runErr) { try { warnLog('[per-leaf exp] run draw failed (mcid ' + _run.mcid + '): ' + (_runErr && _runErr.message)); } catch (_) {} }
+              }
+            } else {
+              try { warnLog('[per-leaf exp] PDFOperator helpers or font unavailable — page ' + (pi + 1) + ' drew nothing'); } catch (_) {}
+            }
+          } else if (_perWord) {
             const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
             let _helvPW = null;
             // ── Horizontal scaling (text-matrix a-component ≈ the Tz operator) ──
@@ -20505,7 +20579,27 @@ tr { page-break-inside: avoid; }
           } else if (rawContents) { _contentRefs.push(rawContents); }
           const _mkCS = (s) => context.register(context.stream(new TextEncoder().encode(s)));
           let newArr;
-          if (isScanned && _origContentCount > 0 && _contentRefs.length > _origContentCount) {
+          if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
+            // ── b0d24ae3 PER-LEAF EXPERIMENT wrap (harness-only) ──
+            // The appended OCR streams already carry their own per-leaf BDC/EMC
+            // runs (drawn above), so they must stay BARE — wrapping them in the
+            // flat /P MCID-0 would nest marked content and double-claim it. The
+            // original scanned image still gets the /Artifact wrap. This is the
+            // "continue past Stage-3 flat-/P" the reverted attempt described
+            // (repro variant H — passes in isolation).
+            if (_origContentCount > 0 && _contentRefs.length > _origContentCount) {
+              newArr = [_mkCS('/Artifact BMC\n')];
+              for (let k = 0; k < _origContentCount; k++) newArr.push(_contentRefs[k]);
+              newArr.push(_mkCS(' EMC\n'));
+              for (let k = _origContentCount; k < _contentRefs.length; k++) newArr.push(_contentRefs[k]);
+            } else if (_origContentCount > 0) {
+              // Runs drew nothing — image-only page, same as the artifact-only branch.
+              newArr = [_mkCS('/Artifact BMC\n')].concat(_contentRefs).concat([_mkCS(' EMC\n')]);
+              _pageArtifactOnly = true;
+            } else {
+              newArr = _contentRefs.slice();
+            }
+          } else if (isScanned && _origContentCount > 0 && _contentRefs.length > _origContentCount) {
             // SCANNED: the first _origContentCount streams are the page IMAGE → mark /Artifact; the
             // appended streams are the OCR text layer → tag as real /P content (MCID 0). An image
             // lumped into a /P is veraPDF §7.1 "content neither Artifact nor tagged"; this separates them.
@@ -20535,6 +20629,15 @@ tr { page-break-inside: avoid; }
           if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
 
+        // b0d24ae3 PER-LEAF EXPERIMENT: the page's ParentTree slot maps each MCID to its
+        // OWN leaf StructElem (array index = MCID) — no flat /P element exists for this page.
+        if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi) && !_pageArtifactOnly) {
+          try {
+            const _runs = _perLeafPlan.get(pi);
+            parentTreeNums.push(PDFNumber.of(pi));
+            parentTreeNums.push(context.obj(_runs.map(r => r.ref)));
+          } catch (_ptErr) { try { warnLog('[per-leaf exp] ParentTree wiring failed p' + (pi + 1) + ': ' + (_ptErr && _ptErr.message)); } catch (_) {} }
+        } else
         // Per-page StructElem (type /P) with a single MCR K-child pointing at the page's MCID 0. SKIPPED
         // for an artifact-only page — there is no MCID-0 tagged content to point at (the image is
         // /Artifact), and a /P StructElem with no real content is itself a §7.1 problem. (tagging-pdfua-2)
@@ -21905,14 +22008,25 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       } catch (_) {}
       // Content-loss guard: compare the StructElem count in the SAVED file to what we
       // built in memory. A large shortfall means a subtree was dropped at serialization.
-      // 2026-06-07: include Stage-4 per-block StructElems in the built count so
-      // the round-trip ratio can detect block-elem prune (the 93%-retention bug
-      // fingerprint). Previously block-elems built at L3471 were tracked only
-      // via Sect.K + parentArrayRef, invisible to this gate.
-      const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
-        + ((typeof pageElemRefs !== 'undefined' && Array.isArray(pageElemRefs)) ? pageElemRefs.length : 0)
-        + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0)
-        + ((typeof _stage4BlockCount === 'number') ? _stage4BlockCount : 0);
+      // 2026-07-01 (tag-tree harness find): the old sum — structElemRefs.length +
+      // pageElemRefs + fieldElemRefs + _stage4BlockCount — counted only TOP-LEVEL
+      // refs (structElemRefs holds the root kids: ~3 Sects), while _rtStructCount
+      // counts EVERY StructElem in the saved file (~20). The ratio was therefore
+      // saved/built >> 1 on every document, and the guard could NEVER detect the
+      // b0d24ae3 loss class it was tightened for (a nested leaf drop leaves the
+      // top-level count unchanged) — and the report showed a nonsense "3/20".
+      // Count built elements the SAME way the round-trip counts saved ones:
+      // enumerate this doc's context and tally /Type /StructElem. Apples-to-apples;
+      // pre-existing StructElems from a tagged source appear in both tallies.
+      let _builtCount = 0;
+      try {
+        for (const _pair of context.enumerateIndirectObjects()) {
+          try {
+            const _o = _pair[1];
+            if (_o && typeof _o.get === 'function' && String(_o.get(PDFName.of('Type')) || '') === '/StructElem') _builtCount++;
+          } catch (_) {}
+        }
+      } catch (_) { _builtCount = 0; }
       // Tightened 2026-06-07: previously warned at <90% retention (b0d24ae3
       // content-loss bug was 93% retained, didn't trip). Now warns on ANY
       // delta. A 1-of-15-leaves drop is exactly the kind of silent loss the
