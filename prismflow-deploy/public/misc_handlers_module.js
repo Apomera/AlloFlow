@@ -284,6 +284,13 @@ const handleLoadProject = (e, deps) => {
             if (rawData.progressLog && Array.isArray(rawData.progressLog)) {
                 setStudentProgressLog(rawData.progressLog);
             }
+            if (rawData.studentProgressSummary && typeof rawData.studentProgressSummary === 'object') {
+                try {
+                    window.__alloflowStudentProgressSummary = rawData.studentProgressSummary;
+                    try { localStorage.setItem('alloflow_student_progress_summary', JSON.stringify(rawData.studentProgressSummary)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-student-progress-summary-restored'));
+                } catch (e) { warnLog && warnLog('Student progress summary restore failed:', e); }
+            }
             // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
             // step (Canvas has no cross-session storage, so progress rides the project file).
             // Hardened restore: (1) restore selectedIds UNCONDITIONALLY — null is the valid
@@ -449,15 +456,6 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-sel-engagement-restored'));
                 } catch (e) { warnLog && warnLog('SEL engagement restore failed:', e); }
             }
-            // SEL Hub saved snapshots (tool-created reflection/checkpoint
-            // artifacts). Restores the landing page "Recent SEL work" cards.
-            if (Array.isArray(rawData.selSnapshots)) {
-                try {
-                    window.__alloflowSelSnapshots = rawData.selSnapshots;
-                    try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(rawData.selSnapshots)); } catch (e) {}
-                    window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
-                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
-            }
             // BirdLab persistent state (life list, badges). Same pattern as
             // SEL engagement: write to window slot, mirror to localStorage,
             // dispatch event for live re-hydration of an open BirdLab tool.
@@ -610,6 +608,13 @@ const handleLoadProject = (e, deps) => {
                     });
                     window.dispatchEvent(new CustomEvent('alloflow-sel-tooldata-restored'));
                 } catch (e) { warnLog && warnLog('SEL tool data restore failed:', e); }
+            }
+            if (Array.isArray(rawData.selSnapshots)) {
+                try {
+                    window.__alloflowSelSnapshots = rawData.selSnapshots;
+                    try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(rawData.selSnapshots)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
+                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
             }
             // Rehydrate sticker overlays. Stickers are saved into the
             // project JSON by phase_k_helpers.executeSaveFile so a teacher's

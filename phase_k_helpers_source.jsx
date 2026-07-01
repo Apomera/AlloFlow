@@ -749,6 +749,226 @@ const syncProgressToFirestore = async (deps) => {
       }
 };
 
+const buildStudentProgressSummary = ({
+  history = [],
+  studentResponses = {},
+  studentNickname = '',
+  currentLog = [],
+  adventureState = {},
+  escapeRoomState = {},
+  gameCompletions = {},
+  labelChallengeResults = [],
+  wordSoundsHistory = [],
+  wordSoundsScore = {},
+  wordSoundsBadges = {},
+  wordSoundsDailyProgress = {},
+  fluencyAssessments = [],
+  flashcardEngagement = {},
+  timeOnTask = {},
+  globalPoints = 0,
+  pointHistory = [],
+  completedActivities = null,
+  focusData = {},
+  pasteEvents = [],
+  selEngagement = null,
+  selStations = null,
+  selProgress = null,
+  selSnapshots = null,
+  selToolData = null,
+  getFocusRatio
+} = {}) => {
+  const nowIso = new Date().toISOString();
+  const asArray = value => Array.isArray(value) ? value : [];
+  const toNumber = value => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+  studentResponses = studentResponses || {};
+  adventureState = adventureState || {};
+  escapeRoomState = escapeRoomState || {};
+  focusData = focusData || {};
+  timeOnTask = timeOnTask || {};
+  wordSoundsScore = wordSoundsScore || {};
+  wordSoundsBadges = wordSoundsBadges || {};
+  wordSoundsDailyProgress = wordSoundsDailyProgress || {};
+
+  const quizItems = asArray(history).filter(h => h && h.type === 'quiz');
+  let quizTotal = 0;
+  let quizCount = 0;
+  quizItems.forEach(quiz => {
+    const questions = quiz.data?.questions || [];
+    if (!questions.length) return;
+    let correct = 0;
+    const studentResps = studentResponses[quiz.id] || {};
+    questions.forEach((q, i) => {
+      const resp = studentResps[i];
+      if (resp === undefined || resp === null) return;
+      let val = resp;
+      if (!isNaN(parseInt(resp)) && q.options && q.options[resp]) val = q.options[resp];
+      if (String(val).trim().toLowerCase() === String(q.correctAnswer).trim().toLowerCase()) correct++;
+    });
+    quizTotal += (correct / questions.length) * 100;
+    quizCount++;
+  });
+  const quizAverage = quizCount > 0 ? Math.round(quizTotal / quizCount) : 0;
+
+  const completedCount = completedActivities instanceof Map
+    ? completedActivities.size
+    : Array.isArray(completedActivities)
+      ? completedActivities.length
+      : completedActivities && typeof completedActivities === 'object'
+        ? Object.keys(completedActivities).length
+        : 0;
+
+  let gamesPlayed = 0;
+  if (Array.isArray(gameCompletions)) {
+    gamesPlayed = gameCompletions.length;
+  } else if (gameCompletions && typeof gameCompletions === 'object') {
+    Object.keys(gameCompletions).forEach(key => {
+      const entries = gameCompletions[key];
+      gamesPlayed += Array.isArray(entries) ? entries.length : entries ? 1 : 0;
+    });
+  }
+
+  const labelScores = asArray(labelChallengeResults).map(r => toNumber(r && r.score)).filter(n => n > 0);
+  const labelAverage = labelScores.length
+    ? Math.round(labelScores.reduce((a, b) => a + b, 0) / labelScores.length)
+    : 0;
+  const latestFluency = asArray(fluencyAssessments)[asArray(fluencyAssessments).length - 1] || null;
+
+  const wsHistory = asArray(wordSoundsHistory);
+  const wsTotal = toNumber(wordSoundsScore.total) || wsHistory.length;
+  const wsCorrect = toNumber(wordSoundsScore.correct) || wsHistory.filter(item => item && (item.correct || item.isCorrect)).length;
+  const wordSoundsAccuracy = wsTotal > 0 ? Math.round((wsCorrect / wsTotal) * 100) : 0;
+
+  let focusRatio = null;
+  try {
+    if (typeof getFocusRatio === 'function') focusRatio = getFocusRatio();
+  } catch (e) {
+    focusRatio = null;
+  }
+  if (focusRatio === null || focusRatio === undefined || !Number.isFinite(Number(focusRatio))) {
+    const engaged = toNumber(focusData.engagedMinutes);
+    const idle = toNumber(focusData.idleMinutes);
+    focusRatio = engaged + idle > 0 ? Math.round((engaged / (engaged + idle)) * 100) : null;
+  }
+
+  const selToolUsage = selEngagement && typeof selEngagement === 'object' && selEngagement.toolUsage
+    ? selEngagement.toolUsage
+    : {};
+  const selToolStateCount = selToolData && typeof selToolData === 'object' ? Object.keys(selToolData).length : 0;
+  const selToolsUsed = Math.max(
+    selToolStateCount,
+    Object.keys(selToolUsage || {}).filter(toolId => {
+      const usage = selToolUsage[toolId];
+      return usage && (usage.count > 0 || usage.visits > 0 || usage.lastUsed);
+    }).length
+  );
+  const selSnapshotCount = Array.isArray(selSnapshots) ? selSnapshots.length : 0;
+  const stationList = Array.isArray(selStations)
+    ? selStations
+    : selStations && typeof selStations === 'object'
+      ? Object.values(selStations)
+      : [];
+  let stationQuestTotal = 0;
+  let stationQuestComplete = 0;
+  stationList.forEach(station => {
+    const quests = Array.isArray(station && station.quests) ? station.quests : [];
+    stationQuestTotal += quests.length;
+    const stationId = station && (station.id || station.stationId || station.title);
+    const stationState = stationId && selProgress && typeof selProgress === 'object' ? (selProgress[stationId] || {}) : {};
+    quests.forEach(quest => {
+      const questId = quest && (quest.qid || quest.id || quest.key || quest.title);
+      const questState = questId && stationState ? stationState[questId] : null;
+      if (questState && (questState.complete || questState.completed || questState.manualComplete || questState.completedAt)) {
+        stationQuestComplete++;
+      }
+    });
+  });
+  const latestSelToolAt = Object.keys(selToolUsage || {}).reduce((latest, toolId) => {
+    const stamp = selToolUsage[toolId] && selToolUsage[toolId].lastUsed;
+    return stamp && (!latest || String(stamp).localeCompare(String(latest)) > 0) ? stamp : latest;
+  }, null);
+
+  const totalActivities = Math.max(
+    completedCount,
+    asArray(history).length
+      + asArray(fluencyAssessments).length
+      + gamesPlayed
+      + labelScores.length
+      + (wsTotal > 0 ? 1 : 0)
+      + selSnapshotCount
+      + stationQuestComplete
+  );
+  const escapePuzzles = toNumber(escapeRoomState.puzzles?.length || escapeRoomState.totalPuzzles);
+  const escapeSolved = toNumber(Object.values(escapeRoomState.solvedPuzzles || {}).filter(Boolean).length || escapeRoomState.puzzlesSolved);
+
+  return {
+    version: 1,
+    generatedAt: nowIso,
+    studentNickname: studentNickname || '',
+    source: 'alloflow-project-save',
+    privacy: {
+      summaryIncludesRawSelText: false,
+      note: 'This summary stores counts and totals only; saved tool artifacts may still exist elsewhere in the project file.'
+    },
+    overview: {
+      totalActivities,
+      resourcesCreated: asArray(history).length,
+      completedActivities: completedCount,
+      globalPoints: toNumber(globalPoints),
+      progressEntries: asArray(currentLog).length,
+      pointEvents: asArray(pointHistory).length
+    },
+    academic: {
+      quizAverage,
+      quizCount,
+      wordSoundsWords: wsTotal,
+      wordSoundsAccuracy,
+      wordSoundsBestStreak: toNumber(wordSoundsScore.streak),
+      wordSoundsBadges: wordSoundsBadges && typeof wordSoundsBadges === 'object' ? Object.keys(wordSoundsBadges).length : 0,
+      wordSoundsPracticeDays: wordSoundsDailyProgress && typeof wordSoundsDailyProgress === 'object' ? Object.keys(wordSoundsDailyProgress).length : 0,
+      fluencyWCPM: toNumber(latestFluency && latestFluency.wcpm),
+      fluencyAssessments: asArray(fluencyAssessments).length,
+      flashcardSessions: Array.isArray(flashcardEngagement?.sessions) ? flashcardEngagement.sessions.length : toNumber(flashcardEngagement?.sessions)
+    },
+    sel: {
+      toolsUsed: selToolsUsed,
+      reflectionSnapshots: selSnapshotCount,
+      stations: stationList.length,
+      stationQuestsComplete,
+      stationQuestsTotal: stationQuestTotal,
+      toolStateCount: selToolStateCount,
+      streakDays: toNumber(selEngagement?.streak?.days || selEngagement?.streak?.count),
+      latestToolAt: latestSelToolAt
+    },
+    engagement: {
+      focusRatio,
+      engagedMinutes: toNumber(focusData.engagedMinutes),
+      idleMinutes: toNumber(focusData.idleMinutes),
+      currentStreak: toNumber(focusData.currentStreak),
+      longestStreak: toNumber(focusData.longestStreak),
+      pasteEventCount: asArray(pasteEvents).length,
+      pasteEventResponseCount: asArray(pasteEvents).filter(e => e && e.isResponseField).length,
+      timeOnTaskMinutes: toNumber(timeOnTask.totalSessionMinutes || timeOnTask.minutes)
+    },
+    gameplay: {
+      adventureXP: toNumber(adventureState.xp || globalPoints),
+      adventureLevel: toNumber(adventureState.level || 1),
+      adventureEnergy: toNumber(adventureState.energy),
+      escapeCompletion: escapePuzzles > 0 ? Math.round((escapeSolved / escapePuzzles) * 100) : 0,
+      gamesPlayed,
+      labelChallengeAverage: labelAverage,
+      labelChallengeAttempts: labelScores.length
+    },
+    recent: {
+      lastSavedAt: nowIso,
+      lastProgressAt: asArray(currentLog).length ? currentLog[currentLog.length - 1].timestamp || null : null,
+      recentActivityTypes: asArray(history).slice(-5).map(item => item && (item.type || item.kind || 'activity')).filter(Boolean)
+    }
+  };
+};
+
 const executeSaveFile = async (deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try { if (window._DEBUG_PHASE_K) console.log("[PhaseK] executeSaveFile fired"); } catch(_) {}
@@ -853,6 +1073,36 @@ const executeSaveFile = async (deps) => {
       // calls window.SelToolDataManager.set(toolId, key, val) which mirrors
       // its ctx.toolData state into this slot.
       const selToolData = (typeof window !== 'undefined' && window.__alloflowSelToolData) || null;
+      // Tool-created SEL reflection/checkpoint artifacts.
+      const selSnapshots = (typeof window !== 'undefined' && window.__alloflowSelSnapshots) || null;
+      const studentProgressSummary = buildStudentProgressSummary({
+          history,
+          studentResponses,
+          studentNickname,
+          currentLog,
+          adventureState,
+          escapeRoomState,
+          gameCompletions,
+          labelChallengeResults,
+          wordSoundsHistory,
+          wordSoundsScore,
+          wordSoundsBadges,
+          wordSoundsDailyProgress,
+          fluencyAssessments,
+          flashcardEngagement,
+          timeOnTask,
+          globalPoints,
+          pointHistory,
+          completedActivities,
+          focusData,
+          pasteEvents,
+          selEngagement,
+          selStations,
+          selProgress,
+          selSnapshots,
+          selToolData,
+          getFocusRatio
+      });
       if (saveType === 'teacher') {
           dataStr = JSON.stringify({
               mode: isIndependentMode ? 'independent' : 'teacher',
@@ -885,6 +1135,8 @@ const executeSaveFile = async (deps) => {
               selStations: selStations,
               selProgress: selProgress,
               selToolData: selToolData,
+              selSnapshots: selSnapshots,
+              studentProgressSummary: studentProgressSummary,
               // Stickers (annotation overlays placed on the output area) ride
               // the project JSON so a teacher's feedback / a student's marks
               // survive save→load. Without this they're wiped on reload.
@@ -981,6 +1233,8 @@ const executeSaveFile = async (deps) => {
               selStations: selStations,
               selProgress: selProgress,
               selToolData: selToolData,
+              selSnapshots: selSnapshots,
+              studentProgressSummary: studentProgressSummary,
               // See teacher-save above — stickers persist with the project so
               // a student's marks aren't wiped on reload.
               stickers: Array.isArray(stickers) ? stickers : [],
@@ -1001,7 +1255,7 @@ const executeSaveFile = async (deps) => {
       // unaffected (empty SEL data {} does not match).
       let outName = filename;
       const _hasVoice = dataStr.indexOf('data:audio') !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
-      const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr);
+      const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr) || /"selSnapshots"\s*:\s*\[\s*\{/.test(dataStr);
       if (_hasVoice || _hasSelText) {
           const _msg = _hasVoice
               ? "This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location — don't email it or put it in personal cloud storage.\n\nSave anyway?"

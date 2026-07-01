@@ -714,7 +714,7 @@
               data: data,
               stats: stats,
               safetyFlags: extractSafetyFlags(data),
-              lastSession: data.lastSaved || new Date().toISOString()
+              lastSession: data.lastSaved || data.timestamp || data.studentProgressSummary?.generatedAt || new Date().toISOString()
             });
           } catch (err) {
             warnLog(`Failed to parse ${file.name}:`, err);
@@ -736,8 +736,10 @@
           allNewStudents.forEach(function (student) {
             var codename = student.name;
             if (prev.students && prev.students[codename] !== undefined) {
+              var snapshotDate = new Date(student.lastSession || Date.now());
+              if (isNaN(snapshotDate.getTime())) snapshotDate = new Date();
               var snapshot = {
-                date: new Date().toISOString().split('T')[0],
+                date: snapshotDate.toISOString().split('T')[0],
                 quizAvg: student.stats.quizAvg || 0,
                 wsAccuracy: student.stats.wsAccuracy || 0,
                 wsBestStreak: student.stats.wsBestStreak || 0,
@@ -746,6 +748,13 @@
                 gamesPlayed: student.stats.gamesPlayed || 0,
                 totalActivities: student.stats.totalActivities || 0,
                 focusRatio: student.stats.focusRatio || null,
+                globalPoints: student.stats.globalPoints || student.stats.adventureXP || 0,
+                selToolsUsed: student.stats.selToolsUsed || 0,
+                selReflections: student.stats.selReflectionCount || 0,
+                selStationQuestsComplete: student.stats.selStationsCompleted || 0,
+                selStationQuestsTotal: student.stats.selStationsTotal || 0,
+                progressSummaryVersion: student.stats.summaryVersion || null,
+                progressSummaryGeneratedAt: student.stats.progressSummaryGeneratedAt || null,
                 importedFrom: student.filename
               };
               var existing = history[codename] || [];
@@ -810,15 +819,28 @@
         wordScramble: null,
         labelChallengeAvg: 0,
         labelChallengeAttempts: 0,
-        labelChallengeBest: 0
+        labelChallengeBest: 0,
+        focusRatio: null,
+        globalPoints: 0,
+        level: 1,
+        selReflectionCount: 0,
+        selToolsUsed: 0,
+        selStationsCompleted: 0,
+        selStationsTotal: 0,
+        hasProgressSummary: false,
+        summaryVersion: null,
+        progressSummaryGeneratedAt: null
       };
+      const summary = data.studentProgressSummary && typeof data.studentProgressSummary === 'object' ? data.studentProgressSummary : null;
       if (data.responses && Object.keys(data.responses).length > 0) {
         const quizScores = Object.values(data.responses).map(r => r.score || 0);
         stats.quizAvg = quizScores.length > 0 ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0;
         stats.totalActivities += quizScores.length;
       }
-      if (data.adventureState) {
-        stats.adventureXP = data.adventureState.xp || data.adventureState.totalXP || 0;
+      const adventure = data.adventureState || data.adventureSnapshot;
+      if (adventure) {
+        stats.adventureXP = adventure.xp || adventure.totalXP || 0;
+        stats.level = adventure.level || stats.level;
         if (stats.adventureXP > 0) stats.totalActivities++;
       }
       if (data.escapeRoomStats) {
@@ -884,6 +906,37 @@
         stats.labelChallengeAttempts = scores.length;
         stats.labelChallengeBest = Math.max(...scores);
         stats.totalActivities += scores.length;
+      }
+      if (data.focusData && data.focusData.focusRatio != null) {
+        stats.focusRatio = data.focusData.focusRatio;
+      }
+      if (summary) {
+        const overview = summary.overview || {};
+        const academic = summary.academic || {};
+        const sel = summary.sel || {};
+        const engagement = summary.engagement || {};
+        const gameplay = summary.gameplay || {};
+        stats.hasProgressSummary = true;
+        stats.summaryVersion = summary.version || 1;
+        stats.progressSummaryGeneratedAt = summary.generatedAt || null;
+        stats.quizAvg = academic.quizAverage ?? stats.quizAvg;
+        stats.fluencyWCPM = academic.fluencyWCPM ?? stats.fluencyWCPM;
+        stats.wsWordsCompleted = academic.wordSoundsWords ?? stats.wsWordsCompleted;
+        stats.wsAccuracy = academic.wordSoundsAccuracy ?? stats.wsAccuracy;
+        stats.wsBestStreak = academic.wordSoundsBestStreak ?? stats.wsBestStreak;
+        stats.adventureXP = gameplay.adventureXP ?? stats.adventureXP;
+        stats.level = gameplay.adventureLevel ?? stats.level;
+        stats.escapeCompletion = gameplay.escapeCompletion ?? stats.escapeCompletion;
+        stats.gamesPlayed = gameplay.gamesPlayed ?? stats.gamesPlayed;
+        stats.labelChallengeAvg = gameplay.labelChallengeAverage ?? stats.labelChallengeAvg;
+        stats.labelChallengeAttempts = gameplay.labelChallengeAttempts ?? stats.labelChallengeAttempts;
+        stats.totalActivities = Math.max(stats.totalActivities, overview.totalActivities || 0);
+        stats.globalPoints = overview.globalPoints ?? stats.globalPoints;
+        stats.focusRatio = engagement.focusRatio ?? stats.focusRatio;
+        stats.selReflectionCount = sel.reflectionSnapshots || 0;
+        stats.selToolsUsed = sel.toolsUsed || 0;
+        stats.selStationsCompleted = sel.stationQuestsComplete || 0;
+        stats.selStationsTotal = sel.stationQuestsTotal || 0;
       }
       return stats;
     };
@@ -3482,6 +3535,23 @@
                     </div>
                 </div>`;
       };
+      const selSummaryHtml = (s.selToolsUsed || s.selReflectionCount || s.selStationsTotal) ? `
+            <div class="section-title">SEL Participation</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                <div style="text-align: center; background: #f0fdfa; padding: 10px; border-radius: 8px; border: 1px solid #ccfbf1;">
+                    <div style="font-size: 22px; font-weight: 800; color: #0f766e;">${s.selToolsUsed || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">SEL tools used</div>
+                </div>
+                <div style="text-align: center; background: #eef2ff; padding: 10px; border-radius: 8px; border: 1px solid #c7d2fe;">
+                    <div style="font-size: 22px; font-weight: 800; color: #4f46e5;">${s.selReflectionCount || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">reflection snapshots</div>
+                </div>
+                <div style="text-align: center; background: #faf5ff; padding: 10px; border-radius: 8px; border: 1px solid #e9d5ff;">
+                    <div style="font-size: 22px; font-weight: 800; color: #7c3aed;">${s.selStationsCompleted || 0}/${s.selStationsTotal || 0}</div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 700;">station quests</div>
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #64748b; font-style: italic; margin-bottom: 12px;">Counts only; private reflection text is not included in this report block.</div>` : '';
       let runningRecordHtml = '';
       const fluencyAssessments = student.data?.fluencyAssessments;
       if (fluencyAssessments?.length > 0) {
@@ -3585,6 +3655,7 @@
             ${metricBar('Label Challenge', s.labelChallengeAvg, 100, '%', '🏷️')}
             ${metricBar('Total Activities', s.totalActivities, 20, '', '📊')}
             ${metricBar('Games Played', s.gamesPlayed, 10, '', '🎮')}
+            ${selSummaryHtml}
             <div class="section-title">📋 Assessment Basis</div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
                 ${rti.reasons.map(r => `<span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; background: ${tc.bg}; color: ${tc.color}; font-weight: 600; border: 1px solid ${tc.border};">${r}</span>`).join('')}
@@ -3713,8 +3784,8 @@
     };
     const handleExportCSV = () => {
       if (importedStudents.length === 0) return;
-      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
-      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
+      const headers = [t('class_analytics.student_name'), t('class_analytics.quiz_avg'), t('class_analytics.adventure_xp'), t('class_analytics.escape_completion'), t('class_analytics.fluency_wcpm'), t('class_analytics.interview_xp'), 'Word Sounds %', 'Games Played', 'Socratic Msgs', 'Label Challenge %', 'SEL Tools', 'SEL Reflections', t('class_analytics.safety_flags'), t('class_analytics.total_activities'), t('class_analytics.last_session')].join(',');
+      const rows = importedStudents.map(student => [`"${student.name}"`, student.stats.quizAvg, student.stats.adventureXP, `${student.stats.escapeCompletion}%`, student.stats.fluencyWCPM, student.stats.interviewXP, student.stats.wsAccuracy ? `${student.stats.wsAccuracy}%` : 'N/A', student.stats.gamesPlayed || 0, student.stats.socraticMessageCount || 0, student.stats.labelChallengeAvg ? `${student.stats.labelChallengeAvg}%` : 'N/A', student.stats.selToolsUsed || 0, student.stats.selReflectionCount || 0, student.safetyFlags.length, student.stats.totalActivities, new Date(student.lastSession).toLocaleDateString()].join(','));
       const csv = [headers, ...rows].join('\n');
       const blob = new Blob([csv], {
         type: 'text/csv;charset=utf-8;'
@@ -6429,6 +6500,16 @@
         value: s.totalActivities,
         color: s.totalActivities >= 5 ? '#16a34a' : s.totalActivities >= 2 ? '#d97706' : '#dc2626',
         icon: '📊'
+      }, {
+        label: 'SEL Tools',
+        value: s.selToolsUsed || 0,
+        color: (s.selToolsUsed || 0) >= 3 ? '#0f766e' : (s.selToolsUsed || 0) >= 1 ? '#0e7490' : '#64748b',
+        icon: 'SEL'
+      }, {
+        label: 'Reflections',
+        value: s.selReflectionCount || 0,
+        color: (s.selReflectionCount || 0) >= 3 ? '#7c3aed' : (s.selReflectionCount || 0) >= 1 ? '#6366f1' : '#64748b',
+        icon: 'R'
       }, {
         label: 'Label Challenge',
         value: s.labelChallengeAvg + '%',

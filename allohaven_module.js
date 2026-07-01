@@ -211,6 +211,7 @@
   // Single key, JSON-serialized state object. Read once on mount,
   // write on every state change.
   var STORAGE_KEY = 'alloflow_allohaven_v1';
+  var STUDENT_PROGRESS_SUMMARY_KEY = 'alloflow_student_progress_summary';
   // STEM Lab's shared persistence key — used to read inherited theme from
   // Typing Practice (or any other tool that stamps state.theme there).
   var STEMLAB_STORAGE_KEY = 'alloflow_stemlab_v2';
@@ -237,6 +238,20 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('[AlloHaven] failed to save state:', e);
+    }
+  }
+
+  function readStudentProgressSummary() {
+    try {
+      if (window.__alloflowStudentProgressSummary && typeof window.__alloflowStudentProgressSummary === 'object') {
+        return window.__alloflowStudentProgressSummary;
+      }
+      var raw = localStorage.getItem(STUDENT_PROGRESS_SUMMARY_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === 'object') ? parsed : null;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -457,6 +472,10 @@
       error: null,                   // user-friendly error string if analysis fails
       generatedAt: null              // ISO timestamp of the cached summary
     },
+
+    // Cross-app student progress summary restored from the student project
+    // file. Counts only; raw SEL reflection text is not rendered here.
+    studentProgressSummary: null,
 
     // ── Tenure narrative cache (Phase Q) ──
     // AI-generated 2-3 paragraph narrative of the student's full
@@ -10342,6 +10361,12 @@
       if (!Array.isArray(merged.goals))          merged.goals          = [];
       if (!Array.isArray(merged.visits))         merged.visits         = [];
       if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
+      var restoredProgressSummary = readStudentProgressSummary();
+      if (restoredProgressSummary) {
+        merged.studentProgressSummary = restoredProgressSummary;
+      } else if (!merged.studentProgressSummary || typeof merged.studentProgressSummary !== 'object') {
+        merged.studentProgressSummary = null;
+      }
       // Phase 2p.7 defensive normalization: backfill new fields onto
       // older saved state so post-update loads don\'t crash on undefined
       // access. These hits run once per session.
@@ -10465,6 +10490,20 @@
     var setStateMulti = function(obj) {
       setState(function(prev) { return Object.assign({}, prev, obj); });
     };
+
+    useEffect(function() {
+      function applyRestoredProgressSummary() {
+        var summary = readStudentProgressSummary();
+        if (!summary) return;
+        setStateField('studentProgressSummary', summary);
+      }
+      applyRestoredProgressSummary();
+      window.addEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
+      return function() {
+        window.removeEventListener('alloflow-student-progress-summary-restored', applyRestoredProgressSummary);
+      };
+      // eslint-disable-next-line
+    }, []);
 
     // ── Pomodoro tick state ──
     // Forces a re-render every ~250ms while the timer is active, so the
@@ -15794,6 +15833,17 @@
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
           // Breathe (Phase 2p.28) — on-demand box-breathing pacer.
           // No tokens, no streak, no judgment. Always available.
+          state.studentProgressSummary ? (function() {
+            var summary = state.studentProgressSummary || {};
+            var total = summary.overview && summary.overview.totalActivities ? summary.overview.totalActivities : 0;
+            var selCount = summary.sel ? ((summary.sel.toolsUsed || 0) + (summary.sel.reflectionSnapshots || 0)) : 0;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'student-progress'); },
+              'aria-label': 'Open my saved progress summary' + (total > 0 ? ', ' + total + ' activities' : ''),
+              title: 'My saved progress',
+              style: secondaryBtnStyle(palette)
+            }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
+          })() : null,
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
             'aria-label': 'Open breathing pacer for self-care',
@@ -23210,6 +23260,197 @@
     // window into one celebratory retrospective. Heavy reuse of
     // computeTenureStats; renders nothing for genuinely-empty saves.
     // ─────────────────────────────────────────────────
+    function renderStudentProgressModal() {
+      if (state.activeModal !== 'student-progress') return null;
+      var summary = state.studentProgressSummary || readStudentProgressSummary();
+      var overview = (summary && summary.overview) || {};
+      var academic = (summary && summary.academic) || {};
+      var sel = (summary && summary.sel) || {};
+      var engagement = (summary && summary.engagement) || {};
+      var gameplay = (summary && summary.gameplay) || {};
+      var recent = (summary && summary.recent) || {};
+      var generated = summary && summary.generatedAt
+        ? new Date(summary.generatedAt).toLocaleDateString()
+        : 'current save';
+      var fmt = function(value, fallback) {
+        if (value === null || value === undefined || value === '') return fallback || '0';
+        return String(value);
+      };
+      var metricBox = function(label, value, sub) {
+        return h('div', {
+          style: {
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '12px',
+            minWidth: 0
+          }
+        },
+          h('div', {
+            style: {
+              fontSize: '20px',
+              fontWeight: 800,
+              color: palette.accent,
+              lineHeight: '1.1',
+              fontVariantNumeric: 'tabular-nums',
+              overflowWrap: 'anywhere'
+            }
+          }, value),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, fontWeight: 700, marginTop: '4px' } }, label),
+          sub ? h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '3px', lineHeight: '1.35' } }, sub) : null
+        );
+      };
+      var row = function(label, value) {
+        return h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '8px 0',
+            borderBottom: '1px solid ' + palette.border,
+            fontSize: '12px'
+          }
+        },
+          h('span', { style: { color: palette.textDim } }, label),
+          h('span', { style: { color: palette.text, fontWeight: 700, textAlign: 'right' } }, value)
+        );
+      };
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'My progress summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 178,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '680px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' } },
+            h('div', null,
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } }, 'My Progress'),
+              h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px' } },
+                summary ? 'From saved student file - ' + generated : 'No saved progress summary is loaded yet.')
+            ),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close progress summary',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, 'x')
+          ),
+          summary ? h('div', null,
+            h('p', {
+              style: {
+                margin: '0 0 16px 0',
+                color: palette.textDim,
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }
+            }, 'Counts only. Reflection text stays out of this view.'),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                gap: '10px',
+                marginBottom: '18px'
+              }
+            },
+              metricBox('Activities', fmt(overview.totalActivities), fmt(overview.resourcesCreated) + ' resources'),
+              metricBox('Points', fmt(overview.globalPoints), fmt(overview.pointEvents) + ' point events'),
+              metricBox('Quiz average', academic.quizAverage ? academic.quizAverage + '%' : '0%', fmt(academic.quizCount) + ' quizzes'),
+              metricBox('Word Sounds', academic.wordSoundsAccuracy ? academic.wordSoundsAccuracy + '%' : '0%', fmt(academic.wordSoundsWords) + ' words')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '16px',
+                marginBottom: '16px'
+              }
+            },
+              h('section', { 'aria-label': 'Learning practice', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+                h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'Learning Practice'),
+                row('Fluency', fmt(academic.fluencyWCPM) + ' WCPM'),
+                row('Fluency reads', fmt(academic.fluencyAssessments)),
+                row('Games played', fmt(gameplay.gamesPlayed)),
+                row('Label challenge', gameplay.labelChallengeAverage ? gameplay.labelChallengeAverage + '%' : '0%')
+              ),
+              h('section', { 'aria-label': 'SEL and reflection', style: { background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '14px' } },
+                h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'SEL And Reflection'),
+                row('SEL tools used', fmt(sel.toolsUsed)),
+                row('Reflection snapshots', fmt(sel.reflectionSnapshots)),
+                row('Station quests', fmt(sel.stationQuestsComplete) + '/' + fmt(sel.stationQuestsTotal)),
+                row('SEL streak days', fmt(sel.streakDays))
+              )
+            ),
+            h('div', {
+              style: {
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '14px',
+                marginBottom: '16px'
+              }
+            },
+              h('h4', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '13px', fontWeight: 800 } }, 'Focus And Adventure'),
+              row('Focus ratio', engagement.focusRatio === null || engagement.focusRatio === undefined ? 'Not tracked' : engagement.focusRatio + '%'),
+              row('Engaged minutes', fmt(engagement.engagedMinutes)),
+              row('Adventure level', fmt(gameplay.adventureLevel)),
+              row('Adventure XP', fmt(gameplay.adventureXP))
+            ),
+            Array.isArray(recent.recentActivityTypes) && recent.recentActivityTypes.length > 0 ? h('div', {
+              style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }
+            },
+              recent.recentActivityTypes.map(function(type, idx) {
+                return h('span', {
+                  key: 'progress-recent-' + idx,
+                  style: {
+                    padding: '4px 9px',
+                    borderRadius: '999px',
+                    border: '1px solid ' + palette.border,
+                    color: palette.textDim,
+                    background: palette.surface,
+                    fontSize: '11px'
+                  }
+                }, type);
+              })
+            ) : null
+          ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
+            'Open a student project file to see saved learning and SEL progress here.'),
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
+        )
+      );
+    }
+
     function renderTenureRecapModal() {
       if (state.activeModal !== 'tenure-recap') return null;
       var stats = computeTenureStats(state);
@@ -26835,6 +27076,7 @@
       renderGoalsListModal(),
       renderGoalBuilderModal(),
       renderAchievementsModal(),
+      renderStudentProgressModal(),
       renderTenureRecapModal(),
       renderCompanionSetupModal(),
       renderTourModal(),
