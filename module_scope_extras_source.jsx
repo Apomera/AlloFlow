@@ -163,8 +163,9 @@ class ErrorBoundary extends React.Component {
 // Firestore deps (doc, db, setDoc, getDoc) are mirrored to window.* by the host;
 // the build-script preamble aliases them as locals.
 
-﻿const SESSION_RESOURCE_INLINE_LIMIT = 700 * 1024;
+const SESSION_RESOURCE_INLINE_LIMIT = 700 * 1024;
 const SESSION_RESOURCE_CHUNK_SIZE = 180 * 1024;
+const SESSION_ASSET_WRITE_CONCURRENCY = 3;
 
 const stripUndefinedForFirestore = (obj) => {
     if (obj === null || obj === undefined) return obj;
@@ -193,7 +194,7 @@ const getSessionAssetRef = (appId, assetId) => (
     doc(db, 'artifacts', appId, 'public', 'data', 'session_assets', assetId)
 );
 
-const compactLargeSessionResources = (appId, resources, writePromises) => {
+const compactLargeSessionResources = (appId, resources, writeTasks) => {
     let resourcesJson = '';
     try {
         resourcesJson = JSON.stringify(resources);
@@ -224,14 +225,14 @@ const compactLargeSessionResources = (appId, resources, writePromises) => {
             for (let offset = 0; offset < itemJson.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
                 const chunkId = `${assetId}_chunk_${chunkIds.length}`;
                 chunkIds.push(chunkId);
-                writePromises.push(setDoc(getSessionAssetRef(appId, chunkId), {
+                writeTasks.push(() => setDoc(getSessionAssetRef(appId, chunkId), {
                     kind: 'sessionResourceChunk',
                     parent: assetId,
                     index: chunkIds.length - 1,
                     data: itemJson.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE)
                 }));
             }
-            writePromises.push(setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+            writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
                 kind: 'sessionResourceChunks',
                 chunks: chunkIds,
                 id: item && item.id,
@@ -240,7 +241,7 @@ const compactLargeSessionResources = (appId, resources, writePromises) => {
                 meta: item && item.meta
             })));
         } else {
-            writePromises.push(setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+            writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
                 kind: 'sessionResource',
                 resource: item
             })));
@@ -256,6 +257,19 @@ const compactLargeSessionResources = (appId, resources, writePromises) => {
             __alloResourceIndex: index
         });
     });
+};
+
+const runFirestoreWriteTasks = async (writeTasks, concurrency = SESSION_ASSET_WRITE_CONCURRENCY) => {
+    if (!Array.isArray(writeTasks) || writeTasks.length === 0) return;
+    const workerCount = Math.max(1, Math.min(concurrency, writeTasks.length));
+    let nextIndex = 0;
+    const workers = Array.from({ length: workerCount }, async () => {
+        while (nextIndex < writeTasks.length) {
+            const task = writeTasks[nextIndex++];
+            await task();
+        }
+    });
+    await Promise.all(workers);
 };
 
 const uploadSessionAssets = async (appId, resources) => {
@@ -287,14 +301,14 @@ const uploadSessionAssets = async (appId, resources) => {
         console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
     }
     const safeResources = structuredClone(resources);
-    const writePromises = [];
+    const writeTasks = [];
     const processField = (obj, key) => {
         const val = obj[key];
         if (val && typeof val === 'string' && val.startsWith('data:image')) {
             const assetId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             obj[key] = `ref::${assetId}`;
             const assetRef = getSessionAssetRef(appId, assetId);
-            writePromises.push(setDoc(assetRef, { data: val }));
+            writeTasks.push(() => setDoc(assetRef, { data: val }));
         }
     };
     safeResources.forEach(item => {
@@ -317,8 +331,8 @@ const uploadSessionAssets = async (appId, resources) => {
         }
     });
     const firestoreResources = stripUndefinedForFirestore(safeResources);
-    const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writePromises);
-    await Promise.all(writePromises);
+    const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writeTasks);
+    await runFirestoreWriteTasks(writeTasks);
     return resourcesForSessionDoc;
 };
 const hydrateSessionAssets = async (appId, resources) => {
