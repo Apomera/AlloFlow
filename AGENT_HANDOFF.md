@@ -28,6 +28,7 @@ Last updated: 2026-07-01 by Codex.
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-07-01 | Codex | `live_polling_module.js`, `prismflow-deploy/public/live_polling_module.js`, `tests/live_polling.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened live poll reliability and UX: deduped reconnects/resubmissions, ignored stale close events, added teacher progress/anonymous aggregate dashboard, and gave students a safe local hide option after submitting in wait mode. |
+| 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, local ignored `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Replaced generic STEM quick-start chips with an AI-assisted tool picker that suggests matching tools from a student's learning interest, validates AI-returned ids against the real catalog, and routes selected suggestions directly into the chosen tool. |
 | 2026-07-01 | Codex | `dev-tools/check_stem_a11y.cjs`, `a11y-audit/stem_tool_ui_a11y_audit.json`, `a11y-audit/stem_tool_ui_a11y_audit.md`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed a comprehensive STEM tool-by-tool UI/UX and accessibility audit across 113 registered tools, with repeatable JSON/Markdown reports and prioritized recommendations for tool-level refinements. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added SEL teacher-mode polish: classroom launch routines that prefill stations, clearer station builder review/selection feedback, educator safety/privacy launch cues, and teacher-facing timing/format hints on key tool cards. |
 | 2026-07-01 | Codex | `view_header_source.jsx`, `view_header_module.js`, `view_guided_mode_banner_source.jsx`, `view_guided_mode_banner_module.js`, `quickstart_source.jsx`, `quickstart_module.js`, `AlloFlowANTI.txt`, `tests/guided_host_wiring.test.js`, `tests/guided_mode_banner_completion.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a QuickStart/Guided Mode choice modal, tightened Guided next-vs-skip behavior, fixed QuickStart upload completion, and added host-level onboarding tests. |
@@ -97,6 +98,10 @@ Last updated: 2026-07-01 by Codex.
 - `node --check dev-tools\check_stem_a11y.cjs` - passed.
 - `node dev-tools\check_stem_a11y.cjs` - passed as an audit/report command across 113 registered STEM tools; generated `a11y-audit/stem_tool_ui_a11y_audit.json` and `.md` with 59 high-confidence tool-markup errors, 180 tool-level warnings, 17 review notices, and 113/113 shared-shell coverage.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed with no app-crash render failures across 113 STEM tools.
+- `node --check stem_lab\stem_lab_module.js`, `node --check prismflow-deploy\public\stem_lab\stem_lab_module.js`, and `node --check prismflow-deploy\build\stem_lab\stem_lab_module.js` - passed after replacing quick-start chips with the AI STEM tool picker; source/public/build file hashes match locally, but `prismflow-deploy/build/` is ignored by Git.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after the AI STEM tool picker change with no app-crash render failures across 113 STEM tools.
+- One-off jsdom/React DOM render of `window.AlloModules.StemLab` - passed; confirmed `stem-tool-matchmaker`, the interest field, and `Suggest tools` render, and `Quick starts` no longer renders.
+- `node dev-tools\check_stem_tile_catalog.cjs` - still fails on existing catalog/register mismatches (`myTool`/`forge` from `stem_tool_forge.js` and optics alias-like ids); not introduced by the AI STEM tool picker change.
 
 ## Open Coordination Notes
 
