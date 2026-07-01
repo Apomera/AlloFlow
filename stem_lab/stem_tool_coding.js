@@ -493,6 +493,7 @@
           var running = d.running || false;
           var stepIdx = d.stepIdx != null ? d.stepIdx : -1;
           var codeMode = d.codeMode || 'blocks';
+          var workspaceTab = d.workspaceTab || 'build';
           var textCode = d.textCode || '';
           var challengeIdx = d.challengeIdx != null ? d.challengeIdx : -1;
           var completed = d.completed || [];
@@ -1863,7 +1864,32 @@
             ),
 
             // ══ COMPLEXITY INQUIRY widget (H7b'') ══
-            (function() {
+            React.createElement("div", {
+              className: "col-span-2 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-900/70 border border-slate-700/70",
+              role: "group",
+              "aria-label": t('stem.coding.workspace_view', 'Workspace view')
+            },
+              [
+                { key: 'build', icon: '\uD83E\uDDE9', label: t('stem.coding.build', 'Build') },
+                { key: 'inquiry', icon: '\uD83D\uDD2C', label: t('stem.coding.inquiry_lab', 'Inquiry Lab') }
+              ].map(function(tab) {
+                var active = workspaceTab === tab.key;
+                return React.createElement("button", {
+                  key: tab.key,
+                  type: "button",
+                  "aria-pressed": active,
+                  "aria-controls": tab.key === 'inquiry' ? 'coding-inquiry-panel' : undefined,
+                  onClick: function() { upd('workspaceTab', tab.key); },
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                    (active ? "bg-white text-indigo-700 shadow-sm" : "bg-white/10 text-white/75 hover:bg-white/20 hover:text-white")
+                },
+                  React.createElement("span", { "aria-hidden": "true" }, tab.icon),
+                  React.createElement("span", null, tab.label)
+                );
+              })
+            ),
+
+            workspaceTab === 'inquiry' && (function() {
               var iq = d.complexityIQ || { n: 100, loopDepth: 1, dataStruct: 'array', recursion: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('complexityIQ', Object.assign({}, iq, patch)); }
               function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
@@ -1887,7 +1913,7 @@
                 slow: { label: t('stem.coding.slow', 'Slow'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.coding.seconds_to_minutes_batch_job_territory', 'Seconds to minutes. Batch-job territory; user gets coffee.') },
                 intractable: { label: t('stem.coding.intractable', 'Intractable'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.coding.practically_infinite_at_this_scale_nee', 'Practically infinite at this scale. Need a better algorithm or smaller input.') }
               })[state];
-              return React.createElement("div", { className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+              return React.createElement("div", { id: "coding-inquiry-panel", role: "region", "aria-label": t('stem.coding.inquiry_lab', 'Inquiry Lab'), className: "col-span-2 rounded-xl p-3", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                 React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, t('stem.coding.big_o_inquiry_predict_the_slowdown', '🔬 Big-O Inquiry — Predict the Slowdown')),
                 React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, t('stem.coding.set_input_size_loop_depth_data_structu', 'Set input size, loop depth, data structure, and recursion shape. Predict how fast (or slow) your code will run before testing it. No score, no reveal.')),
                 React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · ~' + totalOps.toExponential(1) + ' ops · ~' + (msAt1GHz < 1 ? (msAt1GHz * 1000).toFixed(2) + ' µs' : msAt1GHz < 1000 ? msAt1GHz.toFixed(1) + ' ms' : (msAt1GHz / 1000).toFixed(1) + ' s')),

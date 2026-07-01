@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_tool_coding.js`, `prismflow-deploy/public/stem_lab/stem_tool_coding.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_coding.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Simplified the Coding Playground default UX with a Build/Inquiry Lab workspace switch so the Big-O inquiry panel is opt-in instead of appearing on first load. |
 | 2026-07-01 | Codex | `live_polling_module.js`, `prismflow-deploy/public/live_polling_module.js`, `tests/live_polling.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened live poll reliability and UX: deduped reconnects/resubmissions, ignored stale close events, added teacher progress/anonymous aggregate dashboard, and gave students a safe local hide option after submitting in wait mode. |
 | 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, local ignored `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Replaced generic STEM quick-start chips with an AI-assisted tool picker that suggests matching tools from a student's learning interest, validates AI-returned ids against the real catalog, and routes selected suggestions directly into the chosen tool. |
 | 2026-07-01 | Codex | `dev-tools/check_stem_a11y.cjs`, `a11y-audit/stem_tool_ui_a11y_audit.json`, `a11y-audit/stem_tool_ui_a11y_audit.md`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed a comprehensive STEM tool-by-tool UI/UX and accessibility audit across 113 registered tools, with repeatable JSON/Markdown reports and prioritized recommendations for tool-level refinements. |
@@ -48,6 +49,9 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check stem_lab\stem_tool_coding.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_coding.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_coding.js` - passed after the Coding Playground workspace switch change.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after the Coding Playground workspace switch change with no app-crash render failures across 113 STEM tools.
+- One-off jsdom/React server render of `codingPlayground` - passed; confirmed Build and Inquiry Lab controls render, the Big-O panel is hidden by default, and it appears when `workspaceTab: 'inquiry'` is active.
 - `npx vitest run tests/doc_pipeline_loop_support.test.js tests/behavior_lens_golden.test.js` - passed 66 tests.
 - Blocking tagged-PDF golden group - passed 59 Playwright tests locally.
 - `node dev-tools/verapdf_diff.cjs --gate` - passed locally with zero introduced ISO failures.
