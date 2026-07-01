@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added SEL teacher-mode polish: classroom launch routines that prefill stations, clearer station builder review/selection feedback, educator safety/privacy launch cues, and teacher-facing timing/format hints on key tool cards. |
 | 2026-07-01 | Codex | `view_header_source.jsx`, `view_header_module.js`, `view_guided_mode_banner_source.jsx`, `view_guided_mode_banner_module.js`, `quickstart_source.jsx`, `quickstart_module.js`, `AlloFlowANTI.txt`, `tests/guided_host_wiring.test.js`, `tests/guided_mode_banner_completion.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a QuickStart/Guided Mode choice modal, tightened Guided next-vs-skip behavior, fixed QuickStart upload completion, and added host-level onboarding tests. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, selected `sel_hub/sel_tool_*.js`, `dev-tools/check_sel_a11y.cjs`, `a11y-audit/sel_tool_ui_a11y_audit.json`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed the full SEL tool-by-tool UI/UX and accessibility pass across 70 tools: shared shell coverage is now default, contrast and unlabeled control findings were fixed, and `check_sel_a11y` plus `check_sel_render --quiet` both pass cleanly. |
 | 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added recent-tool memory, quick-start chips, catalog result status, clear-filter controls, and global search behavior that clears hidden category filters. |
@@ -86,6 +87,10 @@ Last updated: 2026-07-01 by Codex.
 - `node --check` for the SEL hub module and touched SEL tool modules - passed after the tool-by-tool UI/accessibility pass.
 - `node dev-tools\check_sel_a11y.cjs` - passed across 70 SEL tools with 0 errors, 0 warnings, and full shared-shell coverage.
 - `node dev-tools\check_sel_render.cjs --quiet` - passed with no app-crash render failures across 70 SEL tools.
+- `node --check sel_hub\sel_hub_module.js` - passed after SEL teacher-mode polish.
+- `node dev-tools\check_sel_render.cjs --quiet` - passed after teacher-mode polish with no app-crash render failures across 70 SEL tools.
+- `node dev-tools\check_sel_a11y.cjs` - passed after teacher-mode polish across 70 SEL tools with 0 errors, 0 warnings, and full shared-shell coverage.
+- One-off jsdom/React DOM render of `window.AlloModules.SelHub` - passed; confirmed Teacher launch, Morning advisory check-in, formative-use note, and Start here shell content render.
 
 ## Open Coordination Notes
 

@@ -459,6 +459,84 @@
       { id: 'transitions', name: 'Navigating Change', icon: '\uD83C\uDF31', desc: 'Support students through life transitions and new experiences', tools: ['transitions', 'coping', 'journal', 'goals'], casel: 'self-management' },
     ];
 
+    var SEL_TEACHER_TOOL_META = {
+      zones: { time: '5-8 min', format: 'Solo or group', cue: 'Useful first check-in before any sharing.' },
+      emotions: { time: '5-8 min', format: 'Solo or pair', cue: 'Good vocabulary warm-up.' },
+      coping: { time: '3-10 min', format: 'Solo or group', cue: 'Best for a regulation reset.' },
+      mindfulness: { time: '2-10 min', format: 'Whole class', cue: 'Low-writing regulation option.' },
+      journal: { time: '5-12 min', format: 'Solo', cue: 'Private reflection. Sharing should be optional.' },
+      goals: { time: '5-10 min', format: 'Solo or advisory', cue: 'Good closing step after reflection.' },
+      conflict: { time: '8-12 min', format: 'Pair or small group', cue: 'Preview norms before role-play.' },
+      restorativeCircle: { time: '15-30 min', format: 'Circle', cue: 'Use with established circle norms.' },
+      peersupport: { time: '8-15 min', format: 'Pair practice', cue: 'Strong for listening-skills rehearsal.' },
+      perspective: { time: '6-12 min', format: 'Pair or group', cue: 'Good empathy bridge before discussion.' },
+      digitalWellbeing: { time: '8-15 min', format: 'Solo or advisory', cue: 'Useful before phone or AI norms.' },
+      sleep: { time: '5-10 min', format: 'Solo', cue: 'Good for health advisory units.' },
+      safety: { time: '8-15 min', format: 'Solo', cue: 'Preview first; avoid forced disclosure.', sensitive: true },
+      crisiscompanion: { time: '3-10 min', format: 'Solo', cue: 'For urgent support skills, not a class assignment.', sensitive: true },
+      griefLoss: { time: '10-20 min', format: 'Solo', cue: 'Preview first; use opt-out alternatives.', sensitive: true },
+      identitySupport: { time: '8-15 min', format: 'Solo', cue: 'Use with privacy and opt-out care.', sensitive: true }
+    };
+
+    var SEL_TEACHER_LAUNCH_PLANS = [
+      {
+        id: 'advisory_checkin',
+        name: 'Morning advisory check-in',
+        icon: '\uD83C\uDF05',
+        time: '10-15 min',
+        format: 'Whole class',
+        focus: 'Mood, breath, one next step',
+        tools: ['zones', 'mindfulness', 'goals', 'journal'],
+        note: 'Begin with a private zone check, then offer breathing or goal-setting. Students may share one word, a color, or pass.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Complete a private check-in', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Name one thing you need today', params: { prompt: 'What is one thing that would help you have a steadier day?', minLength: 30 } }
+        ]
+      },
+      {
+        id: 'calm_reset',
+        name: 'Five-minute calm reset',
+        icon: '\uD83E\uDDD8',
+        time: '5-8 min',
+        format: 'Whole class or calm corner',
+        focus: 'Body regulation',
+        tools: ['zones', 'coping', 'mindfulness'],
+        note: 'Keep this low-talk. Students choose one regulation practice and notice what changed.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Check your current zone', params: {} },
+          { type: 'manualComplete', toolRef: 'last', label: 'Try one calm-body practice', params: {} }
+        ]
+      },
+      {
+        id: 'repair_routine',
+        name: 'Post-conflict repair routine',
+        icon: '\u2696\uFE0F',
+        time: '15-25 min',
+        format: 'Small group or advisory',
+        focus: 'Perspective, repair, next action',
+        tools: ['conflict', 'perspective', 'restorativeCircle', 'peersupport'],
+        note: 'Use after norms are set. Keep focus on repair language, not public confession.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Map the conflict or perspective', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Draft a repair statement', params: { prompt: 'Write a repair statement using an "I" statement, one impact you understand, and one next action.', minLength: 70 } }
+        ]
+      },
+      {
+        id: 'digital_reset',
+        name: 'Digital wellbeing mini-lesson',
+        icon: '\uD83D\uDCF1',
+        time: '12-20 min',
+        format: 'Advisory or health',
+        focus: 'Phone, sleep, AI and boundaries',
+        tools: ['digitalWellbeing', 'sleep', 'mindfulness'],
+        note: 'Frame as habit design, not a phone audit. Students choose one boundary to try.',
+        quests: [
+          { type: 'manualComplete', toolRef: 'first', label: 'Choose one digital habit to adjust', params: {} },
+          { type: 'freeResponse', toolId: null, label: 'Name one boundary to test', params: { prompt: 'What is one phone, sleep, or AI boundary you want to test this week?', minLength: 40 } }
+        ]
+      }
+    ];
+
     // ── Grade-Level Complexity Helpers ──
     // Tools call these to adapt vocabulary, scenario depth, and abstraction.
     // gradeLevel comes from the parent app (e.g. "K", "3rd Grade", "6-8", "9-12").
@@ -1737,6 +1815,62 @@
         return _allSelTools.find(function(t) { return t.id === toolId && !t.category; }) || null;
       }
 
+      function _teacherToolCue(toolId) {
+        return (SEL_TEACHER_TOOL_META && SEL_TEACHER_TOOL_META[toolId]) || null;
+      }
+
+      function _teacherPlanTools(plan) {
+        if (!plan || !Array.isArray(plan.tools)) return [];
+        return plan.tools.filter(function(toolId) {
+          return _selToolById(toolId) && window.SelHub && window.SelHub.isRegistered(toolId);
+        });
+      }
+
+      function _teacherPlanToolLabels(plan) {
+        return _teacherPlanTools(plan).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanQuests(plan, selectedToolIds) {
+        return (plan && Array.isArray(plan.quests) ? plan.quests : []).map(function(q) {
+          var copy = Object.assign({}, q, { params: Object.assign({}, q.params || {}) });
+          if (copy.toolRef === 'first') copy.toolId = selectedToolIds[0] || null;
+          if (copy.toolRef === 'last') copy.toolId = selectedToolIds[selectedToolIds.length - 1] || null;
+          delete copy.toolRef;
+          return copy;
+        });
+      }
+
+      function _applyTeacherLaunchPlan(plan) {
+        var selectedToolIds = _teacherPlanTools(plan);
+        if (selectedToolIds.length === 0) {
+          if (typeof addToast === 'function') addToast('Teacher launch tools are still loading. Try again in a moment.', 'info');
+          announceToSR('Teacher launch tools are still loading.');
+          return;
+        }
+        var nextTools = {};
+        selectedToolIds.forEach(function(toolId) { nextTools[toolId] = true; });
+        setBuilderName(plan.name || 'SEL classroom routine');
+        setBuilderNote(plan.note || '');
+        setBuilderTools(nextTools);
+        setBuilderQuests(_teacherPlanQuests(plan, selectedToolIds));
+        setBuilderOpen(true);
+        setActivePathway(null);
+        setActiveStationId(null);
+        setSelCategoryFilter(null);
+        setSelToolSearch('');
+        announceToSR('Teacher launch plan loaded into the station builder: ' + (plan.name || 'SEL routine'));
+        if (typeof addToast === 'function') addToast('Teacher launch plan loaded into Station Builder.', 'success');
+        setTimeout(function() {
+          try {
+            var input = document.getElementById('sel-station-name-input');
+            if (input && input.focus) input.focus();
+          } catch (e) {}
+        }, 50);
+      }
+
       function _selRelativeTime(ts) {
         var n = Number(ts || 0);
         if (!n) return '';
@@ -1986,6 +2120,21 @@
             }, '\u2715')
           ),
           h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
+            h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc' } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 900, color: _t.text } }, 'Classroom launch frame'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 } },
+                [
+                  { label: 'Before', body: 'Confirm parent notice, opt-out path, and crisis-response contact.' },
+                  { label: 'During', body: 'Keep sharing optional. Frame tools as practice, not assessment.' },
+                  { label: 'After', body: 'Save only when students choose to export or hand you a file.' }
+                ].map(function(item) {
+                  return h('div', { key: item.label, style: { padding: 10, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard } },
+                    h('div', { style: { fontSize: 11, fontWeight: 900, color: '#0f766e', textTransform: 'uppercase', marginBottom: 4 } }, item.label),
+                    h('div', { style: { fontSize: 12, color: _t.textMuted, lineHeight: 1.45 } }, item.body)
+                  );
+                })
+              )
+            ),
             _selRenderMarkdown(React, FOR_EDUCATORS_MD),
             h('div', { style: { marginTop: 20, paddingTop: 16, borderTop: '1px solid ' + _t.border } },
               h('h3', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: _t.text } }, 'Data & privacy'),
@@ -2284,6 +2433,53 @@
               }, 'Save now')
             )
           ),
+          !activePathway && !activeStation && h('details', {
+            style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
+          },
+            h('summary', {
+              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 800, color: _t.text, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 8 }
+            }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDF93'), 'Teacher launch'),
+            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid ' + _t.border } },
+              h('div', {
+                role: 'note',
+                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.45 }
+              }, 'Class routines stay formative: no grades, no forced sharing, no teacher dashboard of private reflections. Students save or share only when you ask them to choose a file.'),
+              h('div', {
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
+              },
+                SEL_TEACHER_LAUNCH_PLANS.map(function(plan) {
+                  var availableTools = _teacherPlanTools(plan);
+                  var labels = _teacherPlanToolLabels(plan);
+                  var unavailableCount = Math.max(0, (plan.tools || []).length - availableTools.length);
+                  var disabled = availableTools.length === 0;
+                  return h('div', {
+                    key: plan.id,
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#172033' : '#ffffff', padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flex: '0 0 auto' } }, plan.icon),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { fontSize: 12, fontWeight: 900, color: _t.text, lineHeight: 1.25 } }, plan.name),
+                        h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.35, marginTop: 2 } }, plan.time + ' | ' + plan.format)
+                      )
+                    ),
+                    h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
+                    h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
+                      labels.length ? labels.join(', ') : 'Tools loading...',
+                      unavailableCount > 0 ? ' +' + unavailableCount + ' loading' : ''
+                    ),
+                    h('button', {
+                      type: 'button',
+                      disabled: disabled,
+                      onClick: function() { _applyTeacherLaunchPlan(plan); },
+                      'aria-label': 'Load teacher launch plan: ' + plan.name,
+                      style: { marginTop: 'auto', minHeight: 34, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid #0f766e', background: disabled ? _t.bgCard : '#0f766e', color: disabled ? _t.textMuted : '#ffffff', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
+                    }, disabled ? 'Loading' : 'Load plan')
+                  );
+                })
+              )
+            )
+          ),
           !activePathway && !activeStation && _recentWorkItems.length > 0 && h('section', {
             'aria-label': 'Recent SEL work',
             style: { marginBottom: 14 }
@@ -2503,6 +2699,7 @@
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
+                    st.teacherNote && h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: isDark ? '#111827' : '#f8fafc', border: '1px solid ' + _t.border } }, st.teacherNote),
                     h('button', {
                       onClick: function () {
                         setActiveStationId(st.id);
@@ -2513,7 +2710,7 @@
                       },
                       'aria-label': 'Activate station ' + st.name,
                       style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                    }, 'Activate')
+                    }, 'Start station')
                   );
                 })
               ),
@@ -2534,6 +2731,8 @@
                 var _cardedIds = {};
                 _allSelTools.forEach(function (t) { if (t && t.id && !t.category) _cardedIds[t.id] = true; });
                 registry = registry.filter(function (tool) { return _cardedIds[tool.id]; });
+                var selectedBuilderToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                var builderEstimatedMinutes = selectedBuilderToolIds.length ? Math.max(5, (selectedBuilderToolIds.length * 4) + (builderQuests.length * 2)) : 0;
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
                     var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
@@ -2571,6 +2770,7 @@
                   ),
                   // Name
                   h('input', {
+                    id: 'sel-station-name-input',
                     type: 'text', value: builderName,
                     onChange: function (ev) { setBuilderName(ev.target.value); },
                     placeholder: 'Station name (e.g. "Friday SEL Routine")',
@@ -2586,15 +2786,33 @@
                     rows: 2,
                     style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
                   }),
+                  h('div', {
+                    role: 'status',
+                    'aria-live': 'polite',
+                    style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '7px 9px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.35 }
+                  },
+                    h('span', null, selectedBuilderToolIds.length + (selectedBuilderToolIds.length === 1 ? ' tool' : ' tools') + ' selected'),
+                    h('span', { 'aria-hidden': 'true' }, '|'),
+                    h('span', null, builderQuests.length + (builderQuests.length === 1 ? ' quest' : ' quests')),
+                    builderEstimatedMinutes > 0 && h('span', null, '| about ' + builderEstimatedMinutes + ' min')
+                  ),
                   // Tool picker
                   h('div', null,
-                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 } },
+                      h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text } }, 'Pick tools to include:'),
+                      selectedBuilderToolIds.length > 0 && h('button', {
+                        type: 'button',
+                        onClick: function () { setBuilderTools({}); },
+                        'aria-label': 'Clear selected station tools',
+                        style: { border: 'none', background: 'none', color: _t.textMuted, cursor: 'pointer', fontSize: 10, fontWeight: 800, textDecoration: 'underline' }
+                      }, 'Clear')
+                    ),
                     registry.length === 0
                       ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
                         : h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
-                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isDark ? '#3b1026' : '#fce7f3') : 'transparent', border: checked ? '1px solid #db2777' : '1px solid transparent', fontSize: 11, color: _t.text } },
                               h('input', {
                                 type: 'checkbox', checked: checked,
                                 onChange: function () {
@@ -2655,9 +2873,11 @@
                   ),
                   // Save button
                   h('button', {
+                    type: 'button',
+                    disabled: selectedBuilderToolIds.length === 0,
                     onClick: _saveBuilderAsStation,
                     'aria-label': 'Save this station',
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 ? _t.btnBg : '#db2777', color: selectedBuilderToolIds.length === 0 ? _t.textMuted : '#fff', fontSize: 12, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
                   }, '💾 Save Station')
                 );
               })()
@@ -2688,13 +2908,14 @@
               };
               var cardColor = colorMap[tool.color] || '#3b82f6';
               var shortDesc = _selShortDesc(tool);
+              var teacherCue = _teacherToolCue(tool.id);
 
               return h('button', {
                 key: tool.id,
                 onClick: function() {
                   openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : ''),
+                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : '') + (teacherCue ? '. Teacher cue: ' + teacherCue.time + ', ' + teacherCue.format + '. ' + teacherCue.cue : ''),
                 title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
@@ -2727,6 +2948,12 @@
                   })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, shortDesc),
+                teacherCue && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
+                  h('span', { style: { fontSize: 10, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time + ' | ' + teacherCue.format),
+                  teacherCue.sensitive && h('span', {
+                    style: { fontSize: 9, fontWeight: 900, color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase' }
+                  }, 'Preview first')
+                ),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
                 (function() {
                   if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
