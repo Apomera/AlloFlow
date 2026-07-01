@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `live_polling_module.js`, `prismflow-deploy/public/live_polling_module.js`, `tests/live_polling.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened live poll reliability and UX: deduped reconnects/resubmissions, ignored stale close events, added teacher progress/anonymous aggregate dashboard, and gave students a safe local hide option after submitting in wait mode. |
 | 2026-07-01 | Codex | `dev-tools/check_stem_a11y.cjs`, `a11y-audit/stem_tool_ui_a11y_audit.json`, `a11y-audit/stem_tool_ui_a11y_audit.md`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed a comprehensive STEM tool-by-tool UI/UX and accessibility audit across 113 registered tools, with repeatable JSON/Markdown reports and prioritized recommendations for tool-level refinements. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added SEL teacher-mode polish: classroom launch routines that prefill stations, clearer station builder review/selection feedback, educator safety/privacy launch cues, and teacher-facing timing/format hints on key tool cards. |
 | 2026-07-01 | Codex | `view_header_source.jsx`, `view_header_module.js`, `view_guided_mode_banner_source.jsx`, `view_guided_mode_banner_module.js`, `quickstart_source.jsx`, `quickstart_module.js`, `AlloFlowANTI.txt`, `tests/guided_host_wiring.test.js`, `tests/guided_mode_banner_completion.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a QuickStart/Guided Mode choice modal, tightened Guided next-vs-skip behavior, fixed QuickStart upload completion, and added host-level onboarding tests. |
@@ -82,6 +83,7 @@ Last updated: 2026-07-01 by Codex.
 - `node --check live_polling_module.js`, `node --check prismflow-deploy\public\live_polling_module.js`, and `node --check view_history_panel_module.js` - passed after live polling/history changes.
 - `npx vitest run tests/live_polling.test.js tests/history_panel_share.test.js tests/canvas_shell_live_controls.test.js --reporter=verbose` - passed 19 tests.
 - `npm run build` in `prismflow-deploy` - passed after syncing live polling and history panel public modules; postbuild reported zero external resource requests.
+- `node --check live_polling_module.js`, `node --check prismflow-deploy\public\live_polling_module.js`, and `npx vitest run tests/live_polling.test.js tests/canvas_shell_live_controls.test.js --reporter=verbose` - passed 22 tests after live-session reliability/UX pass.
 
 - `node --check view_header_module.js`, `node --check view_guided_mode_banner_module.js`, `node --check quickstart_module.js`, and matching `prismflow-deploy\public\*` module checks - passed after Guided/QuickStart changes.
 - `npx vitest run tests/guided_host_wiring.test.js tests/guided_mode_banner_completion.test.js tests/guided_example_integrity.test.js tests/onboarding_previewscrub.test.js --reporter=verbose` - passed 32 tests.

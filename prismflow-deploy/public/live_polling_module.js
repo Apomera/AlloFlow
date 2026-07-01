@@ -141,8 +141,30 @@
     for (let n = scale.min; n <= scale.max && out.length < 21; n++) out.push(n);
     return out;
   };
-  const buildPollResultsSummary = (poll, responseList, guestCount) => {
+  const upsertLiveGuest = (guestList, uid, codename) => {
+    if (!uid) return Array.isArray(guestList) ? guestList.slice() : [];
+    const guests = Array.isArray(guestList) ? guestList : [];
+    return guests.filter((g) => g && g.uid !== uid).concat([{ uid: uid, codename: codename || 'Guest' }]);
+  };
+  const upsertPollResponse = (responseList, entry) => {
+    const list = Array.isArray(responseList) ? responseList.slice() : [];
+    if (!entry || !entry.uid) return list.concat([entry]);
+    const idx = list.findIndex((r) => r && r.uid === entry.uid);
+    if (idx >= 0) list[idx] = Object.assign({}, list[idx], entry);
+    else list.push(entry);
+    return list;
+  };
+  const uniqueResponsesForSummary = (responseList) => {
     const responses = Array.isArray(responseList) ? responseList : [];
+    return responses.reduce((out, entry) => upsertPollResponse(out, entry), []);
+  };
+  const shouldApplyPollClose = (activePoll, payload) => {
+    if (!activePoll) return true;
+    const closeId = payload && payload.pollId;
+    return !closeId || closeId === activePoll.id;
+  };
+  const buildPollResultsSummary = (poll, responseList, guestCount) => {
+    const responses = uniqueResponsesForSummary(responseList);
     const total = responses.length;
     const pct = (count) => total > 0 ? Math.round((count / total) * 100) : 0;
     const summary = {
@@ -542,7 +564,7 @@
       const host = new PollingHost({
         sessionCode: sessionCode,
         onGuestConnected: function (uid, codename) {
-          setGuests(function (prev) { return prev.concat([{ uid: uid, codename: codename }]); });
+          setGuests(function (prev) { return upsertLiveGuest(prev, uid, codename); });
         },
         onResponse: function (uid, codename, payload) {
           // Auto-route via teacher-authored rules. Reads latest activePoll
@@ -576,9 +598,8 @@
           }
           setResponses(function (prev) {
             const next = Object.assign({}, prev);
-            const list = next[payload.pollId] ? next[payload.pollId].slice() : [];
-            list.push({ uid: uid, codename: codename, response: payload.response, timestamp: payload.timestamp, routedToGroupId: routedToGroupId });
-            next[payload.pollId] = list;
+            const entry = { uid: uid, codename: codename, response: payload.response, timestamp: payload.timestamp, routedToGroupId: routedToGroupId };
+            next[payload.pollId] = upsertPollResponse(next[payload.pollId], entry);
             return next;
           });
         },
@@ -664,7 +685,7 @@
     };
     const shareResults = function () {
       if (!hostRef.current || !activePoll) return;
-      const summary = buildPollResultsSummary(activePoll, responses[activePoll.id] || [], guests.length);
+      const summary = buildPollResultsSummary(activePoll, uniqueResponsesForSummary(responses[activePoll.id] || []), guests.length);
       hostRef.current.broadcastPollResults(activePoll.id, summary);
       setLastSharedResultsAt(Date.now());
     };
@@ -675,6 +696,10 @@
 
     if (!isOpen) return null;
     const activeResponses = (activePoll && responses[activePoll.id]) || [];
+    const uniqueActiveResponses = uniqueResponsesForSummary(activeResponses);
+    const responseGoal = Math.max(guests.length, uniqueActiveResponses.length, 1);
+    const responsePercent = activePoll ? Math.min(100, Math.round((uniqueActiveResponses.length / responseGoal) * 100)) : 0;
+    const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, guests.length) : null;
 
     return ce('div', {
       role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Live Polling Host',
@@ -806,14 +831,30 @@
               ce('div', { style: { fontWeight: 600, marginTop: 2 } }, activePoll.prompt)
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
-              ce('button', { onClick: shareResults, disabled: activeResponses.length === 0, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (activeResponses.length === 0 ? '#cbd5e1' : '#2563eb'), background: 'white', color: activeResponses.length === 0 ? '#94a3b8' : '#1d4ed8', cursor: activeResponses.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, lastSharedResultsAt ? 'Share updated results' : 'Share anonymous results'),
+              ce('button', { onClick: shareResults, disabled: uniqueActiveResponses.length === 0, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (uniqueActiveResponses.length === 0 ? '#cbd5e1' : '#2563eb'), background: 'white', color: uniqueActiveResponses.length === 0 ? '#94a3b8' : '#1d4ed8', cursor: uniqueActiveResponses.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, lastSharedResultsAt ? 'Share updated results' : 'Share anonymous results'),
               ce('button', { onClick: closePoll, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, 'Close poll')
             )
           ),
           ce('div', { style: { marginTop: '0.6rem', fontSize: '0.85rem' } },
-            ce('strong', null, activeResponses.length), ' / ', guests.length, ' responded',
+            ce('strong', null, uniqueActiveResponses.length), ' / ', guests.length, ' responded',
             lastSharedResultsAt ? ce('span', { style: { marginLeft: 8, color: '#1d4ed8', fontSize: '0.75rem', fontWeight: 700 } }, 'Results shared') : null
           ),
+          ce('div', { style: { marginTop: 8, height: 8, borderRadius: 999, background: '#dbeafe', overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': responsePercent, 'aria-label': 'Poll response progress' },
+            ce('div', { style: { width: responsePercent + '%', height: '100%', background: responsePercent >= 100 ? '#16a34a' : '#2563eb', transition: 'width 180ms ease' } })
+          ),
+          summaryForActive && summaryForActive.items && summaryForActive.items.length > 0 ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.72)', border: '1px solid #dbeafe', borderRadius: 8, padding: '0.55rem', display: 'flex', flexDirection: 'column', gap: 6 } },
+            ce('div', { style: { fontSize: '0.74rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' } }, 'Anonymous summary'),
+            summaryForActive.items.map(function (item, i) {
+              const pct = Math.max(0, Math.min(100, Number(item.percent) || 0));
+              return ce('div', { key: String(item.value || item.label || i), style: { display: 'grid', gridTemplateColumns: 'minmax(80px, 1fr) minmax(120px, 2fr) auto', gap: 8, alignItems: 'center', fontSize: '0.78rem', color: '#0f172a' } },
+                ce('span', { style: { fontWeight: 700, overflowWrap: 'anywhere' } }, item.label || String(item.value || 'Response')),
+                ce('span', { style: { height: 8, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' } },
+                  ce('span', { style: { display: 'block', width: pct + '%', height: '100%', background: '#2563eb' } })
+                ),
+                ce('span', { style: { color: '#475569', fontVariantNumeric: 'tabular-nums' } }, (Number(item.count) || 0) + ' / ' + pct + '%')
+              );
+            })
+          ) : null,
           // Aggregate routing summary (teacher-only; counts per group)
           activePoll && Array.isArray(activePoll.routingRules) && activePoll.routingRules.length > 0
             ? (function () {
@@ -834,8 +875,8 @@
                 );
               })()
             : null,
-          activeResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
-            activeResponses.map(function (r, i) {
+          uniqueActiveResponses.length > 0 ? ce('ul', { style: { listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', maxHeight: 240, overflow: 'auto' } },
+            uniqueActiveResponses.map(function (r, i) {
               const display = typeof r.response === 'object' ? JSON.stringify(r.response) : String(r.response);
               return ce('li', { key: i, style: { padding: '0.4rem 0.6rem', background: 'white', borderRadius: 4, marginBottom: 4, fontSize: '0.85rem', borderLeft: '3px solid #1e3a8a', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
                 ce('strong', { style: { color: '#1e3a8a' } }, r.codename),
@@ -869,7 +910,14 @@
         userUid: userUid,
         codename: codename,
         onPoll: function (p) { setActivePoll(p); setSharedResults(null); setSubmitted(false); setResponseValue(''); },
-        onPollClose: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); },
+        onPollClose: function (payload) {
+          setActivePoll(function (current) {
+            if (!shouldApplyPollClose(current, payload)) return current;
+            setSubmitted(false);
+            setResponseValue('');
+            return null;
+          });
+        },
         onPollResults: function (summary) { setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue(''); },
         onConnected: function () { setConnectionState('connected'); },
         onDisconnected: function () { setConnectionState('disconnected'); },
@@ -920,8 +968,10 @@
 
     const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
     const ratingValues = ratingScale ? getRatingValues(ratingScale) : [];
+    const hasResponse = activePoll.type === 'rating' ? responseValue !== '' : !!String(responseValue || '').trim();
+    const canSubmit = !submitted && !!guestRef.current && hasResponse;
     const submit = function () {
-      if (submitted || !guestRef.current) return;
+      if (!canSubmit) return;
       let payload;
       if (activePoll.type === 'rating') payload = Number(responseValue);
       else if (activePoll.type === 'mcq') payload = String(responseValue);
@@ -947,7 +997,10 @@
       ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
         ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, activePoll.type === 'rating' && ratingScale ? 'rating ' + ratingScale.min + '-' + ratingScale.max : activePoll.type),
         ce('h2', { style: { margin: '0 0 1rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
-        submitted ? ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 6, fontWeight: 600 } }, 'Response sent. Waiting for the teacher to close this poll.') :
+        submitted ? ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 8, fontWeight: 600 } },
+          ce('div', null, 'Response sent. Waiting for the teacher to close this poll.'),
+          ce('button', { onClick: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); }, style: { marginTop: 8, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, 'Hide while waiting')
+        ) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
             ratingValues.map(function (n) {
               const selected = Number(responseValue) === n;
@@ -964,7 +1017,7 @@
             })
           ) :
           ce('textarea', { value: responseValue, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': 'Your response', placeholder: 'Type your response', rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
-        submitted ? null : ce('button', { onClick: submit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer', fontWeight: 700, width: '100%' } }, 'Submit response'),
+        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, 'Submit response'),
         connectionState === 'failed' ? ce('p', { style: { fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.75rem', marginBottom: 0 } }, 'Direct connection failed. Submitting will export your response as a downloadable file for the teacher to import.') :
           connectionState === 'connecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.75rem', marginBottom: 0 } }, 'Connecting...') : null
       )
@@ -980,6 +1033,10 @@
     buildRatingScale: buildRatingScale,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
+    upsertLiveGuest: upsertLiveGuest,
+    upsertPollResponse: upsertPollResponse,
+    uniqueResponsesForSummary: uniqueResponsesForSummary,
+    shouldApplyPollClose: shouldApplyPollClose,
     PollingHost: PollingHost,
     PollingGuest: PollingGuest,
     HostPanel: HostPanel,

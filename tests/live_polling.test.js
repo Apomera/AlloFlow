@@ -130,3 +130,36 @@ describe('custom rating scales + anonymous result sharing', () => {
     expect(sent[0]).toMatchObject({ type: 'pollResults', payload: { pollId: 'p3', prompt: 'Ready?', items: [] } });
   });
 });
+describe('live polling reliability helpers', () => {
+  it('keeps one connected row per student after reconnect', () => {
+    const guests = LP.upsertLiveGuest([{ uid: 'u1', codename: 'First Name' }], 'u1', 'Fresh Name');
+    expect(guests).toEqual([{ uid: 'u1', codename: 'Fresh Name' }]);
+  });
+
+  it('keeps the latest response per student instead of inflating response counts', () => {
+    const responses = LP.upsertPollResponse([
+      { uid: 'u1', codename: 'Learner', response: 2, timestamp: 1 },
+      { uid: 'u2', codename: 'Partner', response: 4, timestamp: 1 },
+    ], { uid: 'u1', codename: 'Learner', response: 5, timestamp: 2 });
+    expect(responses).toHaveLength(2);
+    expect(responses.find((r) => r.uid === 'u1')).toMatchObject({ response: 5, timestamp: 2 });
+  });
+
+  it('deduplicates repeat submissions before building anonymous aggregates', () => {
+    const poll = { id: 'p4', type: 'rating', prompt: 'Ready?', scale: LP.buildRatingScale(1, 5, '5 = Ready') };
+    const summary = LP.buildPollResultsSummary(poll, [
+      { uid: 'u1', codename: 'Learner', response: 1, timestamp: 1 },
+      { uid: 'u1', codename: 'Learner', response: 5, timestamp: 2 },
+      { uid: 'u2', codename: 'Partner', response: 5, timestamp: 1 },
+    ], 2);
+    expect(summary.totalResponses).toBe(2);
+    expect(summary.items.find((item) => item.value === 1)).toMatchObject({ count: 0, percent: 0 });
+    expect(summary.items.find((item) => item.value === 5)).toMatchObject({ count: 2, percent: 100 });
+  });
+
+  it('ignores stale poll-close messages once a newer poll is active', () => {
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, { pollId: 'poll-old' })).toBe(false);
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, { pollId: 'poll-new' })).toBe(true);
+    expect(LP.shouldApplyPollClose({ id: 'poll-new' }, {})).toBe(true);
+  });
+});
