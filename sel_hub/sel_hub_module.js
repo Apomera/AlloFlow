@@ -32,6 +32,56 @@
             time: '5-12 min',
             purpose: 'Write a private reflection and notice patterns you may want to keep.',
             next: 'Choose a prompt, write honestly, and save or export before closing.'
+          },
+          emotions: {
+            time: '4-8 min',
+            purpose: 'Build emotional vocabulary and name what you are feeling with more precision.',
+            next: 'Pick a feeling, rate its intensity, then choose one word that fits best.'
+          },
+          mindfulness: {
+            time: '2-10 min',
+            purpose: 'Pause, breathe, and practice attention without needing to write anything.',
+            next: 'Choose one short practice, follow it through, then notice what changed.'
+          },
+          thoughtRecord: {
+            time: '8-15 min',
+            purpose: 'Slow down a difficult thought and look for a more balanced view.',
+            next: 'Name the situation, rate the feeling, then test the thought against evidence.'
+          },
+          anxietyToolkit: {
+            time: '5-12 min',
+            purpose: 'Sort worry, reduce anxiety intensity, and choose a practical next step.',
+            next: 'Pick the worry that is loudest, try one strategy, then save the plan if it helps.'
+          },
+          sleep: {
+            time: '4-10 min',
+            purpose: 'Notice sleep barriers and choose one rest habit to try next.',
+            next: 'Check what is getting in the way, choose one small change, then revisit later.'
+          },
+          goals: {
+            time: '5-10 min',
+            purpose: 'Turn an intention into a concrete, realistic next action.',
+            next: 'Write one goal, choose a first step, and save the plan before closing.'
+          },
+          friendship: {
+            time: '5-10 min',
+            purpose: 'Think through friendship needs, belonging, and peer choices.',
+            next: 'Choose one friendship situation and identify one kind next move.'
+          },
+          conflict: {
+            time: '6-12 min',
+            purpose: 'Understand a conflict and prepare a repair-focused response.',
+            next: 'Name what happened, consider both sides, then choose one repair action.'
+          },
+          safety: {
+            time: '8-15 min',
+            purpose: 'Create a practical safety plan and identify trusted supports.',
+            next: 'Add warning signs, coping steps, and people to contact; save before closing.'
+          },
+          crisiscompanion: {
+            time: '3-10 min',
+            purpose: 'Use a structured support path when emotions feel urgent or unsafe.',
+            next: 'Choose the closest support option and involve a trusted adult or crisis service when needed.'
           }
         },
         registerTool: function(id, config) {

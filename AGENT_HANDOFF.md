@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Expanded the shared SEL Tool Shell beyond the first pilot tools to more core student-facing SEL tools for consistent navigation, save cues, and next-step guidance. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `phase_k_helpers_module.js`, `misc_handlers_module.js`, `prismflow-deploy/public/phase_k_helpers_module.js`, `prismflow-deploy/public/misc_handlers_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a Recent SEL work section plus snapshot save/load mirrors so saved reflections and recent activity are visible, resumable, and included in project files. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added needs-based SEL finder chips and friendlier search aliases so students can find tools by what they feel or need, not only by formal category names. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a shared SEL Tool Shell pilot for Emotion Zones, Coping Strategies, and Journal so high-use tools get clearer entry, privacy/save cues, and consistent navigation. |
@@ -57,6 +58,8 @@ Last updated: 2026-07-01 by Codex.
 - `node --check sel_hub\sel_hub_module.js`, `node --check phase_k_helpers_module.js`, `node --check misc_handlers_module.js`, `node --check prismflow-deploy\public\phase_k_helpers_module.js`, and `node --check prismflow-deploy\public\misc_handlers_module.js` - passed after Recent SEL work/snapshot persistence changes.
 - `node dev-tools\check_sel_render.cjs --quiet` - passed after Recent SEL work/snapshot persistence changes with no app-crash render failures across 70 SEL tools.
 - One-off jsdom/React DOM render of `window.AlloModules.SelHub` - passed; confirmed Recent SEL work renders seeded snapshots/recent usage and preserves the snapshot mirror.
+- `node --check sel_hub\sel_hub_module.js` and `node dev-tools\check_sel_render.cjs --quiet` - passed after expanded shared SEL Tool Shell metadata.
+- One-off jsdom/fake-React render of `window.SelHub.renderTool('sleep')` - passed; confirmed a newly expanded shell tool renders the standard shell marker, purpose copy, Save now, and tool content.
 - UTF-8/mojibake scan for `sel_hub/FOR_EDUCATORS.md` and `sel_hub/sel_hub_module.js` - passed with zero matches.
 - `npx vitest run tests/word_sounds_golden.test.js --reporter=verbose` - passed 22 tests.
 - `npx vitest run tests/doc_pipeline_loop_support.test.js tests/behavior_lens_golden.test.js tests/pdf_pipeline_quick_bugs.test.js tests/scan_score_labels.test.js tests/guided_mode_banner_completion.test.js tests/guided_example_integrity.test.js tests/i18n_cli_tools.test.js tests/word_sounds_golden.test.js --reporter=verbose` - passed 213 tests.
