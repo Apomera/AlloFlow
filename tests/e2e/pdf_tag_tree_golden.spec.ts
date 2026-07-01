@@ -383,7 +383,43 @@ test.describe('createTaggedPdf — per-leaf MCID experiment (scanned)', () => {
         const stRoot = resolve(outDoc.catalog.get(nm('StructTreeRoot')));
         if (stRoot && stRoot.get) walk(stRoot.get(nm('K')), 0);
         const multiClaimed = Object.values(mcidClaims).filter((c) => c > 1).length;
-        return { leafCount, orphanedLeafCount, distinctMcids: mcids.size, multiClaimed };
+        // MCR→BDC verification (2026-07-01): "hasContent" above only proves an MCR EXISTS —
+        // not that the marked-content sequence it references exists in the page stream. A
+        // /K → MCR(page, MCID n) with no matching "<</MCID n>> BDC" is fake linkage (the
+        // exact blind spot the Node harness + app round-trip now check). Decode the saved
+        // pages' streams (pdf-lib's own decodePDFRawStream handles Flate) and verify every
+        // claimed (page, MCID) pair appears in real content.
+        const pagesOut = outDoc.getPages();
+        const pageIdxByRef: Record<string, number> = {};
+        pagesOut.forEach((p: any, i: number) => { pageIdxByRef[p.ref.toString()] = i; });
+        const pageBodies = pagesOut.map((pg: any) => {
+          let body = '';
+          try {
+            const cts = pg.node.get(nm('Contents'));
+            const refs: any[] = [];
+            if (cts && typeof cts.size === 'function') { for (let i = 0; i < cts.size(); i++) refs.push(cts.get(i)); }
+            else if (cts) refs.push(cts);
+            for (const r of refs) {
+              const s: any = ctx.lookup(r);
+              if (!s) continue;
+              let bts: any = null;
+              const filt = s.dict && s.dict.get && s.dict.get(nm('Filter'));
+              try { bts = (filt && (PDFLib as any).decodePDFRawStream) ? (PDFLib as any).decodePDFRawStream(s).decode() : (s.getContents ? s.getContents() : s.contents); } catch (_) { bts = null; }
+              if (bts) { let sb = ''; for (let bi = 0; bi < bts.length; bi++) sb += String.fromCharCode(bts[bi]); body += sb + '\n'; }
+            }
+          } catch (_) {}
+          return body;
+        });
+        let mcrUnbacked = 0;
+        for (const key of Object.keys(mcidClaims)) {
+          const li = key.lastIndexOf(':');
+          const pref = key.slice(0, li);
+          const mc = Number(key.slice(li + 1));
+          const pi = pageIdxByRef[pref];
+          const body = (pi !== undefined) ? pageBodies[pi] : '';
+          if (!new RegExp('<<\\s*\\/MCID\\s+' + mc + '\\s*>>\\s*BDC').test(body)) mcrUnbacked++;
+        }
+        return { leafCount, orphanedLeafCount, distinctMcids: mcids.size, multiClaimed, mcrTotal: Object.keys(mcidClaims).length, mcrUnbacked };
       } catch (e: any) { return { error: e.message || String(e) }; }
     }, ACCESSIBLE_HTML);
   });
@@ -397,7 +433,9 @@ test.describe('createTaggedPdf — per-leaf MCID experiment (scanned)', () => {
     // The shared-MCID-0 approach would yield distinctMcids === 1; per-leaf must exceed it decisively.
     expect(perLeafScanSummary.distinctMcids, 'per-leaf MCID granularity (not shared MCID 0)').toBeGreaterThan(3);
     expect(perLeafScanSummary.multiClaimed, 'no MCID claimed by more than one element (ISO 32000 §14.7.4)').toBe(0);
-    console.log(`[per-leaf experiment] leaves: ${perLeafScanSummary.leafCount}, orphaned: ${perLeafScanSummary.orphanedLeafCount}, distinct MCIDs: ${perLeafScanSummary.distinctMcids}, multi-claimed: ${perLeafScanSummary.multiClaimed}`);
+    expect(perLeafScanSummary.mcrTotal, 'MCRs were actually stream-checked').toBeGreaterThan(0);
+    expect(perLeafScanSummary.mcrUnbacked, 'every MCR resolves to a real BDC in page content (no fake linkage)').toBe(0);
+    console.log(`[per-leaf experiment] leaves: ${perLeafScanSummary.leafCount}, orphaned: ${perLeafScanSummary.orphanedLeafCount}, distinct MCIDs: ${perLeafScanSummary.distinctMcids}, multi-claimed: ${perLeafScanSummary.multiClaimed}, MCRs stream-verified: ${perLeafScanSummary.mcrTotal - perLeafScanSummary.mcrUnbacked}/${perLeafScanSummary.mcrTotal}`);
   });
 });
 

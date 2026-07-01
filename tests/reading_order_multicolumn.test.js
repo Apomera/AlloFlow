@@ -93,6 +93,33 @@ describe('_alloOrderTextItems — multi-column repair', () => {
     expect(joined(r.items)).toBe(joined(right) + ' ' + joined(left));
   });
 
+  it('RTL AUTO-DETECTS from the text itself (Arabic 2-column reads right column first)', () => {
+    // Arabic-dominant lines (no opts.rtl passed — detection must come from the characters).
+    const AR = ['التعليم حق لكل طفل في العالم', 'القراءة تفتح أبواب المعرفة الواسعة', 'الوصول الشامل يعني تصميم الدرس للجميع', 'المستندات الميسرة تصل إلى كل بيت', 'النص البديل يصف الصورة لقارئ الشاشة', 'ترتيب القراءة يحدد ما يسمعه الطالب', 'الجداول تحتاج رؤوس أعمدة واضحة', 'العناوين تنظم المحتوى للتنقل السريع', 'لغة المستند تضبط نطق قارئ الشاشة', 'التحقق الآلي يكمل المراجعة البشرية'];
+    const rightCol = column(AR, 330, 700);
+    const leftCol = column([...AR].reverse(), 40, 703, 13);
+    const r = order([...leftCol, ...rightCol], {});
+    expect(r.applied).toBe(true);
+    expect(joined(r.items)).toBe(joined(rightCol) + ' ' + joined(leftCol)); // right first
+  });
+
+  it('explicit opts.rtl=false overrides auto-detection (left first even for Arabic)', () => {
+    const AR = ['التعليم حق لكل طفل في العالم', 'القراءة تفتح أبواب المعرفة الواسعة', 'الوصول الشامل يعني تصميم الدرس للجميع', 'المستندات الميسرة تصل إلى كل بيت', 'النص البديل يصف الصورة لقارئ الشاشة', 'ترتيب القراءة يحدد ما يسمعه الطالب', 'الجداول تحتاج رؤوس أعمدة واضحة', 'العناوين تنظم المحتوى للتنقل السريع', 'لغة المستند تضبط نطق قارئ الشاشة', 'التحقق الآلي يكمل المراجعة البشرية'];
+    const rightCol = column(AR, 330, 700);
+    const leftCol = column([...AR].reverse(), 40, 703, 13);
+    const r = order([...leftCol, ...rightCol], { rtl: false });
+    expect(r.applied).toBe(true);
+    expect(joined(r.items)).toBe(joined(leftCol) + ' ' + joined(rightCol));
+  });
+
+  it('English text with a few RTL loanwords stays left→right (threshold guard)', () => {
+    const left = column(LEFT_LINES.map((s, i) => (i === 2 ? s + ' سلام' : s)), 40, 700);
+    const right = column(RIGHT_LINES, 330, 704, 13);
+    const r = order([...left, ...right], {});
+    expect(r.applied).toBe(true);
+    expect(joined(r.items).startsWith(LEFT_LINES[0])).toBe(true); // left column still first
+  });
+
   it('single-column page: passthrough, byte-identical to the legacy sort', () => {
     const lines = column([...LEFT_LINES, ...RIGHT_LINES], 60, 720, 13);
     const shuffled = [...lines].reverse();

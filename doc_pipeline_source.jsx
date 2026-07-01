@@ -896,12 +896,26 @@ function _alloOrderTextItems(items, opts) {
     var _single = { items: _legacy(items || []), columns: 1, gutters: [], applied: false };
     return _single;
   }
+  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
+  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
+  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
+  // reads its RIGHT column first — left-first order would be exactly as scrambled as
+  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
+  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
+  var _rtl = opts.rtl;
+  if (_rtl === undefined) {
+    var _allStr = '';
+    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
+    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
+    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
+    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
+  }
   // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
   var colsOrdered = res.cols.slice().sort(function (A, B) {
     var ax = Infinity, bx = Infinity;
     for (var iA = 0; iA < A.length; iA++) ax = Math.min(ax, _x(A[iA]));
     for (var iB = 0; iB < B.length; iB++) bx = Math.min(bx, _x(B[iB]));
-    return opts.rtl ? bx - ax : ax - bx;
+    return _rtl ? bx - ax : ax - bx;
   });
   var out = [];
   for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c]));
@@ -18641,7 +18655,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.1 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -18774,7 +18788,7 @@ tr { page-break-inside: avoid; }
       if (d.after?.axeCoreAudit) {
         const axe = d.after.axeCoreAudit;
         html += `<h3 style="color:#4f46e5;font-size:16px;margin-top:2rem">🔬 axe-core Automated Verification</h3>`;
-        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">Independent automated testing by Deque axe-core engine (industry standard WCAG scanner)</p>`;
+        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">Independent automated testing by the Deque axe-core engine — an industry-standard scanner for the machine-testable subset of WCAG (automated tools cannot verify every criterion)</p>`;
         html += `
         <div class="meta-grid">
           <div class="meta-card"><div class="meta-val" style="color:${axe.totalViolations === 0 ? '#16a34a' : '#dc2626'}">${axe.totalViolations}</div><div class="meta-label">Violations</div></div>

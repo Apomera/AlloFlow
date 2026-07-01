@@ -5174,7 +5174,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-[11px] font-black text-blue-600 uppercase">axe-core</span>
                           </div>
                           <div className="text-[11px] text-blue-800 space-y-0.5">
-                            <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
+                            {/* "checker" implied full WCAG coverage; automated tools verify only the
+                                machine-testable subset (~a third of criteria) — say so. (i18n packs
+                                translating the old fallback keep their wording until re-extracted.) */}
+                            <div>{t('pdf_audit.score.axe_desc') || 'Deque axe-core — automated checks for the machine-testable subset of WCAG 2.1 AA'}</div>
                             {/* No-text scans: the counts are as by-construction as the score — don't render
                                 "0 violations, N passed" as if the engine meaningfully checked anything. */}
                             <div>{_noText ? (t('pdf_audit.score.axe_counts_na') || 'ran on an empty text reconstruction — counts not meaningful') : `${axeAudit.totalViolations} violation${axeAudit.totalViolations !== 1 ? 's' : ''}, ${axeAudit.totalPasses} passed`}</div>
