@@ -796,6 +796,7 @@ const executeSaveFile = async (deps) => {
   const selStations = typeof window !== "undefined" && window.__alloflowSelStations || null;
   const selProgress = typeof window !== "undefined" && window.__alloflowSelProgress || null;
   const selToolData = typeof window !== "undefined" && window.__alloflowSelToolData || null;
+  const selSnapshots = typeof window !== "undefined" && window.__alloflowSelSnapshots || null;
   if (saveType === "teacher") {
     dataStr = JSON.stringify({
       mode: isIndependentMode ? "independent" : "teacher",
@@ -828,6 +829,7 @@ const executeSaveFile = async (deps) => {
       selStations,
       selProgress,
       selToolData,
+      selSnapshots,
       // Stickers (annotation overlays placed on the output area) ride
       // the project JSON so a teacher's feedback / a student's marks
       // survive save→load. Without this they're wiped on reload.
@@ -924,6 +926,7 @@ const executeSaveFile = async (deps) => {
       selStations,
       selProgress,
       selToolData,
+      selSnapshots,
       // See teacher-save above — stickers persist with the project so
       // a student's marks aren't wiped on reload.
       stickers: Array.isArray(stickers) ? stickers : [],
@@ -935,7 +938,7 @@ const executeSaveFile = async (deps) => {
   }
   let outName = filename;
   const _hasVoice = dataStr.indexOf("data:audio") !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
-  const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr);
+  const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr) || /"selSnapshots"\s*:\s*\[\s*\{/.test(dataStr);
   if (_hasVoice || _hasSelText) {
     const _msg = _hasVoice ? "This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?" : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan \u2014 identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?";
     const _ok = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm(_msg) : true;

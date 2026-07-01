@@ -761,7 +761,17 @@
       var setPathwayProgress = _selPathwayProgress[1];
 
       // Tool snapshots (save/load)
-      var _selSnapshots = React.useState([]);
+      var _selSnapshots = React.useState(function () {
+        try {
+          if (typeof window !== 'undefined' && Array.isArray(window.__alloflowSelSnapshots)) {
+            return window.__alloflowSelSnapshots;
+          }
+        } catch (e) {}
+        try {
+          var raw = JSON.parse(localStorage.getItem('alloflow_sel_snapshots') || '[]');
+          return Array.isArray(raw) ? raw : [];
+        } catch (e) { return []; }
+      });
       var selSnapshots  = _selSnapshots[0];
       var setSelSnapshots = _selSnapshots[1];
 
@@ -998,6 +1008,12 @@
         } catch (e) {}
       }, [selStreak, selToolUsage]);
 
+      // Persist tool snapshots locally and mirror them to the host save slot.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(selSnapshots || [])); } catch (e) {}
+        try { window.__alloflowSelSnapshots = Array.isArray(selSnapshots) ? selSnapshots : []; } catch (e) {}
+      }, [selSnapshots]);
+
       // Hot-reload from a project JSON load mid-session: misc_handlers
       // dispatches this event after writing window.__alloflowSelEngagement.
       React.useEffect(function () {
@@ -1010,6 +1026,18 @@
         }
         window.addEventListener('alloflow-sel-engagement-restored', onRestore);
         return function () { window.removeEventListener('alloflow-sel-engagement-restored', onRestore); };
+      }, []);
+
+      // Same hot-reload path for saved tool snapshots.
+      React.useEffect(function () {
+        function onSnapshotRestore() {
+          try {
+            var w = window.__alloflowSelSnapshots;
+            if (Array.isArray(w)) setSelSnapshots(w);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore);
+        return function () { window.removeEventListener('alloflow-sel-snapshots-restored', onSnapshotRestore); };
       }, []);
 
       var _activeStationId = React.useState(null);
@@ -1645,6 +1673,67 @@
         return _allSelTools.find(function(t) { return t && !t.category; }) || null;
       }
 
+      function _selToolById(toolId) {
+        if (!toolId) return null;
+        return _allSelTools.find(function(t) { return t.id === toolId && !t.category; }) || null;
+      }
+
+      function _selRelativeTime(ts) {
+        var n = Number(ts || 0);
+        if (!n) return '';
+        var diff = Math.max(0, Date.now() - n);
+        var mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + ' min ago';
+        var hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.floor(hours / 24);
+        if (days < 7) return days + (days === 1 ? ' day ago' : ' days ago');
+        try { return new Date(n).toLocaleDateString(); } catch (e) { return ''; }
+      }
+
+      function _selRecentWorkItems() {
+        var items = [];
+        (Array.isArray(selSnapshots) ? selSnapshots : []).forEach(function(snap) {
+          if (!snap) return;
+          var toolId = snap.tool || snap.toolId;
+          var tool = _selToolById(toolId);
+          items.push({
+            key: 'snap-' + (snap.id || toolId || items.length),
+            kind: 'Saved',
+            toolId: toolId,
+            icon: tool ? tool.icon : '\uD83D\uDCBE',
+            title: snap.label || (tool ? tool.label : 'Saved SEL work'),
+            detail: tool ? tool.label : 'SEL snapshot',
+            ts: snap.ts || snap.timestamp || 0
+          });
+        });
+        Object.keys(selToolUsage || {}).forEach(function(toolId) {
+          var usage = selToolUsage[toolId] || {};
+          var tool = _selToolById(toolId);
+          if (!tool || !usage.lastUsed) return;
+          items.push({
+            key: 'use-' + toolId,
+            kind: 'Opened',
+            toolId: toolId,
+            icon: tool.icon,
+            title: tool.label,
+            detail: (usage.count || 1) + ((usage.count || 1) === 1 ? ' visit' : ' visits'),
+            ts: usage.lastUsed || 0
+          });
+        });
+        items.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+        var seen = {};
+        var out = [];
+        items.forEach(function(item) {
+          var dedupeKey = item.kind + ':' + (item.toolId || item.title);
+          if (seen[dedupeKey] || out.length >= 4) return;
+          seen[dedupeKey] = true;
+          out.push(item);
+        });
+        return out;
+      }
+
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
@@ -1810,6 +1899,7 @@
             window.__alloflowSelEngagement = null;
             window.__alloflowSelStations = null;
             window.__alloflowSelProgress = null;
+            window.__alloflowSelSnapshots = [];
           }
         } catch (e) {}
         setShowForEducators(false);
@@ -1883,6 +1973,7 @@
           { key: 'decision', icon: '\u2696\uFE0F', label: 'Make a decision', query: 'decision' },
           { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' }
         ];
+        var _recentWorkItems = (!activePathway && !activeStation) ? _selRecentWorkItems() : [];
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -2132,6 +2223,61 @@
                 'aria-label': 'Save or export SEL work now',
                 style: { border: '1px solid #7c3aed', background: '#7c3aed', color: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
               }, 'Save now')
+            )
+          ),
+          !activePathway && !activeStation && _recentWorkItems.length > 0 && h('section', {
+            'aria-label': 'Recent SEL work',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Recent SEL work'),
+              h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Saved here. Export to keep it after closing.')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _recentWorkItems.map(function(item) {
+                var canOpen = item.toolId && window.SelHub && window.SelHub.isRegistered(item.toolId);
+                var when = _selRelativeTime(item.ts);
+                return h('button', {
+                  key: item.key,
+                  disabled: !canOpen,
+                  onClick: function() {
+                    if (canOpen) openSelToolById(item.toolId, item.title);
+                  },
+                  'aria-label': item.kind + ' SEL work: ' + item.title + (when ? ', ' + when : '') + '. ' + (canOpen ? 'Open related tool.' : 'Related tool is still loading.'),
+                  title: item.detail || item.title,
+                  style: {
+                    minHeight: 72,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: _t.bgCard,
+                    color: _t.text,
+                    cursor: canOpen ? 'pointer' : 'default',
+                    opacity: canOpen ? 1 : 0.55,
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22, flexShrink: 0 } }, item.icon || '\uD83D\uDCBE'),
+                  h('span', { style: { minWidth: 0, flex: 1 } },
+                    h('span', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2, minWidth: 0 } },
+                      h('span', { style: { fontSize: 10, fontWeight: 900, color: '#7c3aed', textTransform: 'uppercase', flexShrink: 0 } }, item.kind),
+                      when && h('span', { style: { fontSize: 10, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, when)
+                    ),
+                    h('span', { style: { display: 'block', fontSize: 12, lineHeight: 1.25, fontWeight: 800, color: _t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.3, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 } }, item.detail)
+                  )
+                );
+              })
             )
           ),
           // \u2500\u2500 Daily Streak \u2500\u2500
@@ -2663,7 +2809,10 @@
           setToolSnapshots: setSelSnapshots,
           saveSnapshot: function(toolId, label, data) {
             setSelSnapshots(function(prev) {
-              return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
+              var ts = Date.now();
+              var next = (prev || []).concat([{ id: toolId + '-' + ts, tool: toolId, label: label, data: data, ts: ts }]);
+              next.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+              return next.slice(0, 30);
             });
           },
 

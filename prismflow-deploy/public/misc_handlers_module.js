@@ -449,6 +449,15 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-sel-engagement-restored'));
                 } catch (e) { warnLog && warnLog('SEL engagement restore failed:', e); }
             }
+            // SEL Hub saved snapshots (tool-created reflection/checkpoint
+            // artifacts). Restores the landing page "Recent SEL work" cards.
+            if (Array.isArray(rawData.selSnapshots)) {
+                try {
+                    window.__alloflowSelSnapshots = rawData.selSnapshots;
+                    try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(rawData.selSnapshots)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-snapshots-restored'));
+                } catch (e) { warnLog && warnLog('SEL snapshots restore failed:', e); }
+            }
             // BirdLab persistent state (life list, badges). Same pattern as
             // SEL engagement: write to window slot, mirror to localStorage,
             // dispatch event for live re-hydration of an open BirdLab tool.
