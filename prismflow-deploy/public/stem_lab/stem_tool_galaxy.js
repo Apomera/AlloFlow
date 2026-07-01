@@ -611,7 +611,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var renderer;
             try {
-              renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+              renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true, powerPreference: 'high-performance' });
             } catch (e) {
               console.error('[Galaxy] WebGLRenderer creation failed:', e);
               setTimeout(function() {
@@ -620,7 +620,13 @@ if (!window._galaxyHasLoadedOnce) {
               return;
             }
 
-            renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setClearColor(0x020208);
+            renderer.setSize(W, H); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+            if (THREE.ACESFilmicToneMapping) {
+              renderer.toneMapping = THREE.ACESFilmicToneMapping;
+              renderer.toneMappingExposure = 1.05;
+            }
+            renderer.setClearColor(0x020208, 1);
 
 
 
@@ -1554,7 +1560,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── 3D Canvas ──
 
-              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-indigo-200 bg-[#050510]", style: { height: '520px' } },
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border", style: { height: '520px', background: 'radial-gradient(circle at 50% 44%, rgba(79,70,229,0.26), rgba(15,23,42,0.78) 42%, #020208 86%)', borderColor: 'rgba(129,140,248,0.42)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -46px 90px rgba(2,6,23,0.76), 0 22px 48px rgba(15,23,42,0.24)' } },
 
                 d.webglError ?
                   React.createElement("div", {
@@ -1593,14 +1599,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                     else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); orb.theta = Math.PI * 0.1; orb.phi = Math.PI * 0.35; orb.r = 1.2; upCam(); }
 
-                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none' },
+                  }, style: { width: '100%', height: '100%', cursor: 'grab', outline: 'none', background: 'transparent' },
                   onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #a78bfa'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
 
                 }),
 
+                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.62) 100%), linear-gradient(rgba(129,140,248,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.045) 1px, transparent 1px)', backgroundSize: '100% 100%, 34px 34px, 34px 34px', mixBlendMode: 'screen', opacity: 0.72 } }),
+
                 // Star type legend
 
-                React.createElement("div", { className: "absolute top-2 left-2 bg-black/50 backdrop-blur rounded-lg px-2 py-1.5 text-[11px] text-white/80" },
+                React.createElement("div", { className: "absolute top-3 left-3 bg-slate-950/65 backdrop-blur-md rounded-lg px-2.5 py-2 text-[11px] text-white/85 border border-indigo-200/15 shadow-xl" },
 
                   React.createElement("div", { className: "font-bold mb-1" }, "Star Types"),
 
@@ -1608,9 +1616,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
+                React.createElement("div", { className: "absolute top-3 right-3 bg-slate-950/65 backdrop-blur-md rounded-lg px-3 py-2 text-[11px] border border-indigo-200/15 shadow-xl", style: { color: '#dbeafe', minWidth: 150 } },
+                  React.createElement("div", { className: "font-black uppercase tracking-wider", style: { color: '#a5b4fc', fontSize: 10 } }, "Galaxy model"),
+                  React.createElement("div", { className: "flex justify-between gap-4 mt-1" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Type"), React.createElement("span", { className: "font-bold" }, gType.label)),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Stars"), React.createElement("span", { className: "font-bold" }, starCount.toLocaleString())),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Age"), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr"))
+                ),
+
                 // Scale info overlay
 
-                layers.grid && React.createElement("div", { className: "absolute bottom-2 right-2 bg-black/60 backdrop-blur rounded-lg px-2 py-1.5 text-[11px] text-white/80" },
+                layers.grid && React.createElement("div", { className: "absolute bottom-3 right-3 bg-slate-950/70 backdrop-blur-md rounded-lg px-2.5 py-2 text-[11px] text-white/85 border border-blue-200/15 shadow-xl" },
 
                   React.createElement("div", { className: "font-bold mb-1 text-blue-300" }, "\uD83D\uDCCF Scale"),
 
@@ -1636,7 +1651,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600')
 
                   }, lt.icon + " " + lt.label);
 

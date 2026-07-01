@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_tool_galaxy.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_galaxy.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_galaxy.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Continued STEM visual refinement with Galaxy Explorer viewport polish: renderer color/tone handling, deeper 3D frame, glass status/legend overlays, and readable inactive layer toggles. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_molecule.js`, `stem_lab/stem_tool_flightsim.js`, matching `prismflow-deploy/public/stem_lab/` copies, local ignored `prismflow-deploy/build/stem_lab/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Audited STEM Three.js/canvas-heavy tools and applied focused viewport refinements to Molecule Lab and Flight Sim: stronger 3D lighting/labels, polished molecule viewport chrome, and a cleaner glass cockpit control/status layer. |
 | 2026-07-01 | Codex | `phase_k_helpers_source.jsx`, `phase_k_helpers_module.js`, `misc_handlers_source.jsx`, `misc_handlers_module.js`, `allohaven_module.js`, `student_analytics_module.js`, matching `prismflow-deploy/public/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Folded student progress into the existing AlloHaven/student-file architecture: saved/restored a shared privacy-safe progress summary, surfaced it in AlloHaven, and taught Student Analytics/CSV/roster history to consume it instead of creating a redundant SEL-only dashboard. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_dinolab.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_dinolab.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_dinolab.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened DinoLab against malformed/stale saved state that could make Explore, Dig, Classify, Quiz, or Glossary fall into the section fallback; added single-field update fallback and cleaned the Bird Connection React key warning. |
@@ -54,6 +55,10 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check stem_lab\stem_tool_galaxy.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_galaxy.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_galaxy.js` - passed after Galaxy Explorer visual refinements.
+- One-off jsdom/React render of Galaxy Explorer - passed; confirmed the updated 3D viewport, `Galaxy model` status overlay, canvas marker, and star-type legend render.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after Galaxy Explorer visual refinements with no app-crash render failures across 113 STEM tools.
+- Source, public, and ignored local build copies for `stem_tool_galaxy.js` have matching SHA-256 hashes locally.
 - `node --check` passed for `stem_lab\stem_tool_molecule.js`, `stem_lab\stem_tool_flightsim.js`, and their matching `prismflow-deploy\public\stem_lab\` / ignored local `prismflow-deploy\build\stem_lab\` copies after the Three.js/canvas visual refinement pass.
 - One-off jsdom/React renders passed for Molecule Lab viewer fallback and Flight Sim flying viewport after the 3D/canvas visual refinement pass.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed after Molecule Lab and Flight Sim visual refinements with no app-crash render failures across 113 STEM tools.
