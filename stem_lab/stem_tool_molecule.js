@@ -346,9 +346,15 @@ window.StemLab = window.StemLab || {
               var W = canvas.clientWidth || 400;
               var H = canvas.clientHeight || 300;
 
-              var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+              var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
               renderer.setSize(W, H, false);
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+              if (THREE.ACESFilmicToneMapping) {
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.12;
+              }
+              if (renderer.setClearColor) renderer.setClearColor(0x020617, 0);
               threeRendererRef.current = renderer;
 
               var scene = new THREE.Scene();
@@ -383,8 +389,11 @@ window.StemLab = window.StemLab || {
               camera.position.set(0, 0, 15);
               threeCameraRef.current = camera;
 
-              var ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // deeper sphere shading (CPK hues untouched — intensity only)
+              var ambientLight = new THREE.AmbientLight(0xffffff, 0.48); // deeper sphere shading (CPK hues untouched — intensity only)
               scene.add(ambientLight);
+
+              var hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x0f172a, 0.45);
+              scene.add(hemiLight);
 
               var dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
               dirLight.position.set(5, 10, 7);
@@ -393,6 +402,10 @@ window.StemLab = window.StemLab || {
               var fillLight = new THREE.DirectionalLight(0x90b0ff, 0.45);
               fillLight.position.set(-5, -5, -2);
               scene.add(fillLight);
+
+              var rimLight = new THREE.DirectionalLight(0x67e8f9, 0.55);
+              rimLight.position.set(-4, 3, 9);
+              scene.add(rimLight);
 
               var controls = new THREE.OrbitControls(camera, renderer.domElement);
               controls.enableDamping = true;
@@ -403,8 +416,10 @@ window.StemLab = window.StemLab || {
 
               threeResourcesRef.current = {
                 ambientLight: ambientLight,
+                hemiLight: hemiLight,
                 dirLight: dirLight,
                 fillLight: fillLight,
+                rimLight: rimLight,
                 atomGroup: new THREE.Group()
               };
               scene.add(threeResourcesRef.current.atomGroup);
@@ -535,22 +550,27 @@ window.StemLab = window.StemLab || {
 
             var createTextSprite = function(text) {
               var canvas = document.createElement('canvas');
-              canvas.width = 64;
-              canvas.height = 64;
+              canvas.width = 96;
+              canvas.height = 96;
               var ctx = canvas.getContext('2d');
-              ctx.clearRect(0, 0, 64, 64);
+              ctx.clearRect(0, 0, 96, 96);
               ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 36px sans-serif';
+              ctx.font = 'bold 40px system-ui, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.shadowColor = 'rgba(0,0,0,0.8)';
-              ctx.shadowBlur = 4;
-              ctx.fillText(text, 32, 32);
+              ctx.lineWidth = 7;
+              ctx.lineJoin = 'round';
+              ctx.strokeStyle = 'rgba(2,6,23,0.86)';
+              ctx.shadowColor = 'rgba(15,23,42,0.55)';
+              ctx.shadowBlur = 8;
+              ctx.strokeText(text, 48, 50);
+              ctx.fillText(text, 48, 50);
               
               var texture = new THREE.CanvasTexture(canvas);
-              var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
+              var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false, depthTest: false });
               var sprite = new THREE.Sprite(spriteMat);
-              sprite.scale.set(0.9, 0.9, 1);
+              sprite.renderOrder = 10;
+              sprite.scale.set(0.82, 0.82, 1);
               return sprite;
             };
 
@@ -561,8 +581,11 @@ window.StemLab = window.StemLab || {
               var color = getColor(a);
 
               var sphereGeo = new THREE.SphereGeometry(r, 32, 32);
+              var atomColor = new THREE.Color(color);
               var atomMat = new THREE.MeshStandardMaterial({
-                color: color,
+                color: atomColor,
+                emissive: atomColor,
+                emissiveIntensity: 0.06,
                 roughness: 0.15,
                 metalness: 0.1
               });
@@ -1382,19 +1405,30 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
 
               threeLoaded
-                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border border-stone-200", style: { height: "300px" } },
+                ? React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
-                      className: "w-full h-full bg-gradient-to-b from-slate-900 to-slate-950",
-                      style: { display: 'block', outline: 'none' }
+                      className: "w-full h-full",
+                      style: { display: 'block', outline: 'none', background: 'transparent' }
                     }),
+                    React.createElement("div", {
+                      "aria-hidden": "true",
+                      style: { position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.5) 100%), linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)", backgroundSize: "100% 100%, 28px 28px, 28px 28px", mixBlendMode: "screen", opacity: 0.68 }
+                    }),
+                    React.createElement("div", {
+                      style: { position: "absolute", top: 12, left: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
+                    },
+                      React.createElement("span", { style: { color: "#67e8f9" } }, "3D molecular model"),
+                      React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, d.formula || "No formula")
+                    ),
                     React.createElement("button", {
                       onClick: function() {
                         if (threeControlsRef.current) {
                           threeControlsRef.current.reset();
                         }
                       },
-                      className: "absolute bottom-3 right-3 px-2 py-1 bg-white/80 hover:bg-white text-stone-700 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      className: "absolute bottom-3 right-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      style: { background: "rgba(248,250,252,0.9)", color: "#0f172a", borderColor: "rgba(203,213,225,0.8)" },
                       'aria-label': __alloT('stem.molecule.reset_view', 'Reset View')
                     }, __alloT('stem.molecule.reset_camera', '🔄 Reset Camera'))
                   )

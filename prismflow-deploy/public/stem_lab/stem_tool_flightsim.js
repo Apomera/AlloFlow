@@ -20162,7 +20162,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── FLYING VIEW ──
       if (view === 'flying') {
-        return h('div', { id: 'skyschool-flight-container', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '12px', overflow: 'hidden', background: '#000', display: 'flex', flexDirection: 'column' } },
+        var flightGlassButton = function(active, accent) {
+          var glow = accent || '#38bdf8';
+          return { padding: '6px 10px', borderRadius: '8px', background: active ? 'rgba(15,23,42,0.78)' : 'rgba(2,6,23,0.62)', color: '#fff', border: '1px solid ' + (active ? glow : 'rgba(255,255,255,0.18)'), boxShadow: active ? '0 0 0 1px ' + glow + '33, 0 8px 22px rgba(2,6,23,0.34)' : '0 8px 18px rgba(2,6,23,0.24)', backdropFilter: 'blur(12px)', fontSize: '11px', fontWeight: 800, cursor: 'pointer' };
+        };
+        var flightBadgeStyle = function(color) {
+          return { padding: '4px 10px', borderRadius: '8px', background: 'rgba(2,6,23,0.58)', color: color, border: '1px solid rgba(148,163,184,0.16)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 800, textAlign: 'center' };
+        };
+        var activeWeather = (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]);
+        return h('div', { id: 'skyschool-flight-container', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 35%, #0f172a 0%, #020617 70%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(148,163,184,0.22)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04), 0 22px 55px rgba(2,6,23,0.34)' } },
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, display: 'block' }
@@ -20176,8 +20184,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
             onFocus: function() { skyAnnounce('SkySchool flight display focused. Press I for flight status. Space to pause.'); }
           }),
+          h('div', { style: { position: 'absolute', top: '40px', right: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', padding: '7px', borderRadius: '12px', background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 12px 30px rgba(2,6,23,0.32)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
+            h('div', { style: { fontSize: '10px', fontWeight: 900, color: '#e0f2fe', letterSpacing: '0.04em', textTransform: 'uppercase' } }, threeLoaded ? '3D terrain active' : 'Canvas cockpit'),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: d.thirdPerson ? '#c4b5fd' : '#67e8f9' } }, d.thirdPerson ? 'Chase camera' : 'Cockpit view'),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbbf24' } }, activeWeather.label)
+          ),
           // Overlay controls
-          h('div', { style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
+          h('div', { style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, padding: '7px', borderRadius: '12px', background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 12px 30px rgba(2,6,23,0.32)', backdropFilter: 'blur(14px)' } },
             h('button', { onClick: function() {
               flyingRef.current = false; stopEngineSound(); updateStallHorn(false);
               // Generate flight debrief
@@ -20194,7 +20207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               });
               updMulti({ view: 'debrief' });
             },
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: flightGlassButton(false, '#f87171')
             }, __alloT('stem.flightsim.exit', '✕ Exit')),
             h('button', { onClick: function() {
               var container = document.getElementById('skyschool-flight-container');
@@ -20204,14 +20217,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             },
               'aria-label': __alloT('stem.flightsim.toggle_fullscreen_flight_view', 'Toggle fullscreen flight view'),
               'aria-pressed': document.fullscreenElement ? 'true' : 'false',
-              style: { padding: '6px 10px', borderRadius: '6px', background: document.fullscreenElement ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: flightGlassButton(!!document.fullscreenElement, '#22d3ee')
             }, __alloT('stem.flightsim.fullscreen', '\u26F6 Fullscreen')),
             h('button', { onClick: function() { upd('thirdPerson', !d.thirdPerson); },
               'aria-label': d.thirdPerson ? 'Switch to cockpit view' : 'Switch to third-person view',
-              style: { padding: '6px 10px', borderRadius: '6px', background: d.thirdPerson ? 'rgba(99,102,241,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: flightGlassButton(!!d.thirdPerson, '#818cf8')
             }, d.thirdPerson ? '\uD83C\uDFA5 Cockpit View' : '\uD83C\uDFA5 Chase Cam'),
             h('button', { onClick: function() { upd('showForces', !d.showForces); },
-              style: { padding: '6px 10px', borderRadius: '6px', background: d.showForces ? 'rgba(34,211,238,0.3)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.showForces ? '#22d3ee' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              'aria-label': d.showForces ? 'Hide force vectors' : 'Show force vectors',
+              style: flightGlassButton(!!d.showForces, '#22d3ee')
             }, d.showForces ? '⚡ Forces ON' : '⚡ Forces'),
             h('button', { onClick: function() {
               var types = WEATHER_TYPES;
@@ -20222,14 +20236,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               addToast && addToast(next.label + ' — Wind ' + next.wind + ' kts from ' + String(weatherRef.current.windDir).padStart(3, '0') + '°');
               upd('weatherLesson', next.lesson);
             },
-              style: { padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: flightGlassButton(false, '#38bdf8')
             }, '🌤️ ' + (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]).label),
             // Discovery counter
-            h('div', { style: { padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', color: '#fbbf24', fontSize: '10px', fontWeight: 700, textAlign: 'center' }
+            h('div', { style: flightBadgeStyle('#fbbf24')
             }, '📍 ' + Object.keys(geoDiscoveredRef.current).length + ' discovered'),
-            h('div', { style: { padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', color: '#60a5fa', fontSize: '10px', fontWeight: 700, textAlign: 'center' }
+            h('div', { style: flightBadgeStyle('#60a5fa')
             }, currentAC.icon + ' ' + currentAC.name.split(' ')[0]),
-            h('div', { style: { padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)', color: '#4ade80', fontSize: '10px', fontWeight: 700, textAlign: 'center' }
+            h('div', { style: flightBadgeStyle('#4ade80')
             }, '🏆 ' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length)
           ),
           // ─── TAKEOFF TUTORIAL OVERLAY ───

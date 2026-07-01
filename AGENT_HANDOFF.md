@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_tool_molecule.js`, `stem_lab/stem_tool_flightsim.js`, matching `prismflow-deploy/public/stem_lab/` copies, local ignored `prismflow-deploy/build/stem_lab/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Audited STEM Three.js/canvas-heavy tools and applied focused viewport refinements to Molecule Lab and Flight Sim: stronger 3D lighting/labels, polished molecule viewport chrome, and a cleaner glass cockpit control/status layer. |
 | 2026-07-01 | Codex | `phase_k_helpers_source.jsx`, `phase_k_helpers_module.js`, `misc_handlers_source.jsx`, `misc_handlers_module.js`, `allohaven_module.js`, `student_analytics_module.js`, matching `prismflow-deploy/public/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Folded student progress into the existing AlloHaven/student-file architecture: saved/restored a shared privacy-safe progress summary, surfaced it in AlloHaven, and taught Student Analytics/CSV/roster history to consume it instead of creating a redundant SEL-only dashboard. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_dinolab.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_dinolab.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_dinolab.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened DinoLab against malformed/stale saved state that could make Explore, Dig, Classify, Quiz, or Glossary fall into the section fallback; added single-field update fallback and cleaned the Bird Connection React key warning. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed Prismflow demo visual QA for SEL Hub using the latest local SEL source routed into the demo shell; teacher launch now keeps catalog-known plan tools selected and marks pending plugins visibly instead of dropping them or showing vague loading counts. |
@@ -53,6 +54,11 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check` passed for `stem_lab\stem_tool_molecule.js`, `stem_lab\stem_tool_flightsim.js`, and their matching `prismflow-deploy\public\stem_lab\` / ignored local `prismflow-deploy\build\stem_lab\` copies after the Three.js/canvas visual refinement pass.
+- One-off jsdom/React renders passed for Molecule Lab viewer fallback and Flight Sim flying viewport after the 3D/canvas visual refinement pass.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after Molecule Lab and Flight Sim visual refinements with no app-crash render failures across 113 STEM tools.
+- Source, public, and ignored local build copies for `stem_tool_molecule.js` and `stem_tool_flightsim.js` have matching SHA-256 hashes locally.
+- Browser screenshot/canvas-pixel verification was not run in this session because the in-app browser control tool was not exposed and local Playwright/Three packages are not installed; validation used syntax, targeted React renders, full STEM smoke, and hash sync checks.
 - `node _build_phase_k_helpers_module.js` and `node _build_misc_handlers_module.js` - passed after adding the shared student progress summary save/restore flow; generated root modules and matching Prismflow public copies.
 - `node --check allohaven_module.js`, `node --check student_analytics_module.js`, `node --check phase_k_helpers_module.js`, `node --check misc_handlers_module.js`, and matching `prismflow-deploy\public\` module checks - passed after folding student progress into AlloHaven and Student Analytics.
 - SHA-256 checks confirm root/public copies match for `allohaven_module.js`, `student_analytics_module.js`, `phase_k_helpers_module.js`, and `misc_handlers_module.js`. Not deployed.
