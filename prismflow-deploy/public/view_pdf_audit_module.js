@@ -7899,7 +7899,7 @@ Return ONLY JSON:
       const full = { before: { score: pdfAuditResult?.score ?? pdfFixResult.beforeScore, audit: pdfAuditResult }, after: { score: _jsonBlended, aiAudit: pdfFixResult.verificationAudit, axeCoreAudit: pdfFixResult.axeAudit || null, secondEngineAudit: pdfFixResult.secondEngineAudit || null }, beforeScore: pdfAuditResult?.score ?? pdfFixResult.beforeScore, afterScore: _jsonBlended, afterScoreVerified: !pdfFixResult._aiVerificationIncomplete, afterScoreBasis: pdfFixResult._aiVerificationIncomplete ? "deterministic-only (AI semantic audit incomplete \u2014 not a verified content score)" : "min(content,automated) \u2014 weakest-layer governing score, NOT an average", integrityCoverage: pdfFixResult.integrityCoverage ?? null, _aiVerificationIncomplete: !!pdfFixResult._aiVerificationIncomplete, _slicedAudit: !!(pdfAuditResult && pdfAuditResult._slicedAudit), _beforeWasSliced: !!pdfFixResult._beforeWasSliced, fileName: pendingPdfFile?.name, date: (/* @__PURE__ */ new Date()).toISOString(), tool: "AlloFlow", standard: "WCAG 2.1 AA", engines: (() => {
         const _p = pdfAuditResult && (pdfAuditResult.auditorCount || pdfAuditResult.scores && pdfAuditResult.scores.length);
         return ["AI (Gemini" + (_p ? ", " + _p + "-pass self-consistency" : "") + ")"].concat(pdfFixResult.axeAudit && typeof pdfFixResult.axeAudit.score === "number" ? ["axe-core (Deque WCAG 2.1 AA)"] : []).concat(pdfFixResult.secondEngineAudit ? ["IBM Equal Access (WCAG 2.1 AA)"] : []);
-      })() };
+      })(), issueResolution: pdfFixResult.issueResolution || null, fidelityNotes: pdfFixResult.fidelityNotes || [], fidelityLimited: !!pdfFixResult.fidelityLimited, expertReview: { needed: !!pdfFixResult.needsExpertReview, reason: pdfFixResult.expertReviewReason || null }, ocrAccuracy: pdfFixResult.ocrAccuracy || null, groundTruth: { charCount: pdfFixResult.groundTruthCharCount || null, method: pdfFixResult.groundTruthMethod || null }, remainingIssues: pdfFixResult.remainingIssues ?? null };
       const blob = new Blob([JSON.stringify(full, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -7985,6 +7985,22 @@ Return ONLY JSON:
             axeAudit: pdfFixResult.axeAudit || null,
             autoFixPasses: pdfFixResult.autoFixPasses || 0,
             integrityCoverage: pdfFixResult.integrityCoverage ?? null,
+            fidelity: {
+              coverage: pdfFixResult.integrityCoverage ?? null,
+              limited: !!pdfFixResult.fidelityLimited,
+              notes: pdfFixResult.fidelityNotes || [],
+              ocrAccuracy: pdfFixResult.ocrAccuracy || null,
+              groundTruth: {
+                charCount: pdfFixResult.groundTruthCharCount || null,
+                method: pdfFixResult.groundTruthMethod || null
+              }
+            },
+            issueResolution: pdfFixResult.issueResolution || null,
+            expertReview: {
+              needed: !!pdfFixResult.needsExpertReview,
+              reason: pdfFixResult.expertReviewReason || null
+            },
+            remainingIssues: pdfFixResult.remainingIssues ?? null,
             userEdits: {
               rejectedHunkCount: pdfFixResult._rejectedHunkCount || 0,
               userEditedAt: pdfFixResult._userEditedAt || null,
