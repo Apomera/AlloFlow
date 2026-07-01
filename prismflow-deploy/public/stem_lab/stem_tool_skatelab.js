@@ -50,6 +50,24 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Responsive layout helpers for the dense play surface.
+  (function() {
+    if (document.getElementById('allo-skatelab-responsive-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-skatelab-responsive-css';
+    st.textContent = [
+      '.sk-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:12px}',
+      '.sk-run-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.sk-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}',
+      '.sk-gap-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}',
+      '.sk-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}',
+      '.sk-inquiry-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:6px}',
+      '.sk-inquiry-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px 12px}',
+      '@media(max-width:760px){.sk-run-focus-grid,.sk-run-metric-grid{grid-template-columns:1fr!important}.sk-canvas-frame{padding:6px!important}.sk-toolbar-row{justify-content:flex-start!important}.sk-compact-label{white-space:normal!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // ── Aria-live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-skatelab')) return;
@@ -2875,6 +2893,211 @@ window.StemLab = window.StemLab || {
         };
       }, [d.mode, d.speedMph, d.angleDeg, d.gapFt, d.pumps, d.trickId, d.vehicle, d.gravity, d.surfaceId, d.windId, d.running]);
 
+      function _predictionGate() {
+        var predTrim = (d.predictionInput || '').trim();
+        var predParsed = parseFloat(predTrim);
+        var predValid = isFinite(predParsed) && predParsed >= 0;
+        return { valid: predValid, blocked: !!(d.predictMode && !predValid) };
+      }
+
+      function _startRunFromUI() {
+        var gate = _predictionGate();
+        if (gate.blocked) {
+          skAnnounce('Type a numeric prediction first.');
+          if (addToast) addToast('Predict mode is on, type a number first.', 'info');
+          var input = document.getElementById('sk-predict-input');
+          if (input) input.focus();
+          return;
+        }
+        (d.mode === 'halfpipe' ? runHalfpipe : runGapJump)();
+      }
+
+      function _renderLaunchButton(compact) {
+        var gate = _predictionGate();
+        var disabled = d.running || gate.blocked;
+        return h('button', {
+          onClick: _startRunFromUI,
+          disabled: disabled,
+          'aria-label': gate.blocked
+            ? 'Type a prediction first'
+            : (d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap'),
+          'aria-busy': d.running,
+          'data-sk-focusable': 'true',
+          'data-skatelab-launch': compact ? 'focus' : 'primary',
+          style: {
+            width: compact ? 'auto' : '100%',
+            padding: compact ? '9px 14px' : '12px 20px',
+            marginBottom: compact ? 0 : 12,
+            background: disabled ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
+            color: disabled ? '#0f172a' : '#fef3c7',
+            border: '2px solid ' + (disabled ? '#475569' : '#78350f'),
+            borderRadius: compact ? 10 : 12,
+            fontSize: compact ? 13 : 16,
+            fontWeight: 900,
+            cursor: d.running ? 'wait' : (gate.blocked ? 'not-allowed' : 'pointer'),
+            boxShadow: disabled ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
+            letterSpacing: '0.04em',
+            opacity: disabled ? 0.85 : 1,
+            minHeight: compact ? 38 : 46
+          }
+        }, d.running
+          ? __alloT('stem.skatelab.sending_it', 'Sending it...')
+          : gate.blocked
+            ? __alloT('stem.skatelab.type_a_prediction_first', 'Type a prediction first')
+            : (d.mode === 'halfpipe' ? __alloT('stem.skatelab.drop_in', 'Drop In!') : __alloT('stem.skatelab.send_it', 'Send It!')));
+      }
+
+      function _runPlan() {
+        if (d.mode === 'halfpipe') {
+          var hpSim = simHalfpipe({
+            pumps: d.pumps,
+            trickId: d.trickId,
+            trickInline: findAnyTrick(d.trickId),
+            vehicle: d.vehicle,
+            gravity: d.gravity,
+            surfaceId: d.surfaceId
+          });
+          var hpReserve = hpSim.airTime - hpSim.effMinAir;
+          var hpSpinPct = hpSim.trick.rotation === 0 ? 100 : Math.min(100, (hpSim.rotationCompleted / Math.max(1, hpSim.trick.rotation)) * 100);
+          var hpReadyPct = Math.max(0, Math.min(100, Math.min(hpSim.airTime / Math.max(0.01, hpSim.effMinAir), hpSpinPct / 100) * 100));
+          var hpReady = hpSim.landed;
+          var hpNext = hpReady
+            ? __alloT('stem.skatelab.ready_try_chain', 'Ready. Land it clean, then raise the difficulty or start a session.')
+            : (hpReserve < 0
+              ? ((d.pumps || 0) < 6
+                ? __alloT('stem.skatelab.need_more_air_add_pumps', 'Need more air. Add pumps to buy hang time before the lip.')
+                : __alloT('stem.skatelab.need_more_air_choose_smaller_trick', 'Air budget is maxed. Try a smaller trick or a smoother surface.'))
+              : __alloT('stem.skatelab.need_more_rotation_budget', 'The airtime is close, but the rotation budget is tight. Try skateboard mode or a smaller spin.'));
+          return {
+            ready: hpReady,
+            pct: hpReadyPct,
+            title: hpReady ? __alloT('stem.skatelab.ready_to_land', 'Ready to land') : __alloT('stem.skatelab.needs_tuning', 'Needs tuning'),
+            subtitle: hpSim.trick.label + ' on ' + hpSim.vehicle.label + ' - ' + hpSim.surface.label + ' surface',
+            next: hpNext,
+            accent: hpReady ? '#22c55e' : '#f59e0b',
+            status: hpReserve >= 0 ? '+' + hpReserve.toFixed(2) + 's air reserve' : Math.abs(hpReserve).toFixed(2) + 's short',
+            metrics: [
+              { label: __alloT('stem.skatelab.air_time_short', 'Air time'), value: hpSim.airTime.toFixed(2) + 's' },
+              { label: __alloT('stem.skatelab.trick_needs', 'Trick needs'), value: hpSim.effMinAir.toFixed(2) + 's' },
+              { label: __alloT('stem.skatelab.spin_budget', 'Spin budget'), value: Math.round(hpSpinPct) + '%' }
+            ]
+          };
+        }
+        var gapSim = simGapJump({
+          speedMph: d.speedMph,
+          angleDeg: d.angleDeg,
+          gapFt: d.gapFt,
+          vehicle: d.vehicle,
+          gravity: d.gravity,
+          windId: d.windId
+        });
+        var clearanceFt = gapSim.clearance * M2FT;
+        var gapReady = gapSim.landed;
+        var shortBy = Math.max(0, d.gapFt - gapSim.rangeFt);
+        var overshoot = Math.max(0, clearanceFt - (1.2 * M2FT));
+        var gapPct = gapReady ? 100 : clearanceFt < 0
+          ? Math.max(0, Math.min(98, (gapSim.rangeFt / Math.max(1, d.gapFt)) * 100))
+          : Math.max(0, 100 - Math.min(100, overshoot * 18));
+        var gapNext = gapReady
+          ? __alloT('stem.skatelab.landing_window_ready', 'Landing window is lined up. Chase a cleaner clearance or a longer gap.')
+          : (clearanceFt < 0
+            ? __alloT('stem.skatelab.short_more_speed', 'Short. Speed has the biggest effect because range scales with speed squared.')
+            : __alloT('stem.skatelab.overshooting_trim_speed', 'Overshooting. Trim speed or flatten the angle to pull the landing back.'));
+        return {
+          ready: gapReady,
+          pct: gapPct,
+          title: gapReady ? __alloT('stem.skatelab.landing_window', 'Landing window') : __alloT('stem.skatelab.recalibrate_jump', 'Recalibrate jump'),
+          subtitle: d.speedMph + ' mph at ' + d.angleDeg + ' deg across ' + d.gapFt + ' ft',
+          next: gapNext,
+          accent: gapReady ? '#22c55e' : '#f59e0b',
+          status: gapReady ? '+' + Math.max(0, clearanceFt).toFixed(1) + ' ft clearance' : (clearanceFt < 0 ? shortBy.toFixed(1) + ' ft short' : overshoot.toFixed(1) + ' ft long'),
+          metrics: [
+            { label: __alloT('stem.skatelab.range_short', 'Range'), value: gapSim.rangeFt.toFixed(1) + ' ft' },
+            { label: __alloT('stem.skatelab.gap_short', 'Gap'), value: d.gapFt + ' ft' },
+            { label: __alloT('stem.skatelab.peak_short', 'Peak'), value: gapSim.peakHFt.toFixed(1) + ' ft' }
+          ]
+        };
+      }
+
+      function _renderRunFocus() {
+        var plan = _runPlan();
+        var barPct = Math.max(4, Math.min(100, plan.pct));
+        return h('div', {
+          className: 'sk-run-focus-grid',
+          'data-skatelab-run-focus': 'true',
+          style: { marginBottom: 12 }
+        },
+          h('div', {
+            style: {
+              background: 'linear-gradient(135deg, rgba(15,23,42,0.94), rgba(30,41,59,0.86))',
+              border: '1px solid ' + plan.accent,
+              borderRadius: 12,
+              padding: 12,
+              boxShadow: '0 10px 26px rgba(0,0,0,0.28)'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+              h('div', { style: { flex: 1, minWidth: 210 } },
+                h('div', { style: { fontSize: 10, fontWeight: 900, color: plan.accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 } }, __alloT('stem.skatelab.run_focus', 'Run focus')),
+                h('div', { style: { fontSize: 16, fontWeight: 900, color: '#fef3c7', lineHeight: 1.2 } }, plan.title),
+                h('div', { className: 'sk-compact-label', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, plan.subtitle)
+              ),
+              h('div', {
+                style: {
+                  padding: '5px 10px',
+                  borderRadius: 999,
+                  background: plan.ready ? 'rgba(34,197,94,0.18)' : 'rgba(245,158,11,0.18)',
+                  border: '1px solid ' + plan.accent,
+                  color: plan.ready ? '#86efac' : '#fbbf24',
+                  fontSize: 11,
+                  fontWeight: 900,
+                  whiteSpace: 'nowrap'
+                }
+              }, plan.status)
+            ),
+            h('div', {
+              role: 'progressbar',
+              'aria-valuemin': 0,
+              'aria-valuemax': 100,
+              'aria-valuenow': Math.round(plan.pct),
+              'aria-label': __alloT('stem.skatelab.run_readiness', 'Run readiness'),
+              style: { height: 9, background: 'rgba(15,23,42,0.8)', borderRadius: 999, overflow: 'hidden', border: '1px solid rgba(254,243,199,0.18)', marginBottom: 8 }
+            },
+              h('div', { style: { height: '100%', width: barPct + '%', background: 'linear-gradient(90deg,' + plan.accent + ',#fbbf24)', borderRadius: 999, transition: 'width 180ms ease' } })
+            ),
+            h('p', { style: { margin: '0 0 10px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.45 } }, plan.next),
+            _renderLaunchButton(true)
+          ),
+          h('div', {
+            className: 'sk-run-metric-grid',
+            style: {
+              background: 'rgba(15,23,42,0.72)',
+              border: '1px solid rgba(254,243,199,0.18)',
+              borderRadius: 12,
+              padding: 10,
+              alignContent: 'stretch'
+            }
+          },
+            plan.metrics.map(function(m) {
+              return h('div', {
+                key: m.label,
+                style: {
+                  background: 'rgba(254,243,199,0.08)',
+                  border: '1px solid rgba(254,243,199,0.16)',
+                  borderRadius: 8,
+                  padding: '9px 8px',
+                  textAlign: 'center'
+                }
+              },
+                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, m.label),
+                h('div', { style: { fontSize: 16, color: '#fef3c7', fontWeight: 900, fontFamily: 'monospace' } }, m.value)
+              );
+            })
+          )
+        );
+      }
+
+
       // ── Render UI ───────────────────────────────────────────────
       var modeBtn = function(id, label, emoji) {
         var sel = d.mode === id;
@@ -3307,8 +3530,30 @@ window.StemLab = window.StemLab || {
             }, '×' + tier.mult + ' XP')
           );
         })() : null),
+        _renderRunFocus(),
         // Canvas
-        h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, border: '2px solid #78350f', padding: 8, marginBottom: 12, boxShadow: '0 6px 20px rgba(0,0,0,0.35)' } },
+        h('div', {
+          className: 'sk-canvas-frame',
+          'data-skatelab-sim-surface': 'true',
+          style: {
+            background: 'linear-gradient(180deg, rgba(30,41,59,0.96), var(--allo-stem-canvas, #0f172a))',
+            borderRadius: 12,
+            border: '2px solid #78350f',
+            padding: 8,
+            marginBottom: 12,
+            boxShadow: '0 10px 28px rgba(0,0,0,0.38), inset 0 1px 0 rgba(254,243,199,0.08)'
+          }
+        },
+          h('div', {
+            className: 'sk-toolbar-row',
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 8 }
+          },
+            h('div', { style: { fontSize: 10, fontWeight: 900, color: '#fbbf24', letterSpacing: '0.08em', textTransform: 'uppercase' } }, __alloT('stem.skatelab.live_motion', 'Live motion')),
+            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              h('span', { style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)', color: '#fbbf24', fontSize: 10, fontWeight: 800 } }, d.mode === 'halfpipe' ? __alloT('stem.skatelab.energy_loop', 'Energy loop') : __alloT('stem.skatelab.projectile_arc', 'Projectile arc')),
+              h('span', { style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.32)', color: '#7dd3fc', fontSize: 10, fontWeight: 800 } }, getVehicle(d.vehicle).label)
+            )
+          ),
           h('canvas', {
             ref: canvasRef,
             width: 720, height: 320,
@@ -3328,7 +3573,7 @@ window.StemLab = window.StemLab || {
                 d.gapFt + ' foot gap. Wind: ' + w.label + '.' +
                 (d.gravity && d.gravity !== 9.81 ? ' Gravity ' + d.gravity.toFixed(2) + ' meters per second squared.' : '');
             })(),
-            style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }
+            style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(254,243,199,0.12)' }
           })
         ),
         // ── First-time tour overlay ──────────────────────────────
@@ -3993,7 +4238,7 @@ window.StemLab = window.StemLab || {
           );
         })(),
         // Mode-specific controls
-        d.mode === 'halfpipe' && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
+        d.mode === 'halfpipe' && h('div', { className: 'sk-control-grid', style: { marginBottom: 12 } },
           h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 10, padding: 12 } },
             h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }, htmlFor: 'sk-pumps' }, '⚡ Pumps: ' + d.pumps),
             h('input', {
@@ -4135,7 +4380,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', {
                 style: {
-                  display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 8,
                   marginTop: 10
                 }
               },
@@ -4397,7 +4642,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        d.mode === 'gap' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+        d.mode === 'gap' && h('div', { className: 'sk-gap-control-grid', style: { marginBottom: 12 } },
           h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 10, padding: 12 } },
             h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#fbbf24', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }, htmlFor: 'sk-speed' }, '🚀 Speed: ' + d.speedMph + ' mph'),
             h('input', {
@@ -4982,7 +5227,7 @@ window.StemLab = window.StemLab || {
           })()
         ),
         // Stats footer
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 } },
+        h('div', { className: 'sk-stat-grid', style: { marginBottom: 8 } },
           [
             { label: __alloT('stem.skatelab.lands_2', 'Lands'),   val: d.landings || 0, color: '#86efac' },
             { label: __alloT('stem.skatelab.bails', 'Bails'),   val: d.bails || 0,    color: '#fca5a5' },
@@ -5001,7 +5246,7 @@ window.StemLab = window.StemLab || {
         // teachers asked for in earlier rounds.
         ((d.bestHalfpipeScore || d.bestGapScore || d.bestAirFt || (d.streak && d.streak.longest)) ? h('div', {
           style: {
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8,
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: 8,
             marginBottom: 10,
             background: 'linear-gradient(135deg, rgba(251,191,36,0.10), rgba(180,83,9,0.10))',
             border: '1px solid rgba(251,191,36,0.40)',
@@ -5077,7 +5322,27 @@ window.StemLab = window.StemLab || {
           )
         ),
         // ═══ AIR/SPIN INQUIRY widget (H7b'') ═══
-        (function() {
+        h('details', {
+          'data-skatelab-inquiry-panel': 'true',
+          style: {
+            background: 'rgba(14,165,233,0.06)',
+            border: '1px solid rgba(14,165,233,0.30)',
+            borderRadius: 10,
+            padding: 10,
+            marginBottom: 12
+          }
+        },
+          h('summary', {
+            style: {
+              cursor: 'pointer',
+              color: '#7dd3fc',
+              fontWeight: 900,
+              fontSize: 12,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase'
+            }
+          }, __alloT('stem.skatelab.air_spin_inquiry_summary', 'Air / Spin Inquiry')),
+          (function() {
           var iq = d.spinIQ || { speed: 6, angle: 45, mass: 70, rotSpeed: 360, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
           function setIQ(patch) { upd({ spinIQ: Object.assign({}, iq, patch) }); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
@@ -5115,7 +5380,7 @@ window.StemLab = window.StemLab || {
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.skatelab.set_takeoff_speed_angle_mass_and_your_', 'Set takeoff speed, angle, mass, and your rotation rate. Predict the biggest rotation you can land cleanly. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · feasible max ≈ ' + maxTrick),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 10 } },
+            h('div', { className: 'sk-inquiry-grid', style: { marginBottom: 10 } },
               [
                 { label: __alloT('stem.skatelab.hang_time_3', 'Hang time'), val: hangTime.toFixed(2) + ' s' },
                 { label: __alloT('stem.skatelab.apex_height', 'Apex height'), val: apex.toFixed(2) + ' m' },
@@ -5135,7 +5400,7 @@ window.StemLab = window.StemLab || {
               h('text', { x: 24, y: 28, fill: '#94a3b8', fontSize: 9 }, 'apex ' + apex.toFixed(2) + 'm'),
               h('text', { x: 160, y: 152, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'trajectory · range ' + range.toFixed(2) + 'm · hang ' + hangTime.toFixed(2) + 's')
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            h('div', { className: 'sk-inquiry-controls', style: { marginBottom: 10 } },
               h('label', null,
                 h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.skatelab.takeoff_speed_2', 'Takeoff speed')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.speed.toFixed(1) + ' m/s')),
                 h('input', { type: 'range', min: 1, max: 18, step: 0.5, value: iq.speed, onChange: function(e) { setKey('speed', parseFloat(e.target.value)); }, style: { width: '100%' } })
@@ -5182,7 +5447,8 @@ window.StemLab = window.StemLab || {
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.skatelab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.skatelab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Treats takeoff as point projectile; real airs add drag, board-spin coupling, and rotation-rate-changes mid-air (tucking ↑ rate).'))
           );
-        })()
+          })()
+        )
       );
     }
   });
