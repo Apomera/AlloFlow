@@ -1330,6 +1330,43 @@ function ExportPreviewView(props) {
                     sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {
                       console.info('[ExportPreview] iframe loaded');
+                      // Paste/drop sanitizer (builder-review A4, 2026-07-01). The editor is an
+                      // allow-scripts designMode iframe: a pasted rich-text payload carrying
+                      // <script>, on* handlers, or javascript: URLs executed HERE and shipped in
+                      // the exported/distributed HTML. Rich-HTML paste/drop is now routed through
+                      // a DOMParser scrub (scripts/embeds/forms out; on* attributes off;
+                      // javascript:/vbscript:/data: URLs off — data:image/png|jpeg|gif|webp kept
+                      // for pasted pictures). Plain-text paste is untouched. onLoad refires after
+                      // every doc.write, so each fresh document gets its own listeners.
+                      try {
+                        const doc = exportPreviewRef.current?.contentDocument;
+                        if (!doc || doc.__alloPasteGuard) return;
+                        doc.__alloPasteGuard = true;
+                        const _sanitizeFragment = (html) => {
+                          try {
+                            const p = new DOMParser().parseFromString('<body>' + String(html || '') + '</body>', 'text/html');
+                            p.querySelectorAll('script,style,iframe,object,embed,link,meta,base,form').forEach(el => el.remove());
+                            p.querySelectorAll('*').forEach(el => {
+                              for (const a of Array.from(el.attributes)) {
+                                const n = a.name.toLowerCase(), v = String(a.value || '');
+                                if (n.startsWith('on')) el.removeAttribute(a.name);
+                                else if ((n === 'href' || n === 'src' || n === 'xlink:href' || n === 'formaction' || n === 'action')
+                                  && /^\s*(javascript|vbscript|data)\s*:/i.test(v)
+                                  && !/^\s*data:image\/(png|jpe?g|gif|webp)/i.test(v)) el.removeAttribute(a.name);
+                              }
+                            });
+                            return p.body.innerHTML;
+                          } catch (_) { return String(html || '').replace(/</g, '&lt;'); }
+                        };
+                        const _insertSanitized = (e, dt) => {
+                          const html = dt && dt.getData && dt.getData('text/html');
+                          if (!html) return; // plain-text paste/drop is safe — native handling
+                          e.preventDefault();
+                          try { doc.execCommand('insertHTML', false, _sanitizeFragment(html)); } catch (_) {}
+                        };
+                        doc.addEventListener('paste', (e) => { try { _insertSanitized(e, e.clipboardData); } catch (_) {} }, true);
+                        doc.addEventListener('drop', (e) => { try { _insertSanitized(e, e.dataTransfer); } catch (_) {} }, true);
+                      } catch (_) {}
                     }}
                   />
                 </div>

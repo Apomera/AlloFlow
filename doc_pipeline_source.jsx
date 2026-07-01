@@ -924,6 +924,36 @@ function _alloOrderTextItems(items, opts) {
   return _multi;
 }
 
+// Cheap, deterministic document fingerprint (review F1/F5, 2026-07-01). Used to stamp the
+// window.__lastGroundTruth* OCR globals with the document they describe, so the legacy
+// fallback readers can REFUSE another document's pages/method instead of silently
+// attaching Document A's invisible text layer to Document B (batch retries, compare-
+// preview re-generation, old-project restore while another doc is in flight).
+// Accepts a base64 STRING (write side: fixAndVerifyPdf holds _base64) or a Uint8Array
+// (read side: createTaggedPdf holds originalPdfBytes) and produces the SAME key for the
+// same underlying bytes: 'pdf:<total-byte-length>:<hash of first 4096 bytes>'.
+function _alloDocFingerprint(input) {
+  try {
+    if (!input) return null;
+    if (typeof input === 'string') {
+      var b64 = input.replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+      var pad = b64.endsWith('==') ? 2 : (b64.endsWith('=') ? 1 : 0);
+      var total = Math.floor(b64.length * 3 / 4) - pad;
+      // First 4096 bytes = first 5464 base64 chars (rounded down to a 4-char group).
+      var headLen = Math.min(b64.length, 5464);
+      headLen -= headLen % 4;
+      var bin = atob(b64.slice(0, headLen));
+      var h = 0;
+      for (var i = 0; i < Math.min(bin.length, 4096); i++) h = ((h << 5) - h + bin.charCodeAt(i)) | 0;
+      return 'pdf:' + total + ':' + h;
+    }
+    var bytes = input;
+    var hb = 0;
+    for (var j = 0; j < Math.min(bytes.length, 4096); j++) hb = ((hb << 5) - hb + bytes[j]) | 0;
+    return 'pdf:' + bytes.length + ':' + hb;
+  } catch (_) { return null; }
+}
+
 // S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
 // structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
 // authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
@@ -10262,6 +10292,21 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           warnLog('[Batch] Quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
           break;
         }
+      } finally {
+        // Per-file global hygiene (review F5, 2026-07-01): a file that THROWS
+        // mid-extraction leaves the window OCR globals still describing the PREVIOUS
+        // file; the next iteration (or a retry) would then report the prior file's OCR
+        // method/pages. Clear between files — each run re-stamps its own, and the
+        // fingerprint gate refuses mismatched leftovers anyway; this keeps the batch
+        // summary metadata honest too.
+        try {
+          window.__lastGroundTruthCharCount = 0;
+          window.__lastGroundTruthPageMap = null;
+          window.__lastGroundTruthMethod = null;
+          window.__lastOcrPageErrors = [];
+          window.__lastOcrLowConfidencePages = [];
+          window.__lastGroundTruthDocKey = null;
+        } catch (_) {}
       }
       // Persist after each file so a tab close mid-batch is recoverable.
       _persistBatchStatus();
@@ -14545,6 +14590,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
+      // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
+      // the CURRENT document's fingerprint. createTaggedPdf's legacy window-fallbacks
+      // validate against this key and refuse another document's OCR state.
+      window.__lastGroundTruthDocKey = _alloDocFingerprint(_base64);
       // H-1 (audit 2026-06-23): these dual-OCR globals are SET only in the scanned path (~13879) but READ by
       // isScanned (~14346) + AutoRestore (~16602); a born-digital doc that skips OCR would otherwise inherit
       // the PRIOR scanned doc's text (cross-document bleed) and be mislabeled scanned. Reset them per run.
@@ -20233,7 +20282,21 @@ tr { page-break-inside: avoid; }
     // honor an explicit fixResult.isScanned. The entire OCR-layer + tag path is gated on this flag, so a
     // dropped/un-propagated method string would otherwise SILENTLY ship an image-only, untagged PDF.
     // Born-digital is unaffected — its method ('pdfjs'/'extracted-text'/'docx-*') never matches.
-    const _gtm = String((fixResult && fixResult.groundTruthMethod) || (typeof window !== 'undefined' && window.__lastGroundTruthMethod) || '');
+    // Cross-document guard (review F1/F5, 2026-07-01): the window.__lastGroundTruth*
+    // globals are a LEGACY fallback for fixResults saved before groundTruthPages/Method
+    // were persisted. They describe whichever document was extracted MOST RECENTLY in
+    // this session — not necessarily THIS one (batch retries, compare-preview
+    // re-generation, old-project restore while another doc is in flight). The fallback
+    // is honored only when the globals' fingerprint matches these bytes; a mismatch
+    // degrades honestly (fixResult-persisted state only) instead of attaching another
+    // document's invisible text layer. NOTE: the typeset path re-saves bytes, so its
+    // fingerprint intentionally never matches — it relies on the persisted fixResult.
+    const _thisDocKey = _alloDocFingerprint(originalPdfBytes);
+    const _gtGlobalsMatch = !!(typeof window !== 'undefined' && window.__lastGroundTruthDocKey && _thisDocKey && window.__lastGroundTruthDocKey === _thisDocKey);
+    if (typeof window !== 'undefined' && window.__lastGroundTruthDocKey && _thisDocKey && !_gtGlobalsMatch) {
+      try { warnLog('[createTaggedPdf] window OCR fallback ignored — session globals belong to a different document (fingerprint mismatch); using only fixResult-persisted OCR state.'); } catch (_) {}
+    }
+    const _gtm = String((fixResult && fixResult.groundTruthMethod) || (_gtGlobalsMatch && window.__lastGroundTruthMethod) || '');
     const isScanned = /tesseract|vision|ocr/i.test(_gtm) || !!(fixResult && fixResult.isScanned);
 
     // ── Tag-tree unify Slices 1+2: /K→MCR linkage for scanned PDFs (any page count) ──
@@ -20334,7 +20397,7 @@ tr { page-break-inside: avoid; }
     // top-left invisible run per page — still searchable + SR-readable.
     const ocrPages = isScanned
       ? ((fixResult && fixResult.groundTruthPages)
-          || (typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null)
+          || (_gtGlobalsMatch ? window.__lastGroundTruthPageMap : null)
           || [])
       : [];
     let _helvFont = null;
@@ -22407,7 +22470,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // Skipped entirely if no page map (cheap fallback — coverage % alone).
           const _missingByPage = {};
           try {
-            const _pageMap = (typeof window !== 'undefined' && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null;
+            const _pageMap = (_gtGlobalsMatch && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null;
             if (_pageMap && _pageMap.length > 0 && _missing.length > 0) {
               const _pagesLc = _pageMap.map(p => (p && p.text) ? String(p.text).toLowerCase() : '');
               for (const tok of _missing) {

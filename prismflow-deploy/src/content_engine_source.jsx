@@ -893,6 +893,17 @@ You MUST:
                     // 5. Final collapse of 2+ tabs/spaces (preserve newlines).
                     .replace(/[ \t]{2,}/g, ' ');
            }
+           // Ungrounded-content disclosure (builder-review A2, 2026-07-01). By default
+           // (includeSourceCitations=false) — or when grounding returned no usable
+           // sources — the document is UN-SOURCED AI prose, and nothing anywhere told
+           // the reader that. Label the ARTIFACT itself (it gets printed and handed to
+           // students far from the app's UI), mirroring the honesty rules the PDF
+           // pipeline applies to its reports. Appended last so it renders as a footer.
+           if (!effIncludeCitations || allGroundingChunks.length === 0) {
+               fullDocument += '\n\n---\n\n*About this document: drafted with AI assistance'
+                 + (effIncludeCitations ? ' — web grounding returned no citable sources for this topic' : ' without source citations enabled')
+                 + '. Facts, figures, and quotations have not been verified against cited sources — review for accuracy before classroom use.*\n';
+           }
            // Surface a partial generation instead of silently shipping a doc with empty sections (the
            // no-grounding fallback above now degrades a hard-failed section to empty rather than aborting).
            if (_sectionFailures > 0) {

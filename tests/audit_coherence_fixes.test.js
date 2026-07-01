@@ -64,3 +64,44 @@ describe('audit coherence — one modal, one story (display guards)', () => {
     expect(vw).toMatch(/typeof lastTaggedValidation\.pdfUa1Checks\?\.summary\?\.conformancePct === 'number'/);
   });
 });
+
+describe('cross-document OCR guard (review F1/F5)', () => {
+  it('C9: _alloDocFingerprint yields the SAME key for base64 and byte views of the same doc, different keys for different docs', () => {
+    const m = dp.match(/function _alloDocFingerprint\(input\) \{[\s\S]*?\n\}/);
+    expect(m).toBeTruthy();
+    const fp = new Function(m[0] + '\n; return _alloDocFingerprint;')();
+    const bytesA = new Uint8Array(6000).map((_, i) => (i * 7 + 13) % 256);
+    const bytesB = new Uint8Array(6000).map((_, i) => (i * 11 + 5) % 256);
+    const b64A = Buffer.from(bytesA).toString('base64');
+    expect(fp(bytesA)).toBe(fp(b64A));            // representation-independent
+    expect(fp(bytesA)).not.toBe(fp(bytesB));      // discriminates documents
+    expect(fp(null)).toBe(null);
+    expect(fp(new Uint8Array(0))).toBe('pdf:0:0');
+  });
+  it('C10: the write site stamps the key and every legacy read is gated on the match', () => {
+    expect(dp).toMatch(/window\.__lastGroundTruthDocKey = _alloDocFingerprint\(_base64\);/);
+    expect(dp).toMatch(/const _thisDocKey = _alloDocFingerprint\(originalPdfBytes\);/);
+    expect(dp).toMatch(/\(_gtGlobalsMatch && window\.__lastGroundTruthMethod\)/);
+    expect(dp).toMatch(/\(_gtGlobalsMatch \? window\.__lastGroundTruthPageMap : null\)/);
+    expect(dp).toMatch(/\(_gtGlobalsMatch && Array\.isArray\(window\.__lastGroundTruthPageMap\)\)/);
+    // and the batch loop clears the globals between files (finally)
+    expect(dp).toMatch(/Per-file global hygiene \(review F5, 2026-07-01\)/);
+    expect(dp).toMatch(/window\.__lastGroundTruthDocKey = null;/);
+  });
+});
+
+describe('builder honesty + editor safety (review A2/A4)', () => {
+  it('C11: ungrounded generations carry the AI-assistance disclosure footer', () => {
+    const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
+    expect(ce).toMatch(/if \(!effIncludeCitations \|\| allGroundingChunks\.length === 0\) \{/);
+    expect(ce).toMatch(/drafted with AI assistance/);
+    expect(ce).toMatch(/review for accuracy before classroom use/);
+  });
+  it('C12: the editor iframe sanitizes rich-HTML paste/drop and createLink enforces a scheme allowlist', () => {
+    const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+    expect(ve).toMatch(/doc\.__alloPasteGuard = true;/);
+    expect(ve).toMatch(/querySelectorAll\('script,style,iframe,object,embed,link,meta,base,form'\)/);
+    expect(ve).toMatch(/n\.startsWith\('on'\)/);
+    expect(ve).toMatch(/\['http', 'https', 'mailto', 'tel'\]\.includes\(_schemeMatch\[1\]\.toLowerCase\(\)\)/);
+  });
+});
