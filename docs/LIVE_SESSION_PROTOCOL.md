@@ -154,9 +154,31 @@ this unsolved was wrong:
    strings capped at 120k chars), then oldest-dropped to ≤ 850 KiB, with an honest
    `syncTruncated`/`syncNotice` compact fallback.
 
-**Gap [ROADMAP]:** the trim-guard path drops resources silently from the student's perspective
-(teacher gets a `warnLog`). Route live resource *updates* through the same manifest externalization
-as session start so nothing is dropped; keep the trim-guard as the last-resort fuse.
+**Correction (verified 2026-07-01):** the live update path (`syncResourcesToSession`, debounced
+1.5s on history change) ALSO goes through `uploadSessionAssets` manifest externalization before the
+trim-guard, and the teacher gets a toast when trimming occurs. The remaining gap is student-side:
+a student whose hydration missed the target resource fails silently (see §4.1 delivery acks).
+
+### 4.1 Resource targeting & pacing (verified)
+
+Who sees what, in precedence order (student `onSnapshot` consumer):
+
+1. **Teacher-paced (`mode:'sync'`) + `currentResourceId`** — written *implicitly* whenever the
+   teacher opens a resource during a live session (three call sites, incl. STEM manipulatives).
+   Students follow continuously (a locked follow: navigating away re-syncs on the next snapshot —
+   that lock is the feature). `currentResourceId:'adventure-sync'` is a special case that mirrors
+   adventure state.
+2. **Group override `groups.{gid}.resourceId`** — set from the Groups modal
+   (`handleSetGroupResource`, with pushing/success UI). In sync mode it replaces the class target
+   for that group (locked). In student-paced mode it is a **one-time jump**: each push writes a
+   `groups.{gid}.resourceAt` nonce and students consume each `group|resource|nonce` key exactly
+   once [SHIPPED 2026-07-01 — previously every unrelated snapshot re-yanked grouped students who
+   had navigated away, so student-paced mode wasn't student-paced for them].
+3. **Per-student**: only *subtractive* targeting exists — quiz routing rules can write
+   `roster.{uid}.hiddenResourceIds` (hide from history). There is **no per-student push**; the
+   workaround is a one-student group. [ROADMAP #9]
+4. A pushed resource that a student's hydrated list doesn't contain is a silent no-op on that
+   device; the teacher has no per-student delivery signal. [ROADMAP #10]
 
 ---
 
@@ -283,6 +305,14 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    into one module with the §5 envelope. Two implementations is duplication; three is a law.
 8. **Bridge → WebRTC migration** — removes the last Tier-2 free-text exception (tracked at the
    allowlist comment).
+9. **Per-student resource send** — add `roster.{uid}.resourceId` + `resourceAt` (Tier-1, id-only)
+   with precedence individual > group > class, consume-once in student-paced mode like §4.1(2),
+   plus a per-student push action in the roster/groups UI. Today's workaround is a one-student
+   group.
+10. **Delivery acknowledgment** — students write `roster.{uid}.viewingResourceId` (Tier-1, id-only)
+    on view change so the teacher's Live Session Center/roster can show who actually landed on a
+    pushed resource ("on it / elsewhere / never received"), closing §4.1(4)'s silent-miss gap.
+    Pairs naturally with the presence heartbeat (#4).
 
 ---
 

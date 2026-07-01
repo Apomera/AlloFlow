@@ -2467,6 +2467,11 @@ const SESSION_TIER1_LEAVES = new Set([
   // Students cannot free-type; the teacher's Live Session Center shows the
   // signal next to the (curated) codename and can clear it. Tier-1 safe.
   'signal', 'signalAt',
+  // Group resource push nonce (teacher-managed): groups.{gid}.resourceAt is a
+  // ms-timestamp written with each push so student-paced consumers treat the
+  // push as ONE jump (and a re-push of the same resource yanks again).
+  // No student-typed content; Tier-1 safe.
+  'resourceAt',
 ]);
 // Help-signal vocabulary shared by the student sender and the teacher's Live
 // Session Center. Enum-only by design: keep free text out of this channel so
@@ -7121,6 +7126,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isJoinPopoverOpen, setIsJoinPopoverOpen] = useState(false);
   const sessionUnsubscribeRef = useRef(null);
   const currentGenContentIdRef = useRef(null);
+  // Consume-once key for group resource pushes in student-paced mode:
+  // "{groupId}|{resourceId}|{resourceAt}". Without it, every unrelated
+  // session-doc snapshot (xp sync, quiz answers, help signals) re-yanked a
+  // grouped student back to the group resource after they navigated away —
+  // student-paced mode wasn't student-paced for grouped students.
+  const lastGroupPushKeyRef = useRef(null);
   const hasConnectedRef = useRef(false);
   const [pptxLoaded, setPptxLoaded] = useState(false);
   const [progressionData, setProgressionData] = useState(null);
@@ -9573,8 +9584,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       const userGroupId = data.roster[user.uid].groupId;
                       if (data.groups && data.groups[userGroupId] && data.groups[userGroupId].resourceId) {
                           const groupResourceId = data.groups[userGroupId].resourceId;
+                          // Student-paced mode: consume each group push ONCE, then let the
+                          // student navigate freely. resourceAt (set by handleSetGroupResource)
+                          // lets the teacher re-push the same resource to yank again; legacy
+                          // pushes without it still dedupe on group+resource.
+                          const groupPushKey = userGroupId + '|' + groupResourceId + '|' + (data.groups[userGroupId].resourceAt || 0);
                           const target = resourcesToRender.find(r => r.id === groupResourceId);
-                          if (target && currentGenContentIdRef.current !== groupResourceId) {
+                          if (target && currentGenContentIdRef.current !== groupResourceId && lastGroupPushKeyRef.current !== groupPushKey) {
+                              lastGroupPushKeyRef.current = groupPushKey;
                               debugLog(`Group Differentiation: Showing group-specific resource ${groupResourceId}`);
                               setGeneratedContent({ type: target.type, data: target.data, id: target.id });
                               setActiveView(target.type);
@@ -16855,7 +16872,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, {
-            [`groups.${groupId}.resourceId`]: resourceId
+            [`groups.${groupId}.resourceId`]: resourceId,
+            // Push nonce: lets student-paced consumers treat each push as a
+            // one-time jump (and lets the teacher re-push the same resource).
+            [`groups.${groupId}.resourceAt`]: Date.now()
         });
         setIsPushingResource(prev => ({...prev, [groupId]: 'success'}));
         addToast(t('toasts.resource_assigned'), "success");
