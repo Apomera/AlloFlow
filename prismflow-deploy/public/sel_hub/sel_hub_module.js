@@ -107,16 +107,18 @@
           var meta = (this._standardShellTools && this._standardShellTools[id]) || {};
           var palette = (ctx.theme && ctx.theme.palette) || ctx.themePalette || {};
           var isDark = !!((ctx.theme && ctx.theme.isDark) || ctx.isDark);
+          var isContrast = !!((ctx.theme && ctx.theme.isContrast) || ctx.isContrast);
           var title = tool.label || tool.title || tool.name || id;
           var icon = tool.icon || '*';
           var category = tool.category ? String(tool.category).replace(/[-_]/g, ' ') : 'SEL practice';
           category = category.charAt(0).toUpperCase() + category.slice(1);
-          var surface = isDark ? '#111827' : '#f8fafc';
-          var headerBg = isDark ? '#0f172a' : '#ffffff';
-          var border = palette.border || (isDark ? '#334155' : '#e2e8f0');
-          var text = palette.text || (isDark ? '#f8fafc' : '#0f172a');
-          var muted = palette.textMuted || (isDark ? '#cbd5e1' : '#64748b');
+          var surface = isContrast ? '#000000' : (isDark ? '#111827' : '#f8fafc');
+          var headerBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff');
+          var border = palette.border || (isContrast ? '#ffff00' : (isDark ? '#334155' : '#e2e8f0'));
+          var text = palette.text || (isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a'));
+          var muted = palette.textMuted || (isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#64748b'));
           var accent = palette.accent || '#7c3aed';
+          var accentText = palette.accentText || (isContrast ? '#000000' : '#ffffff');
           var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
           if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
           var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
@@ -146,7 +148,7 @@
                 borderRadius: 8,
                 border: '1px solid ' + border,
                 color: muted,
-                background: isDark ? '#0b1120' : '#f8fafc',
+                background: isContrast ? '#000000' : (isDark ? '#0b1120' : '#f8fafc'),
                 fontSize: 12,
                 fontWeight: 800,
                 whiteSpace: 'nowrap'
@@ -186,7 +188,7 @@
                     height: 40,
                     borderRadius: 8,
                     border: '1px solid ' + border,
-                    background: isDark ? '#111827' : '#ffffff',
+                    background: isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff'),
                     color: text,
                     cursor: 'pointer',
                     fontSize: 18,
@@ -200,7 +202,7 @@
                     height: 40,
                     borderRadius: 8,
                     background: accent,
-                    color: '#ffffff',
+                    color: accentText,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -226,7 +228,7 @@
                     borderRadius: 8,
                     border: '1px solid ' + accent,
                     background: accent,
-                    color: '#ffffff',
+                    color: accentText,
                     cursor: 'pointer',
                     fontSize: 12,
                     fontWeight: 900,
@@ -242,7 +244,7 @@
                 gap: 14,
                 flexWrap: 'wrap',
                 borderBottom: '1px solid ' + border,
-                background: isDark ? '#111827' : '#f8fafc'
+                background: isContrast ? '#000000' : (isDark ? '#111827' : '#f8fafc')
               }
             },
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
@@ -1546,7 +1548,19 @@
         btnBg:    isContrast ? '#000000' : isDark ? '#334155' : '#e2e8f0',
         btnText:  isContrast ? '#00ff00' : isDark ? '#f1f5f9' : '#334155',
         btnBorder:isContrast ? '2px solid #00ff00' : isDark ? 'none' : 'none',
-        accent:   '#7c3aed'
+        accent:   isContrast ? '#00ff00' : '#7c3aed',
+        accentText: isContrast ? '#000000' : '#ffffff',
+        bgSoft:   isContrast ? '#000000' : isDark ? '#111827' : '#f8fafc',
+        bgRaised: isContrast ? '#000000' : isDark ? '#111827' : '#ffffff',
+        bgDisabled: isContrast ? '#000000' : isDark ? '#172033' : '#f1f5f9',
+        accentSoftBg: isContrast ? '#000000' : isDark ? 'rgba(124,58,237,0.2)' : '#f5f3ff',
+        accentSoftText: isContrast ? '#00ff00' : isDark ? '#ddd6fe' : '#6d28d9',
+        successText: isContrast ? '#00ff00' : '#0f766e',
+        dangerText: isContrast ? '#ff6b6b' : '#b91c1c',
+        warningText: isContrast ? '#ffff00' : isDark ? '#fbbf24' : '#92400e',
+        pinkAccent: isContrast ? '#ff7ab6' : '#db2777',
+        pinkText: isContrast ? '#ff7ab6' : '#be185d',
+        onPink: isContrast ? '#000000' : '#ffffff'
       };
 
       // ══════════════════════════════════════════════════════════════
@@ -2294,7 +2308,7 @@
                   // alloflow-sel-exported if/when the file actually writes).
                   if (typeof addToast === 'function') addToast('Exporting your work\u2026', 'info');
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
+                style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, fontSize: 12, fontWeight: 700, cursor: 'pointer', width: '100%' }
               }, '\uD83D\uDCBE Export now')
             )
           ),
@@ -2315,7 +2329,7 @@
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
             'aria-label': selXp + ' SEL experience points',
-            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
+            style: { background: _t.accent, color: _t.accentText, borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
@@ -2437,7 +2451,7 @@
             }, '\u2715')
           ),
           h('div', { style: { flex: 1, overflow: 'auto', padding: '16px 24px', fontSize: 13, color: _t.text } },
-            h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc' } },
+            h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgSoft } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 900, color: _t.text } }, 'Classroom launch frame'),
               h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 } },
                 [
@@ -2446,7 +2460,7 @@
                   { label: 'After', body: 'Save only when students choose to export or hand you a file.' }
                 ].map(function(item) {
                   return h('div', { key: item.label, style: { padding: 10, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard } },
-                    h('div', { style: { fontSize: 11, fontWeight: 900, color: '#0f766e', textTransform: 'uppercase', marginBottom: 4 } }, item.label),
+                    h('div', { style: { fontSize: 11, fontWeight: 900, color: _t.successText, textTransform: 'uppercase', marginBottom: 4 } }, item.label),
                     h('div', { style: { fontSize: 12, color: _t.textMuted, lineHeight: 1.45 } }, item.body)
                   );
                 })
@@ -2460,7 +2474,7 @@
               h('button', {
                 onClick: clearAllSelData,
                 'aria-label': 'Clear all my SEL data from this device',
-                style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #dc2626', background: 'rgba(220,38,38,0.08)', color: '#dc2626', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _t.dangerText, background: isContrast ? '#000000' : 'rgba(220,38,38,0.08)', color: _t.dangerText, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, '🗑️ Clear my SEL data')
             )
           )
@@ -2513,7 +2527,7 @@
                     var privacy = selected ? (packetSelections[item.id] || 'summary') : 'summary';
                     return h('div', {
                       key: 'packet-item-' + item.id,
-                      style: { border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#111827' : '#ffffff', padding: 10, display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 10, alignItems: 'start' }
+                      style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: 10, alignItems: 'start' }
                     },
                       h('input', {
                         type: 'checkbox',
@@ -2560,7 +2574,7 @@
                     );
                   })
                 ),
-                h('section', { 'aria-label': 'SEL Share Packet preview', style: { border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#111827' : '#f8fafc', padding: 12 } },
+                h('section', { 'aria-label': 'SEL Share Packet preview', style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgSoft, padding: 12 } },
                   h('h3', { style: { margin: '0 0 6px', fontSize: 13, fontWeight: 900, color: _t.text } }, 'Preview'),
                   h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: _t.textMuted, lineHeight: 1.45 } },
                     selectedCount ? 'This is the version that will print, download, and appear in AlloHaven.' : 'Select at least one checkpoint to build a packet.'),
@@ -2571,18 +2585,18 @@
                         style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 10 }
                       },
                         h('div', { style: { fontSize: 11, fontWeight: 900, color: _t.text, marginBottom: 4 } }, String(idx + 1) + '. ' + item.title),
-                        h('div', { style: { fontSize: 10.5, color: item.privacy === 'private' ? '#b91c1c' : '#0f766e', fontWeight: 900, marginBottom: 5 } }, item.privacyLabel),
-                        item.followUpRequested ? h('div', { style: { fontSize: 11, color: '#92400e', fontWeight: 800, marginBottom: 5 } }, 'Follow-up requested.') : null,
+                        h('div', { style: { fontSize: 10.5, color: item.privacy === 'private' ? _t.dangerText : _t.successText, fontWeight: 900, marginBottom: 5 } }, item.privacyLabel),
+                        item.followUpRequested ? h('div', { style: { fontSize: 11, color: _t.warningText, fontWeight: 800, marginBottom: 5 } }, 'Follow-up requested.') : null,
                         h('p', { style: { margin: 0, fontSize: 11.5, lineHeight: 1.45, color: _t.textMuted } }, item.text || item.summary || 'No reflection text shared.')
                       );
                     })
                   ) : null
                 )
-              ) : h('div', { style: { padding: 18, border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 13, lineHeight: 1.5 } },
+              ) : h('div', { style: { padding: 18, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgSoft, color: _t.textMuted, fontSize: 13, lineHeight: 1.5 } },
                 'No saved SEL checkpoints yet. Open an SEL tool and use its save/checkpoint action, then return here to create a packet.')
             ),
             h('div', { style: { borderTop: '1px solid ' + _t.border, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
-              h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 18, fontSize: 11, color: packetSavedNotice ? '#0f766e' : _t.textMuted, fontWeight: packetSavedNotice ? 800 : 500 } },
+              h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 18, fontSize: 11, color: packetSavedNotice ? _t.successText : _t.textMuted, fontWeight: packetSavedNotice ? 800 : 500 } },
                 packetSavedNotice || 'Private items stay private; summary-only items keep full text out of the portfolio.'),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                 h('button', {
@@ -2601,7 +2615,7 @@
                   type: 'button',
                   disabled: !selectedCount,
                   onClick: _saveSelSharePacketToPortfolio,
-                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 14px' }, actionDisabledStyle)
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 14px' }, actionDisabledStyle)
                 }, 'Save to AlloHaven')
               )
             )
@@ -2727,16 +2741,16 @@
         toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
           // Active pathway banner
           activePathway && h('div', {
-            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
+            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.accent, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
           },
             h('div', null,
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7c3aed' } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: _t.accentSoftText } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
               h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } }, activePathway.tools.length + ' tools \u2022 ' + Object.keys(pathwayProgress).filter(function(k) { return pathwayProgress[k]; }).length + '/' + activePathway.tools.length + ' completed')
             ),
             h('button', {
               onClick: function() { setActivePathway(null); setPathwayProgress({}); announceToSR('Pathway cleared'); },
               'aria-label': 'Exit pathway mode',
-              style: { background: 'none', border: '1px solid #7c3aed44', borderRadius: 8, padding: '4px 10px', color: '#7c3aed', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { background: 'none', border: '1px solid ' + _t.accent, borderRadius: 8, padding: '4px 10px', color: _t.accentSoftText, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, '\u2715 Exit Pathway')
           ),
           // Active station banner (mutually exclusive with active pathway in practice)
@@ -2746,11 +2760,11 @@
             var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
             return h('div', {
               role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
-              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.pinkAccent }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { minWidth: 0, flex: 1 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#be185d' } }, '\ud83d\udccc ' + activeStation.name),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _t.pinkText } }, '\ud83d\udccc ' + activeStation.name),
                   h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } },
                     (activeStation.tools || []).length + ' tools' + (totalQ > 0 ? ' \u2022 ' + doneQ + '/' + totalQ + ' quests done' : '')
                   ),
@@ -2759,7 +2773,7 @@
                 h('button', {
                   onClick: function () { setActiveStationId(null); announceToSR('Station cleared'); },
                   'aria-label': 'Exit station mode',
-                  style: { background: 'none', border: '1px solid #ec489944', borderRadius: 8, padding: '4px 10px', color: '#be185d', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              style: { background: 'none', border: '1px solid ' + _t.pinkAccent, borderRadius: 8, padding: '4px 10px', color: _t.pinkText, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, '\u2715 Exit Station')
               ),
               totalQ > 0 && h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -2767,10 +2781,10 @@
                   var qp = stationProg[q.qid] || {};
                   var done = !!qp.complete;
                   var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '\ud83c\udfaf';
-                  return h('div', { key: q.qid, style: { background: done ? '#dcfce7' : _t.bgCard, border: '1px solid ' + (done ? '#86efac' : _t.border), borderRadius: 8, padding: '6px 10px' } },
+                  return h('div', { key: q.qid, style: { background: done ? (isContrast ? '#000000' : '#dcfce7') : _t.bgCard, border: '1px solid ' + (done ? _t.successText : _t.border), borderRadius: 8, padding: '6px 10px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, done ? '\u2705' : qIcon),
-                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? '#166534' : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
+                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? _t.successText : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
                       !done && q.type === 'xpThreshold' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, selXp + ' / ' + ((q.params && q.params.threshold) || 30)),
                       !done && q.type === 'timeSpent' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, Math.floor(((qp.timeAccumMs || 0) / 60000)) + ' / ' + ((q.params && q.params.minutes) || 5) + ' min'),
                       !done && q.type === 'manualComplete' && h('button', {
@@ -2785,7 +2799,7 @@
                           announceToSR('Quest marked complete: ' + q.label);
                         },
                         'aria-label': 'Mark "' + q.label + '" as complete',
-                        style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
+                        style: { fontSize: 11, fontWeight: 700, padding: '8px 14px', minHeight: 36, borderRadius: 6, border: '1px solid ' + _t.pinkAccent, background: _t.bgCard, color: _t.pinkText, cursor: 'pointer' }
                       }, 'Mark complete')
                     ),
                     !done && q.type === 'freeResponse' && h('textarea', {
@@ -2852,7 +2866,7 @@
                     minHeight: isCompact ? 68 : 86,
                     borderRadius: 8,
                     border: '1px solid ' + _t.border,
-                    background: disabled ? (isDark ? '#172033' : '#f1f5f9') : _t.bgCard,
+                    background: disabled ? _t.bgDisabled : _t.bgCard,
                     color: _t.text,
                     opacity: disabled ? 0.55 : 1,
                     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -2873,7 +2887,7 @@
             ),
             h('div', {
               role: 'note',
-              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
+              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
             },
               h('span', null, 'Private on this device. Save or export before closing if you want to keep your work.'),
               h('button', {
@@ -2886,7 +2900,7 @@
                   if (typeof addToast === 'function') addToast('Preparing to save your SEL work...', 'info');
                 },
                 'aria-label': 'Save or export SEL work now',
-                style: { border: '1px solid #7c3aed', background: '#7c3aed', color: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
+                style: { border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText, borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
               }, 'Save now')
             )
           ),
@@ -2899,7 +2913,7 @@
             h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid ' + _t.border } },
               h('div', {
                 role: 'note',
-                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.45 }
+                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.45 }
               }, 'Class routines stay formative: no grades, no forced sharing, no teacher dashboard of private reflections. Students save or share only when you ask them to choose a file.'),
               h('div', {
                 style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
@@ -2911,7 +2925,7 @@
                   var disabled = catalogTools.length === 0;
                   return h('div', {
                     key: plan.id,
-                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#172033' : '#ffffff', padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
                   },
                     h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
                       h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flex: '0 0 auto' } }, plan.icon),
@@ -2923,14 +2937,14 @@
                     h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
                     h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
                       labels.length ? labels.join(', ') : 'Tools loading...',
-                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: isDark ? '#fbbf24' : '#92400e', fontWeight: 800 } }, 'Still loading: ' + pendingLabels.join(', ')) : null
+                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: _t.warningText, fontWeight: 800 } }, 'Still loading: ' + pendingLabels.join(', ')) : null
                     ),
                     h('button', {
                       type: 'button',
                       disabled: disabled,
                       onClick: function() { _applyTeacherLaunchPlan(plan); },
                       'aria-label': 'Load teacher launch plan: ' + plan.name,
-                      style: { marginTop: 'auto', minHeight: 34, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid #0f766e', background: disabled ? _t.bgCard : '#0f766e', color: disabled ? _t.textMuted : '#ffffff', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
+                      style: { marginTop: 'auto', minHeight: 34, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
                     }, disabled ? 'Loading' : 'Load plan')
                   );
                 })
@@ -2949,7 +2963,7 @@
                   type: 'button',
                   onClick: _openSelSharePacketBuilder,
                   'aria-label': 'Create SEL Share Packet from saved checkpoints',
-                  style: { minHeight: 32, borderRadius: 8, border: '1px solid #7c3aed', background: isDark ? 'rgba(124,58,237,0.2)' : '#f5f3ff', color: isDark ? '#ddd6fe' : '#6d28d9', cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
+                  style: { minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.accent, background: _t.accentSoftBg, color: _t.accentSoftText, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
                 }, 'Create Share Packet')
               )
             ),
@@ -2990,7 +3004,7 @@
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 22, flexShrink: 0 } }, item.icon || '\uD83D\uDCBE'),
                   h('span', { style: { minWidth: 0, flex: 1 } },
                     h('span', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2, minWidth: 0 } },
-                      h('span', { style: { fontSize: 10, fontWeight: 900, color: '#7c3aed', textTransform: 'uppercase', flexShrink: 0 } }, item.kind),
+                      h('span', { style: { fontSize: 10, fontWeight: 900, color: _t.accentSoftText, textTransform: 'uppercase', flexShrink: 0 } }, item.kind),
                       when && h('span', { style: { fontSize: 10, color: _t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, when)
                     ),
                     h('span', { style: { display: 'block', fontSize: 12, lineHeight: 1.25, fontWeight: 800, color: _t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, item.title),
@@ -3067,9 +3081,9 @@
                     minHeight: 34,
                     padding: '7px 10px',
                     borderRadius: 8,
-                    border: '1px solid ' + (activeNeed ? '#7c3aed' : _t.border),
-                    background: activeNeed ? '#7c3aed' : _t.bgCard,
-                    color: activeNeed ? '#fff' : _t.text,
+                    border: '1px solid ' + (activeNeed ? _t.accent : _t.border),
+                    background: activeNeed ? _t.accent : _t.bgCard,
+                    color: activeNeed ? _t.accentText : _t.text,
                     fontSize: 11,
                     fontWeight: 800,
                     cursor: 'pointer',
@@ -3092,7 +3106,7 @@
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
               'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
-              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
+              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? _t.accent : _t.border), background: selCategoryFilter === null ? _t.accent : _t.bgCard, color: selCategoryFilter === null ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
             }, 'All'),
             SEL_CATEGORIES.map(function(cat) {
               var isActive = selCategoryFilter === cat.id;
@@ -3101,7 +3115,7 @@
                 onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
                 'aria-label': 'Filter: ' + cat.label,
                 'aria-pressed': isActive ? 'true' : 'false',
-                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
+                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? _t.accent : _t.border), background: isActive ? _t.accent : _t.bgCard, color: isActive ? _t.accentText : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
               }, cat.icon + ' ' + cat.label);
             })
           ),
@@ -3132,7 +3146,7 @@
                     h('span', { style: { fontSize: 12, fontWeight: 700, color: _t.text } }, pw.name)
                   ),
                   h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.4 } }, pw.desc),
-                  h('div', { style: { fontSize: 9, color: '#7c3aed', fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
+                  h('div', { style: { fontSize: 9, color: _t.accentSoftText, fontWeight: 600, marginTop: 4 } }, pw.tools.length + ' activities')
                 );
               })
             )
@@ -3164,7 +3178,7 @@
                       }, '✕')
                     ),
                     h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
-                    st.teacherNote && h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: isDark ? '#111827' : '#f8fafc', border: '1px solid ' + _t.border } }, st.teacherNote),
+                    st.teacherNote && h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4, padding: '6px 8px', borderRadius: 8, background: _t.bgSoft, border: '1px solid ' + _t.border } }, st.teacherNote),
                     h('button', {
                       onClick: function () {
                         setActiveStationId(st.id);
@@ -3174,7 +3188,7 @@
                         if (typeof addToast === 'function') addToast('📌 ' + st.name + ' started!', 'success');
                       },
                       'aria-label': 'Activate station ' + st.name,
-                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: _t.pinkAccent, color: _t.onPink, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                     }, 'Start station')
                   );
                 })
@@ -3183,7 +3197,7 @@
               !builderOpen && h('button', {
                 onClick: function () { setBuilderOpen(true); announceToSR('Station builder opened'); },
                 'aria-label': 'Build a new custom SEL Station',
-                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed #ec4899', background: 'rgba(236, 72, 153, 0.05)', color: '#be185d', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.05)', color: _t.pinkText, fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
               }, '+ Build a Custom Station'),
               // Inline builder
               builderOpen && (function () {
@@ -3234,9 +3248,9 @@
                     ];
                   } }
                 ];
-                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid #ec489955', background: 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
+                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#be185d' } }, '🧑‍🏫 Station Builder'),
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: _t.pinkText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
                       onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); },
                       'aria-label': 'Cancel station builder',
@@ -3264,7 +3278,7 @@
                   h('div', {
                     role: 'status',
                     'aria-live': 'polite',
-                    style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '7px 9px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.35 }
+                    style: { display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '7px 9px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.35 }
                   },
                     h('span', null, selectedBuilderToolIds.length + (selectedBuilderToolIds.length === 1 ? ' tool' : ' tools') + ' selected'),
                     h('span', { 'aria-hidden': 'true' }, '|'),
@@ -3288,7 +3302,7 @@
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
                             var pending = !!tool.pendingRegistration;
-                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isDark ? '#3b1026' : '#fce7f3') : 'transparent', border: checked ? '1px solid #db2777' : '1px solid transparent', fontSize: 11, color: _t.text } },
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isContrast ? '#000000' : (isDark ? '#3b1026' : '#fce7f3')) : 'transparent', border: checked ? '1px solid ' + _t.pinkAccent : '1px solid transparent', fontSize: 11, color: _t.text } },
                               h('input', {
                                 type: 'checkbox', checked: checked,
                                 onChange: function () {
@@ -3298,7 +3312,7 @@
                               }),
                               h('span', { 'aria-hidden': 'true' }, tool.icon || '🔧'),
                               h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.label || tool.id),
-                              pending && h('span', { style: { marginLeft: 'auto', flex: '0 0 auto', fontSize: 9, fontWeight: 800, color: isDark ? '#fbbf24' : '#92400e' } }, 'loading')
+                              pending && h('span', { style: { marginLeft: 'auto', flex: '0 0 auto', fontSize: 9, fontWeight: 800, color: _t.warningText } }, 'loading')
                             );
                           })
                         )
@@ -3354,7 +3368,7 @@
                     disabled: selectedBuilderToolIds.length === 0,
                     onClick: _saveBuilderAsStation,
                     'aria-label': 'Save this station',
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 ? _t.btnBg : '#db2777', color: selectedBuilderToolIds.length === 0 ? _t.textMuted : '#fff', fontSize: 12, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: selectedBuilderToolIds.length === 0 ? _t.btnBg : _t.pinkAccent, color: selectedBuilderToolIds.length === 0 ? _t.textMuted : _t.onPink, fontSize: 12, fontWeight: 700, cursor: selectedBuilderToolIds.length === 0 ? 'not-allowed' : 'pointer', alignSelf: 'flex-start' }
                   }, '💾 Save Station')
                 );
               })()

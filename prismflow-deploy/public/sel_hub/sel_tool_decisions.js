@@ -621,6 +621,7 @@ window.SelHub = window.SelHub || {
       }
 
       var ACCENT = _decFg('#f59e0b');
+      var ACCENT_TEXT = _decHC ? '#000000' : _decFg('#0f172a');
       var ACCENT_DIM = '#f59e0b22';
       var ACCENT_MED = '#f59e0b44';
 
@@ -669,7 +670,7 @@ window.SelHub = window.SelHub || {
           style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8'), position: 'relative' }
         },
           '\uD83C\uDFC5',
-          Object.keys(earnedBadges).length > 0 && h('span', {             style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: _decFg('#0f172a'), borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
+          Object.keys(earnedBadges).length > 0 && h('span', {             style: { position: 'absolute', top: 0, right: 0, background: ACCENT, color: ACCENT_TEXT, borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }
           }, Object.keys(earnedBadges).length)
         )
       );
@@ -806,7 +807,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'I’ve read it',
                 onClick: function() { upd('dtStep', 1); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: ACCENT_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'I\'ve read it \u2192')
             )
           ),
@@ -843,7 +844,7 @@ window.SelHub = window.SelHub || {
                   if (dtValues.length === 0) { addToast('Select at least one value!', 'info'); return; }
                   upd('dtStep', 2); if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: ACCENT_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Options \u2192')
             )
           ),
@@ -865,7 +866,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Next: Choose',
                 onClick: function() { upd('dtStep', 3); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: ACCENT_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Choose \u2192')
             )
           ),
@@ -894,7 +895,7 @@ window.SelHub = window.SelHub || {
             dtChoice != null && h('div', { style: { textAlign: 'center' } },
               h('button', { 'aria-label': 'Next: Reflect',
                 onClick: function() { upd('dtStep', 4); if (soundEnabled) sfxThink(); },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: _decFg('#0f172a'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: ACCENT, color: ACCENT_TEXT, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, 'Next: Reflect \u2192')
             )
           ),

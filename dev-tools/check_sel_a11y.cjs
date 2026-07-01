@@ -85,11 +85,11 @@ fs.readdirSync(dir).filter(function (f) {
   catch (e) { loadErrors.push({ file: f, error: (e && e.message) || String(e) }); }
 });
 
-function makeCtx(toolId) {
-  const themeBase = {
+const THEME_VARIANTS = [
+  {
+    id: 'light',
     isDark: false,
     isContrast: false,
-    reduceMotion: false,
     palette: {
       bg: '#f8fafc',
       bgCard: '#ffffff',
@@ -97,13 +97,58 @@ function makeCtx(toolId) {
       text: '#0f172a',
       textMuted: '#475569',
       border: '#cbd5e1',
-      headerBg: '#0f172a',
+      headerBg: '#4f46e5',
       headerText: '#f8fafc',
       btnBg: '#7c3aed',
       btnText: '#ffffff',
-      accent: '#7c3aed'
+      accent: '#7c3aed',
+      accentText: '#ffffff'
     }
-  };
+  },
+  {
+    id: 'dark',
+    isDark: true,
+    isContrast: false,
+    palette: {
+      bg: '#0f172a',
+      bgCard: '#1e293b',
+      bgInput: '#1e293b',
+      text: '#f1f5f9',
+      textMuted: '#cbd5e1',
+      border: '#64748b',
+      headerBg: '#0f172a',
+      headerText: '#f8fafc',
+      btnBg: '#334155',
+      btnText: '#f1f5f9',
+      accent: '#7c3aed',
+      accentText: '#ffffff'
+    }
+  },
+  {
+    id: 'high-contrast',
+    isDark: true,
+    isContrast: true,
+    palette: {
+      bg: '#000000',
+      bgCard: '#000000',
+      bgInput: '#000000',
+      text: '#ffff00',
+      textMuted: '#ffff00',
+      border: '#ffff00',
+      headerBg: '#000000',
+      headerText: '#ffff00',
+      btnBg: '#000000',
+      btnText: '#00ff00',
+      accent: '#00ff00',
+      accentText: '#000000'
+    }
+  }
+];
+
+function makeCtx(toolId, themeVariant) {
+  const themeBase = Object.assign({
+    reduceMotion: false
+  }, themeVariant || THEME_VARIANTS[0]);
   const theme = new Proxy(themeBase, { get: function (o, p) { return (p in o) ? o[p] : '#475569'; } });
   const base = {
     React: React,
@@ -112,7 +157,7 @@ function makeCtx(toolId) {
     addToast: noop, awardXP: noop, getXP: function () { return 0; },
     announceToSR: noop, celebrate: noop, beep: noop, t: function (k) { return k; },
     theme: theme,
-    isDark: false, isContrast: false, themePalette: themeBase.palette,
+    isDark: !!themeBase.isDark, isContrast: !!themeBase.isContrast, themePalette: themeBase.palette,
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
     onSafetyFlag: noop, studentCodename: 'Student', selectedVoice: null, activeSessionCode: null,
     icons: iconsProxy,
@@ -131,6 +176,14 @@ function attr(el, name) {
 
 function text(el) {
   return (el.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
+function ownText(el) {
+  return Array.from(el.childNodes || []).filter(function (node) {
+    return node.nodeType === 3;
+  }).map(function (node) {
+    return node.textContent || '';
+  }).join(' ').replace(/\s+/g, ' ').trim();
 }
 
 function labelTextFor(doc, id) {
@@ -214,13 +267,13 @@ function issue(toolId, severity, code, message, extra) {
   return Object.assign({ toolId: toolId, severity: severity, code: code, message: message }, extra || {});
 }
 
-function auditMarkup(toolId, html) {
+function auditMarkup(toolId, html, themeId) {
   const page = new JSDOM('<!doctype html><body>' + html + '</body>');
   const doc = page.window.document;
   const issues = [];
 
   if (!text(doc.body)) {
-    issues.push(issue(toolId, 'error', 'empty-render', 'Tool rendered no readable content.'));
+    issues.push(issue(toolId, 'error', 'empty-render', 'Tool rendered no readable content.', { theme: themeId }));
   }
 
   const ids = {};
@@ -230,16 +283,16 @@ function auditMarkup(toolId, html) {
     ids[id] = (ids[id] || 0) + 1;
   });
   Object.keys(ids).forEach(function (id) {
-    if (ids[id] > 1) issues.push(issue(toolId, 'error', 'duplicate-id', 'Duplicate id "' + id + '" appears ' + ids[id] + ' times.'));
+    if (ids[id] > 1) issues.push(issue(toolId, 'error', 'duplicate-id', 'Duplicate id "' + id + '" appears ' + ids[id] + ' times.', { theme: themeId }));
   });
 
   Array.from(doc.querySelectorAll('button, [role="button"]')).forEach(function (el, idx) {
     const name = accessibleName(el, doc);
     if (!meaningfulName(name)) {
-      issues.push(issue(toolId, 'error', 'control-name', 'Button/control is missing a meaningful accessible name.', { index: idx, tag: el.tagName.toLowerCase(), text: text(el).slice(0, 80) }));
+      issues.push(issue(toolId, 'error', 'control-name', 'Button/control is missing a meaningful accessible name.', { theme: themeId, index: idx, tag: el.tagName.toLowerCase(), text: text(el).slice(0, 80) }));
     }
     if (el.tagName.toLowerCase() !== 'button' && attr(el, 'role') === 'button' && !attr(el, 'tabindex')) {
-      issues.push(issue(toolId, 'error', 'role-button-tabindex', 'Non-button role="button" element is missing tabIndex=0.', { index: idx }));
+      issues.push(issue(toolId, 'error', 'role-button-tabindex', 'Non-button role="button" element is missing tabIndex=0.', { theme: themeId, index: idx }));
     }
   });
 
@@ -248,33 +301,35 @@ function auditMarkup(toolId, html) {
     if (type === 'hidden') return;
     const name = accessibleName(el, doc);
     if (!meaningfulName(name)) {
-      issues.push(issue(toolId, 'error', 'field-name', 'Form field is missing a meaningful accessible name.', { index: idx, tag: el.tagName.toLowerCase(), type: type || undefined }));
+      issues.push(issue(toolId, 'error', 'field-name', 'Form field is missing a meaningful accessible name.', { theme: themeId, index: idx, tag: el.tagName.toLowerCase(), type: type || undefined }));
     }
   });
 
   Array.from(doc.querySelectorAll('img')).forEach(function (el, idx) {
     if (!el.hasAttribute('alt')) {
-      issues.push(issue(toolId, 'error', 'img-alt', 'Image is missing alt text. Use empty alt for decorative images.', { index: idx }));
+      issues.push(issue(toolId, 'error', 'img-alt', 'Image is missing alt text. Use empty alt for decorative images.', { theme: themeId, index: idx }));
     }
   });
 
   if (!doc.querySelector('h1,h2,h3,h4,h5,h6,[role="heading"]')) {
-    issues.push(issue(toolId, 'warning', 'heading', 'No heading rendered for this tool.'));
+    issues.push(issue(toolId, 'warning', 'heading', 'No heading rendered for this tool.', { theme: themeId }));
   }
 
   Array.from(doc.querySelectorAll('[style]')).forEach(function (el, idx) {
     const st = parseStyle(attr(el, 'style'));
     const fg = parseColor(st.color);
     const bg = parseColor(st.background || st['background-color']);
-    if (!fg || !bg || !text(el)) return;
+    const visibleText = ownText(el) || (el.children.length ? '' : text(el));
+    if (!fg || !bg || !visibleText) return;
     const ratio = contrast(fg, bg);
     if (ratio < 4.5) {
       issues.push(issue(toolId, 'warning', 'inline-contrast', 'Inline foreground/background contrast is below 4.5:1.', {
+        theme: themeId,
         index: idx,
         ratio: Number(ratio.toFixed(2)),
         color: st.color,
         background: st.background || st['background-color'],
-        text: text(el).slice(0, 80)
+        text: visibleText.slice(0, 80)
       }));
     }
   });
@@ -288,25 +343,44 @@ const tools = [];
 let renderErrors = [];
 
 ids.forEach(function (id) {
-  let html = '';
-  try {
-    const ctx = makeCtx(id);
-    html = RDS.renderToStaticMarkup(React.createElement(function SelA11ySmoke() {
-      return window.SelHub.renderTool(id, ctx);
-    }));
-  } catch (e) {
-    renderErrors.push(issue(id, 'error', 'render-throw', (e && e.message) || String(e)));
-  }
-  const issues = html ? auditMarkup(id, html) : [];
+  const themeResults = [];
+  let renderedBytes = 0;
+  let standardShell = true;
+  THEME_VARIANTS.forEach(function (variant) {
+    let html = '';
+    try {
+      const ctx = makeCtx(id, variant);
+      html = RDS.renderToStaticMarkup(React.createElement(function SelA11ySmoke() {
+        return window.SelHub.renderTool(id, ctx);
+      }));
+    } catch (e) {
+      renderErrors.push(issue(id, 'error', 'render-throw', (e && e.message) || String(e), { theme: variant.id }));
+    }
+    renderedBytes += html.length;
+    const issues = html ? auditMarkup(id, html, variant.id) : [];
+    const themeShell = html.indexOf('data-sel-standard-shell="' + id + '"') >= 0;
+    if (!themeShell) standardShell = false;
+    themeResults.push({
+      theme: variant.id,
+      renderedBytes: html.length,
+      standardShell: themeShell,
+      issueCount: issues.length,
+      errorCount: issues.filter(function (i) { return i.severity === 'error'; }).length,
+      warningCount: issues.filter(function (i) { return i.severity === 'warning'; }).length,
+      issues: issues
+    });
+  });
+  const issues = themeResults.reduce(function (acc, t) { return acc.concat(t.issues); }, []);
   const tool = registry[id] || {};
   tools.push({
     id: id,
     label: tool.label || tool.name || tool.title || id,
-    renderedBytes: html.length,
-    standardShell: html.indexOf('data-sel-standard-shell="' + id + '"') >= 0,
+    renderedBytes: renderedBytes,
+    standardShell: standardShell,
     issueCount: issues.length,
     errorCount: issues.filter(function (i) { return i.severity === 'error'; }).length,
     warningCount: issues.filter(function (i) { return i.severity === 'warning'; }).length,
+    themes: themeResults,
     issues: issues
   });
 });
@@ -315,6 +389,7 @@ const allIssues = tools.reduce(function (acc, t) { return acc.concat(t.issues); 
 const report = {
   generatedAt: new Date().toISOString(),
   toolCount: ids.length,
+  themesAudited: THEME_VARIANTS.map(function (t) { return t.id; }),
   loadErrors: loadErrors,
   renderErrors: renderErrors,
   summary: {

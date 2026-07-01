@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-07-01T23:53:49.349Z",
+  "scope": [
+    "SEL Hub shell/catalog",
+    "Recent SEL work entry point",
+    "Create Share Packet launcher",
+    "Teacher launch entry point",
+    "Tool-by-tool audit summary from sel_tool_ui_a11y_audit.json"
+  ],
+  "themesAudited": [
+    "light",
+    "dark",
+    "high-contrast",
+    "mobile-high-contrast"
+  ],
+  "loadErrors": [],
+  "renderErrors": [],
+  "summary": {
+    "issueCount": 0,
+    "errorCount": 0,
+    "warningCount": 0,
+    "toolCount": 70,
+    "toolThemesAudited": [
+      "light",
+      "dark",
+      "high-contrast"
+    ],
+    "toolIssueCount": 0,
+    "toolErrorCount": 0,
+    "toolWarningCount": 0,
+    "toolsWithoutStandardShell": []
+  },
+  "manualAuditNotes": [
+    "Run an interactive browser pass for focus order inside Create SEL Share Packet, For Educators, and custom Station Builder because SSR cannot click-open every state.",
+    "Keep crisis/sensitive content in editorial review even when WCAG checks pass; accessible UI does not replace clinical/safety review.",
+    "Verify visual responsive layout in the live app at mobile widths after deploy bundling."
+  ],
+  "views": [
+    {
+      "view": "sel-hub-catalog",
+      "theme": "light",
+      "renderedBytes": 160180,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "checks": {
+        "hasRecentWork": true,
+        "hasSharePacketLauncher": true,
+        "hasTeacherLaunch": true,
+        "hasPrivacyCopy": true
+      },
+      "issues": []
+    },
+    {
+      "view": "sel-hub-catalog",
+      "theme": "dark",
+      "renderedBytes": 160191,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "checks": {
+        "hasRecentWork": true,
+        "hasSharePacketLauncher": true,
+        "hasTeacherLaunch": true,
+        "hasPrivacyCopy": true
+      },
+      "issues": []
+    },
+    {
+      "view": "sel-hub-catalog",
+      "theme": "high-contrast",
+      "renderedBytes": 160125,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "checks": {
+        "hasRecentWork": true,
+        "hasSharePacketLauncher": true,
+        "hasTeacherLaunch": true,
+        "hasPrivacyCopy": true
+      },
+      "issues": []
+    },
+    {
+      "view": "sel-hub-catalog",
+      "theme": "mobile-high-contrast",
+      "renderedBytes": 159999,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "checks": {
+        "hasRecentWork": true,
+        "hasSharePacketLauncher": true,
+        "hasTeacherLaunch": true,
+        "hasPrivacyCopy": true
+      },
+      "issues": []
+    }
+  ]
+}

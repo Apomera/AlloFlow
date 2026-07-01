@@ -17144,7 +17144,7 @@ window.SelHub = window.SelHub || {
                         style: {
                           padding: '8px 16px',
                           background: totalAnswered < SELF_CHECK_ITEMS.length ? _upC('#cbd5e1') : '#7c3aed',
-                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                          color: totalAnswered < SELF_CHECK_ITEMS.length && _upCHC ? '#000000' : '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                           cursor: totalAnswered < SELF_CHECK_ITEMS.length ? 'not-allowed' : 'pointer', fontSize: 13
                         }
                       }, totalAnswered < SELF_CHECK_ITEMS.length
