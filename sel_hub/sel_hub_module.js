@@ -17,6 +17,23 @@
       window.SelHub = {
         _registry: {},
         _order: [],
+        _standardShellTools: {
+          zones: {
+            time: '5-8 min',
+            purpose: 'Name your current zone and choose a regulation strategy that fits.',
+            next: 'Check your zone, choose one strategy, then save if you want to revisit it.'
+          },
+          coping: {
+            time: '3-10 min',
+            purpose: 'Choose a coping strategy and practice it once with a clear stopping point.',
+            next: 'Pick one body-based or grounding strategy, try it, then notice whether it helped.'
+          },
+          journal: {
+            time: '5-12 min',
+            purpose: 'Write a private reflection and notice patterns you may want to keep.',
+            next: 'Choose a prompt, write honestly, and save or export before closing.'
+          }
+        },
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
@@ -34,6 +51,159 @@
           return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
         },
         isRegistered: function(id) { return !!this._registry[id]; },
+        _wrapStandardToolShell: function(id, tool, content, ctx) {
+          if (!ctx || !ctx.React) return content;
+          var h = ctx.React.createElement;
+          var meta = (this._standardShellTools && this._standardShellTools[id]) || {};
+          var palette = (ctx.theme && ctx.theme.palette) || ctx.themePalette || {};
+          var isDark = !!((ctx.theme && ctx.theme.isDark) || ctx.isDark);
+          var title = tool.label || tool.title || tool.name || id;
+          var icon = tool.icon || '*';
+          var category = tool.category ? String(tool.category).replace(/[-_]/g, ' ') : 'SEL practice';
+          category = category.charAt(0).toUpperCase() + category.slice(1);
+          var surface = isDark ? '#111827' : '#f8fafc';
+          var headerBg = isDark ? '#0f172a' : '#ffffff';
+          var border = palette.border || (isDark ? '#334155' : '#e2e8f0');
+          var text = palette.text || (isDark ? '#f8fafc' : '#0f172a');
+          var muted = palette.textMuted || (isDark ? '#cbd5e1' : '#64748b');
+          var accent = palette.accent || '#7c3aed';
+
+          function requestSave() {
+            if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
+              try { ctx.props.onExportRequested(); } catch (e) {}
+            } else {
+              try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested', { detail: { source: 'sel-tool-shell', toolId: id } })); } catch (e) {}
+            }
+            if (typeof ctx.addToast === 'function') ctx.addToast('Preparing to save your SEL work...', 'info');
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Save requested for ' + title);
+          }
+
+          function goBack() {
+            if (typeof ctx.setSelHubTool === 'function') ctx.setSelHubTool(null);
+            if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Returned to tool grid');
+          }
+
+          function pill(label) {
+            return h('span', {
+              style: {
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: 28,
+                padding: '5px 9px',
+                borderRadius: 8,
+                border: '1px solid ' + border,
+                color: muted,
+                background: isDark ? '#0b1120' : '#f8fafc',
+                fontSize: 12,
+                fontWeight: 800,
+                whiteSpace: 'nowrap'
+              }
+            }, label);
+          }
+
+          return h('section', {
+            'data-sel-standard-shell': id,
+            style: {
+              background: surface,
+              color: text,
+              minHeight: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }
+          },
+            h('div', {
+              style: {
+                background: headerBg,
+                borderBottom: '1px solid ' + border,
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 300px' } },
+                h('button', {
+                  type: 'button',
+                  onClick: goBack,
+                  'aria-label': 'Back to SEL tools',
+                  style: {
+                    minWidth: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    border: '1px solid ' + border,
+                    background: isDark ? '#111827' : '#ffffff',
+                    color: text,
+                    cursor: 'pointer',
+                    fontSize: 18,
+                    fontWeight: 900
+                  }
+                }, '\u2190'),
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    background: accent,
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 20,
+                    flex: '0 0 auto'
+                  }
+                }, icon),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { color: muted, fontSize: 12, fontWeight: 800, marginBottom: 2 } }, category),
+                  h('h3', { style: { margin: 0, color: text, fontSize: 20, lineHeight: 1.2, fontWeight: 900 } }, title)
+                )
+              ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                pill(meta.time || 'SEL practice'),
+                pill('Private on this device'),
+                pill('Save before closing'),
+                h('button', {
+                  type: 'button',
+                  onClick: requestSave,
+                  'aria-label': 'Save or export SEL work now',
+                  style: {
+                    minHeight: 36,
+                    borderRadius: 8,
+                    border: '1px solid ' + accent,
+                    background: accent,
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    padding: '7px 12px'
+                  }
+                }, 'Save now')
+              )
+            ),
+            h('div', {
+              style: {
+                padding: '10px 16px',
+                display: 'flex',
+                gap: 14,
+                flexWrap: 'wrap',
+                borderBottom: '1px solid ' + border,
+                background: isDark ? '#111827' : '#f8fafc'
+              }
+            },
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Purpose'),
+                meta.purpose || 'Practice one SEL skill with care.'
+              ),
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Next step'),
+                meta.next || 'Complete one small step, then decide whether to save.'
+              )
+            ),
+            h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
+          );
+        },
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
@@ -41,6 +211,9 @@
           try { rendered = tool.render(ctx); }
           catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
+          var hasReact = ctx && ctx.React;
+          var useStandardShell = hasReact && this._standardShellTools && this._standardShellTools[id];
+          var body = rendered;
           // ── WCAG dark-shell auto-wrap ──
           // Same vulnerability + fix as STEM Lab's host-level wrap. 69 of 70
           // SEL tools (audit May 2026) hardcode dark-mode text colors that
@@ -54,17 +227,20 @@
           //
           // Opt out by setting `lightBackground: true` in registerTool config
           // (intended for any future tool that genuinely needs a light surface).
-          if (tool.lightBackground === true) return rendered;
-          if (!ctx || !ctx.React) return rendered;
-          return ctx.React.createElement('div', {
-            style: {
-              background: '#0f172a',
-              color: '#e2e8f0',
-              borderRadius: 12,
-              minHeight: 'calc(100vh - 32px)'
-            },
-            'data-sel-tool-shell': id
-          }, rendered);
+          if (tool.lightBackground !== true && hasReact) {
+            body = ctx.React.createElement('div', {
+              style: {
+                background: '#0f172a',
+                color: '#e2e8f0',
+                borderRadius: useStandardShell ? 8 : 12,
+                minHeight: useStandardShell ? 520 : 'calc(100vh - 32px)',
+                overflow: 'hidden'
+              },
+              'data-sel-tool-shell': id
+            }, rendered);
+          }
+          if (useStandardShell) return this._wrapStandardToolShell(id, tool, body, ctx);
+          return body;
         }
       };
     }
