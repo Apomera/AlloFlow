@@ -117,6 +117,9 @@
           var text = palette.text || (isDark ? '#f8fafc' : '#0f172a');
           var muted = palette.textMuted || (isDark ? '#cbd5e1' : '#64748b');
           var accent = palette.accent || '#7c3aed';
+          var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
+          if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
+          var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
 
           function requestSave() {
             if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
@@ -244,11 +247,11 @@
             },
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', { style: { color: muted, marginRight: 6 } }, 'Purpose'),
-                meta.purpose || 'Practice one SEL skill with care.'
+                purpose
               ),
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', { style: { color: muted, marginRight: 6 } }, 'Next step'),
-                meta.next || 'Complete one small step, then decide whether to save.'
+                nextStep
               )
             ),
             h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
@@ -257,12 +260,18 @@
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
+          var hasReact = ctx && ctx.React;
+          var useStandardShell = hasReact && tool.standardShell !== false;
+          var needsDarkShell = tool.lightBackground !== true && hasReact;
+          var renderCtx = ctx;
+          if (needsDarkShell && ctx) {
+            var shellTheme = Object.assign({}, ctx.theme || {}, { isDark: true });
+            renderCtx = Object.assign({}, ctx, { isDark: true, theme: shellTheme });
+          }
           var rendered;
-          try { rendered = tool.render(ctx); }
+          try { rendered = tool.render(renderCtx); }
           catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
-          var hasReact = ctx && ctx.React;
-          var useStandardShell = hasReact && this._standardShellTools && this._standardShellTools[id];
           var body = rendered;
           // ── WCAG dark-shell auto-wrap ──
           // Same vulnerability + fix as STEM Lab's host-level wrap. 69 of 70
@@ -277,7 +286,7 @@
           //
           // Opt out by setting `lightBackground: true` in registerTool config
           // (intended for any future tool that genuinely needs a light surface).
-          if (tool.lightBackground !== true && hasReact) {
+          if (needsDarkShell) {
             body = ctx.React.createElement('div', {
               style: {
                 background: '#0f172a',

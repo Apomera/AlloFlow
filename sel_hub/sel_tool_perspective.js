@@ -1021,6 +1021,7 @@ window.SelHub = window.SelHub || {
       }
 
       var ACCENT = _pspFg('#8b5cf6');
+      var ACCENT_BUTTON = '#6d28d9';
       var ACCENT_DIM = '#8b5cf622';
       var ACCENT_MED = '#8b5cf644';
 
@@ -1053,7 +1054,7 @@ window.SelHub = window.SelHub || {
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? ACCENT : 'transparent',
+              background: isActive ? ACCENT_BUTTON : 'transparent',
               color: isActive ? _pspFg('#fff') : _pspFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
@@ -1195,7 +1196,7 @@ window.SelHub = window.SelHub || {
                   var allRevealed = current.characters.every(function(c, i) { return newRevealed[current.id + '_' + i]; });
                   if (allRevealed) tryAwardBadge('all_characters');
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: _pspFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT_BUTTON, color: _pspFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
               }, '\uD83D\uDCA1 Reveal Perspective')
             :
               h('div', { style: { padding: 12, borderRadius: 8, background: _pspBg('#1e293b'), border: '1px solid ' + ACCENT_MED, fontSize: 13, color: _pspFg('#e2e8f0'), lineHeight: 1.6 } },

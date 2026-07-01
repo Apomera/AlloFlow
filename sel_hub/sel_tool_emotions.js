@@ -18085,7 +18085,7 @@ window.SelHub = window.SelHub || {
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#3b82f6' : 'transparent',
+              background: isActive ? '#1d4ed8' : 'transparent',
               color: isActive ? '#fff' : P.textMuted,
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
@@ -18212,7 +18212,7 @@ window.SelHub = window.SelHub || {
         var wheelToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
           h('button', { 'aria-label': 'Explore',
             onClick: function() { upd('wheelMode', 'explore'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: wheelMode === 'explore' ? '#3b82f6' : P.card, color: wheelMode === 'explore' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: wheelMode === 'explore' ? '#1d4ed8' : P.card, color: wheelMode === 'explore' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83C\uDF08 Explore'),
           h('button', { 'aria-label': 'Vocab Quiz',
             onClick: function() { upd('wheelMode', 'quiz'); if (!quizDef) generateQuiz(); if (soundEnabled) sfxClick(); },

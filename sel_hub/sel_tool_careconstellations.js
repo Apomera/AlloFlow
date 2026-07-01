@@ -87,8 +87,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       var _cnsHC = !!_cnsT.isContrast, _cnsL = !_cnsHC && !_cnsT.isDark;
       var _cns_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _cns_BGH = {'#f43f5e':'#000000','#0f172a':'#000000','#1e293b':'#000000','#ffffff':'#000000','#fff1f2':'#000000'};
       var _cns_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#fecaca':'#b91c1c','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#a78bfa':'#6d28d9','#fde68a':'#92400e','#e9d5ff':'#581c87'}, _cns_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecaca':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#fca5a5':'#ffff00','#a78bfa':'#ffff00','#fde68a':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#9f1239':'#ffff00'};
-      var _cns_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _cns_BDH = {'#334155':'#ffff00','#fda4af':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#ef4444':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecdd3':'#ffff00','#cbd5e1':'#ffff00'};
-      var _cnsBg = function(h){ return _cnsHC ? (_cns_BGH[h]||h) : (_cnsL ? (_cns_BGL[h]||h) : h); };
+      var _cns_BGD = {'#f43f5e':'#be123c'}, _cns_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1','#0f172a':'#cbd5e1'}, _cns_BDH = {'#334155':'#ffff00','#fda4af':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#ef4444':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#fecdd3':'#ffff00','#cbd5e1':'#ffff00'};
+      var _cnsBg = function(h){ return _cnsHC ? (_cns_BGH[h]||h) : (_cnsL ? (_cns_BGL[h]||h) : (_cns_BGD[h]||h)); };
       var _cnsFg = function(h){ return _cnsHC ? (_cns_FGH[h]||h) : (_cnsL ? (_cns_FGL[h]||h) : h); };
       var _cnsBd = function(h){ return _cnsHC ? (_cns_BDH[h]||h) : (_cnsL ? (_cns_BDL[h]||h) : h); };
       var React = ctx.React;

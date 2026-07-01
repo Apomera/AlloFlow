@@ -26164,8 +26164,8 @@ window.SelHub = window.SelHub || {
       var _copHC = !!_copT.isContrast, _copL = !_copHC && !_copT.isDark;
       var _cop_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#78350f':'#fef3c7'}, _cop_BGH = {'#334155':'#000000','#1e293b':'#000000','#14b8a6':'#000000','#15803d':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#ec4899':'#000000','#f97316':'#000000','#eab308':'#000000','#042f2e':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000','#78350f':'#000000'};
       var _cop_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#5eead4':'#0f766e','#f1f5f9':'#0f172a','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#e2e8f0':'#1e293b','#86efac':'#166534','#fdba74':'#9a3412','#fcd34d':'#78350f','#fbbf24':'#854d0e','#fde68a':'#92400e'}, _cop_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#5eead4':'#ffff00','#f1f5f9':'#ffff00','#14b8a6':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#3b82f6':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#8b5cf6':'#ffff00','#f97316':'#ffff00','#ec4899':'#ffff00','#86efac':'#ffff00','#fdba74':'#ffff00','#fcd34d':'#ffff00','#eab308':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00'};
-      var _cop_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cop_BDH = {'#334155':'#ffff00','#14b8a6':'#ffff00','#ef4444':'#ffff00','#f97316':'#ffff00','#475569':'#ffff00','#fbbf24':'#ffff00','#f59e0b':'#ffff00','#ea580c':'#ffff00'};
-      var _copBg = function(h){ return _copHC ? (_cop_BGH[h]||h) : (_copL ? (_cop_BGL[h]||h) : h); };
+      var _cop_BGD = {'#14b8a6':'#0f766e'}, _cop_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cop_BDH = {'#334155':'#ffff00','#14b8a6':'#ffff00','#ef4444':'#ffff00','#f97316':'#ffff00','#475569':'#ffff00','#fbbf24':'#ffff00','#f59e0b':'#ffff00','#ea580c':'#ffff00'};
+      var _copBg = function(h){ return _copHC ? (_cop_BGH[h]||h) : (_copL ? (_cop_BGL[h]||h) : (_cop_BGD[h]||h)); };
       var _copFg = function(h){ return _copHC ? (_cop_FGH[h]||h) : (_copL ? (_cop_FGL[h]||h) : h); };
       var _copBd = function(h){ return _copHC ? (_cop_BDH[h]||h) : (_copL ? (_cop_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -26399,7 +26399,7 @@ window.SelHub = window.SelHub || {
             onClick: function() { if (tab.id !== 'practice') { stopBreathTimer(); stopMoveTimer(); } upd({ activeTab: tab.id, practiceMode: tab.id !== 'practice' ? null : d.practiceMode }); if (soundEnabled) sfxClick(); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#14b8a6' : 'transparent',
+              background: isActive ? _copBg('#14b8a6') : 'transparent',
               color: isActive ? _copFg('#fff') : _copFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
@@ -27048,7 +27048,7 @@ window.SelHub = window.SelHub || {
                       if (soundEnabled) sfxClick();
                     }
                   },
-                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: isLastMoveStep ? _copFg('#22c55e') : '#14b8a6', color: _copFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: isLastMoveStep ? _copFg('#22c55e') : _copBg('#14b8a6'), color: _copFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, isLastMoveStep ? '\u2705 Finish!' : 'Next Step \u2192'),
                 h('button', { 'aria-label': 'Back',
                   onClick: function() { stopMoveTimer(); upd({ moveActive: false, moveStep: 0, moveTimeLeft: null }); },

@@ -309,7 +309,7 @@ window.SelHub = window.SelHub || {
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
             );
           }),
-          h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '🔊' : '🔇')
         )
       );

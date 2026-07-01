@@ -203,7 +203,7 @@ window.SelHub = window.SelHub || {
       var _VD_DARK = {
         '#1e293b':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#9ca3af':'#cbd5e1',
         '#fff':'#1e293b','#ffffff':'#1e293b','#f8fafc':'#0f172a','#e5e7eb':'#334155','#d1d5db':'#475569',
-        '#faf5ff':'#2e1b4d','#f5f3ff':'#2a1a45','#ede9fe':'#2a1a45',
+        '#faf5ff':'#2e1b4d','#f5f3ff':'#2a1a45','#ede9fe':'#2a1a45','#6b21a8':'#d8b4fe',
         '#fef3c7':'#3a2e12','#fef9c3':'#3a3410','#92400e':'#fde68a',
         '#f0fdf4':'#0b2e22','#eff6ff':'#0e1f3a','#1e40af':'#93c5fd','#f1f5f9':'#1e293b','#dcfce7':'#14532d','#fee2e2':'#3a1a1a'
       };
@@ -454,6 +454,7 @@ window.SelHub = window.SelHub || {
       var card = { background: _vdC('#fff'), borderRadius: '14px', padding: '20px', border: '1px solid ' + _vdC('#e5e7eb'), marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
       var btn = function(bg, fg, dis) { return { padding: '10px 18px', background: dis ? _vdC('#e5e7eb') : bg, color: dis ? _vdC('#9ca3af') : fg, border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
       var PURPLE = '#7c3aed';
+      var PURPLE_TEXT = _vdC('#6b21a8');
 
       // ═══ RENDER ═══
 
@@ -473,7 +474,7 @@ window.SelHub = window.SelHub || {
             [['basic', '3 Emotions', '😊😢😠'], ['intermediate', '6 Emotions', '+ 😮😨🤢'], ['advanced', '10 Emotions', '+ 😏😰🤩😑']].map(function(d) {
               return h('button', { key: d[0], onClick: function() { setDifficulty(d[0]); },
                 role: 'radio', 'aria-checked': difficulty === d[0], 'aria-label': d[1] + ' difficulty',
-                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : _vdC('#d1d5db')), background: difficulty === d[0] ? _vdC('#f5f3ff') : _vdC('#fff'), color: difficulty === d[0] ? PURPLE : _vdC('#94a3b8'), fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? PURPLE : _vdC('#d1d5db')), background: difficulty === d[0] ? _vdC('#f5f3ff') : _vdC('#fff'), color: difficulty === d[0] ? PURPLE_TEXT : _vdC('#94a3b8'), fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, h('div', null, d[1]), h('div', { style: { fontSize: '16px', marginTop: '2px' } }, d[2]));
             })
           ),

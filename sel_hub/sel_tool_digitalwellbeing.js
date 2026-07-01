@@ -17569,6 +17569,7 @@
       };
 
       var ACCENT     = '#06b6d4';
+      var ACCENT_BUTTON = '#0e7490';
       var ACCENT_DIM = '#06b6d422';
       var ACCENT_MED = '#06b6d444';
 
@@ -17708,7 +17709,7 @@
                   padding: '10px 16px',
                   borderRadius: '10px 10px 0 0',
                   border: 'none',
-                  background: active ? ACCENT : 'transparent',
+                  background: active ? ACCENT_BUTTON : 'transparent',
                   color: active ? '#fff' : _dwC('#334155'),
                   fontWeight: active ? 700 : 500,
                   fontSize: 14,
@@ -17876,7 +17877,7 @@
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
               h('button', {
                 onClick: function() { upd('activeTab', 'toolkit'); },
-                style: { padding: '10px 16px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                style: { padding: '10px 16px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
               }, 'Go to full Toolkit →'),
               h('button', {
                 onClick: function() { openCounselorPacket(result, rows, picks); },
@@ -18044,7 +18045,7 @@
             scQuestionIdx < SELF_CHECK_QUESTIONS.length - 1
               ? h('button', {
                   onClick: function() { upd('scQuestionIdx', scQuestionIdx + 1); },
-                  style: { padding: '10px 14px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+                  style: { padding: '10px 14px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
                 }, 'Next →')
               : h('button', {
                   onClick: function() {
@@ -18751,7 +18752,7 @@
                 },
                 style: {
                   padding: '8px 14px',
-                  background: cbChoice == null ? _dwC('#94a3b8') : ACCENT,
+                  background: cbChoice == null ? _dwC('#94a3b8') : ACCENT_BUTTON,
                   color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
                   cursor: cbChoice == null ? 'not-allowed' : 'pointer'
                 }
@@ -19236,7 +19237,7 @@
             ),
             h('button', {
               onClick: addAdult,
-              style: { padding: '8px 14px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
+              style: { padding: '8px 14px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
             }, 'Add to circle')
           ),
 
@@ -19832,7 +19833,7 @@
                 onClick: function() { upd({ refSection: s.id, refExpanded: null }); if (announceToSR) announceToSR(s.label + ' opened'); },
                 style: {
                   padding: '6px 12px',
-                  background: active ? ACCENT : _dwC('#fff'),
+                  background: active ? ACCENT_BUTTON : _dwC('#fff'),
                   color: active ? '#fff' : _dwC('#0f172a'),
                   border: '1px solid ' + (active ? ACCENT : _dwC('#cbd5e1')),
                   borderRadius: 999, fontWeight: active ? 700 : 500, cursor: 'pointer', fontSize: 13
@@ -19984,7 +19985,7 @@
             h('button', {
               onClick: function() { upd('showBadgePopup', null); },
               autoFocus: true,
-              style: { padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
+              style: { padding: '10px 22px', background: ACCENT_BUTTON, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: 14 }
             }, 'Nice')
           )
         );

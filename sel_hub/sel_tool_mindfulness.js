@@ -22035,8 +22035,8 @@ window.SelHub = window.SelHub || {
       var _minHC = !!_minT.isContrast, _minL = !_minHC && !_minT.isDark;
       var _min_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#451a03':'#fff7ed','#7f1d1d':'#fee2e2'}, _min_BGH = {'#334155':'#000000','#1e293b':'#000000','#8b5cf6':'#000000','#0f172a':'#000000','#3b82f6':'#000000','#15803d':'#000000','#5eead4':'#000000','#fbbf24':'#000000','#042f2e':'#000000','#fde047':'#000000','#451a03':'#000000','#7c2d12':'#000000','#7f1d1d':'#000000'};
       var _min_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#fde68a':'#92400e','#5eead4':'#0f766e','#a7f3d0':'#047857','#fecaca':'#b91c1c','#fbcfe8':'#9d174d'}, _min_FGH = {'#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#8b5cf6':'#ffff00','#22c55e':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#3b82f6':'#ffff00','#06b6d4':'#ffff00','#f97316':'#ffff00','#10b981':'#ffff00','#fbbf24':'#ffff00','#a855f7':'#ffff00','#ef4444':'#ffff00','#fde68a':'#ffff00','#64748b':'#ffff00','#5eead4':'#ffff00','#0f172a':'#ffff00','#a7f3d0':'#ffff00','#fb923c':'#ffff00','#fed7aa':'#ffff00','#fecaca':'#ffff00','#fbcfe8':'#ffff00'};
-      var _min_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _min_BDH = {'#334155':'#ffff00','#8b5cf6':'#ffff00','#475569':'#ffff00','#3b82f6':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#22c55e':'#ffff00','#ea580c':'#ffff00'};
-      var _minBg = function(h){ return _minHC ? (_min_BGH[h]||h) : (_minL ? (_min_BGL[h]||h) : h); };
+      var _min_BGD = {'#8b5cf6':'#6d28d9','#3b82f6':'#1d4ed8'}, _min_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1'}, _min_BDH = {'#334155':'#ffff00','#8b5cf6':'#ffff00','#475569':'#ffff00','#3b82f6':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#22c55e':'#ffff00','#ea580c':'#ffff00'};
+      var _minBg = function(h){ return _minHC ? (_min_BGH[h]||h) : (_minL ? (_min_BGL[h]||h) : (_min_BGD[h]||h)); };
       var _minFg = function(h){ return _minHC ? (_min_FGH[h]||h) : (_minL ? (_min_FGL[h]||h) : h); };
       var _minBd = function(h){ return _minHC ? (_min_BDH[h]||h) : (_minL ? (_min_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -22220,7 +22220,7 @@ window.SelHub = window.SelHub || {
             },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              background: isActive ? '#8b5cf6' : 'transparent',
+              background: isActive ? _minBg('#8b5cf6') : 'transparent',
               color: isActive ? _minFg('#fff') : _minFg('#94a3b8'),
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
@@ -22435,7 +22435,7 @@ window.SelHub = window.SelHub || {
                 }
               }, 1000);
             },
-            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: bp.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+            style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: _minBg(bp.color), color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
           }, '\uD83C\uDF2C\uFE0F Begin Breathing'),
 
           // Active breathing display

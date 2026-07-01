@@ -1,0 +1,715 @@
+{
+  "generatedAt": "2026-07-01T18:40:50.335Z",
+  "toolCount": 70,
+  "loadErrors": [],
+  "renderErrors": [],
+  "summary": {
+    "issueCount": 0,
+    "errorCount": 0,
+    "warningCount": 0,
+    "toolsWithIssues": 0,
+    "toolsWithoutStandardShell": []
+  },
+  "tools": [
+    {
+      "id": "advocacy",
+      "label": "Self-Advocacy Workshop",
+      "renderedBytes": 25531,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "anxietyToolkit",
+      "label": "Anxiety Toolkit",
+      "renderedBytes": 7912,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "behavioralActivation",
+      "label": "Behavioral Activation",
+      "renderedBytes": 8245,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "bigFeelings",
+      "label": "Big Feelings (Anger)",
+      "renderedBytes": 11471,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "bodyStory",
+      "label": "Body Story",
+      "renderedBytes": 13102,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "careConstellations",
+      "label": "Care Constellations",
+      "renderedBytes": 11427,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "careerCompass",
+      "label": "Career Compass",
+      "renderedBytes": 11253,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "circlesOfSupport",
+      "label": "Circles of Support",
+      "renderedBytes": 6223,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "civicAction",
+      "label": "Civic Action & Hope",
+      "renderedBytes": 16996,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "community",
+      "label": "Community & Culture",
+      "renderedBytes": 22792,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "compassion",
+      "label": "Self-Compassion",
+      "renderedBytes": 15267,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "conflict",
+      "label": "Conflict Resolution Lab",
+      "renderedBytes": 14523,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "conflicttheater",
+      "label": "Conflict Theater (Beta)",
+      "renderedBytes": 12506,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "coping",
+      "label": "Coping Toolkit",
+      "renderedBytes": 309431,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "costBenefit",
+      "label": "Cost-Benefit Grid",
+      "renderedBytes": 6162,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "crewProtocols",
+      "label": "Crew Protocols",
+      "renderedBytes": 11178,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "crisiscompanion",
+      "label": "Crisis Companion",
+      "renderedBytes": 5995,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "cultureExplorer",
+      "label": "Culture Explorer",
+      "renderedBytes": 28925,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "dearMan",
+      "label": "DEAR MAN",
+      "renderedBytes": 17470,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "decisions",
+      "label": "Decision Workshop",
+      "renderedBytes": 14460,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "digitalWellbeing",
+      "label": "Digital Wellbeing Studio",
+      "renderedBytes": 15917,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "disabilityVoices",
+      "label": "Disability Voices",
+      "renderedBytes": 25035,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "ecomap",
+      "label": "Ecomap",
+      "renderedBytes": 6113,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "emotions",
+      "label": "Emotions Explorer",
+      "renderedBytes": 19268,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "ethicalReasoning",
+      "label": "Ethical Reasoning Lab",
+      "renderedBytes": 16117,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "execfunction",
+      "label": "Executive Function",
+      "renderedBytes": 28162,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "friendship",
+      "label": "Friendship Workshop",
+      "renderedBytes": 16960,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "genogram",
+      "label": "Genogram",
+      "renderedBytes": 6853,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "goals",
+      "label": "Goal Setter",
+      "renderedBytes": 12399,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "griefLoss",
+      "label": "Grief & Loss",
+      "renderedBytes": 14649,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "growthmindset",
+      "label": "Growth Mindset Workshop",
+      "renderedBytes": 17604,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "healthyRelationships",
+      "label": "Healthy Relationships",
+      "renderedBytes": 14221,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "howlTracker",
+      "label": "HOWL Tracker",
+      "renderedBytes": 21683,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "identitySupport",
+      "label": "Identity Support",
+      "renderedBytes": 11592,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "journal",
+      "label": "Feelings Journal",
+      "renderedBytes": 15537,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "landPlace",
+      "label": "Land & Place",
+      "renderedBytes": 17167,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "maps",
+      "label": "MAPS",
+      "renderedBytes": 10927,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "mindfulness",
+      "label": "Mindfulness Corner",
+      "renderedBytes": 20300,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "motivationalInterviewing",
+      "label": "Motivational Interviewing",
+      "renderedBytes": 9684,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "onePageProfile",
+      "label": "One-Page Profile",
+      "renderedBytes": 5931,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "orientations",
+      "label": "Orientations",
+      "renderedBytes": 10048,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "path",
+      "label": "PATH",
+      "renderedBytes": 12590,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "peersupport",
+      "label": "Peer Support Coach",
+      "renderedBytes": 14852,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "perma",
+      "label": "PERMA Wellbeing",
+      "renderedBytes": 7898,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "perspective",
+      "label": "Perspective-Taking Lab",
+      "renderedBytes": 16703,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "quietQuestions",
+      "label": "Quiet Questions",
+      "renderedBytes": 8200,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "restorativeCircle",
+      "label": "Restorative Circle",
+      "renderedBytes": 17780,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "safety",
+      "label": "Safety & Boundaries",
+      "renderedBytes": 20747,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "selfAdvocacy",
+      "label": "Self-Advocacy Studio",
+      "renderedBytes": 34425,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "sensoryRegulation",
+      "label": "Sensory Regulation",
+      "renderedBytes": 13146,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "sfbt",
+      "label": "Solution-Focused",
+      "renderedBytes": 9189,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "sleep",
+      "label": "Sleep & Rest",
+      "renderedBytes": 9887,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "social",
+      "label": "Social Skills Lab",
+      "renderedBytes": 11583,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "sociallab",
+      "label": "Social Skills Roleplay",
+      "renderedBytes": 12953,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "sourcesOfStrength",
+      "label": "Sources of Strength",
+      "renderedBytes": 12076,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "strengths",
+      "label": "Strengths Finder",
+      "renderedBytes": 23681,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "stressBucket",
+      "label": "Stress Bucket",
+      "renderedBytes": 6963,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "substancePsychoed",
+      "label": "Substance Use",
+      "renderedBytes": 12346,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "teamwork",
+      "label": "Teamwork Builder",
+      "renderedBytes": 16386,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "thoughtRecord",
+      "label": "CBT Thought Record",
+      "renderedBytes": 18584,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "tipp",
+      "label": "TIPP",
+      "renderedBytes": 8854,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "transitions",
+      "label": "Transitions & Change",
+      "renderedBytes": 15994,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "traumaPsychoed",
+      "label": "Understanding Trauma",
+      "renderedBytes": 12166,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "upstander",
+      "label": "Upstander Workshop",
+      "renderedBytes": 32181,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "valuesCommittedAction",
+      "label": "Values & Action",
+      "renderedBytes": 8995,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "viaStrengths",
+      "label": "VIA Strengths",
+      "renderedBytes": 14444,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "voicedetective",
+      "label": "Voice Detective",
+      "renderedBytes": 13168,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "wheelOfLife",
+      "label": "Wheel of Life",
+      "renderedBytes": 6047,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "windowOfTolerance",
+      "label": "Window of Tolerance",
+      "renderedBytes": 6270,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    },
+    {
+      "id": "zones",
+      "label": "Emotion Zones",
+      "renderedBytes": 22660,
+      "standardShell": true,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "issues": []
+    }
+  ]
+}
