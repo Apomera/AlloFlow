@@ -102,6 +102,39 @@ function HistoryPanel(props) {
     setActiveSelStation = (() => {
     })
   } = props;
+  const shareResourcePackToCommunity = () => {
+    const visibleItems = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
+    if (visibleItems.length === 0) {
+      addToast && addToast(t("history.empty_general") || "No resources to share yet.", "info");
+      return;
+    }
+    const activeUnit = Array.isArray(units) ? units.find((u) => u.id === activeUnitId) : null;
+    const packTitle = activeUnit && activeUnitId !== "all" && activeUnitId !== "uncategorized" ? activeUnit.name : isTeacherMode ? "AlloFlow resource pack" : "My AlloFlow resources";
+    try {
+      localStorage.setItem("alloflow_pending_submission", JSON.stringify({
+        title: packTitle,
+        source_type: "resource-pack",
+        payload: {
+          type: "resource-pack",
+          title: packTitle,
+          activeUnitId,
+          unitName: activeUnit ? activeUnit.name : null,
+          itemCount: visibleItems.length,
+          items: visibleItems.map((item) => ({
+            id: item.id,
+            type: item.type,
+            title: item.title,
+            timestamp: item.timestamp,
+            data: item.data,
+            meta: item.meta
+          }))
+        }
+      }));
+      setIsCommunityCatalogOpen(true);
+    } catch (err) {
+      addToast && addToast("Could not open submission form: " + (err && err.message), "error");
+    }
+  };
   return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", className: `bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(History, { size: 16 }), " ", isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80" }, isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-200 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-orange-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-green-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -144,6 +177,17 @@ function HistoryPanel(props) {
       "data-help-key": "history_save_student"
     },
     isTeacherMode ? /* @__PURE__ */ React.createElement(Lock, { size: 14 }) : /* @__PURE__ */ React.createElement(Save, { size: 14 })
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: shareResourcePackToCommunity,
+      disabled: history.length === 0,
+      className: "p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("history.share_pack_tooltip") || "Share this resource pack to the AlloFlow community catalog",
+      "aria-label": t("history.share_pack_aria") || "Share resource pack to AlloFlow community catalog",
+      "data-help-key": "history_share_pack"
+    },
+    /* @__PURE__ */ React.createElement(Share2, { size: 14 })
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -447,29 +491,6 @@ function HistoryPanel(props) {
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        "aria-label": t("history.share_to_community_aria") || "Share to AlloFlow community catalog",
-        onClick: (e) => {
-          e.stopPropagation();
-          try {
-            localStorage.setItem("alloflow_pending_submission", JSON.stringify({
-              title: item.title || "",
-              source_type: item.type || "",
-              payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-            }));
-            setIsCommunityCatalogOpen(true);
-          } catch (err) {
-            addToast && addToast("Could not open submission form: " + (err && err.message), "error");
-          }
-        },
-        className: "p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
-        title: t("history.share_to_community_tooltip") || "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
-      },
-      /* @__PURE__ */ React.createElement(Share2, { size: 12 }),
-      " ",
-      t("history.share_button") || "Share"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
         "aria-label": t("common.delete"),
         onClick: (e) => handleDeleteHistoryItem(e, item.id),
         className: "p-1 text-indigo-300 hover:text-red-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
@@ -479,30 +500,6 @@ function HistoryPanel(props) {
       /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
       " ",
       t("actions.remove")
-    )),
-    (isParentMode || isIndependentMode) && !isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-end mt-2 pt-2 border-t border-indigo-800/30", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        "aria-label": t("history.share_to_community_aria") || "Share to AlloFlow community catalog",
-        onClick: (e) => {
-          e.stopPropagation();
-          try {
-            localStorage.setItem("alloflow_pending_submission", JSON.stringify({
-              title: item.title || "",
-              source_type: item.type || "",
-              payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-            }));
-            setIsCommunityCatalogOpen(true);
-          } catch (err) {
-            addToast && addToast("Could not open submission form: " + (err && err.message), "error");
-          }
-        },
-        className: "p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]",
-        title: t("history.share_to_community_tooltip") || "Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
-      },
-      /* @__PURE__ */ React.createElement(Share2, { size: 12 }),
-      " ",
-      t("history.share_button") || "Share"
     ))
   ))));
 }

@@ -87,3 +87,46 @@ describe('isAbilityTieredName (equity guardrail)', () => {
     expect(LP.isAbilityTieredName(42)).toBe(false);
   });
 });
+
+describe('custom rating scales + anonymous result sharing', () => {
+  it('builds a bounded custom rating scale with labels', () => {
+    const scale = LP.buildRatingScale(0, 3, '0 = Not yet\n1 = A little\n2 = Mostly\n3 = Got it');
+    expect(scale.min).toBe(0);
+    expect(scale.max).toBe(3);
+    expect(scale.labels['0']).toBe('Not yet');
+    expect(scale.labels['3']).toBe('Got it');
+  });
+
+  it('summarizes rating responses without codenames or per-student rows', () => {
+    const poll = { id: 'p1', type: 'rating', prompt: 'How ready?', scale: LP.buildRatingScale(1, 4, '1 = Not ready\n4 = Ready') };
+    const summary = LP.buildPollResultsSummary(poll, [
+      { uid: 'u1', codename: 'Daring Sloth', response: 4 },
+      { uid: 'u2', codename: 'Quiet Star', response: 2 },
+      { uid: 'u3', codename: 'Blue Fox', response: 4 },
+    ], 5);
+    expect(summary.totalResponses).toBe(3);
+    expect(summary.guestCount).toBe(5);
+    expect(summary.items.find((item) => item.value === 4)).toMatchObject({ count: 2, percent: 67, label: 'Ready' });
+    expect(JSON.stringify(summary)).not.toContain('Daring Sloth');
+    expect(JSON.stringify(summary)).not.toContain('u1');
+  });
+
+  it('suppresses free-text content when sharing results', () => {
+    const summary = LP.buildPollResultsSummary({ id: 'p2', type: 'freetext', prompt: 'What do you need?' }, [
+      { codename: 'A', response: 'I need help with step 2.' },
+    ], 1);
+    expect(summary.freeTextSuppressed).toBe(true);
+    expect(summary.items).toEqual([{ value: 'responses', label: 'Free-text responses received', count: 1, percent: 100 }]);
+    expect(JSON.stringify(summary)).not.toContain('step 2');
+  });
+
+  it('host broadcasts shared results over open data channels', () => {
+    const host = LP.createHost({ sessionCode: 'ABCD' });
+    const sent = [];
+    host.peers.set('u1', { dc: { readyState: 'open', send: (msg) => sent.push(JSON.parse(msg)) } });
+    host.peers.set('u2', { dc: { readyState: 'closed', send: () => { throw new Error('should not send'); } } });
+    host.broadcastPollResults('p3', { prompt: 'Ready?', items: [] });
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toMatchObject({ type: 'pollResults', payload: { pollId: 'p3', prompt: 'Ready?', items: [] } });
+  });
+});

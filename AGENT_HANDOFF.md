@@ -35,7 +35,7 @@ Last updated: 2026-07-01 by Codex.
 | 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | In progress, not deployed | Continuing STEM Lab visual/UX polish; auditing tool screens and applying next focused refinements without touching live polling work. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Improved SEL Hub first-screen UX, responsive catalog/pathway/station layouts, save/privacy clarity, dirty-state ordering, and tool theme handoff. Verified `sel_hub/FOR_EDUCATORS.md` is clean UTF-8; no Markdown edit needed. |
 | 2026-07-01 | Codex | `tests/helpers/word_sounds_harness.js`, `tests/i18n_cli_tools.test.js`, `tests/__snapshots__/stem_*_golden.test.js.snap`, `AGENT_HANDOFF.md` | Done locally, not deployed | Fixed Word Sounds golden harness translation fallbacks, gave the slow full-tree i18n safety check a larger timeout, and refreshed eight stale STEM render digests after validating they match already-committed tool behavior. |
-| 2026-07-01 | Codex | `live_polling_module.js`, `AlloFlowANTI.txt`, `view_history_panel_source.jsx`, `view_history_panel_module.js`, `AGENT_HANDOFF.md` | In progress, not deployed | Fixing live poll post-submit/close behavior, anonymous result sharing, poll scale customization, pack-level community sharing, and stray literal newline text. |
+| 2026-07-01 | Codex | `live_polling_module.js`, `AlloFlowANTI.txt`, `view_history_panel_source.jsx`, `view_history_panel_module.js`, `tests/live_polling.test.js`, `tests/history_panel_share.test.js`, `tests/canvas_shell_live_controls.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Fixed live poll post-submit/close behavior, added anonymous aggregate result sharing and custom rating scales, moved floating live controls, changed Resource Pack History to pack-level community sharing, and removed the stray literal newline text. |
 
 ## Validation Log
 
@@ -62,6 +62,9 @@ Last updated: 2026-07-01 by Codex.
 - `node --check prismflow-deploy\public\stem_lab\stem_lab_module.js` and `node --check prismflow-deploy\build\stem_lab\stem_lab_module.js` - passed; hashes match the source STEM module.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed with no app-crash render failures across 113 STEM tools; existing MusicSynth AudioContext warning still prints in the Node smoke environment.
 - Playwright preview against `http://127.0.0.1:4174/` with the CDN STEM module request intercepted to the local build copy - passed: desktop catalog measured 1120px / 4 columns, `Chemistry Lab` found Equation Balancer, `Optics Lab` found OpticsLab AP, mobile hid the XP/brand/keyboard crowding controls, and the STEM modal z-layer now sits above the AI guide layer.
+- `node --check live_polling_module.js`, `node --check prismflow-deploy\public\live_polling_module.js`, and `node --check view_history_panel_module.js` - passed after live polling/history changes.
+- `npx vitest run tests/live_polling.test.js tests/history_panel_share.test.js tests/canvas_shell_live_controls.test.js --reporter=verbose` - passed 19 tests.
+- `npm run build` in `prismflow-deploy` - passed after syncing live polling and history panel public modules; postbuild reported zero external resource requests.
 
 ## Open Coordination Notes
 

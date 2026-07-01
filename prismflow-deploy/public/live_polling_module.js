@@ -108,6 +108,71 @@
   const ABILITY_TIERED_PATTERN = /\b(struggling|low|gifted|advanced|remedial|tier\s*[123])\b/i;
   const isAbilityTieredName = (name) => typeof name === 'string' && ABILITY_TIERED_PATTERN.test(name);
 
+  const clampInt = (value, fallback, min, max) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(n)));
+  };
+  const buildRatingScale = (minValue, maxValue, labelText) => {
+    let min = clampInt(minValue, 1, 0, 20);
+    let max = clampInt(maxValue, 5, 1, 20);
+    if (max < min) { const tmp = min; min = max; max = tmp; }
+    if (max === min) max = Math.min(20, min + 1);
+    const labels = {};
+    String(labelText || '').split(/\r?\n/).forEach((line, idx) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      const m = trimmed.match(/^(\d+)\s*(?:=|:|-|\u2013|\u2014)\s*(.+)$/);
+      if (m) labels[String(clampInt(m[1], min, min, max))] = m[2].trim();
+      else {
+        const value = min + idx;
+        if (value <= max) labels[String(value)] = trimmed;
+      }
+    });
+    return { min: min, max: max, labels: labels };
+  };
+  const normalizeRatingScale = (poll) => {
+    const scale = poll && poll.scale ? poll.scale : {};
+    const labels = scale.labels || {};
+    return buildRatingScale(scale.min, scale.max, Object.keys(labels).map((key) => key + '=' + labels[key]).join('\n'));
+  };
+  const getRatingValues = (scale) => {
+    const out = [];
+    for (let n = scale.min; n <= scale.max && out.length < 21; n++) out.push(n);
+    return out;
+  };
+  const buildPollResultsSummary = (poll, responseList, guestCount) => {
+    const responses = Array.isArray(responseList) ? responseList : [];
+    const total = responses.length;
+    const pct = (count) => total > 0 ? Math.round((count / total) * 100) : 0;
+    const summary = {
+      pollId: poll && poll.id,
+      prompt: (poll && poll.prompt) || '',
+      type: (poll && poll.type) || 'poll',
+      totalResponses: total,
+      guestCount: Number(guestCount) || 0,
+      generatedAt: Date.now(),
+      items: []
+    };
+    if (poll && poll.type === 'rating') {
+      const scale = normalizeRatingScale(poll);
+      summary.scale = scale;
+      summary.items = getRatingValues(scale).map((value) => {
+        const count = responses.filter((r) => Number(r && r.response) === value).length;
+        return { value: value, label: scale.labels[String(value)] || String(value), count: count, percent: pct(count) };
+      });
+    } else if (poll && poll.type === 'mcq') {
+      const opts = Array.isArray(poll.options) ? poll.options : [];
+      summary.items = opts.map((opt) => {
+        const count = responses.filter((r) => String(r && r.response) === String(opt)).length;
+        return { value: opt, label: String(opt), count: count, percent: pct(count) };
+      });
+    } else {
+      summary.items = [{ value: 'responses', label: 'Free-text responses received', count: total, percent: total > 0 ? 100 : 0 }];
+      summary.freeTextSuppressed = true;
+    }
+    return summary;
+  };
   // ──────────────────────────────────────────────────────────────────────
   // PollingHost — teacher device
   // Listens for guest signaling docs, accepts incoming offers, exchanges
@@ -234,6 +299,17 @@
       if (this.activePoll && this.activePoll.id === idToClose) this.activePoll = null;
     }
 
+    broadcastPollResults(pollId, summary) {
+      if (!pollId || !summary) return;
+      const safeSummary = Object.assign({}, summary, { pollId: pollId });
+      const msg = JSON.stringify({ type: 'pollResults', payload: safeSummary });
+      this.peers.forEach((peer) => {
+        if (peer.dc && peer.dc.readyState === 'open') {
+          try { peer.dc.send(msg); } catch (err) {}
+        }
+      });
+    }
+
     _cleanupPeer(uid) {
       const peer = this.peers.get(uid);
       if (!peer) return;
@@ -278,6 +354,7 @@
       this.codename = (typeof config.codename === 'string' && config.codename.slice(0, 64)) || 'Guest';
       this.onPoll = config.onPoll || (() => {});
       this.onPollClose = config.onPollClose || (() => {});
+      this.onPollResults = config.onPollResults || (() => {});
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
       this.onFailed = config.onFailed || (() => {});
@@ -319,6 +396,7 @@
           const parsed = JSON.parse(msg.data);
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
+          else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
         } catch (err) {}
       };
 
@@ -439,6 +517,11 @@
     const [pollType, setPollType] = R.useState('rating');
     const [pollPrompt, setPollPrompt] = R.useState('');
     const [pollOptions, setPollOptions] = R.useState('Option A\nOption B\nOption C');
+    const [ratingMin, setRatingMin] = R.useState(1);
+    const [ratingMax, setRatingMax] = R.useState(5);
+    const [ratingLabels, setRatingLabels] = R.useState('1 = Not yet\n2 = A little\n3 = Somewhat\n4 = Mostly\n5 = Very well');
+    const [afterSubmitMode, setAfterSubmitMode] = R.useState('dismiss');
+    const [lastSharedResultsAt, setLastSharedResultsAt] = R.useState(null);
     const [activePoll, setActivePoll] = R.useState(null);
     const [composerRules, setComposerRules] = R.useState([]);
     const [groups, setGroups] = R.useState([]);
@@ -513,9 +596,10 @@
 
     const addRule = function () {
       const defaultPred = pollType === 'mcq' ? 'eq' : 'lte';
+      const ratingScale = buildRatingScale(ratingMin, ratingMax, ratingLabels);
       const defaultValue = pollType === 'mcq'
         ? (pollOptions.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)[0] || '')
-        : 3;
+        : Math.min(ratingScale.max, Math.max(ratingScale.min, Math.round((ratingScale.min + ratingScale.max) / 2)));
       setComposerRules(function (prev) { return prev.concat([{
         id: 'rule-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         when: { predicate: defaultPred, value: defaultValue },
@@ -564,16 +648,25 @@
           ? pollOptions.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
           : null,
         routingRules: validRules,
+        scale: pollType === 'rating' ? buildRatingScale(ratingMin, ratingMax, ratingLabels) : null,
+        afterSubmitMode: afterSubmitMode,
       };
       hostRef.current.broadcastPoll(poll);
       setActivePoll(poll);
       setResponses(function (prev) { const n = Object.assign({}, prev); n[poll.id] = []; return n; });
       setRoutingByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
+      setLastSharedResultsAt(null);
     };
     const closePoll = function () {
       if (!hostRef.current || !activePoll) return;
       hostRef.current.closePoll(activePoll.id);
       setActivePoll(null);
+    };
+    const shareResults = function () {
+      if (!hostRef.current || !activePoll) return;
+      const summary = buildPollResultsSummary(activePoll, responses[activePoll.id] || [], guests.length);
+      hostRef.current.broadcastPollResults(activePoll.id, summary);
+      setLastSharedResultsAt(Date.now());
     };
     const groupNameById = function (id) {
       const g = groups.find(function (x) { return x.id === id; });
@@ -607,7 +700,24 @@
             })
           ),
           ce('input', { type: 'text', value: pollPrompt, onChange: function (e) { setPollPrompt(e.target.value); }, placeholder: 'Poll prompt', 'aria-label': 'Poll prompt', style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box' } }),
+          pollType === 'rating' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginBottom: 8 } },
+            ce('label', { style: { fontSize: '0.75rem', color: '#475569', fontWeight: 700 } }, 'Scale starts',
+              ce('input', { type: 'number', value: ratingMin, min: 0, max: 19, onChange: function (e) { setRatingMin(clampInt(e.target.value, 1, 0, 19)); }, 'aria-label': 'Rating scale minimum', style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box' } })
+            ),
+            ce('label', { style: { fontSize: '0.75rem', color: '#475569', fontWeight: 700 } }, 'Scale ends',
+              ce('input', { type: 'number', value: ratingMax, min: 1, max: 20, onChange: function (e) { setRatingMax(clampInt(e.target.value, 5, 1, 20)); }, 'aria-label': 'Rating scale maximum', style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box' } })
+            ),
+            ce('label', { style: { gridColumn: '1 / -1', fontSize: '0.75rem', color: '#475569', fontWeight: 700 } }, 'Optional labels, one per line',
+              ce('textarea', { value: ratingLabels, onChange: function (e) { setRatingLabels(e.target.value); }, 'aria-label': 'Rating labels', placeholder: '1 = Not yet\n5 = Very well', rows: 3, style: { display: 'block', marginTop: 3, width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', fontSize: '0.8rem' } })
+            )
+          ) : null,
           pollType === 'mcq' ? ce('textarea', { value: pollOptions, onChange: function (e) { setPollOptions(e.target.value); }, 'aria-label': 'Choices (one per line)', placeholder: 'One choice per line', rows: 4, style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box', fontFamily: 'inherit' } }) : null,
+          ce('label', { style: { display: 'block', fontSize: '0.75rem', color: '#475569', fontWeight: 700, marginBottom: 8 } }, 'After a student submits',
+            ce('select', { value: afterSubmitMode, onChange: function (e) { setAfterSubmitMode(e.target.value); }, 'aria-label': 'After submit behavior', style: { display: 'block', marginTop: 3, width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white', color: '#0f172a' } },
+              ce('option', { value: 'dismiss' }, 'Dismiss poll on their device'),
+              ce('option', { value: 'wait' }, 'Keep poll open until I close it')
+            )
+          ),
           // ── Routing-rules expandable section ────────────────────────
           pollType !== 'freetext' ? ce('div', { style: { marginBottom: 8 } },
             ce('button', {
@@ -639,21 +749,22 @@
                     }, opts.map(function (opt) { return ce('option', { key: opt, value: opt }, opt); }))
                   : (rule.when.predicate === 'between'
                       ? ce('span', { style: { display: 'inline-flex', gap: 4 } },
-                          ce('input', { type: 'number', value: (rule.when.value && rule.when.value[0]) || 1, min: 1, max: 5, 'aria-label': 'Range min', onChange: function (e) { const v = Math.max(1, Math.min(5, Number(e.target.value) || 1)); updateRule(rule.id, { when: { value: [v, (rule.when.value && rule.when.value[1]) || 5] } }); }, style: { width: 50, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } }),
+                          ce('input', { type: 'number', value: (rule.when.value && rule.when.value[0]) || buildRatingScale(ratingMin, ratingMax, ratingLabels).min, min: buildRatingScale(ratingMin, ratingMax, ratingLabels).min, max: buildRatingScale(ratingMin, ratingMax, ratingLabels).max, 'aria-label': 'Range min', onChange: function (e) { const scale = buildRatingScale(ratingMin, ratingMax, ratingLabels); const v = Math.max(scale.min, Math.min(scale.max, Number(e.target.value) || scale.min)); updateRule(rule.id, { when: { value: [v, (rule.when.value && rule.when.value[1]) || scale.max] } }); }, style: { width: 50, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } }),
                           ce('span', { style: { alignSelf: 'center', fontSize: '0.75rem' } }, 'to'),
-                          ce('input', { type: 'number', value: (rule.when.value && rule.when.value[1]) || 5, min: 1, max: 5, 'aria-label': 'Range max', onChange: function (e) { const v = Math.max(1, Math.min(5, Number(e.target.value) || 5)); updateRule(rule.id, { when: { value: [(rule.when.value && rule.when.value[0]) || 1, v] } }); }, style: { width: 50, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } })
+                          ce('input', { type: 'number', value: (rule.when.value && rule.when.value[1]) || buildRatingScale(ratingMin, ratingMax, ratingLabels).max, min: buildRatingScale(ratingMin, ratingMax, ratingLabels).min, max: buildRatingScale(ratingMin, ratingMax, ratingLabels).max, 'aria-label': 'Range max', onChange: function (e) { const scale = buildRatingScale(ratingMin, ratingMax, ratingLabels); const v = Math.max(scale.min, Math.min(scale.max, Number(e.target.value) || scale.max)); updateRule(rule.id, { when: { value: [(rule.when.value && rule.when.value[0]) || scale.min, v] } }); }, style: { width: 50, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } })
                         )
-                      : ce('input', { type: 'number', value: rule.when.value, min: 1, max: 5, 'aria-label': 'Rating value', onChange: function (e) { updateRule(rule.id, { when: { value: Math.max(1, Math.min(5, Number(e.target.value) || 1)) } }); }, style: { width: 60, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } })
+                      : ce('input', { type: 'number', value: rule.when.value, min: buildRatingScale(ratingMin, ratingMax, ratingLabels).min, max: buildRatingScale(ratingMin, ratingMax, ratingLabels).max, 'aria-label': 'Rating value', onChange: function (e) { const scale = buildRatingScale(ratingMin, ratingMax, ratingLabels); updateRule(rule.id, { when: { value: Math.max(scale.min, Math.min(scale.max, Number(e.target.value) || scale.min)) } }); }, style: { width: 60, padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } })
                     );
                 return ce('div', { key: rule.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '0.4rem', background: '#f8fafc', borderRadius: 4, fontSize: '0.8rem', flexWrap: 'wrap' } },
                   ce('span', { style: { color: '#64748b' } }, 'When'),
                   ce('select', {
                     value: rule.when.predicate, 'aria-label': 'Predicate', onChange: function (e) {
                       const newPred = e.target.value;
+                      const scale = buildRatingScale(ratingMin, ratingMax, ratingLabels);
                       // Reset value when predicate changes between scalar/array forms
                       let newVal = rule.when.value;
-                      if (newPred === 'between' && !Array.isArray(rule.when.value)) newVal = [1, 5];
-                      if (newPred !== 'between' && Array.isArray(rule.when.value)) newVal = isMcq ? (opts[0] || '') : 3;
+                      if (newPred === 'between' && !Array.isArray(rule.when.value)) newVal = [scale.min, scale.max];
+                      if (newPred !== 'between' && Array.isArray(rule.when.value)) newVal = isMcq ? (opts[0] || '') : Math.min(scale.max, Math.max(scale.min, Math.round((scale.min + scale.max) / 2)));
                       updateRule(rule.id, { when: { predicate: newPred, value: newVal } });
                     },
                     style: { padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' }
@@ -694,10 +805,14 @@
               ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase' } }, activePoll.type),
               ce('div', { style: { fontWeight: 600, marginTop: 2 } }, activePoll.prompt)
             ),
-            ce('button', { onClick: closePoll, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, 'Close poll')
+            ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+              ce('button', { onClick: shareResults, disabled: activeResponses.length === 0, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (activeResponses.length === 0 ? '#cbd5e1' : '#2563eb'), background: 'white', color: activeResponses.length === 0 ? '#94a3b8' : '#1d4ed8', cursor: activeResponses.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, lastSharedResultsAt ? 'Share updated results' : 'Share anonymous results'),
+              ce('button', { onClick: closePoll, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, 'Close poll')
+            )
           ),
           ce('div', { style: { marginTop: '0.6rem', fontSize: '0.85rem' } },
-            ce('strong', null, activeResponses.length), ' / ', guests.length, ' responded'
+            ce('strong', null, activeResponses.length), ' / ', guests.length, ' responded',
+            lastSharedResultsAt ? ce('span', { style: { marginLeft: 8, color: '#1d4ed8', fontSize: '0.75rem', fontWeight: 700 } }, 'Results shared') : null
           ),
           // Aggregate routing summary (teacher-only; counts per group)
           activePoll && Array.isArray(activePoll.routingRules) && activePoll.routingRules.length > 0
@@ -743,6 +858,7 @@
     const [activePoll, setActivePoll] = R.useState(null);
     const [submitted, setSubmitted] = R.useState(false);
     const [responseValue, setResponseValue] = R.useState('');
+    const [sharedResults, setSharedResults] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
 
     R.useEffect(function () {
@@ -752,8 +868,9 @@
         sessionCode: sessionCode,
         userUid: userUid,
         codename: codename,
-        onPoll: function (p) { setActivePoll(p); setSubmitted(false); setResponseValue(''); },
+        onPoll: function (p) { setActivePoll(p); setSharedResults(null); setSubmitted(false); setResponseValue(''); },
         onPollClose: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); },
+        onPollResults: function (summary) { setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue(''); },
         onConnected: function () { setConnectionState('connected'); },
         onDisconnected: function () { setConnectionState('disconnected'); },
         onFailed: function () { setConnectionState('failed'); },
@@ -766,21 +883,60 @@
       };
     }, [enabled, sessionCode, userUid, codename]);
 
-    if (!enabled || !activePoll) return null;
+    const renderResultsSummary = function (summary) {
+      const items = Array.isArray(summary && summary.items) ? summary.items : [];
+      const total = Number(summary && summary.totalResponses) || 0;
+      return ce('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Shared poll results',
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+      },
+        ce('div', { style: { background: 'white', maxWidth: 560, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+          ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, 'Anonymous class results'),
+          ce('h2', { style: { margin: '0 0 0.4rem 0', fontSize: '1.1rem', color: '#0f172a' } }, (summary && summary.prompt) || 'Poll results'),
+          ce('p', { style: { margin: '0 0 0.8rem 0', color: '#475569', fontSize: '0.85rem' } }, total + ' response' + (total === 1 ? '' : 's') + ' shared by the teacher.'),
+          items.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 } },
+            items.map(function (item, i) {
+              const percent = Math.max(0, Math.min(100, Number(item.percent) || 0));
+              return ce('div', { key: String(item.value || item.label || i), style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.55rem' } },
+                ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: '0.85rem', color: '#0f172a', marginBottom: 4 } },
+                  ce('strong', null, item.label || String(item.value || 'Response')),
+                  ce('span', null, (Number(item.count) || 0) + ' (' + percent + '%)')
+                ),
+                ce('div', { style: { height: 8, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' } },
+                  ce('div', { style: { width: percent + '%', height: '100%', background: '#2563eb' } })
+                )
+              );
+            })
+          ) : null,
+          summary && summary.freeTextSuppressed ? ce('p', { style: { fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.8rem 0' } }, 'Free-text answers stay private on the teacher device; only the response count is shared.') : null,
+          ce('button', { onClick: function () { setSharedResults(null); }, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer', fontWeight: 700, width: '100%' } }, 'Close results')
+        )
+      );
+    };
 
+    if (!enabled) return null;
+    if (sharedResults) return renderResultsSummary(sharedResults);
+    if (!activePoll) return null;
+
+    const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
+    const ratingValues = ratingScale ? getRatingValues(ratingScale) : [];
     const submit = function () {
       if (submitted || !guestRef.current) return;
       let payload;
-      if (activePoll.type === 'rating') payload = Number(responseValue) || 0;
+      if (activePoll.type === 'rating') payload = Number(responseValue);
       else if (activePoll.type === 'mcq') payload = String(responseValue);
       else payload = String(responseValue);
-      if (activePoll.type === 'rating' && !payload) return;
+      if (activePoll.type === 'rating' && responseValue === '') return;
       if (activePoll.type !== 'rating' && !String(payload).trim()) return;
+      const finishSubmitted = function () {
+        if (activePoll.afterSubmitMode === 'wait') setSubmitted(true);
+        else { setSubmitted(false); setResponseValue(''); setActivePoll(null); }
+      };
       const sent = guestRef.current.sendResponse(activePoll.id, payload);
-      if (sent) setSubmitted(true);
+      if (sent) finishSubmitted();
       else if (connectionState === 'failed') {
         exportResponseForFallback(activePoll.id, payload, codename);
-        setSubmitted(true);
+        finishSubmitted();
       }
     };
 
@@ -789,12 +945,17 @@
       style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
     },
       ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
-        ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, activePoll.type),
+        ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, activePoll.type === 'rating' && ratingScale ? 'rating ' + ratingScale.min + '-' + ratingScale.max : activePoll.type),
         ce('h2', { style: { margin: '0 0 1rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
         submitted ? ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 6, fontWeight: 600 } }, 'Response sent. Waiting for the teacher to close this poll.') :
-          activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', margin: '1rem 0' } },
-            [1, 2, 3, 4, 5].map(function (n) {
-              return ce('button', { key: n, onClick: function () { setResponseValue(n); }, style: { width: 48, height: 48, borderRadius: 24, border: '2px solid ' + (Number(responseValue) === n ? '#1e3a8a' : '#cbd5e1'), background: Number(responseValue) === n ? '#1e3a8a' : 'white', color: Number(responseValue) === n ? 'white' : '#0f172a', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer' } }, n);
+          activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
+            ratingValues.map(function (n) {
+              const selected = Number(responseValue) === n;
+              const label = ratingScale.labels[String(n)];
+              return ce('button', { key: n, onClick: function () { setResponseValue(n); }, style: { minWidth: 54, minHeight: 52, borderRadius: 14, border: '2px solid ' + (selected ? '#1e3a8a' : '#cbd5e1'), background: selected ? '#1e3a8a' : 'white', color: selected ? 'white' : '#0f172a', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0.55rem' } },
+                ce('span', { style: { display: 'block' } }, n),
+                label ? ce('span', { style: { display: 'block', fontSize: '0.62rem', fontWeight: 600, marginTop: 2, maxWidth: 80, lineHeight: 1.15 } }, label) : null
+              );
             })
           ) :
           activePoll.type === 'mcq' ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, margin: '0.5rem 0 1rem 0' } },
@@ -805,11 +966,10 @@
           ce('textarea', { value: responseValue, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': 'Your response', placeholder: 'Type your response', rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
         submitted ? null : ce('button', { onClick: submit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer', fontWeight: 700, width: '100%' } }, 'Submit response'),
         connectionState === 'failed' ? ce('p', { style: { fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.75rem', marginBottom: 0 } }, 'Direct connection failed. Submitting will export your response as a downloadable file for the teacher to import.') :
-          connectionState === 'connecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.75rem', marginBottom: 0 } }, 'Connecting…') : null
+          connectionState === 'connecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.75rem', marginBottom: 0 } }, 'Connecting...') : null
       )
     );
   };
-
   const LivePolling = {
     createHost: (config) => new PollingHost(config),
     createGuest: (config) => new PollingGuest(config),
@@ -817,13 +977,16 @@
     evaluateRoutingRules: evaluateRoutingRules,
     matchesPredicate: matchesPredicate,
     isAbilityTieredName: isAbilityTieredName,
+    buildRatingScale: buildRatingScale,
+    normalizeRatingScale: normalizeRatingScale,
+    buildPollResultsSummary: buildPollResultsSummary,
     PollingHost: PollingHost,
     PollingGuest: PollingGuest,
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.1.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with teacher-authored auto-routing rules. Signaling-only Firestore use; application data flows browser-to-browser; only Tier-1 groupId writes touch the session doc.',
+      version: '1.2.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, and teacher-authored auto-routing rules.',
     },
   };
 
