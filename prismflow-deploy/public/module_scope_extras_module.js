@@ -150,6 +150,90 @@ class ErrorBoundary extends React.Component {
   }
 }
 __publicField(ErrorBoundary, "contextType", LanguageContext);
+﻿const SESSION_RESOURCE_INLINE_LIMIT = 700 * 1024;
+const SESSION_RESOURCE_CHUNK_SIZE = 180 * 1024;
+const stripUndefinedForFirestore = (obj) => {
+  if (obj === null || obj === void 0) return obj;
+  if (Array.isArray(obj)) return obj.map((v) => v === void 0 ? null : stripUndefinedForFirestore(v));
+  if (typeof obj === "object" && !(obj instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([, v]) => v !== void 0).map(([k, v]) => [k, stripUndefinedForFirestore(v)])
+    );
+  }
+  return obj;
+};
+const jsonByteLength = (value) => {
+  const str = typeof value === "string" ? value : JSON.stringify(value);
+  try {
+    if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str).length;
+  } catch (_) {
+  }
+  return str.length;
+};
+const makeSessionAssetId = (prefix) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+const getSessionAssetRef = (appId, assetId) => doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+const compactLargeSessionResources = (appId, resources, writePromises) => {
+  let resourcesJson = "";
+  try {
+    resourcesJson = JSON.stringify(resources);
+  } catch (_) {
+    return resources;
+  }
+  if (jsonByteLength(resourcesJson) <= SESSION_RESOURCE_INLINE_LIMIT) {
+    return resources;
+  }
+  console.warn("[SESSION DEBUG] Resources exceed inline session limit; storing full resource bodies as refs.");
+  return resources.map((item, index) => {
+    const assetId = makeSessionAssetId("res");
+    let itemJson = "";
+    try {
+      itemJson = JSON.stringify(item);
+    } catch (_) {
+      itemJson = JSON.stringify({
+        id: item && item.id,
+        type: item && item.type,
+        title: item && item.title,
+        data: item && item.data
+      });
+    }
+    if (jsonByteLength(itemJson) > SESSION_RESOURCE_CHUNK_SIZE) {
+      const chunkIds = [];
+      for (let offset = 0; offset < itemJson.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
+        const chunkId = `${assetId}_chunk_${chunkIds.length}`;
+        chunkIds.push(chunkId);
+        writePromises.push(setDoc(getSessionAssetRef(appId, chunkId), {
+          kind: "sessionResourceChunk",
+          parent: assetId,
+          index: chunkIds.length - 1,
+          data: itemJson.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE)
+        }));
+      }
+      writePromises.push(setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+        kind: "sessionResourceChunks",
+        chunks: chunkIds,
+        id: item && item.id,
+        type: item && item.type,
+        title: item && item.title,
+        meta: item && item.meta
+      })));
+    } else {
+      writePromises.push(setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+        kind: "sessionResource",
+        resource: item
+      })));
+    }
+    return stripUndefinedForFirestore({
+      id: item && item.id || assetId,
+      type: item && item.type || "resource",
+      title: item && item.title || "",
+      meta: item && item.meta,
+      __alloResourceRef: assetId,
+      __alloResourceBytes: jsonByteLength(itemJson),
+      __alloResourceIndex: index
+    });
+  });
+};
+
 const uploadSessionAssets = async (appId, resources) => {
   console.log("[SESSION DEBUG] uploadSessionAssets called, resources:", resources?.length);
   if (!resources || !Array.isArray(resources)) return;
@@ -189,7 +273,7 @@ const uploadSessionAssets = async (appId, resources) => {
     if (val && typeof val === "string" && val.startsWith("data:image")) {
       const assetId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       obj[key] = `ref::${assetId}`;
-      const assetRef = doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+      const assetRef = getSessionAssetRef(appId, assetId);
       writePromises.push(setDoc(assetRef, { data: val }));
     }
   };
@@ -212,17 +296,44 @@ const uploadSessionAssets = async (appId, resources) => {
       item.data.forEach((p) => processField(p, "avatarUrl"));
     }
   });
+  const firestoreResources = stripUndefinedForFirestore(safeResources);
+  const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writePromises);
   await Promise.all(writePromises);
-  return safeResources;
+  return resourcesForSessionDoc;
 };
 const hydrateSessionAssets = async (appId, resources) => {
   const hydrated = structuredClone(resources);
+﻿  const resourceFetchPromises = [];
+  hydrated.forEach((item, index) => {
+    if (!item || typeof item !== "object" || !item.__alloResourceRef) return;
+    const assetRef = getSessionAssetRef(appId, item.__alloResourceRef);
+    const promise = getDoc(assetRef).then(async (snap) => {
+      if (!snap.exists()) return;
+      const payload = snap.data() || {};
+      if (payload.kind === "sessionResource" && payload.resource) {
+        hydrated[index] = payload.resource;
+        return;
+      }
+      if (payload.kind === "sessionResourceChunks" && Array.isArray(payload.chunks)) {
+        const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getDoc(getSessionAssetRef(appId, chunkId))));
+        const json = chunkSnaps.map((chunkSnap) => chunkSnap.exists() ? (chunkSnap.data() || {}).data || "" : "").join("");
+        try {
+          hydrated[index] = JSON.parse(json);
+        } catch (e) {
+          warnLog("Failed to parse session resource chunks", item.__alloResourceRef);
+        }
+      }
+    }).catch(() => warnLog("Failed to load session resource", item.__alloResourceRef));
+    resourceFetchPromises.push(promise);
+  });
+  await Promise.all(resourceFetchPromises);
+
   const fetchPromises = [];
   const restoreField = (obj, key) => {
     const val = obj[key];
     if (val && typeof val === "string" && val.startsWith("ref::")) {
       const assetId = val.split("ref::")[1];
-      const assetRef = doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+      const assetRef = getSessionAssetRef(appId, assetId);
       const promise = getDoc(assetRef).then((snap) => {
         if (snap.exists()) {
           obj[key] = snap.data().data;
