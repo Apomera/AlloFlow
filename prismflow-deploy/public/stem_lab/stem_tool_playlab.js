@@ -1858,6 +1858,7 @@ window.StemLab = window.StemLab || {
         });
       }
       var d = labToolData.playlab || PLAYLAB_DEFAULTS;
+      var workspaceTab = d.workspaceTab || 'field';
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.playlab); next[key] = val;
@@ -2129,6 +2130,7 @@ window.StemLab = window.StemLab || {
             runT: 0,
             runOutcome: null,
             coachReply: '', coachError: '',
+            workspaceTab: 'field',
             activeScenarioId: scenarioId
           });
           if (s.sport === 'soccer') {
@@ -2235,6 +2237,7 @@ window.StemLab = window.StemLab || {
           var next = Object.assign({}, prev.playlab, {
             sport: entry.sport,
             customPositions: Object.assign({}, entry.customPositions || {}),
+            workspaceTab: 'field',
             // Clear in-flight animation + ephemeral state on load
             runActive: false, runT: 0, runOutcome: null, coachReply: '', coachError: ''
           });
@@ -3653,7 +3656,7 @@ window.StemLab = window.StemLab || {
         // run successfully for the current sport, plus chips for each.
         // Football: counts plays with first-completion. Soccer: counts
         // concepts with first xG ≥ 0.20.
-        (function () {
+        workspaceTab === 'scout' && (function () {
           var catalog = (d.playCatalog && typeof d.playCatalog === 'object') ? d.playCatalog : {};
           var sportPrefix = isSoccer ? 'soccer:' : 'football:';
           var sportEntries = Object.keys(catalog).filter(function (k) { return k.indexOf(sportPrefix) === 0; });
@@ -3718,7 +3721,36 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Sport-accent hero band (sport-flavored, dark-themed) ──
-        (function() {
+        // Workspace switch: default to the live field, keep scenario/stats extras opt-in.
+        h('div', { role: 'tablist', 'aria-label': __alloT('stem.playlab.workspace', 'PlayLab workspace'),
+          style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
+          [
+            { id: 'field', label: __alloT('stem.playlab.field_tab', 'Field'), title: __alloT('stem.playlab.field_tab_title', 'Run the active play and adjust the tactical setup') },
+            { id: 'scout', label: __alloT('stem.playlab.scout_tab', 'Scout'), title: __alloT('stem.playlab.scout_tab_title', 'Choose scenarios, daily challenges, achievements, and session numbers') }
+          ].map(function(wt) {
+            var sel = workspaceTab === wt.id;
+            return h('button', {
+              key: 'pl-workspace-' + wt.id,
+              role: 'tab',
+              onClick: function() {
+                upd('workspaceTab', wt.id);
+                plAnnounce(wt.label + ' workspace.');
+              },
+              'aria-selected': sel,
+              'data-pl-focusable': 'true',
+              title: wt.title,
+              style: {
+                padding: '7px 13px', borderRadius: 8, cursor: 'pointer',
+                border: '1px solid ' + (sel ? '#38bdf8' : '#334155'),
+                background: sel ? 'rgba(56,189,248,0.16)' : '#1e293b',
+                color: sel ? '#7dd3fc' : 'var(--allo-stem-text, #cbd5e1)',
+                fontSize: 12, fontWeight: sel ? 800 : 600
+              }
+            }, wt.label);
+          })
+        ),
+
+        workspaceTab === 'scout' && (function() {
           var SPORT_META = {
             football: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)', icon: '🏈', title: __alloT('stem.playlab.american_football_chess_at_4_4_yds_sec', 'American Football \u2014 chess at 4.4 yds/sec'),  hint: __alloT('stem.playlab.11_vs_11_100_yd_field_4_downs_to_gain_', '11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense \u2014 and good QBs read the answer pre-snap.') },
             soccer:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)', icon: '⚽', title: __alloT('stem.playlab.soccer_the_beautiful_game_on_a_105_68m', 'Soccer \u2014 the beautiful game, on a 105\u00d768m grid'), hint: __alloT('stem.playlab.4_3_3_vs_4_4_2_vs_3_5_2_pep_s_position', '4-3-3 vs 4-4-2 vs 3-5-2. Pep\u2019s positional play, Klopp\u2019s gegenpress, Italian catenaccio. Width creates space, the 10 finds it, the false-9 drops to make it. Tactics are the second player.') }
@@ -3749,7 +3781,7 @@ window.StemLab = window.StemLab || {
         // configured tactical setup. Useful as a warm-up for class
         // discussion. Filtered to the active sport so students don't see
         // 5 football scenarios when they're in soccer mode.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
@@ -3871,7 +3903,7 @@ window.StemLab = window.StemLab || {
         // today\'s football pick, soccer class sees today\'s soccer pick.
         // Three states: untried (lavender) / in-progress (gold) /
         // complete (green). Click → applies the scenario.
-        (function() {
+        workspaceTab === 'scout' && (function() {
           var daily = getPlayLabDailyChallenge(d.sport || 'football');
           if (!daily) return null;
           var key = todayKey();
@@ -3909,7 +3941,7 @@ window.StemLab = window.StemLab || {
         // Collection mechanic for athletic students. Earned badges glow
         // with their color; unearned are dimmed with the hint as tooltip
         // so students see how to unlock them.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
@@ -3943,7 +3975,7 @@ window.StemLab = window.StemLab || {
         // Baseball-card-style "your numbers" surface for PlayLab. Sport-
         // aware: football shows coverages-beaten / plays completed / drill
         // flags; soccer shows xG / concepts run / set-piece types.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {
@@ -4114,7 +4146,7 @@ window.StemLab = window.StemLab || {
         // students can see HOW the current call sits within the broader
         // tactical landscape. Collapsed by default to keep the layout
         // tight for free-explore.
-        h('details', {
+        workspaceTab === 'scout' && h('details', {
           style: { marginBottom: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px' }
         },
           h('summary', {

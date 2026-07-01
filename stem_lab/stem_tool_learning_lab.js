@@ -16208,7 +16208,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           }
         ];
         var badgeCount = Object.keys(badges).length;
-        var collapsedCats = d.collapsedCats || {};
+        var defaultCollapsedCats = {
+          mytk: true,
+          udl: true,
+          strategies: true,
+          careers: true,
+          specialized: true
+        };
+        var collapsedCats = d.collapsedCats || defaultCollapsedCats;
 
         return h('div', { role: 'main', 'aria-label': __alloT('stem.learning_lab.learning_lab_main_menu', 'Learning Lab main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('a', { href: '#ll-menu-categories', 'data-ll-focusable': true,

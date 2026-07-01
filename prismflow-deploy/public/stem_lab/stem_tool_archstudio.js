@@ -269,6 +269,7 @@
     var aiAdvice = d.aiAdvice || '';
     var aiLoading = d.aiLoading || false;
     var showAI = d.showAI || false;
+    var showInquiryLab = d.showInquiryLab || false;
     var soundEnabled = d.soundEnabled != null ? d.soundEnabled : true;
 
     // ── Shape definitions (12 shapes) ──
@@ -1428,6 +1429,7 @@
         pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
         pillBtn('\uD83C\uDFC6 ' + completedCount + '/10', showChallenges, 'rgba(245,158,11,.2)', '#f59e0b', '#fbbf24', function () { upd('showChallenges', !showChallenges); }),
         pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }),
+        pillBtn('\u2696\uFE0F Inquiry', showInquiryLab, 'rgba(139,92,246,.2)', '#8b5cf6', '#c4b5fd', function () { upd('showInquiryLab', !showInquiryLab); }),
         pillBtn('\uD83D\uDCBE Gallery', showGallery, 'rgba(34,197,94,.2)', '#22c55e', '#4ade80', function () { upd('showGallery', !showGallery); }),
         pillBtn('\uD83D\uDCC2 Templates', showTemplates, 'rgba(56,189,248,.2)', '#38bdf8', '#7dd3fc', function () { upd('showTemplates', !showTemplates); }),
         pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }),
@@ -2170,7 +2172,7 @@
       ),
 
       // === H7b'' inquiry widget: gravity-rigidity discovery ===
-      (function() {
+      showInquiryLab && (function() {
         var iq = d.gravRigid || { gravMult: 1, rigidity: 80, mass: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('gravRigid', Object.assign({}, iq, patch)); }
         var stress = (iq.mass / 50) * iq.gravMult * (100 - iq.rigidity) / 100;

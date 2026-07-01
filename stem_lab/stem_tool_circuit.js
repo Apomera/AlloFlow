@@ -2068,12 +2068,39 @@ window.StemLab = window.StemLab || {
       var setLabToolData = ctx.setToolData;
       var React = ctx.React;
       var d2 = (labToolData && labToolData.circuit) || {};
+      var workspaceTab = d2.workspaceTab || 'build';
       var expSection = d2.expSection || null;
       function setExp(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.circuit) || {};
           return Object.assign({}, prev, { circuit: Object.assign({}, prior, patch) });
         });
+      }
+      function renderWorkspaceSwitch() {
+        var tabs = [
+          { id: 'build', label: 'Build', icon: '\uD83D\uDD0C' },
+          { id: 'reference', label: 'Reference', icon: '\uD83D\uDCD8' }
+        ];
+        return h('div', {
+          className: 'max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-950/90 border border-slate-800 shadow-lg',
+          role: 'tablist',
+          'aria-label': 'Circuit Builder workspace'
+        }, tabs.map(function(tab) {
+          var active = workspaceTab === tab.id;
+          return h('button', {
+            key: tab.id,
+            type: 'button',
+            role: 'tab',
+            'aria-selected': active,
+            'aria-controls': tab.id === 'reference' ? 'circuit-reference-panel' : 'circuit-build-panel',
+            onClick: function() { setExp({ workspaceTab: tab.id }); },
+            className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
+              (active ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white')
+          },
+            h('span', { 'aria-hidden': 'true' }, tab.icon),
+            h('span', null, tab.label)
+          );
+        }));
       }
 
       var CIRCUIT_LAWS = [
@@ -4286,13 +4313,16 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      var __circuitExpansions = h('div', { className: 'mt-4 max-w-3xl mx-auto' },
+      var __circuitExpansions = h('div', { id: 'circuit-reference-panel', role: 'tabpanel', className: 'mt-4 max-w-3xl mx-auto' },
         expHeader(),
         expTabBar(),
         expSection && h('div', { className: 'mt-2' }, renderActiveSection())
       );
 
-      return h(React.Fragment, null, __circuitMainView, __circuitExpansions);
+      return h(React.Fragment, null,
+        renderWorkspaceSwitch(),
+        workspaceTab === 'reference' ? __circuitExpansions : h('div', { id: 'circuit-build-panel', role: 'tabpanel' }, __circuitMainView)
+      );
     }
   });
 

@@ -161,6 +161,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var showTrendline = d.showTrendline || false;
 
+          var workspaceTab = d.workspaceTab || 'chart';
+
           var sortOrder = d.sortOrder || 'none';  // 'none', 'asc', 'desc'
 
           var filterMin = typeof d.filterMin === 'number' ? d.filterMin : '';
@@ -396,13 +398,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", { onClick: function () { updDS('showStats', !showStats); },
+                React.createElement("button", { onClick: function () { updDS('workspaceTab', workspaceTab === 'analyze' ? 'chart' : 'analyze'); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold",
 
-                  style: { background: showStats ? _btnBg : _card, color: showStats ? '#fff' : _text, border: '1px solid ' + _border }
+                  style: { background: workspaceTab === 'analyze' ? _btnBg : _card, color: workspaceTab === 'analyze' ? '#fff' : _text, border: '1px solid ' + _border }
 
-                }, showStats ? '📊 Stats On' : '📊 Stats'),
+                }, workspaceTab === 'analyze' ? '📈 Chart View' : '📊 Analyze'),
 
                 React.createElement("button", { "aria-label": t('stem.datastudio.back', "Back"),
 
@@ -1153,7 +1155,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── Statistics Panel ──
 
-            showStats && dataRows.length > 0 && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+            workspaceTab === 'analyze' && dataRows.length > 0 && React.createElement(React.Fragment, null,
+
+            showStats && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
 
               [
 
@@ -1183,7 +1187,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
             // ── AI Data Story Panel (reading-level aware) ──
 
-            dataRows.length > 0 && (function () {
+            (function () {
 
               var aiLevel = d.aiLevel || 'grade5';
 
@@ -1360,6 +1364,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
                 React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.datastudio.design_note_discrete_4_state_visual_ma', 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.'))
               );
             })()
+
+            )
 
           );
       })();
