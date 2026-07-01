@@ -480,7 +480,16 @@
           '.stem-tool-card:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
           '.stem-tool-card h4 { line-height: 1.25; }',
           '.stem-tool-card p { line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '.stem-active-toolbar { position: sticky; top: 0; z-index: 16; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; border-bottom: 1px solid rgba(148,163,184,0.24); backdrop-filter: blur(12px); }',
+          '.stem-active-tool-main { display: flex; align-items: center; gap: 10px; min-width: 0; }',
+          '.stem-active-tool-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; background: rgba(99,102,241,0.10); }',
+          '.stem-active-tool-title { min-width: 0; }',
+          '.stem-active-tool-title h3 { margin: 0; font-size: 14px; line-height: 1.2; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
+          '.stem-active-tool-title p { margin: 2px 0 0; font-size: 11px; line-height: 1.25; }',
+          '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
+          '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
+          '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
@@ -2344,6 +2353,32 @@
         { text: 'Pick a Starter Template to load a prebuilt program, or tackle Challenges to earn XP. Switch to Code mode for JavaScript-like syntax!', top: '80%', left: '50%' }
       ];
 
+      var _activeToolFallbackMeta = {
+        volume: { label: '3D Volume Explorer', icon: 'ðŸ“¦' },
+        numberline: { label: 'Number Line', icon: 'ðŸ“' },
+        areamodel: { label: 'Area Model', icon: 'ðŸŸ§' },
+        fractionViz: { label: 'Fraction Lab', icon: 'ðŸ•' },
+        chemBalance: { label: 'Chemistry Lab', icon: 'âš–ï¸' },
+        opticsLab: { label: 'Optics Lab', icon: 'ðŸ”†' },
+        codingPlayground: { label: 'Coding Playground', icon: 'ðŸ’»' },
+        graphCalc: { label: 'Graphing Calculator', icon: 'ðŸ“ˆ' },
+        solarSystem: { label: 'Solar System Explorer', icon: 'ðŸª' },
+        anatomy: { label: 'Human Anatomy', icon: 'ðŸ«€' },
+        titrationLab: { label: 'Titration Lab', icon: 'ðŸ§ª' }
+      };
+      function _formatStemToolId(id) {
+        return String(id || 'Tool').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+      }
+      function _getActiveStemToolMeta(id) {
+        var reg = null;
+        try { reg = window.StemLab && window.StemLab._registry && window.StemLab._registry[id]; } catch (_) {}
+        var fallback = _activeToolFallbackMeta[id] || {};
+        var label = (reg && reg.label) || fallback.label || _formatStemToolId(id);
+        var icon = (reg && reg.icon) || fallback.icon || 'ðŸ§ª';
+        return { label: label, icon: icon };
+      }
+      var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
+
       // STEM Lab modal JSX
       return /*#__PURE__*/React.createElement("div", {
         "data-stem-lab": "true", role: "dialog", "aria-modal": "true", "aria-label": stemLabTool ? "STEM Lab: " + stemLabTool : "STEM Lab",
@@ -2515,6 +2550,46 @@
         }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
           className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
         }, tab.desc)))),
+        stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
+          className: "stem-active-toolbar",
+          role: "region",
+          "aria-label": "Current STEM Lab tool",
+          style: {
+            backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.94)' : 'rgba(255,255,255,0.94)'),
+            borderColor: _pal.border
+          }
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "stem-active-tool-main"
+        }, /*#__PURE__*/React.createElement("button", {
+          type: "button",
+          className: "stem-active-tool-back",
+          onClick: function () {
+            setStemLabTool(null);
+            if (typeof announceToSR === 'function') announceToSR('Returned to all STEM Lab tools');
+          },
+          "aria-label": "Back to all STEM Lab tools",
+          style: {
+            backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
+            color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
+            borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
+          }
+        }, /*#__PURE__*/React.createElement(ArrowLeft, { size: 15 }), /*#__PURE__*/React.createElement("span", null, "All tools")),
+          /*#__PURE__*/React.createElement("span", {
+            className: "stem-active-tool-icon",
+            "aria-hidden": "true"
+          }, _activeStemToolMeta.icon),
+          /*#__PURE__*/React.createElement("div", {
+            className: "stem-active-tool-title"
+          }, /*#__PURE__*/React.createElement("h3", {
+            style: { color: _pal.text }
+          }, _activeStemToolMeta.label), /*#__PURE__*/React.createElement("p", {
+            style: { color: _pal.textMuted }
+          }, "Explore tool"))), /*#__PURE__*/React.createElement("div", {
+            className: "stem-active-tool-actions"
+          }, /*#__PURE__*/React.createElement("span", {
+            className: "stem-active-tool-hint",
+            style: { color: _pal.textMuted }
+          }, "Esc or Alt+B returns to all tools"))),
         // ── Keyboard Help Panel ──
         _showKeyHelp && React.createElement("div", {
           role: "region", "aria-label": "Keyboard shortcuts",
