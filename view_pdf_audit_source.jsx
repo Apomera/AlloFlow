@@ -2858,9 +2858,18 @@ function PdfAuditView(props) {
   const _reauditAndScore = async (newHtml, onActivity) => {
     try {
       if (onActivity) onActivity({ text: '🔍 Re-auditing to refresh score + remaining-issues count…', type: 'audit', time: new Date().toLocaleTimeString() });
-      const [_wv, _wa] = await Promise.all([auditOutputAccessibility(newHtml), runAxeAudit(newHtml)]);
+      // Audit-coherence (2026-07-01): this re-audit previously ran axe ONLY, so its headline
+      // was min(AI, axe) while the fix flow's headline is min(AI, min(axe, EqualAccess)).
+      // When EA was the governing (lower) engine, one expert edit silently RAISED the
+      // headline by dropping EA from the min — score inflation through path inconsistency.
+      // Run EA here too (fail-soft → exactly the prior axe-only behavior).
+      const _weaP = (_docPipeline && typeof _docPipeline.runEqualAccessAudit === 'function')
+        ? _docPipeline.runEqualAccessAudit(newHtml).catch(() => null) : Promise.resolve(null);
+      const [_wv, _wa, _wea] = await Promise.all([auditOutputAccessibility(newHtml), runAxeAudit(newHtml), _weaP]);
       if (_wv && Number.isFinite(_wv.score)) {
-        const _wdet = (_wa && typeof _wa.score === 'number') ? _wa.score : null;
+        const _weaOk = _wea && typeof _wea.score === 'number';
+        const _waOk = _wa && typeof _wa.score === 'number';
+        const _wdet = _waOk ? (_weaOk ? Math.min(_wa.score, _wea.score) : _wa.score) : (_weaOk ? _wea.score : null);
         const _wscore = (_wdet !== null) ? _computeHeadline(_wv.score, _wdet) : _wv.score; // weakest-layer-governs (shared)
         // H-9 (audit 2026-06-23): stale-HTML guard. This re-audit is fire-and-forget from 7 call sites; if a
         // SECOND edit stored newer bytes while this audit was in flight, writing this score would make the
@@ -2880,6 +2889,10 @@ function PdfAuditView(props) {
             _scoreSource: _wdet !== null ? 'min' : 'content-only',
             axeAudit: _wa || prev.axeAudit,
             axeViolations: _wa ? _wa.totalViolations : prev.axeViolations,
+            // Keep the displayed EA data in sync with the score that used it (a fresh EA
+            // replaces the stale one; when EA was unavailable this run the prior audit
+            // stays visible but the score honestly fell back to axe-only).
+            secondEngineAudit: _weaOk ? _wea : prev.secondEngineAudit,
             issueResolution: (typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
           });
         });
@@ -5162,7 +5175,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </div>
                           <div className="text-[11px] text-blue-800 space-y-0.5">
                             <div>{t('pdf_audit.score.axe_desc') || 'Deque automated WCAG 2.1 AA checker'}</div>
-                            <div>{axeAudit.totalViolations} violation{axeAudit.totalViolations !== 1 ? 's' : ''}, {axeAudit.totalPasses} passed</div>
+                            {/* No-text scans: the counts are as by-construction as the score — don't render
+                                "0 violations, N passed" as if the engine meaningfully checked anything. */}
+                            <div>{_noText ? (t('pdf_audit.score.axe_counts_na') || 'ran on an empty text reconstruction — counts not meaningful') : `${axeAudit.totalViolations} violation${axeAudit.totalViolations !== 1 ? 's' : ''}, ${axeAudit.totalPasses} passed`}</div>
                             <div className="text-[10px] text-blue-600 italic">{t('pdf_audit.score.axe_proxy_note') || 'Runs on a text reconstruction of the extracted content — not the original PDF bytes — so page-structure/landmark rules can pass by construction. Treat as a content-level check, not a PDF/UA validation.'}</div>
                           </div>
                           <details data-help-key="pdf_audit_results_score_how_axe_details" className="mt-1 text-[11px]">
@@ -5195,7 +5210,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {pdfAuditResult && pdfAuditResult._baselineSecondEngineAudit ? (
                             <div className="mt-1.5 text-[11px] text-blue-700">
                               <span className="font-bold">{t('pdf_audit.score.second_engine_baseline') || 'Second engine at baseline (IBM Equal Access):'}</span>{' '}
-                              {pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}.{!pdfFixResult ? (' ' + (t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.')) : ''}
+                              {/* Same n/a guard as the axe card above — this line previously showed a
+                                  real-looking "score 100" for image-only scans two inches below the
+                                  axe card's n/a (same modal, two different stories). */}
+                              {_noText
+                                ? (t('pdf_audit.score.ea_na_no_text') || 'n/a (no text layer — ran on an empty reconstruction)')
+                                : <>{pdfAuditResult._baselineSecondEngineAudit.failViolations} {t('pdf_audit.score.confirmed_fails') || 'confirmed rule failure(s)'} → {t('pdf_audit.score.score_label') || 'score'} {pdfAuditResult._baselineSecondEngineAudit.score}.{!pdfFixResult ? (' ' + (t('pdf_audit.score.conservative_note') || 'The blend uses the more conservative of the two engines.')) : ''}</>}
                               {Array.isArray(pdfAuditResult._baselineSecondEngineAudit.fails) && pdfAuditResult._baselineSecondEngineAudit.fails.length > 0 && (
                                 <details className="mt-1">
                                   <summary className="cursor-pointer font-bold text-blue-600 hover:text-blue-800">{t('pdf_audit.score.ea_fails_baseline_summary') || 'What Equal Access flagged at baseline'}</summary>
@@ -5251,7 +5271,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="font-black text-slate-900 text-lg">{displayedScore}</span>
                             <span className="text-slate-600 text-xs">/100</span>
                           </div>
-                          <div className="text-[11px] text-slate-600 mt-0.5">{(aiScore <= deterministicShown) ? (t('pdf_audit.score.governed_by_content') || 'Governed by the content layer — the AI rubric scored lower.') : (t('pdf_audit.score.governed_by_automated') || 'Governed by the automated layer — the WCAG checkers scored lower.')} {t('pdf_audit.score.no_average_note') || 'The two layers measure different things and are shown separately, never averaged.'}</div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">{_noText ? (t('pdf_audit.score.governed_no_text') || 'Automated checks are not applicable (no text layer) — the content rubric governs by definition.') : (aiScore <= deterministicShown) ? (t('pdf_audit.score.governed_by_content') || 'Governed by the content layer — the AI rubric scored lower.') : (t('pdf_audit.score.governed_by_automated') || 'Governed by the automated layer — the WCAG checkers scored lower.')} {t('pdf_audit.score.no_average_note') || 'The two layers measure different things and are shown separately, never averaged.'}</div>
                         </div>
                       )}
                     </div>
@@ -9515,7 +9535,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast(t('toasts.report_generation_failed') || 'Report generation failed: ' + (err?.message || 'unknown'), 'error');
                               }
                             }} data-help-key="pdf_audit_view_adobe_report_btn" className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors">
-                              🏛️ Adobe-style A11y Report{lastTaggedValidation ? ` (${(lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct ?? 0)}% self-check)` : ''}
+                              {/* "?? 0" previously rendered "(0% self-check)" when the self-check simply
+                                  hadn't run — a false-LOW claim on the button itself. Show the pct only
+                                  when it exists. */}
+                              🏛️ Adobe-style A11y Report{lastTaggedValidation && typeof lastTaggedValidation.pdfUa1Checks?.summary?.conformancePct === 'number' ? ` (${lastTaggedValidation.pdfUa1Checks.summary.conformancePct}% self-check)` : ''}
                             </button>
                             {/* Inline per-rule PDF/UA-1 self-check on the SHIPPED bytes (2026-06-19). The per-rule
                                 detail was previously only in the downloadable Adobe report + transient gate messages;

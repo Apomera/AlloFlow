@@ -490,7 +490,7 @@ describe('B9: 2026-06-30 multi-h1 outline fix + Equal Access shown in the export
   });
 
   it('_honestReportBlocks accepts a secondEngine arg + renders an Equal Access tile and a "governs" note', () => {
-    expect(dpx).toMatch(/_honestReportBlocks = \(structural, semantic, coverage, pdfua, secondEngine\)/);
+    expect(dpx).toMatch(/_honestReportBlocks = \(structural, semantic, coverage, pdfua, secondEngine, opts\)/); // opts added 2026-07-01 (automatedNA no-text tiles)
     expect(dpx).toMatch(/2nd engine \(Equal Access\)/);
     expect(dpx).toMatch(/headline is governed by the IBM Equal Access engine/);
   });

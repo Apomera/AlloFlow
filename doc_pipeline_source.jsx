@@ -8809,7 +8809,13 @@ Return ONLY valid JSON:
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
         pageCount: parsedAudits.find(a => a.pageCount)?.pageCount,
-        hasSearchableText: parsedAudits.some(a => a.hasSearchableText !== undefined) ? parsedAudits.some(a => a.hasSearchableText) : undefined,
+        // hasSearchableText is a mechanical fact the AI passes merely OPINE on; the old
+        // any-true-wins merge let a single hallucinated "true" (out of N passes) disarm the
+        // entire no-text honesty layer (n/a guards + AI-governs headline) on an image-only
+        // scan. Majority vote of the passes that answered; ties go to FALSE — the
+        // conservative side: a wrong "false" shows n/a + an AI-governed score, a wrong
+        // "true" ships real-looking engine scores measured on an empty reconstruction.
+        hasSearchableText: (() => { const _v = parsedAudits.filter(a => a.hasSearchableText !== undefined); if (!_v.length) return undefined; const _t = _v.filter(a => a.hasSearchableText).length; return _t > _v.length - _t; })(),
         hasImages: parsedAudits.some(a => a.hasImages),
         hasTables: parsedAudits.some(a => a.hasTables),
         hasForms: parsedAudits.some(a => a.hasForms),
@@ -8896,7 +8902,16 @@ Return ONLY valid JSON:
           // (the "46" that meant neither 'terrible' nor 'fine'). min() also matches the auto-fix loop's
           // own stop gate (axe==0 AND ai>=target). Both layer scores are shown SEPARATELY in the UI.
           const aiOnlyScore = triangulated.score;
-          const governingInitial = _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
+          // No-text-layer exclusion (audit-coherence 2026-07-01): the UI has told users
+          // "automated checks N/A — the AI rubric governs" for image-only scans since
+          // 2026-06-30, but the math still ran min(AI, engines-on-empty-reconstruction) —
+          // if the empty shell ever tripped an axe/EA rule, a MEANINGLESS engine would
+          // silently govern the headline while the badge claimed the opposite. Enforce the
+          // claim: no text layer → the AI rubric IS the headline; the engine audits are
+          // still recorded below for disclosure (the UI renders them as n/a).
+          const _noTextLayer = triangulated.hasSearchableText === false;
+          const governingInitial = _noTextLayer ? aiOnlyScore : _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
+          if (_noTextLayer) triangulated._automatedNA = true;
           triangulated.score = governingInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
           triangulated._deterministicScore = deterministicBaseline;
@@ -18484,7 +18499,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
   // Surfaces the structural-vs-semantic SPLIT (axe-core passes ≠ the document is
   // usable) + a content-integrity coverage line — so a high automated score never
   // reads as "fully accessible" when the AI rubric or text-coverage says otherwise.
-  const _honestReportBlocks = (structural, semantic, coverage, pdfua, secondEngine) => {
+  const _honestReportBlocks = (structural, semantic, coverage, pdfua, secondEngine, opts) => {
     // pdfua: optional PdfValidator summary { pass, fail, overall } — when
     // present, renders a 3rd score tile labelled "PDF/UA-1 (self-check)"
     // alongside the existing Structural (axe-core) and Semantic (AI rubric)
@@ -18511,6 +18526,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       ? (typeof pdfua.conformancePct === 'number' ? pdfua.conformancePct : Math.round((pdfua.pass / _pdfuaDenom) * 100))
       : null;
     const _pdfuaHasWarn = hasPdfUa && (pdfua.warn || 0) > 0;
+    // No-text-layer honesty (audit-coherence 2026-07-01): on an image-only scan the
+    // automated engines audited an EMPTY text reconstruction, so their ~100s are
+    // by-construction, not earned. The ON-SCREEN breakdown has shown "n/a" for this case
+    // since 2026-06-30 — but this DOWNLOADABLE report (the artifact a district actually
+    // files) still printed the real-looking numbers under a WCAG/ADA/508 header. Render
+    // n/a tiles + the explanation instead; the AI rubric tile stays (it saw the scan).
+    if (opts && opts.automatedNA && typeof semantic === 'number') {
+      const _naTile = (label) => `<div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:12px"><div style="font-size:1.05rem;font-weight:800;color:#94a3b8">n/a</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">${label}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">no text layer</div></div>`;
+      h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${semantic}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Semantic (AI rubric)</div></div>
+        ${_naTile('Structural (axe-core)')}
+        ${typeof secondEngine === 'number' ? _naTile('2nd engine (Equal Access)') : ''}
+      </div>
+      <p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Automated engine checks are not applicable to this document.</strong> It has no searchable text layer (image-only scan), so the automated WCAG engines could only audit an empty text reconstruction &mdash; their results would be by-construction, not earned. The AI rubric (which reviews the scanned pages themselves) governs the headline. Run OCR/remediation to produce a text layer before automated results can be meaningful.</p>`;
+      if (typeof coverage === 'number') {
+        h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>.</p>`;
+      }
+      return h;
+    }
     if (typeof structural === 'number' && typeof semantic === 'number') {
       const div = Math.abs(structural - semantic);
       const pdfuaTile = (hasPdfUa && pdfuaPct !== null)
@@ -18643,7 +18678,10 @@ tr { page-break-inside: avoid; }
     const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score ?? d._aiOnlyScore);
     // 2nd-engine (IBM Equal Access): when it is the lower deterministic engine it GOVERNS the headline.
     const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score ?? (d._baselineSecondEngineAudit && d._baselineSecondEngineAudit.score));
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined));
+    // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
+    // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
+    const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt });
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
