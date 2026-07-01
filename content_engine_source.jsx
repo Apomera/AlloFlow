@@ -259,6 +259,53 @@ var createContentEngine = function(deps) {
       return true;
     });
   };
+  // Citation-support statistics (builder-review A3, 2026-07-01). Gemini's own
+  // groundingMetadata.groundingSupports maps RESPONSE-TEXT SEGMENTS to the grounding
+  // chunks that back them — the engine's own record of which passages it tied to
+  // sources. We never consumed it, so a real URL could ride a fabricated claim with
+  // no signal to the reader. This computes, per raw section: (a) how much of the
+  // text the engine tied to sources at all, and (b) how many citation-reference
+  // sites ("[Sources N]" in the raw response, matched with the same pattern the
+  // conversion pass uses) sit OUTSIDE any supported segment — decorative citations.
+  // Deterministic (reads the engine's own map; no extra AI calls). Pure → testable.
+  var computeGroundingSupportStats = function (text, groundingMetadata) {
+    var out = { totalChars: 0, supportedChars: 0, citationsTotal: 0, citationsUnsupported: 0, hasSupports: false };
+    try {
+      var s = String(text || '');
+      out.totalChars = s.length;
+      var supports = groundingMetadata && Array.isArray(groundingMetadata.groundingSupports) ? groundingMetadata.groundingSupports : null;
+      var ranges = [];
+      if (supports && supports.length) {
+        out.hasSupports = true;
+        for (var i = 0; i < supports.length; i++) {
+          var seg = supports[i] && supports[i].segment;
+          if (!seg || typeof seg.endIndex !== 'number') continue;
+          var a = typeof seg.startIndex === 'number' ? seg.startIndex : 0; // Gemini omits startIndex when 0
+          ranges.push([Math.max(0, a), Math.min(s.length, seg.endIndex)]);
+        }
+        ranges.sort(function (x, y) { return x[0] - y[0]; });
+        var covered = 0, curA = -1, curB = -1;
+        for (var j = 0; j < ranges.length; j++) {
+          var r = ranges[j];
+          if (r[0] > curB) { if (curB > curA) covered += curB - curA; curA = r[0]; curB = r[1]; }
+          else if (r[1] > curB) { curB = r[1]; }
+        }
+        if (curB > curA) covered += curB - curA;
+        out.supportedChars = covered;
+      }
+      var re = /\[?Sources?\s+[\d,\s]+(?:and\s+\d+)?\]?/gi, m;
+      while ((m = re.exec(s))) {
+        out.citationsTotal++;
+        if (out.hasSupports) {
+          var pos = m.index, ok = false;
+          for (var k = 0; k < ranges.length; k++) { if (pos >= ranges[k][0] - 40 && pos <= ranges[k][1] + 40) { ok = true; break; } }
+          if (!ok) out.citationsUnsupported++;
+        }
+      }
+    } catch (_) {}
+    return out;
+  };
+
   var generateBibliographyString = function(metadata, citationStyle, title) {
     // Honesty (2026-06-21): these entries are raw AI-search grounding chunks — Gemini can ground on a
     // mismatched/wrong page and the links are often ephemeral redirects. Do NOT title them "Verified
@@ -556,6 +603,8 @@ var createContentEngine = function(deps) {
            let fullDocument = `Title: ${effTopic}\n\n`;
            const wordsPerSection = Math.ceil(targetWords / sections.length);
            let allGroundingChunks = [];
+           // A3: doc-level aggregation of the engine's own claim↔source support map.
+           let _supportAgg = { totalChars: 0, supportedChars: 0, citationsTotal: 0, citationsUnsupported: 0, sectionsWithSupports: 0 };
            let currentCitationOffset = 0;
            let _sectionFailures = 0; // sections skipped because even the no-grounding fallback hard-failed (rate-limit) — surfaced after the loop instead of aborting the whole doc
            // Track per-section text so each subsequent prompt can include a recap of
@@ -756,6 +805,17 @@ You MUST:
                                  return converted.length > 0 ? ' ' + converted.join(' ') : '';
                              });
                              allGroundingChunks = [...allGroundingChunks, ...result.groundingMetadata.groundingChunks];
+                             // A3: score this section against the engine's own support map
+                             // BEFORE any text mutation (segment indices refer to the raw
+                             // response). Failure is non-fatal — stats simply stay zero.
+                             try {
+                                 const _sup = computeGroundingSupportStats(rawSection, result.groundingMetadata);
+                                 _supportAgg.totalChars += _sup.totalChars;
+                                 _supportAgg.supportedChars += _sup.supportedChars;
+                                 _supportAgg.citationsTotal += _sup.citationsTotal;
+                                 _supportAgg.citationsUnsupported += _sup.citationsUnsupported;
+                                 if (_sup.hasSupports) _supportAgg.sectionsWithSupports++;
+                             } catch (_) {}
                              currentCitationOffset += chunkCount;
                         }
                         // Sanitize orphan brackets that could break markdown link rendering
@@ -863,6 +923,19 @@ You MUST:
                 // Generate bibliography from reordered chunks so its numbers match body.
                 var masterMetadata = { groundingChunks: _renum.reorderedChunks };
                 fullDocument += generateBibliographyString(masterMetadata, 'Links Only', "Source Text References");
+                // A3: citation-support disclosure — surfaces the engine's OWN accounting of
+                // which passages it tied to sources. A citation number links a passage to a
+                // source; it does not guarantee the source states the claim. When the
+                // grounding engine reports unmatched citation sites, say so on the artifact.
+                if (_supportAgg.sectionsWithSupports > 0 && _supportAgg.totalChars > 0) {
+                    var _supPct = Math.round(100 * _supportAgg.supportedChars / _supportAgg.totalChars);
+                    fullDocument += '\n*Source-support check (automated, from the grounding engine\'s own map): '
+                      + _supPct + '% of the generated text is directly tied to the sources above'
+                      + (_supportAgg.citationsUnsupported > 0
+                          ? '; ' + _supportAgg.citationsUnsupported + ' of ' + _supportAgg.citationsTotal + ' citation sites could not be matched to a supported passage — verify those claims against their sources before relying on them'
+                          : '')
+                      + '. A citation links a passage to a source; it does not guarantee the source states the claim.*\n';
+                }
                 fullDocument = validateAndRepairCitations(fullDocument, _renum.reorderedChunks);
                 // Citation spacing normalization (mirrors the former short-path cleanup).
                 // Multi-chunk per-section processing only moved trailing periods; it did

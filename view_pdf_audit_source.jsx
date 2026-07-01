@@ -288,7 +288,12 @@ function _htmlToDocxSpec(html) {
             const cell = tr.children[c];
             if (cell.tagName !== 'TH' && cell.tagName !== 'TD') continue;
             if (cell.tagName !== 'TH') allTh = false;
-            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH' });
+            // Merged cells (builder-review A5, 2026-07-01): carry colspan/rowspan into the
+            // spec so the DOCX builder can emit real merges. HTML omits cells covered by a
+            // rowspan, which is exactly the shape the docx lib's rowSpan expects.
+            cells.push({ runs: inlineRuns(cell, {}), header: cell.tagName === 'TH',
+              colSpan: Math.max(1, parseInt(cell.getAttribute('colspan') || '1', 10) || 1),
+              rowSpan: Math.max(1, parseInt(cell.getAttribute('rowspan') || '1', 10) || 1) });
           }
           if (cells.length) rows.push({ header: allTh || (tr.parentNode && tr.parentNode.tagName === 'THEAD'), cells });
         }
@@ -887,7 +892,13 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
         width: { size: 100, type: d.WidthType.PERCENTAGE },
         rows: b.rows.map((row) => new d.TableRow({
           tableHeader: !!row.header,
-          children: row.cells.map((c) => new d.TableCell({ children: [new d.Paragraph({ children: runsTo(c.runs) })] })),
+          children: row.cells.map((c) => new d.TableCell({
+            // Merged cells (A5): columnSpan → OOXML gridSpan; rowSpan → vMerge chain.
+            // The spec's HTML source omits covered cells, matching the docx lib contract.
+            ...(c.colSpan > 1 ? { columnSpan: c.colSpan } : {}),
+            ...(c.rowSpan > 1 ? { rowSpan: c.rowSpan } : {}),
+            children: [new d.Paragraph({ children: runsTo(c.runs) })],
+          })),
         })),
       }));
     } else if (b.type === 'image') {

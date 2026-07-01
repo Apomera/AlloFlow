@@ -105,3 +105,47 @@ describe('builder honesty + editor safety (review A2/A4)', () => {
     expect(ve).toMatch(/\['http', 'https', 'mailto', 'tel'\]\.includes\(_schemeMatch\[1\]\.toLowerCase\(\)\)/);
   });
 });
+
+describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)', () => {
+  it('C13: DOCX spec + builder carry colspan/rowspan through to TableCell', () => {
+    const vp = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+    expect(vp).toMatch(/colSpan: Math\.max\(1, parseInt\(cell\.getAttribute\('colspan'\)/);
+    expect(vp).toMatch(/rowSpan: Math\.max\(1, parseInt\(cell\.getAttribute\('rowspan'\)/);
+    expect(vp).toMatch(/\.\.\.\(c\.colSpan > 1 \? \{ columnSpan: c\.colSpan \} : \{\}\),/);
+    expect(vp).toMatch(/\.\.\.\(c\.rowSpan > 1 \? \{ rowSpan: c\.rowSpan \} : \{\}\),/);
+  });
+
+  it('C14: computeGroundingSupportStats — coverage union + unsupported-citation detection (behavioral)', () => {
+    const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
+    const m = ce.match(/var computeGroundingSupportStats = function \(text, groundingMetadata\) \{[\s\S]*?\n  \};/);
+    expect(m).toBeTruthy();
+    const stats = new Function('"use strict"; ' + m[0].replace(/^  var /, 'var ') + ' return computeGroundingSupportStats;')();
+    // 100-char text; supports covering [0,30) and [20,50) → union 50 chars.
+    // One citation site inside support (pos ~10), one far outside (pos ~80).
+    // Second citation sits at pos ~152 — beyond the supports' reach ([0,50) + the ±40
+    // proximity window = 90), so it must count as unsupported.
+    const text = 'aaaaaaaaa [Sources 1] ' + 'b'.repeat(130) + ' [Sources 2] cccccccc';
+    const gm = { groundingSupports: [
+      { segment: { endIndex: 30 } },                    // startIndex omitted = 0 (Gemini quirk)
+      { segment: { startIndex: 20, endIndex: 50 } },
+    ] };
+    const r = stats(text, gm);
+    expect(r.hasSupports).toBe(true);
+    expect(r.supportedChars).toBe(50);                  // union, not sum (60)
+    expect(r.citationsTotal).toBe(2);
+    expect(r.citationsUnsupported).toBe(1);             // the far one only
+    // No supports at all → hasSupports false, nothing counted as unsupported.
+    const r2 = stats(text, { groundingSupports: [] });
+    expect(r2.hasSupports).toBe(false);
+    expect(r2.citationsUnsupported).toBe(0);
+  });
+
+  it('C15: support disclosure + ungrounded footer + A1 capture are wired', () => {
+    const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
+    expect(ce).toMatch(/computeGroundingSupportStats\(rawSection, result\.groundingMetadata\)/);
+    expect(ce).toMatch(/Source-support check \(automated, from the grounding engine/);
+    expect(ce).toMatch(/it does not guarantee the source states the claim/);
+    const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+    expect(ve).toMatch(/window\.__alloBuilderEditedPack = \{ html: '<!DOCTYPE html>\\n' \+ doc\.documentElement\.outerHTML, at: Date\.now\(\) \}/);
+  });
+});

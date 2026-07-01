@@ -1366,6 +1366,18 @@ function ExportPreviewView(props) {
                         };
                         doc.addEventListener('paste', (e) => { try { _insertSanitized(e, e.clipboardData); } catch (_) {} }, true);
                         doc.addEventListener('drop', (e) => { try { _insertSanitized(e, e.dataTransfer); } catch (_) {} }, true);
+                        // WYSIWYG edit capture (builder-review A1, capture half, 2026-07-01).
+                        // designMode edits previously lived ONLY in this iframe's DOM — Save
+                        // Project / export-from-history regenerated from history and silently
+                        // discarded them. Capture the edited pack (debounced) into a session
+                        // global with a timestamp; the persist/restore wiring (project save +
+                        // preview re-hydration, with a history-newer invalidation check) is the
+                        // follow-up half — design in memory: project_comprehensive_review.
+                        let _capT = null;
+                        const _captureEdits = () => {
+                          try { window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() }; } catch (_) {}
+                        };
+                        doc.addEventListener('input', () => { try { if (_capT) clearTimeout(_capT); _capT = setTimeout(_captureEdits, 800); } catch (_) {} }, true);
                       } catch (_) {}
                     }}
                   />
