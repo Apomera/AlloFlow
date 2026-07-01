@@ -93,9 +93,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             for (var i = 0; i < samples; i++) { var x = (i * 2) / samples - 1; curve[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x)); }
             return curve;
           }
+          function getAudioContextCtor() {
+            return (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) || null;
+          }
+          function hasUsableAudioContext() {
+            return typeof getAudioContextCtor() === 'function';
+          }
           function getCtx() {
+            var AudioContextCtor = getAudioContextCtor();
+            if (!AudioContextCtor) throw new Error('Web Audio API is not available in this environment.');
             if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
-              var ac = new (window.AudioContext || window.webkitAudioContext)();
+              var ac = new AudioContextCtor();
               var gain = ac.createGain(); gain.gain.value = d.volume || 0.5;
               var analyser = ac.createAnalyser(); analyser.fftSize = 2048;
               // Resonant filter
@@ -154,7 +162,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               fx.chorusDepth.gain.value = (d.chorusMix || 0) > 0 ? 0.003 : 0; fx.chorusWet.gain.value = d.chorusMix || 0;
               fx.tremoloLFO.frequency.value = d.tremoloRate || 5; fx.tremoloGain.gain.value = d.tremoloDepth || 0;
             }
-            return { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser, effects: window._alloSynthEffects };
+            var audioState = { ctx: window._alloSynthCtx, gain: window._alloSynthGain, analyser: window._alloSynthAnalyser, effects: window._alloSynthEffects };
+            ensureSynthEffects(audioState);
+            return audioState;
           }
 
           // ═══ NOTE & FREQUENCY ═══
@@ -1366,11 +1376,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
           }, [d.omniVoice]);
 
           // ═══ SOUND ENGINE BOOST: Reverb + Compressor ═══
-          (function initSynthEffects() {
+          function ensureSynthEffects(audio) {
             if (window._alloSynthReverbInit) return;
+            if (!hasUsableAudioContext() || !audio || !audio.ctx || !audio.gain) return;
             window._alloSynthReverbInit = true;
             try {
-              var audio = getCtx();
               var ctx = audio.ctx;
               // Create DynamicsCompressor for master limiting
               if (!audio._compressor) {
@@ -1408,7 +1418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 audio._reverbGain = reverbGain;
               }
             } catch (e) { console.warn('[Synth] Reverb init failed:', e); }
-          })();
+          }
 
           // ═══ BEAT PAD: 16-step sequencer state & engine ═══
           var BEAT_PAD_SOUNDS = [
