@@ -142,12 +142,19 @@ class PictionaryHost {
         if (change.type === 'removed') return;
         const uid = change.doc.id;
         const data = change.doc.data() || {};
-        if (data.offer && !this.peers.has(uid)) {
+        const existing = this.peers.get(uid);
+        if (data.offer && !existing) {
           this._acceptPeer(uid, data, change.doc.ref);
-        } else if (data.iceFromGuest && this.peers.has(uid)) {
-          const peer = this.peers.get(uid);
+        } else if (data.offer && existing && existing.offerSdp && data.offer.sdp !== existing.offerSdp) {
+          // Re-offer: the student reloaded (or auto-rejoined after a drop)
+          // while the host still holds their old, dead peer. Replace it and
+          // answer the fresh offer; otherwise reconnect silently fails until
+          // the stale RTC connection times out.
+          this._cleanupPeer(uid);
+          this._acceptPeer(uid, data, change.doc.ref);
+        } else if (data.iceFromGuest && existing) {
           (data.iceFromGuest || []).forEach((c) => {
-            try { peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
+            try { existing.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
           });
         }
       });
@@ -160,7 +167,7 @@ class PictionaryHost {
     if (!fb) return;
     const pc = new RTCPeerConnection(RTC_CONFIG);
     const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
-    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [] };
+    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -190,6 +197,10 @@ class PictionaryHost {
             durationMs: this.activeRound.durationMs,
           };
           try { dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
+        } else {
+          // State sync on (re)connect: a reconnecting guest may hold a stale
+          // round from before the drop; an explicit "no round" clears it.
+          try { dc.send(JSON.stringify({ type: 'roundSync', payload: { active: false } })); } catch (_) {}
         }
       };
       dc.onmessage = (msg) => {
@@ -345,23 +356,40 @@ class PictionaryHost {
     const peer = this.peers.get(uid);
     if (!peer) return;
     try { if (peer.pc) peer.pc.close(); } catch (_) {}
-    if (peer.signalingRef) {
-      const fb = _getFb();
-      if (fb) fb.deleteDoc(peer.signalingRef).catch(() => {});
-    }
+    // Deliberately do NOT delete the signaling doc here. A reconnecting guest
+    // overwrites that same doc with a fresh offer; deleting it from a
+    // stale-peer cleanup raced that write and destroyed the new offer before
+    // the host could answer it. Signaling docs are already deleted on
+    // successful connect (~750ms post-connect, both sides) and by the guest's
+    // own leave().
     this.peers.delete(uid);
     this.onGuestLeft(uid);
   }
   stop() {
+    if (this._stopped) return;
     this._stopped = true;
     if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
     if (this.collectionUnsub) {
       try { this.collectionUnsub(); } catch (_) {}
       this.collectionUnsub = null;
     }
-    Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    // Terminal event: tell every connected guest the host dashboard is going
+    // away so guest overlays can clear/close instead of dangling on a dead
+    // channel. Peers are torn down shortly after so the send buffer can flush.
+    const terminal = JSON.stringify({ type: 'hostClosed', payload: {} });
+    let notified = false;
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try { peer.dc.send(terminal); notified = true; } catch (_) {}
+      }
+    });
     this.activeRound = null;
     this.strokeHistory = [];
+    const teardown = () => {
+      Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    };
+    if (notified) setTimeout(teardown, 300);
+    else teardown();
   }
 }
 
@@ -376,6 +404,8 @@ class PictionaryGuest {
     this.onFailed = config.onFailed || (() => {});
     this.onRoundStart = config.onRoundStart || (() => {});
     this.onRoundResolved = config.onRoundResolved || (() => {});
+    this.onRoundSync = config.onRoundSync || (() => {});
+    this.onHostClosed = config.onHostClosed || (() => {});
     this.onStroke = config.onStroke || (() => {});
     this.onStrokeHistory = config.onStrokeHistory || (() => {});
     this.onStrokeUndo = config.onStrokeUndo || (() => {});
@@ -412,6 +442,8 @@ class PictionaryGuest {
         if (!parsed || !parsed.type) return;
         if (parsed.type === 'roundStart') this.onRoundStart(parsed.payload);
         else if (parsed.type === 'roundResolved') this.onRoundResolved(parsed.payload);
+        else if (parsed.type === 'roundSync') this.onRoundSync(parsed.payload || {});
+        else if (parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
         else if (parsed.type === 'stroke') this.onStroke(parsed.payload);
         else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
         else if (parsed.type === 'strokeHistory') this.onStrokeHistory((parsed.payload && parsed.payload.strokes) || []);
@@ -1275,7 +1307,8 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const guestRef = React.useRef(null);
   const guestContainerRef = React.useRef(null);
   const [isGuestFullscreen, toggleGuestFullscreen] = useFullscreen(guestContainerRef);
-  const [connected, setConnected] = React.useState(false);
+  // 'connecting' | 'connected' | 'reconnecting' | 'failed'
+  const [connState, setConnState] = React.useState('connecting');
   const [strokes, setStrokes] = React.useState([]);
   const [activeRound, setActiveRound] = React.useState(null);  // { roundId, status, concept?, isDrawer }
   const [resolved, setResolved] = React.useState(null);        // { concept, winnerUid }
@@ -1283,17 +1316,70 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const [mode, setMode] = React.useState('pen');
   const [myStrokeIds, setMyStrokeIds] = React.useState([]);    // for undo of MY own strokes
   const [guessText, setGuessText] = React.useState('');
+  // Auto-rejoin: bumping joinNonce re-runs the join effect with a fresh
+  // PictionaryGuest (fresh offer over the same signaling doc). The host
+  // accepts re-offers, so a reload/Wi-Fi blip no longer strands the student.
+  const [joinNonce, setJoinNonce] = React.useState(0);
+  const retryCountRef = React.useRef(0);
+  const retryTimerRef = React.useRef(null);
+  // Refs so WebRTC callbacks see current values without re-creating the guest.
+  const resolvedRef = React.useRef(null);
+  React.useEffect(() => { resolvedRef.current = resolved; }, [resolved]);
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
   React.useEffect(() => {
     if (!sessionCode || !userUid) return;
-    if (guestRef.current) return;
+    let disposed = false;
+    const REJOIN_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+    // Cap auto-rejoins so an overlay left open against a gone host (e.g.
+    // student reading the resolution after the teacher closed the dashboard)
+    // doesn't generate signaling churn forever. The manual Retry button
+    // resets the budget.
+    const MAX_AUTO_REJOINS = 8;
+    const scheduleRejoin = () => {
+      if (disposed) return;
+      if (retryCountRef.current >= MAX_AUTO_REJOINS) return;
+      const delay = REJOIN_DELAYS_MS[Math.min(retryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+      retryCountRef.current += 1;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        retryTimerRef.current = null;
+        setJoinNonce((n) => n + 1);
+      }, delay);
+    };
+    setConnState((prev) => (prev === 'connected' ? prev : 'connecting'));
     const guest = new PictionaryGuest({
       sessionCode,
       userUid,
       codename,
-      onConnected: () => setConnected(true),
-      onDisconnected: () => setConnected(false),
-      onFailed: () => setConnected(false),
+      onConnected: () => { retryCountRef.current = 0; setConnState('connected'); },
+      onDisconnected: () => { setConnState('reconnecting'); scheduleRejoin(); },
+      onFailed: () => {
+        setConnState((prev) => (prev === 'connected' ? prev : 'failed'));
+        scheduleRejoin();
+      },
+      onRoundSync: (payload) => {
+        // Host state sync on (re)connect: no active round → drop any stale one.
+        if (payload && payload.active === false) {
+          setActiveRound(null);
+          setStrokes([]);
+          setMyStrokeIds([]);
+        }
+      },
+      onHostClosed: () => {
+        // Terminal event: teacher closed the Pictionary dashboard. Clear the
+        // round and close the overlay so the student is never stuck "waiting
+        // for the teacher" on a dead channel. If the round's resolution is on
+        // screen, leave the overlay up so they can read the reveal. The shell
+        // re-opens the overlay automatically when a new round starts.
+        setActiveRound(null);
+        setStrokes([]);
+        setMyStrokeIds([]);
+        if (!resolvedRef.current && typeof onCloseRef.current === 'function') {
+          onCloseRef.current();
+        }
+      },
       onRoundStart: (round) => {
         setActiveRound(round);
         setStrokes([]);
@@ -1320,13 +1406,25 @@ const PictionaryGuestOverlay = React.memo((props) => {
       onCanvasClear: () => { setStrokes([]); setMyStrokeIds([]); },
       onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
     });
-    guest.join().catch((err) => console.warn('[Pictionary guest] join failed:', err && err.message));
+    guest.join().catch((err) => {
+      console.warn('[Pictionary guest] join failed:', err && err.message);
+      setConnState('failed');
+      scheduleRejoin();
+    });
     guestRef.current = guest;
     return () => {
+      disposed = true;
+      if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
       try { guestRef.current && guestRef.current.leave(); } catch (_) {}
       guestRef.current = null;
     };
-  }, [sessionCode, userUid, codename]);
+  }, [sessionCode, userUid, codename, joinNonce]);
+
+  const handleManualRetry = () => {
+    retryCountRef.current = 0;
+    if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
+    setJoinNonce((n) => n + 1);
+  };
 
   const isDrawer = !!(activeRound && activeRound.isDrawer);
   const handleStrokeBatch = (stroke) => {
@@ -1365,7 +1463,17 @@ const PictionaryGuestOverlay = React.memo((props) => {
           <div className="flex-1 min-w-0">
             <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">{isDrawer ? '🎨 You are a drawer' : '👀 You are a guesser'}</div>
             <h2 className="text-lg sm:text-xl font-black text-slate-800 mt-0.5">Concept Pictionary</h2>
-            {!connected ? <div className="text-[11px] text-amber-700 mt-1">Connecting…</div> : null}
+            {connState === 'connecting' ? <div className="text-[11px] text-amber-700 mt-1">Connecting…</div> : null}
+            {connState === 'reconnecting' ? <div className="text-[11px] text-amber-700 mt-1" role="status">Connection lost — reconnecting…</div> : null}
+            {connState === 'failed' ? (
+              <div className="text-[11px] text-red-700 mt-1 flex items-center gap-2" role="status">
+                <span>Can't reach the teacher's device.</span>
+                <button
+                  onClick={handleManualRetry}
+                  className="px-2 py-0.5 text-[10px] font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
+                >Retry</button>
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {activeRound && activeRound.durationMs && activeRound.startedAt ? (
@@ -1428,7 +1536,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 value={guessText}
                 onChange={(e) => setGuessText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGuess(); }}
-                placeholder={t("placeholders.type_guess")}
+                placeholder={(typeof window !== 'undefined' && window.__alloT && window.__alloT("placeholders.type_guess")) || "Type your guess…"}
                 className="flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
                 aria-label="Your guess"
               />

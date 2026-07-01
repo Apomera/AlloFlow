@@ -2455,6 +2455,13 @@ const SESSION_TIER1_LEAVES = new Set([
   // through writeToSession(), which routes arrays through prepareSessionResourcesForWrite
   // to strip binary payloads and keep the session doc under Firestore's 1 MiB limit.
   'resources',
+  // Live Polling host presence (host-managed): { hostActive: boolean,
+  // hostOpenedAt: ms-timestamp }. Written by LivePolling.HostPanel when the
+  // teacher opens/closes the polling panel; students gate their WebRTC join
+  // attempts on it so they only dial while a host is listening (bounds
+  // signaling churn) and re-dial when hostOpenedAt changes. No student-typed
+  // content; Tier-1 safe.
+  'livePolling',
 ]);
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
@@ -9318,6 +9325,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const unsubscribe = onSnapshot(sessionRef, async (docSnap) => {
           if (docSnap.exists()) {
               const data = docSnap.data();
+              // Terminal-state check: handleEndLiveSession soft-ends the session
+              // (isActive:false / status:'ended') WITHOUT deleting the doc, so the
+              // doc-not-found branch below never fires for that path. Without this
+              // check students stay in a zombie session (stale sessionData, live
+              // overlays still armed) after the teacher ends it from the quiz
+              // dashboard. Treat a soft-ended doc exactly like a deleted one.
+              if (data && (data.isActive === false || data.status === 'ended')) {
+                  if (hasConnectedRef.current) {
+                      addToast(t('session.toast_ended'), "error");
+                  }
+                  setActiveSessionCode(null);
+                  setSessionData(null);
+                  hasConnectedRef.current = false;
+                  lastResourcesStringRef.current = null;
+                  return;
+              }
               if (!hasConnectedRef.current) {
                   hasConnectedRef.current = true;
                   addToast(t('session.toast_connected'), "success");
@@ -27513,6 +27536,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           userUid: user.uid,
           codename: studentNickname || 'Guest',
           enabled: true,
+          // Presence gating (Tier-1 livePolling leaf): only dial the WebRTC
+          // host while the teacher's polling panel is actually open; a new
+          // hostOpenedAt re-arms guests' auto-rejoin budget.
+          hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive),
+          hostNonce: (sessionData && sessionData.livePolling && sessionData.livePolling.hostOpenedAt) || 0,
         })
       }
       {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}

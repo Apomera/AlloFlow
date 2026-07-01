@@ -50,6 +50,7 @@ const KNOWN_GLOBALS = new Set([
   'React', 'ReactDOM', 'process', 'require', 'module', 'exports', '__dirname', '__filename', 'Buffer',
   'WebSocket', 'Worker', 'Notification', 'CanvasRenderingContext2D', 'Path2D', 'OffscreenCanvas',
   'webkitAudioContext', 'speechSynthesis', 'SpeechSynthesisUtterance', 'ClipboardItem', 'arguments',
+  'RTCPeerConnection', 'RTCSessionDescription', 'RTCIceCandidate',
 ]);
 
 const args = process.argv.slice(2);

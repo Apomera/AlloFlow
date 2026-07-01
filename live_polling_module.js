@@ -32,6 +32,7 @@
 //     onConnected:   () => ...,
 //     onDisconnected: () => ...,
 //     onFailed:      () => ...,  // signaling timeout; UI should fall back to async
+//     onHostClosed:  () => ...,  // terminal event: teacher closed the host panel
 //   });
 //   await guest.join();
 //   guest.sendResponse(pollId, response);
@@ -226,9 +227,18 @@
           if (change.type === 'removed') return;
           const uid = change.doc.id;
           const data = change.doc.data() || {};
-          if (data.offer && !this.peers.has(uid)) {
+          const existing = this.peers.get(uid);
+          if (data.offer && !existing) {
             this._acceptPeer(uid, data, change.doc.ref);
-          } else if (data.iceFromGuest && this.peers.has(uid)) {
+          } else if (data.offer && existing && existing.offerSdp && data.offer.sdp !== existing.offerSdp) {
+            // Re-offer: the student reloaded (or auto-rejoined after a drop) and
+            // wrote a fresh offer while the host still holds their old, dead
+            // peer connection. Without this branch the fresh offer is ignored
+            // until the stale RTC connection times out — and reconnect breaks.
+            // Replace the stale peer and answer the new offer.
+            this._cleanupPeer(uid);
+            this._acceptPeer(uid, data, change.doc.ref);
+          } else if (data.iceFromGuest && existing) {
             this._addIceFromGuest(uid, data.iceFromGuest);
           }
         });
@@ -242,7 +252,7 @@
       if (!fb) return;
       const pc = new RTCPeerConnection(RTC_CONFIG);
       const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
-      const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [] };
+      const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
       this.peers.set(uid, peerRecord);
 
       pc.onicecandidate = (e) => {
@@ -256,8 +266,14 @@
         peerRecord.dc = dc;
         dc.onopen = () => {
           this.onGuestConnected(uid, codename);
+          // State sync on (re)connect. A reconnecting guest may hold a stale
+          // poll overlay from before the drop; sending an id-less closePoll
+          // clears it (shouldApplyPollClose treats a missing pollId as
+          // "close whatever is showing").
           if (this.activePoll) {
             try { dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll })); } catch (err) {}
+          } else {
+            try { dc.send(JSON.stringify({ type: 'closePoll', payload: {} })); } catch (err) {}
           }
         };
         dc.onmessage = (msg) => {
@@ -336,23 +352,43 @@
       const peer = this.peers.get(uid);
       if (!peer) return;
       try { if (peer.pc) peer.pc.close(); } catch (err) {}
-      if (peer.signalingRef) {
-        const fb = getFb();
-        if (fb) fb.deleteDoc(peer.signalingRef).catch(() => {});
-      }
+      // Deliberately do NOT delete the signaling doc here. A reconnecting
+      // guest overwrites that same doc with a fresh offer; deleting it from a
+      // stale-peer cleanup raced that write and destroyed the new offer before
+      // the host could answer it. Signaling docs are already deleted on
+      // successful connect (both sides, ~750ms post-connect) and by the
+      // guest's own leave(); a doc for a guest that never connected simply
+      // waits for the guest's next overwrite.
       this.peers.delete(uid);
       this.onGuestLeft(uid);
     }
 
     stop() {
+      if (this._stopped) return;
       this._stopped = true;
       if (this.collectionUnsub) {
         try { this.collectionUnsub(); } catch (err) {}
         this.collectionUnsub = null;
       }
-      const uids = Array.from(this.peers.keys());
-      uids.forEach((uid) => this._cleanupPeer(uid));
+      // Terminal event: tell every connected guest the host is going away so
+      // student overlays clear immediately instead of dangling on a dead
+      // channel. Best-effort — peers are torn down shortly after, which gives
+      // the send buffer time to flush; guests that miss it still recover via
+      // the closePoll state-sync on their next reconnect.
+      const terminal = JSON.stringify({ type: 'hostClosed', payload: { pollId: (this.activePoll && this.activePoll.id) || null } });
+      let notified = false;
+      this.peers.forEach((peer) => {
+        if (peer.dc && peer.dc.readyState === 'open') {
+          try { peer.dc.send(terminal); notified = true; } catch (err) {}
+        }
+      });
       this.activePoll = null;
+      const teardown = () => {
+        const uids = Array.from(this.peers.keys());
+        uids.forEach((uid) => this._cleanupPeer(uid));
+      };
+      if (notified) setTimeout(teardown, 300);
+      else teardown();
     }
 
     listGuests() {
@@ -380,6 +416,7 @@
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
       this.onFailed = config.onFailed || (() => {});
+      this.onHostClosed = config.onHostClosed || (() => {});
       this.pc = null;
       this.dc = null;
       this.signalingRef = null;
@@ -419,6 +456,7 @@
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
           else if (parsed && parsed.type === 'pollResults') this.onPollResults(parsed.payload);
+          else if (parsed && parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
         } catch (err) {}
       };
 
@@ -609,7 +647,19 @@
       });
       hostRef.current = host;
       host.start().catch(function (err) { console.warn('[LivePolling HostPanel] start failed', err); });
+      // Tier-1 presence marker: student shells gate guest joins on an
+      // actually-listening host (see GuestOverlay's hostActive prop) instead
+      // of dialing a closed panel on a retry loop. hostOpenedAt doubles as a
+      // nonce that re-arms dormant guests' retry budget on panel reopen.
+      const presenceRef = sessionDocRef(sessionCode);
+      const presenceWriter = (typeof window !== 'undefined') && window.__alloWriteToSession;
+      if (presenceRef && typeof presenceWriter === 'function') {
+        presenceWriter(presenceRef, { livePolling: { hostActive: true, hostOpenedAt: Date.now() } }).catch(function () {});
+      }
       return function () {
+        if (presenceRef && typeof presenceWriter === 'function') {
+          presenceWriter(presenceRef, { livePolling: { hostActive: false } }).catch(function () {});
+        }
         host.stop();
         hostRef.current = null;
       };
@@ -894,42 +944,98 @@
     const sessionCode = props.sessionCode;
     const userUid = props.userUid;
     const codename = props.codename;
-    const enabled = !!(sessionCode && userUid && props.enabled);
+    // hostActive: Tier-1 presence marker (sessionData.livePolling.hostActive)
+    // written by HostPanel. Gates joining so guests only dial while a host is
+    // actually listening — otherwise every closed-panel minute becomes
+    // signaling churn (offer writes) against nobody. `undefined` (older
+    // shells that don't pass it) keeps the legacy always-on behavior.
+    const hostActive = props.hostActive;
+    const hostNonce = props.hostNonce || 0;
+    const enabled = !!(sessionCode && userUid && props.enabled && hostActive !== false);
     const guestRef = R.useRef(null);
     const [activePoll, setActivePoll] = R.useState(null);
     const [submitted, setSubmitted] = R.useState(false);
     const [responseValue, setResponseValue] = R.useState('');
     const [sharedResults, setSharedResults] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
+    const [submitNotice, setSubmitNotice] = R.useState(null);
+    // Auto-rejoin: bumping joinNonce re-runs the join effect with a fresh
+    // PollingGuest (fresh offer/signaling doc). The host accepts re-offers,
+    // so this is the student half of the reconnect story.
+    const [joinNonce, setJoinNonce] = R.useState(0);
+    const retryCountRef = R.useRef(0);
+    const retryTimerRef = R.useRef(null);
+    const hostNonceRef = R.useRef(hostNonce);
 
     R.useEffect(function () {
       if (!enabled) return undefined;
-      setConnectionState('connecting');
+      let disposed = false;
+      // A fresh hostOpenedAt means the teacher (re)opened the panel: reset the
+      // retry budget so dormant guests wake up and dial again.
+      if (hostNonceRef.current !== hostNonce) {
+        hostNonceRef.current = hostNonce;
+        retryCountRef.current = 0;
+      }
+      const REJOIN_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+      // Cap auto-rejoins so a stale hostActive marker (teacher tab crashed
+      // without cleanup) can't generate signaling churn forever; a hostNonce
+      // change re-arms the budget.
+      const MAX_AUTO_REJOINS = 8;
+      const scheduleRejoin = function () {
+        if (disposed) return;
+        if (retryCountRef.current >= MAX_AUTO_REJOINS) return;
+        const delay = REJOIN_DELAYS_MS[Math.min(retryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+        retryCountRef.current += 1;
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = setTimeout(function () {
+          retryTimerRef.current = null;
+          setJoinNonce(function (n) { return n + 1; });
+        }, delay);
+      };
+      setConnectionState(function (prev) { return prev === 'connected' ? prev : 'connecting'; });
       const guest = new PollingGuest({
         sessionCode: sessionCode,
         userUid: userUid,
         codename: codename,
-        onPoll: function (p) { setActivePoll(p); setSharedResults(null); setSubmitted(false); setResponseValue(''); },
+        onPoll: function (p) { setActivePoll(p); setSharedResults(null); setSubmitted(false); setResponseValue(''); setSubmitNotice(null); },
         onPollClose: function (payload) {
           setActivePoll(function (current) {
             if (!shouldApplyPollClose(current, payload)) return current;
             setSubmitted(false);
             setResponseValue('');
+            setSubmitNotice(null);
             return null;
           });
         },
-        onPollResults: function (summary) { setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue(''); },
-        onConnected: function () { setConnectionState('connected'); },
-        onDisconnected: function () { setConnectionState('disconnected'); },
-        onFailed: function () { setConnectionState('failed'); },
+        onPollResults: function (summary) { setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue(''); setSubmitNotice(null); },
+        onHostClosed: function () {
+          // Terminal event: the teacher closed the polling panel. Force-clear
+          // any active poll so the student is never left answering into a dead
+          // channel; keep already-shared results readable. Rejoin quietly in
+          // the background so we reconnect if the teacher reopens the panel.
+          setActivePoll(null);
+          setSubmitted(false);
+          setResponseValue('');
+          setSubmitNotice(null);
+          setConnectionState('reconnecting');
+          scheduleRejoin();
+        },
+        onConnected: function () { retryCountRef.current = 0; setConnectionState('connected'); setSubmitNotice(null); },
+        onDisconnected: function () { setConnectionState('reconnecting'); scheduleRejoin(); },
+        onFailed: function () {
+          setConnectionState(function (prev) { return prev === 'connected' ? prev : 'failed'; });
+          scheduleRejoin();
+        },
       });
       guestRef.current = guest;
-      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed', err); setConnectionState('failed'); });
+      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed', err); setConnectionState('failed'); scheduleRejoin(); });
       return function () {
+        disposed = true;
+        if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
         guest.leave();
         guestRef.current = null;
       };
-    }, [enabled, sessionCode, userUid, codename]);
+    }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce]);
 
     const renderResultsSummary = function (summary) {
       const items = Array.isArray(summary && summary.items) ? summary.items : [];
@@ -983,10 +1089,15 @@
         else { setSubmitted(false); setResponseValue(''); setActivePoll(null); }
       };
       const sent = guestRef.current.sendResponse(activePoll.id, payload);
-      if (sent) finishSubmitted();
+      if (sent) { setSubmitNotice(null); finishSubmitted(); }
       else if (connectionState === 'failed') {
         exportResponseForFallback(activePoll.id, payload, codename);
         finishSubmitted();
+      } else {
+        // Channel dropped mid-poll: say so instead of silently ignoring the
+        // click (the old dead-submit state). The auto-rejoin keeps working in
+        // the background and the host will resync the poll on reconnect.
+        setSubmitNotice('Connection lost — reconnecting. Your response was not sent; try again in a few seconds.');
       }
     };
 
@@ -1018,7 +1129,9 @@
           ) :
           ce('textarea', { value: responseValue, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': 'Your response', placeholder: 'Type your response', rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
         submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, 'Submit response'),
+        submitNotice ? ce('p', { role: 'status', style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, submitNotice) : null,
         connectionState === 'failed' ? ce('p', { style: { fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.75rem', marginBottom: 0 } }, 'Direct connection failed. Submitting will export your response as a downloadable file for the teacher to import.') :
+          connectionState === 'reconnecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, 'Connection lost — reconnecting…') :
           connectionState === 'connecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.75rem', marginBottom: 0 } }, 'Connecting...') : null
       )
     );
@@ -1042,8 +1155,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.2.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, and teacher-authored auto-routing rules.',
+      version: '1.3.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, and reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin).',
     },
   };
 

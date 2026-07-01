@@ -154,13 +154,16 @@ class PictionaryHost {
         if (change.type === "removed") return;
         const uid = change.doc.id;
         const data = change.doc.data() || {};
-        if (data.offer && !this.peers.has(uid)) {
+        const existing = this.peers.get(uid);
+        if (data.offer && !existing) {
           this._acceptPeer(uid, data, change.doc.ref);
-        } else if (data.iceFromGuest && this.peers.has(uid)) {
-          const peer = this.peers.get(uid);
+        } else if (data.offer && existing && existing.offerSdp && data.offer.sdp !== existing.offerSdp) {
+          this._cleanupPeer(uid);
+          this._acceptPeer(uid, data, change.doc.ref);
+        } else if (data.iceFromGuest && existing) {
           (data.iceFromGuest || []).forEach((c) => {
             try {
-              peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
+              existing.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
               });
             } catch (_) {
             }
@@ -176,7 +179,7 @@ class PictionaryHost {
     if (!fb) return;
     const pc = new RTCPeerConnection(RTC_CONFIG);
     const codename = typeof offerData.codename === "string" && offerData.codename.slice(0, 64) || "Guest";
-    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [] };
+    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: offerData.offer && offerData.offer.sdp || null };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -208,6 +211,11 @@ class PictionaryHost {
           };
           try {
             dc.send(JSON.stringify({ type: "roundStart", payload }));
+          } catch (_) {
+          }
+        } else {
+          try {
+            dc.send(JSON.stringify({ type: "roundSync", payload: { active: false } }));
           } catch (_) {
           }
         }
@@ -380,15 +388,11 @@ class PictionaryHost {
       if (peer.pc) peer.pc.close();
     } catch (_) {
     }
-    if (peer.signalingRef) {
-      const fb = _getFb();
-      if (fb) fb.deleteDoc(peer.signalingRef).catch(() => {
-      });
-    }
     this.peers.delete(uid);
     this.onGuestLeft(uid);
   }
   stop() {
+    if (this._stopped) return;
     this._stopped = true;
     if (this._timeoutHandle) {
       clearTimeout(this._timeoutHandle);
@@ -401,9 +405,24 @@ class PictionaryHost {
       }
       this.collectionUnsub = null;
     }
-    Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    const terminal = JSON.stringify({ type: "hostClosed", payload: {} });
+    let notified = false;
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === "open") {
+        try {
+          peer.dc.send(terminal);
+          notified = true;
+        } catch (_) {
+        }
+      }
+    });
     this.activeRound = null;
     this.strokeHistory = [];
+    const teardown = () => {
+      Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    };
+    if (notified) setTimeout(teardown, 300);
+    else teardown();
   }
 }
 class PictionaryGuest {
@@ -420,6 +439,10 @@ class PictionaryGuest {
     this.onRoundStart = config.onRoundStart || (() => {
     });
     this.onRoundResolved = config.onRoundResolved || (() => {
+    });
+    this.onRoundSync = config.onRoundSync || (() => {
+    });
+    this.onHostClosed = config.onHostClosed || (() => {
     });
     this.onStroke = config.onStroke || (() => {
     });
@@ -467,6 +490,8 @@ class PictionaryGuest {
         if (!parsed || !parsed.type) return;
         if (parsed.type === "roundStart") this.onRoundStart(parsed.payload);
         else if (parsed.type === "roundResolved") this.onRoundResolved(parsed.payload);
+        else if (parsed.type === "roundSync") this.onRoundSync(parsed.payload || {});
+        else if (parsed.type === "hostClosed") this.onHostClosed(parsed.payload || {});
         else if (parsed.type === "stroke") this.onStroke(parsed.payload);
         else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) this.onStrokeUndo(parsed.payload.strokeId);
         else if (parsed.type === "strokeHistory") this.onStrokeHistory(parsed.payload && parsed.payload.strokes || []);
@@ -1124,7 +1149,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const guestRef = React.useRef(null);
   const guestContainerRef = React.useRef(null);
   const [isGuestFullscreen, toggleGuestFullscreen] = useFullscreen(guestContainerRef);
-  const [connected, setConnected] = React.useState(false);
+  const [connState, setConnState] = React.useState("connecting");
   const [strokes, setStrokes] = React.useState([]);
   const [activeRound, setActiveRound] = React.useState(null);
   const [resolved, setResolved] = React.useState(null);
@@ -1132,16 +1157,65 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const [mode, setMode] = React.useState("pen");
   const [myStrokeIds, setMyStrokeIds] = React.useState([]);
   const [guessText, setGuessText] = React.useState("");
+  const [joinNonce, setJoinNonce] = React.useState(0);
+  const retryCountRef = React.useRef(0);
+  const retryTimerRef = React.useRef(null);
+  const resolvedRef = React.useRef(null);
+  React.useEffect(() => {
+    resolvedRef.current = resolved;
+  }, [resolved]);
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
   React.useEffect(() => {
     if (!sessionCode || !userUid) return;
-    if (guestRef.current) return;
+    let disposed = false;
+    const REJOIN_DELAYS_MS = [2e3, 5e3, 1e4, 2e4, 3e4];
+    const MAX_AUTO_REJOINS = 8;
+    const scheduleRejoin = () => {
+      if (disposed) return;
+      if (retryCountRef.current >= MAX_AUTO_REJOINS) return;
+      const delay = REJOIN_DELAYS_MS[Math.min(retryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+      retryCountRef.current += 1;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        retryTimerRef.current = null;
+        setJoinNonce((n) => n + 1);
+      }, delay);
+    };
+    setConnState((prev) => prev === "connected" ? prev : "connecting");
     const guest = new PictionaryGuest({
       sessionCode,
       userUid,
       codename,
-      onConnected: () => setConnected(true),
-      onDisconnected: () => setConnected(false),
-      onFailed: () => setConnected(false),
+      onConnected: () => {
+        retryCountRef.current = 0;
+        setConnState("connected");
+      },
+      onDisconnected: () => {
+        setConnState("reconnecting");
+        scheduleRejoin();
+      },
+      onFailed: () => {
+        setConnState((prev) => prev === "connected" ? prev : "failed");
+        scheduleRejoin();
+      },
+      onRoundSync: (payload) => {
+        if (payload && payload.active === false) {
+          setActiveRound(null);
+          setStrokes([]);
+          setMyStrokeIds([]);
+        }
+      },
+      onHostClosed: () => {
+        setActiveRound(null);
+        setStrokes([]);
+        setMyStrokeIds([]);
+        if (!resolvedRef.current && typeof onCloseRef.current === "function") {
+          onCloseRef.current();
+        }
+      },
       onRoundStart: (round) => {
         setActiveRound(round);
         setStrokes([]);
@@ -1170,16 +1244,33 @@ const PictionaryGuestOverlay = React.memo((props) => {
       },
       onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId))
     });
-    guest.join().catch((err) => console.warn("[Pictionary guest] join failed:", err && err.message));
+    guest.join().catch((err) => {
+      console.warn("[Pictionary guest] join failed:", err && err.message);
+      setConnState("failed");
+      scheduleRejoin();
+    });
     guestRef.current = guest;
     return () => {
+      disposed = true;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       try {
         guestRef.current && guestRef.current.leave();
       } catch (_) {
       }
       guestRef.current = null;
     };
-  }, [sessionCode, userUid, codename]);
+  }, [sessionCode, userUid, codename, joinNonce]);
+  const handleManualRetry = () => {
+    retryCountRef.current = 0;
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    setJoinNonce((n) => n + 1);
+  };
   const isDrawer = !!(activeRound && activeRound.isDrawer);
   const handleStrokeBatch = (stroke) => {
     setStrokes((prev) => prev.concat([{ ...stroke, uid: userUid }]));
@@ -1205,7 +1296,14 @@ const PictionaryGuestOverlay = React.memo((props) => {
       className: "relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200",
       style: isGuestFullscreen ? { width: "100vw", height: "100vh", maxWidth: "none", margin: 0, borderRadius: 0 } : { borderRadius: "1rem", marginTop: "2rem", marginBottom: "2rem" }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, "Concept Pictionary"), !connected ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1" }, "Connecting\u2026") : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs }) : null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-wider" }, isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, "Concept Pictionary"), connState === "connecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1" }, "Connecting\u2026") : null, connState === "reconnecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 mt-1", role: "status" }, "Connection lost \u2014 reconnecting\u2026") : null, connState === "failed" ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-red-700 mt-1 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "Can't reach the teacher's device."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleManualRetry,
+        className: "px-2 py-0.5 text-[10px] font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
+      },
+      "Retry"
+    )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs }) : null, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: toggleGuestFullscreen,
@@ -1243,7 +1341,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         onKeyDown: (e) => {
           if (e.key === "Enter") handleSubmitGuess();
         },
-        placeholder: "Type your guess and press Enter\u2026",
+        placeholder: typeof window !== "undefined" && window.__alloT && window.__alloT("placeholders.type_guess") || "Type your guess\u2026",
         className: "flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300",
         "aria-label": "Your guess"
       }

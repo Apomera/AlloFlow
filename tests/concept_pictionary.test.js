@@ -230,6 +230,8 @@ function linkHostAndGuest(host, guest, uid, codename) {
       if (!parsed || !parsed.type) return;
       if (parsed.type === 'roundStart') guest.onRoundStart(parsed.payload);
       else if (parsed.type === 'roundResolved') guest.onRoundResolved(parsed.payload);
+      else if (parsed.type === 'roundSync') guest.onRoundSync(parsed.payload || {});
+      else if (parsed.type === 'hostClosed') guest.onHostClosed(parsed.payload || {});
       else if (parsed.type === 'stroke') guest.onStroke(parsed.payload);
       else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) guest.onStrokeUndo(parsed.payload.strokeId);
       else if (parsed.type === 'strokeHistory') guest.onStrokeHistory((parsed.payload && parsed.payload.strokes) || []);
@@ -499,8 +501,11 @@ describe('PictionaryHost + PictionaryGuest smoke test', () => {
       expect(host.peers.size).toBe(1);
 
       host.stop();
-      expect(host.peers.size).toBe(0);
+      // Round state clears immediately; peer teardown is deferred ~300ms so
+      // the hostClosed terminal message can flush over the open channels.
       expect(host.activeRound).toBeNull();
+      vi.advanceTimersByTime(300);
+      expect(host.peers.size).toBe(0);
 
       // Pending timer should be cancelled — no auto-resolve fires after stop.
       vi.advanceTimersByTime(120000);
@@ -530,5 +535,94 @@ describe('PEN_COLORS palette', () => {
     expect(ConceptPictionary.PEN_COLORS.length).toBe(6);
     const hexes = new Set(ConceptPictionary.PEN_COLORS.map((c) => c.hex));
     expect(hexes.size).toBe(6);
+  });
+});
+
+// ── Reconnect-safe transport (2026-07-01 hardening) ─────────────────────
+// Pins the terminal-event + reconnect protocol: hostClosed broadcast on
+// stop(), roundSync state-sync for reconnecting guests, and re-offer
+// handling (a reloading student's fresh offer replaces their stale peer
+// instead of being ignored, and the fresh offer doc is NOT deleted by the
+// stale peer's cleanup).
+describe('reconnect-safe transport', () => {
+  const SIGNALING_BASE = 'artifacts/test-app/public/data/pictionary-signaling/RECON/peers';
+
+  it('stop() broadcasts hostClosed to open channels, then tears peers down', () => {
+    vi.useFakeTimers();
+    try {
+      const host = new PictionaryHost({ sessionCode: 'RECON' });
+      const sent = [];
+      const dc = { readyState: 'open', send: (m) => sent.push(JSON.parse(m)) };
+      host.peers.set('stu-1', { pc: new FakePeerConnection(), dc, codename: 'Stu', signalingRef: null, sentIce: [] });
+
+      host.stop();
+      expect(sent.some((m) => m.type === 'hostClosed')).toBe(true);
+      expect(host.peers.size).toBe(1); // teardown deferred so the send flushes
+      vi.advanceTimersByTime(300);
+      expect(host.peers.size).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('sends roundSync {active:false} on connect when no round is active (clears stale guest overlays)', async () => {
+    const fb = window.__alloFirebase;
+    const host = new PictionaryHost({ sessionCode: 'RECON' });
+    await host.start();
+    const docRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'pictionary-signaling', 'RECON', 'peers', 'stu-sync');
+    await fb.setDoc(docRef, { offer: { type: 'offer', sdp: 'sdp-sync' }, codename: 'Stu' });
+    await new Promise((r) => setTimeout(r, 0)); // let _acceptPeer's async body run
+    const peer = host.peers.get('stu-sync');
+    expect(peer).toBeTruthy();
+
+    const received = [];
+    const hostDc = new FakeDataChannel();
+    hostDc.peer = { onmessage: (m) => received.push(JSON.parse(m.data)) };
+    peer.pc.ondatachannel({ channel: hostDc });
+    hostDc.onopen();
+
+    expect(received.some((m) => m.type === 'roundSync' && m.payload && m.payload.active === false)).toBe(true);
+    host.stop();
+  });
+
+  it('accepts a re-offer for an already-known uid and keeps the fresh signaling doc', async () => {
+    const fb = window.__alloFirebase;
+    const host = new PictionaryHost({ sessionCode: 'RECON' });
+    await host.start();
+    const docRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'pictionary-signaling', 'RECON', 'peers', 'stu-re');
+    await fb.setDoc(docRef, { offer: { type: 'offer', sdp: 'sdp-A' }, codename: 'Stu' });
+    await new Promise((r) => setTimeout(r, 0));
+    const firstPeer = host.peers.get('stu-re');
+    expect(firstPeer.offerSdp).toBe('sdp-A');
+
+    // Student reloads: full-overwrite setDoc with a fresh offer.
+    await fb.setDoc(docRef, { offer: { type: 'offer', sdp: 'sdp-B' }, codename: 'Stu' });
+    await new Promise((r) => setTimeout(r, 0));
+    const secondPeer = host.peers.get('stu-re');
+    expect(secondPeer).toBeTruthy();
+    expect(secondPeer.offerSdp).toBe('sdp-B');
+    expect(secondPeer).not.toBe(firstPeer);
+    expect(firstPeer.pc.connectionState).toBe('closed');
+    // The stale-peer cleanup must NOT have deleted the fresh offer doc.
+    expect(fb._docs.has(`${SIGNALING_BASE}/stu-re`)).toBe(true);
+    host.stop();
+  });
+
+  it('guest routes roundSync and hostClosed to the new callbacks', () => {
+    const onRoundSync = vi.fn();
+    const onHostClosed = vi.fn();
+    const guest = new PictionaryGuest({
+      sessionCode: 'RECON', userUid: 'g1', codename: 'Fox',
+      onRoundSync, onHostClosed,
+      onRoundStart: vi.fn(), onRoundResolved: vi.fn(), onStroke: vi.fn(),
+      onStrokeHistory: vi.fn(), onStrokeUndo: vi.fn(), onCanvasClear: vi.fn(),
+    });
+    const host = new PictionaryHost({ sessionCode: 'RECON' });
+    linkHostAndGuest(host, guest, 'g1', 'Fox');
+    host.peers.get('g1').dc.peer.onmessage({ data: JSON.stringify({ type: 'roundSync', payload: { active: false } }) });
+    host.peers.get('g1').dc.peer.onmessage({ data: JSON.stringify({ type: 'hostClosed', payload: {} }) });
+    expect(onRoundSync).toHaveBeenCalledWith({ active: false });
+    expect(onHostClosed).toHaveBeenCalledWith({});
+    host.stop();
   });
 });
