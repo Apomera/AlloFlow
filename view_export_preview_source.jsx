@@ -1203,7 +1203,16 @@ function ExportPreviewView(props) {
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
                     className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
-                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return; const url = prompt('Link URL:'); if (url) doc.execCommand('createLink', false, url); }}
+                  <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return; const url = prompt('Link URL:'); if (!url) return;
+                    // Scheme allowlist (builder-review A4, 2026-07-01): createLink accepted ANY URI —
+                    // "javascript:alert(1)" became a live link inside the allow-scripts editor iframe
+                    // AND survived into the exported/distributed HTML. Allow web/mail/tel/anchor/
+                    // relative links only; anything else is refused with a message, never inserted.
+                    const _u = url.trim();
+                    const _schemeMatch = _u.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+                    const _okScheme = !_schemeMatch || ['http', 'https', 'mailto', 'tel'].includes(_schemeMatch[1].toLowerCase());
+                    if (!_okScheme) { alert('Only web (http/https), mailto:, tel:, and internal links are allowed.'); return; }
+                    doc.execCommand('createLink', false, _u); }}
                     className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
                     className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>

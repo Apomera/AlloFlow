@@ -6912,7 +6912,16 @@ var createDocPipeline = function(deps) {
       for (const oi of outlineItems) {
         const ot = norm(oi && oi.text);
         if (ot.length < 4) continue;
-        if (ot.startsWith(itemText) || itemText.startsWith(ot) || ot.includes(itemText) || itemText.includes(ot)) {
+        // Prefix relationships (either direction) are usually a pdf.js text run that
+        // TRUNCATES the real heading — keep them. Bare mid-string containment with only
+        // the 4-char floor was a mislabel vector (pipeline-review F3, 2026-07-01): a
+        // short cell like "Item 1" inherited the role of ANY outline entry containing
+        // those characters (e.g. an H3 "Item 1: Full Description"), silently promoting
+        // a table cell to a heading. Containment now requires the contained string to
+        // be ≥12 chars — long enough to be the actual heading text, not a fragment.
+        if (ot.startsWith(itemText) || itemText.startsWith(ot)
+            || (itemText.length >= 12 && ot.includes(itemText))
+            || (ot.length >= 12 && itemText.includes(ot))) {
           return oi.role;
         }
       }
