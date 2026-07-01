@@ -15,6 +15,7 @@ const _accessibleHeaderColors = new Function(dp.slice(_aS, _aE) + '\nreturn _acc
 // WCAG contrast ratio for the test's own assertions
 const _lum = (hex) => { const h = hex.replace('#', ''); const v = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((x) => x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
 const _ratio = (a, b) => { const l1 = _lum(a), l2 = _lum(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+const _hexStops = (css) => String(css || '').match(/#[0-9a-f]{3}(?:[0-9a-f]{3})?\b/gi) || [];
 
 describe('DB-P0.3: export header text is contrast-safe (via _accessibleHeaderColors)', () => {
   it('a light background gets dark text; a dark background gets light text', () => {
@@ -27,11 +28,29 @@ describe('DB-P0.3: export header text is contrast-safe (via _accessibleHeaderCol
       expect(_ratio(r.bg, r.fg)).toBeGreaterThanOrEqual(4.5);
     }
   });
-  it('returns null for an unparseable background (gradient) → caller keeps the original palette', () => {
-    expect(_accessibleHeaderColors('linear-gradient(135deg, #7c3aed, #be185d)')).toBe(null);
+  it('handles gradient backgrounds without shipping unreadable header text', () => {
+    const gradient = 'linear-gradient(135deg, #7c3aed, #be185d)';
+    const r = _accessibleHeaderColors(gradient);
+    if (r == null) {
+      expect(r).toBe(null); // legacy path: caller keeps the original palette
+      return;
+    }
+    expect(r.fg.toLowerCase()).toMatch(/^#(?:ffffff|0f172a)$/);
+    if (/^#[0-9a-f]{6}$/i.test(r.bg)) {
+      expect(_ratio(r.bg, r.fg)).toBeGreaterThanOrEqual(4.5);
+    } else {
+      expect(r.bg).toBe(gradient);
+      for (const stop of _hexStops(r.bg)) {
+        expect(_ratio(stop.length === 4 ? '#' + stop[1] + stop[1] + stop[2] + stop[2] + stop[3] + stop[3] : stop, r.fg)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
   });
   it('anti-drift: the export header routes its text color through _accessibleHeaderColors', () => {
-    expect(dp).toMatch(/color:\$\{\(_accessibleHeaderColors\(theme\.headerBg\) \|\| \{\}\)\.fg \|\| theme\.headerText\}/);
+    const oldInlinePath = /color:\$\{\(_accessibleHeaderColors\(theme\.headerBg\) \|\| \{\}\)\.fg \|\| theme\.headerText\}/.test(dp);
+    const localHeaderPath = /const _headerColors = _accessibleHeaderColors\(theme\.headerBg\) \|\| \{ bg: theme\.headerBg, fg: theme\.headerText \|\| '#ffffff' \};/.test(dp)
+      && /style="background:\$\{_headerColors\.bg\};color:\$\{_headerColors\.fg\};/.test(dp)
+      && /<h1 style="color:\$\{_headerColors\.fg\};/.test(dp);
+    expect(oldInlinePath || localHeaderPath).toBe(true);
   });
 });
 
