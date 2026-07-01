@@ -92,8 +92,9 @@ describe('Guided banner — success note is gated on real completion, not the cl
     expect(txt).toContain('Run Analyze');     // the still-pending action instruction
     expect(txt).toContain('👉');               // pending marker, not ✅
     expect(txt).not.toContain('✅');
-    // ...but the click affordance (Next step) DOES still key on guidedEngaged:
-    expect(b.button('Next step')).toBeTruthy();
+    // A click alone now stays honest: the teacher may skip, but Next step waits for real output.
+    expect(b.button('Next step')).toBeFalsy();
+    expect(b.button('Skip')).toBeTruthy();
     b.cleanup();
   });
 
@@ -105,6 +106,7 @@ describe('Guided banner — success note is gated on real completion, not the cl
     const txt = b.text();
     expect(txt).toContain('Analysis done');
     expect(txt).toContain('✅');
+    expect(b.button('Next step')).toBeTruthy();
     b.cleanup();
   });
 

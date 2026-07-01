@@ -1200,10 +1200,11 @@ const QuickStartWizard = React.memo(({
     className: "text-slate-600 mb-8 max-w-xs mx-auto text-sm"
   }, t('wizard.file_helper')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.upload'),
-    onClick: () => {
-      onUpload();
-      onClose();
-    },
+    onClick: () => onComplete({
+      ...localData,
+      sourceMode: 'file',
+      materialType: 'file'
+    }),
     className: "bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 20

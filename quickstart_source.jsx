@@ -956,10 +956,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </p>
                               <button
                                   aria-label={t('common.upload')}
-                                  onClick={() => {
-                                      onUpload();
-                                      onClose();
-                                  }}
+                                  onClick={() => onComplete({ ...localData, sourceMode: 'file', materialType: 'file' })}
                                   className="bg-indigo-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-indigo-700 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto shadow-xl"
                               >
                                   <Upload size={20}/> {t('wizard.select_file')}

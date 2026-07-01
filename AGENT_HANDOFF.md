@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `view_header_source.jsx`, `view_header_module.js`, `view_guided_mode_banner_source.jsx`, `view_guided_mode_banner_module.js`, `quickstart_source.jsx`, `quickstart_module.js`, `AlloFlowANTI.txt`, `tests/guided_host_wiring.test.js`, `tests/guided_mode_banner_completion.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added a QuickStart/Guided Mode choice modal, tightened Guided next-vs-skip behavior, fixed QuickStart upload completion, and added host-level onboarding tests. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, selected `sel_hub/sel_tool_*.js`, `dev-tools/check_sel_a11y.cjs`, `a11y-audit/sel_tool_ui_a11y_audit.json`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed the full SEL tool-by-tool UI/UX and accessibility pass across 70 tools: shared shell coverage is now default, contrast and unlabeled control findings were fixed, and `check_sel_a11y` plus `check_sel_render --quiet` both pass cleanly. |
 | 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Added recent-tool memory, quick-start chips, catalog result status, clear-filter controls, and global search behavior that clears hidden category filters. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Expanded the shared SEL Tool Shell beyond the first pilot tools to more core student-facing SEL tools for consistent navigation, save cues, and next-step guidance. |
@@ -79,6 +80,9 @@ Last updated: 2026-07-01 by Codex.
 - `node --check live_polling_module.js`, `node --check prismflow-deploy\public\live_polling_module.js`, and `node --check view_history_panel_module.js` - passed after live polling/history changes.
 - `npx vitest run tests/live_polling.test.js tests/history_panel_share.test.js tests/canvas_shell_live_controls.test.js --reporter=verbose` - passed 19 tests.
 - `npm run build` in `prismflow-deploy` - passed after syncing live polling and history panel public modules; postbuild reported zero external resource requests.
+
+- `node --check view_header_module.js`, `node --check view_guided_mode_banner_module.js`, `node --check quickstart_module.js`, and matching `prismflow-deploy\public\*` module checks - passed after Guided/QuickStart changes.
+- `npx vitest run tests/guided_host_wiring.test.js tests/guided_mode_banner_completion.test.js tests/guided_example_integrity.test.js tests/onboarding_previewscrub.test.js --reporter=verbose` - passed 32 tests.
 
 - `node --check` for the SEL hub module and touched SEL tool modules - passed after the tool-by-tool UI/accessibility pass.
 - `node dev-tools\check_sel_a11y.cjs` - passed across 70 SEL tools with 0 errors, 0 warnings, and full shared-shell coverage.

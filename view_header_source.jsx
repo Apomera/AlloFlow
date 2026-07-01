@@ -98,7 +98,7 @@ function HeaderBar(props) {
     resetFontSize, safeRemoveItem, selectedVoice, sessionData,
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
-    setPendingRole, setRunTour,
+    setPendingRole, setRunTour, setGuidedMode, setGuidedStep, setGuidedSelectedIds,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
     setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
@@ -107,6 +107,21 @@ function HeaderBar(props) {
     showVoiceSettings, sliderFontSize, startClassSession, t,
     voiceSpeed, voiceVolume,
   } = props;
+
+  const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const openQuickStartSetup = () => {
+    try { if (safeRemoveItem) safeRemoveItem('allo_wizard_completed'); } catch (_) {}
+    setShowSetupPathMenu(false);
+    setShowWizard(true);
+  };
+  const startGuidedModeFromHeader = () => {
+    if (typeof setGuidedSelectedIds === 'function') setGuidedSelectedIds(null);
+    if (typeof setGuidedStep === 'function') setGuidedStep(0);
+    if (typeof setGuidedMode === 'function') setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === 'function') addToast(t('guided.started_from_header') || 'Guided Mode started.', 'success');
+  };
 
   return (
       <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
@@ -657,11 +672,11 @@ function HeaderBar(props) {
                               <MapIcon size={20} />
                             </button>
                             <button
-                              onClick={() => { safeRemoveItem('allo_wizard_completed'); setShowWizard(true); }}
+                              onClick={() => setShowSetupPathMenu(true)}
                               data-help-key="header_rerun_wizard"
                               className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
-                              title={t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}
-                              aria-label={t('toolbar.rerun_wizard_aria') || 'Re-run the QuickStart setup wizard'}
+                              title={t('toolbar.setup_options') || 'Setup and Guided Mode'}
+                              aria-label={t('toolbar.setup_options_aria') || 'Open setup and Guided Mode options'}
                             >
                               <Sparkles size={20} />
                             </button>
@@ -958,6 +973,58 @@ function HeaderBar(props) {
             </div>
           </div>
         </div>
-      </header>
+        {showSetupPathMenu && (
+          <div
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Escape') setShowSetupPathMenu(false); }}
+            className="fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8"
+            onClick={() => setShowSetupPathMenu(false)}
+            aria-label={t('toolbar.setup_options_close') || 'Close setup options'}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="header-setup-options-title"
+              className="w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3">
+                <div>
+                  <h2 id="header-setup-options-title" className="text-sm font-black">{t('toolbar.setup_options_title') || 'Choose a setup path'}</h2>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{t('toolbar.setup_options_desc') || 'Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.'}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowSetupPathMenu(false)}
+                  className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label={t('common.close') || 'Close'}
+                >
+                  <span aria-hidden="true">x</span>
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                <button
+                  type="button"
+                  onClick={openQuickStartSetup}
+                  data-help-key="header_quickstart_setup"
+                  className="w-full text-start rounded-xl border border-indigo-300/30 bg-indigo-500/15 hover:bg-indigo-500/25 px-4 py-3 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-black"><Sparkles size={16} />{t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}</span>
+                  <span className="block text-xs text-indigo-100 mt-1 leading-relaxed">{t('toolbar.quickstart_setup_desc') || 'Set grade, source material, standards, languages, and personalization.'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={startGuidedModeFromHeader}
+                  data-help-key="header_guided_mode_start"
+                  className="w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
+                >
+                  <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} />{t('launch_pad.guided_title') || 'Guided Mode'}</span>
+                  <span className="block text-xs text-emerald-100 mt-1 leading-relaxed">{t('toolbar.guided_mode_setup_desc') || 'Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}`r`n      </header>
   );
 }

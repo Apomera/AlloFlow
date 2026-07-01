@@ -153,13 +153,16 @@ function HeaderBar(props) {
     setJoinCodeInput,
     setPendingRole,
     setRunTour,
+    setGuidedMode,
+    setGuidedStep,
+    setGuidedSelectedIds,
     setSelectedVoice,
     setSessionData,
     setShowAIBackendModal,
+    setBridgeSendOpen,
     setShowClassAnalytics,
     setShowEducatorHub,
     setShowExportMenu,
-    setBridgeSendOpen,
     setShowLearningHub,
     setShowNotebook,
     setShowReadThisPage,
@@ -183,6 +186,23 @@ function HeaderBar(props) {
     voiceSpeed,
     voiceVolume
   } = props;
+  const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const openQuickStartSetup = () => {
+    try {
+      if (safeRemoveItem) safeRemoveItem("allo_wizard_completed");
+    } catch (_) {
+    }
+    setShowSetupPathMenu(false);
+    setShowWizard(true);
+  };
+  const startGuidedModeFromHeader = () => {
+    if (typeof setGuidedSelectedIds === "function") setGuidedSelectedIds(null);
+    if (typeof setGuidedStep === "function") setGuidedStep(0);
+    if (typeof setGuidedMode === "function") setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === "function") addToast(t("guided.started_from_header") || "Guided Mode started.", "success");
+  };
   return /* @__PURE__ */ React.createElement("header", { "aria-label": t("common.main_application_header"), className: `p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === "contrast" ? "bg-black border-b-4 border-yellow-400" : "bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[98%] mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { className: `text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3 ${theme === "contrast" ? "text-yellow-400" : "text-white drop-shadow-sm"}` }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center justify-center ${theme === "contrast" ? "" : "p-1.5 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30"}`, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Layers, { className: "w-10 h-10", "aria-hidden": "true" })), theme === "contrast" ? t("header.app_name") : /* @__PURE__ */ React.createElement("span", { className: "bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent" }, t("header.app_name")), /* @__PURE__ */ React.createElement("div", { className: `hidden md:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-green-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.equitable"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-teal-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.accessible"))), /* @__PURE__ */ React.createElement("div", { className: `w-px h-3 ${theme === "contrast" ? "bg-yellow-400" : "bg-white/10"}` }), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === "contrast" ? "text-yellow-400" : "text-purple-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "fill-current opacity-50", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-widest opacity-90" }, t("header.scaffolded"))))), /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-sm font-medium italic opacity-90 ${theme === "contrast" ? "text-yellow-400" : "text-indigo-100"}` }, t("header.tagline")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] ${theme === "contrast" ? "text-yellow-400" : "px-2.5 py-0.5 rounded-xl bg-white/10 border border-white/20 text-indigo-100"}` }, t("header.rights")), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-medium ${theme === "contrast" ? "text-red-400" : "px-2.5 py-0.5 rounded-xl bg-orange-400/15 border border-orange-300/30 text-orange-100"}` }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("header.pii_warning")))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-end gap-4 w-full lg:w-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap justify-end relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -570,14 +590,11 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => {
-        safeRemoveItem("allo_wizard_completed");
-        setShowWizard(true);
-      },
+      onClick: () => setShowSetupPathMenu(true),
       "data-help-key": "header_rerun_wizard",
       className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
-      title: t("toolbar.rerun_wizard") || "Re-run Setup Wizard",
-      "aria-label": t("toolbar.rerun_wizard_aria") || "Re-run the QuickStart setup wizard"
+      title: t("toolbar.setup_options") || "Setup and Guided Mode",
+      "aria-label": t("toolbar.setup_options_aria") || "Open setup and Guided Mode options"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 20 })
   )), /* @__PURE__ */ React.createElement(
@@ -636,7 +653,18 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F9E0}"),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Learn")
-  ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement("button", { onClick: () => setBridgeSendOpen(true), "data-help-key": "header_bridge", className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10", title: t("header.bridge_tooltip") || "Family Bridge: live translation to talk with multilingual families & students", "aria-label": t("header.bridge_aria") || "Family Bridge translation" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"), /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Bridge")), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !isIndependentMode && setBridgeSendOpen && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setBridgeSendOpen(true),
+      "data-help-key": "header_bridge",
+      className: "px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider hover:bg-white/10 text-white/80 hover:text-white border border-white/10",
+      title: t("header.bridge_tooltip") || "Family Bridge: live translation to talk with multilingual families & students",
+      "aria-label": t("header.bridge_aria") || "Family Bridge translation"
+    },
+    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "14px", lineHeight: 1 } }, "\u{1F310}"),
+    /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, "Bridge")
+  ), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-white/10 mx-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, isTeacherMode ? !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.connect"),
@@ -852,7 +880,60 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement(Send, { size: 14 }),
     " ",
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.submit_work"))
-  )))))));
+  )))))), showSetupPathMenu && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      role: "button",
+      tabIndex: 0,
+      onKeyDown: (e) => {
+        if (e.key === "Escape") setShowSetupPathMenu(false);
+      },
+      className: "fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8",
+      onClick: () => setShowSetupPathMenu(false),
+      "aria-label": t("toolbar.setup_options_close") || "Close setup options"
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "header-setup-options-title",
+        className: "w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden",
+        onClick: (e) => e.stopPropagation()
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "header-setup-options-title", className: "text-sm font-black" }, t("toolbar.setup_options_title") || "Choose a setup path"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-300 mt-1 leading-relaxed" }, t("toolbar.setup_options_desc") || "Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setShowSetupPathMenu(false),
+          className: "p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors",
+          "aria-label": t("common.close") || "Close"
+        },
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "x")
+      )),
+      /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: openQuickStartSetup,
+          "data-help-key": "header_quickstart_setup",
+          className: "w-full text-start rounded-xl border border-indigo-300/30 bg-indigo-500/15 hover:bg-indigo-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), t("toolbar.rerun_wizard") || "Re-run Setup Wizard"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-100 mt-1 leading-relaxed" }, t("toolbar.quickstart_setup_desc") || "Set grade, source material, standards, languages, and personalization.")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: startGuidedModeFromHeader,
+          "data-help-key": "header_guided_mode_start",
+          className: "w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16 }), t("launch_pad.guided_title") || "Guided Mode"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-100 mt-1 leading-relaxed" }, t("toolbar.guided_mode_setup_desc") || "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.")
+      ))
+    )
+  ), "`r`n      ");
 }
 
   window.AlloModules = window.AlloModules || {};
