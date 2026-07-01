@@ -1577,6 +1577,60 @@
         return desc.slice(0, 147).replace(/\s+\S*$/, '') + '...';
       }
 
+      var _selSearchAliasMap = {
+        zones: 'feeling feelings emotion emotions mood mad angry sad worried nervous calm red yellow green blue dysregulated overwhelmed',
+        emotions: 'feeling feelings emotion emotions mood identify name vocabulary faces sad mad worried happy',
+        coping: 'calm breathe breathing grounding panic anxious anxiety worried stress overwhelmed regulate body',
+        mindfulness: 'calm breathe breathing body scan mindful still focus quiet attention',
+        journal: 'write writing private reflect reflection feelings diary think process',
+        thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe',
+        anxietyToolkit: 'anxiety anxious worry worried panic nervous fear calm',
+        sleep: 'sleep tired rest exhausted bedtime phone night stress',
+        stressBucket: 'stress stressed pressure overwhelmed busy load capacity',
+        tipp: 'panic crisis intense emotion emergency calm body temperature breathing',
+        bigFeelings: 'anger angry mad rage upset conflict cool down',
+        sensoryRegulation: 'sensory noise light texture overload neurodivergent regulation',
+        friendship: 'friend friends lonely friendship peer belong',
+        conflict: 'conflict fight argument repair friend apologize',
+        conflicttheater: 'conflict fight argument repair friend mediation',
+        restorativeCircle: 'repair conflict harm apology restore relationship',
+        peersupport: 'listen listening friend help support peer adult',
+        sociallab: 'social roleplay conversation practice friend peer',
+        goals: 'goal goals plan motivation future',
+        decisions: 'decision decide choice choices problem solve',
+        ethicalReasoning: 'decision ethics right wrong dilemma values',
+        valuesCommittedAction: 'values purpose decision action committed',
+        advocacy: 'ask help need accommodation self advocate',
+        safety: 'safe safety plan help trusted adult',
+        crisiscompanion: 'crisis urgent unsafe self harm suicide help',
+        griefLoss: 'grief loss death missing sad',
+        digitalWellbeing: 'phone social media cyberbullying screen online chatbot'
+      };
+
+      function _selToolSearchText(tool) {
+        if (!tool) return '';
+        return [
+          tool.label || '',
+          tool.desc || '',
+          tool.recommendedRange || '',
+          _selSearchAliasMap[tool.id] || ''
+        ].join(' ').toLowerCase();
+      }
+
+      function _selToolMatchesSearch(tool, query) {
+        var q = String(query || '').toLowerCase().trim();
+        if (!q) return true;
+        var text = _selToolSearchText(tool);
+        if (text.indexOf(q) !== -1) return true;
+        var terms = q.split(/\s+/).filter(function(term) { return term.length > 1; });
+        if (terms.length === 0) return true;
+        var matches = 0;
+        terms.forEach(function(term) {
+          if (text.indexOf(term) !== -1) matches++;
+        });
+        return matches > 0 && matches >= Math.ceil(Math.min(terms.length, 3) / 2);
+      }
+
       function _selGradePick() {
         var band = gradeBand(gradeLevel);
         var ids = band === 'elementary'
@@ -1820,6 +1874,15 @@
           { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a private reflection.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
           { key: 'browse', icon: '\uD83D\uDD0D', label: 'Browse All', desc: 'Search or filter the full catalog.', browse: true, disabled: false }
         ];
+        var _selNeedChips = [
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm my body', query: 'calm' },
+          { key: 'feelings', icon: '\uD83D\uDCAC', label: 'Name feelings', query: 'feelings' },
+          { key: 'stress', icon: '\uD83C\uDF2A', label: 'Stress or worry', query: 'stress worry' },
+          { key: 'friend', icon: '\uD83E\uDD1D', label: 'Friend conflict', query: 'friend conflict' },
+          { key: 'write', icon: '\uD83D\uDCD3', label: 'Write it out', query: 'write' },
+          { key: 'decision', icon: '\u2696\uFE0F', label: 'Make a decision', query: 'decision' },
+          { key: 'sleep', icon: '\uD83D\uDE34', label: 'Sleep or tired', query: 'sleep tired' }
+        ];
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -1828,13 +1891,11 @@
             var catIdx = _allSelTools.indexOf(tool);
             for (var j = catIdx + 1; j < _allSelTools.length; j++) {
               if (_allSelTools[j].category) break;
-              if (_allSelTools[j].label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                  _allSelTools[j].desc.toLowerCase().indexOf(_searchLower) !== -1) return true;
+              if (_selToolMatchesSearch(_allSelTools[j], _searchLower)) return true;
             }
             return false;
           }
-          return tool.label.toLowerCase().indexOf(_searchLower) !== -1 ||
-                 tool.desc.toLowerCase().indexOf(_searchLower) !== -1;
+          return _selToolMatchesSearch(tool, _searchLower);
         }) : _allSelTools;
 
         // Remove orphan category headers
@@ -2101,13 +2162,63 @@
             h('input', {
               id: 'sel-tool-search-input',
               type: 'text',
-              placeholder: '\uD83D\uDD0D Search SEL tools...',
+              placeholder: '\uD83D\uDD0D Search feelings, friends, stress, goals...',
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
               style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
             })
+          ),
+          !activePathway && !activeStation && h('div', {
+            role: 'group',
+            'aria-label': 'Find SEL tools by need',
+            style: { marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 6 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: 11, fontWeight: 800, color: _t.textMuted } }, 'I need...'),
+              _searchLower && h('button', {
+                onClick: function() { setSelToolSearch(''); setSelCategoryFilter(null); announceToSR('Cleared SEL search'); },
+                'aria-label': 'Clear SEL search',
+                style: { border: 'none', background: 'transparent', color: _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '4px 2px' }
+              }, 'Clear')
+            ),
+            h('div', { style: { display: 'flex', gap: 6, overflowX: isCompact ? 'auto' : 'visible', flexWrap: isCompact ? 'nowrap' : 'wrap', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
+              _selNeedChips.map(function(chip) {
+                var activeNeed = _searchLower === chip.query;
+                return h('button', {
+                  key: chip.key,
+                  onClick: function() {
+                    setActivePathway(null);
+                    setActiveStationId(null);
+                    setSelCategoryFilter(null);
+                    setSelToolSearch(activeNeed ? '' : chip.query);
+                    announceToSR(activeNeed ? 'Cleared SEL need filter' : 'Showing SEL tools for ' + chip.label);
+                  },
+                  'aria-label': (activeNeed ? 'Clear need filter: ' : 'Find tools for: ') + chip.label,
+                  'aria-pressed': activeNeed ? 'true' : 'false',
+                  style: {
+                    minHeight: 34,
+                    padding: '7px 10px',
+                    borderRadius: 8,
+                    border: '1px solid ' + (activeNeed ? '#7c3aed' : _t.border),
+                    background: activeNeed ? '#7c3aed' : _t.bgCard,
+                    color: activeNeed ? '#fff' : _t.text,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true' }, chip.icon),
+                  chip.label
+                );
+              })
+            )
           ),
           // CASEL category filter chips
           h('div', { role: 'group', 'aria-label': 'Filter SEL tools by category', style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
@@ -2456,7 +2567,7 @@
           _searchLower && _filteredTools.length === 0 && h('div', { style: { textAlign: 'center', padding: '48px 0', color: _t.textMuted } },
             h('div', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDD0D'),
             h('p', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, 'No tools match "' + selToolSearch + '"'),
-            h('p', { style: { fontSize: 12 } }, 'Try a different search term')
+            h('p', { style: { fontSize: 12 } }, 'Try calm, feelings, stress, friend, write, decision, or sleep.')
           )
         );
       }
