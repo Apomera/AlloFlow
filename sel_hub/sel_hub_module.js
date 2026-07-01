@@ -608,6 +608,21 @@
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
       }, []);
 
+      var _viewportWidthState = React.useState(function() {
+        try { return window.innerWidth || 1024; } catch (e) { return 1024; }
+      });
+      var viewportWidth = _viewportWidthState[0];
+      var setViewportWidth = _viewportWidthState[1];
+      React.useEffect(function() {
+        function onResize() {
+          try { setViewportWidth(window.innerWidth || 1024); } catch (e) {}
+        }
+        window.addEventListener('resize', onResize);
+        return function() { window.removeEventListener('resize', onResize); };
+      }, []);
+      var isCompact = viewportWidth < 720;
+      var isMidWidth = viewportWidth < 980;
+
       // ── CHANGE 1: Ephemerality explainer state ──
       // Surfaces a first-run modal explaining that work is lost without Export.
       // Re-shows after 20 min of active use with no export. SessionStorage
@@ -635,15 +650,6 @@
       var _showForEducators = React.useState(false);
       var showForEducators = _showForEducators[0];
       var setShowForEducators = _showForEducators[1];
-
-      // Mark dirty when any persisted tool state changes (after first render).
-      React.useEffect(function() {
-        if (_firstRenderRef.current) {
-          _firstRenderRef.current = false;
-          return;
-        }
-        setIsDirty(true);
-      }, [selToolData, selSnapshots, selXp, selToolUsage]);
 
       // Listen for export events fired by either the parent app or our own
       // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
@@ -798,6 +804,15 @@
       var _selToolUsage = React.useState(_selInitial.toolUsage || {});
       var selToolUsage = _selToolUsage[0]; var setSelToolUsage = _selToolUsage[1];
 
+      // Mark dirty when any persisted tool state changes (after first render).
+      React.useEffect(function() {
+        if (_firstRenderRef.current) {
+          _firstRenderRef.current = false;
+          return;
+        }
+        setIsDirty(true);
+      }, [selToolData, selSnapshots, selXp, selToolUsage]);
+
       // Mirror state changes to the window slot so the host save flow can
       // serialize it into the project JSON. The _ts stamp lets the host
       // skip emitting a SEL block when nothing has changed.
@@ -938,6 +953,24 @@
           try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
           return next;
         });
+      }
+
+      function openSelToolById(toolId, label) {
+        if (!toolId) return;
+        if (window.SelHub && window.SelHub.isRegistered(toolId)) {
+          trackToolOpen(toolId);
+          setSelHubTool(toolId);
+          announceToSR('Opened ' + (label || toolId));
+          if (activePathway && activePathway.tools && activePathway.tools.indexOf(toolId) >= 0) {
+            setPathwayProgress(function(prev) {
+              var n = Object.assign({}, prev);
+              n[toolId] = true;
+              return n;
+            });
+          }
+        } else if (typeof addToast === 'function') {
+          addToast((label || 'This SEL tool') + ' is loading...', 'info');
+        }
       }
 
       // Sync activeStation prop from parent (e.g. resource-history click).
@@ -1359,6 +1392,29 @@
         disabilityVoices: { tier: 'practice' }
       };
 
+      function _selShortDesc(tool) {
+        var desc = (tool && tool.desc) ? String(tool.desc).trim() : '';
+        if (!desc) return '';
+        var firstSentence = desc.match(/^.{1,150}?[.!?](?:\s|$)/);
+        if (firstSentence && firstSentence[0]) return firstSentence[0].trim();
+        if (desc.length <= 150) return desc;
+        return desc.slice(0, 147).replace(/\s+\S*$/, '') + '...';
+      }
+
+      function _selGradePick() {
+        var band = gradeBand(gradeLevel);
+        var ids = band === 'elementary'
+          ? ['zones', 'emotions', 'coping', 'friendship']
+          : band === 'middle'
+            ? ['coping', 'journal', 'perspective', 'goals']
+            : ['thoughtRecord', 'valuesCommittedAction', 'advocacy', 'sleep'];
+        for (var i = 0; i < ids.length; i++) {
+          var found = _allSelTools.find(function(t) { return t.id === ids[i] && !t.category; });
+          if (found) return found;
+        }
+        return _allSelTools.find(function(t) { return t && !t.category; }) || null;
+      }
+
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
@@ -1376,36 +1432,36 @@
       // ── Header bar (fixed: removed bogus role=button from non-interactive containers) ──
       var header = h('div', {
         role: 'banner',
-        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: isCompact ? 'wrap' : 'nowrap', padding: isCompact ? '12px 12px' : '16px 20px', borderBottom: '1px solid ' + _t.border, background: _t.headerBg }
       },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 8 : 12, minWidth: 0 } },
           selHubTool && h('button', {
             onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
             'aria-label': 'Back to tools',
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
-          h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: _t.headerText } },
+          h('h2', { style: { margin: 0, fontSize: isCompact ? 18 : 20, fontWeight: 800, color: _t.headerText, whiteSpace: 'nowrap' } },
             '\u2764\uFE0F\u200D\uD83D\uDD25 SEL Hub'
           ),
           h('span', {
-            style: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
+            style: { display: isCompact ? 'none' : 'inline', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }
           }, gradeBand(gradeLevel) === 'elementary' ? 'Elementary' : gradeBand(gradeLevel) === 'middle' ? 'Middle School' : 'High School')
         ),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, position: 'relative' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 6 : 8, position: 'relative', flexWrap: 'wrap', justifyContent: isCompact ? 'flex-end' : 'flex-start', marginLeft: 'auto' } },
           // CHANGE 2: Unsaved-changes badge \u2014 dot only when dirty
           isDirty && h('div', { style: { position: 'relative' } },
             h('button', {
               onClick: function() { setShowDirtyTooltip(function(v) { return !v; }); },
               'aria-label': 'You have unsaved changes',
               title: 'Unsaved changes',
-              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
+              style: { background: 'rgba(239, 68, 68, 0.18)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fecaca', cursor: 'pointer', padding: isCompact ? '4px 8px' : '4px 10px', borderRadius: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }
             },
               h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' } }),
               h('span', null, 'Unsaved')
             ),
             showDirtyTooltip && h('div', {
               role: 'tooltip',
-              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 10, padding: 12, fontSize: 12, width: 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
+              style: { position: 'absolute', top: '110%', right: 0, marginTop: 6, background: '#0f172a', color: '#f1f5f9', border: '1px solid #475569', borderRadius: 8, padding: 12, fontSize: 12, width: isCompact ? 220 : 260, zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }
             },
               h('div', { style: { marginBottom: 8 } }, 'You have unsaved changes \u2014 tap Export now to save them'),
               h('button', {
@@ -1431,19 +1487,19 @@
             onClick: function() { setShowForEducators(true); announceToSR('For Educators guide opened'); },
             'aria-label': 'For Educators: how to use this Hub responsibly',
             title: 'For Educators',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }
-          }, '\uD83C\uDF93 ', h('span', null, 'For Educators')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, '\uD83C\uDF93 ', h('span', { style: { display: isCompact ? 'none' : 'inline' } }, 'For Educators')),
           // Theme toggle button
           h('button', {
             onClick: function() { if (typeof window.AlloToggleTheme === 'function') { window.AlloToggleTheme(); setTimeout(function() { setSelToolData(function(p) { return Object.assign({}, p); }); }, 50); } },
             'aria-label': 'Toggle theme (light / dark / high contrast)',
             title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode',
-            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }
-          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+            style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 14, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
+          }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', h('span', { style: { display: isCompact ? 'none' : 'inline', fontSize: 10, fontWeight: 700 } }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
           // XP badge (fixed: removed bogus role=button from display-only element)
           h('div', {
             'aria-label': selXp + ' SEL experience points',
-            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 12, fontWeight: 700 }
+            style: { background: _t.accent, color: '#fff', borderRadius: 20, padding: isCompact ? '6px 10px' : '4px 14px', fontSize: 12, fontWeight: 700, minHeight: isCompact ? 24 : 'auto' }
           }, '\u2728 ' + selXp + ' XP'),
           // Close button
           h('button', {
@@ -1571,6 +1627,23 @@
       // ══════════════════════════════════════════════════════════════
       var toolGrid = null;
       if (!selHubTool) {
+        var _recentSelTool = null;
+        if (!activePathway && !activeStation) {
+          var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
+          Object.keys(selToolUsage || {}).forEach(function(k) {
+            var u = selToolUsage[k];
+            if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
+          });
+          if (bestId) _recentSelTool = _allSelTools.find(function(t) { return t.id === bestId && !t.category; }) || null;
+        }
+        var _gradePick = _selGradePick();
+        var _startHereCards = [
+          { key: 'continue', icon: _recentSelTool ? _recentSelTool.icon : '\u21A9', label: 'Continue', desc: _recentSelTool ? _recentSelTool.label : 'Resume the last SEL tool you opened.', tool: _recentSelTool, disabled: !_recentSelTool },
+          { key: 'recommended', icon: _gradePick ? _gradePick.icon : '\u2728', label: 'Recommended', desc: _gradePick ? _gradePick.label + ' fits this grade band.' : 'Open a grade-friendly starting point.', tool: _gradePick, disabled: !_gradePick },
+          { key: 'calm', icon: '\uD83E\uDDD8', label: 'Calm Down', desc: 'Try a quick regulation practice.', tool: _allSelTools.find(function(t) { return t.id === 'coping'; }) || _allSelTools.find(function(t) { return t.id === 'mindfulness'; }) },
+          { key: 'journal', icon: '\uD83D\uDCD3', label: 'Journal', desc: 'Write a private reflection.', tool: _allSelTools.find(function(t) { return t.id === 'journal'; }) },
+          { key: 'browse', icon: '\uD83D\uDD0D', label: 'Browse All', desc: 'Search or filter the full catalog.', browse: true, disabled: false }
+        ];
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -1658,10 +1731,10 @@
           });
         }
 
-        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
+        toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: isCompact ? 12 : 20 } },
           // Active pathway banner
           activePathway && h('div', {
-            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+            style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #7c3aed15, #6366f115)', border: '1px solid #7c3aed33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
           },
             h('div', null,
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7c3aed' } }, '\uD83D\uDEE4\uFE0F ' + activePathway.name),
@@ -1680,7 +1753,7 @@
             var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
             return h('div', {
               role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
-              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 8, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                 h('div', { style: { minWidth: 0, flex: 1 } },
@@ -1744,28 +1817,95 @@
               )
             );
           })(),
-          // \u2500\u2500 Daily Streak + Continue Where You Left Off \u2500\u2500
+          !activePathway && !activeStation && h('section', {
+            'aria-label': 'Start here',
+            style: { marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 8 } },
+              h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Start here'),
+              h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Pick a quick route, or browse below.')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(3, minmax(0, 1fr))' : 'repeat(5, minmax(0, 1fr))'),
+                gap: 8
+              }
+            },
+              _startHereCards.map(function(card) {
+                var disabled = card.disabled || (!card.browse && !card.tool);
+                return h('button', {
+                  key: card.key,
+                  disabled: disabled,
+                  onClick: function() {
+                    if (card.browse) {
+                      setActivePathway(null);
+                      setActiveStationId(null);
+                      setSelCategoryFilter(null);
+                      setSelToolSearch('');
+                      announceToSR('Browsing all SEL tools');
+                      setTimeout(function() {
+                        var searchInput = document.getElementById('sel-tool-search-input');
+                        if (searchInput && searchInput.focus) searchInput.focus();
+                      }, 50);
+                    } else if (card.tool) {
+                      openSelToolById(card.tool.id, card.tool.label);
+                    }
+                  },
+                  'aria-label': card.label + ': ' + card.desc,
+                  style: {
+                    textAlign: 'left',
+                    padding: isCompact ? '10px 12px' : '12px',
+                    minHeight: isCompact ? 68 : 86,
+                    borderRadius: 8,
+                    border: '1px solid ' + _t.border,
+                    background: disabled ? (isDark ? '#172033' : '#f1f5f9') : _t.bgCard,
+                    color: _t.text,
+                    opacity: disabled ? 0.55 : 1,
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    flexDirection: isCompact ? 'row' : 'column',
+                    alignItems: isCompact ? 'center' : 'flex-start',
+                    gap: isCompact ? 10 : 6,
+                    boxSizing: 'border-box'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: isCompact ? 20 : 22, flexShrink: 0 } }, card.icon),
+                  h('span', { style: { minWidth: 0 } },
+                    h('span', { style: { display: 'block', fontSize: 12, fontWeight: 800, color: _t.text, marginBottom: 2 } }, card.label),
+                    h('span', { style: { display: 'block', fontSize: 10.5, lineHeight: 1.35, color: _t.textMuted } }, card.desc)
+                  )
+                );
+              })
+            ),
+            h('div', {
+              role: 'note',
+              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: isDark ? '#111827' : '#f8fafc', color: _t.textMuted, fontSize: 11, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
+            },
+              h('span', null, 'Private on this device. Save or export before closing if you want to keep your work.'),
+              h('button', {
+                onClick: function() {
+                  if (typeof props.onExportRequested === 'function') {
+                    try { props.onExportRequested(); } catch (e) {}
+                  } else {
+                    try { window.dispatchEvent(new CustomEvent('alloflow-sel-export-requested')); } catch (e) {}
+                  }
+                  if (typeof addToast === 'function') addToast('Preparing to save your SEL work...', 'info');
+                },
+                'aria-label': 'Save or export SEL work now',
+                style: { border: '1px solid #7c3aed', background: '#7c3aed', color: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: 'pointer', minHeight: 32 }
+              }, 'Save now')
+            )
+          ),
+          // \u2500\u2500 Daily Streak \u2500\u2500
           // Pulls from localStorage-backed selStreak / selToolUsage.
           // Streak chip surfaces only when count >= 2 (avoids "1-day streak"
-          // noise on first visit). Continue card shows the most recently
-          // opened tool if it was used within the last 7 days AND the user
-          // isn't already in a pathway/station view.
+          // noise on first visit). Continue now lives in the Start here cards.
           (function () {
             var showStreak = (selStreak.count || 0) >= 2;
-            var continueTool = null;
-            if (!activePathway && !activeStation) {
-              var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
-              Object.keys(selToolUsage).forEach(function (k) {
-                var u = selToolUsage[k];
-                if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
-              });
-              if (bestId) {
-                continueTool = _allSelTools.find(function (t) { return t.id === bestId && !t.category; }) || null;
-              }
-            }
-            if (!showStreak && !continueTool) return null;
+            if (!showStreak) return null;
             return h('div', {
-              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
                 showStreak && h('div', {
@@ -1776,47 +1916,30 @@
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\uD83D\uDD25'),
                   h('span', { style: { fontSize: 12, fontWeight: 800, color: '#c2410c' } }, selStreak.count + '-day streak'),
                   (selStreak.longest > selStreak.count) && h('span', { style: { fontSize: 10, color: '#9a3412', fontWeight: 600 } }, '\u00B7 best ' + selStreak.longest)
-                ),
-                continueTool && h('div', { style: { fontSize: 12, color: _t.textMuted } },
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, '\uD83D\uDC4B Welcome back. '),
-                  'Continue with ',
-                  h('span', { style: { fontWeight: 700, color: _t.text } }, continueTool.label),
-                  '?'
                 )
-              ),
-              continueTool && h('button', {
-                onClick: function () {
-                  trackToolOpen(continueTool.id);
-                  setSelHubTool(continueTool.id);
-                  announceToSR('Resumed ' + continueTool.label);
-                },
-                'aria-label': 'Continue with ' + continueTool.label,
-                style: { padding: '10px 16px', minHeight: 44, borderRadius: 10, background: '#b45309', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
-              },
-                h('span', { 'aria-hidden': 'true' }, continueTool.icon),
-                'Continue \u2192'
               )
             );
           })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
+              id: 'sel-tool-search-input',
               type: 'text',
               placeholder: '\uD83D\uDD0D Search SEL tools...',
               value: selToolSearch,
               onChange: function(e) { setSelToolSearch(e.target.value); },
               'aria-label': 'Search SEL tools',
-              style: { width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
+              style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' },
               onFocus: function(e) { e.target.style.boxShadow = '0 0 0 2px #8b5cf6'; }, onBlur: function(e) { e.target.style.boxShadow = 'none'; }
             })
           ),
           // CASEL category filter chips
-          h('div', { role: 'group', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+          h('div', { role: 'group', 'aria-label': 'Filter SEL tools by category', style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
               'aria-pressed': selCategoryFilter === null ? 'true' : 'false',
-              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }
+              style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (selCategoryFilter === null ? '#7c3aed' : _t.border), background: selCategoryFilter === null ? '#7c3aed' : _t.bgCard, color: selCategoryFilter === null ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }
             }, 'All'),
             SEL_CATEGORIES.map(function(cat) {
               var isActive = selCategoryFilter === cat.id;
@@ -1825,18 +1948,18 @@
                 onClick: function() { setSelCategoryFilter(isActive ? null : cat.id); announceToSR(isActive ? 'Showing all categories' : 'Filtered to ' + cat.label); },
                 'aria-label': 'Filter: ' + cat.label,
                 'aria-pressed': isActive ? 'true' : 'false',
-                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4 }
+                style: { padding: '5px 12px', borderRadius: 20, border: '1px solid ' + (isActive ? '#7c3aed' : _t.border), background: isActive ? '#7c3aed' : _t.bgCard, color: isActive ? '#fff' : _t.textMuted, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }
               }, cat.icon + ' ' + cat.label);
             })
           ),
           // SEL Pathways — curated learning sequences (collapsed by default)
           !activePathway && h('details', {
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '\uD83D\uDEE4\uFE0F SEL Pathways \u2014 Curated Learning Sequences'),
-            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+            h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
               SEL_PATHWAYS.map(function(pw) {
                 return h('button', {
                   key: pw.id,
@@ -1849,7 +1972,7 @@
                     if (typeof addToast === 'function') addToast('\uD83D\uDEE4\uFE0F ' + pw.name + ' pathway started!', 'success');
                   },
                   'aria-label': pw.name + ': ' + pw.desc,
-                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
+                  style: { textAlign: 'left', padding: '10px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, cursor: 'pointer', transition: 'all 0.15s' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                     h('span', { style: { fontSize: 16 } }, pw.icon),
@@ -1864,14 +1987,14 @@
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           !activeStation && !activePathway && h('details', {
             open: builderOpen || savedStations.length > 0,
-            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
           },
             h('summary', {
               style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
             }, '📌 Custom SEL Stations — teacher-authored bundles'),
             h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
               // Saved stations list
-              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
                 savedStations.map(function (st) {
                   return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
@@ -1976,7 +2099,7 @@
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
                     registry.length === 0
                       ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
-                      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
+                        : h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
                             return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
@@ -1996,7 +2119,7 @@
                   // Quest presets + manual quest add
                   h('div', null,
                     h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Quests (optional):'),
-                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 6 } },
+                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 6, marginBottom: 6 } },
                       QUEST_PRESETS.map(function (preset) {
                         return h('button', {
                           key: preset.name,
@@ -2049,7 +2172,7 @@
             )
           ),
           // Grid
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isCompact ? 10 : 16 } },
             _filteredTools.map(function(tool) {
               // Category header
               if (tool.category) {
@@ -2072,26 +2195,18 @@
                 pink: '#ec4899', red: '#ef4444'
               };
               var cardColor = colorMap[tool.color] || '#3b82f6';
+              var shortDesc = _selShortDesc(tool);
 
               return h('button', {
                 key: tool.id,
                 onClick: function() {
-                  if (isRegistered) {
-                    trackToolOpen(tool.id);
-                    setSelHubTool(tool.id);
-                    announceToSR('Opened ' + tool.label);
-                    // Track pathway progress
-                    if (activePathway && activePathway.tools.indexOf(tool.id) >= 0) {
-                      setPathwayProgress(function(prev) { var n = Object.assign({}, prev); n[tool.id] = true; return n; });
-                    }
-                  } else {
-                    if (typeof addToast === 'function') addToast(tool.label + ' is loading...', 'info');
-                  }
+                  openSelToolById(tool.id, tool.label);
                 },
-                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : ''),
+                'aria-label': tool.label + (tool.recommendedRange ? ' (Grades ' + tool.recommendedRange + ')' : '') + (shortDesc ? '. ' + shortDesc : ''),
+                title: tool.desc || tool.label,
                 style: {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 16, borderRadius: 14, border: '1px solid ' + _t.border,
+                  padding: isCompact ? 14 : 16, borderRadius: 8, border: '1px solid ' + _t.border,
                   background: _t.bgCard,
                   cursor: isRegistered ? 'pointer' : 'default',
                   opacity: isRegistered ? 1 : 0.5,
@@ -2119,7 +2234,7 @@
                     return h('span', { 'aria-hidden': 'true', title: u.count + (u.count === 1 ? ' visit' : ' visits'), style: { fontSize: 9, color: cardColor, letterSpacing: '1px' } }, '•'.repeat(Math.min(u.count, 4)));
                   })()
                 ),
-                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
+                h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, shortDesc),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
                 (function() {
                   if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
@@ -2279,7 +2394,7 @@
           // ── Theme ──
           isDark: isDark,
           isContrast: isContrast,
-          theme: _t,
+          themePalette: _t,
 
           // ── Full props passthrough ──
           props: props || {}

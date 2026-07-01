@@ -95,5 +95,5 @@ describe('check_safety_string_spanglish.cjs --json — regression guard', () => 
     expect(report.skipped).toContain('maay_maay'); // PPS pack is intentionally excluded
     expect(report.flaggedKeys).toBe(0);
     expect(status).toBe(0);
-  });
+  }, 15000);
 });

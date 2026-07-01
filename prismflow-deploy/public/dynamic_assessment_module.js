@@ -13387,6 +13387,14 @@
     scoreForLevel: scoreForLevel,
     computeModifiabilityIndex: computeModifiabilityIndex,
     modifiabilityTier: modifiabilityTier,
+    // Psychometrics layer exposed for characterization tests (tests/dynamic_assessment.test.js).
+    // Read-only pure fns; zero behavior change.
+    transferTier: transferTier,
+    aggregateSessionStatistics: aggregateSessionStatistics,
+    computeMiZScore: computeMiZScore,
+    computeMiPercentile: computeMiPercentile,
+    interpretCohenD: interpretCohenD,
+    aggregateItemStatistics: aggregateItemStatistics,
     // Phase D — export helpers exposed for cross-tool integration
     buildDaFactChunks: buildDaFactChunks,
     buildDaNarrativeSection: buildDaNarrativeSection,

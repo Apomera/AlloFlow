@@ -1,66 +1,78 @@
-// Per-step guided examples are DISPLAY-ONLY. The maintainer's hard requirement was that an
-// example shown in the panel must never end up in the resource pack / full-pack download /
-// project save / end-of-tour recap. All of those are built from `history`, so the guarantee is
-// structural: the example lives in a dedicated `guidedExampleId` view-state and a static
-// GUIDED_EXAMPLES map, and is rendered into a badged card WITHOUT ever calling setHistory or
-// setGeneratedContent. These tests read the monolith source and fail if that separation is broken.
+// Guided worked examples are DISPLAY-ONLY. They live in the extracted
+// GuidedModeBanner module as static GUIDED_DETAIL content plus local tab/modal
+// state, so opening a worked example must never add anything to history, saved
+// projects, downloads, or generated-content state.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const mono = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+const banner = readFileSync(resolve(process.cwd(), 'view_guided_mode_banner_source.jsx'), 'utf8');
 
-const EXAMPLE_STEP_IDS = [
-  'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart',
-  'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona', 'timeline',
-  'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', '_final',
+const DETAIL_STEP_IDS = [
+  'source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline',
+  'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona',
+  'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', '_final',
 ];
 
-describe('Guided examples — data + wiring present', () => {
-  it('defines GUIDED_EXAMPLES with an entry for every guided step except source-input', () => {
-    expect(mono).toContain('const GUIDED_EXAMPLES = {');
-    const block = mono.slice(mono.indexOf('const GUIDED_EXAMPLES = {'));
-    for (const id of EXAMPLE_STEP_IDS) {
-      expect(block.includes(`'${id}': {`)).toBe(true);
+function guidedDetailBlock() {
+  const start = banner.indexOf('const GUIDED_DETAIL = {');
+  const end = banner.indexOf('function GuidedModeBanner', start);
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  return banner.slice(start, end);
+}
+
+describe('Guided worked examples - data + wiring present', () => {
+  it('defines GUIDED_DETAIL with an example for every guided step', () => {
+    const block = guidedDetailBlock();
+    for (const id of DETAIL_STEP_IDS) {
+      expect(block.includes(`"${id}": {`)).toBe(true);
     }
-    // source-input is intentionally absent (it has the "load real text" affordance instead)
-    const exampleObj = block.slice(0, block.indexOf('\n  };'));
-    expect(exampleObj.includes(`'source-input':`)).toBe(false);
+    expect((block.match(/"example":/g) || []).length).toBe(DETAIL_STEP_IDS.length);
   });
 
-  it('holds the example in a dedicated display-only state with a toggle handler', () => {
-    expect(mono).toContain('const [guidedExampleId, setGuidedExampleId] = useState(null)');
-    expect(mono).toContain('const onShowGuidedExample = (stepId) =>');
+  it('keeps example viewing in local tab/modal state instead of host state', () => {
+    expect(banner).toContain('const [infoTab, setInfoTab] = React.useState(null)');
+    expect(banner).toContain('const [showFullLesson, setShowFullLesson] = React.useState(false)');
+    expect(banner).toContain("onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')}");
+    expect(banner).toContain('onClick={() => setShowFullLesson(true)}');
+    expect(banner).not.toContain('guidedExampleId');
+    expect(banner).not.toContain('onShowGuidedExample');
   });
 
-  it('renders a badged example card gated on guidedExampleId', () => {
-    expect(mono).toContain('guidedMode && guidedExampleId && GUIDED_EXAMPLES[guidedExampleId]');
-    expect(mono).toMatch(/Example · not saved to your pack|guided\.example_badge/);
+  it('renders a badged worked-example panel from detailEntry.example', () => {
+    expect(banner).toContain("t('guided.example_heading') || 'Example output'");
+    expect(banner).toContain("t('guided.example_lesson') || 'Photosynthesis'");
+    expect(banner).toContain("t('guided.example_consistent') || 'The same lesson runs through every step.'");
+    expect(banner).toContain('<pre style={_gdPre}>{detailEntry.example}</pre>');
   });
 });
 
-describe("Guided examples — INTEGRITY: can't reach the resource pack", () => {
-  it('never mentions the example state alongside setHistory or setGeneratedContent (no persistence path)', () => {
-    const offenders = mono.split(/\r?\n/)
+describe("Guided worked examples - INTEGRITY: can't reach the resource pack", () => {
+  it('never mentions guided-detail state alongside setHistory or setGeneratedContent', () => {
+    const offenders = banner.split(/\r?\n/)
       .map((line, i) => ({ line: line.trim(), n: i + 1 }))
       .filter(({ line }) =>
-        /guidedExampleId|GUIDED_EXAMPLES|setGuidedExampleId/.test(line) &&
+        /GUIDED_DETAIL|detailEntry|infoTab|setInfoTab|showFullLesson|setShowFullLesson|GUIDED_SAMPLE_TEXT/.test(line) &&
         /setHistory\(|setGeneratedContent\(/.test(line));
-    // Listing them in the assertion message makes a regression obvious.
     expect(offenders.map(o => `${o.n}: ${o.line}`)).toEqual([]);
   });
 
-  it('clears the example when the step changes and when guided mode exits', () => {
-    expect(mono).toContain('setShowGuidedTip(false); setGuidedExampleId(null);'); // step-change effect
-    expect(mono).toContain('setGuidedMode(false); setGuidedExampleId(null);');    // exit handler
+  it('the worked-example panel markup itself contains no persistence call', () => {
+    const panelStart = banner.indexOf("infoTab === 'example'");
+    expect(panelStart).toBeGreaterThan(-1);
+    const panelEnd = banner.indexOf('{isLast &&', panelStart);
+    expect(panelEnd).toBeGreaterThan(panelStart);
+    const panelMarkup = banner.slice(panelStart, panelEnd);
+    expect(panelMarkup).not.toMatch(/setHistory\(|setGeneratedContent\(/);
   });
 
-  it('the example card markup itself contains no setHistory/setGeneratedContent call', () => {
-    const cardStart = mono.indexOf('guidedMode && guidedExampleId && GUIDED_EXAMPLES[guidedExampleId]');
-    expect(cardStart).toBeGreaterThan(-1);
-    // the card block ends where the real analysis panel begins
-    const cardEnd = mono.indexOf("isGuidedToolVisible('analysis')", cardStart);
-    const cardMarkup = mono.slice(cardStart, cardEnd);
-    expect(cardMarkup).not.toMatch(/setHistory\(|setGeneratedContent\(/);
+  it('the full worked lesson modal reads GUIDED_DETAIL but does not save generated content', () => {
+    const modalStart = banner.indexOf('showFullLesson && (');
+    expect(modalStart).toBeGreaterThan(-1);
+    const modalEnd = banner.indexOf('function GuidedModeBanner', modalStart);
+    const modalMarkup = banner.slice(modalStart, modalEnd === -1 ? undefined : modalEnd);
+    expect(modalMarkup).toContain('GUIDED_DETAIL[s.id]');
+    expect(modalMarkup).not.toMatch(/setHistory\(|setGeneratedContent\(/);
   });
 });

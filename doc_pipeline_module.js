@@ -7365,12 +7365,12 @@ var createDocPipeline = function(deps) {
       const _winConf = _winner === 'tesseract' ? _meanConf(tPage) : null;
       if (chosen.text && _winConf != null && _winConf < 60) {
         lowConfidence.push({ pageNum: _pn, confidence: Math.round(_winConf) });
-      } else if (chosen.text && _ocrJunkRatio(chosen.text) >= 0.6) {
+      } else if (chosen.text && _ocrJunk(chosen.text) >= 0.6) {
         // Engine-AGNOSTIC net: Vision-won / all-Vision pages have no per-word confidence, so a page
         // whose CHOSEN text is mostly non-alphanumeric (symbol-soup OCR) would escape the check above.
         // Conservative 0.6 floor (clean prose ~0.05-0.15; even symbol-heavy math rarely >0.5) avoids
         // STEM false-positives; pseudo-confidence keeps the {pageNum,confidence} shape the banner reads.
-        lowConfidence.push({ pageNum: _pn, confidence: Math.round((1 - _ocrJunkRatio(chosen.text)) * 100) });
+        lowConfidence.push({ pageNum: _pn, confidence: Math.round((1 - _ocrJunk(chosen.text)) * 100) });
       } else if (chosen.text) {
         // Accuracy net (2026-06-30): letter-shaped garble ("lke"/"rnodern"/"tlie") that BOTH the
         // confidence net (Tesseract-only) and the junk-ratio net (symbol density) miss — flag a page
@@ -22695,6 +22695,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     let passCount = 0;
     let prevScore = 0;
     let plateauCount = 0;
+    let changedByAgent = false;
     const activityLog = [];
 
     function logActivity(msg, type) {
@@ -22801,6 +22802,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             var newHtml = toolFn(currentHtml, action.params);
             if (newHtml && newHtml !== currentHtml) {
               currentHtml = newHtml;
+              changedByAgent = true;
               fixedCount++;
               logActivity('  \u2705 ' + action.tool + ': ' + (action.reason || 'applied'), 'tool');
             } else {
@@ -22832,7 +22834,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // report 100. This is the same content-preserving, idempotent net every other path runs (it includes
     // fixHeadingHierarchy + _collapseHeadingSkipsStrict, which REPAIR a skipping outline); no-op on a clean
     // doc. Note: it also normalizes /auto output beyond headings (landmarks etc.), matching the main path.
-    try { currentHtml = runDeterministicWcagFixes(currentHtml); } catch (e) { warnLog('[Agent] deterministic net failed: ' + (e && e.message || e)); }
+    if (changedByAgent) {
+      try { currentHtml = runDeterministicWcagFixes(currentHtml); } catch (e) { warnLog('[Agent] deterministic net failed: ' + (e && e.message || e)); }
+    }
 
     // Final audit summary.
     var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });

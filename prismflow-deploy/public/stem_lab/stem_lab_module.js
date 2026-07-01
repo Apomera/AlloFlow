@@ -111,6 +111,8 @@
           // would cause visible degradation (slate tile, ungrouped category).
           if (!config.label) config.label = config.title || config.name || id;
           if (!config.desc) config.desc = config.description || '';
+          if (config.aliases && !Array.isArray(config.aliases)) config.aliases = [config.aliases];
+          if (!config.aliases && config.searchAliases) config.aliases = Array.isArray(config.searchAliases) ? config.searchAliases : [config.searchAliases];
           if (!config.color) config.color = 'slate';
           if (!config.category) config.category = 'general';
           this._registry[id] = config;
@@ -119,7 +121,7 @@
           // Populate STEM_TOOL_REGISTRY for lesson plan integration
           if (!window.STEM_TOOL_REGISTRY) window.STEM_TOOL_REGISTRY = [];
           var catMap = { science: ['Science'], math: ['Math'], engineering: ['Engineering'], art: ['Art'], coding: ['CS'] };
-          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
+          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id].concat(config.aliases || []) };
           var exists = false;
           for (var ri = 0; ri < window.STEM_TOOL_REGISTRY.length; ri++) {
             if (window.STEM_TOOL_REGISTRY[ri].id === id) { exists = true; break; }
@@ -463,7 +465,23 @@
           // WCAG 2.3.3: Reduced motion — disable ALL animations for users who prefer
           '@media (prefers-reduced-motion: reduce) { .stem-lab-modal *, .stem-lab-modal *::before, .stem-lab-modal *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
           // WCAG 1.4.11: Ensure focus indicators have adequate contrast on all backgrounds
-          '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }'
+          '.stem-lab-modal [role="button"]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; }',
+          '.stem-lab-modal-shell { max-height: calc(100vh - 16px); }',
+          '.stem-lab-topbar { gap: 16px; }',
+          '.stem-lab-brand-block, .stem-lab-actionbar { min-width: 0; }',
+          '.stem-lab-title-lockup { min-width: 0; }',
+          '.stem-lab-title-lockup p { max-width: 520px; }',
+          '.stem-lab-actionbar button { min-height: 34px; }',
+          '.stem-tool-catalog { width: min(100%, 1120px); }',
+          '.stem-tool-searchbar { position: sticky; top: 0; z-index: 12; padding-top: 8px; padding-bottom: 10px; backdrop-filter: blur(10px); }',
+          '.stem-tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: stretch; }',
+          '.stem-tool-category { grid-column: 1 / -1; }',
+          '.stem-tool-card { min-height: 148px; border-radius: 14px !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
+          '.stem-tool-card:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 28px rgba(15,23,42,0.12) !important; }',
+          '.stem-tool-card h4 { line-height: 1.25; }',
+          '.stem-tool-card p { line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 8px !important; } .stem-lab-actionbar button { min-width: 40px; min-height: 40px; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
@@ -2341,15 +2359,15 @@
           style: { position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }
         }, a11yAnnouncement),
         /*#__PURE__*/React.createElement("div", {
-        className: "w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
+        className: "stem-lab-modal-shell w-full max-w-[98vw] m-2 rounded-2xl shadow-2xl flex flex-col overflow-hidden overflow-y-auto stemlab-styled-scrollbar" + (_reduceMotion ? "" : " animate-in zoom-in-95 duration-300"),
         style: { backgroundColor: _pal.bg, color: _pal.text }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center justify-between px-6 py-3 text-white", role: "banner",
+        className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
         style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-center gap-3"
+        className: "stem-lab-brand-block flex items-center gap-3"
       }, React.createElement("button", {
-        className: "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative cursor-pointer border-none outline-none focus:ring-2 focus:ring-white/50",
+        className: "stem-lab-xp-badge flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black relative cursor-pointer border-none outline-none focus:ring-2 focus:ring-white/50",
         style: {
           background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)',
           backgroundSize: '200% 200%',
@@ -2381,23 +2399,25 @@
         })
       ),
         React.createElement("div", {
-          className: "hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white/70",
+          className: "stem-lab-keyboard-badge hidden md:flex items-center gap-1 bg-white/10 backdrop-blur rounded-full px-2.5 py-1 text-[11px] font-medium text-white/70",
           title: "Keyboard shortcuts: Esc = close, Alt+1/2 = switch tabs, Alt+B = back to tools, Tab = navigate, Arrow keys = orbit 3D views"
         }, React.createElement("span", null, "\u2328\uFE0F"), React.createElement("span", null, "Keyboard accessible")),
       /*#__PURE__*/React.createElement("div", {
-          className: "bg-white/20 p-2 rounded-lg"
+          className: "stem-lab-brand-icon bg-white/20 p-2 rounded-lg"
         }, /*#__PURE__*/React.createElement(Calculator, {
           size: 20
-        })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+        })), /*#__PURE__*/React.createElement("div", {
+          className: "stem-lab-title-lockup"
+        }, /*#__PURE__*/React.createElement("h2", {
           className: "text-lg font-bold tracking-tight"
         }, "\uD83E\uDDEA STEM Lab"), /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-white/70"
         }, "Create problems, build assessments, explore with manipulatives"))), /*#__PURE__*/React.createElement("div", {
-          className: "flex items-center gap-3"
+          className: "stem-lab-actionbar flex items-center gap-3"
         }, stemLabTab !== 'explore' && /*#__PURE__*/React.createElement("select", {
           value: mathSubject,
           onChange: e => setMathSubject(e.target.value),
-          className: "px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
+          className: "stem-lab-subject-select px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
           "aria-label": "Subject"
         }, /*#__PURE__*/React.createElement("option", {
           value: "General Math",
@@ -2471,7 +2491,7 @@
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
         })))), /*#__PURE__*/React.createElement("div", {
-          className: "flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
+          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEM Lab navigation",
           style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
         }, [{
           id: 'create',
@@ -3331,6 +3351,7 @@
                 // @tool chemBalance
                 id: 'chemBalance', icon: '⚖️', label: t('stem.tools_menu.equation_balancer'),
                 desc: t('stem.tools_menu.balance_chemical_equations_with_visual'),
+                aliases: ['Chemistry Lab', 'chem lab', 'chemical equations', 'equation balancing', 'stoichiometry', 'chemical reactions'],
                 color: 'lime', ready: true
               },
               {
@@ -3370,6 +3391,7 @@
               {
                 id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
                 desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+                aliases: ['Optics Lab', 'optics', 'light lab', 'lenses', 'mirrors', 'reflection', 'refraction', 'Snell', 'AP Physics 2'],
                 color: 'sky', ready: true
               },
 
@@ -3591,14 +3613,35 @@
               { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
-            var _searchLower = _stemToolSearch.toLowerCase().trim();
+            var _searchAliasMap = {
+              chemBalance: 'chemistry lab chemistry chemical equation balancer equation balancing stoichiometry reaction reactions molecule molecules',
+              opticsLab: 'optics lab light lab geometric optics wave optics lens lenses mirror mirrors reflection refraction snell diffraction interference polarization ap physics',
+              fractionViz: 'fraction lab fractions compare numerator denominator pizza visualizer',
+              base10: 'base ten base-10 manipulatives place value math blocks abacus slide rule',
+              titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
+              anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
+              solarSystem: 'solar system explorer planets astronomy space orbit orrery'
+            };
+            function _normalizeToolSearchText(value) {
+              return String(value || '')
+                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, ' ')
+                .trim();
+            }
+            function _stemToolSearchHaystack(tool) {
+              var aliases = [];
+              if (tool.aliases) aliases = aliases.concat(tool.aliases);
+              if (_searchAliasMap[tool.id]) aliases.push(_searchAliasMap[tool.id]);
+              return _normalizeToolSearchText([tool.id, tool.label, tool.desc, tool.category, aliases.join(' ')].join(' '));
+            }
+            var _searchLower = _normalizeToolSearchText(_stemToolSearch);
             var _filteredTools = _searchLower ? _allStemTools.filter(function (tool) {
               if (tool.category) {
                 // Keep category if ANY tool in it matches
                 return true;
               }
-              return (tool.label || '').toLowerCase().indexOf(_searchLower) !== -1 ||
-                (tool.desc || '').toLowerCase().indexOf(_searchLower) !== -1;
+              return _stemToolSearchHaystack(tool).indexOf(_searchLower) !== -1;
             }) : _allStemTools;
             // Remove orphan category headers (categories with no matching tools after them)
             if (_searchLower) {
@@ -3738,7 +3781,7 @@
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200"
+              className: "stem-tool-catalog max-w-6xl mx-auto animate-in fade-in duration-200"
             },
           // ── Mastery Atlas (only shows when at least one tool has progress) ──
           _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -3798,12 +3841,12 @@
             )
           ),
           // Search input
-          /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
+          /*#__PURE__*/React.createElement("div", { className: "stem-tool-searchbar mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {
               type: "text",
               value: _stemToolSearch,
               onChange: function (e) { _setStemToolSearch(e.target.value); },
-              placeholder: "\uD83D\uDD0D Search tools...",
+              placeholder: "Search tools...",
               className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-400 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
@@ -3816,7 +3859,7 @@
             ),
 
           // ── Category filter chips ──
-          !_activeStation && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
+          !_activeStation && React.createElement("div", { className: "stem-tool-filter-row flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
             [
               { id: '', label: 'All', icon: '\u2B50' },
               { id: 'science', label: 'Science', icon: '\uD83E\uDDEA' },
@@ -4464,12 +4507,12 @@
 
           // Tool grid
           /*#__PURE__*/React.createElement("div", { role: 'region', 'aria-label': _activeStation ? _activeStation.name + ' station tools' : 'STEM Lab tools',
-              className: "grid grid-cols-2 gap-4"
+              className: "stem-tool-grid"
             }, _filteredTools.map(function (tool) {
               if (tool.category) {
                 return /*#__PURE__*/React.createElement("div", {
                   key: tool.id,
-                  className: "col-span-2 mt-3 first:mt-0"
+                  className: "stem-tool-category mt-3 first:mt-0"
                 }, /*#__PURE__*/React.createElement("h3", {
                   className: "text-sm font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-1 mb-1"
                 }, tool.label));
@@ -4490,7 +4533,7 @@
                   if (typeof announceToSR === 'function') announceToSR('Opening ' + tool.label);
                 },
                 title: tool.desc || tool.label,
-                className: 'group p-5 rounded-2xl border-2 text-left transition-all duration-200 hover:scale-[1.04] hover:-translate-y-0.5 hover:shadow-xl ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
+                className: 'stem-tool-card group p-5 rounded-2xl border-2 text-left transition-all duration-200 ' + _cm.bg + ' ' + _cm.border + ' ' + _cm.hoverBorder,
                 style: _reduceMotion ? {} : { animation: 'stemCardIn 0.35s ease-out both', animationDelay: (_ci * 40) + 'ms' }
               }, /*#__PURE__*/React.createElement("div", {
                 className: "text-3xl mb-2"

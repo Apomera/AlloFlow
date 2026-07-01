@@ -137,7 +137,7 @@ describe('Guided banner — source-step "Try this example" loader (integrity-saf
   it('offers the example only on the empty source step, and loads a real passage via setInputText', () => {
     const setInputText = vi.fn();
     const b = mountBanner(baseProps({ guidedStep: 0, inputText: '', setInputText }));
-    const btn = b.button('example');
+    const btn = b.button('example passage');
     expect(btn).toBeTruthy();
     act(() => { btn.click(); });
     expect(setInputText).toHaveBeenCalledTimes(1);
@@ -150,13 +150,15 @@ describe('Guided banner — source-step "Try this example" loader (integrity-saf
 
   it('hides the example button once the source step already has text', () => {
     const b = mountBanner(baseProps({ guidedStep: 0, inputText: 'Teacher already pasted plenty of their own source text here.' }));
-    expect(b.button('example')).toBeFalsy();
+    expect(b.button('example passage')).toBeFalsy();
+    expect(b.button('Worked example')).toBeFalsy();
     b.cleanup();
   });
 
   it('never offers the example on a non-source step', () => {
     const b = mountBanner(baseProps({ guidedStep: 1, inputText: '' }));
-    expect(b.button('example')).toBeFalsy();
+    expect(b.button('example passage')).toBeFalsy();
+    expect(b.button('Worked example')).toBeTruthy();
     b.cleanup();
   });
 });
@@ -185,27 +187,35 @@ describe('Guided banner — About-panel read-aloud reuses window.callTTS', () =>
   });
 });
 
-describe('Guided banner — per-step "Show an example" toggle', () => {
-  it('offers "Show an example" on a generate step and reports the step id to the host', () => {
-    const onShowGuidedExample = vi.fn();
-    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample, guidedExampleId: null }));
-    const btn = b.button('Show an example');
+describe('Guided banner - per-step "Worked example" tab', () => {
+  it('opens a display-only worked example on a generate step', () => {
+    const b = mountBanner(baseProps({ guidedStep: 1 }));
+    const btn = b.button('Worked example');
     expect(btn).toBeTruthy();
     act(() => { btn.click(); });
-    expect(onShowGuidedExample).toHaveBeenCalledWith('analysis');
+    const txt = b.text();
+    expect(txt).toContain('Example output');
+    expect(txt).toContain('Photosynthesis');
+    expect(txt).toContain('View the full worked lesson');
     b.cleanup();
   });
 
-  it('reflects the showing state — the label flips to "Hide"', () => {
-    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample: () => {}, guidedExampleId: 'analysis' }));
-    expect(b.button('Hide the example')).toBeTruthy();
-    expect(b.button('Show an example')).toBeFalsy();
+  it('toggles the worked example panel locally without a host callback', () => {
+    const onShowGuidedExample = vi.fn();
+    const b = mountBanner(baseProps({ guidedStep: 1, onShowGuidedExample }));
+    const btn = b.button('Worked example');
+    act(() => { btn.click(); });
+    expect(b.text()).toContain('Example output');
+    act(() => { btn.click(); });
+    expect(b.text()).not.toContain('Example output');
+    expect(onShowGuidedExample).not.toHaveBeenCalled();
     b.cleanup();
   });
 
-  it('does NOT offer "Show an example" on the source step (it has the load-text example instead)', () => {
-    const b = mountBanner(baseProps({ guidedStep: 0, onShowGuidedExample: () => {}, guidedExampleId: null }));
-    expect(b.button('Show an example')).toBeFalsy();
+  it('does NOT offer the worked-example tab on the source step (it has the load-text example instead)', () => {
+    const b = mountBanner(baseProps({ guidedStep: 0 }));
+    expect(b.button('Worked example')).toBeFalsy();
+    expect(b.button('example passage')).toBeTruthy();
     b.cleanup();
   });
 });

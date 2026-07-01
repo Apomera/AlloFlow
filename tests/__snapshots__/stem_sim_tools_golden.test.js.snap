@@ -86,7 +86,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
   "lengthBucket": 185,
   "paths": 3,
   "selects": 0,
-  "sha": "57a1d5503f3d21fd",
+  "sha": "a26fabe4d84a6fbe",
   "svgs": 1,
 }
 `;
@@ -106,13 +106,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cell 
 
 exports[`science-sim + studio render goldens > renders + pins a digest for chemBalance [ssr] 1`] = `
 {
-  "buttons": 39,
+  "buttons": 40,
   "canvases": 1,
-  "inputs": 1,
-  "lengthBucket": 72,
+  "inputs": 2,
+  "lengthBucket": 78,
   "paths": 0,
   "selects": 0,
-  "sha": "a3c6c5d82ba39c0b",
+  "sha": "d653baa8ea47d3c5",
   "svgs": 1,
 }
 `;
@@ -268,7 +268,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
   "lengthBucket": 46,
   "paths": 0,
   "selects": 0,
-  "sha": "a0d5acd3fbd202ca",
+  "sha": "723b26205b12fba2",
   "svgs": 0,
 }
 `;
@@ -281,7 +281,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for physi
   "lengthBucket": 83,
   "paths": 0,
   "selects": 0,
-  "sha": "a806deee1a708e72",
+  "sha": "250078968fba849d",
   "svgs": 0,
 }
 `;

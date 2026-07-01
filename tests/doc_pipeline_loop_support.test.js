@@ -137,8 +137,16 @@ describe('reconcileOcrPages — Tesseract/Vision merge', () => {
   it('prefers the cleaner shorter text over a longer GARBLED one (the reported bug)', () => {
     expect(src({ text: 'Th3 b##rd ~~ appr@@ved ## bud~~t !! f0r th3 y##r' }, { text: 'The board approved the budget for the year' })).toBe('vision');
   });
-  it('rejects an EXTREMELY garbled longer pass even when the clean alternative is much shorter', () => {
-    expect(src({ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~' }, { text: 'real clean text' })).toBe('vision');
+  it('rejects an EXTREMELY garbled longer pass when the clean alternative is substantial', () => {
+    expect(src({ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~#####@@@@@~~~~~|||||' }, { text: 'real clean text with enough context to trust' })).toBe('vision');
+  });
+  it('does NOT drop a garbled long page to a tiny clean fragment; flags it for review instead', () => {
+    const r = reconcileOcrPages(
+      [{ text: '#####@@@@@~~~~~|||||_____#####@@@@@~~~~~' }],
+      [{ text: 'real clean text' }]
+    );
+    expect(r.pages[0].source).toBe('tesseract');
+    expect(r.lowConfidence[0].pageNum).toBe(1);
   });
   it('distrusts a longer Tesseract pass with LOW mean word confidence when a clean alternative exists', () => {
     expect(src({ text: 'the board approved the budget today right now', words: [{ c: 38 }, { c: 40 }, { c: 35 }, { c: 42 }] }, { text: 'the board approved the budget today' })).toBe('vision');

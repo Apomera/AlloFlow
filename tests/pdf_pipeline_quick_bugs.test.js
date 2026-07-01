@@ -446,7 +446,7 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
   });
   // #3: OCR low-confidence net is engine-agnostic (catches garbled Vision-won / all-Vision pages)
   it('OCR low-confidence flag also fires on garbled Vision pages via an absolute junk-ratio gate', () => {
-    expect(dpx).toMatch(/else if \(chosen\.text && _ocrJunkRatio\(chosen\.text\) >= 0\.6\)/);
+    expect(dpx).toMatch(/else if \(chosen\.text && _ocrJunk\(chosen\.text\) >= 0\.6\)/);
   });
   // #5: web/HTML-paste unmeasured baseline = null (not 0) → excluded from history avg-gain
   it('web/HTML-paste baseline failure sets beforeScore=null (not a fake 0 → N gain)', () => {

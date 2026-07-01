@@ -108,6 +108,8 @@ function installAmbientGlobals() {
     window[k] = stubs[k];
     globalThis[k] = stubs[k];
   }
+  window.ts = emptyTranslationT;
+  globalThis.ts = emptyTranslationT;
   if (typeof globalThis.warnLog !== 'function') globalThis.warnLog = noop;
   if (typeof globalThis.debugLog !== 'function') globalThis.debugLog = noop;
 }
@@ -139,6 +141,14 @@ export function setupWordSounds() {
 }
 
 const passthroughT = (key, fallback) => fallback || key;
+const emptyTranslationT = () => '';
+const FALLBACK_STRING_KEYS = new Set(['word_sounds.sr_welcome', 'word_sounds.sr_number', 'word_sounds.sr_tap_count_syllables', 'word_sounds.sr_tracing_canvas']);
+const wordSoundsStringStub = (_t, key) => {
+  // Keep the golden harness mostly key-stable, but exercise explicit English
+  // fallbacks for strings whose prior baseline intentionally asserted them.
+  if (FALLBACK_STRING_KEYS.has(key)) return '';
+  return key;
+};
 
 /**
  * A complete, deterministic prop set that drives one activity to a populated
@@ -176,7 +186,7 @@ export function baseProps(activity) {
     wsPreloadedWords: [], setWsPreloadedWords: noop, onBackToSetup: noop,
     initialShowReviewPanel: false, initialActivitySequence: [], lessonPlanConfig: null,
     isProbeMode: false, probeGradeLevel: 'K', onProbeComplete: noop,
-    getWordSoundsString: passthroughT, isParentMode: false,
+    getWordSoundsString: wordSoundsStringStub, isParentMode: false,
   };
 }
 

@@ -94,7 +94,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -149,7 +149,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>
@@ -1196,7 +1196,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -1251,7 +1251,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>
@@ -2298,7 +2298,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -2353,7 +2353,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>
@@ -3420,7 +3420,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -3475,7 +3475,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>
@@ -4522,7 +4522,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -4577,7 +4577,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>
@@ -5624,7 +5624,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 <span class="text-2xl">👋</span>
 <h2 class="text-lg font-black">Welcome to BehaviorLens</h2>
 </div>
-<p class="text-sm text-indigo-100 mb-4 max-w-lg">81 clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
+<p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
 <button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
@@ -5679,7 +5679,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 </div>
 </div>
 <div class="relative">
-<input type="text" placeholder="🔍  Search 81+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
+<input type="text" placeholder="🔍  Search 80+ tools…" aria-label="Search BehaviorLens tools" class="w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm" value=""/>
 </div>
 <div class="flex flex-wrap gap-2">
 <button aria-label="All" class="px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all bg-indigo-100 border-indigo-400 text-indigo-700 shadow-sm">All</button>

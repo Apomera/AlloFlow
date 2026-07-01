@@ -17,8 +17,9 @@ describe('the audit header no longer calls the score a 50/50 blend', () => {
     expect(view).not.toMatch(/\(50\/50 blend\)/);
   });
   it('the header reflects the governing (lower) layer', () => {
-    expect(view).toMatch(/\(lower of AI &amp; axe-core\)/);
-    expect(view).toMatch(/Governing: \{pdfAuditResult\.score\} \(the lower of the two — never averaged\)/);
+    expect(view).toMatch(/\(lower of AI & automated\)/);
+    expect(view).toMatch(/Governing: \{pdfAuditResult\.score\}/);
+    expect(view).toMatch(/the lower of the engines.*never averaged/);
     expect(view).toMatch(/then the lower of the two layers governs/);
   });
 });
