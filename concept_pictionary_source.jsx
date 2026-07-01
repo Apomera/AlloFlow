@@ -96,6 +96,13 @@ const _signalingCollectionRef = (sessionCode) => {
 
 const STUN_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
 const RTC_CONFIG = { iceServers: STUN_SERVERS };
+// Deploy-time override hook (mirrors LivePolling's getRtcConfig): set
+// window.__alloRtcConfig = { iceServers: [...] } to add TURN servers for
+// UDP-blocked school networks without a module change.
+const _getRtcConfig = () => {
+  const cfg = (typeof window !== 'undefined') && window.__alloRtcConfig;
+  return (cfg && Array.isArray(cfg.iceServers) && cfg.iceServers.length > 0) ? cfg : RTC_CONFIG;
+};
 
 // ── PictionaryHost (teacher) ────────────────────────────────────────────
 // Mirrors PollingHost: collection listener, accept-peer flow, per-peer
@@ -129,6 +136,14 @@ class PictionaryHost {
     this.strokeHistory = [];          // [{strokeId, uid, color, points}]
     this._timeoutHandle = null;
     this._stopped = false;
+    // Roster gate: when set (Set of uids), offers from unknown uids are
+    // ignored — defense-in-depth against drive-by connections to a guessed
+    // session code (not a security boundary alone; see
+    // docs/LIVE_SESSION_HARDENING_PROPOSAL.md). null = allow all (legacy).
+    this._allowedUids = config.allowedUids ? new Set(config.allowedUids) : null;
+  }
+  setAllowedUids(uids) {
+    this._allowedUids = uids ? new Set(uids) : null;
   }
   async start() {
     const fb = _getFb();
@@ -141,6 +156,7 @@ class PictionaryHost {
       snap.docChanges().forEach((change) => {
         if (change.type === 'removed') return;
         const uid = change.doc.id;
+        if (this._allowedUids && !this._allowedUids.has(uid)) return;
         const data = change.doc.data() || {};
         const existing = this.peers.get(uid);
         if (data.offer && !existing) {
@@ -165,7 +181,7 @@ class PictionaryHost {
   async _acceptPeer(uid, offerData, signalingRef) {
     const fb = _getFb();
     if (!fb) return;
-    const pc = new RTCPeerConnection(RTC_CONFIG);
+    const pc = new RTCPeerConnection(_getRtcConfig());
     const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
     const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
     this.peers.set(uid, peerRecord);
@@ -423,7 +439,7 @@ class PictionaryGuest {
     if (!fb) throw new Error('Pictionary: Firebase not available');
     if (!this.sessionCode || !this.userUid) throw new Error('Pictionary: sessionCode + userUid required');
     this.signalingRef = _signalingDocRef(this.sessionCode, this.userUid);
-    this.pc = new RTCPeerConnection(RTC_CONFIG);
+    this.pc = new RTCPeerConnection(_getRtcConfig());
     this.dc = this.pc.createDataChannel('pictionary', { ordered: true });
     this.pc.onicecandidate = (e) => {
       if (!e.candidate) return;
@@ -904,6 +920,7 @@ const PictionaryHostView = React.memo((props) => {
         _clearRolesAndRound();
       },
     });
+    host.setAllowedUids(Object.keys(roster));
     host.start().catch((err) => console.warn('[Pictionary host] start failed:', err && err.message));
     hostRef.current = host;
     return () => {
@@ -911,6 +928,14 @@ const PictionaryHostView = React.memo((props) => {
       hostRef.current = null;
     };
   }, [isOpen, sessionCode]);
+
+  // Keep the roster gate current as students join/leave without recreating
+  // the host (which would tear down every peer connection).
+  React.useEffect(() => {
+    if (hostRef.current && typeof hostRef.current.setAllowedUids === 'function') {
+      hostRef.current.setAllowedUids(Object.keys(roster));
+    }
+  }, [roster]);
 
   const handleAISuggestConcepts = async () => {
     if (!callGemini || isLoadingIdeas) return;

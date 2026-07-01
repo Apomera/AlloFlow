@@ -174,11 +174,15 @@ Who sees what, in precedence order (student `onSnapshot` consumer):
    `groups.{gid}.resourceAt` nonce and students consume each `group|resource|nonce` key exactly
    once [SHIPPED 2026-07-01 — previously every unrelated snapshot re-yanked grouped students who
    had navigated away, so student-paced mode wasn't student-paced for them].
-3. **Per-student**: only *subtractive* targeting exists — quiz routing rules can write
-   `roster.{uid}.hiddenResourceIds` (hide from history). There is **no per-student push**; the
-   workaround is a one-student group. [ROADMAP #9]
-4. A pushed resource that a student's hydrated list doesn't contain is a silent no-op on that
-   device; the teacher has no per-student delivery signal. [ROADMAP #10]
+3. **Per-student push `roster.{uid}.resourceId`** [SHIPPED 2026-07-01] — outranks group and class.
+   Sent/cleared from the Live Session Center's Students rows (`handleSetStudentResource`, pushes
+   the teacher's currently open resource). Locked-follow in sync mode; consume-once via
+   `roster.{uid}.resourceAt` in student-paced mode. Subtractive targeting
+   (`hiddenResourceIds` from quiz rules) still exists alongside.
+4. **Delivery acknowledgment** [SHIPPED 2026-07-01] — students write id-only
+   `roster.{uid}.viewingResourceId` + `viewingAt` (Tier-1, ref-guarded against repeat writes); the
+   dock's Students section shows ● on it / ○ elsewhere / – no signal against each student's
+   resolved target.
 
 ---
 
@@ -275,18 +279,23 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 
 ## 8. Classroom-phase roadmap (prioritized)
 
+> Infrastructure items (#1 rules, #3 TURN, App Check) are specified in detail — including a draft
+> rules file and a rollout order — in `docs/LIVE_SESSION_HARDENING_PROPOSAL.md` (2026-07-01),
+> written for external IT review.
+
 1. **Firestore security rules** — no rules file exists in the repo (they live in the Firebase
    console, unaudited). Minimum: signaling docs writable only by `auth.uid == {uid}`; session-doc
    field-level validation mirroring Tier-1; `conceptMastery/{uid}` self-write only. Without rules,
    any authed client that guesses appId + 4-char code can read/write session state.
    *(4-char code space is ~1.2M with the confusable-stripped alphabet — fine against typos, weak
    against enumeration; rules + join-rate limits matter more than longer codes.)*
-2. **Host-side roster check** — polling/pictionary hosts accept any offer in the signaling
-   collection. Pass `sessionData.roster` into the hosts and ignore offers from uids not in the
-   roster (Pictionary HostView already receives sessionData; HostPanel would need the prop).
-3. **TURN for school networks** — without it, expect a meaningful fraction of classroom devices to
-   land on the fallback path. Needs a hosted TURN (coturn/Twilio) + credentials strategy; keep the
-   file-export fallback regardless.
+2. **Host-side roster check** — [SHIPPED 2026-07-01] both hosts ignore offers from uids not in the
+   session roster (`allowedUids` gate, kept fresh as students join). Defense-in-depth only until
+   #1's rules make the roster itself trustworthy.
+3. **TURN for school networks** — client hook [SHIPPED 2026-07-01]: both modules read
+   `window.__alloRtcConfig` at connection time, so adding TURN is config, not code. The actual
+   relay + short-lived-credential minting is an infrastructure decision — see
+   `docs/LIVE_SESSION_HARDENING_PROPOSAL.md` §4. Keep the file-export fallback regardless.
 4. **Presence heartbeat + roster status** — roster entries persist forever; teacher cannot tell
    connected/disconnected/stuck outside the polling panel. Add `roster.{uid}.lastSeenAt` (Tier-1)
    written on a slow cadence, and a teacher roster view with derived status.
@@ -305,14 +314,12 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    into one module with the §5 envelope. Two implementations is duplication; three is a law.
 8. **Bridge → WebRTC migration** — removes the last Tier-2 free-text exception (tracked at the
    allowlist comment).
-9. **Per-student resource send** — add `roster.{uid}.resourceId` + `resourceAt` (Tier-1, id-only)
-   with precedence individual > group > class, consume-once in student-paced mode like §4.1(2),
-   plus a per-student push action in the roster/groups UI. Today's workaround is a one-student
-   group.
-10. **Delivery acknowledgment** — students write `roster.{uid}.viewingResourceId` (Tier-1, id-only)
-    on view change so the teacher's Live Session Center/roster can show who actually landed on a
-    pushed resource ("on it / elsewhere / never received"), closing §4.1(4)'s silent-miss gap.
-    Pairs naturally with the presence heartbeat (#4).
+9. **Per-student resource send** — [SHIPPED 2026-07-01] `roster.{uid}.resourceId` + `resourceAt`
+   (Tier-1, id-only), precedence individual > group > class, consume-once in student-paced mode,
+   push/clear from the Live Session Center's Students rows. See §4.1(3).
+10. **Delivery acknowledgment** — [SHIPPED 2026-07-01] id-only `roster.{uid}.viewingResourceId` +
+    `viewingAt` acks with ●/○/– status in the dock's Students section. See §4.1(4). The `viewingAt`
+    timestamp doubles as a coarse presence signal until the heartbeat (#4) lands.
 
 ---
 

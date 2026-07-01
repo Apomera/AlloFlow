@@ -41,6 +41,13 @@
 (function () {
   const STUN_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
   const RTC_CONFIG = { iceServers: STUN_SERVERS };
+  // Deploy-time override hook: set window.__alloRtcConfig = { iceServers: [...] }
+  // (e.g. to add a TURN server for UDP-blocked school networks) without a
+  // module change. Read at connection time so late-loaded config applies.
+  const getRtcConfig = () => {
+    const cfg = (typeof window !== 'undefined') && window.__alloRtcConfig;
+    return (cfg && Array.isArray(cfg.iceServers) && cfg.iceServers.length > 0) ? cfg : RTC_CONFIG;
+  };
   const CONNECTION_TIMEOUT_MS = 10000;
   const SIGNALING_TTL_MS = 60 * 60 * 1000;
 
@@ -213,6 +220,16 @@
       this.collectionUnsub = null;
       this.activePoll = null;
       this._stopped = false;
+      // Roster gate: when set (Set of uids), offers from unknown uids are
+      // ignored. Defense-in-depth against drive-by connections to a guessed
+      // session code — NOT a security boundary on its own, since the roster
+      // lives in a client-writable doc until Firestore rules land (see
+      // docs/LIVE_SESSION_HARDENING_PROPOSAL.md). null = allow all (legacy).
+      this._allowedUids = config.allowedUids ? new Set(config.allowedUids) : null;
+    }
+
+    setAllowedUids(uids) {
+      this._allowedUids = uids ? new Set(uids) : null;
     }
 
     async start() {
@@ -226,6 +243,7 @@
         snap.docChanges().forEach((change) => {
           if (change.type === 'removed') return;
           const uid = change.doc.id;
+          if (this._allowedUids && !this._allowedUids.has(uid)) return;
           const data = change.doc.data() || {};
           const existing = this.peers.get(uid);
           if (data.offer && !existing) {
@@ -250,7 +268,7 @@
     async _acceptPeer(uid, offerData, signalingRef) {
       const fb = getFb();
       if (!fb) return;
-      const pc = new RTCPeerConnection(RTC_CONFIG);
+      const pc = new RTCPeerConnection(getRtcConfig());
       const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
       const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
       this.peers.set(uid, peerRecord);
@@ -433,7 +451,7 @@
       this.signalingRef = signalingDocRef(this.sessionCode, this.userUid);
       if (!this.signalingRef) throw new Error('LivePolling: cannot resolve signaling doc');
 
-      this.pc = new RTCPeerConnection(RTC_CONFIG);
+      this.pc = new RTCPeerConnection(getRtcConfig());
       this.dc = this.pc.createDataChannel('polling', { ordered: true });
 
       this.pc.onicecandidate = (e) => {
@@ -662,6 +680,7 @@
         },
       });
       hostRef.current = host;
+      if (props.allowedUids) host.setAllowedUids(props.allowedUids);
       host.start().catch(function (err) { console.warn('[LivePolling HostPanel] start failed', err); });
       // Tier-1 presence marker: student shells gate guest joins on an
       // actually-listening host (see GuestOverlay's hostActive prop) instead
@@ -680,6 +699,15 @@
         hostRef.current = null;
       };
     }, [isOpen, sessionCode]);
+
+    // Keep the roster gate current as students join without recreating the
+    // host (which would tear down every peer connection). undefined prop
+    // (older shells) leaves the gate off — legacy allow-all.
+    R.useEffect(function () {
+      if (hostRef.current && typeof hostRef.current.setAllowedUids === 'function' && props.allowedUids) {
+        hostRef.current.setAllowedUids(props.allowedUids);
+      }
+    }, [props.allowedUids]);
 
     const addRule = function () {
       const defaultPred = pollType === 'mcq' ? 'eq' : 'lte';
@@ -1171,8 +1199,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.4.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin), and initialPoll composer presets (Live Session Center Quick Check).',
+      version: '1.5.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin), initialPoll composer presets (Live Session Center Quick Check), a roster gate on incoming offers (allowedUids), and a window.__alloRtcConfig TURN override hook.',
     },
   };
 

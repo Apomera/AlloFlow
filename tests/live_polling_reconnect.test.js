@@ -24,7 +24,7 @@ class FakeDataChannel {
   close() { this.readyState = 'closed'; if (typeof this.onclose === 'function') this.onclose(); }
 }
 class FakePeerConnection {
-  constructor() { this.signalingState = 'stable'; this.connectionState = 'new'; this.onicecandidate = null; this.ondatachannel = null; this.onconnectionstatechange = null; }
+  constructor(cfg) { this._cfg = cfg; this.signalingState = 'stable'; this.connectionState = 'new'; this.onicecandidate = null; this.ondatachannel = null; this.onconnectionstatechange = null; }
   createDataChannel() { const dc = new FakeDataChannel(); this._createdDc = dc; return dc; }
   async createOffer() { return { type: 'offer', sdp: 'fake-offer-sdp' }; }
   async createAnswer() { return { type: 'answer', sdp: 'fake-answer-sdp' }; }
@@ -157,6 +157,43 @@ describe('reconnect-safe transport', () => {
     // The stale-peer cleanup must NOT have deleted the fresh offer doc.
     expect(fb._docs.has('artifacts/test-app/public/data/signaling/REROOM/peers/stu-re')).toBe(true);
     host.stop();
+  });
+
+  it('ignores offers from uids outside the roster gate; accepts after the gate updates', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    const host = LP.createHost({ sessionCode: 'GATED' });
+    host.setAllowedUids(['stu-ok']);
+    await host.start();
+    const badRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'signaling', 'GATED', 'peers', 'stu-late');
+    await fb.setDoc(badRef, { offer: { type: 'offer', sdp: 'sdp-x' }, codename: 'Latecomer' });
+    await tick();
+    expect(host.peers.has('stu-late')).toBe(false);
+
+    // Roster catches up (student joined): gate update + fresh offer accepted.
+    host.setAllowedUids(['stu-ok', 'stu-late']);
+    await fb.setDoc(badRef, { offer: { type: 'offer', sdp: 'sdp-y' }, codename: 'Latecomer' });
+    await tick();
+    expect(host.peers.has('stu-late')).toBe(true);
+    host.stop();
+  });
+
+  it('honors window.__alloRtcConfig for new peer connections (TURN override hook)', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    window.__alloRtcConfig = { iceServers: [{ urls: 'turn:turn.example.org:3478', username: 'u', credential: 'c' }] };
+    try {
+      const host = LP.createHost({ sessionCode: 'TURNROOM' });
+      await host.start();
+      const ref = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'signaling', 'TURNROOM', 'peers', 'stu-t');
+      await fb.setDoc(ref, { offer: { type: 'offer', sdp: 'sdp-t' }, codename: 'Stu' });
+      await tick();
+      const peer = host.peers.get('stu-t');
+      expect(peer.pc._cfg.iceServers[0].urls).toBe('turn:turn.example.org:3478');
+      host.stop();
+    } finally {
+      delete window.__alloRtcConfig;
+    }
   });
 
   it('guest routes hostClosed to onHostClosed', async () => {

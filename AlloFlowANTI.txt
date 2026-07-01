@@ -1273,8 +1273,9 @@ const StudentAnalyticsPanel = React.memo((props) => {
     const ExternalModule = window.AlloModules && window.AlloModules.StudentAnalytics;
     if (ExternalModule) return React.createElement(ExternalModule, props);
     if (!props.isOpen) return null;
+    const panelTheme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
+        <div className={`fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4 theme-${panelTheme}`} onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Assessment Center' }) || 'Loading Assessment Center...'}</p>
@@ -2472,6 +2473,16 @@ const SESSION_TIER1_LEAVES = new Set([
   // push as ONE jump (and a re-push of the same resource yanks again).
   // No student-typed content; Tier-1 safe.
   'resourceAt',
+  // Per-student resource send (teacher-managed): roster.{uid}.resourceId is an
+  // auto-generated resource id (never student-typed) with precedence
+  // individual > group > class; paired with resourceAt above for consume-once
+  // semantics in student-paced mode. Tier-1 safe.
+  'resourceId',
+  // Delivery acknowledgment (student-written, id-only): roster.{uid}.viewingResourceId
+  // + viewingAt let the teacher's Live Session Center show who actually landed
+  // on a pushed resource. Resource ids are auto-generated, never student-typed;
+  // no content travels on this channel. Tier-1 safe.
+  'viewingResourceId', 'viewingAt',
 ]);
 // Help-signal vocabulary shared by the student sender and the teacher's Live
 // Session Center. Enum-only by design: keep free text out of this channel so
@@ -7132,6 +7143,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // grouped student back to the group resource after they navigated away —
   // student-paced mode wasn't student-paced for grouped students.
   const lastGroupPushKeyRef = useRef(null);
+  // Same consume-once pattern for per-student pushes (roster.{uid}.resourceId).
+  const lastIndividualPushKeyRef = useRef(null);
+  // Last viewingResourceId this student wrote to the session doc (delivery
+  // ack); guards against re-writing the same id on unrelated re-renders.
+  const lastViewingSyncRef = useRef(undefined);
   const hasConnectedRef = useRef(false);
   const [pptxLoaded, setPptxLoaded] = useState(false);
   const [progressionData, setProgressionData] = useState(null);
@@ -9534,6 +9550,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               targetResourceId = data.groups[userGroupId].resourceId;
                           }
                       }
+                      // Per-student send outranks group and class targets. In sync
+                      // mode it inherits the locked-follow semantics of the branch.
+                      if (data.roster && data.roster[user.uid] && data.roster[user.uid].resourceId) {
+                          debugLog(`Differentiation: Overriding to individual resource ${data.roster[user.uid].resourceId}`);
+                          targetResourceId = data.roster[user.uid].resourceId;
+                      }
                       if (targetResourceId === 'adventure-sync') {
                           if (data.activeAdventureState) {
                               setAdventureState(prev => {
@@ -9578,6 +9600,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                   addToast(t('toasts.synced_resource', { title: target.title || getDefaultTitle(target.type) }) || `Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
                               }
                           }
+                      }
+                  }
+                  else if (data.roster && data.roster[user.uid] && data.roster[user.uid].resourceId) {
+                      // Student-paced mode, per-student send: consume each push ONCE
+                      // (same nonce pattern as group pushes below), then let the
+                      // student navigate freely.
+                      const myEntry = data.roster[user.uid];
+                      const individualPushKey = myEntry.resourceId + '|' + (myEntry.resourceAt || 0);
+                      const target = resourcesToRender.find(r => r.id === myEntry.resourceId);
+                      if (target && currentGenContentIdRef.current !== myEntry.resourceId && lastIndividualPushKeyRef.current !== individualPushKey) {
+                          lastIndividualPushKeyRef.current = individualPushKey;
+                          debugLog(`Individual Differentiation: Showing per-student resource ${myEntry.resourceId}`);
+                          setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+                          setActiveView(target.type);
+                          if (audioRef.current) {
+                              audioRef.current.pause();
+                              setIsPlaying(false);
+                          }
+                          addToast(t('toasts.individual_resource', { title: target.title || getDefaultTitle(target.type) }) || `For you: ${target.title || getDefaultTitle(target.type)}`, "info");
                       }
                   }
                   else if (data.roster && data.roster[user.uid] && data.roster[user.uid].groupId) {
@@ -9648,6 +9689,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
       }
   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+  // Delivery acknowledgment (spec §4.1 / roadmap #10): students report WHICH
+  // resource id they are viewing (id-only, Tier-1) so the teacher's Live
+  // Session Center can show who actually landed on a pushed resource. The ref
+  // guard keeps unrelated re-renders from repeating the same write.
+  useEffect(() => {
+      if (isTeacherMode || !activeSessionCode || !user || !user.uid) {
+          lastViewingSyncRef.current = undefined;
+          return;
+      }
+      const viewingId = (generatedContent && generatedContent.id) || null;
+      if (lastViewingSyncRef.current === viewingId) return;
+      lastViewingSyncRef.current = viewingId;
+      try {
+          const targetAppId = activeSessionAppId || appId;
+          const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+          writeToSession(sessionRef, {
+              [`roster.${user.uid}.viewingResourceId`]: viewingId,
+              [`roster.${user.uid}.viewingAt`]: Date.now()
+          }).catch(e => warnLog("Viewing ack skipped", e));
+      } catch (e) { /* session ref unavailable — ack is best-effort */ }
+  }, [generatedContent && generatedContent.id, activeSessionCode, isTeacherMode, user, activeSessionAppId]);
   useEffect(() => {
       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
           const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
@@ -16885,6 +16947,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       } catch (error) {
           warnLog("Error setting resource:", error);
           setIsPushingResource(prev => { const next = {...prev}; delete next[groupId]; return next; });
+          addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
+      }
+  };
+  // Per-student resource send (spec §4.1 / roadmap #9). Precedence on the
+  // student side: individual > group > class. Passing resourceId=null clears
+  // the override. resourceAt is the consume-once nonce for student-paced mode.
+  const handleSetStudentResource = async (uid, resourceId) => {
+      if (!activeSessionCode || !uid) return;
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      try {
+        await updateDoc(sessionRef, {
+            [`roster.${uid}.resourceId`]: resourceId || null,
+            [`roster.${uid}.resourceAt`]: resourceId ? Date.now() : null
+        });
+        addToast(resourceId
+          ? (t('toasts.resource_assigned') || 'Resource pushed.')
+          : (t('toasts.individual_resource_cleared') || 'Individual resource cleared.'), "success");
+      } catch (error) {
+          warnLog("Error setting student resource:", error);
           addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
       }
   };
@@ -24268,7 +24349,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     <ActiveViewContext.Provider value={_activeViewCtx}>
     <RoleContext.Provider value={_roleCtx}>
     <ThemeContext.Provider value={_themeCtx}>
-    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col theme-${theme} ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
         <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -25291,7 +25372,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )}
       {isPersonaChatOpen && (personaState.selectedCharacter || (personaState.mode === 'panel' && personaState.selectedCharacters.length > 0)) && window.AlloModules && window.AlloModules.PersonaChatView && ReactDOM.createPortal(
         React.createElement(window.AlloModules.PersonaChatView, {
-            personaState, t,
+            personaState, t, theme,
             isPersonaFreeResponse, showPersonaHints, personaAutoRead,
             personaInput, personaAutoSend,
             isPersonaReflectionOpen, personaDefinitionData, reflectionFeedback,
@@ -25327,7 +25408,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {(diffViewOpen && pdfFixResult) && window.AlloModules && window.AlloModules.PdfDiffViewer && React.createElement(window.AlloModules.PdfDiffViewer, {
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
-          diffViewOpen, pdfFixResult, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
+          diffViewOpen, pdfFixResult, theme, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
           setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
       })}
@@ -27623,6 +27704,70 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
                   </button>
                 </div>
+                {(() => {
+                  // Students: delivery status (which resource each student is
+                  // actually viewing vs their target) + per-student push of the
+                  // teacher's currently open resource. Precedence for target:
+                  // individual > group > class (sync mode only for class).
+                  const studentUids = Object.keys(rosterEntries);
+                  if (studentUids.length === 0) return null;
+                  const titleFor = (id) => {
+                    if (!id) return null;
+                    const h = (history || []).find(x => x && x.id === id);
+                    return h ? (h.title || getDefaultTitle(h.type)) : null;
+                  };
+                  const targetFor = (entry) => entry.resourceId
+                    || (entry.groupId && sessionData && sessionData.groups && sessionData.groups[entry.groupId] && sessionData.groups[entry.groupId].resourceId)
+                    || ((sessionData && sessionData.mode === 'sync') ? sessionData.currentResourceId : null);
+                  const canPushCurrent = !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type));
+                  const rows = studentUids
+                    .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
+                    .sort((a, b) => String(a.entry.name || '').localeCompare(String(b.entry.name || '')));
+                  return (
+                    <>
+                      <div style={dockGroupLabel}>{(t('live_dock.group_students') || 'Students') + ' (' + rows.length + ')'}</div>
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:170,overflowY:'auto'}}>
+                        {rows.map(({ uid, entry }) => {
+                          const target = targetFor(entry);
+                          const viewing = entry.viewingResourceId || null;
+                          const onTarget = !!(target && viewing === target);
+                          const statusDot = !target
+                            ? { glyph: '·', color: '#94a3b8', label: t('live_dock.status_free') || 'no target' }
+                            : onTarget
+                              ? { glyph: '●', color: '#16a34a', label: t('live_dock.status_on') || 'on it' }
+                              : viewing
+                                ? { glyph: '○', color: '#b45309', label: t('live_dock.status_elsewhere') || 'elsewhere' }
+                                : { glyph: '–', color: '#94a3b8', label: t('live_dock.status_unknown') || 'no signal' };
+                          const viewingTitle = titleFor(viewing);
+                          return (
+                            <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
+                              <span aria-hidden="true" style={{color:statusDot.color,fontWeight:900}}>{statusDot.glyph}</span>
+                              <span style={{fontWeight:700,color:'#0f172a',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:86}}>{entry.name || 'Student'}</span>
+                              <span style={{color:'#64748b',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
+                                {statusDot.label}{viewingTitle ? ' · ' + viewingTitle : ''}
+                              </span>
+                              {entry.resourceId ? (
+                                <button
+                                  onClick={() => handleSetStudentResource(uid, null)}
+                                  aria-label={(t('live_dock.clear_student_resource_aria') || 'Clear individual resource for') + ' ' + (entry.name || 'student')}
+                                  title={t('live_dock.clear_student_resource') || 'Clear individual resource'}
+                                  style={{background:'white',border:'1px solid #fca5a5',borderRadius:6,padding:'0.05rem 0.35rem',cursor:'pointer',fontSize:'0.68rem',fontWeight:700,color:'#b91c1c'}}
+                                >✕</button>
+                              ) : null}
+                              <button
+                                onClick={() => canPushCurrent && handleSetStudentResource(uid, generatedContent.id)}
+                                disabled={!canPushCurrent}
+                                aria-label={(t('live_dock.push_student_resource_aria') || 'Send the current resource to') + ' ' + (entry.name || 'student')}
+                                title={canPushCurrent ? (t('live_dock.push_student_resource') || 'Send current resource to this student') : (t('live_dock.push_student_resource_none') || 'Open a student-facing resource first')}
+                                style={{background: canPushCurrent ? '#1e3a8a' : '#e2e8f0', color: canPushCurrent ? 'white' : '#94a3b8', border:'none', borderRadius:6, padding:'0.05rem 0.45rem', cursor: canPushCurrent ? 'pointer' : 'default', fontSize:'0.7rem', fontWeight:800}}
+                              >→</button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
                 <div style={dockGroupLabel}>{(t('live_dock.group_signals') || 'Signals') + (activeSignals.length > 0 ? ' (' + activeSignals.length + ')' : '')}</div>
                 {activeSignals.length === 0 ? (
                   <p style={{fontSize:'0.75rem',color:'#64748b',fontStyle:'italic',margin:'0 0 0.2rem 0'}}>{t('live_dock.no_signals') || 'No signals right now.'}</p>
@@ -27660,6 +27805,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           // One-tap presets from the Live Session Center (e.g. Quick Check)
           // seed the composer; the teacher still reviews + broadcasts.
           initialPoll: livePollPreset,
+          // Roster gate (defense-in-depth): the host ignores WebRTC offers
+          // from uids not present in the session roster.
+          allowedUids: sessionData && sessionData.roster ? Object.keys(sessionData.roster) : [],
         })
       }
       {!isTeacherMode && activeSessionCode && user && user.uid && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.GuestOverlay &&
@@ -28246,6 +28394,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <StudentAnalyticsPanel
               isOpen={showClassAnalytics}
               onClose={handleCloseClassAnalytics}
+              theme={theme}
               t={t}
               isIndependentMode={isIndependentMode}
               globalPoints={globalPoints}

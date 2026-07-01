@@ -608,6 +608,18 @@ describe('reconnect-safe transport', () => {
     host.stop();
   });
 
+  it('ignores offers from uids outside the roster gate', async () => {
+    const fb = window.__alloFirebase;
+    const host = new PictionaryHost({ sessionCode: 'RECON' });
+    host.setAllowedUids(['known-1']);
+    await host.start();
+    const badRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'pictionary-signaling', 'RECON', 'peers', 'unknown-1');
+    await fb.setDoc(badRef, { offer: { type: 'offer', sdp: 'sdp-x' }, codename: 'Intruder' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(host.peers.has('unknown-1')).toBe(false);
+    host.stop();
+  });
+
   it('guest routes roundSync and hostClosed to the new callbacks', () => {
     const onRoundSync = vi.fn();
     const onHostClosed = vi.fn();
