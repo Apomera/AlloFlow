@@ -345,6 +345,8 @@ async function makeInputPdf(pages) {
   console.log('leaves:', leafCount, '| orphaned (no /K→MCR):', orphanedLeafCount);
   console.log('roundTrip.ok:', result.roundTrip && result.roundTrip.ok,
     '| built-vs-saved (app):', result.roundTrip && result.roundTrip.structElemsBuilt, '/', result.roundTrip && result.roundTrip.structElemsSaved);
+  const _mcrRule = result.roundTrip && (result.roundTrip.checks || []).find((c) => /MCR/.test(c.rule || ''));
+  console.log('app MCR→BDC rule:', _mcrRule ? (_mcrRule.status + ' — ' + (_mcrRule.detail || '')) : '(not present)');
   if (dangles.length) {
     console.log('\n!! DANGLING REFS IN SAVED STRUCT TREE:', dangles.length);
     for (const d of dangles.slice(0, 10)) console.log('  obj', d.num, 'at', d.at);

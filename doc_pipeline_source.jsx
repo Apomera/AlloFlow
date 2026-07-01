@@ -804,6 +804,112 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Multi-column reading-order REPAIR (H-5's harder half, 2026-07-01) ──
+// readingOrderSequenceRatio (above) DETECTS a scrambled order; this REPAIRS it at the
+// extraction root. pdf.js returns text items in content-stream order, and the extractor's
+// plain (y desc, x asc) sort INTERLEAVES the columns of a multi-column page line-by-line —
+// so the ground truth, the AI rebuild, and ultimately the tagged output all inherit a
+// scrambled reading order. This reorders a page's items COLUMN-AWARE:
+//   1. Projection profile: build an x-coverage histogram of the items' horizontal spans and
+//      find the deepest interior GUTTER (a tall vertical band ~no item crosses).
+//   2. Table discriminator: if the y-baselines on the two sides of the gutter mostly ALIGN,
+//      the "columns" are table/grid cells whose row-major order is correct — DON'T split.
+//      True body-text columns wrap independently, so their line grids drift apart.
+//   3. Recurse per side (≤3 splits → up to 4 columns), then (y desc, x asc) within a column.
+// CONSERVATIVE BY CONSTRUCTION: any ambiguity (few items, no clean gutter, unbalanced sides,
+// aligned baselines) falls through to the exact legacy sort — the repair can only engage on
+// a high-confidence gutter, so single-column and table pages are byte-identical to before.
+// opts.rtl reads columns right→left (Arabic/Hebrew two-column worksheets).
+// Pure (items in → ordered items + diagnostics out) → unit-testable without pdf.js.
+function _alloOrderTextItems(items, opts) {
+  opts = opts || {};
+  var _x = function (it) { return it && it.transform ? it.transform[4] : 0; };
+  var _y = function (it) { return it && it.transform ? it.transform[5] : 0; };
+  var _w = function (it) {
+    if (it && typeof it.width === 'number' && isFinite(it.width) && it.width > 0) return it.width;
+    var scale = (it && it.transform && isFinite(it.transform[0]) && Math.abs(it.transform[0]) > 0.01) ? Math.abs(it.transform[0]) : 10;
+    return String((it && it.str) || '').length * scale * 0.5;
+  };
+  var _legacy = function (arr) {
+    return arr.slice().sort(function (a, b) {
+      var ay = _y(a), by = _y(b);
+      if (Math.abs(ay - by) > 2) return by - ay;
+      return _x(a) - _x(b);
+    });
+  };
+  var real = [];
+  for (var i = 0; i < (items || []).length; i++) { var it = items[i]; if (it && String(it.str || '').trim()) real.push(it); }
+  var keepEmpties = (items || []).length - real.length; // empties re-dropped by the caller's join; order among them is irrelevant
+  var MAX_DEPTH = 2;
+  var split = function (arr, depth) {
+    if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var i2 = 0; i2 < arr.length; i2++) {
+      var x0 = _x(arr[i2]), x1 = x0 + _w(arr[i2]), yy = _y(arr[i2]);
+      if (x0 < minX) minX = x0; if (x1 > maxX) maxX = x1;
+      if (yy < minY) minY = yy; if (yy > maxY) maxY = yy;
+    }
+    var span = maxX - minX;
+    if (!(span > 80) || !(maxY - minY > 40)) return { cols: [arr], gutters: [] }; // too narrow/short to be columnar
+    var BINS = 96, cov = new Array(BINS);
+    for (var b0 = 0; b0 < BINS; b0++) cov[b0] = 0;
+    for (var i3 = 0; i3 < arr.length; i3++) {
+      var s0 = Math.max(0, Math.floor((_x(arr[i3]) - minX) / span * BINS));
+      var s1 = Math.min(BINS - 1, Math.ceil((_x(arr[i3]) + _w(arr[i3]) - minX) / span * BINS) - 1);
+      for (var bb = s0; bb <= s1; bb++) cov[bb]++;
+    }
+    // Deepest interior gutter: a run of near-empty bins (≤2% of items) at least ~2.5% of the
+    // span wide, whose center lies in the middle 70% of the text extent.
+    var thresh = Math.max(1, Math.floor(arr.length * 0.02));
+    var best = null, runStart = -1;
+    for (var b1 = 0; b1 <= BINS; b1++) {
+      var empty = b1 < BINS && cov[b1] <= thresh;
+      if (empty && runStart < 0) runStart = b1;
+      if (!empty && runStart >= 0) {
+        var runLen = b1 - runStart, center = (runStart + b1) / 2 / BINS;
+        if (runLen >= Math.max(3, Math.floor(BINS * 0.025)) && center > 0.15 && center < 0.85) {
+          if (!best || runLen > best.len) best = { len: runLen, xCut: minX + ((runStart + b1) / 2 / BINS) * span };
+        }
+        runStart = -1;
+      }
+    }
+    if (!best) return { cols: [arr], gutters: [] };
+    var left = [], right = [];
+    for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < best.xCut ? left : right).push(arr[i4]); }
+    // Balance guard: a stray margin note isn't a column.
+    if (left.length < 5 || right.length < 5 || left.length / right.length > 8 || right.length / left.length > 8) return { cols: [arr], gutters: [] };
+    // Table discriminator: fraction of left baselines (3pt buckets) that also appear on the right.
+    var leftY = Object.create(null), matches = 0, lY = 0;
+    for (var i5 = 0; i5 < left.length; i5++) leftY[Math.round(_y(left[i5]) / 3)] = true;
+    for (var kY in leftY) lY++;
+    var rightSeen = Object.create(null);
+    for (var i6 = 0; i6 < right.length; i6++) {
+      var ky = Math.round(_y(right[i6]) / 3);
+      if (leftY[ky] && !rightSeen[ky]) { rightSeen[ky] = true; matches++; }
+    }
+    if (lY > 0 && matches / lY >= 0.55) return { cols: [arr], gutters: [] }; // aligned rows → table/grid, keep row-major
+    var L = split(left, depth + 1), R = split(right, depth + 1);
+    return { cols: L.cols.concat(R.cols), gutters: L.gutters.concat([best.xCut]).concat(R.gutters) };
+  };
+  var res = split(real, 0);
+  if (res.cols.length <= 1) {
+    var _single = { items: _legacy(items || []), columns: 1, gutters: [], applied: false };
+    return _single;
+  }
+  // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
+  var colsOrdered = res.cols.slice().sort(function (A, B) {
+    var ax = Infinity, bx = Infinity;
+    for (var iA = 0; iA < A.length; iA++) ax = Math.min(ax, _x(A[iA]));
+    for (var iB = 0; iB < B.length; iB++) bx = Math.min(bx, _x(B[iB]));
+    return opts.rtl ? bx - ax : ax - bx;
+  });
+  var out = [];
+  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c]));
+  if (keepEmpties > 0) { for (var i7 = 0; i7 < (items || []).length; i7++) { var e = items[i7]; if (!(e && String(e.str || '').trim())) out.push(e); } }
+  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true };
+  return _multi;
+}
+
 // S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
 // structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
 // authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
@@ -5963,18 +6069,17 @@ var createDocPipeline = function(deps) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
-          // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
-          // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
-          const items = (tc.items || []).slice().sort((a, b) => {
-            const ay = a.transform ? a.transform[5] : 0;
-            const by = b.transform ? b.transform[5] : 0;
-            if (Math.abs(ay - by) > 2) return by - ay; // higher y first
-            const ax = a.transform ? a.transform[4] : 0;
-            const bx = b.transform ? b.transform[4] : 0;
-            return ax - bx;
-          });
+          // Column-aware reading order (H-5 repair, 2026-07-01). _alloOrderTextItems detects a
+          // high-confidence column gutter and reads column-by-column; on ANY ambiguity (single
+          // column, table-aligned rows, unbalanced sides) it returns the exact legacy
+          // (y desc, x asc) sort — so non-columnar pages are byte-identical to before. The
+          // legacy sort alone INTERLEAVED multi-column pages line-by-line, scrambling the
+          // ground truth every downstream stage inherits.
+          const _ordered = _alloOrderTextItems(tc.items || [], {});
+          const items = _ordered.items;
+          if (_ordered.applied) { try { warnLog('[PDF Det] p' + p + ': multi-column layout detected (' + _ordered.columns + ' columns) — reading order repaired column-by-column'); } catch (_) {} }
           const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
-          pages.push({ pageNum: p, text: pageText });
+          pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', error: _pmsg });
@@ -22006,6 +22111,81 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const _allP = _rtPages.length;
         _rtChecks.push({ rule: 'Pages link to tag tree (StructParents)', status: (_allP > 0 && _spOk === _allP) ? 'pass' : 'fail', detail: _spOk + '/' + _allP + ' pages' });
       } catch (_) {}
+      // ── MCR→BDC honesty check (2026-07-01, tag-tree harness find) ──
+      // The checks above (and the orphan metric) count a leaf as "content-linked" when its
+      // /K carries an MCR — WITHOUT verifying that the referenced marked-content sequence
+      // actually exists in the page's content stream. A /K → MCR(page, MCID n) with no
+      // matching "<</MCID n>> BDC" is fake linkage: validators resolve it to nothing and a
+      // tag-walking AT reads silence. Decode the SAVED pages' streams (pdf-lib's own
+      // decodePDFRawStream handles Flate) and verify every MCR's MCID appears on its page.
+      // Pages whose streams can't be decoded are EXCLUDED (counted, disclosed) rather than
+      // guessed at — the check only judges what it could actually read.
+      try {
+        const _decode = (typeof window !== 'undefined' && window.PDFLib && window.PDFLib.decodePDFRawStream) ? window.PDFLib.decodePDFRawStream : null;
+        const _rtPages3 = _rt.getPages();
+        const _pageIdxByRef = {};
+        const _bdcByPage = [];
+        let _pagesUndecodable = 0;
+        for (let _pi3 = 0; _pi3 < _rtPages3.length; _pi3++) {
+          _pageIdxByRef[_rtPages3[_pi3].ref.toString()] = _pi3;
+          let _body = '', _decodeOk = true;
+          try {
+            const _cts = _rtPages3[_pi3].node.get(PDFName.of('Contents'));
+            const _crefs = [];
+            if (_cts && typeof _cts.size === 'function') { for (let _k3 = 0; _k3 < _cts.size(); _k3++) _crefs.push(_cts.get(_k3)); }
+            else if (_cts) { _crefs.push(_cts); }
+            for (const _cr of _crefs) {
+              const _cs = _rt.context.lookup(_cr);
+              if (!_cs) continue;
+              let _bts = null;
+              const _hasFilter = _cs.dict && _cs.dict.get && _cs.dict.get(PDFName.of('Filter'));
+              try {
+                if (_hasFilter && _decode) { const _d = _decode(_cs); _bts = _d && _d.decode ? _d.decode() : null; }
+                else if (!_hasFilter) { _bts = _cs.getContents ? _cs.getContents() : (_cs.contents || null); }
+              } catch (_) { _bts = null; }
+              if (_bts) { let _sb = ''; for (let _bi = 0; _bi < _bts.length; _bi++) _sb += String.fromCharCode(_bts[_bi]); _body += _sb + '\n'; }
+              else if (_hasFilter) { _decodeOk = false; }
+            }
+          } catch (_) { _decodeOk = false; }
+          if (!_decodeOk) _pagesUndecodable++;
+          const _set = {};
+          const _reB = /<<\s*\/MCID\s+(\d+)\s*>>\s*BDC/g; let _mB;
+          while ((_mB = _reB.exec(_body))) _set[Number(_mB[1])] = true;
+          _bdcByPage.push({ ok: _decodeOk, mcids: _set });
+        }
+        let _mcrTotal = 0, _mcrUnbacked = 0, _mcrSkipped = 0;
+        for (const _entry3 of _rt.context.enumerateIndirectObjects()) {
+          const _o3 = _entry3 && _entry3[1];
+          try {
+            if (!_o3 || typeof _o3.get !== 'function') continue;
+            const _ty3 = _o3.get(PDFName.of('Type'));
+            if (!_ty3 || String(_ty3) !== '/StructElem') continue;
+            const _kRaw = _o3.get(PDFName.of('K'));
+            const _kRes = _kRaw && _kRaw.toString && /R$/.test(_kRaw.toString()) ? _rt.context.lookup(_kRaw) : _kRaw;
+            const _kItems = (_kRes && typeof _kRes.size === 'function') ? Array.from({ length: _kRes.size() }, (_, _ii) => { const _v = _kRes.get(_ii); return (_v && _v.toString && /R$/.test(_v.toString())) ? _rt.context.lookup(_v) : _v; }) : [_kRes];
+            for (const _ki of _kItems) {
+              if (!_ki || typeof _ki.get !== 'function') continue;
+              const _kt = _ki.get(PDFName.of('Type'));
+              if (!_kt || String(_kt) !== '/MCR') continue;
+              _mcrTotal++;
+              const _pg3 = _ki.get(PDFName.of('Pg'));
+              const _mc3 = _ki.get(PDFName.of('MCID'));
+              const _pIdx = _pg3 ? _pageIdxByRef[_pg3.toString()] : undefined;
+              const _mcNum = _mc3 != null ? Number(String(_mc3)) : NaN;
+              const _pageInfo = (_pIdx !== undefined) ? _bdcByPage[_pIdx] : null;
+              if (!_pageInfo || !_pageInfo.ok) { _mcrSkipped++; continue; }
+              if (isNaN(_mcNum) || !_pageInfo.mcids[_mcNum]) _mcrUnbacked++;
+            }
+          } catch (_) {}
+        }
+        if (_mcrTotal > 0) {
+          const _mcrDetail = (_mcrTotal - _mcrUnbacked - _mcrSkipped) + '/' + _mcrTotal + ' content links verified against page streams'
+            + (_mcrUnbacked > 0 ? '; ' + _mcrUnbacked + ' point at marked content that does NOT exist' : '')
+            + (_mcrSkipped > 0 ? '; ' + _mcrSkipped + ' skipped (page stream not decodable)' : '');
+          _rtChecks.push({ rule: 'Content links (MCR) resolve to real marked content (BDC)', status: _mcrUnbacked > 0 ? 'fail' : 'pass', detail: _mcrDetail });
+          if (_mcrUnbacked > 0) _rtWarn.push(_mcrUnbacked + ' of ' + _mcrTotal + ' structure-element content links (MCR) reference marked content that does not exist in the page streams — the affected elements are effectively orphaned even though they carry a /K.');
+        }
+      } catch (_) { /* honesty check is best-effort — never blocks the round-trip report */ }
       // Content-loss guard: compare the StructElem count in the SAVED file to what we
       // built in memory. A large shortfall means a subtree was dropped at serialization.
       // 2026-07-01 (tag-tree harness find): the old sum — structElemRefs.length +
