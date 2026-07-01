@@ -171,21 +171,99 @@ const jsonByteLength = (value) => {
   }
   return str.length;
 };
-const makeSessionAssetId = (prefix) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+const hashStringForSessionAsset = (value) => {
+  const str = typeof value === "string" ? value : JSON.stringify(value || "");
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+};
+const sanitizeSessionAssetIdPart = (value) => String(value || "x").replace(/[^a-zA-Z0-9_-]+/g, "_").slice(0, 80) || "x";
+const makeSessionAssetId = (prefix, parts) => {
+  if (Array.isArray(parts) && parts.length) {
+    return [prefix].concat(parts.map(sanitizeSessionAssetIdPart)).join("_").slice(0, 420);
+  }
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+};
 const getSessionAssetRef = (appId, assetId) => doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
-const compactLargeSessionResources = (appId, resources, writeTasks) => {
+const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metadata = {}) => {
+  const text = typeof data === "string" ? data : JSON.stringify(data);
+  if (jsonByteLength(text) > SESSION_RESOURCE_CHUNK_SIZE) {
+    const chunkIds = [];
+    for (let offset = 0; offset < text.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
+      const chunkId = `${assetId}_chunk_${chunkIds.length}`;
+      chunkIds.push(chunkId);
+      writeTasks.push(() => setDoc(getSessionAssetRef(appId, chunkId), {
+        kind: `${kind}Chunk`,
+        parent: assetId,
+        index: chunkIds.length - 1,
+        data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE)
+      }));
+    }
+    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+      kind: `${kind}Chunks`,
+      chunks: chunkIds,
+      byteLength: jsonByteLength(text),
+      ...metadata
+    })));
+  } else {
+    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+      kind,
+      data: text,
+      byteLength: jsonByteLength(text),
+      ...metadata
+    })));
+  }
+};
+const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks) => {
+  if (jsonByteLength(itemJson) > SESSION_RESOURCE_CHUNK_SIZE) {
+    enqueueChunkedStringAsset(appId, assetId, "sessionResource", itemJson, writeTasks, {
+      id: item && item.id,
+      type: item && item.type,
+      title: item && item.title,
+      meta: item && item.meta
+    });
+  } else {
+    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+      kind: "sessionResource",
+      resource: item,
+      byteLength: jsonByteLength(itemJson)
+    })));
+  }
+};
+const stripUnsafeLiveSessionFields = (value, keyName = "") => {
+  if (value == null) return value;
+  if (typeof value === "string") {
+    if (/^(audioRecording|rawAudio|voiceClip|recording)$/i.test(keyName) || /^data:audio/i.test(value)) return null;
+    return value;
+  }
+  if (Array.isArray(value)) return value.map((entry) => stripUnsafeLiveSessionFields(entry, keyName));
+  if (typeof value === "object" && !(value instanceof Date)) {
+    const out = {};
+    Object.keys(value).forEach((key) => {
+      if (/^(audioRecording|rawAudio|voiceClip|recording|mimeType)$/i.test(key)) return;
+      out[key] = stripUnsafeLiveSessionFields(value[key], key);
+    });
+    return out;
+  }
+  return value;
+};
+const compactLargeSessionResources = (appId, resources, writeTasks, options = {}) => {
   let resourcesJson = "";
   try {
     resourcesJson = JSON.stringify(resources);
   } catch (_) {
     return resources;
   }
-  if (jsonByteLength(resourcesJson) <= SESSION_RESOURCE_INLINE_LIMIT) {
+  const shouldExternalize = options.alwaysExternalize || jsonByteLength(resourcesJson) > SESSION_RESOURCE_INLINE_LIMIT;
+  if (!shouldExternalize) {
     return resources;
   }
-  console.warn("[SESSION DEBUG] Resources exceed inline session limit; storing full resource bodies as refs.");
-  return resources.map((item, index) => {
-    const assetId = makeSessionAssetId("res");
+  console.log("[SESSION DEBUG] Storing live-session resource bodies as refs outside the session doc.");
+  const sessionCode = options.sessionCode || "session";
+  const manifest = resources.map((item, index) => {
     let itemJson = "";
     try {
       itemJson = JSON.stringify(item);
@@ -197,32 +275,9 @@ const compactLargeSessionResources = (appId, resources, writeTasks) => {
         data: item && item.data
       });
     }
-    if (jsonByteLength(itemJson) > SESSION_RESOURCE_CHUNK_SIZE) {
-      const chunkIds = [];
-      for (let offset = 0; offset < itemJson.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
-        const chunkId = `${assetId}_chunk_${chunkIds.length}`;
-        chunkIds.push(chunkId);
-        writeTasks.push(() => setDoc(getSessionAssetRef(appId, chunkId), {
-          kind: "sessionResourceChunk",
-          parent: assetId,
-          index: chunkIds.length - 1,
-          data: itemJson.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE)
-        }));
-      }
-      writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
-        kind: "sessionResourceChunks",
-        chunks: chunkIds,
-        id: item && item.id,
-        type: item && item.type,
-        title: item && item.title,
-        meta: item && item.meta
-      })));
-    } else {
-      writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
-        kind: "sessionResource",
-        resource: item
-      })));
-    }
+    const itemHash = hashStringForSessionAsset(itemJson);
+    const assetId = makeSessionAssetId("res", [sessionCode, index, item && item.id || item && item.type || "resource"]);
+    enqueueSessionResourceAsset(appId, assetId, item, itemJson, writeTasks);
     return stripUndefinedForFirestore({
       id: item && item.id || assetId,
       type: item && item.type || "resource",
@@ -230,11 +285,35 @@ const compactLargeSessionResources = (appId, resources, writeTasks) => {
       meta: item && item.meta,
       __alloResourceRef: assetId,
       __alloResourceBytes: jsonByteLength(itemJson),
+      __alloResourceHash: itemHash,
       __alloResourceIndex: index
     });
   });
+  let manifestJson = "";
+  try {
+    manifestJson = JSON.stringify(manifest);
+  } catch (_) {
+    return manifest;
+  }
+  if (jsonByteLength(manifestJson) <= SESSION_RESOURCE_INLINE_LIMIT) {
+    return manifest;
+  }
+  const manifestHash = hashStringForSessionAsset(manifestJson);
+  const manifestId = makeSessionAssetId("manifest", [sessionCode, manifestHash]);
+  enqueueChunkedStringAsset(appId, manifestId, "sessionResourcesManifest", manifestJson, writeTasks, {
+    count: manifest.length,
+    hash: manifestHash
+  });
+  return [stripUndefinedForFirestore({
+    id: manifestId,
+    type: "session-resources-manifest",
+    title: "Live session resources",
+    __alloResourcesManifestRef: manifestId,
+    __alloResourceCount: manifest.length,
+    __alloResourcesManifestHash: manifestHash,
+    __alloResourceBytes: jsonByteLength(manifestJson)
+  })];
 };
-
 const runFirestoreWriteTasks = async (writeTasks, concurrency = SESSION_ASSET_WRITE_CONCURRENCY) => {
   if (!Array.isArray(writeTasks) || writeTasks.length === 0) return;
   const workerCount = Math.max(1, Math.min(concurrency, writeTasks.length));
@@ -248,7 +327,7 @@ const runFirestoreWriteTasks = async (writeTasks, concurrency = SESSION_ASSET_WR
   await Promise.all(workers);
 };
 
-const uploadSessionAssets = async (appId, resources) => {
+const uploadSessionAssets = async (appId, resources, sessionCode) => {
   console.log("[SESSION DEBUG] uploadSessionAssets called, resources:", resources?.length);
   if (!resources || !Array.isArray(resources)) return;
   try {
@@ -280,44 +359,77 @@ const uploadSessionAssets = async (appId, resources) => {
   } catch (preCheckErr) {
     console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
   }
-  const safeResources = structuredClone(resources);
+  const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources));
   const writeTasks = [];
-  const processField = (obj, key) => {
+  const processField = (obj, key, assetSeed) => {
     const val = obj[key];
     if (val && typeof val === "string" && val.startsWith("data:image")) {
-      const assetId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const assetId = makeSessionAssetId("img", assetSeed.concat([key, hashStringForSessionAsset(val)]));
       obj[key] = `ref::${assetId}`;
-      const assetRef = getSessionAssetRef(appId, assetId);
-      writeTasks.push(() => setDoc(assetRef, { data: val }));
+      enqueueChunkedStringAsset(appId, assetId, "sessionImage", val, writeTasks);
     }
   };
-  safeResources.forEach((item) => {
+  safeResources.forEach((item, index) => {
+    const seed = [sessionCode || "session", index, item && item.id || item && item.type || "resource"];
     if (item.type === "image" && item.data) {
-      processField(item.data, "imageUrl");
+      processField(item.data, "imageUrl", seed);
     }
     if (item.type === "glossary" && Array.isArray(item.data)) {
-      item.data.forEach((term) => {
-        processField(term, "image");
+      item.data.forEach((term, termIndex) => {
+        processField(term, "image", seed.concat(["term", termIndex]));
       });
     }
     if (item.type === "adventure" && item.data) {
-      processField(item.data, "sceneImage");
+      processField(item.data, "sceneImage", seed);
       if (Array.isArray(item.data.inventory)) {
-        item.data.inventory.forEach((inv) => processField(inv, "image"));
+        item.data.inventory.forEach((inv, invIndex) => processField(inv, "image", seed.concat(["inventory", invIndex])));
       }
     }
     if (item.type === "persona" && Array.isArray(item.data)) {
-      item.data.forEach((p) => processField(p, "avatarUrl"));
+      item.data.forEach((p, personaIndex) => processField(p, "avatarUrl", seed.concat(["persona", personaIndex])));
     }
   });
   const firestoreResources = stripUndefinedForFirestore(safeResources);
-  const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writeTasks);
+  const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writeTasks, { alwaysExternalize: true, sessionCode });
   await runFirestoreWriteTasks(writeTasks);
   return resourcesForSessionDoc;
 };
+const loadChunkedAssetString = async (appId, payload) => {
+  if (!payload || !Array.isArray(payload.chunks)) return "";
+  const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getDoc(getSessionAssetRef(appId, chunkId))));
+  return chunkSnaps.map((chunkSnap) => chunkSnap.exists() ? (chunkSnap.data() || {}).data || "" : "").join("");
+};
+const hydrateResourcesManifest = async (appId, resources) => {
+  const source = Array.isArray(resources) ? resources : [];
+  const expanded = [];
+  for (const item of source) {
+    if (!item || typeof item !== "object" || !item.__alloResourcesManifestRef) {
+      expanded.push(item);
+      continue;
+    }
+    try {
+      const manifestSnap = await getDoc(getSessionAssetRef(appId, item.__alloResourcesManifestRef));
+      if (!manifestSnap.exists()) continue;
+      const payload = manifestSnap.data() || {};
+      let manifestJson = "";
+      if (payload.kind === "sessionResourcesManifest" && typeof payload.data === "string") {
+        manifestJson = payload.data;
+      } else if (payload.kind === "sessionResourcesManifestChunks" && Array.isArray(payload.chunks)) {
+        manifestJson = await loadChunkedAssetString(appId, payload);
+      }
+      if (!manifestJson) continue;
+      const manifestItems = JSON.parse(manifestJson);
+      if (Array.isArray(manifestItems)) expanded.push(...manifestItems);
+    } catch (e) {
+      warnLog("Failed to load session resources manifest", item.__alloResourcesManifestRef);
+    }
+  }
+  return expanded;
+};
 const hydrateSessionAssets = async (appId, resources) => {
-  const hydrated = structuredClone(resources);
-﻿  const resourceFetchPromises = [];
+  const manifestResources = await hydrateResourcesManifest(appId, resources);
+  const hydrated = structuredClone(manifestResources);
+  const resourceFetchPromises = [];
   hydrated.forEach((item, index) => {
     if (!item || typeof item !== "object" || !item.__alloResourceRef) return;
     const assetRef = getSessionAssetRef(appId, item.__alloResourceRef);
@@ -329,8 +441,7 @@ const hydrateSessionAssets = async (appId, resources) => {
         return;
       }
       if (payload.kind === "sessionResourceChunks" && Array.isArray(payload.chunks)) {
-        const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getDoc(getSessionAssetRef(appId, chunkId))));
-        const json = chunkSnaps.map((chunkSnap) => chunkSnap.exists() ? (chunkSnap.data() || {}).data || "" : "").join("");
+        const json = await loadChunkedAssetString(appId, payload);
         try {
           hydrated[index] = JSON.parse(json);
         } catch (e) {
@@ -348,9 +459,14 @@ const hydrateSessionAssets = async (appId, resources) => {
     if (val && typeof val === "string" && val.startsWith("ref::")) {
       const assetId = val.split("ref::")[1];
       const assetRef = getSessionAssetRef(appId, assetId);
-      const promise = getDoc(assetRef).then((snap) => {
+      const promise = getDoc(assetRef).then(async (snap) => {
         if (snap.exists()) {
-          obj[key] = snap.data().data;
+          const payload = snap.data() || {};
+          if (payload.kind === "sessionImageChunks" && Array.isArray(payload.chunks)) {
+            obj[key] = await loadChunkedAssetString(appId, payload);
+          } else {
+            obj[key] = payload.data;
+          }
         }
       }).catch((e) => warnLog("Failed to load asset", assetId));
       fetchPromises.push(promise);

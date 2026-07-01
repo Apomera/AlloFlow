@@ -17084,7 +17084,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const syncResourcesToSession = async () => {
           try {
               const resourcesToUpload = history.filter(h => h.id);
-              const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+              const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, activeSessionCode);
               const prepared = prepareSessionResourcesForWrite(lightweightResources);
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
               await writeToSession(sessionRef, { resources: prepared.resources });
