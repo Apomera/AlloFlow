@@ -2462,7 +2462,22 @@ const SESSION_TIER1_LEAVES = new Set([
   // signaling churn) and re-dial when hostOpenedAt changes. No student-typed
   // content; Tier-1 safe.
   'livePolling',
+  // Help signals: roster.{uid}.signal is an enum from LIVE_SIGNAL_OPTIONS
+  // ('stuck'|'slow'|'repeat'|'ready') + roster.{uid}.signalAt timestamp.
+  // Students cannot free-type; the teacher's Live Session Center shows the
+  // signal next to the (curated) codename and can clear it. Tier-1 safe.
+  'signal', 'signalAt',
 ]);
+// Help-signal vocabulary shared by the student sender and the teacher's Live
+// Session Center. Enum-only by design: keep free text out of this channel so
+// roster.{uid}.signal stays Tier-1 (see SESSION_TIER1_LEAVES above).
+const LIVE_SIGNAL_OPTIONS = [
+  { id: 'stuck', emoji: '✋', label: "I'm stuck" },
+  { id: 'slow', emoji: '🐢', label: 'Please slow down' },
+  { id: 'repeat', emoji: '🔁', label: 'Repeat that' },
+  { id: 'ready', emoji: '✅', label: "I'm ready" },
+];
+const LIVE_SIGNAL_FRESH_MS = 10 * 60 * 1000;
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
     return Promise.reject(new Error('writeToSession: invalid arguments'));
@@ -7039,6 +7054,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
     setShowPictionaryHost(true);
   }, []);
+  // Live Session Center dock (teacher) + help signals (student). The dock is
+  // the single entry point for live activities; livePollPreset seeds the
+  // polling HostPanel composer for one-tap presets like Quick Check.
+  const [showLiveDock, setShowLiveDock] = useState(false);
+  const [livePollPreset, setLivePollPreset] = useState(null);
+  const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
   // _picMyRoleRaw / _picRoundActive const declarations below can reference
   // it without hitting the TDZ. Previously fired
@@ -27514,20 +27535,111 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* Live Polling (WebRTC peer-to-peer). Signaling docs at signaling/{sessionCode}/peers/{uid} */}
       {/* contain only SDP+ICE+codename and are deleted on connection. All poll/response data flows */}
       {/* browser-to-browser, never persisted. See live_polling_module.js + feedback_session_tier1_tier2. */}
-      {isTeacherMode && activeSessionCode && (
-        <button
-          onClick={() => setShowLivePollingPanel(true)}
-          aria-label={t('live_polling.open_aria') || 'Open live polling'}
-          style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
-        >
-          {t('live_polling.button') || 'Live Polling'}
-        </button>
-      )}
+      {/* Live Session Center: single teacher dock consolidating live activities */}
+      {/* (poll / quick check / pictionary), guidance (pacing, groups, session) */}
+      {/* and student help signals. Replaces the old per-feature floating buttons. */}
+      {isTeacherMode && activeSessionCode && (() => {
+        const dockSessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        const rosterEntries = (sessionData && sessionData.roster) || {};
+        const dockNow = Date.now();
+        const activeSignals = Object.keys(rosterEntries)
+          .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
+          .filter(({ entry }) => entry.signal && entry.signalAt && (dockNow - entry.signalAt) < LIVE_SIGNAL_FRESH_MS)
+          .sort((a, b) => (b.entry.signalAt || 0) - (a.entry.signalAt || 0));
+        const signalMeta = (id) => LIVE_SIGNAL_OPTIONS.find(o => o.id === id) || { emoji: '✋', label: id };
+        const clearSignal = (uid) => {
+          writeToSession(dockSessionRef, { [`roster.${uid}.signal`]: null, [`roster.${uid}.signalAt`]: null }).catch(() => {});
+        };
+        const dockCardStyle = { display:'flex', alignItems:'center', gap:8, width:'100%', textAlign:'left', padding:'0.5rem 0.6rem', borderRadius:8, border:'1px solid #e2e8f0', background:'white', cursor:'pointer', fontSize:'0.82rem', fontWeight:600, color:'#0f172a' };
+        const dockGroupLabel = { fontSize:'0.68rem', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.05em', color:'#64748b', margin:'0.6rem 0 0.3rem 0' };
+        return (
+          <>
+            <button
+              onClick={() => setShowLiveDock(v => !v)}
+              aria-label={t('live_dock.open_aria') || 'Open the live session center'}
+              aria-expanded={showLiveDock}
+              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+            >
+              {(t('live_dock.button') || '🎛️ Live Session') + (activeSignals.length > 0 ? ' · ✋' + activeSignals.length : '')}
+            </button>
+            {showLiveDock && (
+              <div role="dialog" aria-label={t('live_dock.title') || 'Live Session Center'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:300,maxHeight:'68vh',overflowY:'auto',background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.85rem'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+                  <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.95rem'}}>{t('live_dock.title') || 'Live Session Center'}</div>
+                  <button onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
+                </div>
+                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code'}>
+                  {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
+                </button>
+                <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
+                    <span aria-hidden="true">📊</span>{t('live_dock.poll') || 'Live Poll'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => {
+                    setLivePollPreset({
+                      type: 'rating',
+                      prompt: t('live_dock.quick_check_prompt') || 'How is this landing for you right now?',
+                      ratingMin: 1, ratingMax: 3,
+                      ratingLabels: (t('live_dock.quick_check_labels') || '1 = Confused\n2 = Okay\n3 = Ready'),
+                      afterSubmitMode: 'dismiss',
+                    });
+                    setShowLivePollingPanel(true); setShowLiveDock(false);
+                  }}>
+                    <span aria-hidden="true">⚡</span>{t('live_dock.quick_check') || 'Quick Check (confused → ready)'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                    <span aria-hidden="true">🎨</span>{t('pictionary.button') || 'Concept Pictionary'}
+                  </button>
+                </div>
+                <div style={dockGroupLabel}>{t('live_dock.group_guide') || 'Guide'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
+                    <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '🧭'}</span>
+                    {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-paced') : (t('session.student_paced') || 'Student-paced')}
+                    <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.toggle') || 'toggle'}</span>
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowGroupModalToTrue(); }}>
+                    <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
+                  </button>
+                </div>
+                <div style={dockGroupLabel}>{(t('live_dock.group_signals') || 'Signals') + (activeSignals.length > 0 ? ' (' + activeSignals.length + ')' : '')}</div>
+                {activeSignals.length === 0 ? (
+                  <p style={{fontSize:'0.75rem',color:'#64748b',fontStyle:'italic',margin:'0 0 0.2rem 0'}}>{t('live_dock.no_signals') || 'No signals right now.'}</p>
+                ) : (
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {activeSignals.map(({ uid, entry }) => {
+                      const meta = signalMeta(entry.signal);
+                      return (
+                        <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.35rem 0.5rem',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,fontSize:'0.78rem'}}>
+                          <span aria-hidden="true">{meta.emoji}</span>
+                          <span style={{fontWeight:700,color:'#0f172a'}}>{entry.name || 'Student'}</span>
+                          <span style={{color:'#475569'}}>{t('live_signals.' + entry.signal) || meta.label}</span>
+                          <button onClick={() => clearSignal(uid)} aria-label={(t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student')} style={{marginLeft:'auto',background:'white',border:'1px solid #e2e8f0',borderRadius:6,padding:'0.05rem 0.4rem',cursor:'pointer',fontSize:'0.7rem',fontWeight:700,color:'#475569'}}>✓</button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => activeSignals.forEach(({ uid }) => clearSignal(uid))} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
+                      {t('live_dock.clear_all_signals') || 'Clear all'}
+                    </button>
+                  </div>
+                )}
+                <p style={{fontSize:'0.68rem',color:'#64748b',margin:'0.7rem 0 0 0',lineHeight:1.35}}>
+                  {t('live_dock.privacy_note') || '🔒 Poll answers, drawings and guesses travel device-to-device and are never stored. Signals share only a codename + a preset phrase.'}
+                </p>
+              </div>
+            )}
+          </>
+        );
+      })()}
       {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
         React.createElement(window.AlloModules.LivePolling.HostPanel, {
           sessionCode: activeSessionCode,
           isOpen: showLivePollingPanel,
-          onClose: () => setShowLivePollingPanel(false),
+          onClose: () => { setShowLivePollingPanel(false); setLivePollPreset(null); },
+          // One-tap presets from the Live Session Center (e.g. Quick Check)
+          // seed the composer; the teacher still reviews + broadcasts.
+          initialPoll: livePollPreset,
         })
       }
       {!isTeacherMode && activeSessionCode && user && user.uid && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.GuestOverlay &&
@@ -27546,15 +27658,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}
       {/* flow browser-to-browser; only Tier-1 roster.{uid}.role markers touch Firestore. See  */}
       {/* concept_pictionary_module.js + feedback_session_tier1_tier2. */}
-      {isTeacherMode && activeSessionCode && (
-        <button
-          onClick={() => setShowPictionaryHost(true)}
-          aria-label={t('pictionary.open_aria') || 'Open Concept Pictionary'}
-          style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,background:'#9f1239',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(159,18,57,0.35)'}}
-        >
-          {t('pictionary.button') || '🎨 Pictionary'}
-        </button>
-      )}
+      {/* Pictionary's floating button now lives inside the Live Session Center dock above. */}
       {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
         React.createElement(window.AlloModules.ConceptPictionary.HostView, {
           isOpen: showPictionaryHost,
@@ -27591,6 +27695,59 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setShowPictionaryGuest(false),
         })
       }
+      {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
+      {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
+      {/* Session Center lists + clears them. No free text by design. */}
+      {!isTeacherMode && activeSessionCode && user && user.uid && (() => {
+        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
+        const myFresh = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
+        const myMeta = myFresh ? (LIVE_SIGNAL_OPTIONS.find(o => o.id === myFresh) || null) : null;
+        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+        const sendSignal = (id) => {
+          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {});
+          setShowStudentSignals(false);
+        };
+        const clearMySignal = () => {
+          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {});
+          setShowStudentSignals(false);
+        };
+        return (
+          <>
+            <button
+              onClick={() => setShowStudentSignals(v => !v)}
+              aria-label={t('live_signals.open_aria') || 'Send your teacher a quick signal'}
+              aria-expanded={showStudentSignals}
+              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background: myFresh ? '#b45309' : '#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+            >
+              {myMeta ? myMeta.emoji + ' ' + (t('live_signals.sent') || 'Sent') : (t('live_signals.button') || '✋ Signal')}
+            </button>
+            {showStudentSignals && (
+              <div role="dialog" aria-label={t('live_signals.title') || 'Send your teacher a signal'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:238,background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.7rem'}}>
+                <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.85rem',marginBottom:6}}>{t('live_signals.title') || 'Let your teacher know'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                  {LIVE_SIGNAL_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => sendSignal(opt.id)}
+                      style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'0.45rem 0.55rem',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,color:'#0f172a',background: myFresh === opt.id ? '#eef2ff' : 'white',border: myFresh === opt.id ? '1.5px solid #1e3a8a' : '1px solid #e2e8f0'}}
+                    >
+                      <span aria-hidden="true">{opt.emoji}</span>{t('live_signals.' + opt.id) || opt.label}
+                    </button>
+                  ))}
+                  {myFresh && (
+                    <button onClick={clearMySignal} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
+                      {t('live_signals.clear') || 'Clear my signal'}
+                    </button>
+                  )}
+                </div>
+                <p style={{fontSize:'0.66rem',color:'#64748b',margin:'0.55rem 0 0 0',lineHeight:1.35}}>
+                  {t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.'}
+                </p>
+              </div>
+            )}
+          </>
+        );
+      })()}
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,

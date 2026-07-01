@@ -114,7 +114,7 @@ Formalizes the existing `SESSION_TIER1_LEAVES` gate (AlloFlowANTI.txt, `writeToS
 | Tier | Definition | Examples | Transport |
 |---|---|---|---|
 | **0** | Ephemeral student content — never stored anywhere | poll responses, free text, strokes, guesses, hidden concept | WebRTC only |
-| **1** | Operational metadata, structurally non-PII | roster codename/xp/groupId/role, `pictionaryRound`, `interactiveOrganizer`, `livePolling` presence, mode, `quizState` phase | Firestore via `writeToSession()` |
+| **1** | Operational metadata, structurally non-PII | roster codename/xp/groupId/role, `pictionaryRound`, `interactiveOrganizer`, `livePolling` presence, help signals (`roster.{uid}.signal`/`signalAt` — enum from `LIVE_SIGNAL_OPTIONS`, no free text), mode, `quizState` phase | Firestore via `writeToSession()` |
 | **2** | Teacher-authored content, synced with intent | `resources` (manifest), `bridgePayload`, organizer payloads | Firestore, size-guarded |
 | **3** | Student responses/voice/free text | quiz free-text answers, fluency audio | **Blocked** — stripped by sanitizers or Tier-1 refusal |
 | **4** | Real PII | real names, contact info | Never; codenames are dropdown-curated so students can't free-type |
@@ -270,9 +270,14 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    written on a slow cadence, and a teacher roster view with derived status.
 5. **Live resource updates through the manifest path** (§4 gap) — stop silently dropping oldest
    resources on the trim-guard path.
-6. **Live Session Center** — one teacher surface consolidating session status, roster w/ status,
-   polling, Pictionary, quiz state, activity history, and per-feature privacy badges ("peer-only" /
-   "anonymous aggregate" / "stored"). Do this *after* 1–4; it's UI consolidation, not correctness.
+6. **Live Session Center** — [PARTIALLY SHIPPED 2026-07-01] one teacher dock now replaces the
+   per-feature floating buttons: Run (Live Poll / Quick Check preset / Pictionary), Guide (pacing
+   toggle, groups, session code), Signals (student help signals, see below), and a privacy note.
+   Quick Check rides the polling transport via the HostPanel `initialPoll` composer preset.
+   **Help signals** shipped with it: students send an enum-only status (`stuck`/`slow`/`repeat`/
+   `ready`) as Tier-1 `roster.{uid}.signal` + `signalAt`; the dock lists fresh (<10 min) signals
+   with clear buttons. Still open for the full vision: quiz state surface, roster
+   connected/disconnected status (needs #4), activity history, per-card privacy badges.
 7. **Shared `LiveTransport` extraction** — when the third WebRTC activity appears, lift the
    duplicated host/guest classes (signaling, timeout, re-offer, terminal events, state-sync replay)
    into one module with the §5 envelope. Two implementations is duplication; three is a law.

@@ -20,10 +20,15 @@ describe('Canvas shell live-session controls', () => {
     }
   });
 
-  it('keeps live polling and pictionary above the bottom-right tool stack', () => {
+  it('keeps the Live Session Center dock above the bottom-right tool stack', () => {
+    // One consolidated dock button (teacher) and one signal button (student)
+    // at 5.5rem, with their popover panels at 8.75rem. The old per-feature
+    // Live Polling / Pictionary floating buttons must not come back at
+    // stack-overlapping positions.
     expect(src).toContain("bottom:'5.5rem'");
     expect(src).toContain("bottom:'8.75rem'");
     expect(src).not.toContain("bottom:'1rem',right:'1rem',zIndex:9999,background:'#1e3a8a'");
     expect(src).not.toContain("bottom:'4rem',right:'1rem',zIndex:9999,background:'#9f1239'");
+    expect(src).not.toContain("zIndex:9999,background:'#9f1239'"); // standalone pictionary button retired
   });
 });

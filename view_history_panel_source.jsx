@@ -68,7 +68,26 @@ function HistoryPanel(props) {
     const packTitle = activeUnit && activeUnitId !== 'all' && activeUnitId !== 'uncategorized'
       ? activeUnit.name
       : (isTeacherMode ? 'AlloFlow resource pack' : 'My AlloFlow resources');
+    // Privacy + size gate: run the pack through the same sanitizer the cloud
+    // sync uses (strips child voice audioRecording, base64 images/avatars,
+    // adventure scene blobs) before it leaves the device as a community
+    // submission. Fail CLOSED if the sanitizer module hasn't loaded — raw
+    // history items can carry biometric-class student audio.
+    const sanitizeForCloud = (typeof window !== 'undefined' && typeof window.sanitizeHistoryForCloud === 'function') ? window.sanitizeHistoryForCloud : null;
+    const stripU = (typeof window !== 'undefined' && typeof window.stripUndefined === 'function') ? window.stripUndefined : (x => x);
+    if (!sanitizeForCloud) {
+      addToast && addToast(t('history.share_pack_not_ready') || 'Sharing is still warming up — try again in a moment.', 'info');
+      return;
+    }
     try {
+      const cleanedItems = stripU(sanitizeForCloud(visibleItems.map(item => ({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        timestamp: item.timestamp,
+        data: item.data,
+        meta: item.meta
+      }))));
       localStorage.setItem('alloflow_pending_submission', JSON.stringify({
         title: packTitle,
         source_type: 'resource-pack',
@@ -78,14 +97,10 @@ function HistoryPanel(props) {
           activeUnitId,
           unitName: activeUnit ? activeUnit.name : null,
           itemCount: visibleItems.length,
-          items: visibleItems.map(item => ({
-            id: item.id,
-            type: item.type,
-            title: item.title,
-            timestamp: item.timestamp,
-            data: item.data,
-            meta: item.meta
-          }))
+          // Media/audio were stripped by the sanitizer above; catalog UIs
+          // should disclose this rather than implying full-fidelity resources.
+          mediaStripped: true,
+          items: cleanedItems
         }
       }));
       setIsCommunityCatalogOpen(true);

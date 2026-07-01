@@ -597,6 +597,22 @@
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
     R.useEffect(function () { routingByPollRef.current = routingByPoll; }, [routingByPoll]);
 
+    // One-tap presets (e.g. the Live Session Center's Quick Check) seed the
+    // composer when the panel opens; the teacher still reviews + broadcasts.
+    // Shape: { type, prompt, ratingMin, ratingMax, ratingLabels, options,
+    // afterSubmitMode } — all fields optional.
+    const initialPoll = props.initialPoll || null;
+    R.useEffect(function () {
+      if (!isOpen || !initialPoll) return;
+      if (initialPoll.type) setPollType(initialPoll.type);
+      if (typeof initialPoll.prompt === 'string') setPollPrompt(initialPoll.prompt);
+      if (initialPoll.ratingMin != null) setRatingMin(clampInt(initialPoll.ratingMin, 1, 0, 19));
+      if (initialPoll.ratingMax != null) setRatingMax(clampInt(initialPoll.ratingMax, 5, 1, 20));
+      if (typeof initialPoll.ratingLabels === 'string') setRatingLabels(initialPoll.ratingLabels);
+      if (typeof initialPoll.options === 'string') setPollOptions(initialPoll.options);
+      if (initialPoll.afterSubmitMode) setAfterSubmitMode(initialPoll.afterSubmitMode);
+    }, [isOpen, initialPoll]);
+
     R.useEffect(function () {
       if (!isOpen || !sessionCode) return undefined;
       const host = new PollingHost({
@@ -1155,8 +1171,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.3.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, and reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin).',
+      version: '1.4.0',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin), and initialPoll composer presets (Live Session Center Quick Check).',
     },
   };
 

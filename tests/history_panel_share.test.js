@@ -12,4 +12,18 @@ describe('HistoryPanel community sharing', () => {
     expect(src).not.toContain('history.share_to_community_aria');
     expect(src).not.toContain('alloflow_pending_submission", JSON.stringify({\n                                                title: item.title');
   });
+
+  it('sanitizes the pack payload before staging it (fail-closed without the sanitizer)', () => {
+    // Raw history items can carry biometric-class student audio
+    // (fluency-record audioRecording) and base64 media; the share path must
+    // run sanitizeHistoryForCloud and refuse to stage when it is unavailable.
+    expect(src).toContain('window.sanitizeHistoryForCloud');
+    expect(src).toContain('if (!sanitizeForCloud)');
+    expect(src).toContain('mediaStripped: true');
+    const shareStart = src.indexOf('const shareResourcePackToCommunity');
+    const stagingIdx = src.indexOf('alloflow_pending_submission', shareStart);
+    const sanitizeIdx = src.indexOf('sanitizeForCloud(', shareStart);
+    expect(sanitizeIdx).toBeGreaterThan(-1);
+    expect(sanitizeIdx).toBeLessThan(stagingIdx);
+  });
 });
