@@ -16356,16 +16356,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var droneHighScore = droneData.highScore || 0;
         var droneFlightActive = droneData.active || false;
         var droneDifficulty = droneData.difficulty || 'normal'; // easy | normal | hard
+        function droneMaxEnergy(diff) {
+          return diff === 'easy' ? 125 : diff === 'hard' ? 82 : 105;
+        }
 
         function startDroneFlight(diff) {
           var difficulty = diff || droneDifficulty;
           var timerByDiff = { easy: 150, normal: 110, hard: 75 };
           var queenDistByDiff = { easy: 800, normal: 1200, hard: 1800 };
-          var energyByDiff = { easy: 120, normal: 100, hard: 80 };
+          var nectarGoalByDiff = { easy: 8, normal: 10, hard: 12 };
           // Generate world
           var obs = [], fls = [], clds = [], otherDrones = [], thermals = [], birds = [];
           for (var oi = 0; oi < 40; oi++) obs.push({ x: (Math.random() - 0.5) * 800, z: -200 - Math.random() * 2500, type: ['tree', 'pole', 'building', 'tree', 'tree'][Math.floor(Math.random() * 5)], h: 30 + Math.random() * 80 });
-          for (var fi = 0; fi < 60; fi++) fls.push({ x: (Math.random() - 0.5) * 600, z: -100 - Math.random() * 2000, col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa'][fi % 7], hasPollen: Math.random() > 0.6, collected: false });
+          for (var fi = 0; fi < 76; fi++) {
+            var lane = (fi % 4) - 1.5;
+            var depth = -110 - fi * 27 - Math.random() * 90;
+            var meadowCurve = Math.sin(fi * 0.55) * 105;
+            fls.push({
+              x: lane * 95 + meadowCurve + (Math.random() - 0.5) * 70,
+              z: depth,
+              col: ['#f472b6','#fbbf24','#a78bfa','#fb923c','#34d399','#f87171','#60a5fa'][fi % 7],
+              hasPollen: true,
+              hasNectar: Math.random() > 0.12,
+              nectar: 1 + Math.random() * 0.55,
+              radius: 24 + Math.random() * 14,
+              bloom: 0.8 + Math.random() * 0.7,
+              sway: Math.random() * 6.28,
+              collected: false
+            });
+          }
           for (var ci = 0; ci < 20; ci++) clds.push({ x: (Math.random() - 0.5) * 1000, y: 140 + Math.random() * 100, z: -300 - Math.random() * 2500, w: 40 + Math.random() * 70 });
           for (var di = 0; di < 18; di++) otherDrones.push({ x: (Math.random() - 0.5) * 300, y: 80 + Math.random() * 120, z: -600 - Math.random() * 1000, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5), vz: -1.5 - Math.random() * 2.5 });
           // Thermal updrafts — rising air columns that give free altitude
@@ -16376,12 +16395,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var qDist = queenDistByDiff[difficulty] || 1200;
           _droneState.current = {
             x: 0, y: 10, z: 0, vx: 0, vy: 2, vz: -2, yaw: 0, pitch: -0.1,
-            speed: 0, energy: energyByDiff[difficulty] || 100, phase: 'launch',
+            speed: 0, energy: droneMaxEnergy(difficulty), phase: 'launch',
             matingTarget: null,
             nearQueens: [{ x: (Math.random() - 0.5) * 150, y: 150 + Math.random() * 50, z: -qDist - Math.random() * 400, caught: false }],
             obstacles: obs, flowers: fls, clouds: clds, drones: otherDrones,
             thermals: thermals, birds: birds,
-            pollenCollected: 0, pollenGoal: 5,
+            pollenCollected: 0, pollenGoal: nectarGoalByDiff[difficulty] || 10,
+            nectarCollected: 0, nectarGoal: nectarGoalByDiff[difficulty] || 10,
+            nectarCombo: 0, comboTimer: 0, boostTimer: 0, collectionFlash: 0,
+            collectionText: '', particles: [],
             score: 0, distance: 0, maxAlt: 10,
             timer: timerByDiff[difficulty] || 110,
             facts: [], factIdx: 0, difficulty: difficulty,
@@ -16436,8 +16458,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           function droneFrame(now) {
             var dt = Math.min(0.05, (now - lastTime) / 1000);
+            var frameScale = Math.max(0.35, Math.min(2.2, dt * 60));
             lastTime = now;
             var keys = _droneKeys.current;
+            var maxDroneEnergy = droneMaxEnergy(ds.difficulty);
 
             // ── Update drone physics ──
             if (ds.phase !== 'end') {
@@ -16445,12 +16469,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               if (ds.timer <= 0) { ds.phase = 'end'; ds.timer = 0; }
 
               // Controls
-              var thrust = 0, turn = 0, pitchD = 0;
-              if (keys.ArrowUp || keys.w) thrust = 5;
+              var thrust = 1.1, turn = 0, pitchD = 0;
+              var activeThrust = false;
+              if (keys.ArrowUp || keys.w) { thrust = 6.2; activeThrust = true; }
               if (keys.ArrowDown || keys.s) thrust = -3;
               if (keys.ArrowLeft || keys.a) turn = 2.5;
               if (keys.ArrowRight || keys.d) turn = -2.5;
               if (keys[' '] || keys.Shift) pitchD = keys[' '] ? 1.5 : -1.5;
+              if (ds.boostTimer > 0) {
+                thrust += 1.6;
+                ds.boostTimer = Math.max(0, ds.boostTimer - dt);
+              }
+              if (ds.comboTimer > 0) ds.comboTimer = Math.max(0, ds.comboTimer - dt);
+              else ds.nectarCombo = 0;
+              if (ds.collectionFlash > 0) ds.collectionFlash = Math.max(0, ds.collectionFlash - dt);
 
               ds.yaw += turn * dt;
               ds.pitch = Math.max(-0.6, Math.min(0.6, ds.pitch + pitchD * dt));
@@ -16466,17 +16498,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ds.vy -= 2.0 * dt; // gravity
 
               // Drag
-              ds.vx *= 0.97; ds.vy *= 0.97; ds.vz *= 0.97;
+              var drag = Math.pow(0.968, frameScale);
+              ds.vx *= drag; ds.vy *= drag; ds.vz *= drag;
 
               // Apply velocity
-              ds.x += ds.vx; ds.y += ds.vy; ds.z += ds.vz;
+              ds.x += ds.vx * frameScale; ds.y += ds.vy * frameScale; ds.z += ds.vz * frameScale;
               ds.y = Math.max(2, ds.y);
               ds.speed = Math.sqrt(ds.vx * ds.vx + ds.vz * ds.vz);
-              ds.distance += ds.speed * dt;
+              ds.distance += ds.speed * frameScale * 0.18;
               ds.maxAlt = Math.max(ds.maxAlt, ds.y);
 
               // Energy drain
-              ds.energy = Math.max(0, ds.energy - (thrust > 0 ? 0.8 : 0.15) * dt);
+              var energyDrain = activeThrust ? 0.95 : 0.22;
+              if (ds.boostTimer > 0) energyDrain *= 0.55;
+              ds.energy = Math.max(0, ds.energy - energyDrain * dt);
               if (ds.energy <= 0) ds.phase = 'end';
 
               // Thermal updrafts — free altitude boost
@@ -16485,16 +16520,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var tDist = Math.sqrt(tdx * tdx + tdz * tdz);
                 if (tDist < th.radius && ds.y < 250) {
                   ds.vy += th.strength * dt * (1 - tDist / th.radius);
-                  ds.energy = Math.min(ds.energy + 0.3 * dt, (ds.difficulty === 'easy' ? 120 : ds.difficulty === 'hard' ? 80 : 100)); // thermals restore a little energy
+                  ds.energy = Math.min(ds.energy + 0.3 * dt, maxDroneEnergy); // thermals restore a little energy
                 }
               });
 
               // Bird predators — drain energy on collision
               if (ds.hitFlash > 0) ds.hitFlash -= dt;
               (ds.birds || []).forEach(function(bird) {
-                bird.x += bird.vx + Math.sin(now * 0.0008 + bird.z * 0.01) * 1.5;
-                bird.y += bird.vy + Math.cos(now * 0.001 + bird.x * 0.01) * 0.8;
-                bird.z += bird.vz;
+                bird.x += (bird.vx + Math.sin(now * 0.0008 + bird.z * 0.01) * 1.5) * frameScale;
+                bird.y += (bird.vy + Math.cos(now * 0.001 + bird.x * 0.01) * 0.8) * frameScale;
+                bird.z += bird.vz * frameScale;
                 bird.wingPhase += dt * 8;
                 // Recycle birds that fall behind
                 if (bird.z > ds.z + 300) { bird.z = ds.z - 900; bird.x = ds.x + (Math.random() - 0.5) * 400; }
@@ -16513,15 +16548,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               });
 
-              // Pollen collection — fly near flowers with pollen
+              // Nectar boost checkpoints: a game layer based on worker foraging.
+              // Real drones are fed by workers; these blooms teach flower approach and energy tradeoffs.
+              ds.particles = (ds.particles || []).filter(function(pt) {
+                pt.life -= dt;
+                pt.x += pt.vx * frameScale;
+                pt.y += pt.vy * frameScale;
+                pt.z += pt.vz * frameScale;
+                return pt.life > 0;
+              });
               (ds.flowers || []).forEach(function(fl) {
-                if (!fl.hasPollen || fl.collected) return;
-                if (ds.y > 15) return; // must be low altitude
+                if (fl.collected || fl.hasNectar === false) return;
+                var lowEnough = ds.y <= 30;
                 var fdx = ds.x - fl.x, fdz = ds.z - fl.z;
-                if (Math.sqrt(fdx * fdx + fdz * fdz) < 20) {
+                var fDist = Math.sqrt(fdx * fdx + fdz * fdz);
+                var collectRadius = fl.radius || 26;
+                if (lowEnough && fDist < collectRadius * 1.8 && fDist > 2) {
+                  var pull = (1 - Math.min(1, fDist / (collectRadius * 1.8))) * 0.018;
+                  ds.vx -= (fdx / fDist) * pull * frameScale;
+                  ds.vz -= (fdz / fDist) * pull * frameScale;
+                }
+                if (lowEnough && fDist < collectRadius) {
                   fl.collected = true;
-                  ds.pollenCollected = (ds.pollenCollected || 0) + 1;
-                  ds.score += 15;
+                  ds.nectarCombo = (ds.comboTimer > 0 ? (ds.nectarCombo || 0) : 0) + 1;
+                  ds.comboTimer = 4.2;
+                  var nectarValue = fl.nectar || 1;
+                  ds.nectarCollected = Math.round(((ds.nectarCollected || 0) + nectarValue) * 10) / 10;
+                  ds.pollenCollected = Math.floor(ds.nectarCollected);
+                  var comboBonus = Math.min(36, ds.nectarCombo * 4);
+                  var gain = Math.round(14 + comboBonus);
+                  ds.score += gain;
+                  ds.energy = Math.min(maxDroneEnergy, ds.energy + 7 + Math.min(10, ds.nectarCombo * 1.2));
+                  ds.boostTimer = Math.min(3.5, (ds.boostTimer || 0) + 0.8);
+                  ds.collectionFlash = 0.45;
+                  ds.collectionText = '+' + gain + ' nectar boost' + (ds.nectarCombo > 1 ? ' x' + ds.nectarCombo : '');
+                  for (var np = 0; np < 14; np++) {
+                    ds.particles.push({
+                      x: fl.x + (Math.random() - 0.5) * 8,
+                      y: 3 + Math.random() * 12,
+                      z: fl.z + (Math.random() - 0.5) * 8,
+                      vx: (Math.random() - 0.5) * 0.8,
+                      vy: 0.12 + Math.random() * 0.35,
+                      vz: (Math.random() - 0.5) * 0.8,
+                      life: 0.55 + Math.random() * 0.45,
+                      col: fl.col || '#facc15'
+                    });
+                  }
                   playSfx(sfxBeeCollect);
                 }
               });
@@ -16556,9 +16628,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
               // Move other drones
               ds.drones.forEach(function(od) {
-                od.x += od.vx + Math.sin(now * 0.001 + od.z) * 0.3;
-                od.y += od.vy * 0.3 + Math.sin(now * 0.002 + od.x) * 0.5;
-                od.z += od.vz;
+                od.x += (od.vx + Math.sin(now * 0.001 + od.z) * 0.3) * frameScale;
+                od.y += (od.vy * 0.3 + Math.sin(now * 0.002 + od.x) * 0.5) * frameScale;
+                od.z += od.vz * frameScale;
                 if (od.z > ds.z + 200) { od.z = ds.z - 800; od.x = ds.x + (Math.random() - 0.5) * 300; }
               });
             }
@@ -16668,24 +16740,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.restore();
             });
 
-            // Render flowers on ground (with pollen glow for collectible ones)
+            // Render flowers on ground (nectar boost path)
             ds.flowers.forEach(function(fl) {
               var p = project(fl.x, 0, fl.z);
               if (!p || p.d > 400 || p.s < 0.3) return;
-              c.fillStyle = fl.col; c.globalAlpha = Math.min(1, p.s);
-              for (var pp = 0; pp < 5; pp++) {
-                var pa = pp * 1.257;
-                c.beginPath(); c.ellipse(p.x + Math.cos(pa) * 3 * p.s, p.y + Math.sin(pa) * 3 * p.s, 2.5 * p.s, 1.5 * p.s, pa, 0, 6.28); c.fill();
-              }
-              c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(p.x, p.y, 1.5 * p.s, 0, 6.28); c.fill();
-              // Pollen glow indicator
-              if (fl.hasPollen && !fl.collected && p.s > 0.8) {
-                c.save(); c.shadowColor = '#facc15'; c.shadowBlur = 8;
-                c.fillStyle = '#facc15'; c.globalAlpha = 0.5 + Math.sin(now * 0.005 + fl.x) * 0.3;
-                c.beginPath(); c.arc(p.x, p.y - 4 * p.s, 2 * p.s, 0, 6.28); c.fill();
+              var bloom = fl.bloom || 1;
+              var alive = !fl.collected && fl.hasNectar !== false;
+              var pulse = 0.5 + Math.sin(now * 0.006 + (fl.sway || 0)) * 0.5;
+              if (alive && p.s > 0.45) {
+                c.save();
+                c.globalAlpha = Math.min(0.55, 0.16 + p.s * 0.12 + pulse * 0.12);
+                c.strokeStyle = '#fef08a';
+                c.lineWidth = Math.max(1, 1.2 * p.s);
+                c.beginPath(); c.arc(p.x, p.y, (fl.radius || 26) * p.s, 0, 6.28); c.stroke();
+                c.fillStyle = 'rgba(250,204,21,0.14)';
+                c.beginPath(); c.arc(p.x, p.y, (fl.radius || 26) * p.s * 0.72, 0, 6.28); c.fill();
                 c.restore();
               }
-              c.globalAlpha = 1;
+              var stemTop = project(fl.x, 8 * bloom, fl.z) || { x: p.x, y: p.y - 8 * p.s * bloom, s: p.s };
+              c.save();
+              c.globalAlpha = fl.collected ? 0.28 : Math.min(1, p.s + 0.1);
+              c.strokeStyle = fl.collected ? '#64748b' : '#15803d';
+              c.lineWidth = Math.max(1, 1.5 * p.s);
+              c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(stemTop.x, stemTop.y); c.stroke();
+              c.fillStyle = fl.collected ? '#94a3b8' : fl.col;
+              for (var pp = 0; pp < 6; pp++) {
+                var pa = pp * 1.047;
+                var petalX = stemTop.x + Math.cos(pa + pulse * 0.12) * 4.2 * p.s * bloom;
+                var petalY = stemTop.y + Math.sin(pa) * 3.2 * p.s * bloom;
+                c.beginPath(); c.ellipse(petalX, petalY, 3.2 * p.s * bloom, 1.8 * p.s * bloom, pa, 0, 6.28); c.fill();
+              }
+              c.fillStyle = alive ? '#fbbf24' : '#cbd5e1'; c.beginPath(); c.arc(stemTop.x, stemTop.y, 1.9 * p.s * bloom, 0, 6.28); c.fill();
+              if (alive && p.s > 0.55) {
+                c.shadowColor = '#fde047'; c.shadowBlur = 10;
+                c.fillStyle = '#facc15'; c.globalAlpha = 0.45 + pulse * 0.35;
+                c.beginPath(); c.arc(stemTop.x, stemTop.y - 5 * p.s, 2.8 * p.s * bloom, 0, 6.28); c.fill();
+                c.shadowBlur = 0;
+              }
+              c.restore();
+            });
+
+            // Nectar particles rise from blooms after collection.
+            (ds.particles || []).forEach(function(pt) {
+              var p = project(pt.x, pt.y, pt.z);
+              if (!p || p.d > 420) return;
+              c.save();
+              c.globalAlpha = Math.max(0, Math.min(1, pt.life));
+              c.shadowColor = pt.col || '#facc15';
+              c.shadowBlur = 8;
+              c.fillStyle = pt.col || '#facc15';
+              c.beginPath(); c.arc(p.x, p.y, Math.max(1.2, 2.2 * p.s), 0, 6.28); c.fill();
+              c.restore();
             });
 
             // Render obstacles (trees, buildings, poles)
@@ -16859,14 +16964,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.restore();
 
             // Top HUD bar
+            var nectarNow = Math.floor((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0);
+            var nectarGoal = ds.nectarGoal || ds.pollenGoal || 10;
             c.fillStyle = 'rgba(15,23,42,0.7)';
-            c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 50, 10); else c.rect(10, 8, W - 20, 50); c.fill();
+            c.beginPath(); if (c.roundRect) c.roundRect(10, 8, W - 20, 64, 10); else c.rect(10, 8, W - 20, 64); c.fill();
             c.font = 'bold 10px system-ui'; c.textAlign = 'left'; c.fillStyle = '#fbbf24';
             var diffLabel = (ds.difficulty || 'normal').toUpperCase();
             c.fillText('🚀 DRONE NUPTIAL FLIGHT · ' + diffLabel, 20, 24);
             c.font = '9px system-ui'; c.fillStyle = '#e2e8f0';
             c.fillText('Alt: ' + Math.round(ds.y) + 'ft · Spd: ' + ds.speed.toFixed(1) + ' · Dist: ' + Math.round(ds.distance) + 'm', 20, 38);
-            c.fillText('🌼 Pollen: ' + (ds.pollenCollected || 0) + '/' + (ds.pollenGoal || 5) + ' · 🐦 Avoid birds!', 20, 51);
+
+            c.fillStyle = 'rgba(15,23,42,0.86)';
+            c.fillRect(18, 43, Math.max(180, W - 210), 24);
+            c.font = '9px system-ui'; c.textAlign = 'left'; c.fillStyle = '#e2e8f0';
+            c.fillText('Nectar: ' + nectarNow + '/' + nectarGoal + ' | low blooms refill energy | avoid birds', 20, 53);
+            c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(20, 59, 130, 5);
+            var nectarFrac = Math.max(0, Math.min(1, nectarNow / nectarGoal));
+            var nectarG = c.createLinearGradient(20, 59, 150, 59);
+            nectarG.addColorStop(0, '#f97316'); nectarG.addColorStop(0.55, '#facc15'); nectarG.addColorStop(1, '#bef264');
+            c.fillStyle = nectarG; c.fillRect(20, 59, 130 * nectarFrac, 5);
+            if ((ds.nectarCombo || 0) > 1 && ds.comboTimer > 0) {
+              c.fillStyle = '#fef08a'; c.font = 'bold 9px system-ui';
+              c.fillText('Combo x' + ds.nectarCombo, 160, 64);
+            }
 
             c.textAlign = 'right'; c.fillStyle = '#fbbf24';
             c.fillText('⚡ ' + Math.round(ds.energy) + '%', W - 20, 24);
@@ -16874,10 +16994,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillText('⏱ ' + Math.round(ds.timer) + 's · 🏆 ' + ds.score, W - 20, 38);
 
             // Energy bar
-            var maxEnergy = ds.difficulty === 'easy' ? 120 : ds.difficulty === 'hard' ? 80 : 100;
+            var maxEnergy = droneMaxEnergy(ds.difficulty);
             c.fillStyle = 'rgba(0,0,0,0.4)'; c.fillRect(W - 130, 12, 70, 6);
             c.fillStyle = ds.energy > 30 ? '#22c55e' : ds.energy > 10 ? '#eab308' : '#ef4444';
             c.fillRect(W - 130, 12, 70 * (ds.energy / maxEnergy), 6);
+            if (ds.boostTimer > 0) {
+              c.fillStyle = '#bef264'; c.font = 'bold 9px system-ui'; c.textAlign = 'right';
+              c.fillText('NECTAR BOOST', W - 20, 53);
+            }
 
             // ═══ VISUAL FLIGHT EFFECTS ═══
             // Speed lines (radiating motion streaks when moving fast)
@@ -16895,6 +17019,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.lineTo(halfW + Math.cos(slAng) * slOuterR, halfH + Math.sin(slAng) * slOuterR);
                 c.stroke();
               }
+              c.restore();
+            }
+
+            if (ds.collectionFlash > 0) {
+              c.save();
+              var collectAlpha = Math.min(1, ds.collectionFlash / 0.45);
+              var collectG = c.createRadialGradient(halfW, halfH, 10, halfW, halfH, Math.max(W, H) * 0.45);
+              collectG.addColorStop(0, 'rgba(250,204,21,' + (0.16 * collectAlpha) + ')');
+              collectG.addColorStop(1, 'rgba(250,204,21,0)');
+              c.fillStyle = collectG; c.fillRect(0, 0, W, H);
+              c.textAlign = 'center';
+              c.font = 'bold 16px system-ui';
+              c.fillStyle = 'rgba(254,240,138,' + collectAlpha + ')';
+              c.fillText(ds.collectionText || 'Nectar boost', halfW, halfH - 54);
               c.restore();
             }
 
@@ -17104,13 +17242,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText('Flight Complete', halfW, halfH - 55);
               c.font = 'bold 11px system-ui'; c.fillStyle = '#e2e8f0';
               c.fillText('🏆 Score: ' + ds.score + ' · Max Alt: ' + Math.round(ds.maxAlt) + 'ft · Distance: ' + Math.round(ds.distance) + 'm', halfW, halfH - 28);
-              c.fillText('🌼 Pollen: ' + (ds.pollenCollected || 0) + '/' + (ds.pollenGoal || 5) + ' · 📚 Facts: ' + ds.facts.length + '/' + DRONE_FACTS.length, halfW, halfH - 10);
+              c.fillText('Nectar: ' + Math.floor((ds.nectarCollected != null ? ds.nectarCollected : ds.pollenCollected) || 0) + '/' + (ds.nectarGoal || ds.pollenGoal || 10) + ' · Facts: ' + ds.facts.length + '/' + DRONE_FACTS.length, halfW, halfH - 10);
               // Performance rating
               var rating = ds.score >= 250 ? '🌟 LEGENDARY' : ds.score >= 150 ? '🥇 EXCELLENT' : ds.score >= 80 ? '🥈 GOOD' : '🥉 KEEP TRYING';
               c.fillStyle = ds.score >= 150 ? '#fbbf24' : '#94a3b8'; c.font = 'bold 14px system-ui';
               c.fillText(rating, halfW, halfH + 15);
               c.fillStyle = '#94a3b8'; c.font = '10px system-ui';
-              c.fillText('Click "Start Flight" to try again · Try a harder difficulty!', halfW, halfH + 42);
+              c.fillText('Return to launch to try again or choose a harder route.', halfW, halfH + 42);
               // Save high score — write directly (no 100ms setTimeout delay that caused a
               // brief flash of stale state on the end screen). ds._hsSaved guards against
               // writing the same high score every frame while the end screen is shown.
@@ -17812,12 +17950,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           } else {
             tone = 'indigo';
             chips = droneFlightActive
-              ? ['Energy ' + Math.round((_droneState.current && _droneState.current.energy) || 0), 'Pollen ' + (((_droneState.current || {}).pollenCollected) || 0) + '/5', 'Score ' + (((_droneState.current || {}).score) || 0)]
-              : ['Choose difficulty', 'Collect pollen', 'Find the queen'];
+              ? ['Energy ' + Math.round((_droneState.current && _droneState.current.energy) || 0), 'Nectar ' + Math.floor(((_droneState.current || {}).nectarCollected) || ((_droneState.current || {}).pollenCollected) || 0) + '/' + (((_droneState.current || {}).nectarGoal) || 10), 'Score ' + (((_droneState.current || {}).score) || 0)]
+              : ['Choose difficulty', 'Collect nectar boosts', 'Find the queen'];
             title = droneFlightActive ? 'Flight objective' : 'Drone flight briefing';
             body = droneFlightActive
-              ? 'Stay low to pick up pollen, use thermals for altitude, avoid birds, then climb toward the golden queen signal.'
-              : 'Start on Easy first. The flight is playable when students know the loop: collect pollen, manage energy, and steer toward the DCA.';
+              ? 'Skim glowing nectar blooms for energy boosts, use thermals for altitude, avoid birds, then climb toward the golden queen signal.'
+              : 'Start on Easy first. The game loop is: gather nectar boosts low, chain combos for energy, then steer toward the DCA. Real drones are fed by workers; the nectar route is the flight-training layer.';
             if (!droneFlightActive) action = { label: 'Start easy flight', onClick: function() { startDroneFlight('easy'); } };
           }
           var toneCls = tone === 'purple'
@@ -18047,6 +18185,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, __alloT('stem.beehive.drone_nuptial_flight', 'Drone Nuptial Flight')),
                   h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
                     __alloT('stem.beehive.experience_life_as_a_drone_bee_your_so', 'Experience life as a drone bee. Your sole purpose: fly to the Drone Congregation Area (DCA) at 200+ feet altitude and find a queen to mate with. You have 90 seconds of flight energy. Only 1 in 1,000 drones succeeds — can you?')),
+                  h('p', { className: 'text-[11px] max-w-lg mx-auto leading-relaxed rounded-lg border px-3 py-2 ' + (dk ? 'text-indigo-200 bg-indigo-950/35 border-indigo-700/40' : 'text-indigo-800 bg-white/70 border-indigo-200') },
+                    'Game layer: skim glowing nectar blooms for boosts and combo points, then climb toward the DCA. Biology note: real drones do not forage; workers feed them before mating flights.'),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg mx-auto text-center' },
                     [['🎯', 'Find the DCA', 'Fly high and far'], ['👑', 'Locate Queen', 'Follow the golden glow'], ['📚', 'Learn Facts', 'Science appears as you fly']].map(function(g) {
                       return h('div', { key: g[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-indigo-700/30' : 'bg-white border-indigo-200') },
@@ -18069,9 +18209,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!')))
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to chain nectar boosts.')))
               : h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
-                  h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
+                  h('canvas', { ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
                   h('canvas', { ref: _droneOverlayCvRef, style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'block' } }),
                   // Stop button overlay
                   h('button', { onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); }, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10 },
