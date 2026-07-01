@@ -12,7 +12,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import axe from 'axe-core';
-import { JSDOM } from 'jsdom';
+import { JSDOM, VirtualConsole } from 'jsdom';
 import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
 
@@ -31,25 +31,49 @@ const BASELINE = new Set([
 ]);
 const ACE_BASELINE = new Set([
   // IBM Equal Access VIOLATION-level rule IDs that are known/accepted. Currently EMPTY — the export
-  // has 0 VIOLATION-level failures (matches axe's 0). ace does report 2 RECOMMENDATION-level (advisory,
-  // not gated) `aria_content_in_landmark` items, both ACCEPTED, NOT regressions:
+  // has 0 VIOLATION-level failures (matches axe's 0). ace may report RECOMMENDATION-level (advisory,
+  // not gated) `aria_content_in_landmark` items; known advisory cases are ACCEPTED, NOT regressions:
   //   1. body > a.sr-only  — the skip link. Correct-by-design: a skip link MUST precede the landmarks
   //      (WCAG 2.4.1 / technique G1), so it cannot itself live inside one. Known ace false-positive.
-  //   2. body > div#alloflow-savejson-cta — the "Save as JSON" CTA between </main> and <footer>.
-  //      The "all content in a landmark" rule is an ARIA authoring best-practice mapped to a
-  //      RECOMMENDATION, not an A/AA Success Criterion. Minor polish, tracked; does not block AA.
 ]);
 
 let html;
+let pipeline;
 let results;
 let aceResults;
 let aceViolations;
+
+const hexRgb = (hex) => {
+  const h = String(hex || '').replace('#', '').trim();
+  if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+};
+const luminance = (hex) => {
+  const rgb = hexRgb(hex);
+  if (!rgb) return null;
+  const c = rgb.map((v) => {
+    const n = v / 255;
+    return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+};
+const contrast = (fg, bg) => {
+  const a = luminance(fg);
+  const b = luminance(bg);
+  if (a == null || b == null) return null;
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+};
+const waitForExportRuntime = (win) => new Promise((resolve) => {
+  const done = () => win.setTimeout(resolve, 0);
+  if (win.document.readyState === 'complete' || win.document.readyState === 'interactive') done();
+  else win.document.addEventListener('DOMContentLoaded', done, { once: true });
+});
 
 beforeAll(async () => {
   loadAlloModule('doc_pipeline_module.js');
   const factory = window.AlloModules.createDocPipeline;
   const stub = async () => '{}';
-  const pipeline = factory({
+  pipeline = factory({
     callGemini: stub, callGeminiVision: stub, callImagen: async () => null,
     addToast: () => {}, t: (k) => k, isRtlLang: () => false,
     updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
@@ -72,7 +96,17 @@ beforeAll(async () => {
       data: { templateType: 'double-entry', rows: [{ left: 'Quote', right: 'Reaction' }] } },
   ];
 
-  html = pipeline.generateFullPackHTML(historyItems, 'Volcanoes', false, {}, null);
+  html = pipeline.generateFullPackHTML(historyItems, 'Volcanoes', false, {}, {
+    annotations: [],
+    annotationsByResource: {
+      s1: [
+        { id: 'teacher-note-s1', kind: 'note', x: 42, y: 92, content: 'Check this key idea.', color: 'yellow', author: 'teacher', createdAt: '2026-06-01T12:00:00.000Z' },
+      ],
+      q1: [
+        { id: 'teacher-sticker-q1', type: 'star', x: 64, y: 84, author: 'teacher', createdAt: '2026-06-01T12:00:00.000Z' },
+      ],
+    },
+  });
 
   // Audit the rendered DOM. runScripts: 'outside-only' lets us inject axe but does NOT run the
   // export's own toolbar/karaoke scripts — we want the static structure.
@@ -110,6 +144,19 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     expect(html).toContain('Yes &amp; true');
   });
 
+  it('embeds teacher annotations for every resource and wraps each resource for targeting', () => {
+    expect(html).toContain('id="alloflow-teacher-annotations-by-resource"');
+    expect(html).toContain('"s1":[{"id":"teacher-note-s1"');
+    expect(html).toContain('"q1":[{"id":"teacher-sticker-q1"');
+    expect(html).toContain('data-alloflow-resource-id="s1"');
+    expect(html).toContain('data-alloflow-resource-id="q1"');
+  });
+
+  it('keeps export toolbars and save controls inside landmarks', () => {
+    expect(html).toContain('<aside class="alloflow-reading-tools-shell" aria-label="Reading and annotation tools">');
+    expect(html).toContain('<aside class="alloflow-export-save-tools" aria-label="Save your work">');
+  });
+
   it('SCORECARD: log axe pass/incomplete/violation counts + every violation', () => {
     const lines = results.violations.map(v =>
       `  [${v.impact}] ${v.id} (${v.nodes.length}) — ${v.help}\n      e.g. ${(v.nodes[0]?.target || []).join(' ')}`);
@@ -126,6 +173,89 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     expect(html).toContain("host.addEventListener('keydown'");
     expect(html).toContain("Press Enter here to add a note");
     expect(html).toContain("host.setAttribute('tabindex', '0')");
+  });
+
+  it('annotation runtime initializes in the downloaded HTML and opens the inline note editor', async () => {
+    const runtimeErrors = [];
+    const virtualConsole = new VirtualConsole();
+    virtualConsole.on('jsdomError', (err) => {
+      const msg = String((err && (err.stack || err.message)) || err || '');
+      if (/SyntaxError|Uncaught/i.test(msg)) runtimeErrors.push(msg);
+    });
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://example.test/export.html',
+      virtualConsole,
+    });
+    await waitForExportRuntime(dom.window);
+    expect(runtimeErrors).toEqual([]);
+
+    const noteBtn = dom.window.document.querySelector('[data-rt-anno="note"]');
+    const host = dom.window.document.getElementById('main-export-content');
+    expect(noteBtn).toBeTruthy();
+    expect(host).toBeTruthy();
+    expect(dom.window.document.getElementById('s1')?.querySelector('.alloflow-anno-note')).toBeTruthy();
+    expect(dom.window.document.getElementById('q1')?.querySelector('.alloflow-anno-sticker')).toBeTruthy();
+    noteBtn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, clientX: 12, clientY: 12 }));
+    expect(noteBtn.getAttribute('aria-pressed')).toBe('true');
+    host.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, clientX: 90, clientY: 140 }));
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
+    expect(dom.window.document.querySelector('.alloflow-note-editor textarea')).toBeTruthy();
+  });
+
+  it('annotation color swatches are wired to the toolbar mode classes', () => {
+    expect(html).toContain('.alloflow-reading-tools.mode-note ~ .alloflow-anno-colors-note');
+    expect(html).toContain('.alloflow-reading-tools.mode-highlight ~ .alloflow-anno-colors-hl');
+  });
+
+  it('read-aloud controls support pause/resume without stealing text clicks from annotations', () => {
+    expect(html).toContain('function pause()');
+    expect(html).toContain('function resume()');
+    expect(html).toContain('allo-ka-stop');
+    expect(html).toContain('Resume');
+  });
+
+  it('Venn diagram export stays legible at large text sizes via stable visual text and auto-open fallback', () => {
+    const vennHtml = pipeline.generateResourceHTML({
+      type: 'outline',
+      id: 'venn1',
+      title: 'Compare',
+      data: {
+        main: 'Compare and Contrast',
+        structureType: 'Venn Diagram',
+        branches: [
+          { title: 'You-Statements', items: ['Focus on the person', 'Make the other person feel attacked'] },
+          { title: 'I-Statements', items: ['Focus on your own feelings', 'Make it easier to listen'] },
+          { title: 'Shared', items: ['Ways to communicate', 'Involve talking about a problem'] },
+        ],
+      },
+    }, false, {}, {});
+    expect(vennHtml).toContain('class="venn-visual"');
+    expect(vennHtml).toContain('font-size: 16px');
+    expect(vennHtml).toContain('data-diagram-auto-open="large-text"');
+  });
+
+  it('curated export themes expose contrast-clamped text colors for body, headings, and links', () => {
+    const themes = pipeline.EXPORT_THEMES || {};
+    expect(Object.keys(themes).length).toBeGreaterThanOrEqual(4);
+    for (const [id, theme] of Object.entries(themes)) {
+      const bg = theme.bgColor || '#ffffff';
+      const surface = theme.cardBg || bg;
+      for (const pair of [
+        ['textColor', bg, 4.5],
+        ['textColor', surface, 4.5],
+        ['headingColor', bg, 3.0],
+        ['headingColor', surface, 3.0],
+        ['accentColor', bg, 4.5],
+        ['accentColor', surface, 4.5],
+      ]) {
+        const [token, against, target] = pair;
+        const got = contrast(theme[token], against);
+        if (got == null) continue;
+        expect(got, `${id}.${token} on ${against}`).toBeGreaterThanOrEqual(target - 0.05);
+      }
+    }
   });
 
   it('REGRESSION GATE: no violation outside the documented baseline', () => {

@@ -90,3 +90,30 @@ describe('docStyle AA clamp — LIVE pipeline wiring (fixAndVerifyPdf)', () => {
     expect(dp).not.toMatch(/clampPaletteContrast\(batchDocStyle/);
   });
 });
+
+describe('export theme AA clamp: document builder HTML export wiring', () => {
+  it('curated STYLE_SEEDS are clamped before becoming EXPORT_THEMES or export CSS', () => {
+    expect(dp).toMatch(/const _clampStyleSeedCssVars = \(cssVars\) => \{/);
+    expect(dp).toMatch(/_STYLE_SEED_CONTRAST_PAIRS/);
+    expect(dp).toMatch(/\{ fg: 'link', bg: 'surface', target: 4\.5 \}/);
+    expect(dp).toMatch(/\.map\(\(\[id, seed\]\) => \[id, \{ name: seed\.name, emoji: seed\.emoji, \.\.\._clampStyleSeedCssVars\(seed\.cssVars\) \}\]\)/);
+    expect(dp).toMatch(/const theme = seed\.cssVars \? \{ name: seed\.name, emoji: seed\.emoji, \.\.\._clampStyleSeedCssVars\(seed\.cssVars\) \}/);
+    expect(dp).toContain("color: ${theme.textColor || '#334155'}; background: ${theme.bgColor};");
+  });
+
+  it('preview theme application also routes seed cssVars through the clamp', () => {
+    const resolveIdx = dp.indexOf('// Resolve CSS vars: matchOriginal uses extracted PDF colors');
+    const clampIdx = dp.indexOf('cssVars = _clampStyleSeedCssVars(cssVars);');
+    const cssIdx = dp.indexOf('const themeCSS = sanitizeCustomExportCSS', clampIdx);
+    expect(resolveIdx).toBeGreaterThan(0);
+    expect(clampIdx).toBeGreaterThan(resolveIdx);
+    expect(cssIdx).toBeGreaterThan(clampIdx);
+  });
+
+  it('export header gradient contrast checks every color stop before rendering', () => {
+    expect(dp).toMatch(/raw\.match\(\/#\[0-9a-f\]\{3\}/);
+    expect(dp).toMatch(/gradientStops\.length > 0/);
+    expect(dp).toMatch(/const _headerColors = _accessibleHeaderColors\(theme\.headerBg\)/);
+    expect(dp).toContain('background:${_headerColors.bg};color:${_headerColors.fg};');
+  });
+});

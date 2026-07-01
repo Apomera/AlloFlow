@@ -479,13 +479,50 @@ function _validateTableGrid(grid) {
 // ever shipping an inaccessible header. Returns null on an unparseable colour (caller keeps the doc
 // palette). Pure.
 function _accessibleHeaderColors(hex) {
-  var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex == null ? '' : hex).trim());
-  if (!m) return null;
-  var h = m[1]; if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-  var bg = [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  var raw = String(hex == null ? '' : hex).trim();
+  var _parse = function (value) {
+    var m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(value == null ? '' : value).trim());
+    if (!m) return null;
+    var h = m[1]; if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  };
+  var bg = _parse(raw);
+  var gradientStops = [];
+  if (!bg) {
+    var matches = raw.match(/#[0-9a-f]{3}(?:[0-9a-f]{3})?\b/gi) || [];
+    for (var gi = 0; gi < matches.length; gi++) {
+      var stop = _parse(matches[gi]);
+      if (stop) gradientStops.push(stop);
+    }
+    if (gradientStops.length === 0) return null;
+  }
   var _l = function (c) { var f = function (x) { x /= 255; return x <= 0.03928 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4); }; return 0.2126*f(c[0]) + 0.7152*f(c[1]) + 0.0722*f(c[2]); };
   var _ratio = function (a, b) { var l1 = _l(a), l2 = _l(b); return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05); };
   var _hex = function (c) { return '#' + c.map(function (x) { return Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0'); }).join(''); };
+  if (gradientStops.length > 0) {
+    var light = [255,255,255];
+    var dark = [15,23,42];
+    var minLight = Infinity;
+    var minDark = Infinity;
+    for (var si = 0; si < gradientStops.length; si++) {
+      minLight = Math.min(minLight, _ratio(gradientStops[si], light));
+      minDark = Math.min(minDark, _ratio(gradientStops[si], dark));
+    }
+    var gradFg = minLight >= minDark ? light : dark;
+    if (Math.max(minLight, minDark) >= 4.5) {
+      var _gr = { bg: raw, fg: _hex(gradFg) };
+      return _gr;
+    }
+    // If no single text color passes every gradient stop, trade the gradient
+    // for a hue-preserving solid fill instead of shipping unreadable text.
+    bg = gradientStops[0].slice();
+    for (var ai = 0; ai < 40 && _ratio(bg, gradFg) < 4.5; ai++) {
+      if (gradFg[0] === 255) bg = [bg[0]*0.9, bg[1]*0.9, bg[2]*0.9];
+      else bg = [bg[0]+(255-bg[0])*0.1, bg[1]+(255-bg[1])*0.1, bg[2]+(255-bg[2])*0.1];
+    }
+    var _gs = { bg: _hex(bg), fg: _hex(gradFg) };
+    return _gs;
+  }
   var useLight = _ratio(bg, [255,255,255]) >= _ratio(bg, [15,23,42]);
   var fg = useLight ? [255,255,255] : [15,23,42];
   for (var i = 0; i < 40 && _ratio(bg, fg) < 4.5; i++) {
@@ -22177,8 +22214,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       cssVars = STYLE_SEEDS.professional.cssVars;
     }
 
+    cssVars = _clampStyleSeedCssVars(cssVars);
+
     // For dark themes, use light text color instead of dark
-    const textColor = cssVars.bgColor && (() => {
+    const textColor = cssVars.textColor || cssVars.bgColor && (() => {
       const hexToRgb = (hex) => { const h = hex.replace('#',''); return h.length === 3 ? [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)] : [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)]; };
       try { const bg = hexToRgb(cssVars.bgColor); const lum = (0.2126*(bg[0]/255<=0.03928?bg[0]/255/12.92:Math.pow((bg[0]/255+0.055)/1.055,2.4))) + (0.7152*(bg[1]/255<=0.03928?bg[1]/255/12.92:Math.pow((bg[1]/255+0.055)/1.055,2.4))) + (0.0722*(bg[2]/255<=0.03928?bg[2]/255/12.92:Math.pow((bg[2]/255+0.055)/1.055,2.4))); return lum < 0.18 ? '#e2e8f0' : '#1e293b'; } catch(e) { return '#1e293b'; }
     })() || '#1e293b';
@@ -24409,6 +24448,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <style>
                     .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 32px 24px; border-radius: 16px; }
                     .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .venn-print-wrapper .venn-visual { font-size: 16px; line-height: 1.35; max-width: 100%; overflow: visible; }
+                    .venn-print-wrapper .venn-visual li { overflow-wrap: anywhere; hyphens: auto; }
+                    @media (max-width: 820px) {
+                      .venn-print-wrapper { overflow-x: auto; }
+                      .venn-print-wrapper .venn-visual { min-width: 720px; }
+                    }
                     @media print {
                       .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 16px; }
                       .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
@@ -24426,7 +24471,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
                       </div>
                   </div>
-                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
+                  <div class="venn-visual" role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header pill -->
@@ -24963,7 +25008,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   `).join('');
               }
               return `
-                  <details class="diagram-text-fallback" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
+                  <details class="diagram-text-fallback" data-diagram-auto-open="large-text" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
                       <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;">📋 View as text</summary>
                       <div style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
                           <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
@@ -26598,7 +26643,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     highContrast: {
       name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
       promptInstructions: 'STYLE PREFERENCE: High Contrast accessibility — use Atkinson Hyperlegible font, pure black text on white background, blue (#0000ff) underlined links, bold 2px borders, increased font size (1.1rem). ALL text must achieve 7:1 contrast ratio (WCAG AAA). No subtle colors.',
-      cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
+      cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", textColor: '#000000', headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' },
     },
     nature: {
       name: 'Nature & Calm', emoji: '🌿', wcagLevel: 'AA',
@@ -26608,12 +26653,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     print: {
       name: 'Print Optimized', emoji: '🖨️', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Print Optimized — use Times New Roman serif, pure black text on white, page-break-inside: avoid on sections, 12pt base font, optimized for physical printing with clean margins and no decorative elements.',
-      cssVars: { bodyFont: "'Times New Roman', serif", headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+      cssVars: { bodyFont: "'Times New Roman', serif", textColor: '#000000', headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
     },
     dark: {
       name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Dark mode — dark charcoal background (#1e1e2e), white text (#ffffff), indigo accents (#818cf8), subtle borders, excellent contrast. All text must be light on dark.',
-      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#ffffff', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#ffffff', extraCSS: 'body { color: #ffffff; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #ffffff; } td { color: #ffffff; } tbody tr:nth-child(even) { background: #2a2a3e; } tbody tr:hover { background: #334155; } .resource-header { color: #cbd5e1; } .meta { color: #a1aab8; }' },
+      cssVars: { bodyFont: "'Inter', system-ui, sans-serif", textColor: '#ffffff', headingColor: '#ffffff', accentColor: '#818cf8', bgColor: '#1e1e2e', cardBg: '#2a2a3e', cardBorder: '#3f3f5e', headerBg: 'linear-gradient(135deg, #1e1e2e, #2d2b55)', headerText: '#ffffff', extraCSS: 'body { color: #ffffff; } a { color: #818cf8; } table { border-color: #3f3f5e; } th { background: #2a2a3e; color: #ffffff; } td { color: #ffffff; } tbody tr:nth-child(even) { background: #2a2a3e; } tbody tr:hover { background: #334155; } .resource-header { color: #cbd5e1; } .meta { color: #a1aab8; }' },
     },
     magazine: {
       name: 'Magazine', emoji: '📰', wcagLevel: 'AA',
@@ -26626,11 +26671,51 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       cssVars: null, // Populated dynamically from PDF color extraction
     },
   };
+  const _STYLE_SEED_CONTRAST_PAIRS = [
+    { fg: 'text', bg: 'bg', target: 4.5 },
+    { fg: 'text', bg: 'surface', target: 4.5 },
+    { fg: 'heading', bg: 'bg', target: 3.0 },
+    { fg: 'heading', bg: 'surface', target: 3.0 },
+    { fg: 'link', bg: 'bg', target: 4.5 },
+    { fg: 'link', bg: 'surface', target: 4.5 },
+    { fg: 'border', bg: 'bg', target: 3.0 },
+    { fg: 'border', bg: 'surface', target: 3.0 },
+    { fg: 'headerText', bg: 'headerBg', target: 4.5 },
+    { fg: 'calloutText', bg: 'calloutBg', target: 4.5 },
+  ];
+  const _clampStyleSeedCssVars = (cssVars) => {
+    const vars = { ...(cssVars || {}) };
+    const surface = vars.cardBg || vars.bgColor || '#ffffff';
+    const palette = {
+      bg: vars.bgColor || '#ffffff',
+      surface,
+      text: vars.textColor || vars.bodyText || '#334155',
+      heading: vars.headingColor || '#1e293b',
+      link: vars.accentColor || '#2563eb',
+      border: vars.cardBorder || '#94a3b8',
+      headerBg: vars.headerBg || vars.headingColor || '#1e293b',
+      headerText: vars.headerText || '#ffffff',
+      calloutBg: surface,
+      calloutText: vars.headingColor || vars.textColor || '#334155',
+    };
+    let clamped = palette;
+    try {
+      const result = clampPaletteContrast(palette, { pairs: _STYLE_SEED_CONTRAST_PAIRS });
+      if (result && result.palette) clamped = result.palette;
+    } catch (_) {}
+    const out = { ...vars };
+    if (clamped.text) out.textColor = clamped.text;
+    if (clamped.heading) out.headingColor = clamped.heading;
+    if (clamped.link) out.accentColor = clamped.link;
+    if (clamped.border) out.cardBorder = clamped.border;
+    if (clamped.headerText) out.headerText = clamped.headerText;
+    return out;
+  };
   // Backward compatibility: EXPORT_THEMES maps to STYLE_SEEDS cssVars
   const EXPORT_THEMES = Object.fromEntries(
     Object.entries(STYLE_SEEDS)
       .filter(([, seed]) => seed.cssVars)
-      .map(([id, seed]) => [id, { name: seed.name, emoji: seed.emoji, ...seed.cssVars }])
+      .map(([id, seed]) => [id, { name: seed.name, emoji: seed.emoji, ..._clampStyleSeedCssVars(seed.cssVars) }])
   );
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
@@ -26638,6 +26723,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Escape raw text (e.g. the lesson topic) before interpolating into the document body, so a
       // stray < & > displays as text rather than garbling/injecting markup (WCAG 4.1.1).
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const _escAttr = (s) => _escTxt(s).replace(/'/g, '&#39;');
       // ── Tier 1 visual structure (May 13 2026): cover TOC + numbered section
       // markers + decorative terminators. Mirrors the visibility logic in
       // generateResourceHTML so we only TOC items that will actually render.
@@ -26694,7 +26780,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         const terminator = idx < total - 1
           ? `<div aria-hidden="true" style="text-align:center;margin:18px 0 4px;color:${tv.color};opacity:0.45;font-size:14px;letter-spacing:10px;line-height:1;">◆ ◆ ◆</div>`
           : '';
-        return marker + html + terminator;
+        const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
+        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}" style="position:relative;">${marker}${html}${terminator}</div>`;
       };
       const _buildTOC = (items, isTeacher) => {
         if (items.length < 2) return '';  // single-resource exports don't need a TOC
@@ -26726,7 +26813,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
       const seed = STYLE_SEEDS[exportTheme] || (function (sid) { try { var _BP = window.AlloModules && window.AlloModules.BrandProfile; var _p = _BP && _BP.getBrandProfile && _BP.getBrandProfile(sid); return _p ? { name: _p.name, emoji: '\u{1F3A8}', cssVars: _BP.brandProfileToCssVars(_p) } : null; } catch (e) { return null; } })(exportTheme) || STYLE_SEEDS.professional;
-      const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ...seed.cssVars } : (EXPORT_THEMES.professional);
+      const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ..._clampStyleSeedCssVars(seed.cssVars) } : (EXPORT_THEMES.professional);
       // ── Brand identity bands (header/footer) — independent of style choice ──
       // If a BrandProfile is active, render its header/footer + minimal styling
       // regardless of which style seed is selected. This lets a teacher pick
@@ -26944,6 +27031,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     });
                 })();
       ` : '';
+      const _cloneAnnoArray = (arr) => Array.isArray(arr) ? arr.filter(Boolean) : [];
+      const _teacherAnnotations = _cloneAnnoArray(cfg.annotations);
+      const _teacherAnnotationsByResource = {};
+      if (cfg.annotationsByResource && typeof cfg.annotationsByResource === 'object') {
+        Object.keys(cfg.annotationsByResource).forEach((rid) => {
+          const arr = _cloneAnnoArray(cfg.annotationsByResource[rid]);
+          if (arr.length) _teacherAnnotationsByResource[String(rid)] = arr;
+        });
+      }
+      const _jsonForScript = (value) => String(JSON.stringify(value == null ? null : value)).replace(/</g, '\\u003c');
+      const _headerColors = _accessibleHeaderColors(theme.headerBg) || { bg: theme.headerBg, fg: theme.headerText || '#ffffff' };
       const rawHtml = `
       <!DOCTYPE html>
       <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[leveledTextLanguage || currentUiLanguage] || 'en'}" dir="${direction}">
@@ -26957,7 +27055,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
           ${exportFontImport}
-          body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: #334155; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
+          body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
@@ -27178,7 +27276,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-rt-btn:hover { background: #e2e8f0; }
           .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
           .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
-          @media print { .alloflow-reading-tools { display: none !important; } }
+          @media print { .alloflow-reading-tools-shell, .alloflow-reading-tools { display: none !important; } }
           /* Hide the interactive "Save my answers" CTAs on paper (they are dead buttons in print). */
           @media print { #alloflow-save-cta, #alloflow-savejson-cta { display: none !important; } }
           /* Print neutralizes a Dark / Sepia / High-Contrast reading theme. Those modes otherwise
@@ -27205,8 +27303,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           /* ─── Annotation color pickers (Tier 1 parity with in-app) ─── */
           .alloflow-anno-colors { display: none; align-items: center; gap: 6px; padding: 6px 12px 8px; border-bottom: 1px solid #e2e8f0; background: #fafbfc; }
-          .alloflow-reading-tools.mode-note .alloflow-anno-colors-note,
-          .alloflow-reading-tools.mode-highlight .alloflow-anno-colors-hl { display: flex; }
+          .alloflow-reading-tools.mode-note ~ .alloflow-anno-colors-note,
+          .alloflow-reading-tools.mode-highlight ~ .alloflow-anno-colors-hl { display: flex; }
           .alloflow-anno-colors-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
           .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
           .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
@@ -27297,7 +27395,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .allo-ka-passage .ka-s { transition: background-color 0.12s ease, box-shadow 0.12s ease; border-radius: 3px; }
           .allo-ka-passage .ka-s.ka-on { background-color: #fde047; color: #1e293b; box-shadow: 0 0 0 3px #fde047; }
           html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on { background-color: #ca8a04; color: #1e293b; box-shadow: 0 0 0 3px #ca8a04; }
-          .allo-ka-play:hover { filter: brightness(1.08); }
+          .allo-ka-play:hover, .allo-ka-stop:hover { filter: brightness(1.08); }
           @media print { .allo-ka-bar { display: none !important; } }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn { color: #cbd5e1; border-left-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-rt-btn:hover { background: #334155; }
@@ -27453,8 +27551,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
         ${_brandHeaderHTML}
-        <noscript><style>.alloflow-reading-tools{display:none !important;}</style></noscript>
-        <div class="alloflow-reading-tools" role="region" aria-label="Reading tools">
+        <aside class="alloflow-reading-tools-shell" aria-label="Reading and annotation tools">
+        <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
+        <div class="alloflow-reading-tools">
           <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
             <span class="alloflow-reading-tools-label">Theme</span>
             <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="Light (teacher default)">☀ Light</button>
@@ -27495,7 +27594,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="Blue highlight" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="Pink highlight" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
         </div>
-        <script type="application/json" id="alloflow-teacher-annotations">${JSON.stringify(Array.isArray(cfg.annotations) ? cfg.annotations : [])}</script>
+        </aside>
+        <script type="application/json" id="alloflow-teacher-annotations">${_jsonForScript(_teacherAnnotations)}</script>
+        <script type="application/json" id="alloflow-teacher-annotations-by-resource">${_jsonForScript(_teacherAnnotationsByResource)}</script>
         <script>
           // Reading Tools — runtime theme switcher.
           // Applies saved theme (or prefers-color-scheme dark) immediately on
@@ -27545,6 +27646,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             function apply(save) {
               var host = document.getElementById('main-export-content') || document.body;
               if (host) { host.style.fontSize = (SCALES[st.s] || 1) + 'em'; host.style.lineHeight = String(LEADS[st.l] || 1.5); }
+              var largeText = (SCALES[st.s] || 1) >= 1.3;
+              var fallbacks = document.querySelectorAll('[data-diagram-auto-open="large-text"]');
+              for (var fi = 0; fi < fallbacks.length; fi++) {
+                if (largeText && !fallbacks[fi].open) {
+                  fallbacks[fi].open = true;
+                  fallbacks[fi].setAttribute('data-auto-opened', 'true');
+                } else if (!largeText && fallbacks[fi].getAttribute('data-auto-opened') === 'true') {
+                  fallbacks[fi].open = false;
+                  fallbacks[fi].removeAttribute('data-auto-opened');
+                }
+              }
               if (save) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
             }
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { apply(false); }); else apply(false);
@@ -27567,17 +27679,58 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             if (window.__alloKaBound) return; window.__alloKaBound = true;
             var active = null;
             function clearHi(spans) { for (var i = 0; i < spans.length; i++) spans[i].classList.remove("ka-on"); }
+            function setPlayButton(btn, label, pressed) {
+              if (!btn) return;
+              btn.textContent = label;
+              btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+            }
+            function ensureStopButton(btn) {
+              if (!btn || !btn.parentNode) return null;
+              var id = btn.getAttribute("data-ka-for") || "";
+              var existing = btn.parentNode.querySelectorAll('.allo-ka-stop');
+              for (var si = 0; si < existing.length; si++) {
+                if ((existing[si].getAttribute('data-ka-for') || '') === id) return existing[si];
+              }
+              var stopBtn = null;
+              stopBtn = document.createElement('button');
+              stopBtn.type = 'button';
+              stopBtn.className = 'allo-ka-stop';
+              stopBtn.setAttribute('data-ka-for', id);
+              stopBtn.setAttribute('aria-label', 'Stop read aloud');
+              stopBtn.style.cssText = btn.style.cssText || '';
+              stopBtn.style.marginLeft = '8px';
+              stopBtn.textContent = "\u23F9 Stop";
+              btn.insertAdjacentElement('afterend', stopBtn);
+              return stopBtn;
+            }
             function stop() {
               if (!active) return;
               try { var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; } } catch (e) {}
               clearHi(active.spans);
-              if (active.btn) active.btn.textContent = "\u{1F50A} Read aloud";
+              setPlayButton(active.btn, "\u{1F50A} Read aloud", false);
+              if (active.stopBtn) { try { active.stopBtn.remove(); } catch (e) {} }
               active = null;
+            }
+            function pause() {
+              if (!active || active.paused) return;
+              try { var a = active.audios[active.idx]; if (a) a.pause(); } catch (e) {}
+              active.paused = true;
+              setPlayButton(active.btn, "\u25B6 Resume", true);
+            }
+            function resume() {
+              if (!active || !active.paused) return;
+              var a = active.audios[active.idx];
+              if (!a) { step(active, active.idx + 1); return; }
+              active.paused = false;
+              setPlayButton(active.btn, "\u23F8 Pause", true);
+              var p = a.play();
+              if (p && p.catch) p.catch(function () { stop(); });
             }
             function step(state, i) {
               if (!active || active !== state) return;
               if (i >= state.audios.length) { stop(); return; }
               state.idx = i;
+              state.paused = false;
               var a = state.audios[i];
               if (!a) { step(state, i + 1); return; }
               var sidx = a.getAttribute("data-ka-s");
@@ -27587,21 +27740,29 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               try { a.currentTime = 0; } catch (e) {}
               a.onended = function () { step(state, i + 1); };
+              setPlayButton(state.btn, "\u23F8 Pause", true);
               var p = a.play();
               if (p && p.catch) p.catch(function () { stop(); });
             }
             document.addEventListener("click", function (e) {
+              var stopBtn = e.target && e.target.closest && e.target.closest(".allo-ka-stop");
+              if (stopBtn) { stop(); return; }
               var btn = e.target && e.target.closest && e.target.closest(".allo-ka-play");
               if (!btn) return;
-              if (active) { stop(); return; }
+              if (active && active.btn === btn) {
+                if (active.paused) resume(); else pause();
+                return;
+              }
+              if (active) stop();
               var id = btn.getAttribute("data-ka-for");
               var box = document.querySelector('.allo-ka-audios[data-ka-for="' + id + '"]');
               var sec = btn.closest(".section") || document;
               var spans = Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));
               var audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
               if (!audios.length || !spans.length) return;
-              btn.textContent = "\u23F9 Stop";
-              active = { audios: audios, spans: spans, idx: 0, btn: btn };
+              var stopControl = ensureStopButton(btn);
+              setPlayButton(btn, "\u23F8 Pause", true);
+              active = { audios: audios, spans: spans, idx: 0, btn: btn, stopBtn: stopControl, paused: false };
               step(active, 0);
             });
           })();
@@ -27637,6 +27798,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 if (Array.isArray(parsed)) teacherAnno = parsed;
               }
             } catch (e) { /* malformed — render none */ }
+            var teacherAnnoByResource = {};
+            try {
+              var mapSlot = document.getElementById('alloflow-teacher-annotations-by-resource');
+              if (mapSlot && mapSlot.textContent) {
+                var parsedMap = JSON.parse(mapSlot.textContent);
+                if (parsedMap && typeof parsedMap === 'object' && !Array.isArray(parsedMap)) teacherAnnoByResource = parsedMap;
+              }
+            } catch (e) { teacherAnnoByResource = {}; }
 
             // Load student annotations from localStorage.
             var studentAnno = [];
@@ -27788,6 +27957,34 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // annotation fields (authorName/title can arrive from tampered localStorage or a
             // crafted imported annotation JSON). (sec-annot-escape)
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+            function attrEsc(s) { return esc(s).replace(/"/g, '&quot;'); }
+            function findResourceTarget(rid) {
+              if (!rid) return host;
+              var direct = document.getElementById(String(rid));
+              if (direct && host.contains(direct)) return direct;
+              var wraps = host.querySelectorAll('[data-alloflow-resource-id]');
+              for (var wi = 0; wi < wraps.length; wi++) {
+                if ((wraps[wi].getAttribute('data-alloflow-resource-id') || '') === String(rid)) return wraps[wi];
+              }
+              return host;
+            }
+            function annotateResourceCopy(a, rid, idx) {
+              var copy = Object.assign({}, a || {});
+              copy.author = copy.author || 'teacher';
+              copy._resourceId = rid;
+              copy._focusKey = String(rid) + '|' + String(copy.id != null ? copy.id : idx);
+              return copy;
+            }
+            function allTeacherAnnotations() {
+              var out = teacherAnno.slice();
+              for (var rid in teacherAnnoByResource) {
+                if (!Object.prototype.hasOwnProperty.call(teacherAnnoByResource, rid)) continue;
+                var arr = teacherAnnoByResource[rid];
+                if (!Array.isArray(arr)) continue;
+                for (var ai = 0; ai < arr.length; ai++) out.push(annotateResourceCopy(arr[ai], rid, ai));
+              }
+              return out;
+            }
             function buildTitle(a) {
               var parts = [];
               if (a.author === 'teacher') parts.push('Teacher feedback');
@@ -27891,7 +28088,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
                 note.addEventListener('click', function (e) {
                   e.stopPropagation();
-                  if (window.AlloFlowUX) window.AlloFlowUX.toast((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''), 'error'); else alert((a.content || '(empty note)') + (buildTitle(a) ? '\n\n— ' + buildTitle(a) : ''));
+                  var noteMessage = (a.content || '(empty note)') + (buildTitle(a) ? '\\n\\n— ' + buildTitle(a) : '');
+                  if (window.AlloFlowUX) window.AlloFlowUX.toast(noteMessage, 'error'); else alert(noteMessage);
                 });
                 attachDrag(note, a);
                 return note;
@@ -27990,6 +28188,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 var el = renderAnno(a, a && a.author === 'teacher');
                 if (el) host.appendChild(el);
               });
+              for (var rid in teacherAnnoByResource) {
+                if (!Object.prototype.hasOwnProperty.call(teacherAnnoByResource, rid)) continue;
+                var arr = teacherAnnoByResource[rid];
+                if (!Array.isArray(arr) || arr.length === 0) continue;
+                var target = findResourceTarget(rid);
+                try { target.style.position = 'relative'; } catch (e) {}
+                for (var ri = 0; ri < arr.length; ri++) {
+                  var copy = annotateResourceCopy(arr[ri], rid, ri);
+                  var rel = renderAnno(copy, true);
+                  if (rel) target.appendChild(rel);
+                }
+              }
             }
 
             // Annotation mode state (off / note / highlight / voice). Sticker
@@ -28433,10 +28643,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 fx = a.rects[0].x + (a.rects[0].w || 0) / 2;
                 fy = a.rects[0].y + (a.rects[0].h || 0) / 2;
               }
+              var targetHost = findResourceTarget(a._resourceId || a.resourceId);
+              if (!targetHost) targetHost = host;
               if (typeof fy === 'number') {
                 // Scroll the WINDOW (export uses page scrolling, not a
                 // scrollable host like the in-app version).
-                var hostRect = host.getBoundingClientRect();
+                var hostRect = targetHost.getBoundingClientRect();
                 var targetY = hostRect.top + window.scrollY + fy - window.innerHeight * 0.30;
                 try { window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' }); }
                 catch (e) { window.scrollTo(0, Math.max(0, targetY)); }
@@ -28444,13 +28656,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               try {
                 var pulse = document.createElement('div');
                 pulse.style.cssText = 'position:absolute;top:' + (fy - 24) + 'px;left:' + (fx - 24) + 'px;width:48px;height:48px;border-radius:50%;border:3px solid #6366f1;pointer-events:none;z-index:60;animation:alloflow-anno-pulse 1.2s ease-out forwards;';
-                host.appendChild(pulse);
+                try { targetHost.style.position = 'relative'; } catch (e) {}
+                targetHost.appendChild(pulse);
                 setTimeout(function () { try { pulse.remove(); } catch (e) {} }, 1300);
               } catch (e) {}
             }
             function renderSidebar() {
               if (!sidebarEl) return;
-              var all = teacherAnno.concat(studentAnno);
+              var all = allTeacherAnnotations().concat(studentAnno);
               var counts = { teacher: 0, student: 0, total: all.length };
               all.forEach(function (a) {
                 if (!a) return;
@@ -28487,12 +28700,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     } catch (e) {}
                   }
                   var title = titleParts.join(' • ');
-                  listHtml += '<div class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '" data-rt-anno-focus="' + a.id + '" role="button" tabindex="0" aria-label="Jump to annotation">' +
+                  listHtml += '<div class="alloflow-anno-item ' + (isT ? 'teacher' : 'student') + '" data-rt-anno-focus="' + attrEsc(a._focusKey || a.id) + '" role="button" tabindex="0" aria-label="Jump to annotation">' +
                     '<div class="alloflow-anno-item-body">' +
                       '<div class="alloflow-anno-item-text">' + annoPreview(a).replace(/</g, '&lt;') + '</div>' +
                       '<div class="alloflow-anno-item-meta">' + esc(title) + '</div>' +
                     '</div>' +
-                    (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + a.id + '" aria-label="Delete this annotation" title="Delete">✕</button>' : '') +
+                    (canDelete ? '<button type="button" class="alloflow-anno-item-del" data-rt-anno-del="' + attrEsc(a.id) + '" aria-label="Delete this annotation" title="Delete">✕</button>' : '') +
                     '</div>';
                 });
               }
@@ -28603,9 +28816,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (focusItem && !e.target.closest('[data-rt-anno-del]')) {
                 var fid = focusItem.getAttribute('data-rt-anno-focus');
                 if (fid) {
-                  var all = teacherAnno.concat(studentAnno);
+                  var all = allTeacherAnnotations().concat(studentAnno);
                   for (var j = 0; j < all.length; j++) {
-                    if (String(all[j].id) === String(fid)) { focusOn(all[j]); break; }
+                    if (String(all[j]._focusKey || all[j].id) === String(fid)) { focusOn(all[j]); break; }
                   }
                 }
                 return;
@@ -28659,8 +28872,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
         </script>
         <main id="main-export-content" role="main">
-        <div class="export-header" style="background:${theme.headerBg};color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <h1 style="color:${(_accessibleHeaderColors(theme.headerBg) || {}).fg || theme.headerText};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
+        <div class="export-header" style="background:${_headerColors.bg};color:${_headerColors.fg};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+          <h1 style="color:${_headerColors.fg};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
           ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
         </div>
         ${worksheetHeader}
@@ -28679,6 +28892,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           This document was built with accessibility in mind: semantic HTML structure, heading hierarchy, table header scope, landmark regions, a language attribute, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim — verify with veraPDF / PAC or an accessibility checker before relying on it for compliance. Created with AlloFlow.
         </div>
         </main>
+        <aside class="alloflow-export-save-tools" aria-label="Save your work">
         ${_submissionSaveButton}
         <div id="alloflow-savejson-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:#eef2ff;border:2px solid #c7d2fe;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
@@ -28686,6 +28900,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <button type="button" id="alloflow-savejson-btn" style="padding:12px 28px;background:#4f46e5;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,0.3);">&#128190; Save my answers</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">Saves a .json file your teacher opens in AlloFlow.</p>
         </div>
+        </aside>
         <footer role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>

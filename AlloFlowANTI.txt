@@ -17200,7 +17200,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // so they ride the exported HTML. Phase 4 of the annotation suite —
     // the export becomes a self-contained surface that renders these
     // annotations + lets the student add their own locally.
-    const cfgWithSubmissionKey = { ...cfgBase, annotations: Array.isArray(stickers) ? stickers : [] };
+    const activeResourceId = (generatedContent && generatedContent.id) || 'default';
+    const annotationsByResource = { ...(stickersMapRef.current || {}) };
+    if (activeResourceId) annotationsByResource[activeResourceId] = Array.isArray(stickers) ? stickers : [];
+    const cfgWithSubmissionKey = { ...cfgBase, annotations: [], annotationsByResource };
     return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
   };
   const getSlidesPreviewHTML = () => {

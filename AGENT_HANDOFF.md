@@ -83,7 +83,6 @@ Last updated: 2026-07-01 by Codex.
 
 - `node --check view_header_module.js`, `node --check view_guided_mode_banner_module.js`, `node --check quickstart_module.js`, and matching `prismflow-deploy\public\*` module checks - passed after Guided/QuickStart changes.
 - `npx vitest run tests/guided_host_wiring.test.js tests/guided_mode_banner_completion.test.js tests/guided_example_integrity.test.js tests/onboarding_previewscrub.test.js --reporter=verbose` - passed 32 tests.
-
 - `node --check` for the SEL hub module and touched SEL tool modules - passed after the tool-by-tool UI/accessibility pass.
 - `node dev-tools\check_sel_a11y.cjs` - passed across 70 SEL tools with 0 errors, 0 warnings, and full shared-shell coverage.
 - `node dev-tools\check_sel_render.cjs --quiet` - passed with no app-crash render failures across 70 SEL tools.
