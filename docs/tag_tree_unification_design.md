@@ -245,6 +245,15 @@ NonStruct) make no content claim.
    showed "3/20"). Fix: count built elements by enumerating the doc's own context for
    /Type /StructElem — apples-to-apples with the saved-side tally (now 20/20, 19/19).
 
+**veraPDF pre-validation (2026-07-01, verapdf-cli 1.29 dev / Java 21, `--flavour ua1`):** both the
+per-leaf sample and the shared-MCID production sample fail ONLY §7.21.4.1 (font embedding — a
+harness artifact: the offline harness can't fetch NotoSans, so the layer fell back to base-14
+Helvetica, which production never does) and §5 (PDF/UA identifier — the app's honesty gate
+correctly WITHHELD the claim on the degraded offline run). **Zero structure/tagging failures on
+the per-leaf construction** (no §7.1, §7.2, §7.18) — which also independently confirms the
+artifact-split fix. veraPDF cannot see multi-claimed MCIDs (its known blind spot), so PAC 2024
+remains the final discriminating check before default-ON.
+
 **Ship posture:** the experiment flag stays DEFAULT OFF. The Playwright golden gained a per-leaf
 block (leaves > 0, orphaned = 0, distinct MCIDs > 3, multi-claimed = 0) so the gate covers the
 construction. Flip checklist for default-ON (scanned docs): (a) external validation of a per-leaf
