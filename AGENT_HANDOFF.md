@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed Prismflow demo visual QA for SEL Hub using the latest local SEL source routed into the demo shell; teacher launch now keeps catalog-known plan tools selected and marks pending plugins visibly instead of dropping them or showing vague loading counts. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_coding.js`, `prismflow-deploy/public/stem_lab/stem_tool_coding.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_coding.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Simplified the Coding Playground default UX with a Build/Inquiry Lab workspace switch so the Big-O inquiry panel is opt-in instead of appearing on first load. |
 | 2026-07-01 | Codex | `live_polling_module.js`, `prismflow-deploy/public/live_polling_module.js`, `tests/live_polling.test.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened live poll reliability and UX: deduped reconnects/resubmissions, ignored stale close events, added teacher progress/anonymous aggregate dashboard, and gave students a safe local hide option after submitting in wait mode. |
 | 2026-07-01 | Codex | `stem_lab/stem_lab_module.js`, `prismflow-deploy/public/stem_lab/stem_lab_module.js`, local ignored `prismflow-deploy/build/stem_lab/stem_lab_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Replaced generic STEM quick-start chips with an AI-assisted tool picker that suggests matching tools from a student's learning interest, validates AI-returned ids against the real catalog, and routes selected suggestions directly into the chosen tool. |
@@ -49,6 +50,10 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check sel_hub\sel_hub_module.js` - passed after the SEL Hub visual QA teacher-launch pending-tool fix.
+- `node dev-tools\check_sel_render.cjs --quiet` - passed after the SEL Hub visual QA teacher-launch pending-tool fix with no app-crash render failures across 70 SEL tools.
+- `node dev-tools\check_sel_a11y.cjs` - passed after the SEL Hub visual QA teacher-launch pending-tool fix with 0 errors, 0 warnings, and all 70 tools retaining standard shell coverage.
+- Prismflow demo visual QA used `http://127.0.0.1:4174/` with the latest local `sel_hub/` source routed into the demo page; screenshots saved under `C:\tmp\sel-visual-qa\`, including `09-desktop-teacher-launch-after-pending-copy.png` and `11-station-builder-selected-loading-row-element.png`.
 - `node --check stem_lab\stem_tool_coding.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_coding.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_coding.js` - passed after the Coding Playground workspace switch change.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed after the Coding Playground workspace switch change with no app-crash render failures across 113 STEM tools.
 - One-off jsdom/React server render of `codingPlayground` - passed; confirmed Build and Inquiry Lab controls render, the Big-O panel is hidden by default, and it appears when `workspaceTab: 'inquiry'` is active.

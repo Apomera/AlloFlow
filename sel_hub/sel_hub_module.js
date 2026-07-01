@@ -1819,15 +1819,24 @@
         return (SEL_TEACHER_TOOL_META && SEL_TEACHER_TOOL_META[toolId]) || null;
       }
 
-      function _teacherPlanTools(plan) {
+      function _teacherPlanCatalogTools(plan) {
         if (!plan || !Array.isArray(plan.tools)) return [];
         return plan.tools.filter(function(toolId) {
-          return _selToolById(toolId) && window.SelHub && window.SelHub.isRegistered(toolId);
+          return !!_selToolById(toolId);
         });
       }
 
       function _teacherPlanToolLabels(plan) {
-        return _teacherPlanTools(plan).map(function(toolId) {
+        return _teacherPlanCatalogTools(plan).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanPendingLabels(plan) {
+        return _teacherPlanCatalogTools(plan).filter(function(toolId) {
+          return !(window.SelHub && window.SelHub.isRegistered(toolId));
+        }).map(function(toolId) {
           var tool = _selToolById(toolId);
           return tool ? tool.label : toolId;
         });
@@ -1844,7 +1853,7 @@
       }
 
       function _applyTeacherLaunchPlan(plan) {
-        var selectedToolIds = _teacherPlanTools(plan);
+        var selectedToolIds = _teacherPlanCatalogTools(plan);
         if (selectedToolIds.length === 0) {
           if (typeof addToast === 'function') addToast('Teacher launch tools are still loading. Try again in a moment.', 'info');
           announceToSR('Teacher launch tools are still loading.');
@@ -2448,10 +2457,10 @@
                 style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
               },
                 SEL_TEACHER_LAUNCH_PLANS.map(function(plan) {
-                  var availableTools = _teacherPlanTools(plan);
                   var labels = _teacherPlanToolLabels(plan);
-                  var unavailableCount = Math.max(0, (plan.tools || []).length - availableTools.length);
-                  var disabled = availableTools.length === 0;
+                  var pendingLabels = _teacherPlanPendingLabels(plan);
+                  var catalogTools = _teacherPlanCatalogTools(plan);
+                  var disabled = catalogTools.length === 0;
                   return h('div', {
                     key: plan.id,
                     style: { border: '1px solid ' + _t.border, borderRadius: 8, background: isDark ? '#172033' : '#ffffff', padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
@@ -2466,7 +2475,7 @@
                     h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
                     h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
                       labels.length ? labels.join(', ') : 'Tools loading...',
-                      unavailableCount > 0 ? ' +' + unavailableCount + ' loading' : ''
+                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: isDark ? '#fbbf24' : '#92400e', fontWeight: 800 } }, 'Still loading: ' + pendingLabels.join(', ')) : null
                     ),
                     h('button', {
                       type: 'button',
@@ -2732,6 +2741,16 @@
                 _allSelTools.forEach(function (t) { if (t && t.id && !t.category) _cardedIds[t.id] = true; });
                 registry = registry.filter(function (tool) { return _cardedIds[tool.id]; });
                 var selectedBuilderToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                selectedBuilderToolIds.forEach(function(toolId) {
+                  if (!_cardedIds[toolId]) return;
+                  if (registry.some(function(tool) { return tool.id === toolId; })) return;
+                  var catalogTool = _selToolById(toolId);
+                  if (!catalogTool) return;
+                  registry.push(Object.assign({}, catalogTool, {
+                    name: catalogTool.name || catalogTool.label || catalogTool.id,
+                    pendingRegistration: true
+                  }));
+                });
                 var builderEstimatedMinutes = selectedBuilderToolIds.length ? Math.max(5, (selectedBuilderToolIds.length * 4) + (builderQuests.length * 2)) : 0;
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
@@ -2812,16 +2831,18 @@
                         : h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
                           registry.map(function (tool) {
                             var checked = !!builderTools[tool.id];
+                            var pending = !!tool.pendingRegistration;
                             return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? (isDark ? '#3b1026' : '#fce7f3') : 'transparent', border: checked ? '1px solid #db2777' : '1px solid transparent', fontSize: 11, color: _t.text } },
                               h('input', {
                                 type: 'checkbox', checked: checked,
                                 onChange: function () {
                                   setBuilderTools(function (prev) { var n = Object.assign({}, prev); n[tool.id] = !checked; return n; });
                                 },
-                                'aria-label': 'Include ' + (tool.name || tool.id) + ' in this station'
+                                'aria-label': 'Include ' + (tool.name || tool.label || tool.id) + ' in this station' + (pending ? '. Tool is still loading.' : '')
                               }),
                               h('span', { 'aria-hidden': 'true' }, tool.icon || '🔧'),
-                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.id)
+                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.label || tool.id),
+                              pending && h('span', { style: { marginLeft: 'auto', flex: '0 0 auto', fontSize: 9, fontWeight: 800, color: isDark ? '#fbbf24' : '#92400e' } }, 'loading')
                             );
                           })
                         )
