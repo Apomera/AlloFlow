@@ -108,6 +108,23 @@ const d = labToolData.wave;
           var waveSpeedBase = d.waveSpeed || 343;
           var wavelength = waveSpeedBase / (d.frequency || 1);
           var waveSpeedCalc = (d.frequency || 1) * wavelength;
+          var displayAmp = d.amplitude || 50;
+          var displayFreq = d.frequency || 2;
+          var displaySpeed = d.speed || 1;
+          var displayMediumSpeed = d.waveSpeed || 343;
+          var displayWavelength = displayMediumSpeed / displayFreq;
+          var displayPeriod = 1 / displayFreq;
+          var activeWaveType = d.waveType || 'sine';
+          var WAVE_VIEW_META = {
+            free: { label: 'Free wave', accent: '#22d3ee', chip: 'Waveform lab' },
+            standing: { label: 'Standing', accent: '#a855f7', chip: 'Nodes + antinodes' },
+            ripple: { label: 'Ripple tank', accent: '#60a5fa', chip: 'Interference field' },
+            reflection: { label: 'Reflection', accent: '#f59e0b', chip: 'Boundary lab' },
+            longitudinal: { label: 'Longitudinal', accent: '#fb923c', chip: 'Compression map' },
+            doppler: { label: 'Doppler', accent: '#fb7185', chip: 'Motion shift' },
+            spectrum: { label: 'Spectrum', accent: '#34d399', chip: 'Frequency analyzer' }
+          };
+          var waveViewMeta = WAVE_VIEW_META[waveMode] || WAVE_VIEW_META.free;
 
 
 
@@ -1627,7 +1644,7 @@ const d = labToolData.wave;
 
 
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
             null, // tutorial overlay removed (hub-scope dependency)
 
@@ -1643,7 +1660,7 @@ const d = labToolData.wave;
 
             // Mode tabs
 
-            React.createElement("div", { className: "flex gap-2 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 items-center" },
 
               [['free', '\uD83C\uDF0A Free Wave'], ['standing', '\uD83C\uDFB8 Standing'], ['ripple', '\uD83D\uDCA7 Ripple Tank'], ['reflection', '\uD83E\uDE9E Reflection'], ['longitudinal', '\u2261 Longitudinal'], ['doppler', '\uD83D\uDE97 Doppler'], ['spectrum', '\uD83D\uDCCA Spectrum']].map(function (m) {
 
@@ -1658,7 +1675,7 @@ const d = labToolData.wave;
                       terse: m[1]
                     });
                   }
-                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
+                }, className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1 " + (waveMode === m[0] ? 'bg-slate-900 text-white shadow-md ring-1 ring-cyan-300/70' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]') }, m[1]);
 
               }),
 
@@ -1666,7 +1683,7 @@ const d = labToolData.wave;
 
                 onClick: toggleSound,
 
-                className: "ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-emerald-50 active:scale-[0.97]')
+                className: "sm:ml-auto px-4 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.soundPlaying ? 'bg-emerald-700 text-white animate-pulse shadow-sm' : 'transition-colors bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
 
               }, d.soundPlaying ? '\uD83D\uDD0A Stop Sound' : '\uD83D\uDD08 Play Sound (' + (d.frequency * 100) + 'Hz)')
 
@@ -1687,7 +1704,7 @@ const d = labToolData.wave;
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
-                  borderRadius: 12,
+                  borderRadius: 8,
                   background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
@@ -1704,11 +1721,20 @@ const d = labToolData.wave;
 
             // Canvas
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },
+            React.createElement("div", {
+              className: "relative rounded-lg overflow-hidden border mb-3",
+              style: {
+                height: "clamp(360px, 52vw, 460px)",
+                background: "radial-gradient(circle at 24% 16%, rgba(34,211,238,0.22), transparent 30%), linear-gradient(180deg, #061827 0%, #082f49 52%, #06202f 100%)",
+                borderColor: "rgba(14,116,144,0.42)",
+                boxShadow: "0 20px 44px rgba(8,47,73,0.24), inset 0 1px 0 rgba(255,255,255,0.18)"
+              }
+            },
 
               React.createElement("canvas", {
 
                 ref: canvasRef,
+                "data-wave-canvas": "true",
 
                 tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed",
 
@@ -1752,9 +1778,48 @@ const d = labToolData.wave;
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block", outline: "none" }
+                style: { width: "100%", height: "100%", display: "block", outline: "none", background: "transparent" }
 
-              })
+              }),
+
+              React.createElement("div", {
+                "aria-hidden": "true",
+                className: "pointer-events-none absolute inset-0",
+                style: {
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10), transparent 18%, transparent 78%, rgba(2,6,23,0.28)), radial-gradient(circle at 50% 50%, transparent 58%, rgba(2,6,23,0.32) 100%)"
+                }
+              }),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute left-3 top-3 rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-white shadow-xl backdrop-blur-md"
+              },
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-100/80" }, "Live wave"),
+                React.createElement("p", { className: "text-sm font-black leading-tight" }, waveViewMeta.label),
+                React.createElement("p", { className: "mt-1 text-[11px] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
+              ),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute right-3 top-3 hidden rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-right text-white shadow-xl backdrop-blur-md sm:block"
+              },
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Type " + activeWaveType),
+                React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Medium " + displayMediumSpeed + " m/s")
+              ),
+
+              React.createElement("div", {
+                className: "pointer-events-none absolute bottom-3 left-3 right-3 flex flex-wrap items-end gap-2 text-white"
+              },
+                [
+                  ['Wavelength', displayWavelength.toFixed(1) + ' m'],
+                  ['Speed', displaySpeed.toFixed(1) + 'x'],
+                  ['Energy', (displayAmp * displayAmp).toFixed(0)]
+                ].map(function(item) {
+                  return React.createElement("div", { key: item[0], className: "rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
+                    React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
+                    React.createElement("p", { className: "text-xs font-black leading-tight" }, item[1])
+                  );
+                })
+              )
 
             ),
 
@@ -1808,7 +1873,7 @@ const d = labToolData.wave;
 
             // Controls
 
-            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+            React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-3" },
 
               [
 
@@ -1822,11 +1887,11 @@ const d = labToolData.wave;
 
               ].map(s =>
 
-                React.createElement("div", { key: s.k, className: "text-center bg-slate-50 rounded-lg p-2 border" },
+                React.createElement("div", { key: s.k, className: "bg-white rounded-lg p-3 border border-slate-200 shadow-sm" },
 
-                  React.createElement("label", { className: "text-[11px] font-bold text-slate-600 block" }, s.label),
+                  React.createElement("label", { className: "text-[11px] font-black text-slate-600 block uppercase tracking-wide" }, s.label),
 
-                  React.createElement("span", { className: "text-sm font-bold text-slate-700 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
+                  React.createElement("span", { className: "mt-1 text-lg font-black text-slate-900 block" }, d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : d[s.k])),
 
                   React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k] || (s.k === 'speed' ? 1 : s.k === 'waveSpeed' ? 343 : 0), 'aria-label': s.label, onChange: function (e) {
                     var v = parseFloat(e.target.value); upd(s.k, v);
@@ -1837,7 +1902,7 @@ const d = labToolData.wave;
                       var msg = s.label + ': ' + v + (wl ? '. Wavelength: ' + wl.toFixed(1) + ' m' : '');
                       canvasNarrate('wave', 'param_' + s.k, msg, { debounce: 800 });
                     }
-                  }, className: "w-full accent-cyan-600" })
+                  }, className: "mt-2 w-full accent-cyan-600" })
 
                 )
 
@@ -2009,9 +2074,9 @@ const d = labToolData.wave;
 
             // Wave equation display
 
-            React.createElement("div", { className: "bg-slate-800 rounded-lg p-3 mb-3 text-center" },
+            React.createElement("div", { className: "bg-slate-900 rounded-lg p-4 mb-3 text-center border border-slate-700 shadow-lg" },
 
-              React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
+              React.createElement("p", { className: "text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1" }, "\uD83D\uDCDD Wave Equation"),
 
               
 
@@ -2019,7 +2084,7 @@ const d = labToolData.wave;
 
               React.createElement("div", { className: "mb-3 p-1.5 bg-slate-900/50 rounded-lg border border-slate-700/50 inline-block text-center" },
 
-                 React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-0.5" }, "General Formula"),
+                 React.createElement("p", { className: "text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5" }, "General Formula"),
 
                  React.createElement("p", { className: "text-sm font-mono font-bold text-slate-300" }, 
 
@@ -2084,9 +2149,9 @@ const d = labToolData.wave;
 
             // Info cards
 
-            React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3 text-center" },
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 text-center" },
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wavelength \u03BB"),
 
@@ -2094,7 +2159,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Period T"),
 
@@ -2102,7 +2167,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-600 uppercase" }, "Wave Speed v"),
 
@@ -2110,7 +2175,7 @@ const d = labToolData.wave;
 
               ),
 
-              React.createElement("div", { className: "p-2 bg-cyan-50 rounded-lg border border-cyan-200" },
+              React.createElement("div", { className: "p-3 bg-white rounded-lg border border-cyan-100 shadow-sm" },
 
                 React.createElement("p", { className: "text-[11px] font-bold text-cyan-700 uppercase" }, "Energy"),
 
