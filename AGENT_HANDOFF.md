@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-01 | Codex | `stem_lab/stem_tool_dinolab.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_dinolab.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_dinolab.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Hardened DinoLab against malformed/stale saved state that could make Explore, Dig, Classify, Quiz, or Glossary fall into the section fallback; added single-field update fallback and cleaned the Bird Connection React key warning. |
 | 2026-07-01 | Codex | `sel_hub/sel_hub_module.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Completed Prismflow demo visual QA for SEL Hub using the latest local SEL source routed into the demo shell; teacher launch now keeps catalog-known plan tools selected and marks pending plugins visibly instead of dropping them or showing vague loading counts. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_circuit.js`, `stem_lab/stem_tool_datastudio.js`, `stem_lab/stem_tool_archstudio.js`, `stem_lab/stem_tool_playlab.js`, `stem_lab/stem_tool_learning_lab.js`, matching `prismflow-deploy/public/stem_lab/` copies, local ignored `prismflow-deploy/build/stem_lab/` copies, `AGENT_HANDOFF.md` | Done locally, not deployed | Continued the STEM tool-level UX simplification pass by moving dense reference/analysis/inquiry/scenario areas in Circuit Builder, Data Studio, Architecture Studio, PlayLab, and Learning Lab behind workspace switches, calmer category defaults, or opt-in controls so default views stay focused on the primary activity. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_coding.js`, `prismflow-deploy/public/stem_lab/stem_tool_coding.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_coding.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Simplified the Coding Playground default UX with a Build/Inquiry Lab workspace switch so the Big-O inquiry panel is opt-in instead of appearing on first load. |
@@ -51,6 +52,10 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check stem_lab\stem_tool_dinolab.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_dinolab.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_dinolab.js` - passed after DinoLab render hardening.
+- One-off jsdom/React server render of DinoLab - passed for all 17 DinoLab tabs plus malformed saved-state cases for Explore search, Glossary search, Quiz index, Classify index, and Dig state; no section fallback or React warnings in the checked states.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed after DinoLab hardening with no app-crash render failures across 113 STEM tools.
+- Source, public, and ignored local build copies for `stem_tool_dinolab.js` have matching SHA-256 hashes locally.
 - `node --check sel_hub\sel_hub_module.js` - passed after the SEL Hub visual QA teacher-launch pending-tool fix.
 - `node dev-tools\check_sel_render.cjs --quiet` - passed after the SEL Hub visual QA teacher-launch pending-tool fix with no app-crash render failures across 70 SEL tools.
 - `node dev-tools\check_sel_a11y.cjs` - passed after the SEL Hub visual QA teacher-launch pending-tool fix with 0 errors, 0 warnings, and all 70 tools retaining standard shell coverage.

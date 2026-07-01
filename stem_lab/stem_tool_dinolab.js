@@ -5138,13 +5138,25 @@ window.StemLab = window.StemLab || {
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.dinoLab) || {};
       var upd = function (key, val) {
-        if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('dinoLab', key); }
+        if (typeof key === 'object' && key) {
+          if (ctx.updateMulti) ctx.updateMulti('dinoLab', key);
+          else if (ctx.update) Object.keys(key).forEach(function (k) { ctx.update('dinoLab', k, key[k]); });
+        }
         else { if (ctx.update) ctx.update('dinoLab', key, val); }
       };
       var announceToSR = ctx.announceToSR || function () {};
 
+      function strVal(value) { return value == null ? '' : String(value); }
+      function arrVal(value) { return Array.isArray(value) ? value : []; }
+      function numVal(value, fallback) { var n = Number(value); return isFinite(n) ? n : fallback; }
+      function modIndex(value, length) {
+        if (!length) return 0;
+        var n = Math.floor(numVal(value, 0));
+        return ((n % length) + length) % length;
+      }
+
       var tab = d.tab || 'explore';
-      var query = d.query || '';
+      var query = strVal(d.query);
       var filterPeriod = d.filterPeriod || 'all';
       var filterDiet = d.filterDiet || 'all';
       var sortBy = d.sortBy || 'name';
@@ -5586,8 +5598,8 @@ window.StemLab = window.StemLab || {
       }
 
       function renderDig() {
-        var seed = d.digSeed || 1;
-        var revealed = d.digRevealed || [];
+        var seed = Math.max(1, Math.floor(numVal(d.digSeed, 1)));
+        var revealed = arrVal(d.digRevealed);
         var guess = d.digGuess || null;
         var solved = d.digSolvedFor === seed;
         var rng = mulberry32(seed * 2654435761 % 4294967296);
@@ -5638,7 +5650,7 @@ window.StemLab = window.StemLab || {
           );
         });
         var sortPool = DINOS.filter(function (dn) { return dn.group !== 'other'; });
-        var sIdx = (d.sortIdx || 0) % sortPool.length;
+        var sIdx = modIndex(d.sortIdx, sortPool.length);
         var target = sortPool[sIdx];
         var sAnswered = d.sortAnswered || false, sPicked = d.sortPicked || null;
         var groups = [{ id: 'theropod', label: t('stem.dinolab.theropod_mostly_meat_eaters_two_legs', 'Theropod (mostly meat-eaters, two legs)') }, { id: 'sauropod', label: t('stem.dinolab.sauropodomorph_long_necked_plant_eater', 'Sauropodomorph (long-necked plant-eaters)') }, { id: 'ornithischian', label: t('stem.dinolab.ornithischian_bird_hipped_plant_eaters', 'Ornithischian (bird-hipped plant-eaters)') }];
@@ -5694,7 +5706,7 @@ window.StemLab = window.StemLab || {
       }
 
       function renderQuiz() {
-        var qIdx = (d.quizIdx || 0) % QUIZ.length;
+        var qIdx = modIndex(d.quizIdx, QUIZ.length);
         var q = QUIZ[qIdx];
         var picked = d.quizPicked, answered = d.quizAnswered || false, correctCount = d.quizCorrect || 0, doneCount = d.quizDone || 0;
         function pick(i) { if (answered) return; var isCorrect = i === q.answer; upd({ quizPicked: i, quizAnswered: true, quizCorrect: correctCount + (isCorrect ? 1 : 0), quizDone: doneCount + 1 }); announceToSR(isCorrect ? 'Correct' : 'Incorrect'); }
@@ -5716,11 +5728,12 @@ window.StemLab = window.StemLab || {
       }
 
       function renderGlossary() {
-        var gq = (d.glossaryQuery || '').trim().toLowerCase();
+        var glossaryQuery = strVal(d.glossaryQuery);
+        var gq = glossaryQuery.trim().toLowerCase();
         var list = GLOSSARY.slice().sort(function (a, b) { return a.term < b.term ? -1 : 1; });
         if (gq) list = list.filter(function (g) { return (g.term + ' ' + g.def).toLowerCase().indexOf(gq) !== -1; });
         var rows = list.map(function (g) { return el('div', { key: g.term, style: { padding: '8px 0', borderBottom: '1px solid ' + T.border } }, el('div', { style: { fontWeight: 700, fontSize: 13.5, color: T.text } }, g.term), el('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.5, marginTop: 2 } }, g.def)); });
-        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: d.glossaryQuery || '', placeholder: t('stem.dinolab.search_terms', 'Search terms...'), 'aria-label': t('stem.dinolab.search_glossary', 'Search glossary'), onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
+        return el('div', null, sectionTitle('📖', 'Glossary', 'The words paleontologists use, in plain language.'), el('input', { type: 'text', value: glossaryQuery, placeholder: t('stem.dinolab.search_terms', 'Search terms...'), 'aria-label': t('stem.dinolab.search_glossary', 'Search glossary'), onChange: function (e) { upd('glossaryQuery', e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 14, marginBottom: 10 } }), panel(rows.length ? rows : el('div', { style: { color: T.soft, fontSize: 13 } }, 'No terms match that search.')));
       }
 
       function renderBirds() {
@@ -5741,7 +5754,7 @@ window.StemLab = window.StemLab || {
         var evCards = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } }, evidence.map(function (ev) {
           return panel([el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 4 } }, ev.icon + ' ' + ev.title), el('div', { key: 't', style: { fontSize: 12.5, color: T.soft, lineHeight: 1.5 } }, ev.text)], { key: ev.title });
         }));
-        var fchips = el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, feathered.map(function (dn) {
+        var fchips = el('div', { key: 'chips', style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, feathered.map(function (dn) {
           return el('button', { key: dn.id, onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, 'aria-label': 'Open ' + dn.common, style: { fontSize: 11, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + T.border, background: T.deeper, color: T.text } }, dn.common);
         }));
         return el('div', null,
