@@ -23375,6 +23375,11 @@
       return 'Student work';
     }
 
+    function portfolioSourceKey(artifact, packet) {
+      var label = portfolioSourceLabel(artifact, packet);
+      return String(label || 'Student work').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'student-work';
+    }
+
     function portfolioKindLabel(artifact, packet) {
       artifact = artifact || {};
       packet = packet || {};
@@ -23490,8 +23495,30 @@
       if (state.activeModal !== 'student-portfolio') return null;
       var artifacts = (Array.isArray(state.studentArtifacts) ? state.studentArtifacts : readStudentArtifacts()).slice();
       artifacts.sort(function(a, b) {
-        return Date.parse((b && (b.createdAt || b.updatedAt)) || 0) - Date.parse((a && (a.createdAt || a.updatedAt)) || 0);
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
       });
+      var activeFilter = state.portfolioFilter || 'all';
+      var sourceCounts = {};
+      var sourceLabels = {};
+      artifacts.forEach(function(artifact) {
+        var packet = portfolioArtifactPacket(artifact);
+        var key = portfolioSourceKey(artifact, packet);
+        sourceCounts[key] = (sourceCounts[key] || 0) + 1;
+        sourceLabels[key] = portfolioSourceLabel(artifact, packet);
+      });
+      var sourceFilters = Object.keys(sourceCounts).sort(function(a, b) {
+        return String(sourceLabels[a] || a).localeCompare(String(sourceLabels[b] || b));
+      });
+      var visibleArtifacts = activeFilter === 'all'
+        ? artifacts
+        : artifacts.filter(function(artifact) {
+          var packet = portfolioArtifactPacket(artifact);
+          return portfolioSourceKey(artifact, packet) === activeFilter;
+        });
+      if (activeFilter !== 'all' && sourceFilters.indexOf(activeFilter) === -1) {
+        activeFilter = 'all';
+        visibleArtifacts = artifacts;
+      }
       var formatDate = function(value) {
         if (!value) return 'Saved product';
         try { return new Date(value).toLocaleDateString(); } catch (e) { return 'Saved product'; }
@@ -23543,9 +23570,38 @@
             }, 'x')
           ),
           artifacts.length ? h('div', {
+            role: 'group',
+            'aria-label': 'Filter portfolio products by source',
+            style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }
+          },
+            [{ id: 'all', label: 'All', count: artifacts.length }].concat(sourceFilters.map(function(key) {
+              return { id: key, label: sourceLabels[key] || 'Student work', count: sourceCounts[key] || 0 };
+            })).map(function(option) {
+              var active = activeFilter === option.id;
+              return h('button', {
+                key: option.id,
+                type: 'button',
+                onClick: function() { setStateField('portfolioFilter', option.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                'aria-label': 'Show ' + option.label + ' portfolio products, ' + option.count + ' item' + (option.count === 1 ? '' : 's'),
+                style: {
+                  minHeight: '32px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  background: active ? palette.accent : palette.surface,
+                  color: active ? (palette.onAccent || palette.bg) : palette.text,
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  padding: '6px 10px'
+                }
+              }, option.label + ' - ' + option.count);
+            })
+          ) : null,
+          visibleArtifacts.length ? h('div', {
             style: { display: 'flex', flexDirection: 'column', gap: '12px' }
           },
-            artifacts.map(function(artifact, idx) {
+            visibleArtifacts.map(function(artifact, idx) {
               artifact = artifact || {};
               var packet = portfolioArtifactPacket(artifact);
               var items = portfolioArtifactItems(artifact, packet);
@@ -23632,7 +23688,9 @@
               );
             })
           ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
-            'No portfolio products are loaded yet. Create one in SEL Hub, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
+            artifacts.length
+              ? 'No portfolio products match this source filter.'
+              : 'No portfolio products are loaded yet. Create one in SEL Hub, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
             h('button', {
               onClick: function() { setStateField('activeModal', null); },

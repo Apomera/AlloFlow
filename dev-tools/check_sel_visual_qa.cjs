@@ -103,6 +103,36 @@ const SAMPLE_ARTIFACTS = [
       { id: 'scene', title: 'Scene 1', toolLabel: 'Adventure Mode', privacy: 'full', text: 'The canopy opened above a flooded trail, and your team had to choose a safe path.' },
       { id: 'choice', title: 'Student choice', toolLabel: 'Adventure Mode', privacy: 'full', text: 'You asked the group to check the map before rushing forward.' }
     ]
+  },
+  {
+    id: 'poettree-visual',
+    type: 'poettree-poem',
+    source: 'poettree',
+    sourceLabel: 'PoetTree',
+    kindLabel: 'Poem',
+    title: 'Steady Hands',
+    summary: 'A student poem with 8 lines',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    poemTitle: 'Steady Hands',
+    poemText: 'I breathe and count the window light. I name one thing that stayed.'
+  },
+  {
+    id: 'story-stage-visual',
+    type: 'story-stage-performance',
+    source: 'story-stage',
+    sourceLabel: 'Story Stage',
+    kindLabel: 'Performance',
+    title: 'Kindness Scene',
+    summary: 'Short performance script with 2 lines',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    script: {
+      lines: [
+        { id: 'line-1', character: 'Narrator', text: 'The class paused and made space for a quieter voice.' },
+        { id: 'line-2', character: 'Student', text: 'I can try again if someone reads the first line with me.' }
+      ]
+    }
   }
 ];
 
@@ -305,6 +335,10 @@ async function mountAlloHaven(page, scenario) {
   await page.getByRole('button', { name: /Open my portfolio/i }).first().waitFor({ state: 'visible', timeout: 20000 });
   await page.getByRole('button', { name: /Open my portfolio/i }).first().click();
   await page.locator('[role="dialog"][aria-label="My portfolio"]').waitFor({ state: 'visible', timeout: 20000 });
+  if (scenario.filterSource) {
+    await page.getByRole('button', { name: new RegExp('Show ' + scenario.filterSource + ' portfolio products', 'i') }).first().click();
+    await page.waitForTimeout(200);
+  }
   await page.waitForTimeout(400);
 }
 
@@ -450,6 +484,7 @@ function summarize(results) {
     { name: 'sel-station-builder-mobile-high-contrast', kind: 'sel', theme: 'high-contrast', viewport: { width: 390, height: 844 }, surface: 'station-builder', selector: '[role="region"][aria-label="Station Builder"]', minText: 400 },
     { name: 'sel-for-educators-tablet-dark', kind: 'sel', theme: 'dark', viewport: { width: 820, height: 900 }, surface: 'for-educators', selector: '#sel-for-educators-modal', minText: 700 },
     { name: 'allohaven-portfolio-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 500 },
+    { name: 'allohaven-portfolio-filter-sel-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, filterSource: 'SEL Hub', selector: '[role="dialog"][aria-label="My portfolio"]', minText: 300 },
     { name: 'allohaven-portfolio-mobile-high-contrast', kind: 'allohaven', theme: 'high-contrast', viewport: { width: 390, height: 844 }, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 500 }
   ];
   let browser;

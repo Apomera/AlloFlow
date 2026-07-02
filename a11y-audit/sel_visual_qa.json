@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T02:37:30.424Z",
+  "generatedAt": "2026-07-02T16:32:02.144Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
-    "total": 30,
-    "passed": 30,
+    "total": 35,
+    "passed": 35,
     "failed": 0
   },
   "scenarios": [
@@ -81,14 +81,14 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 140995
+            "bytes": 140835
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1673,
+            "textLength": 1817,
             "controlCount": 11
           }
         },
@@ -113,7 +113,7 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1673,
+        "textLength": 1817,
         "controlCount": 11,
         "bodyScrollWidth": 1280,
         "viewportWidth": 1280,
@@ -251,15 +251,15 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 106851
+            "bytes": 106067
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1148,
-            "controlCount": 5
+            "textLength": 1700,
+            "controlCount": 13
           }
         },
         {
@@ -283,14 +283,71 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1148,
-        "controlCount": 5,
+        "textLength": 1700,
+        "controlCount": 13,
         "bodyScrollWidth": 1280,
         "viewportWidth": 1280,
         "overflowOffenders": [],
         "clippedControls": []
       },
       "screenshot": "a11y-audit\\sel_visual_qa\\allohaven-portfolio-desktop-light.png"
+    },
+    {
+      "name": "allohaven-portfolio-filter-sel-desktop-light",
+      "kind": "allohaven",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "filterSource": "SEL Hub",
+      "selector": "[role=\"dialog\"][aria-label=\"My portfolio\"]",
+      "minText": 300,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 102567
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 454,
+            "controlCount": 9
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 454,
+        "controlCount": 9,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\allohaven-portfolio-filter-sel-desktop-light.png"
     },
     {
       "name": "allohaven-portfolio-mobile-high-contrast",
@@ -307,15 +364,15 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 40753
+            "bytes": 41349
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1148,
-            "controlCount": 5
+            "textLength": 1700,
+            "controlCount": 13
           }
         },
         {
@@ -339,8 +396,8 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1148,
-        "controlCount": 5,
+        "textLength": 1700,
+        "controlCount": 13,
         "bodyScrollWidth": 390,
         "viewportWidth": 390,
         "overflowOffenders": [],

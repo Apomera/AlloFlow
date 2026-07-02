@@ -1,6 +1,6 @@
 # SEL Visual QA
 
-Generated: 2026-07-02T02:37:30.424Z
+Generated: 2026-07-02T16:32:02.144Z
 
 Harness: public module visual fixture
 
@@ -8,9 +8,9 @@ Screenshots: a11y-audit\sel_visual_qa
 
 ## Summary
 
-- Passed: 30
+- Passed: 35
 - Failed: 0
-- Scenarios: 6
+- Scenarios: 7
 
 ## Checks
 
@@ -48,6 +48,14 @@ Screenshots: a11y-audit\sel_visual_qa
 
 ### allohaven-portfolio-desktop-light
 - Screenshot: a11y-audit\sel_visual_qa\allohaven-portfolio-desktop-light.png
+- PASS nonblank-screenshot
+- PASS readable-surface
+- PASS no-horizontal-page-overflow
+- PASS no-unexpected-container-overflow
+- PASS no-clipped-controls
+
+### allohaven-portfolio-filter-sel-desktop-light
+- Screenshot: a11y-audit\sel_visual_qa\allohaven-portfolio-filter-sel-desktop-light.png
 - PASS nonblank-screenshot
 - PASS readable-surface
 - PASS no-horizontal-page-overflow

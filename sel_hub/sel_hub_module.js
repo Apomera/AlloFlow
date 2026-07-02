@@ -176,6 +176,10 @@
           var purpose = meta.purpose || tool.desc || tool.description || 'Practice one SEL skill with care.';
           if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
           var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
+          var savePolicy = (typeof ctx.getSavePolicy === 'function') ? ctx.getSavePolicy(id) : {
+            checkpointLabel: 'Private checkpoint',
+            sharePacketLabel: 'Share Packet eligible'
+          };
 
           function requestSave() {
             if (ctx.props && typeof ctx.props.onExportRequested === 'function') {
@@ -272,12 +276,12 @@
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                 pill(meta.time || 'SEL practice'),
-                pill('Private on this device'),
-                pill('Save before closing'),
+                pill(savePolicy.checkpointLabel || 'Private checkpoint'),
+                pill(savePolicy.sharePacketLabel || 'Share Packet eligible'),
                 h('button', {
                   type: 'button',
                   onClick: requestSave,
-                  'aria-label': 'Save or export SEL work now',
+                  'aria-label': 'Export SEL project file now',
                   style: {
                     minHeight: 36,
                     borderRadius: 8,
@@ -289,7 +293,7 @@
                     fontWeight: 900,
                     padding: '7px 12px'
                   }
-                }, 'Save now')
+                }, 'Export now')
               )
             ),
             h('div', {
@@ -309,6 +313,10 @@
               h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
                 h('strong', { style: { color: muted, marginRight: 6 } }, 'Next step'),
                 nextStep
+              ),
+              h('p', { style: { margin: 0, flex: '1 1 260px', color: text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: muted, marginRight: 6 } }, 'Saved work'),
+                'Tool checkpoints stay private here unless you choose them for a Share Packet.'
               )
             ),
             h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
@@ -2114,6 +2122,72 @@
         return text;
       }
 
+      function _selCheckpointSavePolicy(toolId) {
+        var tool = _selToolById(toolId);
+        return {
+          checkpointLabel: 'Private checkpoint',
+          confirmation: 'Checkpoint saved privately.',
+          privacy: 'student-controlled',
+          privacyLabel: 'Private on this device',
+          sharePacketEligible: true,
+          sharePacketLabel: 'Share Packet eligible',
+          sharePacketDefaultPrivacy: 'summary',
+          sharePacketPrivacyLabel: 'Defaults to summary only',
+          sharePacketHint: 'It can appear in a Share Packet only if the student chooses it.',
+          sourceLabel: tool ? tool.label : 'SEL Hub'
+        };
+      }
+
+      function _normalizeSelCheckpoint(toolId, label, data, options) {
+        options = options || {};
+        if (toolId && typeof toolId === 'object') {
+          options = toolId;
+          toolId = options.toolId || options.tool || selHubTool || 'sel';
+          label = options.label || options.title;
+          data = options.data || options.value || options.snapshot || {};
+        }
+        toolId = toolId || selHubTool || 'sel';
+        var tool = _selToolById(toolId);
+        var ts = options.ts || Date.now();
+        var policy = _selCheckpointSavePolicy(toolId);
+        var eligible = options.sharePacketEligible === false ? false : policy.sharePacketEligible;
+        return {
+          id: options.id || (toolId + '-' + ts),
+          type: 'sel-checkpoint',
+          kind: 'sel-checkpoint',
+          source: 'sel_hub',
+          sourceLabel: 'SEL Hub',
+          tool: toolId,
+          toolId: toolId,
+          toolLabel: options.toolLabel || (tool ? tool.label : policy.sourceLabel),
+          label: label || options.title || (tool ? tool.label + ' checkpoint' : 'SEL checkpoint'),
+          title: label || options.title || (tool ? tool.label + ' checkpoint' : 'SEL checkpoint'),
+          data: data || {},
+          ts: ts,
+          createdAt: new Date(ts).toISOString(),
+          privacy: options.privacy || policy.privacy,
+          privacyLabel: options.privacyLabel || policy.privacyLabel,
+          saveConfirmation: options.confirmation || policy.confirmation,
+          sharePacketEligible: eligible,
+          sharePacketLabel: eligible ? policy.sharePacketLabel : 'Not included in Share Packets',
+          sharePacketDefaultPrivacy: options.sharePacketDefaultPrivacy || policy.sharePacketDefaultPrivacy,
+          sharePacketPrivacyLabel: options.sharePacketPrivacyLabel || policy.sharePacketPrivacyLabel,
+          sharePacketHint: options.sharePacketHint || policy.sharePacketHint
+        };
+      }
+
+      function _saveSelCheckpoint(toolId, label, data, options) {
+        var checkpoint = _normalizeSelCheckpoint(toolId, label, data, options);
+        setSelSnapshots(function(prev) {
+          var next = (prev || []).concat([checkpoint]);
+          next.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+          return next.slice(0, 30);
+        });
+        if (typeof addToast === 'function') addToast(checkpoint.saveConfirmation + ' You choose later if it joins a Share Packet.', 'success');
+        if (announceToSR) announceToSR(checkpoint.saveConfirmation + ' It remains private unless selected for a Share Packet.');
+        return checkpoint;
+      }
+
       function _selArtifactPacket(artifact) {
         if (!artifact || typeof artifact !== 'object') return {};
         if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
@@ -2149,6 +2223,7 @@
       function _selSharePacketItems() {
         var items = (Array.isArray(selSnapshots) ? selSnapshots : []).map(function(snap, idx) {
           if (!snap) return null;
+          if (snap.sharePacketEligible === false) return null;
           var toolId = snap.tool || snap.toolId;
           var tool = _selToolById(toolId);
           var title = snap.label || (tool ? tool.label : 'Saved SEL work');
@@ -2162,7 +2237,12 @@
             title: title,
             text: text,
             summary: text ? _selPacketCleanText(text, 220) : ('Saved checkpoint from ' + (tool ? tool.label : 'SEL Hub') + '.'),
-            ts: snap.ts || snap.timestamp || 0
+            ts: snap.ts || snap.timestamp || 0,
+            privacyLabel: snap.privacyLabel || 'Private on this device',
+            sharePacketLabel: snap.sharePacketLabel || 'Share Packet eligible',
+            sharePacketDefaultPrivacy: snap.sharePacketDefaultPrivacy || 'summary',
+            sharePacketPrivacyLabel: snap.sharePacketPrivacyLabel || 'Defaults to summary only',
+            sharePacketHint: snap.sharePacketHint || 'It can appear in a Share Packet only if the student chooses it.'
           };
         }).filter(Boolean);
         var seen = {};
@@ -2382,7 +2462,7 @@
         var packetItems = _selSharePacketItems().filter(function(item) { return !item.fromSavedPacket; });
         var nextSelections = {};
         packetItems.slice(0, Math.min(4, packetItems.length)).forEach(function(item) {
-          nextSelections[item.id] = 'summary';
+          nextSelections[item.id] = item.sharePacketDefaultPrivacy || 'summary';
         });
         setActiveSharePacketArtifactId(null);
         setPacketSelections(nextSelections);
@@ -2791,7 +2871,7 @@
                         'aria-label': (selected ? 'Remove ' : 'Add ') + item.title + ' from SEL Share Packet',
                         onChange: function(e) {
                           var next = Object.assign({}, packetSelections || {});
-                          if (e.target.checked) next[item.id] = next[item.id] || 'summary';
+                          if (e.target.checked) next[item.id] = next[item.id] || item.sharePacketDefaultPrivacy || 'summary';
                           else delete next[item.id];
                           setPacketSelections(next);
                           setPacketSavedNotice('');
@@ -2807,6 +2887,14 @@
                           )
                         ),
                         h('p', { style: { margin: '0 0 8px', fontSize: 11, lineHeight: 1.4, color: _t.textMuted } }, item.summary),
+                        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 } },
+                          [item.privacyLabel || 'Private on this device', item.sharePacketPrivacyLabel || 'Defaults to summary only'].map(function(label) {
+                            return h('span', {
+                              key: label,
+                              style: { border: '1px solid ' + _t.border, borderRadius: 999, padding: '2px 7px', color: _t.textMuted, background: _t.bgSoft, fontSize: 10, fontWeight: 800 }
+                            }, label);
+                          })
+                        ),
                         h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 10.5, fontWeight: 800, color: _t.textMuted } },
                           'Sharing choice',
                           h('select', {
@@ -3882,14 +3970,10 @@
           // ── Snapshots ──
           toolSnapshots: selSnapshots,
           setToolSnapshots: setSelSnapshots,
-          saveSnapshot: function(toolId, label, data) {
-            setSelSnapshots(function(prev) {
-              var ts = Date.now();
-              var next = (prev || []).concat([{ id: toolId + '-' + ts, tool: toolId, label: label, data: data, ts: ts }]);
-              next.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
-              return next.slice(0, 30);
-            });
-          },
+          saveSnapshot: _saveSelCheckpoint,
+          saveCheckpoint: _saveSelCheckpoint,
+          getSavePolicy: _selCheckpointSavePolicy,
+          savePolicy: _selCheckpointSavePolicy(selHubTool),
 
           // ── Accessibility helpers ──
           srOnly: function(text) { return h('span', { className: 'sr-only' }, text); },

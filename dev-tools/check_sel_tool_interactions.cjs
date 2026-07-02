@@ -258,6 +258,24 @@ async function auditTool(page, scenario, tool) {
     details: readable
   });
 
+  const saveCues = await page.evaluate(function () {
+    const shell = document.querySelector('[data-sel-standard-shell]');
+    const text = (shell && shell.innerText || '').replace(/\s+/g, ' ').trim();
+    const exportButton = shell ? shell.querySelector('button[aria-label="Export SEL project file now"]') : null;
+    return {
+      hasStandardShell: !!shell,
+      hasPrivateCheckpoint: /Private checkpoint/.test(text),
+      hasSharePacketEligible: /Share Packet eligible/.test(text),
+      hasSavedWorkCue: /Tool checkpoints stay private here unless you choose them for a Share Packet/.test(text),
+      hasExportButton: !!exportButton
+    };
+  });
+  checks.push({
+    id: 'tool-save-consistency-cues',
+    pass: saveCues.hasStandardShell && saveCues.hasPrivateCheckpoint && saveCues.hasSharePacketEligible && saveCues.hasSavedWorkCue && saveCues.hasExportButton,
+    details: saveCues
+  });
+
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
   const activeAfterTabs = await activeInfo(page);
