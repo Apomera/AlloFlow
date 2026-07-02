@@ -172,6 +172,27 @@
     document.head.appendChild(_s);
   }
 
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-stem-platetectonics-refine-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-platetectonics-refine-css';
+    st.textContent = [
+      '.pt-sim-shell{max-width:1100px;margin:0 auto}',
+      '.pt-mission-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr);gap:12px;align-items:stretch}',
+      '.pt-mission-card{border-radius:18px;border:1px solid rgba(248,113,113,.36);background:linear-gradient(135deg,rgba(255,247,237,.96),rgba(254,242,242,.98));box-shadow:0 14px 34px rgba(127,29,29,.12);padding:14px}',
+      '.pt-dark-card{background:linear-gradient(135deg,rgba(30,41,59,.82),rgba(15,23,42,.92));border-color:rgba(248,113,113,.24);box-shadow:0 14px 34px rgba(2,6,23,.28)}',
+      '.pt-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.pt-canvas-shell{border-radius:20px;padding:10px;background:linear-gradient(180deg,#170f21,#070710);border:1px solid rgba(251,146,60,.45);box-shadow:0 20px 46px rgba(127,29,29,.24),inset 0 1px 0 rgba(255,255,255,.08);overflow:hidden}',
+      '.pt-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
+      '.pt-control-grid{display:grid;grid-template-columns:minmax(170px,1fr) repeat(3,max-content);gap:10px;align-items:center}',
+      '.pt-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}',
+      '.pt-primary-canvas{width:100%;min-height:360px;border-radius:14px;border:1px solid rgba(251,146,60,.28);box-shadow:inset 0 0 46px rgba(251,146,60,.12);touch-action:none}',
+      '@media(max-width:860px){.pt-mission-grid{grid-template-columns:1fr}.pt-metric-grid{grid-template-columns:1fr}.pt-control-grid{grid-template-columns:1fr}.pt-canvas-shell{padding:6px}.pt-primary-canvas{min-height:320px}.pt-canvas-toolbar{align-items:flex-start}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // ===============================================================
   // -- INTERACTIVE EPICENTER (TRIANGULATION) --
   // Three seismograph stations report S-P time differences after a
@@ -5252,6 +5273,71 @@ var d = labToolData.plateTectonics || {};
             }
           }, [simTab]);
 
+          function renderSimulationFocus() {
+            var quakeTotal = d.quakeCount || 0;
+            var eruptionTotal = d.eruptionCount || 0;
+            var challengeTotal = (d.completedChallenges || []).length;
+            var status = quakeTotal || eruptionTotal ? 'Active investigation' : 'Ready to investigate';
+            var cue = selectedPlate
+              ? 'Study the ' + selectedPlate + ' plate, then drag nearby crust to compare boundary behavior.'
+              : 'Drag one plate toward another, pull plates apart, or slide them sideways to compare boundary behavior.';
+            var metrics = [
+              ['Motion speed', speed + 'x', showConvection ? 'currents visible' : 'surface only'],
+              ['Events', quakeTotal + ' quakes', eruptionTotal + ' eruptions'],
+              ['Research', challengeTotal + '/' + CHALLENGES.length, (d.researchPoints || 0) + ' RP']
+            ];
+            return React.createElement('div', {
+              className: 'pt-mission-grid',
+              'data-pt-sim-focus': 'true'
+            },
+              React.createElement('div', { className: 'pt-mission-card ' + (isDark ? 'pt-dark-card' : '') },
+                React.createElement('div', { className: 'flex items-center justify-between gap-3 flex-wrap mb-2' },
+                  React.createElement('div', null,
+                    React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider ' + (isDark ? 'text-orange-300' : 'text-red-700') }, 'Boundary mission'),
+                    React.createElement('h3', { className: 'text-2xl font-black leading-tight ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, status)
+                  ),
+                  React.createElement('div', { className: 'flex gap-2 flex-wrap' },
+                    React.createElement('span', { className: 'pt-chip ' + (showLabels ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700') }, showLabels ? 'Labels on' : 'Labels off'),
+                    React.createElement('span', { className: 'pt-chip ' + (showConvection ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-700') }, showConvection ? 'Convection on' : 'Convection off')
+                  )
+                ),
+                React.createElement('p', { className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, cue),
+                React.createElement('div', { className: 'mt-3 flex gap-2 flex-wrap' },
+                  React.createElement('button', {
+                    onClick: function() { upd({ showLabels: !showLabels }); },
+                    'aria-pressed': showLabels,
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showLabels ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-red-700 border border-red-200'))
+                  }, showLabels ? 'Hide labels' : 'Show labels'),
+                  React.createElement('button', {
+                    onClick: function() { upd({ showConvection: !showConvection }); },
+                    'aria-pressed': showConvection,
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-600 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
+                  }, showConvection ? 'Hide currents' : 'Show currents'),
+                  React.createElement('button', {
+                    onClick: function() {
+                      if (canvasRef._last && canvasRef._last._ptInit) {
+                        canvasRef._last.dispatchEvent(new CustomEvent('triggerEruption'));
+                      }
+                    },
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none'
+                  }, 'Trigger eruption')
+                )
+              ),
+              React.createElement('div', { className: 'pt-mission-card ' + (isDark ? 'pt-dark-card' : '') },
+                React.createElement('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (isDark ? 'text-orange-300' : 'text-slate-600') }, 'Live readout'),
+                React.createElement('div', { className: 'pt-metric-grid' },
+                  metrics.map(function(item) {
+                    return React.createElement('div', { key: item[0], className: 'rounded-xl border p-3 ' + (isDark ? 'border-slate-700 bg-slate-950/50' : 'border-red-100 bg-white/75') },
+                      React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
+                      React.createElement('div', { className: 'text-lg font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, item[1]),
+                      React.createElement('div', { className: 'text-[10px] font-mono ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[2])
+                    );
+                  })
+                )
+              )
+            );
+          }
+
 
 
           // â”€â”€ Canvas ref callback â”€â”€
@@ -6291,7 +6377,7 @@ var d = labToolData.plateTectonics || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto",
+              className: "pt-sim-shell max-w-6xl mx-auto",
               role: "region",
               "aria-label": __alloT('stem.platetectonics.plate_tectonics_keyboard_shortcuts_1_t', "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents."),
               tabIndex: 0,
@@ -6448,7 +6534,9 @@ var d = labToolData.plateTectonics || {};
 
             // ── TAB 1: SIMULATION ──
 
-            simTab === 'sim' && React.createElement("div", { className: "space-y-4" },
+            simTab === 'sim' && React.createElement("div", { className: "space-y-4", 'data-pt-sim-screen': 'true' },
+
+              renderSimulationFocus(),
 
               React.createElement("div", {
                 role: "note",
@@ -6460,18 +6548,30 @@ var d = labToolData.plateTectonics || {};
                 }
               },
                 React.createElement("strong", { style: { color: '#b91c1c' } }, "Goal: "),
-                __alloT('stem.platetectonics.drag_plates_toward_each_other_converge', "drag plates toward each other (convergent), apart (divergent), or sideways past each other (transform), and watch which boundary produces volcanoes, trenches, mid-ocean ridges, or earthquakes. Convection currents show why plates move; toggle them off (C key) to focus on surface features.")
+                __alloT('stem.platetectonics.drag_plates_toward_each_other_converge', "drag plates together, apart, or sideways. Watch the boundary clues: quakes, volcanoes, trenches, ridges, and convection currents all tell you what kind of plate interaction is happening.")
               ),
 
-              React.createElement("div", { className: "rounded-2xl overflow-hidden border-2 border-red-200 shadow-lg" },
+              React.createElement("div", { className: "pt-canvas-shell rounded-2xl border-2 border-red-200 shadow-lg", 'data-pt-sim-surface': 'true' },
+
+                React.createElement("div", { className: "pt-canvas-toolbar", 'data-pt-canvas-toolbar': 'true' },
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider text-orange-200" }, "Live tectonic model"),
+                    React.createElement("div", { className: "text-sm font-bold text-white" }, "Drag the crust plates and compare the boundary response")
+                  ),
+                  React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                    React.createElement("span", { className: "pt-chip bg-red-500/20 text-red-100 border border-red-400/30" }, speed + "x speed"),
+                    React.createElement("span", { className: "pt-chip bg-orange-500/20 text-orange-100 border border-orange-400/30" }, showConvection ? "Currents visible" : "Currents hidden"),
+                    React.createElement("span", { className: "pt-chip bg-slate-700 text-slate-100 border border-slate-500/40" }, showLabels ? "Labels visible" : "Labels hidden")
+                  )
+                ),
 
                 React.createElement("canvas", {
 
                   ref: canvasRef,
 
-                  'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), tabIndex: 0,
+                  'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization. Drag crust plates left or right to create convergent, divergent, and transform boundary events.'), role: 'img', tabIndex: 0, title: __alloT('stem.platetectonics.interactive_plate_tectonics_cross_sect', 'Interactive plate tectonics cross-section visualization'), 'data-pt-main-canvas': 'true',
 
-                  className: "w-full cursor-grab active:cursor-grabbing",
+                  className: "pt-primary-canvas w-full cursor-grab active:cursor-grabbing",
 
                   style: { height: '400px', display: 'block', background: '#1a1a2e' }
 
@@ -6481,15 +6581,15 @@ var d = labToolData.plateTectonics || {};
 
               // Controls
 
-              React.createElement("div", { className: "flex flex-wrap gap-3 items-center justify-center p-3 rounded-xl border " + (isDark ? "border-slate-800 bg-slate-950/60" : "border-red-200 bg-red-50") },
+              React.createElement("div", { className: "pt-control-grid p-3 rounded-xl border " + (isDark ? "border-slate-800 bg-slate-950/60" : "border-red-200 bg-red-50"), 'data-pt-sim-controls': 'true' },
 
-                React.createElement("label", { className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") }, __alloT('stem.platetectonics.speed', "\u23F1 Speed:")),
+                React.createElement("label", { htmlFor: "pt-speed-control", className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") },
+                  React.createElement("span", null, __alloT('stem.platetectonics.speed', "\u23F1 Speed:")),
+                  React.createElement("span", { className: "ml-2 font-black" }, speed + "\u00D7"),
+                  React.createElement("input", { id: "pt-speed-control", type: "range", "aria-label": __alloT('stem.platetectonics.simulation_speed_multiplier', "Simulation speed multiplier"), min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-full mt-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" })
+                ),
 
-                React.createElement("input", { type: "range", "aria-label": __alloT('stem.platetectonics.simulation_speed_multiplier', "Simulation speed multiplier"), min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" }),
-
-                React.createElement("span", { className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-500") }, speed + "\u00D7"),
-
-                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.labels', "Labels"),
+                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.labels', "Labels"), "aria-pressed": showLabels,
 
                   onClick: function() { upd({ showLabels: !showLabels }); },
 
@@ -6497,7 +6597,7 @@ var d = labToolData.plateTectonics || {};
 
                 }, __alloT('stem.platetectonics.labels_2', "\uD83C\uDFF7 Labels")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.currents', "Currents"),
+                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.currents', "Currents"), "aria-pressed": showConvection,
 
                   onClick: function() { upd({ showConvection: !showConvection }); },
 
@@ -6506,7 +6606,7 @@ var d = labToolData.plateTectonics || {};
                 }, __alloT('stem.platetectonics.currents_2', "\uD83C\uDF00 Currents")),
 
                 // 🌋 Erupt! button
-                React.createElement("button", { "aria-label": "Erupt!",
+                React.createElement("button", { "aria-label": "Trigger a volcanic eruption in the plate tectonics simulation", title: "Trigger volcanic eruption",
                   onClick: function() {
                     if (canvasRef._last && canvasRef._last._ptInit) {
                       // Dispatch eruption event
@@ -6530,6 +6630,22 @@ var d = labToolData.plateTectonics || {};
                   { id: 'grade5', label: __alloT('stem.platetectonics.grade_5', 'Grade 5'), hint: __alloT('stem.platetectonics.for_a_5th_grade_student_brief_and_frie', 'for a 5th grade student, brief and friendly') },
                   { id: 'hs', label: __alloT('stem.platetectonics.high_school', 'High School'), hint: __alloT('stem.platetectonics.for_a_high_school_earth_science_studen', 'for a high school earth-science student, accurate but accessible') }
                 ];
+                var aiOpen = !!(d.aiCoachOpen || aiText || aiLoading || aiError);
+                if (!aiOpen) {
+                  return React.createElement("div", {
+                    className: "p-3 rounded-xl border flex items-center justify-between gap-3 flex-wrap " + (isDark ? "border-purple-900/60 bg-purple-950/20" : "border-purple-200 bg-purple-50/60"),
+                    'data-pt-ai-coach': 'closed'
+                  },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-sm font-bold " + (isDark ? "text-purple-300" : "text-purple-700") }, __alloT('stem.platetectonics.ai_tectonics_tutor', "AI tectonics tutor")),
+                      React.createElement("div", { className: "text-[11px] " + (isDark ? "text-slate-300" : "text-slate-600") }, "Ask for a plain-language explanation when you want help interpreting the model.")
+                    ),
+                    React.createElement("button", {
+                      onClick: function() { upd({ aiCoachOpen: true }); },
+                      className: "transition-colors px-3 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                    }, "Open AI coach")
+                  );
+                }
                 function explain() {
                   if (typeof callGemini !== 'function') { upd({ aiError: 'AI tutor not available.' }); return; }
                   upd({ aiLoading: true, aiError: '', aiExplain: '' });
@@ -6549,7 +6665,7 @@ var d = labToolData.plateTectonics || {};
                 }
                 return React.createElement("div", {
                   className: "p-4 rounded-xl border-2 " + (isDark ? "border-purple-900/60 bg-purple-950/20" : "border-purple-200 bg-purple-50/60"),
-                  role: "region", "aria-label": __alloT('stem.platetectonics.ai_tectonics_tutor', "AI tectonics tutor")
+                  role: "region", "aria-label": __alloT('stem.platetectonics.ai_tectonics_tutor', "AI tectonics tutor"), 'data-pt-ai-coach': 'open'
                 },
                   React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-2" },
                     React.createElement("span", { className: "text-sm font-bold " + (isDark ? "text-purple-300" : "text-purple-700") }, __alloT('stem.platetectonics.explain_at_my_level', "\u2728 Explain at my level")),
@@ -6570,7 +6686,12 @@ var d = labToolData.plateTectonics || {};
                       disabled: aiLoading,
                       "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
                       className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
-                    }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                    }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain')),
+                    React.createElement("button", {
+                      onClick: function() { upd({ aiCoachOpen: false }); },
+                      className: "transition-colors px-2 py-1 rounded-lg text-[11px] font-bold " + (isDark ? "bg-slate-900 text-purple-300 border border-purple-900 hover:bg-slate-800" : "bg-white text-purple-700 border border-purple-200 hover:bg-purple-100"),
+                      "aria-label": "Close AI tectonics tutor"
+                    }, "Close")
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                   aiText && React.createElement("p", { className: "text-xs leading-relaxed rounded-lg p-3 border " + (isDark ? "bg-slate-900 text-slate-200 border-purple-900/50" : "bg-white text-slate-700 border-purple-100") }, aiText),
@@ -6722,6 +6843,7 @@ var d = labToolData.plateTectonics || {};
 
                     // Speed selector
                     React.createElement('select', {
+                      'aria-label': __alloT('stem.platetectonics.timelapse_playback_speed', 'Time-lapse playback speed'),
                       value: timelapseSpeed,
                       onChange: function(e) { upd({ timelapseSpeed: parseFloat(e.target.value) }); },
                       className: 'text-[11px] font-bold px-2 py-1 rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-900 text-red-400' : 'border-red-200 bg-white text-red-700')
