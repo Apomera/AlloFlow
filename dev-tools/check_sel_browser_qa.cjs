@@ -215,7 +215,8 @@ async function auditFocusTrap(page, modalId, triggerName) {
   await page.locator('#' + modalId).waitFor({ state: 'detached', timeout: 10000 });
   await page.waitForTimeout(150);
   const restored = await activeInfo(page);
-  const restoredToTrigger = restored && (new RegExp(triggerName, 'i').test(restored.aria) || new RegExp(triggerName, 'i').test(restored.text));
+  const restoredIsControl = restored && restored.tag !== 'body' && restored.tag !== 'html';
+  const restoredToTrigger = restoredIsControl && (new RegExp(triggerName, 'i').test(restored.aria) || new RegExp(triggerName, 'i').test(restored.text));
 
   return {
     pass: allInside && !!restoredToTrigger,
@@ -303,10 +304,13 @@ async function runScenario(browser, scenario) {
         const explainerFocus = await activeInfo(page);
         await explainer.locator('[data-primary-action]').first().click();
         await explainer.waitFor({ state: 'detached', timeout: 10000 });
+        await page.waitForTimeout(150);
+        const afterExplainerDismiss = await activeInfo(page);
         result.checks.push({
           id: 'first-run-explainer-dismissable',
-          pass: !!explainerFocus && explainerFocus.inExplainer,
-          activeBeforeDismiss: explainerFocus
+          pass: !!explainerFocus && explainerFocus.inExplainer && !!afterExplainerDismiss && afterExplainerDismiss.tag !== 'body' && afterExplainerDismiss.tag !== 'html' && !afterExplainerDismiss.inExplainer,
+          activeBeforeDismiss: explainerFocus,
+          activeAfterDismiss: afterExplainerDismiss
         });
       }
 

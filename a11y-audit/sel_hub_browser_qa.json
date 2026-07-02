@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T00:27:16.760Z",
+  "generatedAt": "2026-07-02T00:34:06.983Z",
   "harness": "standalone SEL Hub browser fixture",
   "summary": {
     "total": 12,
-    "failed": 1,
-    "passed": 11
+    "failed": 0,
+    "passed": 12
   },
   "scenarios": [
     {
@@ -46,6 +46,15 @@
             "inExplainer": true,
             "inSharePacket": false,
             "inEducators": false
+          },
+          "activeAfterDismiss": {
+            "tag": "button",
+            "id": "",
+            "text": "🎓 For Educators",
+            "aria": "For Educators: how to use this Hub responsibly",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
           }
         },
         {
@@ -55,10 +64,10 @@
           "allTabStopsInside": true,
           "focusRestoredToTrigger": true,
           "activeAfterClose": {
-            "tag": "body",
+            "tag": "button",
             "id": "",
-            "text": "Open SEL HubFor Educators guide opened❤️‍🔥 SEL HubElementary🎓 For Educators☀️L",
-            "aria": "",
+            "text": "🎓 For Educators",
+            "aria": "For Educators: how to use this Hub responsibly",
             "inExplainer": false,
             "inSharePacket": false,
             "inEducators": false
@@ -193,10 +202,10 @@
           "allTabStopsInside": true,
           "focusRestoredToTrigger": true,
           "activeAfterClose": {
-            "tag": "body",
+            "tag": "button",
             "id": "",
-            "text": "Open SEL HubCreate SEL Share Packet opened.❤️‍🔥 SEL HubElementary🎓 For Educato",
-            "aria": "",
+            "text": "Create Share Packet",
+            "aria": "Create SEL Share Packet from saved checkpoints",
             "inExplainer": false,
             "inSharePacket": false,
             "inEducators": false
@@ -326,12 +335,12 @@
         },
         {
           "id": "station-builder-focus-handoff",
-          "pass": false,
+          "pass": true,
           "activeAfterOpen": {
-            "tag": "body",
-            "id": "",
-            "text": "Open SEL HubStation builder opened❤️‍🔥 SEL HubElementary🎓 For Educators☀️Light",
-            "aria": "",
+            "tag": "input",
+            "id": "sel-station-name-input",
+            "text": "",
+            "aria": "Station name",
             "inExplainer": false,
             "inSharePacket": false,
             "inEducators": false

@@ -1,13 +1,13 @@
 # SEL Hub Browser QA
 
-Generated: 2026-07-02T00:27:16.760Z
+Generated: 2026-07-02T00:34:06.983Z
 
 Harness: standalone SEL Hub browser fixture
 
 ## Summary
 
-- Passed: 11
-- Failed: 1
+- Passed: 12
+- Failed: 0
 - Scenarios: 4
 
 ## Checks
@@ -18,7 +18,7 @@ Harness: standalone SEL Hub browser fixture
 - PASS first-run-explainer-dismissable
 - PASS for-educators-focus-trap
 - PASS share-packet-focus-trap
-- FAIL station-builder-focus-handoff
+- PASS station-builder-focus-handoff
 
 ### desktop-dark-responsive
 - PASS responsive-overflow
