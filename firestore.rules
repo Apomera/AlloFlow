@@ -100,10 +100,12 @@ service cloud.firestore {
         allow read, write: if authed();
       }
 
-      // ── Cross-session concept mastery ──────────────────────────────────
-      // Self-write only. Authed-read is intentional for now: teachers read
-      // students' docs for retention dashboards (proposal §2.2.3 discusses
-      // the design question). Contains status enums + timestamps only.
+      // ── Cross-session concept mastery — RETIRED 2026-07-01 ─────────────
+      // The app no longer writes here (mastery is device-local; teachers get
+      // it via live P2P snapshots + student project files). Kept readable/
+      // self-writable only for clients running pre-migration builds; safe to
+      // flip to `allow read, write: if false;` once all surfaces are updated,
+      // and legacy docs can be bulk-deleted.
       match /public/data/conceptMastery/{uid} {
         allow write: if authed() && request.auth.uid == uid;
         allow read: if authed();

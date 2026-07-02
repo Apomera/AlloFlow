@@ -29,7 +29,7 @@ student-content bus. Every live feature is one of three transport patterns:
 | Resource sync / teacher push | Firestore (manifest + chunked assets) | No (teacher content) |
 | Live Polling | WebRTC star (teacher = host) | **Never** (signaling only) |
 | Concept Pictionary | WebRTC star (separate signaling collection) | **Never** (role/round metadata only) |
-| Live Quiz | Firestore `quizState.allResponses` | Structured answers only (see §5) |
+| Live Quiz | WebRTC star on `quiz-signaling` (2026-07-01); Firestore `quizState.allResponses` fallback-only | P2P primary; structured-only fallback |
 | Interactive organizers / visual supports / StoryForge | Firestore payload fields | Teacher-authored |
 | Bridge (family comms) | Firestore `bridgePayload` | Teacher free text — documented exception |
 | Arcade Pictionary, Adventure | Local only | No |

@@ -788,9 +788,18 @@ function LiveResultsDashboard(p) {
   var conceptMasteryByUid = conceptMasteryState[0];
   var setConceptMasteryByUid = conceptMasteryState[1];
   var rosterKeysSig = Object.keys(roster).sort().join(',');
+  // FERPA refit 2026-07-01: mastery now arrives as a prop from the shell
+  // (live peer-to-peer snapshots + project-file imports; device-local
+  // model). The Firestore fetch below survives ONLY as a legacy fallback
+  // for older shells that don't pass the prop.
+  var propMastery = p.conceptMasteryByUid;
   React.useEffect(function () {
     if (mode !== 'review') {
       setConceptMasteryByUid(null);
+      return;
+    }
+    if (propMastery !== undefined && propMastery !== null) {
+      setConceptMasteryByUid(propMastery);
       return;
     }
     var fb = window.__alloFirebase;
@@ -828,7 +837,7 @@ function LiveResultsDashboard(p) {
     return function () {
       cancelled = true;
     };
-  }, [mode, rosterKeysSig, appId]);
+  }, [mode, rosterKeysSig, appId, propMastery]);
   var aiGradedState = React.useState({});
   var aiGradedCache = aiGradedState[0];
   var setAiGradedCache = aiGradedState[1];
@@ -2879,7 +2888,8 @@ function QuizView(props) {
     activeSessionCode: activeSessionCode,
     callGemini: props.callGemini,
     callTTS: props.callTTS,
-    gradeLevel: props.gradeLevel
+    gradeLevel: props.gradeLevel,
+    conceptMasteryByUid: props.conceptMasteryByUid
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(TeacherLiveQuizControls, {

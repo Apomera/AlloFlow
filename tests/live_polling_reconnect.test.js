@@ -196,6 +196,30 @@ describe('reconnect-safe transport', () => {
     }
   });
 
+  it('honors a custom signalingPath so parallel stars (e.g. quiz) can coexist', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    const host = LP.createHost({ sessionCode: 'QROOM', signalingPath: 'quiz-signaling' });
+    await host.start();
+    // Guest on the same custom path reaches this host…
+    const qRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'quiz-signaling', 'QROOM', 'peers', 'stu-q');
+    await fb.setDoc(qRef, { offer: { type: 'offer', sdp: 'sdp-q' }, codename: 'Stu' });
+    await tick();
+    expect(host.peers.has('stu-q')).toBe(true);
+    // …while an offer on the DEFAULT polling path is invisible to it.
+    const pRef = fb.doc(fb.db, 'artifacts', 'test-app', 'public', 'data', 'signaling', 'QROOM', 'peers', 'stu-p');
+    await fb.setDoc(pRef, { offer: { type: 'offer', sdp: 'sdp-p' }, codename: 'Other' });
+    await tick();
+    expect(host.peers.has('stu-p')).toBe(false);
+
+    // Guest side writes its offer under the same custom path.
+    const guest = LP.createGuest({ sessionCode: 'QROOM', userUid: 'g-q', codename: 'Fox', signalingPath: 'quiz-signaling' });
+    await guest.join();
+    expect(fb._docs.has('artifacts/test-app/public/data/quiz-signaling/QROOM/peers/g-q')).toBe(true);
+    guest.leave();
+    host.stop();
+  });
+
   it('guest routes hostClosed to onHostClosed', async () => {
     const fb = makeFakeFirebase();
     window.__alloFirebase = fb;

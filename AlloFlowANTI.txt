@@ -4846,7 +4846,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0afab722'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=0afab722'); }; })();
     loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=0afab722');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=0afab722');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=785b29ba');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=0afab722');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=0afab722');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=0afab722');
@@ -4871,7 +4871,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=0afab722');
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=0afab722');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=0afab722');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=0afab722');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=f23596c7');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=0afab722');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
@@ -4928,7 +4928,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=0afab722');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=0afab722');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=0afab722');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=0afab722');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3d6f35b5');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=0afab722');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=0afab722');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=0afab722');
@@ -4962,7 +4962,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=0afab722');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=0afab722');
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=0afab722');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=0afab722');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=d08f960a');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=0afab722');
     loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=0afab722');
     loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=0afab722');
@@ -5673,6 +5673,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!lzLoaded) return;
       try { safeSetItem('allo_phoneme_mastery', JSON.stringify(phonemeMastery)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [phonemeMastery, lzLoaded]);
+  // Concept mastery is DEVICE-LOCAL by design (FERPA posture): the per-concept
+  // attempt history that used to live in the cloud conceptMastery/{uid} doc now
+  // stays on the student's device. It reaches the teacher only through
+  // user-controlled channels: (a) live peer-to-peer snapshots over the quiz
+  // WebRTC channel, (b) the student's saved project file. Never Firestore.
+  const [conceptMasteryLocal, setConceptMasteryLocal] = useState(() => {
+      try {
+          const parsed = JSON.parse(localStorage.getItem('allo_concept_mastery') || 'null');
+          return (parsed && parsed.attempts) ? parsed : { attempts: {} };
+      } catch(e) { return { attempts: {} }; }
+  });
+  useEffect(() => {
+      try { safeSetItem('allo_concept_mastery', JSON.stringify(conceptMasteryLocal)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [conceptMasteryLocal]);
+  // Teacher-side bank of mastery blocks imported from student project files
+  // (keyed by the student's uid when present, else a nickname-derived key) so
+  // the retention dashboard works from submitted files, not cloud reads.
+  const [importedConceptMastery, setImportedConceptMastery] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('allo_imported_mastery') || '{}') || {}; } catch(e) { return {}; }
+  });
+  useEffect(() => {
+      try { safeSetItem('allo_imported_mastery', JSON.stringify(importedConceptMastery)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [importedConceptMastery]);
   useEffect(() => {
       if (!lzLoaded) return;
       try { safeSetItem('allo_word_sounds_daily', JSON.stringify(wordSoundsDailyProgress)); } catch(e) { warnLog('localStorage write failed', e); }
@@ -7152,6 +7175,120 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // ack); guards against re-writing the same id on unrelated re-renders.
   const lastViewingSyncRef = useRef(undefined);
   const hasConnectedRef = useRef(false);
+  // ── Live-quiz peer-to-peer channel (FERPA: answers never stored) ──────
+  // Quiz answers ride a dedicated WebRTC star on the 'quiz-signaling'
+  // collection (same hardened transport as Live Polling, Pictionary-style
+  // coexistence). Students also stream their device-local concept-mastery
+  // snapshot over it (reserved pollId '__mastery__'). Firestore
+  // quizState.allResponses remains ONLY as a fallback when the channel
+  // isn't up; teacher consumers read the merged view below.
+  const quizHostRef = useRef(null);
+  const quizGuestRef = useRef(null);
+  const [quizJoinNonce, setQuizJoinNonce] = useState(0);
+  const quizRetryCountRef = useRef(0);
+  const quizRetryTimerRef = useRef(null);
+  const [liveQuizAnswers, setLiveQuizAnswers] = useState({});     // { uid: { qIdx: responsePayload } }
+  const [liveMasteryByUid, setLiveMasteryByUid] = useState({});   // { uid: { attempts } } — session-scoped, memory only
+  const conceptMasteryLocalRef = useRef(null);
+  useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
+  // Teacher: headless quiz host while a live quiz is armed.
+  useEffect(() => {
+      const LP = window.AlloModules && window.AlloModules.LivePolling;
+      const quizActive = !!(isTeacherMode && activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive);
+      if (!quizActive || !LP || !LP.PollingHost) {
+          if (quizHostRef.current) { try { quizHostRef.current.stop(); } catch(e) {} quizHostRef.current = null; }
+          setLiveQuizAnswers({});
+          setLiveMasteryByUid({});
+          return undefined;
+      }
+      if (quizHostRef.current) return undefined;
+      const host = new LP.PollingHost({
+          sessionCode: activeSessionCode,
+          signalingPath: 'quiz-signaling',
+          onResponse: (uid, codename, payload) => {
+              if (!payload) return;
+              if (payload.pollId === '__mastery__') {
+                  setLiveMasteryByUid(prev => ({ ...prev, [uid]: payload.response }));
+              } else {
+                  setLiveQuizAnswers(prev => ({ ...prev, [uid]: { ...(prev[uid] || {}), [payload.pollId]: payload.response } }));
+              }
+          },
+      });
+      host.start().catch(e => warnLog('Quiz channel host start failed:', e && e.message));
+      quizHostRef.current = host;
+      return () => {
+          try { host.stop(); } catch(e) {}
+          quizHostRef.current = null;
+      };
+  }, [isTeacherMode, activeSessionCode, sessionData && sessionData.quizState && sessionData.quizState.isActive]);
+  // Keep the quiz host's roster gate current as students join.
+  useEffect(() => {
+      if (quizHostRef.current && typeof quizHostRef.current.setAllowedUids === 'function') {
+          quizHostRef.current.setAllowedUids(Object.keys((sessionData && sessionData.roster) || {}));
+      }
+  }, [sessionData && sessionData.roster]);
+  // Student: headless quiz guest with capped auto-rejoin (mirrors the polling
+  // GuestOverlay's reconnect budget). On connect, shares the device-local
+  // mastery snapshot peer-to-peer so review-mode dashboards work live.
+  useEffect(() => {
+      const LP = window.AlloModules && window.AlloModules.LivePolling;
+      const quizActive = !!(!isTeacherMode && activeSessionCode && user && user.uid && sessionData && sessionData.quizState && sessionData.quizState.isActive);
+      if (!quizActive || !LP || !LP.PollingGuest) return undefined;
+      let disposed = false;
+      const REJOIN_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+      const scheduleRejoin = () => {
+          if (disposed || quizRetryCountRef.current >= 8) return;
+          const delay = REJOIN_DELAYS_MS[Math.min(quizRetryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+          quizRetryCountRef.current += 1;
+          if (quizRetryTimerRef.current) clearTimeout(quizRetryTimerRef.current);
+          quizRetryTimerRef.current = setTimeout(() => {
+              quizRetryTimerRef.current = null;
+              setQuizJoinNonce(n => n + 1);
+          }, delay);
+      };
+      const guest = new LP.PollingGuest({
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          signalingPath: 'quiz-signaling',
+          onConnected: () => {
+              quizRetryCountRef.current = 0;
+              try {
+                  const m = conceptMasteryLocalRef.current;
+                  if (m && m.attempts && Object.keys(m.attempts).length > 0) guest.sendResponse('__mastery__', m);
+              } catch(e) {}
+          },
+          onDisconnected: scheduleRejoin,
+          onFailed: scheduleRejoin,
+          onHostClosed: () => {},
+      });
+      guest.join().catch(() => scheduleRejoin());
+      quizGuestRef.current = guest;
+      return () => {
+          disposed = true;
+          if (quizRetryTimerRef.current) { clearTimeout(quizRetryTimerRef.current); quizRetryTimerRef.current = null; }
+          try { guest.leave(); } catch(e) {}
+          quizGuestRef.current = null;
+      };
+  }, [isTeacherMode, activeSessionCode, user && user.uid, sessionData && sessionData.quizState && sessionData.quizState.isActive, quizJoinNonce]);
+  // Merged teacher views: channel-received answers/mastery layered over the
+  // Firestore fallback so every consumer (dashboards, aggregators, routing
+  // rules) sees one coherent map regardless of which path each student used.
+  const quizMergedAllResponses = React.useMemo(() => {
+      const fsAll = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+      const liveUids = Object.keys(liveQuizAnswers);
+      if (liveUids.length === 0) return fsAll;
+      const merged = { ...fsAll };
+      liveUids.forEach(uid => { merged[uid] = { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
+      return merged;
+  }, [sessionData, liveQuizAnswers]);
+  const quizMergedSessionData = React.useMemo(() => {
+      if (!sessionData) return sessionData;
+      return { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses } };
+  }, [sessionData, quizMergedAllResponses]);
+  const teacherConceptMasteryByUid = React.useMemo(() => (
+      { ...importedConceptMastery, ...liveMasteryByUid }
+  ), [importedConceptMastery, liveMasteryByUid]);
   const [pptxLoaded, setPptxLoaded] = useState(false);
   const [progressionData, setProgressionData] = useState(null);
   const [isGeneratingProgression, setIsGeneratingProgression] = useState(false);
@@ -11266,7 +11403,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // minimal monolith state needed to drive template-type selection and
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
-  const [anchorChartType, setAnchorChartType] = useState('reference');
+  const [anchorChartType, setAnchorChartType] = useState('auto');
   const [showNotebook, setShowNotebook] = useState(false);
   const handleNoteUpdate = useCallback((key, value) => {
     setGeneratedContent(prev => {
@@ -12387,7 +12524,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           // measurement-reliability floor by averaging across >=2 items. Letting
           // a length-1 acrossQuestions slip through would defeat the floor.
           if (when.acrossQuestions.length < 2) return null;
-          const allByUidLocal = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+          const allByUidLocal = quizMergedAllResponses || {};
           const uidEntry = allByUidLocal[uid];
           if (!uidEntry) return null;
           const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
@@ -12460,10 +12597,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const responseValue = (typeof raw === 'number' && options[raw] !== undefined) ? options[raw] : raw;
           _applyMatch(uid, responseValue);
       });
-      const allMap = (sessionData.quizState.allResponses && sessionData.quizState.allResponses[qIdx]) || null;
       // allResponses is keyed { uid: { answer, itemType, ... } }, not { questionIdx: { uid: ... } }.
-      // Iterate the outer (uid) keys and only act on responses for the current questionIdx.
-      const allByUid = sessionData.quizState.allResponses || {};
+      // Iterate the outer (uid) keys and only act on responses for the current
+      // questionIdx. Reads the MERGED view (peer-to-peer channel + Firestore
+      // fallback) so routing rules fire regardless of transport.
+      const allByUid = quizMergedAllResponses || {};
       Object.keys(allByUid).forEach(uid => {
           if (already[uid]) return;
           const entry = allByUid[uid] && allByUid[uid][qIdx];
@@ -12475,7 +12613,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           _applyMatch(uid, responseValue);
       });
       routedQuizRef.current[qIdx] = already;
-  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, sessionData?.quizState?.allResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
+  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, quizMergedAllResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
   useEffect(() => {
       setUdlStandardGrade(gradeLevel);
   }, [gradeLevel]);
@@ -16920,21 +17058,34 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (isStructured) {
           responsePayload.answer = payload.answer;
       }
+      // FERPA-first transport: prefer the peer-to-peer quiz channel (answer
+      // lands only on the teacher's device, nothing stored). Firestore
+      // quizState.allResponses remains strictly as the fallback for students
+      // whose WebRTC connection isn't up (blocked UDP, mid-reconnect) —
+      // teacher consumers read the merged view either way.
+      let sentViaChannel = false;
       try {
-        await updateDoc(sessionRef, {
-            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
-        });
-      } catch (error) {
-           warnLog("Error submitting live answer:", error);
+          const g = quizGuestRef.current;
+          if (g) sentViaChannel = g.sendResponse(payload.questionIdx, responsePayload);
+      } catch (e) { sentViaChannel = false; }
+      if (!sentViaChannel) {
+          try {
+            await updateDoc(sessionRef, {
+                [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
+            });
+          } catch (error) {
+               warnLog("Error submitting live answer:", error);
+          }
       }
-      // Plan T v3: cross-session concept-mastery store. Skip silently when
-      // the submission has no conceptLabel (older quizzes or items without
-      // tags). Path is in /public/data/ so teachers can read other students'
-      // mastery during their sessions for retention dashboard.
+      // Plan T v3 (FERPA refit 2026-07-01): cross-session concept mastery is
+      // DEVICE-LOCAL now — the cloud conceptMastery/{uid} write was removed.
+      // The teacher's retention dashboard gets this data only through
+      // user-controlled channels: a live peer-to-peer snapshot on the quiz
+      // channel (below) and the student's saved project file. Skip silently
+      // when the submission has no conceptLabel (older quizzes/untagged items).
       if (payload.conceptLabel && typeof payload.conceptLabel === 'string') {
-          // Plan T v3+ Chunk 5: use shared normalizeConceptId so write path
-          // and aggregateRetentionCurve agree on which concept a label refers
-          // to. Falls back to inline trim+lowercase if module not yet loaded.
+          // Shared normalizeConceptId keeps the write path and
+          // aggregateRetentionCurve agreeing on which concept a label means.
           const _qla = window.AlloModules && window.AlloModules.QuizLiveAggregators;
           const conceptId = (_qla && typeof _qla.normalizeConceptId === 'function')
               ? _qla.normalizeConceptId(payload.conceptLabel)
@@ -16943,12 +17094,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           let status = 'submitted';
           if (payload.answer && payload.answer.idk === true) status = 'idk';
           else if (payload.answer && typeof payload.answer.status === 'string') status = payload.answer.status;
-          const masteryRef = doc(db, 'artifacts', appId, 'public', 'data', 'conceptMastery', user.uid);
-          try {
-              const snap = await getDoc(masteryRef);
-              const existing = snap.exists() ? (snap.data() || {}) : {};
-              const attempts = existing.attempts || {};
-              const concept = attempts[conceptId] || { label: payload.conceptLabel, totalAttempts: 0, correctAttempts: 0, idkCount: 0, recent: [], firstSeenTs: payload.timestamp || Date.now() };
+          setConceptMasteryLocal(prev => {
+              const attempts = { ...((prev && prev.attempts) || {}) };
+              const concept = { ...(attempts[conceptId] || { label: payload.conceptLabel, totalAttempts: 0, correctAttempts: 0, idkCount: 0, recent: [], firstSeenTs: payload.timestamp || Date.now() }) };
               concept.totalAttempts = (concept.totalAttempts || 0) + 1;
               if (status === 'correct') concept.correctAttempts = (concept.correctAttempts || 0) + 1;
               if (status === 'idk') concept.idkCount = (concept.idkCount || 0) + 1;
@@ -16957,10 +17105,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               concept.label = payload.conceptLabel;
               const newAttempt = { ts: payload.timestamp || Date.now(), status: status, sessionCode: activeSessionCode };
               concept.recent = ((concept.recent || []).concat(newAttempt)).slice(-10);
-              await setDoc(masteryRef, { uid: user.uid, attempts: { [conceptId]: concept } }, { merge: true });
-          } catch (mErr) {
-              warnLog("Error writing concept mastery:", mErr);
-          }
+              attempts[conceptId] = concept;
+              const next = { attempts };
+              // Opportunistic live share to the teacher (peer-to-peer, never stored).
+              try {
+                  const g = quizGuestRef.current;
+                  if (g && g.dc && g.dc.readyState === 'open') g.sendResponse('__mastery__', next);
+              } catch (e) {}
+              return next;
+          });
       }
   };
   const handleSetGroupResource = async (groupId, resourceId) => {
@@ -17958,6 +18111,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         applyGlobalCitations,
         chunkText,
         stickers,
+        conceptMasteryLocal,
+        user,
       });
     throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
   };
@@ -18036,6 +18191,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         warnLog,
         hydrateHistory,
         setStickers,
+        setConceptMasteryLocal,
+        // Teacher-side mastery bank for imported student files (retention
+        // dashboard reads this via teacherConceptMasteryByUid).
+        bankImportedConceptMastery: (m) => {
+            if (!m || !m.attempts) return;
+            const key = m.uid || ('file:' + (m.nickname || 'student'));
+            setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
+        },
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
@@ -21337,7 +21500,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         - persona — Interview historical figures.
         - dbq — Document-Based Question activity.
         - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
-        - anchor-chart — EL-style class anchor chart.
+        - anchor-chart — classroom visual reference poster.
         - math — Opens STEM Lab.
         - lesson-plan — Teacher synthesis. ALWAYS place LAST.
         - gemini-bridge — Interactive sim/app generator.
@@ -26886,7 +27049,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })}
                 {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
                     t, isTeacherMode, isParentMode, isIndependentMode,
-                    activeSessionCode, sessionData,
+                    // Merged session view: peer-to-peer quiz answers layered over
+                    // the Firestore fallback (see quizMergedSessionData).
+                    activeSessionCode, sessionData: quizMergedSessionData,
+                    // Retention-dashboard mastery: live P2P snapshots + project-file
+                    // imports (device-local model; no cloud conceptMastery reads).
+                    conceptMasteryByUid: teacherConceptMasteryByUid,
                     onSubmitLiveAnswer: handleSubmitLiveAnswer,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,

@@ -62,15 +62,19 @@
     if (typeof window.__app_id !== 'undefined') return window.__app_id;
     return 'default-app-id';
   };
-  const signalingDocRef = (sessionCode, peerUid) => {
+  // signalingPath lets other live features reuse this exact transport on
+  // their own signaling collection (the Pictionary-coexistence pattern) —
+  // e.g. the live quiz rides 'quiz-signaling' so poll and quiz stars can
+  // run simultaneously without answering each other's offers.
+  const signalingDocRef = (sessionCode, peerUid, signalingPath) => {
     const fb = getFb();
     if (!fb) return null;
-    return fb.doc(fb.db, 'artifacts', getAppId(), 'public', 'data', 'signaling', sessionCode, 'peers', peerUid);
+    return fb.doc(fb.db, 'artifacts', getAppId(), 'public', 'data', signalingPath || 'signaling', sessionCode, 'peers', peerUid);
   };
-  const signalingCollectionRef = (sessionCode) => {
+  const signalingCollectionRef = (sessionCode, signalingPath) => {
     const fb = getFb();
     if (!fb || !fb.collection) return null;
-    return fb.collection(fb.db, 'artifacts', getAppId(), 'public', 'data', 'signaling', sessionCode, 'peers');
+    return fb.collection(fb.db, 'artifacts', getAppId(), 'public', 'data', signalingPath || 'signaling', sessionCode, 'peers');
   };
   const sessionDocRef = (sessionCode) => {
     const fb = getFb();
@@ -226,6 +230,7 @@
       // lives in a client-writable doc until Firestore rules land (see
       // docs/LIVE_SESSION_HARDENING_PROPOSAL.md). null = allow all (legacy).
       this._allowedUids = config.allowedUids ? new Set(config.allowedUids) : null;
+      this.signalingPath = config.signalingPath || 'signaling';
     }
 
     setAllowedUids(uids) {
@@ -236,7 +241,7 @@
       const fb = getFb();
       if (!fb) throw new Error('LivePolling: Firebase not available');
       if (!this.sessionCode) throw new Error('LivePolling: sessionCode required');
-      const peersRef = signalingCollectionRef(this.sessionCode);
+      const peersRef = signalingCollectionRef(this.sessionCode, this.signalingPath);
       if (!peersRef) throw new Error('LivePolling: cannot resolve signaling collection');
       this.collectionUnsub = fb.onSnapshot(peersRef, (snap) => {
         if (this._stopped) return;
@@ -435,6 +440,7 @@
       this.onDisconnected = config.onDisconnected || (() => {});
       this.onFailed = config.onFailed || (() => {});
       this.onHostClosed = config.onHostClosed || (() => {});
+      this.signalingPath = config.signalingPath || 'signaling';
       this.pc = null;
       this.dc = null;
       this.signalingRef = null;
@@ -448,7 +454,7 @@
       const fb = getFb();
       if (!fb) throw new Error('LivePolling: Firebase not available');
       if (!this.sessionCode || !this.userUid) throw new Error('LivePolling: sessionCode and userUid required');
-      this.signalingRef = signalingDocRef(this.sessionCode, this.userUid);
+      this.signalingRef = signalingDocRef(this.sessionCode, this.userUid, this.signalingPath);
       if (!this.signalingRef) throw new Error('LivePolling: cannot resolve signaling doc');
 
       this.pc = new RTCPeerConnection(getRtcConfig());
@@ -1199,7 +1205,7 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.5.0',
+      version: '1.6.0',
       description: 'FERPA-by-design live polling via WebRTC peer-to-peer with custom rating scales, teacher-selected post-submit behavior, anonymous aggregate result sharing, teacher-authored auto-routing rules, reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin), initialPoll composer presets (Live Session Center Quick Check), a roster gate on incoming offers (allowedUids), and a window.__alloRtcConfig TURN override hook.',
     },
   };
