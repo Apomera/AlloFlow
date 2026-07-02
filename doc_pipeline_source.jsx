@@ -12446,8 +12446,13 @@ HTML section ${chunkNum}/${chunks.length}:
   const _docFingerprint = (html) => String((html || '').length) + ':' + String(html || '').slice(0, 200);
 
   // ── Auto-fix axe-core violations via targeted AI pass ──
-  const autoFixAxeViolations = async (htmlContent, axeResult, maxPasses = 2) => {
+  const autoFixAxeViolations = async (htmlContent, axeResult, maxPasses = 2, sessionMeta = null) => {
     if (!callGemini || !axeResult || axeResult.totalViolations === 0) return { html: htmlContent, axe: axeResult, passes: 0 };
+    // S1 step 4: the chunk-resume session id needs the RUN's file identity, not whatever
+    // pendingPdfFile happens to be bound at read time (deep in the pass loop, after many
+    // awaits — a concurrent upload used to be able to swap it and derail resume matching).
+    // Callers pass sessionMeta {fileName, fileSize}; otherwise snapshot at entry.
+    const _sessMeta = sessionMeta || (function () { var s = _makeRunCtx(); return { fileName: s.file ? s.file.name : null, fileSize: s.file ? s.file.size : null }; })();
     // Clear stale chunk state from an unrelated prior document. The "re-fix chunk N" feature
     // relies on _chunkState persisting across autoFixAxeViolations calls, but if the calling
     // document has changed we must not reuse the old state — it would splice chunks from
@@ -12831,8 +12836,8 @@ Return ONLY the complete fixed HTML.`, true);
           const _chunkFp = (s) => { const _n = String(s || '').replace(/\s+/g, ' ').trim(); return _n.length + ':' + _n.slice(0, 80) + ':' + _n.slice(-80); };
           // ── Resume detection: check IndexedDB for saved progress from a prior session ──
           const _sessionId = _chunkSessionId(
-            pendingPdfFile ? pendingPdfFile.name : 'document',
-            pendingPdfFile ? pendingPdfFile.size : currentHtml.length,
+            _sessMeta.fileName || 'document',
+            _sessMeta.fileSize || currentHtml.length,
             bodyChunks.length
           );
           let _resumedResults = null;
