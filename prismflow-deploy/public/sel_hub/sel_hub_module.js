@@ -2343,8 +2343,10 @@
           sourceLabel: 'SEL Hub',
           kindLabel: 'SEL Share Packet',
           title: (basePacket && basePacket.title) || 'SEL Share Packet',
-          summary: items.length + (items.length === 1 ? ' selected SEL checkpoint' : ' selected SEL checkpoints'),
+          summary: 'Student-controlled SEL packet with ' + items.length + (items.length === 1 ? ' selected checkpoint' : ' selected checkpoints'),
           privacy: 'student-controlled',
+          privacySummary: 'Student-controlled. Only selected checkpoint details appear in AlloHaven.',
+          sourceSummary: 'Saved from SEL Hub Share Packet',
           audience: 'student-selected',
           sharingModel: 'item-level-privacy',
           exportKinds: ['text', 'print', 'allohaven'],
@@ -2449,6 +2451,8 @@
           title: packet.title,
           summary: packet.summary,
           privacy: packet.privacy,
+          privacySummary: packet.privacySummary,
+          sourceSummary: packet.sourceSummary,
           audience: packet.audience,
           sharingModel: packet.sharingModel,
           exportKinds: packet.exportKinds,
@@ -2489,9 +2493,12 @@
           return next;
         });
         setActiveSharePacketArtifactId(artifact.id);
-        setPacketSavedNotice(existingArtifact ? 'Updated the saved AlloHaven portfolio copy.' : 'Saved to AlloHaven Portfolio.');
-        if (typeof addToast === 'function') addToast(existingArtifact ? 'Updated SEL Share Packet in AlloHaven.' : 'Saved to AlloHaven Portfolio.', 'success');
-        if (announceToSR) announceToSR(existingArtifact ? 'Saved SEL Share Packet updated in AlloHaven Portfolio.' : 'SEL Share Packet saved to AlloHaven Portfolio.');
+        var receipt = existingArtifact
+          ? 'Updated existing student-controlled SEL Hub packet in AlloHaven Portfolio.'
+          : 'Saved new student-controlled SEL Hub packet to AlloHaven Portfolio.';
+        setPacketSavedNotice(receipt + ' Open AlloHaven > Portfolio to view it.');
+        if (typeof addToast === 'function') addToast(receipt, 'success');
+        if (announceToSR) announceToSR(receipt);
       }
 
       function _startNewSelSharePacketDraft() {
@@ -4133,6 +4140,11 @@
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': 'SEL Hub',
+        // allo-docsuite = the generated theme-remap scope (gen_docsuite_theme.cjs).
+        // It themes the 4 Tailwind-className tools (civicaction/cultureexplorer/
+        // ethicalreasoning/selfadvocacy); the 66 inline-hex tools carry their own
+        // _xxC remaps and are untouched by class-based CSS.
+        className: 'allo-docsuite',
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: _t.bg, color: _t.text,

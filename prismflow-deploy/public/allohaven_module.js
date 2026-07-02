@@ -79,11 +79,21 @@
       next = next.filter(Boolean).sort(function(a, b) {
         return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
       }).slice(0, options.limit || LIMIT);
+      var action = replaced ? 'updated' : 'saved';
       try { window.__alloflowStudentArtifacts = next; } catch (e) {}
       try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e2) {}
       try {
         window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
-          detail: { source: options.source || normalized.source || 'student-work', artifact: normalized, count: next.length }
+          detail: {
+            source: options.source || normalized.source || 'student-work',
+            sourceLabel: normalized.sourceLabel || sourceLabelFor(normalized.source),
+            kindLabel: normalized.kindLabel || kindLabelFor(normalized.type),
+            privacy: normalized.privacy || 'student-controlled',
+            title: normalized.title || 'Portfolio item',
+            action: action,
+            artifact: normalized,
+            count: next.length
+          }
         }));
       } catch (e3) {}
       return next;

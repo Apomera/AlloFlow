@@ -185,7 +185,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   return elements;
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, broadcastInteractiveOrganizer } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
   });
   const _GameLoadingFallback = () => React.createElement(
@@ -1086,7 +1086,16 @@ const renderOutlineContent = (deps) => {
         onPersist: deps.handleConceptSpacePersist,
         playSound,
         onScoreUpdate: handleGameScoreUpdate,
-        onGameComplete: handleGameCompletion
+        onGameComplete: handleGameCompletion,
+        isTeacherMode,
+        armed: !!isInteractiveStrandChallenge,
+        onChallengeArm: () => {
+          if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(true);
+          _broadcastInteractiveOrganizer("strandchallenge3d");
+        },
+        onChallengeClose: () => {
+          if (!isTeacherMode && setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
+        }
       }
     )));
   }
@@ -1372,7 +1381,7 @@ function openConceptMap3D(opts) {
   });
   return destroy;
 }
-const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const handleRef = React.useRef(null);
@@ -1386,6 +1395,14 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
   const [placedCount, setPlacedCount] = React.useState(0);
   const placedRef = React.useRef({});
   const attemptsRef = React.useRef(0);
+  const startedByArmRef = React.useRef(false);
+  const [elapsed, setElapsed] = React.useState(0);
+  const elapsedRef = React.useRef(0);
+  const [won, setWon] = React.useState(false);
+  const [lastScore, setLastScore] = React.useState(null);
+  const [hint, setHint] = React.useState(null);
+  const [hintLoading, setHintLoading] = React.useState(false);
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const challengeEligible = React.useMemo(() => {
     const branches = Array.isArray(data?.branches) ? data.branches : [];
     const items = branches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
@@ -1442,7 +1459,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
       handleRef.current = null;
     };
   }, [ready, failed, dataKey, nonce, challenge]);
-  const startChallenge = () => {
+  const _resetRunState = () => {
+    placedRef.current = {};
+    setPlacedCount(0);
+    elapsedRef.current = 0;
+    setElapsed(0);
+    setWon(false);
+    setLastScore(null);
+    setHint(null);
+  };
+  const startChallenge = (viaArm) => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     if (!E || !E.buildStrandChallenge || !graphRef.current) return;
     const ch = E.buildStrandChallenge(graphRef.current);
@@ -1450,28 +1476,55 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
       if (addToast) addToast(t("concept_space.challenge_empty") || "No concepts to sort yet.", "info");
       return;
     }
-    placedRef.current = {};
-    setPlacedCount(0);
+    _resetRunState();
     attemptsRef.current = 0;
+    startedByArmRef.current = viaArm === true;
     setChallenge(ch);
     if (addToast) addToast(t("concept_space.challenge_start") || "\u{1F3AF} Every concept fell off its strand! Click one, then pick its strand.", "info");
+    if (isTeacherMode && viaArm !== true && typeof onChallengeArm === "function") {
+      try {
+        onChallengeArm();
+      } catch (e) {
+      }
+    }
   };
   const exitChallenge = () => {
     setChallenge(null);
-    placedRef.current = {};
-    setPlacedCount(0);
+    _resetRunState();
     attemptsRef.current = 0;
+    startedByArmRef.current = false;
+    if (typeof onChallengeClose === "function") {
+      try {
+        onChallengeClose();
+      } catch (e) {
+      }
+    }
   };
   const retryChallenge = () => {
-    placedRef.current = {};
-    setPlacedCount(0);
+    _resetRunState();
     setChallenge((c) => c ? { ...c } : c);
   };
+  React.useEffect(() => {
+    if (!challenge || won) return void 0;
+    const iv = setInterval(() => {
+      elapsedRef.current += 1;
+      setElapsed(elapsedRef.current);
+    }, 1e3);
+    return () => clearInterval(iv);
+  }, [challenge, won]);
+  React.useEffect(() => {
+    if (armed && !isTeacherMode && !challenge && ready && !failed && hasContent) startChallenge(true);
+    else if (!armed && !isTeacherMode && challenge && startedByArmRef.current) {
+      startedByArmRef.current = false;
+      exitChallenge();
+    }
+  }, [armed, isTeacherMode, ready, failed, challenge]);
   const checkChallenge = () => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     if (!E || !challenge || !handleRef.current) return;
     attemptsRef.current += 1;
     const score = E.scoreStrandChallenge(challenge.answerKey, placedRef.current);
+    setLastScore(score);
     const summary = (t("concept_space.challenge_result") || "Placed {correct} of {total} correctly.").replace("{correct}", String(score.correct)).replace("{total}", String(score.total));
     if (handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, summary);
     const points = score.correct * 10;
@@ -1480,10 +1533,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
       return n && n.label || id;
     };
     if (score.complete) {
+      setWon(true);
       if (playSound) playSound("correct");
       if (addToast) addToast(t("concept_space.challenge_win") || "\u{1F389} Every concept is on the right strand!", "success");
       if (onScoreUpdate) onScoreUpdate(points, "Strand Challenge Complete");
-      if (onGameComplete) onGameComplete("strandChallenge3d", { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, incorrectPlacements: [] });
+      if (onGameComplete) onGameComplete("strandChallenge3d", { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, timeSeconds: elapsedRef.current, incorrectPlacements: [] });
     } else {
       if (playSound) playSound("reveal");
       if (addToast) addToast(summary, "info");
@@ -1494,6 +1548,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
         isPerfect: false,
         attempts: attemptsRef.current,
         bestScore: points,
+        timeSeconds: elapsedRef.current,
         incorrectPlacements: Object.keys(score.results).filter((id) => score.results[id] !== "correct").map((id) => ({
           itemId: id,
           itemText: labelOf(id),
@@ -1503,6 +1558,27 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
         }))
       });
     }
+  };
+  const requestHint = () => {
+    const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || typeof window.callGemini !== "function") return;
+    const badId = Object.keys(lastScore.results).find((id) => lastScore.results[id] !== "correct");
+    if (!badId) return;
+    const n = (challenge.graph.nodes || []).find((x) => x.id === badId);
+    const prompt = E.buildStrandHintPrompt({
+      itemLabel: n && n.label || badId,
+      placedStrand: placedRef.current[badId] || null,
+      strands: challenge.strands,
+      topic: data?.main || title || ""
+    });
+    setHintLoading(true);
+    Promise.resolve(window.callGemini(prompt)).then((res) => {
+      const text = typeof res === "string" ? res : res && (res.text || res.output || res.response) || "";
+      const clean = String(text).trim().slice(0, 400);
+      if (clean) setHint({ label: n && n.label || badId, text: clean });
+    }).catch(() => {
+      if (addToast) addToast(t("concept_space.hint_failed") || "Could not fetch a hint right now.", "error");
+    }).then(() => setHintLoading(false));
   };
   const handleArrange = () => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -1538,7 +1614,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
       addToast
     });
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full", role: "status" }, (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums", role: "status" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: checkChallenge,
@@ -1547,6 +1623,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     },
     "\u2714 ",
     t("concept_space.challenge_check") || "Check placements"
+  ), lastScore && !lastScore.complete && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: requestHint,
+      disabled: hintLoading,
+      className: "flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("concept_space.hint_tooltip") || "Get a nudge about one misplaced concept \u2014 the answer is never given away"
+    },
+    "\u{1F4A1} ",
+    hintLoading ? t("common.loading") || "Loading\u2026" : t("concept_space.hint_button") || "Hint"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1565,7 +1651,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && challengeEligible && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: startChallenge,
+      onClick: () => startChallenge(false),
       className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
       title: t("concept_space.challenge_tooltip") || "Practice: every concept falls off its strand \u2014 put each one back where it belongs"
     },
@@ -1602,7 +1688,15 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     },
     "\u26F6 ",
     t("concept_space.fullscreen") || "Fullscreen"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
+  )))), hint && /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, (t("concept_space.hint_for") || "Thinking about \u201C{label}\u201D:").replace("{label}", hint.label)), " ", hint.text), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setHint(null),
+      "aria-label": t("common.close") || "Close",
+      className: "text-amber-700 hover:text-amber-900 font-bold px-1"
+    },
+    "\u2715"
+  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
 };
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;

@@ -733,8 +733,12 @@ const createExport = (deps) => {
                     sourceLabel: 'Adventure Mode',
                     kindLabel: 'Adventure Storybook',
                     title,
-                    summary: `Adventure storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
+                    summary: `Student-controlled Adventure Mode storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
                     privacy: 'student-controlled',
+                    privacySummary: 'Student-controlled. Storybook text is saved on this device for the AlloHaven Portfolio.',
+                    sourceSummary: 'Saved from Adventure Mode storybook export',
+                    lifecycleStatus: 'saved',
+                    version: 1,
                     createdAt,
                     updatedAt: createdAt,
                     itemCount: storyItems.length,
@@ -760,8 +764,11 @@ const createExport = (deps) => {
                     const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
                     window.__alloflowStudentArtifacts = next;
                     localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-                    window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'adventure' } }));
+                    window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+                        detail: { source: 'adventure', sourceLabel: 'Adventure Mode', kindLabel: 'Adventure Storybook', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact, count: next.length }
+                    }));
                 }
+                addToast('Saved new student-controlled Adventure Mode storybook to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', "success");
             } catch (_) {}
             let storyHtml = `
               <!DOCTYPE html>

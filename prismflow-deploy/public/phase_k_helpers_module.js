@@ -1529,27 +1529,37 @@ ${typeof window !== "undefined" && typeof window.formatToolCatalogForPrompt === 
                 "adventureConfig": { "mode": "choice" | "debate", "theme": "string" },
                 "brainstormConfig": { "focus": "string" }
             }
-        `;
+    `;
     const result = await callGemini(prompt, true);
     const config = JSON.parse(cleanJson(result));
-    if (config.resourcePlan && !config.recommendedResources) {
-      config.recommendedResources = [...new Set(config.resourcePlan.map((r) => r.tool))];
-      config.toolDirectives = {};
-      config.resourcePlan.forEach((r) => {
-        config.toolDirectives[r.tool] = r.directive;
-      });
+    const normalizePlanItem = (item) => {
+      if (typeof item === "string") return { tool: item, directive: "" };
+      if (!item || typeof item !== "object") return null;
+      const tool = item.tool || item.type || item.id;
+      if (!tool) return null;
+      return {
+        tool: String(tool),
+        directive: item.directive || item.instructions || item.customInstructions || config.toolDirectives && config.toolDirectives[tool] || ""
+      };
+    };
+    if (Array.isArray(config.resourcePlan) && config.resourcePlan.length > 0) {
+      config.resourcePlan = config.resourcePlan.map(normalizePlanItem).filter(Boolean);
+    } else if (Array.isArray(config.recommendedResources)) {
+      config.resourcePlan = config.recommendedResources.map((type) => ({
+        tool: type,
+        directive: config.toolDirectives && config.toolDirectives[type] || ""
+      })).filter((r) => r.tool);
     }
-    if (config.resourcePlan && Array.isArray(config.resourcePlan)) {
+    if (Array.isArray(config.resourcePlan) && config.resourcePlan.length > 0) {
       const analysisItems = config.resourcePlan.filter((r) => r.tool === "analysis");
       const planItems = config.resourcePlan.filter((r) => r.tool === "lesson-plan");
       const otherItems = config.resourcePlan.filter((r) => r.tool !== "analysis" && r.tool !== "lesson-plan");
       config.resourcePlan = [...analysisItems, ...otherItems, ...planItems];
       config.recommendedResources = config.resourcePlan.map((r) => r.tool);
-    } else if (config.recommendedResources) {
-      const analysisItems = config.recommendedResources.filter((r) => r === "analysis");
-      const planItems = config.recommendedResources.filter((r) => r === "lesson-plan");
-      const otherItems = config.recommendedResources.filter((r) => r !== "analysis" && r !== "lesson-plan");
-      config.recommendedResources = [...analysisItems, ...otherItems, ...planItems];
+      config.toolDirectives = config.resourcePlan.reduce((acc, item) => {
+        if (!acc[item.tool]) acc[item.tool] = item.directive || "";
+        return acc;
+      }, {});
     }
     addToast(t("toasts.autoconfig_optimized"), "success");
     return config;

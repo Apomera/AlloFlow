@@ -43,6 +43,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
     document.head.appendChild(st);
   })();
 
+  // Economics Lab visual shell: scoped theme and accessibility refinements.
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-economicslab-refine-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-economicslab-refine-css';
+    st.textContent = [
+      '.economicslab-tool-shell{--eco-surface:var(--allo-stem-canvas,#ffffff);--eco-panel:var(--allo-stem-panel,#f8fafc);--eco-deeper:var(--allo-stem-deeper,#e2e8f0);--eco-text:var(--allo-stem-text,#0f172a);--eco-muted:var(--allo-stem-text-soft,#475569);--eco-border:var(--allo-stem-border,#cbd5e1);--eco-button:var(--allo-stem-button-bg,#f1f5f9);--eco-button-text:var(--allo-stem-button-text,#0f172a);--eco-button-border:var(--allo-stem-button-border,#cbd5e1);color:var(--eco-text);}',
+      '.economicslab-tool-shell .bg-white{background:var(--eco-surface)!important;color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .bg-gradient-to-r,.economicslab-tool-shell .bg-slate-50,.economicslab-tool-shell .bg-blue-50,.economicslab-tool-shell .bg-indigo-50,.economicslab-tool-shell .bg-emerald-50,.economicslab-tool-shell .bg-green-50,.economicslab-tool-shell .bg-amber-50,.economicslab-tool-shell .bg-yellow-50,.economicslab-tool-shell .bg-orange-50,.economicslab-tool-shell .bg-red-50,.economicslab-tool-shell .bg-rose-50,.economicslab-tool-shell .bg-pink-50,.economicslab-tool-shell .bg-violet-50,.economicslab-tool-shell .bg-purple-50,.economicslab-tool-shell .bg-cyan-50,.economicslab-tool-shell .bg-sky-50,.economicslab-tool-shell .bg-zinc-50{background:var(--eco-panel)!important;color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .bg-slate-100,.economicslab-tool-shell .bg-blue-100,.economicslab-tool-shell .bg-indigo-100,.economicslab-tool-shell .bg-emerald-100,.economicslab-tool-shell .bg-green-100,.economicslab-tool-shell .bg-amber-100,.economicslab-tool-shell .bg-red-100,.economicslab-tool-shell .bg-rose-100,.economicslab-tool-shell .bg-violet-100,.economicslab-tool-shell .bg-purple-100,.economicslab-tool-shell .bg-sky-100{background:var(--eco-deeper)!important;}',
+      '.economicslab-tool-shell .text-slate-800,.economicslab-tool-shell .text-slate-700{color:var(--eco-text)!important;}',
+      '.economicslab-tool-shell .text-slate-600,.economicslab-tool-shell .text-slate-500,.economicslab-tool-shell .text-slate-400{color:var(--eco-muted)!important;}',
+      '.economicslab-tool-shell input,.economicslab-tool-shell textarea,.economicslab-tool-shell select{background:var(--eco-surface)!important;color:var(--eco-text)!important;border-color:var(--eco-border)!important;}',
+      '.economicslab-topic-card{background:linear-gradient(135deg,var(--eco-panel) 0%,var(--eco-surface) 100%)!important;color:var(--eco-text);border-radius:8px!important;}',
+      '.economicslab-tabbar{background:var(--eco-panel)!important;border:1px solid var(--eco-border);overflow-x:auto;scrollbar-width:thin;}',
+      '.economicslab-tool-shell [role="tab"]{border:1px solid transparent;min-width:112px;white-space:normal;line-height:1.15;}',
+      '.economicslab-tool-shell [role="tab"][aria-selected="true"]{background:var(--eco-surface)!important;color:var(--eco-text)!important;border:1px solid var(--eco-border);}',
+      '.economicslab-reference-shelf{border:1px solid var(--eco-border);border-radius:8px;background:var(--eco-panel);padding:10px 12px;margin:0 0 12px;color:var(--eco-text);}',
+      '.economicslab-reference-shelf-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}',
+      '.economicslab-reference-shelf-title{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--eco-text);}',
+      '.economicslab-reference-shelf-count{font-size:11px;color:var(--eco-muted);}',
+      '.economicslab-reference-actions{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin;}',
+      '.economicslab-reference-chip{flex:0 0 auto;border:1px solid var(--eco-border);border-radius:999px;background:var(--eco-surface);color:var(--eco-muted);font-size:11px;font-weight:800;padding:4px 9px;white-space:nowrap;cursor:pointer;}',
+      '.economicslab-reference-chip[aria-pressed="true"]{background:var(--eco-text);color:var(--eco-surface);border-color:var(--eco-text);}',
+      '.economicslab-canvas-shell{border:1px solid var(--eco-border);border-radius:8px;background:var(--eco-surface);overflow:hidden;margin-bottom:12px;}',
+      '.economicslab-canvas-shell canvas{border:0!important;border-radius:0!important;display:block;}',
+      '.economicslab-canvas-summary{border-top:1px solid var(--eco-border);background:var(--eco-surface);padding:10px 12px;color:var(--eco-muted);font-size:11px;line-height:1.55;}',
+      '.economicslab-canvas-summary strong{display:block;color:var(--eco-text);font-size:11px;margin-bottom:2px;}',
+      '.economicslab-teacher-prompt{border-top:1px solid var(--eco-border);background:var(--eco-panel);padding:10px 12px;color:var(--eco-muted);font-size:11px;line-height:1.5;}',
+      '.economicslab-teacher-prompt strong{display:block;color:var(--eco-text);font-size:11px;text-transform:uppercase;margin-bottom:2px;}',
+      '.theme-dark .economicslab-tool-shell .text-blue-800,.theme-dark .economicslab-tool-shell .text-blue-700,.theme-dark .economicslab-tool-shell .text-blue-600,.theme-dark .economicslab-tool-shell .text-sky-800,.theme-dark .economicslab-tool-shell .text-sky-700,.theme-dark .economicslab-tool-shell .text-sky-600,.theme-dark .economicslab-tool-shell .text-cyan-800,.theme-dark .economicslab-tool-shell .text-cyan-700,.theme-dark .economicslab-tool-shell .text-cyan-600{color:#7dd3fc!important;}',
+      '.theme-dark .economicslab-tool-shell .text-green-800,.theme-dark .economicslab-tool-shell .text-green-700,.theme-dark .economicslab-tool-shell .text-green-600,.theme-dark .economicslab-tool-shell .text-emerald-800,.theme-dark .economicslab-tool-shell .text-emerald-700,.theme-dark .economicslab-tool-shell .text-emerald-600{color:#86efac!important;}',
+      '.theme-dark .economicslab-tool-shell .text-amber-800,.theme-dark .economicslab-tool-shell .text-amber-700,.theme-dark .economicslab-tool-shell .text-amber-600,.theme-dark .economicslab-tool-shell .text-orange-800,.theme-dark .economicslab-tool-shell .text-orange-700,.theme-dark .economicslab-tool-shell .text-orange-600{color:#fcd34d!important;}',
+      '.theme-dark .economicslab-tool-shell .text-red-800,.theme-dark .economicslab-tool-shell .text-red-700,.theme-dark .economicslab-tool-shell .text-red-600,.theme-dark .economicslab-tool-shell .text-rose-800,.theme-dark .economicslab-tool-shell .text-rose-700,.theme-dark .economicslab-tool-shell .text-rose-600{color:#fda4af!important;}',
+      '.theme-dark .economicslab-tool-shell .text-purple-800,.theme-dark .economicslab-tool-shell .text-purple-700,.theme-dark .economicslab-tool-shell .text-purple-600,.theme-dark .economicslab-tool-shell .text-violet-800,.theme-dark .economicslab-tool-shell .text-violet-700,.theme-dark .economicslab-tool-shell .text-violet-600,.theme-dark .economicslab-tool-shell .text-indigo-800,.theme-dark .economicslab-tool-shell .text-indigo-700,.theme-dark .economicslab-tool-shell .text-indigo-600{color:#c4b5fd!important;}',
+      '.theme-contrast .economicslab-tool-shell *{box-shadow:none!important;text-shadow:none!important;}',
+      '.theme-contrast .economicslab-tool-shell button:not([aria-pressed="true"]):not([aria-selected="true"]){background:var(--eco-button)!important;color:var(--eco-button-text)!important;border-color:var(--eco-button-border)!important;}',
+      '.theme-contrast .economicslab-tool-shell [role="tab"][aria-selected="true"]{outline:2px solid var(--eco-text);outline-offset:-2px;}',
+      '.theme-contrast .economicslab-tool-shell .text-blue-800,.theme-contrast .economicslab-tool-shell .text-blue-700,.theme-contrast .economicslab-tool-shell .text-blue-600,.theme-contrast .economicslab-tool-shell .text-sky-800,.theme-contrast .economicslab-tool-shell .text-sky-700,.theme-contrast .economicslab-tool-shell .text-sky-600,.theme-contrast .economicslab-tool-shell .text-cyan-800,.theme-contrast .economicslab-tool-shell .text-cyan-700,.theme-contrast .economicslab-tool-shell .text-cyan-600,.theme-contrast .economicslab-tool-shell .text-green-800,.theme-contrast .economicslab-tool-shell .text-green-700,.theme-contrast .economicslab-tool-shell .text-green-600,.theme-contrast .economicslab-tool-shell .text-emerald-800,.theme-contrast .economicslab-tool-shell .text-emerald-700,.theme-contrast .economicslab-tool-shell .text-emerald-600,.theme-contrast .economicslab-tool-shell .text-amber-800,.theme-contrast .economicslab-tool-shell .text-amber-700,.theme-contrast .economicslab-tool-shell .text-amber-600,.theme-contrast .economicslab-tool-shell .text-red-800,.theme-contrast .economicslab-tool-shell .text-red-700,.theme-contrast .economicslab-tool-shell .text-red-600,.theme-contrast .economicslab-tool-shell .text-rose-800,.theme-contrast .economicslab-tool-shell .text-rose-700,.theme-contrast .economicslab-tool-shell .text-rose-600,.theme-contrast .economicslab-tool-shell .text-purple-800,.theme-contrast .economicslab-tool-shell .text-purple-700,.theme-contrast .economicslab-tool-shell .text-purple-600,.theme-contrast .economicslab-tool-shell .text-violet-800,.theme-contrast .economicslab-tool-shell .text-violet-700,.theme-contrast .economicslab-tool-shell .text-violet-600,.theme-contrast .economicslab-tool-shell .text-indigo-800,.theme-contrast .economicslab-tool-shell .text-indigo-700,.theme-contrast .economicslab-tool-shell .text-indigo-600{color:var(--eco-text)!important;}',
+      '.theme-contrast .economicslab-tool-shell .border-blue-200,.theme-contrast .economicslab-tool-shell .border-indigo-200,.theme-contrast .economicslab-tool-shell .border-emerald-200,.theme-contrast .economicslab-tool-shell .border-green-200,.theme-contrast .economicslab-tool-shell .border-amber-200,.theme-contrast .economicslab-tool-shell .border-red-200,.theme-contrast .economicslab-tool-shell .border-rose-200,.theme-contrast .economicslab-tool-shell .border-violet-200,.theme-contrast .economicslab-tool-shell .border-purple-200,.theme-contrast .economicslab-tool-shell .border-cyan-200,.theme-contrast .economicslab-tool-shell .border-sky-200{border-color:var(--eco-border)!important;}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _ecoAC = null;
@@ -1382,9 +1427,64 @@ var d = labToolData || {};
 
           }, 0);
 
+          function economicsCanvasSummary() {
+            if (econTab === 'supplyDemand') {
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
+              var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
+              return t('stem.economicslab.canvas_summary_supply_demand', 'Supply and demand graph showing demand, supply, equilibrium price, equilibrium quantity, surplus, shortage, and tax effects.') + ' P* $' + eqP.toFixed(0) + ', Q* ' + eqQ.toFixed(0) + '.';
+            }
+            if (econTab === 'personalFinance') {
+              var expensesTotal = pfRent + pfFood + pfTransport + pfEntertain + pfSavings;
+              return t('stem.economicslab.canvas_summary_personal_finance', 'Personal finance chart showing a monthly budget pie chart and compound-interest growth projection.') + ' Income $' + pfIncome.toLocaleString() + ', expenses $' + expensesTotal.toLocaleString() + '.';
+            }
+            if (econTab === 'stockMarket') {
+              var co = smCompanies[smSelected];
+              return co
+                ? t('stem.economicslab.canvas_summary_stock_market', 'Stock market chart showing selected company price history, portfolio cash, holdings, and current value.') + ' Selected: ' + co.ticker + ' at $' + co.price.toFixed(2) + '.'
+                : t('stem.economicslab.canvas_summary_stock_market_empty', 'Stock market chart area ready for a generated market. Start a market simulation to see price history and holdings.');
+            }
+            if (econTab === 'entrepreneur') {
+              return t('stem.economicslab.canvas_summary_entrepreneur', 'Business simulation canvas showing weather, lemonade stand price, cash, costs, break-even point, and profit history.') + ' Day ' + enDay + ', cash $' + enCash.toFixed(2) + '.';
+            }
+            if (econTab === 'macro') {
+              return t('stem.economicslab.canvas_summary_macro', 'National economy dashboard showing GDP growth, inflation, interest rate, unemployment, trade balance, and policy history.') + ' GDP ' + macroGDP.toFixed(1) + '%, inflation ' + macroInflation.toFixed(1) + '%, unemployment ' + macroUnemployment.toFixed(1) + '%.';
+            }
+            return t('stem.economicslab.canvas_summary_inquiry', 'Policy inquiry mode uses four policy levers to model a toy macro outcome. Use the policy bars below to compare GDP, inflation, and unemployment changes.');
+          }
+
+          function economicsTeacherPrompt() {
+            if (econTab === 'supplyDemand') return t('stem.economicslab.teacher_prompt_supply_demand', 'Ask students to predict whether price, quantity, surplus, or shortage changes before moving a slider.');
+            if (econTab === 'personalFinance') return t('stem.economicslab.teacher_prompt_personal_finance', 'Ask students to name one trade-off in the budget and one reason compound interest rewards starting early.');
+            if (econTab === 'stockMarket') return t('stem.economicslab.teacher_prompt_stock_market', 'Ask students to separate price movement, business fundamentals, and portfolio risk in one explanation.');
+            if (econTab === 'entrepreneur') return t('stem.economicslab.teacher_prompt_entrepreneur', 'Ask students to estimate break-even cups before opening the business for the day.');
+            if (econTab === 'macro') return t('stem.economicslab.teacher_prompt_macro', 'Ask students to choose one policy goal and identify the metric that would show progress or harm.');
+            return t('stem.economicslab.teacher_prompt_inquiry', 'Ask students which policy lever economists would most disagree about, then explain why the model is only a heuristic.');
+          }
+
+          var econCanvasSummary = economicsCanvasSummary();
+          var econTeacherPrompt = economicsTeacherPrompt();
+          var econReferenceItems = [
+            { key: 'showScenarioChallenge', label: t('stem.economicslab.reference_challenge', 'Challenge') },
+            { key: 'showEconQuickRef', label: t('stem.economicslab.reference_quick_ref', 'Quick ref') },
+            { key: 'showEconTimeline', label: t('stem.economicslab.reference_timeline', 'Timeline') },
+            { key: 'showConceptLib', label: t('stem.economicslab.reference_concepts', 'Concepts') },
+            { key: 'showEconSchools', label: t('stem.economicslab.reference_schools', 'Schools') },
+            { key: 'showMarketStructures', label: t('stem.economicslab.reference_markets', 'Markets') },
+            { key: 'showBudgetRules', label: t('stem.economicslab.reference_budget', 'Budget') },
+            { key: 'showCompoundCalc', label: t('stem.economicslab.reference_compound', 'Compound') },
+            { key: 'showInflationCalc', label: t('stem.economicslab.reference_inflation', 'Inflation') },
+            { key: 'showBizCycle', label: t('stem.economicslab.reference_cycle', 'Cycle') },
+            { key: 'showGdpBreakdown', label: t('stem.economicslab.reference_gdp', 'GDP') },
+            { key: 'showEconomists', label: t('stem.economicslab.reference_people', 'People') },
+            { key: 'showIndicators', label: t('stem.economicslab.reference_indicators', 'Indicators') }
+          ];
+          var econOpenReferenceCount = econReferenceItems.reduce(function(total, item) {
+            return total + (d[item.key] ? 1 : 0);
+          }, 0);
 
 
-          return React.createElement('div', { className: 'max-w-4xl mx-auto' },
+
+          return React.createElement('div', { className: 'economicslab-tool-shell max-w-4xl mx-auto', "data-economicslab-tool": "true" },
 
             // Header
 
@@ -1422,16 +1522,20 @@ var d = labToolData || {};
 
               React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, t('stem.economicslab.ai_powered_learning', '\uD83D\uDCDA AI-Powered Learning')),
 
-              econAchievements.length > 0 && React.createElement('span', { 
+              econAchievements.length > 0 && React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showAchievements ? 'true' : 'false',
                 className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
                 onClick: function () { upd('showAchievements', !(d.showAchievements)); }
 
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
 
-              React.createElement('span', { 
+              React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showGlossary ? 'true' : 'false',
                 className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
                 onClick: function () { upd('showGlossary', !(d.showGlossary)); }
@@ -1440,6 +1544,8 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showQuiz ? 'true' : 'false',
                 onClick: function () { upd('showQuiz', !(d.showQuiz)); },
 
                 className: 'text-[11px] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200 cursor-pointer font-bold'
@@ -1448,6 +1554,8 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
+                type: 'button',
+                'aria-expanded': d.showAdvisor ? 'true' : 'false',
                 onClick: function () { upd('showAdvisor', !(d.showAdvisor)); },
 
                 className: 'text-[11px] text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200 cursor-pointer font-bold'
@@ -1476,7 +1584,11 @@ var d = labToolData || {};
 
             // Tab bar
 
-            React.createElement('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1' },
+            React.createElement('div', {
+              className: 'economicslab-tabbar flex gap-1 mb-4 bg-slate-100 rounded-xl p-1',
+              role: 'tablist',
+              'aria-label': t('stem.economicslab.topic_tabs', 'Economics Lab topics')
+            },
 
               [
 
@@ -1498,7 +1610,16 @@ var d = labToolData || {};
 
                   key: tab.id,
 
-                  onClick: function () { upd('econTab', tab.id); },
+                  role: 'tab',
+                  id: 'economicslab-tab-' + tab.id,
+                  'aria-selected': econTab === tab.id ? 'true' : 'false',
+                  'aria-controls': 'economicslab-panel-' + tab.id,
+                  onClick: function () {
+                    var viewed = Object.assign({}, d.tabsViewed || {});
+                    viewed[tab.id] = true;
+                    upd('tabsViewed', viewed);
+                    upd('econTab', tab.id);
+                  },
 
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
 
@@ -1521,11 +1642,16 @@ var d = labToolData || {};
               };
               var meta = TAB_META[econTab] || TAB_META.supplyDemand;
               return React.createElement('div', {
+                className: 'economicslab-topic-card',
+                'data-economicslab-topic-card': 'true',
+                id: 'economicslab-panel-' + econTab,
+                role: 'tabpanel',
+                'aria-labelledby': 'economicslab-tab-' + econTab,
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, var(--allo-stem-canvas, #ffffff) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
                   display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
@@ -1538,6 +1664,37 @@ var d = labToolData || {};
                 )
               );
             })(),
+
+            React.createElement('div', {
+              className: 'economicslab-reference-shelf',
+              'data-economicslab-reference-shelf': 'true'
+            },
+              React.createElement('div', { className: 'economicslab-reference-shelf-head' },
+                React.createElement('span', { className: 'economicslab-reference-shelf-title' }, t('stem.economicslab.reference_tools', 'Reference tools')),
+                React.createElement('span', { className: 'economicslab-reference-shelf-count' },
+                  econOpenReferenceCount > 0
+                    ? t('stem.economicslab.reference_open_count', 'Open: ') + econOpenReferenceCount
+                    : t('stem.economicslab.reference_closed_hint', 'Optional support')
+                )
+              ),
+              React.createElement('div', {
+                className: 'economicslab-reference-actions',
+                role: 'group',
+                'aria-label': t('stem.economicslab.reference_tool_group', 'Economics reference tools')
+              },
+                econReferenceItems.map(function(item) {
+                  var isOpen = !!d[item.key];
+                  return React.createElement('button', {
+                    key: item.key,
+                    type: 'button',
+                    className: 'economicslab-reference-chip',
+                    'aria-pressed': isOpen ? 'true' : 'false',
+                    'aria-expanded': isOpen ? 'true' : 'false',
+                    onClick: function() { upd(item.key, !isOpen); }
+                  }, item.label);
+                })
+              )
+            ),
 
             // Achievement panel
 
@@ -1843,7 +2000,7 @@ var d = labToolData || {};
             
             
             // === ECONOMICS SCENARIO CHALLENGES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
+            d.showScenarioChallenge && React.createElement('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200 mb-4' },
               React.createElement('h4', { className: 'text-sm font-bold text-rose-800 mb-2' }, '\uD83C\uDFAF Economics Scenarios (' + (econScenarioIdx + 1) + '/' + ECON_SCENARIOS.length + ')'),
               // Streak + score
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
@@ -1914,7 +2071,7 @@ var d = labToolData || {};
             ),
 
             // === HISTORIC ECONOMIC EVENTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
+            d.showEconTimeline && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, t('stem.economicslab.economic_history_timeline', '\uD83D\uDCC5 Economic History Timeline')),
                 React.createElement('button', {
@@ -1956,7 +2113,7 @@ var d = labToolData || {};
             ),
 
             // === QUICK REFERENCE CARDS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 mb-4' },
+            d.showEconQuickRef && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.quick_reference_cards', '\uD83D\uDCCB Quick Reference Cards')),
                 React.createElement('button', {
@@ -1982,7 +2139,7 @@ var d = labToolData || {};
 
 
             // === INFLATION CALCULATOR ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border border-red-200 mb-4' },
+            d.showInflationCalc && React.createElement('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border border-red-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-red-800' }, t('stem.economicslab.inflation_calculator', '\uD83D\uDCB2 Inflation Calculator')),
                 React.createElement('button', {
@@ -2034,7 +2191,7 @@ var d = labToolData || {};
             ),
 
             // === BUSINESS CYCLE DIAGRAM ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4' },
+            d.showBizCycle && React.createElement('div', { className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-green-800' }, t('stem.economicslab.business_cycle', '\uD83D\uDD04 Business Cycle')),
                 React.createElement('button', {
@@ -2092,7 +2249,7 @@ var d = labToolData || {};
             ),
 
             // === COMPOUND INTEREST CALCULATOR CONTROLS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 mb-4' },
+            d.showCompoundCalc && React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.compound_interest_calculator', '\uD83D\uDCCA Compound Interest Calculator')),
                 React.createElement('button', {
@@ -2141,7 +2298,7 @@ var d = labToolData || {};
             ),
 
             // === BUDGET RULES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 mb-4' },
+            d.showBudgetRules && React.createElement('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.economicslab.budget_rules', '\uD83D\uDCB0 Budget Rules')),
                 React.createElement('button', {
@@ -2195,7 +2352,7 @@ var d = labToolData || {};
             ),
 
             // === SCHOOLS OF ECONOMIC THOUGHT ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-4 border border-purple-200 mb-4' },
+            d.showEconSchools && React.createElement('div', { className: 'bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-4 border border-purple-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-purple-800' }, t('stem.economicslab.schools_of_economic_thought', '\uD83C\uDFDB\uFE0F Schools of Economic Thought')),
                 React.createElement('button', {
@@ -2250,7 +2407,7 @@ var d = labToolData || {};
 
 
             // === ECONOMICS CONCEPT LIBRARY ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200 mb-4' },
+            d.showConceptLib && React.createElement('div', { className: 'bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 border border-indigo-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-indigo-800' }, '\uD83D\uDCDA Economics Concept Library (' + ECON_CONCEPTS.length + ')'),
                 React.createElement('button', {
@@ -2295,7 +2452,7 @@ var d = labToolData || {};
             ),
 
             // === MARKET STRUCTURES ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200 mb-4' },
+            d.showMarketStructures && React.createElement('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-emerald-800' }, t('stem.economicslab.market_structures', '\uD83C\uDFEA Market Structures')),
                 React.createElement('button', {
@@ -2356,7 +2513,7 @@ var d = labToolData || {};
             ),
 
             // === GDP COMPONENTS ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
+            d.showGdpBreakdown && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.economicslab.gdp_c_i_g_x_m', '\uD83C\uDFDB\uFE0F GDP = C + I + G + (X\u2212M)')),
                 React.createElement('button', {
@@ -2402,7 +2559,7 @@ var d = labToolData || {};
             ),
 
             // === FAMOUS ECONOMISTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4' },
+            d.showEconomists && React.createElement('div', { className: 'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-4 border border-violet-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, t('stem.economicslab.famous_economists', '\uD83C\uDF93 Famous Economists')),
                 React.createElement('button', {
@@ -2446,7 +2603,7 @@ var d = labToolData || {};
             ),
 
             // === ECONOMIC INDICATORS REFERENCE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200 mb-4' },
+            d.showIndicators && React.createElement('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-cyan-800' }, '\uD83D\uDCCA Key Economic Indicators (' + ECONOMIC_INDICATORS.length + ')'),
                 React.createElement('button', {
@@ -2492,17 +2649,45 @@ var d = labToolData || {};
 
             // Canvas
 
-            React.createElement('canvas', {
+            React.createElement('div', {
+              className: 'economicslab-canvas-shell',
+              'data-economicslab-canvas-shell': 'true'
+            },
 
-              ref: canvasRef,
+              React.createElement('canvas', {
 
-              'aria-label': t('stem.economicslab.interactive_economics_lab_supply_and_d', 'Interactive economics lab supply and demand visualization'), tabIndex: 0,
+                ref: canvasRef,
 
-              className: 'w-full rounded-xl border border-slate-400',
+                role: 'img',
+                'aria-label': econCanvasSummary,
+                'aria-describedby': 'economicslab-canvas-summary',
+                tabIndex: 0,
 
-              style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)' }
+                className: 'w-full rounded-xl border border-slate-400',
 
-            }),
+                style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)' }
+
+              }),
+
+              React.createElement('div', {
+                id: 'economicslab-canvas-summary',
+                className: 'economicslab-canvas-summary',
+                'data-economicslab-canvas-summary': 'true',
+                'aria-live': 'polite'
+              },
+                React.createElement('strong', null, t('stem.economicslab.canvas_summary_label', 'Canvas summary')),
+                econCanvasSummary
+              ),
+
+              React.createElement('div', {
+                className: 'economicslab-teacher-prompt',
+                'data-economicslab-teacher-prompt': 'true'
+              },
+                React.createElement('strong', null, t('stem.economicslab.teacher_move_label', 'Teacher move')),
+                econTeacherPrompt
+              )
+
+            ),
 
             // Controls (below canvas, based on active tab)
 
@@ -4057,15 +4242,15 @@ var d = labToolData || {};
                     // Clamp bar heights to 50 (the room available above/below the
                     // baseline) so policy extremes (e.g. tariff=25 driving dInflation
                     // past 12.5pp ⇒ untouched height = 12.5*15 = 187px) can't overflow.
-                    function bar(x, val, posFill, negFill) {
+                    function bar(key, x, val, posFill, negFill) {
                       var h = Math.min(50, Math.abs(val) * 15);
                       var y = val > 0 ? 60 - h : 60;
-                      return React.createElement('rect', { x: x, y: y, width: 40, height: h, fill: val > 0 ? posFill : negFill });
+                      return React.createElement('rect', { key: 'policy-bar-' + key, x: x, y: y, width: 40, height: h, fill: val > 0 ? posFill : negFill });
                     }
                     return [
-                      bar(50, dGDP, '#4ade80', '#f87171'),
-                      bar(150, dInflation, '#facc15', '#22d3ee'),
-                      bar(250, dUnemployment, '#f87171', '#4ade80')
+                      bar('gdp', 50, dGDP, '#4ade80', '#f87171'),
+                      bar('inflation', 150, dInflation, '#facc15', '#22d3ee'),
+                      bar('unemployment', 250, dUnemployment, '#f87171', '#4ade80')
                     ];
                   })(),
                   React.createElement('text', { x: 4, y: 8, fill: '#475569', fontSize: 8 }, 'up'),

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T18:59:24.473Z",
+  "generatedAt": "2026-07-02T19:52:45.707Z",
   "harness": "standalone SEL Hub and AlloHaven browser fixture",
   "summary": {
     "total": 21,
@@ -350,7 +350,8 @@
             "packetCount": 1,
             "updatedSamePacket": true,
             "version": 2,
-            "notice": true
+            "notice": true,
+            "hasViewCue": true
           }
         },
         {
@@ -510,6 +511,9 @@
             "storeExists": true,
             "count": 6,
             "eventSource": "storyforge",
+            "eventAction": "saved",
+            "eventSourceLabel": "StoryForge",
+            "eventPrivacy": "student-controlled",
             "savedId": "helper-browser-qa"
           }
         },

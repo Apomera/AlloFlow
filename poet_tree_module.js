@@ -890,8 +890,12 @@
           sourceLabel: 'PoetTree',
           kindLabel: 'Poem',
           title: submission.poemTitle || 'My Poem',
-          summary: submission.lineCount + ' lines - ' + submission.wordCount + ' words',
+          summary: 'Student-controlled poem with ' + submission.lineCount + ' lines and ' + submission.wordCount + ' words',
           privacy: 'student-controlled',
+          privacySummary: 'Student-controlled. Full poem text is saved on this device for the AlloHaven Portfolio.',
+          sourceSummary: 'Saved from PoetTree',
+          lifecycleStatus: 'saved',
+          version: 1,
           createdAt: createdAt,
           updatedAt: createdAt,
           itemCount: 1,
@@ -908,11 +912,13 @@
           var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
           window.__alloflowStudentArtifacts = next;
           localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'poettree' } }));
+          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+            detail: { source: 'poettree', sourceLabel: 'PoetTree', kindLabel: 'Poem', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact: artifact, count: next.length }
+          }));
         }
       } catch (e) {}
-      announcePT('Poem saved to portfolio.');
-      addToast && addToast('Poem saved to your portfolio!', 'success');
+      announcePT('Saved new student-controlled PoetTree poem to AlloHaven Portfolio.');
+      addToast && addToast('Saved new student-controlled PoetTree poem to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', 'success');
     }, [onSaveSubmission, poemText, poemTitle, form, aiFeedback, meterAnalysis, studentNickname, gradeLevel, addToast]);
 
     var deletePoem = useCallback(function (id) {

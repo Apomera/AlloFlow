@@ -250,6 +250,26 @@
     return { graph: g, answerKey: answerKey, targets: targets, strands: strands };
   }
 
+  // One-shot pedagogical hint for a misplaced/unplaced concept. Deliberately
+  // NEVER reveals the correct strand — it nudges the student to think about what
+  // the concept is/does. PURE (string builder); the host owns the callGemini.
+  function buildStrandHintPrompt(opts) {
+    opts = opts || {};
+    var strands = Array.isArray(opts.strands) ? opts.strands : [];
+    var label = String(opts.itemLabel || 'this concept');
+    return [
+      opts.topic ? 'Topic: ' + opts.topic : '',
+      opts.gradeLevel ? 'Grade band: ' + opts.gradeLevel : '',
+      'A student is sorting concepts onto thematic strands: ' + JSON.stringify(strands) + '.',
+      (opts.placedStrand
+        ? 'They placed the concept "' + label + '" on the strand "' + opts.placedStrand + '", which is not where it belongs.'
+        : 'They have not yet placed the concept "' + label + '".'),
+      'Give ONE short hint (maximum 2 sentences, student-friendly) that helps them think about what "' + label + '" is, does, or is part of —',
+      'WITHOUT naming or revealing the correct strand, WITHOUT listing the strands, and WITHOUT the words "correct" or "wrong".',
+      'Return plain text only, no markdown.'
+    ].filter(Boolean).join('\n');
+  }
+
   // placed = {nodeId: strand} (from the emitted arrangement's categories).
   function scoreStrandChallenge(answerKey, placed) {
     placed = placed || {};
@@ -485,6 +505,7 @@
     nudgeNodeAxis: nudgeNodeAxis,
     buildStrandChallenge: buildStrandChallenge,
     scoreStrandChallenge: scoreStrandChallenge,
+    buildStrandHintPrompt: buildStrandHintPrompt,
     fromThroughlineUnit: fromThroughlineUnit,
     toThroughlineUnit: toThroughlineUnit,
     fromConceptMap: fromConceptMap,

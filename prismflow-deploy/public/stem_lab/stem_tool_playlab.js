@@ -3576,6 +3576,7 @@ window.StemLab = window.StemLab || {
       function pillBtn(label, sel, onClick, opts) {
         opts = opts || {};
         return h('button', {
+          key: opts.key,
           onClick: onClick, 'aria-pressed': sel, 'data-pl-focusable': 'true',
           style: {
             padding: opts.small ? '6px 10px' : '8px 14px', borderRadius: 999, cursor: 'pointer',
@@ -4131,7 +4132,7 @@ window.StemLab = window.StemLab || {
               } else {
                 loadPlay(p.id);
               }
-            });
+            }, { key: (isSoccer ? 'formation-' : 'play-') + p.id });
           })
         ),
 
@@ -4143,7 +4144,7 @@ window.StemLab = window.StemLab || {
             return pillBtn(c.icon + ' ' + c.label, d.conceptId === c.id, function() {
               upd('conceptId', c.id);
               plAnnounce('Concept: ' + c.label + '. ' + c.teach);
-            });
+            }, { key: 'concept-' + c.id });
           })
         ) : null,
 
@@ -4280,7 +4281,7 @@ window.StemLab = window.StemLab || {
               } else {
                 loadCoverage(c.id);
               }
-            });
+            }, { key: (isSoccer ? 'shape-' : 'coverage-') + c.id });
           })
         ),
 

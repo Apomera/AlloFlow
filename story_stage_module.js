@@ -578,8 +578,12 @@
           sourceLabel: 'Story Stage',
           kindLabel: 'Performance',
           title: submission.storyTitle || 'My Performance',
-          summary: submission.characterCount + ' characters - ' + submission.lineCount + ' lines',
+          summary: 'Student-controlled performance with ' + submission.characterCount + ' characters and ' + submission.lineCount + ' lines',
           privacy: 'student-controlled',
+          privacySummary: 'Student-controlled. Performance script text is saved on this device for the AlloHaven Portfolio.',
+          sourceSummary: 'Saved from Story Stage',
+          lifecycleStatus: 'saved',
+          version: 1,
           createdAt: createdAt,
           updatedAt: createdAt,
           itemCount: performanceItems.length,
@@ -596,10 +600,12 @@
           var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
           window.__alloflowStudentArtifacts = next;
           localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'story-stage' } }));
+          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+            detail: { source: 'story-stage', sourceLabel: 'Story Stage', kindLabel: 'Performance', privacy: 'student-controlled', title: artifact.title, action: 'saved', artifact: artifact, count: next.length }
+          }));
         }
       } catch (e) {}
-      addToast && addToast('Performance saved to portfolio!', 'success');
+      addToast && addToast('Saved new student-controlled Story Stage performance to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it.', 'success');
     }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
 
     // ── Generate Character Portraits ──

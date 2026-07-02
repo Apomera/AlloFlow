@@ -1187,8 +1187,12 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
         sourceLabel: "StoryForge",
         kindLabel: "StoryForge Story",
         title: submission.storyTitle || "My Story",
-        summary: `${words} words across ${paragraphsForShelf.length} paragraph${paragraphsForShelf.length === 1 ? "" : "s"}`,
+        summary: `Student-controlled StoryForge story with ${words} words across ${paragraphsForShelf.length} paragraph${paragraphsForShelf.length === 1 ? "" : "s"}`,
         privacy: "student-controlled",
+        privacySummary: "Student-controlled. Full story text is saved on this device for the AlloHaven Portfolio.",
+        sourceSummary: "Saved from StoryForge",
+        lifecycleStatus: "saved",
+        version: 1,
         createdAt,
         updatedAt: createdAt,
         itemCount: items.length,
@@ -1197,8 +1201,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       };
       const artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
       if (artifactStore && typeof artifactStore.save === "function") {
-        artifactStore.save(artifact, { source: "storyforge", limit: 80 });
-        return;
+        const next2 = artifactStore.save(artifact, { source: "storyforge", limit: 80 });
+        return { action: "saved", artifact, count: Array.isArray(next2) ? next2.length : 0 };
       }
       let existing = [];
       if (Array.isArray(window.__alloflowStudentArtifacts)) {
@@ -1213,9 +1217,13 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
       window.__alloflowStudentArtifacts = next;
       localStorage.setItem("alloflow_student_artifacts", JSON.stringify(next));
-      window.dispatchEvent(new CustomEvent("alloflow-student-artifacts-changed", { detail: { source: "storyforge" } }));
+      window.dispatchEvent(new CustomEvent("alloflow-student-artifacts-changed", {
+        detail: { source: "storyforge", sourceLabel: "StoryForge", kindLabel: "StoryForge Story", privacy: "student-controlled", title: artifact.title, action: "saved", artifact, count: next.length }
+      }));
+      return { action: "saved", artifact, count: next.length };
     } catch (_) {
     }
+    return null;
   };
   const saveAsSubmission = () => {
     if (!onSaveSubmission) return;
@@ -1242,8 +1250,10 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       xp: { totalXP: xpData.totalXP, level: currentLevel.name }
     };
     onSaveSubmission(submission);
-    saveStoryForgeArtifactToAlloHaven(submission);
-    if (addToast) addToast(t("toasts.story_saved_portfolio"), "success");
+    const receipt = saveStoryForgeArtifactToAlloHaven(submission);
+    const receiptText = receipt ? "Saved new student-controlled StoryForge story to AlloHaven Portfolio. Open AlloHaven > Portfolio to view it." : t("toasts.story_saved_portfolio");
+    if (addToast) addToast(receiptText, "success");
+    sfAnnounce(receiptText);
     awardXP(10, "Saved story to portfolio");
   };
   const importFromResource = (resource) => {

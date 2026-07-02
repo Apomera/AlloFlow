@@ -609,12 +609,13 @@ async function runScenario(browser, scenario) {
           packetCount: packets.length,
           updatedSamePacket: !!packet,
           version: packet ? packet.version : null,
-          notice: /Updated the saved AlloHaven portfolio copy/.test(status)
+          notice: /Updated existing student-controlled SEL Hub packet in AlloHaven Portfolio/.test(status),
+          hasViewCue: /Open AlloHaven > Portfolio to view it/.test(status)
         };
       });
       result.checks.push({
         id: 'share-packet-lifecycle-update-in-place',
-        pass: updateResult.packetCount === 1 && updateResult.updatedSamePacket && updateResult.version === 2 && updateResult.notice,
+        pass: updateResult.packetCount === 1 && updateResult.updatedSamePacket && updateResult.version === 2 && updateResult.notice && updateResult.hasViewCue,
         details: updateResult
       });
       await page.keyboard.press('Escape');
@@ -748,12 +749,15 @@ async function runAlloHavenScenario(browser, scenario) {
         storeExists: true,
         count: Array.isArray(next) ? next.length : 0,
         eventSource: seen && seen.source,
+        eventAction: seen && seen.action,
+        eventSourceLabel: seen && seen.sourceLabel,
+        eventPrivacy: seen && seen.privacy,
         savedId: next && next[0] && next[0].id
       };
     });
     result.checks.push({
       id: 'student-artifact-store-save-event',
-      pass: helper.storeExists && helper.count >= SAMPLE_ARTIFACTS.length && helper.eventSource === 'storyforge' && helper.savedId === 'helper-browser-qa',
+      pass: helper.storeExists && helper.count >= SAMPLE_ARTIFACTS.length && helper.eventSource === 'storyforge' && helper.eventAction === 'saved' && helper.eventSourceLabel === 'StoryForge' && helper.eventPrivacy === 'student-controlled' && helper.savedId === 'helper-browser-qa',
       details: helper
     });
 

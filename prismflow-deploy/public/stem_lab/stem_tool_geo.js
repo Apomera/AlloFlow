@@ -1162,6 +1162,57 @@ var d = labToolData || {};
 
 
 
+            // ── Realism upgrades: night mode, showroom spin, drifting clouds ──
+
+            // Restore night mode if the student had it on (textures are the open-source
+            // three-globe set: Blue Marble day / city-lights night, both NASA-derived)
+            if (d.geoGlobeNight) {
+              globe.globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg');
+            }
+
+            var geoPrefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+            // Slow idle spin until the student takes the wheel
+            try {
+              var gControls = globe.controls();
+              if (gControls && !geoPrefersRM) {
+                gControls.autoRotate = true;
+                gControls.autoRotateSpeed = 0.55;
+                container.addEventListener('pointerdown', function() { gControls.autoRotate = false; }, { once: true });
+              }
+            } catch(e) {}
+
+            // Drifting cloud shell — a slightly larger sphere wearing the three-globe
+            // cloud texture. Pure enhancement: ANY failure (no THREE global, texture
+            // 404, API drift) is swallowed and the globe renders exactly as before.
+            function addGlobeClouds() {
+              try {
+                var T = window.THREE;
+                if (!T || typeof globe.scene !== 'function' || typeof globe.getGlobeRadius !== 'function') return;
+                new T.TextureLoader().load('https://unpkg.com/three-globe/example/img/earth-clouds.png', function(cloudTex) {
+                  try {
+                    var cloudMesh = new T.Mesh(
+                      new T.SphereGeometry(globe.getGlobeRadius() * 1.01, 64, 64),
+                      new T.MeshLambertMaterial({ map: cloudTex, transparent: true, opacity: 0.45, depthWrite: false })
+                    );
+                    globe.scene().add(cloudMesh);
+                    (function spinClouds() {
+                      if (!container.isConnected) return;
+                      if (!geoPrefersRM) cloudMesh.rotation.y += 0.00032;
+                      requestAnimationFrame(spinClouds);
+                    })();
+                  } catch(e) {}
+                });
+              } catch(e) {}
+            }
+            if (window.THREE) { addGlobeClouds(); }
+            else {
+              var threeScript = document.createElement('script');
+              threeScript.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+              threeScript.onload = addGlobeClouds;
+              document.head.appendChild(threeScript);
+            }
+
             globeRef.current = globe;
 
           }
@@ -2180,7 +2231,24 @@ var d = labToolData || {};
 
             geoTab === 'globeView' && React.createElement('div', null,
 
-              React.createElement('div', { className: 'text-center py-2 bg-slate-900 text-white text-xs' }, __alloT('stem.geo.drag_to_rotate_scroll_to_zoom_click_co', '\uD83C\uDF10 Drag to rotate \u2022 Scroll to zoom \u2022 Click countries for info')),
+              React.createElement('div', { className: 'flex items-center justify-center gap-3 py-2 bg-slate-900 text-white text-xs' },
+                React.createElement('span', null, __alloT('stem.geo.drag_to_rotate_scroll_to_zoom_click_co', '\uD83C\uDF10 Drag to rotate \u2022 Scroll to zoom \u2022 Click countries for info')),
+                React.createElement('button', {
+                  onClick: function() {
+                    var night = !d.geoGlobeNight;
+                    upd('geoGlobeNight', night);
+                    if (globeRef.current) {
+                      globeRef.current.globeImageUrl(night
+                        ? '//unpkg.com/three-globe/example/img/earth-night.jpg'
+                        : '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+                    }
+                    if (typeof announceToSR === 'function') announceToSR(night ? 'Night view: city lights show where people live.' : 'Day view: NASA Blue Marble satellite imagery.');
+                  },
+                  'aria-pressed': !!d.geoGlobeNight,
+                  'aria-label': __alloT('stem.geo.toggle_day_night_view', 'Toggle day / night view'),
+                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-200 hover:border-slate-400')
+                }, d.geoGlobeNight ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
+              ),
 
               !window._GlobeGLConstructor ? React.createElement('div', { className: 'text-center py-16 text-slate-600' },
 
