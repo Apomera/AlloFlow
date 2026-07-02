@@ -159,6 +159,11 @@
           <video id="editVideo" controls playsinline style="width:100%"></video>
         </div>
         <div class="card" style="margin-top:12px">
+          <h2>Timeline</h2>
+          <canvas id="waveCanvas" style="width:100%;height:84px;display:block;background:#0b1220;border-radius:8px;cursor:pointer" height="84" role="slider" tabindex="0" aria-label="Audio timeline — click or use arrow keys to move the playhead"></canvas>
+          <div class="status" id="waveStatus">Silences you add show red, zooms indigo, captions amber. Click anywhere to jump; Space plays/pauses.</div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <h2>Trim</h2>
           <div class="row">
             <label for="trimStart">Cut from start (s)</label>
@@ -689,6 +694,24 @@ function vsSanitizeAiSuggestions(raw, duration) {
   }
   return out;
 }
+
+// PCM samples → N peak buckets (0..1) for waveform drawing. Peak (not RMS)
+// per bucket so brief loud moments — the ones worth finding — stay visible.
+function vsComputePeaks(samples, buckets) {
+  var n = samples ? samples.length : 0;
+  var B = Math.max(10, Math.min(4000, Math.round(Number(buckets) || 0) || 600));
+  var out = [];
+  if (!n) { for (var z = 0; z < B; z++) out.push(0); return out; }
+  var per = n / B;
+  for (var b = 0; b < B; b++) {
+    var s = Math.floor(b * per);
+    var e = Math.min(n, Math.max(s + 1, Math.floor((b + 1) * per)));
+    var m = 0;
+    for (var i = s; i < e; i++) { var v = Math.abs(Number(samples[i]) || 0); if (v > m) m = v; }
+    out.push(Math.min(1, m));
+  }
+  return out;
+}
 // [VS_SHARED_END]
 
 /* ─── Studio app ────────────────────────────────────────────────────────────*/
@@ -1213,6 +1236,7 @@ function vsSanitizeAiSuggestions(raw, duration) {
       row.appendChild(del);
       host.appendChild(row);
     });
+    drawWave();
   }
   $('addZoomBtn').addEventListener('click', function () {
     var t = currentTake(); if (!t) return;
@@ -1282,6 +1306,7 @@ function vsSanitizeAiSuggestions(raw, duration) {
       row.appendChild(del);
       host.appendChild(row);
     });
+    drawWave();
   }
   $('volSlider').addEventListener('input', function () {
     var t = currentTake(); if (!t) return;
@@ -1548,6 +1573,7 @@ function vsSanitizeAiSuggestions(raw, duration) {
       row.appendChild(del);
       host.appendChild(row);
     });
+    drawWave();
   }
   $('addClipFileBtn').addEventListener('click', function () { $('clipFileInput').click(); });
   $('clipFileInput').addEventListener('change', function () {
@@ -1611,6 +1637,119 @@ function vsSanitizeAiSuggestions(raw, duration) {
   }
   ['play', 'pause', 'seeked', 'timeupdate'].forEach(function (evName) {
     $('editVideo').addEventListener(evName, syncPreviewAudio);
+  });
+
+  // ── Waveform timeline: see the audio, place edits precisely ──
+  var wavePeaksCache = {}; // take id → { peaks: [0..1], ok: bool }
+  var waveRaf = 0;
+  function ensurePeaks(t) {
+    if (wavePeaksCache[t.id]) return Promise.resolve(wavePeaksCache[t.id]);
+    setStatus($('waveStatus'), 'Reading the audio track…');
+    return extractPcm16k(t.blob).then(function (pcm) {
+      wavePeaksCache[t.id] = { peaks: vsComputePeaks(pcm, 800), ok: true };
+      setStatus($('waveStatus'), 'Silences you add show red, zooms indigo, captions amber. Click anywhere to jump; Space plays/pauses.');
+      return wavePeaksCache[t.id];
+    }).catch(function () {
+      wavePeaksCache[t.id] = { peaks: null, ok: false };
+      setStatus($('waveStatus'), 'This video has no readable audio track — the timeline still shows your edits and playhead.');
+      return wavePeaksCache[t.id];
+    });
+  }
+  function drawWave() {
+    var cv = $('waveCanvas');
+    var t = currentTake();
+    var dpr = window.devicePixelRatio || 1;
+    var W = Math.max(1, Math.round(cv.clientWidth * dpr));
+    var H = Math.round(84 * dpr);
+    if (cv.width !== W) cv.width = W;
+    if (cv.height !== H) cv.height = H;
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = '#0b1220';
+    ctx.fillRect(0, 0, W, H);
+    if (!t) return;
+    var dur = Math.max(0.01, t.duration || 0.01);
+    var xOf = function (sec) { return Math.max(0, Math.min(W, sec / dur * W)); };
+    // Peaks
+    var cache = wavePeaksCache[t.id];
+    if (cache && cache.ok && cache.peaks) {
+      ctx.fillStyle = '#475569';
+      var n = cache.peaks.length;
+      var bw = W / n;
+      for (var i = 0; i < n; i++) {
+        var h = Math.max(1, cache.peaks[i] * (H - 8));
+        ctx.fillRect(i * bw, (H - h) / 2, Math.max(1, bw - 0.5), h);
+      }
+    }
+    // Trimmed ends (dimmed + red edge)
+    var ts = Number($('trimStart').value) || 0, te = Number($('trimEnd').value) || 0;
+    ctx.fillStyle = 'rgba(2,6,23,0.72)';
+    if (ts > 0) ctx.fillRect(0, 0, xOf(ts), H);
+    if (te > 0) ctx.fillRect(xOf(dur - te), 0, W - xOf(dur - te), H);
+    ctx.fillStyle = '#f87171';
+    if (ts > 0) ctx.fillRect(xOf(ts) - 1, 0, 2, H);
+    if (te > 0) ctx.fillRect(xOf(dur - te) - 1, 0, 2, H);
+    // Mute spans (red wash)
+    if (t.audio && Array.isArray(t.audio.muteSpans)) {
+      ctx.fillStyle = 'rgba(239,68,68,0.32)';
+      t.audio.muteSpans.forEach(function (s) {
+        var a = Math.min(Number(s.start) || 0, Number(s.end) || 0), b = Math.max(Number(s.start) || 0, Number(s.end) || 0);
+        ctx.fillRect(xOf(a), 0, Math.max(2, xOf(b) - xOf(a)), H);
+      });
+    }
+    // Zoom keyframes (indigo lens at top)
+    (t.zooms || []).forEach(function (z) {
+      if (!(Number(z.scale) > 1)) return;
+      ctx.fillStyle = '#818cf8';
+      ctx.beginPath(); ctx.arc(xOf(z.t), 7 * dpr, 4 * dpr, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(129,140,248,0.35)';
+      ctx.fillRect(xOf(z.t), 0, Math.max(2, xOf(Math.min(dur, z.t + (z.dur || 3))) - xOf(z.t)), 3 * dpr);
+    });
+    // Caption cues (amber ticks at bottom)
+    ctx.fillStyle = '#fbbf24';
+    (t.captions || []).forEach(function (c) {
+      ctx.fillRect(xOf(c.start), H - 4 * dpr, Math.max(2, xOf(c.end) - xOf(c.start)), 3 * dpr);
+    });
+    // Sound clips (green marks under the top edge)
+    (t.audioClips || []).forEach(function (c) {
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(xOf(c.t), 11 * dpr, 3 * dpr, 6 * dpr);
+    });
+    // Playhead
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(xOf($('editVideo').currentTime || 0) - 1, 0, 2, H);
+  }
+  function waveFollow() {
+    drawWave();
+    if (!$('editVideo').paused) waveRaf = requestAnimationFrame(waveFollow);
+  }
+  $('editVideo').addEventListener('play', function () { cancelAnimationFrame(waveRaf); waveRaf = requestAnimationFrame(waveFollow); });
+  $('editVideo').addEventListener('pause', function () { cancelAnimationFrame(waveRaf); drawWave(); });
+  $('editVideo').addEventListener('seeked', drawWave);
+  window.addEventListener('resize', drawWave);
+  ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('input', drawWave); });
+  function waveSeekTo(clientX) {
+    var t = currentTake(); if (!t) return;
+    var r = $('waveCanvas').getBoundingClientRect();
+    var frac = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    $('editVideo').currentTime = frac * (t.duration || 0);
+    drawWave();
+  }
+  $('waveCanvas').addEventListener('click', function (ev) { waveSeekTo(ev.clientX); });
+  $('waveCanvas').addEventListener('keydown', function (ev) {
+    var t = currentTake(); if (!t) return;
+    var v = $('editVideo');
+    var step = ev.shiftKey ? 1 : 0.2;
+    if (ev.key === 'ArrowRight') { v.currentTime = Math.min(t.duration, v.currentTime + step); drawWave(); ev.preventDefault(); }
+    else if (ev.key === 'ArrowLeft') { v.currentTime = Math.max(0, v.currentTime - step); drawWave(); ev.preventDefault(); }
+  });
+  // Space toggles play/pause anywhere in the Edit tab (except while typing).
+  document.addEventListener('keydown', function (ev) {
+    if (ev.code !== 'Space' || $('panelEdit').hidden) return;
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (/INPUT|TEXTAREA|SELECT|BUTTON|VIDEO/.test(tag)) return;
+    ev.preventDefault();
+    var v = $('editVideo');
+    if (v.paused) { try { v.play(); } catch (_) {} } else { v.pause(); }
   });
 
   // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
@@ -1680,6 +1819,8 @@ function vsSanitizeAiSuggestions(raw, duration) {
     renderAudio();
     renderNarration();
     renderClips();
+    drawWave();
+    ensurePeaks(t).then(drawWave);
   }
 
   // Trim preview: clamp playback into the kept window.
@@ -1737,6 +1878,7 @@ function vsSanitizeAiSuggestions(raw, duration) {
       tdDel.appendChild(del); tr.appendChild(tdDel);
       body.appendChild(tr);
     });
+    drawWave();
   }
   $('addCueBtn').addEventListener('click', function () {
     var t = currentTake(); if (!t) return;

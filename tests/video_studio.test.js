@@ -397,6 +397,39 @@ describe('vsSanitizeAiSuggestions', () => {
   });
 });
 
+// ─── vsComputePeaks (waveform timeline) ──────────────────────────────────────
+describe('vsComputePeaks', () => {
+  it('produces the requested number of buckets, normalized 0..1', () => {
+    const samples = new Float32Array(16000).fill(0.5);
+    const peaks = VS.vsComputePeaks(samples, 100);
+    expect(peaks).toHaveLength(100);
+    peaks.forEach((p) => expect(p).toBeCloseTo(0.5));
+  });
+  it('uses per-bucket PEAK so a brief spike stays visible', () => {
+    const samples = new Float32Array(1000);
+    samples[500] = 0.9; // single-sample spike
+    const peaks = VS.vsComputePeaks(samples, 10);
+    expect(Math.max(...peaks)).toBeCloseTo(0.9);
+    expect(peaks.filter((p) => p > 0)).toHaveLength(1);
+  });
+  it('handles negative samples (absolute value) and clips >1 to 1', () => {
+    const peaks = VS.vsComputePeaks(Float32Array.from([-0.8, 0.1, 3.5, 0]), 10);
+    expect(Math.max(...peaks)).toBe(1);
+    expect(peaks.some((p) => Math.abs(p - 0.8) < 1e-6)).toBe(true);
+  });
+  it('empty input gives silent buckets; bucket count is clamped', () => {
+    expect(VS.vsComputePeaks(null, 50)).toHaveLength(50);
+    expect(VS.vsComputePeaks(new Float32Array(0), 50).every((p) => p === 0)).toBe(true);
+    expect(VS.vsComputePeaks(new Float32Array(10), 99999)).toHaveLength(4000);
+    expect(VS.vsComputePeaks(new Float32Array(10), -5)).toHaveLength(10);
+    expect(VS.vsComputePeaks(new Float32Array(10), NaN)).toHaveLength(600);
+  });
+  it('works when samples outnumber and undernumber buckets', () => {
+    expect(VS.vsComputePeaks(new Float32Array(7).fill(0.3), 20)).toHaveLength(20);
+    expect(VS.vsComputePeaks(new Float32Array(100000).fill(0.2), 12)).toHaveLength(12);
+  });
+});
+
 // ─── vsMakePackReference ─────────────────────────────────────────────────────
 describe('vsMakePackReference (pack-size guard)', () => {
   it('produces metadata only — never video bytes', () => {

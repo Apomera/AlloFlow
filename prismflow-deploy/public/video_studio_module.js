@@ -440,9 +440,27 @@
     }
     return out;
   }
+
+  // PCM samples → N peak buckets (0..1) for waveform drawing. Peak (not RMS)
+  // per bucket so brief loud moments — the ones worth finding — stay visible.
+  function vsComputePeaks(samples, buckets) {
+    var n = samples ? samples.length : 0;
+    var B = Math.max(10, Math.min(4000, Math.round(Number(buckets) || 0) || 600));
+    var out = [];
+    if (!n) { for (var z = 0; z < B; z++) out.push(0); return out; }
+    var per = n / B;
+    for (var b = 0; b < B; b++) {
+      var s = Math.floor(b * per);
+      var e = Math.min(n, Math.max(s + 1, Math.floor((b + 1) * per)));
+      var m = 0;
+      for (var i = s; i < e; i++) { var v = Math.abs(Number(samples[i]) || 0); if (v > m) m = v; }
+      out.push(Math.min(1, m));
+    }
+    return out;
+  }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
