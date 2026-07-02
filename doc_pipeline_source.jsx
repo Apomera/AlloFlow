@@ -14295,6 +14295,271 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     return { extractedImages };
   };
 
+  // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 0 deterministic extraction ──
+  // Extracted VERBATIM from fixAndVerifyPdf: the DOCX/PPTX/PDF text-layer branches, the
+  // garbled-layer detector, the mixed scanned+digital OCR rescue (H3-instrumented), the B1
+  // page-error surfacing, scanned pacing, the 0-page abort (rethrown via _alloAbortRun), and
+  // the per-page forced re-OCR splice. Contract:
+  //   in : { base64, fileName, pageRange, forceOcrPages, forceFullOcr, effectivePageCount,
+  //          updateProgress }
+  //   out: { extractedText, effectivePageCount, forceFullOcr, garbledFallbackText,
+  //          officeMediaImages }
+  // Ground-truth globals (window.__lastGroundTruth*, __lastOcrLowConfidencePages,
+  // __lastExtractEncrypted) are written here exactly as before — the OCR path and the
+  // fidelity nets read them downstream. Helpers resolve from the factory closure.
+  const _runExtractionPhase = async (extCtx) => {
+    const _base64 = extCtx.base64;
+    const _fileName = extCtx.fileName;
+    const _pageRange = extCtx.pageRange;
+    const _forceOcrPages = extCtx.forceOcrPages;
+    let _forceFullOcr = !!extCtx.forceFullOcr;
+    let effectivePageCount = extCtx.effectivePageCount;
+    const updateProgress = extCtx.updateProgress || function () {};
+    let extractedText = '';
+    let _garbledFallbackText = null;
+      // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
+      // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
+      // Only fall through to Gemini Vision OCR for scanned PDFs / images.
+      // H1 (deep dive 2026-07-02): Office embedded media (bytes + authored alt text) used to be
+      // collected by the deterministic extractors but consumed ONLY by the audit preview — the
+      // remediated output silently dropped every image and its author-written description while
+      // the audit toast said "preserved". Captured here and spliced into accessibleHtml after the
+      // AI transform (via the same deferred data-URL token mechanism the PDF image path uses).
+      let _officeMediaImages = [];
+      try {
+        const isDocx = _fileName && /\.docx$/i.test(_fileName);
+        const isPptx = _fileName && /\.pptx$/i.test(_fileName);
+        const isPdf = !isDocx && !isPptx; // default to PDF path for unknown mime types
+
+        if (isDocx) {
+          updateProgress(1, 'Extracting DOCX text deterministically...');
+          const det = await extractDocxTextDeterministic(_base64);
+          _officeMediaImages = (det && det.mediaImages) || [];
+          if (det && det.sourceCharCount > 50) {
+            extractedText = det.fullText;
+            window.__lastGroundTruthCharCount = det.sourceCharCount;
+            window.__lastGroundTruthMethod = 'docx-' + det.method;
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from DOCX (${det.method})`);
+            warnLog(`[Det] DOCX → ${det.sourceCharCount} chars via ${det.method}`);
+          } else {
+            // Honest: there is NO OCR rescue for Office files — the Vision/Tesseract path
+            // below is gated to application/pdf, and a .docx/.pptx can't be rasterized
+            // client-side. A sparse extraction means an image-only/scanned or corrupt Office
+            // file. Tell the teacher what actually happened + the actionable fix, instead of
+            // silently dead-ending with empty text behind a misleading "falling through" log.
+            warnLog('[Det] DOCX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
+            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This Word file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
+          }
+        } else if (isPptx) {
+          updateProgress(1, 'Extracting PPTX text deterministically...');
+          const det = await extractPptxTextDeterministic(_base64);
+          _officeMediaImages = (det && det.mediaImages) || [];
+          if (det && det.sourceCharCount > 50) {
+            extractedText = det.fullText;
+            window.__lastGroundTruthCharCount = det.sourceCharCount;
+            window.__lastGroundTruthMethod = 'pptx-jszip';
+            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from ${det.slideCount} slides`);
+            warnLog(`[Det] PPTX → ${det.sourceCharCount} chars from ${det.slideCount} slides`);
+          } else {
+            // Same as DOCX above: no client-side OCR rescue exists for Office files. Be honest.
+            warnLog('[Det] PPTX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
+            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This PowerPoint file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
+          }
+        } else if (isPdf) {
+          updateProgress(1, 'Extracting PDF text layer deterministically...');
+          const det = await extractPdfTextDeterministic(_base64);
+          // Garbled text-layer detector (2026-06-29): isScanned only triggers on a near-EMPTY layer
+          // (<50 chars/page). A scanned page with a thin/mojibake text layer — or a prior bad OCR baked
+          // into the file — clears that gate and would ship unfixed. If the present layer reads like broken
+          // encoding (U+FFFD/control-char density), force the OCR path instead (auto re-scan + honest toast).
+          if (det && !det.isScanned && !_forceFullOcr && det.method !== 'transcript' && _textLayerLooksGarbage(det.fullText)) {
+            _forceFullOcr = true;
+            _garbledFallbackText = det.fullText || null; // keep the discarded layer; adopt OCR only if it's no junkier
+            warnLog('[Extract] Text layer present but looks garbled (broken encoding) — forcing OCR over it (with junk-ratio fallback).');
+            if (typeof addToast === 'function') addToast(t('toasts.garbled_text_layer_ocr') || 'The PDF’s built-in text looks garbled (an encoding problem) — re-scanning it with OCR for a clean copy.', 'info');
+          }
+          if (det && !det.isScanned && !_forceFullOcr && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan. _forceFullOcr → reject the text layer so the OCR path below runs (broken-encoding recovery)
+            // Multi-session: if a pageRange was specified, narrow the extracted pages to
+            // [start, end]. Keeps the full per-page map for later reference but only feeds
+            // the selected pages to the downstream remediation pipeline.
+            if (_pageRange && Array.isArray(det.pages) && det.pages.length > 0) {
+              const rs = Math.max(1, _pageRange[0] || 1);
+              const re = Math.min(det.pageCount, _pageRange[1] || det.pageCount);
+              const slice = det.pages.filter(p => p.pageNum >= rs && p.pageNum <= re);
+              const rangeText = slice.map(p => p.text).filter(Boolean).join('\n\n');
+              extractedText = rangeText;
+              window.__lastGroundTruthCharCount = rangeText.length;
+              window.__lastGroundTruthPageMap = slice;
+              window.__lastGroundTruthMethod = 'pdfjs';
+              effectivePageCount = re - rs + 1;
+              updateProgress(1, `Extracted pages ${rs}-${re} (${rangeText.length.toLocaleString()} chars)`);
+              warnLog(`[Det] PDF text layer range pages ${rs}-${re} → ${rangeText.length} chars / ${effectivePageCount} pages`);
+            } else {
+              extractedText = det.fullText;
+              window.__lastGroundTruthCharCount = det.sourceCharCount;
+              window.__lastGroundTruthPageMap = det.pages;
+              window.__lastGroundTruthMethod = 'pdfjs';
+              if (det.pageCount > 0) effectivePageCount = det.pageCount;
+              updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
+              warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
+              // ── Mixed scanned+digital rescue ──
+              // isScanned is a whole-document average, so a born-digital PDF with a few
+              // image-only pages (a scanned signature page, an inserted figure-page) passes
+              // as text-layer and those pages contribute '' that is silently dropped. Detect
+              // near-empty pages and OCR JUST those, splicing the recovered text back in page
+              // order. Fail-safe: any failure leaves the text-layer result untouched.
+              try {
+                if (Array.isArray(det.pages) && det.pages.length > 1) {
+                  const _gapPages = det.pages.filter(pg => pg && (pg.text || '').trim().length < 20).map(pg => pg.pageNum);
+                  if (_gapPages.length > 0 && _gapPages.length < det.pages.length) {
+                    updateProgress(1, `${_gapPages.length} image-only page(s) found in a text PDF — OCRing just those...`);
+                    const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
+                    const _rescueConf = {};
+                    const _rescued = await _ocrSpecificPages(_base64, _gapPages, _toTesseractLang(_ovr), _rescueConf);
+                    const _rescuedNums = Object.keys(_rescued);
+                    if (_rescuedNums.length > 0) {
+                      // H3 (deep dive 2026-07-02): rescued pages used to be spliced in unmarked with
+                      // groundTruthMethod left at 'pdfjs' — so the OCR-accuracy scan, the low-confidence
+                      // banner, and the scanned-path disclosure ALL skipped them: garbled OCR shipped as
+                      // silent "ground truth". Now: junk-gate adoption (same rule as ForceOCR — empty old
+                      // text has junkRatio 1, so gap pages still always adopt over nothing), per-page
+                      // source + confidence marking, an honest '+ocr-rescue' method suffix (matches the
+                      // /ocr/i isScanned test in createTaggedPdf, same as '+reocr'), and low-confidence
+                      // entries into the SAME net the full-OCR path feeds.
+                      let _adoptedRescue = 0;
+                      det.pages.forEach(pg => {
+                        if (!pg || !_rescued[pg.pageNum]) return;
+                        if (_ocrJunkRatio(_rescued[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
+                          pg.text = _rescued[pg.pageNum];
+                          pg.source = 'ocr-rescue';
+                          if (typeof _rescueConf[pg.pageNum] === 'number') pg.ocrConfidence = _rescueConf[pg.pageNum];
+                          _adoptedRescue++;
+                        } else warnLog('[Det] Mixed-page rescue: page ' + pg.pageNum + ' kept (OCR came back junkier than the sparse text layer)');
+                      });
+                      const _merged = det.pages.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
+                      extractedText = _merged;
+                      window.__lastGroundTruthCharCount = _merged.length;
+                      window.__lastGroundTruthPageMap = det.pages;
+                      if (_adoptedRescue > 0) {
+                        window.__lastGroundTruthMethod = 'pdfjs+ocr-rescue';
+                        const _lowRescue = det.pages.filter(pg => pg && pg.source === 'ocr-rescue' && typeof pg.ocrConfidence === 'number' && pg.ocrConfidence < 60)
+                          .map(pg => ({ pageNum: pg.pageNum, confidence: pg.ocrConfidence }));
+                        if (_lowRescue.length) {
+                          window.__lastOcrLowConfidencePages = (window.__lastOcrLowConfidencePages || []).concat(_lowRescue);
+                          if (typeof addToast === 'function') addToast(`⚠ ${_lowRescue.length} rescued page${_lowRescue.length === 1 ? '' : 's'} OCR'd at low confidence — verify the text is correct (review the Diff / fidelity panel).`, 'warning');
+                        }
+                      }
+                      updateProgress(1, `Recovered text from ${_adoptedRescue} image-only page(s) via OCR`);
+                      warnLog(`[Det] Mixed-page rescue: OCR'd ${_rescuedNums.length}/${_gapPages.length} image-only page(s), adopted ${_adoptedRescue} → ${_merged.length} total chars`);
+                    }
+                  }
+                }
+              } catch (_mixErr) { warnLog('[Det] Mixed-page OCR rescue failed (keeping text-layer result): ' + (_mixErr && _mixErr.message)); }
+              // B1 (2026-06-20): surface born-digital extraction THROWS to the Stage-1 partial-extraction
+              // banner. Only the SCANNED path wrote __lastOcrPageErrors, so a text-PDF page that threw on
+              // getTextContent — and wasn't recovered by the mixed-page rescue above — vanished with no
+              // banner (the 97% char gate is the only net, and one short lost page stays under it). Report
+              // pages that threw AND are still empty post-rescue; blank-by-design pages don't throw, so excluded.
+              try {
+                if (Array.isArray(det.pageErrors) && det.pageErrors.length) {
+                  const _lost = det.pageErrors.filter(e => { const pg = (det.pages || []).find(p => p && p.pageNum === e.pageNum); return !pg || (pg.text || '').trim().length < 20; });
+                  if (_lost.length) { window.__lastOcrPageErrors = _lost; warnLog('[Det] ' + _lost.length + ' born-digital page(s) failed extraction (unrecovered) — surfaced to the partial-extraction banner'); }
+                }
+              } catch (_) {}
+            }
+          } else if (det) {
+            if (det.isEncrypted) window.__lastExtractEncrypted = true; // password-cause: remember for the <20-char abort message below
+            // 0-page guard (deep dive 2026-07-02 H11): a PDF that parses fine but reports zero pages
+            // (attachment-only container, degenerate producer output) used to fall through to the
+            // Vision OCR path, whose page count is then ESTIMATED from base64 size — prompting Vision
+            // for "pages 1..N" that don't exist (hallucination risk, wasted quota) before the <20-char
+            // net finally aborted. Abort here with the real cause. det.error (password/corrupt) paths
+            // keep falling through — Vision is a legitimate rescue for those.
+            if (det.pageCount === 0 && !det.error) {
+              const _zeroPageErr = new Error('This PDF contains no pages — it may be an attachments-only container or corrupted. Nothing to remediate.');
+              _zeroPageErr._alloAbortRun = true; // deliberate abort — rethrown past the fail-safe catch below
+              throw _zeroPageErr;
+            }
+            // (2026-06-20) Adopt the REAL page count from pdf.js for the scanned branch too — the text
+            // branch already does (above). Otherwise OCR chunking falls back to the rough base64-size
+            // estimate (effectivePageCount @ ~12522), which can UNDERcount and silently drop trailing
+            // pages from the Vision range. det.pageCount is authoritative even when the doc is scanned.
+            // ocr-fidelity-2 (2026-06-21): when a partial pageRange is active, NARROW to the selected
+            // pages (like the text branch above) — otherwise numChunks is sized to the WHOLE doc and the
+            // Vision loop fires dozens of out-of-range "pages 12 through 10" calls (wasted quota + the risk
+            // of hallucinated out-of-range pseudo-pages in fullText). det.pageCount remains the absolute
+            // clamp via _rangeMax (= _rangeStart + effectivePageCount - 1) below.
+            if (det.pageCount > 0) {
+              effectivePageCount = (_pageRange && _pageRange[1])
+                ? Math.max(1, Math.min(det.pageCount, _pageRange[1]) - Math.max(1, _pageRange[0] || 1) + 1)
+                : det.pageCount;
+            }
+            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
+            // Scanned confirmed (the audit may not have flagged it): pace the upcoming Vision-OCR burst so the
+            // many chunk calls are staggered under the rate-limit. Idempotent with the proactive call above.
+            try { _applyGeminiPacing(true, (det.pageCount >= 20) ? { maxConcurrent: 2, staggerMs: 1000 } : {}); } catch (_pcErr2) {}
+          }
+        }
+      } catch (detErr) {
+        if (detErr && detErr._alloAbortRun) throw detErr; // 0-page guard above: a deliberate abort, not an extraction failure
+        warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
+      }
+
+      // ── Per-page forced re-OCR (2026-06-20) ── "Re-OCR these pages" target: re-runs OCR on
+      // the user/low-confidence-selected pages and splices the result OVER the existing page text.
+      // The recovery path for a born-digital PDF where a FEW pages have a broken/garbled text layer
+      // (custom font encodings) while the rest are clean — re-OCR just the bad pages, keep the good
+      // ones. Only applies when we have a page map to splice into (full re-OCR above takes precedence
+      // and leaves no map; a fully-scanned doc has no text-layer map yet and runs the OCR path below).
+      // Mirrors the mixed-page rescue mechanism, just driven by an explicit page list. Fail-safe.
+      if (_forceOcrPages && extractedText && Array.isArray(window.__lastGroundTruthPageMap) && window.__lastGroundTruthPageMap.length) {
+        try {
+          const _pm = window.__lastGroundTruthPageMap;
+          updateProgress(1, `Re-OCRing ${_forceOcrPages.length} page(s) as requested...`);
+          const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
+          const _reConf = {};
+          const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr), _reConf);
+          const _reNums = Object.keys(_re);
+          if (_reNums.length) {
+            let _adopted = 0;
+            _pm.forEach(pg => {
+              if (!pg || !_re[pg.pageNum]) return;
+              // Quality gate (2026-06-29): this splice previously overwrote page text UNCONDITIONALLY, so a
+              // re-scan that came back JUNKIER than the existing text silently replaced good content. Only
+              // adopt the re-OCR when it is no junkier than what's already there. Empty/near-empty old text
+              // → _ocrJunkRatio = 1 → always adopted (preserves the gap-page rescue case).
+              if (_ocrJunkRatio(_re[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
+                pg.text = _re[pg.pageNum];
+                // H3 (2026-07-02): mark provenance + confidence so re-OCR'd pages feed the same
+                // accuracy/disclosure nets as full-OCR pages (they were previously unmarked).
+                pg.source = 'reocr';
+                if (typeof _reConf[pg.pageNum] === 'number') pg.ocrConfidence = _reConf[pg.pageNum];
+                _adopted++;
+              }
+              else warnLog('[Re-OCR] page ' + pg.pageNum + ' kept (re-scan came back junkier than the existing text)');
+            });
+            const _merged = _pm.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
+            extractedText = _merged;
+            window.__lastGroundTruthCharCount = _merged.length;
+            window.__lastGroundTruthPageMap = _pm;
+            window.__lastGroundTruthMethod = (window.__lastGroundTruthMethod || 'pdfjs') + '+reocr';
+            updateProgress(1, _adopted > 0 ? `Re-OCR'd ${_adopted} page(s)` : 'Re-OCR ran — kept the original text');
+            warnLog(`[ForceOCR] Re-OCR produced ${_reNums.length}/${_forceOcrPages.length} page(s); adopted ${_adopted} (the rest came back junkier and were kept) → ${_merged.length} chars`);
+            // Honest toast (2026-06-29): report ADOPTED pages, not merely produced — the quality gate above
+            // can keep the original on every page (common when the existing text was the cleaner winner and a
+            // scale-2.0 re-scan is junkier), in which case nothing actually changed.
+            if (typeof addToast === 'function') {
+              if (_adopted > 0) addToast(`🔄 Re-OCR'd ${_adopted} page${_adopted === 1 ? '' : 's'} — review the Diff to confirm the text is correct.`, 'info');
+              else addToast(`Re-OCR ran but the new scan was not cleaner than the existing text — kept the original.`, 'info');
+            }
+          } else {
+            warnLog('[ForceOCR] per-page re-OCR produced no text for the requested pages — keeping original');
+          }
+        } catch (_reErr) { warnLog('[ForceOCR] per-page re-OCR failed (keeping original): ' + (_reErr && _reErr.message)); }
+      }
+    return { extractedText, effectivePageCount, forceFullOcr: _forceFullOcr, garbledFallbackText: _garbledFallbackText, officeMediaImages: _officeMediaImages };
+  };
+
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     const _isBatch = !!batchOverrides;
@@ -14590,246 +14855,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         }
       }
 
-      // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
-      // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
-      // Only fall through to Gemini Vision OCR for scanned PDFs / images.
-      // H1 (deep dive 2026-07-02): Office embedded media (bytes + authored alt text) used to be
-      // collected by the deterministic extractors but consumed ONLY by the audit preview — the
-      // remediated output silently dropped every image and its author-written description while
-      // the audit toast said "preserved". Captured here and spliced into accessibleHtml after the
-      // AI transform (via the same deferred data-URL token mechanism the PDF image path uses).
-      let _officeMediaImages = [];
-      try {
-        const isDocx = _fileName && /\.docx$/i.test(_fileName);
-        const isPptx = _fileName && /\.pptx$/i.test(_fileName);
-        const isPdf = !isDocx && !isPptx; // default to PDF path for unknown mime types
-
-        if (isDocx) {
-          updateProgress(1, 'Extracting DOCX text deterministically...');
-          const det = await extractDocxTextDeterministic(_base64);
-          _officeMediaImages = (det && det.mediaImages) || [];
-          if (det && det.sourceCharCount > 50) {
-            extractedText = det.fullText;
-            window.__lastGroundTruthCharCount = det.sourceCharCount;
-            window.__lastGroundTruthMethod = 'docx-' + det.method;
-            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from DOCX (${det.method})`);
-            warnLog(`[Det] DOCX → ${det.sourceCharCount} chars via ${det.method}`);
-          } else {
-            // Honest: there is NO OCR rescue for Office files — the Vision/Tesseract path
-            // below is gated to application/pdf, and a .docx/.pptx can't be rasterized
-            // client-side. A sparse extraction means an image-only/scanned or corrupt Office
-            // file. Tell the teacher what actually happened + the actionable fix, instead of
-            // silently dead-ending with empty text behind a misleading "falling through" log.
-            warnLog('[Det] DOCX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
-            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This Word file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
-          }
-        } else if (isPptx) {
-          updateProgress(1, 'Extracting PPTX text deterministically...');
-          const det = await extractPptxTextDeterministic(_base64);
-          _officeMediaImages = (det && det.mediaImages) || [];
-          if (det && det.sourceCharCount > 50) {
-            extractedText = det.fullText;
-            window.__lastGroundTruthCharCount = det.sourceCharCount;
-            window.__lastGroundTruthMethod = 'pptx-jszip';
-            updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars from ${det.slideCount} slides`);
-            warnLog(`[Det] PPTX → ${det.sourceCharCount} chars from ${det.slideCount} slides`);
-          } else {
-            // Same as DOCX above: no client-side OCR rescue exists for Office files. Be honest.
-            warnLog('[Det] PPTX extraction sparse (' + (det ? det.sourceCharCount : 0) + ' chars) — no extractable text layer; Office files cannot be OCR\'d client-side');
-            if (typeof addToast === 'function') addToast(t('toasts.office_no_text_layer') || 'This PowerPoint file has little or no extractable text — it looks image-only (scanned) or corrupt. AlloFlow can OCR scanned PDFs but not scanned Office files; please export it to PDF and upload that instead.', 'error');
-          }
-        } else if (isPdf) {
-          updateProgress(1, 'Extracting PDF text layer deterministically...');
-          const det = await extractPdfTextDeterministic(_base64);
-          // Garbled text-layer detector (2026-06-29): isScanned only triggers on a near-EMPTY layer
-          // (<50 chars/page). A scanned page with a thin/mojibake text layer — or a prior bad OCR baked
-          // into the file — clears that gate and would ship unfixed. If the present layer reads like broken
-          // encoding (U+FFFD/control-char density), force the OCR path instead (auto re-scan + honest toast).
-          if (det && !det.isScanned && !_forceFullOcr && det.method !== 'transcript' && _textLayerLooksGarbage(det.fullText)) {
-            _forceFullOcr = true;
-            _garbledFallbackText = det.fullText || null; // keep the discarded layer; adopt OCR only if it's no junkier
-            warnLog('[Extract] Text layer present but looks garbled (broken encoding) — forcing OCR over it (with junk-ratio fallback).');
-            if (typeof addToast === 'function') addToast(t('toasts.garbled_text_layer_ocr') || 'The PDF’s built-in text looks garbled (an encoding problem) — re-scanning it with OCR for a clean copy.', 'info');
-          }
-          if (det && !det.isScanned && !_forceFullOcr && (det.method === 'transcript' || det.sourceCharCount > 100)) { // transcripts accepted by METHOD (sweep 2026-06-11 LOW[6]): a tiny transcript is still ground truth, not a scan. _forceFullOcr → reject the text layer so the OCR path below runs (broken-encoding recovery)
-            // Multi-session: if a pageRange was specified, narrow the extracted pages to
-            // [start, end]. Keeps the full per-page map for later reference but only feeds
-            // the selected pages to the downstream remediation pipeline.
-            if (_pageRange && Array.isArray(det.pages) && det.pages.length > 0) {
-              const rs = Math.max(1, _pageRange[0] || 1);
-              const re = Math.min(det.pageCount, _pageRange[1] || det.pageCount);
-              const slice = det.pages.filter(p => p.pageNum >= rs && p.pageNum <= re);
-              const rangeText = slice.map(p => p.text).filter(Boolean).join('\n\n');
-              extractedText = rangeText;
-              window.__lastGroundTruthCharCount = rangeText.length;
-              window.__lastGroundTruthPageMap = slice;
-              window.__lastGroundTruthMethod = 'pdfjs';
-              effectivePageCount = re - rs + 1;
-              updateProgress(1, `Extracted pages ${rs}-${re} (${rangeText.length.toLocaleString()} chars)`);
-              warnLog(`[Det] PDF text layer range pages ${rs}-${re} → ${rangeText.length} chars / ${effectivePageCount} pages`);
-            } else {
-              extractedText = det.fullText;
-              window.__lastGroundTruthCharCount = det.sourceCharCount;
-              window.__lastGroundTruthPageMap = det.pages;
-              window.__lastGroundTruthMethod = 'pdfjs';
-              if (det.pageCount > 0) effectivePageCount = det.pageCount;
-              updateProgress(1, `Extracted ${det.sourceCharCount.toLocaleString()} chars deterministically from ${det.pageCount} pages`);
-              warnLog(`[Det] PDF text layer → ${det.sourceCharCount} chars / ${det.pageCount} pages (avg ${Math.round(det.sourceCharCount / Math.max(1, det.pageCount))}/page)`);
-              // ── Mixed scanned+digital rescue ──
-              // isScanned is a whole-document average, so a born-digital PDF with a few
-              // image-only pages (a scanned signature page, an inserted figure-page) passes
-              // as text-layer and those pages contribute '' that is silently dropped. Detect
-              // near-empty pages and OCR JUST those, splicing the recovered text back in page
-              // order. Fail-safe: any failure leaves the text-layer result untouched.
-              try {
-                if (Array.isArray(det.pages) && det.pages.length > 1) {
-                  const _gapPages = det.pages.filter(pg => pg && (pg.text || '').trim().length < 20).map(pg => pg.pageNum);
-                  if (_gapPages.length > 0 && _gapPages.length < det.pages.length) {
-                    updateProgress(1, `${_gapPages.length} image-only page(s) found in a text PDF — OCRing just those...`);
-                    const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
-                    const _rescueConf = {};
-                    const _rescued = await _ocrSpecificPages(_base64, _gapPages, _toTesseractLang(_ovr), _rescueConf);
-                    const _rescuedNums = Object.keys(_rescued);
-                    if (_rescuedNums.length > 0) {
-                      // H3 (deep dive 2026-07-02): rescued pages used to be spliced in unmarked with
-                      // groundTruthMethod left at 'pdfjs' — so the OCR-accuracy scan, the low-confidence
-                      // banner, and the scanned-path disclosure ALL skipped them: garbled OCR shipped as
-                      // silent "ground truth". Now: junk-gate adoption (same rule as ForceOCR — empty old
-                      // text has junkRatio 1, so gap pages still always adopt over nothing), per-page
-                      // source + confidence marking, an honest '+ocr-rescue' method suffix (matches the
-                      // /ocr/i isScanned test in createTaggedPdf, same as '+reocr'), and low-confidence
-                      // entries into the SAME net the full-OCR path feeds.
-                      let _adoptedRescue = 0;
-                      det.pages.forEach(pg => {
-                        if (!pg || !_rescued[pg.pageNum]) return;
-                        if (_ocrJunkRatio(_rescued[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
-                          pg.text = _rescued[pg.pageNum];
-                          pg.source = 'ocr-rescue';
-                          if (typeof _rescueConf[pg.pageNum] === 'number') pg.ocrConfidence = _rescueConf[pg.pageNum];
-                          _adoptedRescue++;
-                        } else warnLog('[Det] Mixed-page rescue: page ' + pg.pageNum + ' kept (OCR came back junkier than the sparse text layer)');
-                      });
-                      const _merged = det.pages.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
-                      extractedText = _merged;
-                      window.__lastGroundTruthCharCount = _merged.length;
-                      window.__lastGroundTruthPageMap = det.pages;
-                      if (_adoptedRescue > 0) {
-                        window.__lastGroundTruthMethod = 'pdfjs+ocr-rescue';
-                        const _lowRescue = det.pages.filter(pg => pg && pg.source === 'ocr-rescue' && typeof pg.ocrConfidence === 'number' && pg.ocrConfidence < 60)
-                          .map(pg => ({ pageNum: pg.pageNum, confidence: pg.ocrConfidence }));
-                        if (_lowRescue.length) {
-                          window.__lastOcrLowConfidencePages = (window.__lastOcrLowConfidencePages || []).concat(_lowRescue);
-                          if (typeof addToast === 'function') addToast(`⚠ ${_lowRescue.length} rescued page${_lowRescue.length === 1 ? '' : 's'} OCR'd at low confidence — verify the text is correct (review the Diff / fidelity panel).`, 'warning');
-                        }
-                      }
-                      updateProgress(1, `Recovered text from ${_adoptedRescue} image-only page(s) via OCR`);
-                      warnLog(`[Det] Mixed-page rescue: OCR'd ${_rescuedNums.length}/${_gapPages.length} image-only page(s), adopted ${_adoptedRescue} → ${_merged.length} total chars`);
-                    }
-                  }
-                }
-              } catch (_mixErr) { warnLog('[Det] Mixed-page OCR rescue failed (keeping text-layer result): ' + (_mixErr && _mixErr.message)); }
-              // B1 (2026-06-20): surface born-digital extraction THROWS to the Stage-1 partial-extraction
-              // banner. Only the SCANNED path wrote __lastOcrPageErrors, so a text-PDF page that threw on
-              // getTextContent — and wasn't recovered by the mixed-page rescue above — vanished with no
-              // banner (the 97% char gate is the only net, and one short lost page stays under it). Report
-              // pages that threw AND are still empty post-rescue; blank-by-design pages don't throw, so excluded.
-              try {
-                if (Array.isArray(det.pageErrors) && det.pageErrors.length) {
-                  const _lost = det.pageErrors.filter(e => { const pg = (det.pages || []).find(p => p && p.pageNum === e.pageNum); return !pg || (pg.text || '').trim().length < 20; });
-                  if (_lost.length) { window.__lastOcrPageErrors = _lost; warnLog('[Det] ' + _lost.length + ' born-digital page(s) failed extraction (unrecovered) — surfaced to the partial-extraction banner'); }
-                }
-              } catch (_) {}
-            }
-          } else if (det) {
-            if (det.isEncrypted) window.__lastExtractEncrypted = true; // password-cause: remember for the <20-char abort message below
-            // 0-page guard (deep dive 2026-07-02 H11): a PDF that parses fine but reports zero pages
-            // (attachment-only container, degenerate producer output) used to fall through to the
-            // Vision OCR path, whose page count is then ESTIMATED from base64 size — prompting Vision
-            // for "pages 1..N" that don't exist (hallucination risk, wasted quota) before the <20-char
-            // net finally aborted. Abort here with the real cause. det.error (password/corrupt) paths
-            // keep falling through — Vision is a legitimate rescue for those.
-            if (det.pageCount === 0 && !det.error) {
-              const _zeroPageErr = new Error('This PDF contains no pages — it may be an attachments-only container or corrupted. Nothing to remediate.');
-              _zeroPageErr._alloAbortRun = true; // deliberate abort — rethrown past the fail-safe catch below
-              throw _zeroPageErr;
-            }
-            // (2026-06-20) Adopt the REAL page count from pdf.js for the scanned branch too — the text
-            // branch already does (above). Otherwise OCR chunking falls back to the rough base64-size
-            // estimate (effectivePageCount @ ~12522), which can UNDERcount and silently drop trailing
-            // pages from the Vision range. det.pageCount is authoritative even when the doc is scanned.
-            // ocr-fidelity-2 (2026-06-21): when a partial pageRange is active, NARROW to the selected
-            // pages (like the text branch above) — otherwise numChunks is sized to the WHOLE doc and the
-            // Vision loop fires dozens of out-of-range "pages 12 through 10" calls (wasted quota + the risk
-            // of hallucinated out-of-range pseudo-pages in fullText). det.pageCount remains the absolute
-            // clamp via _rangeMax (= _rangeStart + effectivePageCount - 1) below.
-            if (det.pageCount > 0) {
-              effectivePageCount = (_pageRange && _pageRange[1])
-                ? Math.max(1, Math.min(det.pageCount, _pageRange[1]) - Math.max(1, _pageRange[0] || 1) + 1)
-                : det.pageCount;
-            }
-            warnLog(`[Det] PDF appears scanned (${det.sourceCharCount} chars / ${det.pageCount} pages) — falling through to Vision OCR`);
-            // Scanned confirmed (the audit may not have flagged it): pace the upcoming Vision-OCR burst so the
-            // many chunk calls are staggered under the rate-limit. Idempotent with the proactive call above.
-            try { _applyGeminiPacing(true, (det.pageCount >= 20) ? { maxConcurrent: 2, staggerMs: 1000 } : {}); } catch (_pcErr2) {}
-          }
-        }
-      } catch (detErr) {
-        if (detErr && detErr._alloAbortRun) throw detErr; // 0-page guard above: a deliberate abort, not an extraction failure
-        warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
-      }
-
-      // ── Per-page forced re-OCR (2026-06-20) ── "Re-OCR these pages" target: re-runs OCR on
-      // the user/low-confidence-selected pages and splices the result OVER the existing page text.
-      // The recovery path for a born-digital PDF where a FEW pages have a broken/garbled text layer
-      // (custom font encodings) while the rest are clean — re-OCR just the bad pages, keep the good
-      // ones. Only applies when we have a page map to splice into (full re-OCR above takes precedence
-      // and leaves no map; a fully-scanned doc has no text-layer map yet and runs the OCR path below).
-      // Mirrors the mixed-page rescue mechanism, just driven by an explicit page list. Fail-safe.
-      if (_forceOcrPages && extractedText && Array.isArray(window.__lastGroundTruthPageMap) && window.__lastGroundTruthPageMap.length) {
-        try {
-          const _pm = window.__lastGroundTruthPageMap;
-          updateProgress(1, `Re-OCRing ${_forceOcrPages.length} page(s) as requested...`);
-          const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
-          const _reConf = {};
-          const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr), _reConf);
-          const _reNums = Object.keys(_re);
-          if (_reNums.length) {
-            let _adopted = 0;
-            _pm.forEach(pg => {
-              if (!pg || !_re[pg.pageNum]) return;
-              // Quality gate (2026-06-29): this splice previously overwrote page text UNCONDITIONALLY, so a
-              // re-scan that came back JUNKIER than the existing text silently replaced good content. Only
-              // adopt the re-OCR when it is no junkier than what's already there. Empty/near-empty old text
-              // → _ocrJunkRatio = 1 → always adopted (preserves the gap-page rescue case).
-              if (_ocrJunkRatio(_re[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
-                pg.text = _re[pg.pageNum];
-                // H3 (2026-07-02): mark provenance + confidence so re-OCR'd pages feed the same
-                // accuracy/disclosure nets as full-OCR pages (they were previously unmarked).
-                pg.source = 'reocr';
-                if (typeof _reConf[pg.pageNum] === 'number') pg.ocrConfidence = _reConf[pg.pageNum];
-                _adopted++;
-              }
-              else warnLog('[Re-OCR] page ' + pg.pageNum + ' kept (re-scan came back junkier than the existing text)');
-            });
-            const _merged = _pm.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
-            extractedText = _merged;
-            window.__lastGroundTruthCharCount = _merged.length;
-            window.__lastGroundTruthPageMap = _pm;
-            window.__lastGroundTruthMethod = (window.__lastGroundTruthMethod || 'pdfjs') + '+reocr';
-            updateProgress(1, _adopted > 0 ? `Re-OCR'd ${_adopted} page(s)` : 'Re-OCR ran — kept the original text');
-            warnLog(`[ForceOCR] Re-OCR produced ${_reNums.length}/${_forceOcrPages.length} page(s); adopted ${_adopted} (the rest came back junkier and were kept) → ${_merged.length} chars`);
-            // Honest toast (2026-06-29): report ADOPTED pages, not merely produced — the quality gate above
-            // can keep the original on every page (common when the existing text was the cleaner winner and a
-            // scale-2.0 re-scan is junkier), in which case nothing actually changed.
-            if (typeof addToast === 'function') {
-              if (_adopted > 0) addToast(`🔄 Re-OCR'd ${_adopted} page${_adopted === 1 ? '' : 's'} — review the Diff to confirm the text is correct.`, 'info');
-              else addToast(`Re-OCR ran but the new scan was not cleaner than the existing text — kept the original.`, 'info');
-            }
-          } else {
-            warnLog('[ForceOCR] per-page re-OCR produced no text for the requested pages — keeping original');
-          }
-        } catch (_reErr) { warnLog('[ForceOCR] per-page re-OCR failed (keeping original): ' + (_reErr && _reErr.message)); }
-      }
+      // ── Step 0 (S2-extracted → _runExtractionPhase) ──
+      const _extOut = await _runExtractionPhase({ base64: _base64, fileName: _fileName, pageRange: _pageRange, forceOcrPages: _forceOcrPages, forceFullOcr: _forceFullOcr, effectivePageCount, updateProgress });
+      extractedText = _extOut.extractedText;                 // '' when the doc is scanned → the OCR path below runs
+      effectivePageCount = _extOut.effectivePageCount;       // real pdf.js page count when the text branch adopted it
+      _forceFullOcr = _extOut.forceFullOcr;                  // garbled-layer detector can force the OCR path
+      _garbledFallbackText = _extOut.garbledFallbackText;    // discarded layer kept as the junk-ratio fallback
+      const _officeMediaImages = _extOut.officeMediaImages;  // H1: spliced into accessibleHtml post-transform
 
       const PAGES_PER_CHUNK = 2; // Tight: 2 pages per chunk — safely fits in 8192 output tokens
       const numChunks = Math.max(1, Math.ceil(effectivePageCount / PAGES_PER_CHUNK));
