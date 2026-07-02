@@ -16306,47 +16306,110 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           // ═══ RENDER ═══
 
-          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', quiz: 'amber', waterlab: 'violet', designer: 'pink' };
+          var modeColors = { tank: 'cyan', ocean: 'blue', marine: 'indigo', learn: 'emerald', quiz: 'amber', waterlab: 'violet', designer: 'pink', stressHunt: 'rose' };
 
           var mColor = modeColors[mode] || 'cyan';
 
+          var modeTabs = [
+            { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.aquarium_lab', 'Aquarium Lab'), activeClass: 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/25' },
+            { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology'), activeClass: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25' },
+            { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science'), activeClass: 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' },
+            { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn'), activeClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25' },
+            { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz'), activeClass: 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25' },
+            { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab'), activeClass: 'bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-lg shadow-violet-500/25' },
+            { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer'), activeClass: 'bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25' },
+            { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.stress_lab', 'Stress Lab'), activeClass: 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/25' }
+          ];
+
+          var activeModeMeta = modeTabs.filter(function (tab) { return tab.id === mode; })[0] || modeTabs[0];
+          var activeTankMeta = selectedTank ? TANK_TYPES.filter(function (tank) { return tank.id === selectedTank; })[0] : null;
+          var missionRoutes = [
+            { id: 'cycle', mode: 'tank', icon: '\uD83D\uDC20', title: __alloT('stem.aquarium.route_cycle_tank', 'Cycle a living tank'), detail: __alloT('stem.aquarium.route_cycle_tank_detail', 'Watch fish waste become chemistry data.'), tone: 'from-cyan-50 to-sky-50 border-cyan-200 text-cyan-900' },
+            { id: 'chem', mode: 'waterlab', icon: '\uD83E\uDDEA', title: __alloT('stem.aquarium.route_balance_chemistry', 'Balance chemistry'), detail: __alloT('stem.aquarium.route_balance_chemistry_detail', 'Test pH, ammonia, nitrite, nitrate, oxygen.'), tone: 'from-violet-50 to-fuchsia-50 border-violet-200 text-violet-900' },
+            { id: 'design', mode: 'designer', icon: '\u270F\uFE0F', title: __alloT('stem.aquarium.route_design_habitat', 'Design a habitat'), detail: __alloT('stem.aquarium.route_design_habitat_detail', 'Build a compatible stocking plan.'), tone: 'from-pink-50 to-rose-50 border-pink-200 text-pink-900' },
+            { id: 'ocean', mode: 'ocean', icon: '\uD83C\uDF0A', title: __alloT('stem.aquarium.route_ocean_systems', 'Model ocean systems'), detail: __alloT('stem.aquarium.route_ocean_systems_detail', 'Track plankton, fisheries, acidification.'), tone: 'from-blue-50 to-cyan-50 border-blue-200 text-blue-900' }
+          ];
 
 
-          return React.createElement("div", { className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-300" },
+
+          return React.createElement("div", { className: "space-y-4 max-w-5xl mx-auto animate-in fade-in duration-300", 'data-aquarium-tool': 'true' },
 
 
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-2" },
+            React.createElement("div", {
+              className: "rounded-2xl overflow-hidden border border-cyan-200 bg-gradient-to-br from-white via-cyan-50 to-sky-100 shadow-sm",
+              'data-aquarium-focus-panel': 'true'
+            },
 
-              React.createElement("button", {
+              React.createElement("div", { className: "p-4 sm:p-5 flex flex-col gap-4" },
 
-                onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
+                React.createElement("div", { className: "flex items-start gap-3" },
 
-                className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
+                  React.createElement("button", {
 
-              }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+                    onClick: function () { setStemLabTool(null); updMulti({ simRunning: false }); },
 
-              React.createElement("h3", { className: "text-lg font-bold bg-gradient-to-r from-cyan-700 via-blue-600 to-indigo-700 bg-clip-text text-transparent" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
+                    className: "mt-0.5 p-2 hover:bg-white/80 rounded-xl transition-colors border border-transparent hover:border-cyan-200", 'aria-label': __alloT('stem.aquarium.back_to_tools', 'Back to tools')
 
-              React.createElement("div", { className: "flex items-center gap-2 ml-auto" },
+                  }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-                React.createElement("button", { "aria-label": __alloT('stem.aquarium.snapshot', "Snapshot"),
+                  React.createElement("div", { className: "flex-1 min-w-0" },
+                    React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-cyan-700" }, __alloT('stem.aquarium.tank_systems_mission', 'Tank Systems Mission')),
+                    React.createElement("h3", { className: "text-xl sm:text-2xl font-black text-slate-900 leading-tight" }, __alloT('stem.aquarium.aquaculture_ocean_lab', "\uD83D\uDC20 Aquaculture & Ocean Lab")),
+                    React.createElement("p", { className: "text-[12px] sm:text-sm text-slate-700 leading-relaxed max-w-2xl mt-1" },
+                      __alloT('stem.aquarium.aquarium_focus_copy', 'Keep a miniature ecosystem stable: choose a tank, stock it carefully, read the water chemistry, and connect those choices to ocean-scale systems.'))
+                  ),
 
-                  onClick: function () {
+                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.snapshot', "Snapshot"),
 
-                    var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
+                    onClick: function () {
 
-                    setToolSnapshots(function (prev) { return prev.concat([snap]); });
+                      var snap = { id: 'aqua-' + Date.now(), tool: 'aquarium', label: mode === 'tank' ? 'Tank: ' + (selectedTank || 'none') : mode === 'ocean' ? 'Ocean Year ' + oceanYear : 'Marine Science', data: Object.assign({}, d), timestamp: Date.now() };
 
-                    if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
+                      setToolSnapshots(function (prev) { return prev.concat([snap]); });
 
-                  },
+                      if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
 
-                  className: "text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all"
+                    },
 
-                }, __alloT('stem.aquarium.snapshot_2', "\uD83D\uDCF8 Snapshot"))
+                    className: "hidden sm:inline-flex items-center justify-center text-[11px] font-black text-cyan-900 bg-white/85 hover:bg-white border border-cyan-200 rounded-full px-3 py-1.5 transition-all shadow-sm"
+
+                  }, __alloT('stem.aquarium.snapshot_2', "\uD83D\uDCF8 Snapshot"))
+
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-4 gap-2", 'data-aquarium-status-strip': 'true' },
+                  [
+                    { k: 'mode', label: __alloT('stem.aquarium.current_path', 'Current path'), value: activeModeMeta.icon + ' ' + activeModeMeta.label },
+                    { k: 'tank', label: __alloT('stem.aquarium.active_tank', 'Active tank'), value: activeTankMeta ? activeTankMeta.name : __alloT('stem.aquarium.not_chosen_yet', 'Not chosen yet') },
+                    { k: 'fish', label: __alloT('stem.aquarium.living_stock', 'Living stock'), value: (tankFish || []).length + ' fish' },
+                    { k: 'day', label: __alloT('stem.aquarium.sim_day', 'Sim day'), value: selectedTank ? ('Day ' + (simDay || 0)) : __alloT('stem.aquarium.ready', 'Ready') }
+                  ].map(function (stat) {
+                    return React.createElement("div", { key: stat.k, className: "rounded-xl bg-white/80 border border-white/80 px-3 py-2 shadow-sm" },
+                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-500" }, stat.label),
+                      React.createElement("div", { className: "text-[12px] font-black text-slate-900 truncate" }, stat.value)
+                    );
+                  })
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2" },
+                  missionRoutes.map(function (route) {
+                    var selectedRoute = mode === route.mode;
+                    return React.createElement("button", {
+                      key: route.id,
+                      onClick: function () { upd('mode', route.mode); },
+                      className: "text-left rounded-xl border p-3 bg-gradient-to-br " + route.tone + " transition-all hover:-translate-y-0.5 hover:shadow-md " + (selectedRoute ? "ring-2 ring-cyan-400" : "")
+                    },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "text-lg", 'aria-hidden': 'true' }, route.icon),
+                        React.createElement("span", { className: "text-[12px] font-black" }, route.title)
+                      ),
+                      React.createElement("p", { className: "mt-1 text-[11px] leading-snug opacity-80" }, route.detail)
+                    );
+                  })
+                )
 
               )
 
@@ -16362,40 +16425,26 @@ var d = (labToolData && labToolData._aquarium) || {};
             // on the new lighter background. Active tabs keep their
             // existing per-mode color treatment.
             React.createElement("div", {
-              className: "flex gap-1 rounded-xl p-1.5",
+              className: "grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-1 rounded-2xl p-1.5",
+              role: "tablist",
+              'aria-label': __alloT('stem.aquarium.aquarium_sections', 'Aquarium sections'),
               style: {
                 background: "linear-gradient(180deg,#e0f2fe 0%,#bae6fd 60%,#7dd3fc 100%)",
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(2,132,199,0.10),0 4px 14px -10px rgba(15,23,42,0.10)"
               }
             },
 
-              [
-
-                { id: 'tank', icon: '\uD83D\uDC20', label: __alloT('stem.aquarium.aquarium_lab', 'Aquarium Lab') },
-
-                { id: 'ocean', icon: '\uD83C\uDF0A', label: __alloT('stem.aquarium.ocean_ecology', 'Ocean Ecology') },
-
-                { id: 'marine', icon: '\uD83D\uDD2C', label: __alloT('stem.aquarium.marine_science', 'Marine Science') },
-
-                { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.aquarium.learn', 'Learn') },
-
-                { id: 'quiz', icon: '\uD83C\uDFAF', label: __alloT('stem.aquarium.quiz', 'Quiz') },
-
-                { id: 'waterlab', icon: '\uD83E\uDDEA', label: __alloT('stem.aquarium.water_lab', 'Water Lab') },
-
-                { id: 'designer', icon: '\u270F\uFE0F', label: __alloT('stem.aquarium.designer', 'Designer') },
-
-                { id: 'stressHunt', icon: '\uD83D\uDC1F', label: __alloT('stem.aquarium.stress_lab', 'Stress Lab') }
-
-              ].map(function (tab) {
+              modeTabs.map(function (tab) {
 
                 return React.createElement("button", { key: tab.id,
 
                   onClick: function () { upd('mode', tab.id); },
+                  role: "tab",
+                  'aria-selected': mode === tab.id,
 
-                  className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-cyan-900 hover:text-sky-800 hover:bg-white/70")
+                  className: "min-h-[48px] px-2 rounded-xl text-[12px] font-black transition-all duration-200 flex flex-col items-center justify-center gap-0.5 " + (mode === tab.id ? tab.activeClass : "text-cyan-900 hover:text-sky-800 hover:bg-white/75")
 
-                }, tab.icon, " ", tab.label);
+                }, React.createElement("span", { className: "text-base leading-none", 'aria-hidden': 'true' }, tab.icon), React.createElement("span", { className: "leading-tight" }, tab.label));
 
               })
 
@@ -16756,50 +16805,84 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             // ═══════════════ MODE 1: AQUARIUM LAB ═══════════════
 
-            mode === 'tank' && !selectedTank && React.createElement("div", { className: "space-y-3" },
+            mode === 'tank' && !selectedTank && React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-4", 'data-aquarium-tank-launch': 'true' },
 
-              React.createElement("h4", { className: "text-sm font-bold text-cyan-700" }, __alloT('stem.aquarium.choose_your_tank', "\uD83D\uDC1F Choose Your Tank")),
+              React.createElement("div", { className: "lg:col-span-4 rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm" },
 
-              React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                React.createElement("div", { className: "text-[11px] font-black uppercase tracking-[0.14em] text-cyan-700" }, __alloT('stem.aquarium.choose_your_tank', "\uD83D\uDC1F Choose Your Tank")),
+
+                React.createElement("h4", { className: "text-lg font-black text-slate-900 mt-1" }, __alloT('stem.aquarium.starter_ecosystem', 'Starter ecosystem')),
+
+                React.createElement("p", { className: "text-[12px] text-slate-700 leading-relaxed mt-2" },
+                  __alloT('stem.aquarium.starter_ecosystem_copy', 'Pick a habitat, add stock slowly, and watch the water chemistry respond. A smaller bioload gives the bacteria time to keep up.')),
+
+                React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2" },
+                  [
+                    { label: __alloT('stem.aquarium.safe_chemistry', 'Safe chemistry'), value: 'NH\u2083 0 ppm' },
+                    { label: __alloT('stem.aquarium.weekly_action', 'Weekly action'), value: '25% water' },
+                    { label: __alloT('stem.aquarium.stocking_rule', 'Stocking rule'), value: 'Low bioload' },
+                    { label: __alloT('stem.aquarium.plant_bonus', 'Plant bonus'), value: 'Nitrate sink' }
+                  ].map(function (item) {
+                    return React.createElement("div", { key: item.label, className: "rounded-xl bg-cyan-50 border border-cyan-100 p-2" },
+                      React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-700" }, item.label),
+                      React.createElement("div", { className: "text-[12px] font-black text-slate-900" }, item.value)
+                    );
+                  })
+                ),
+
+                React.createElement("div", { className: "mt-4 rounded-xl bg-gradient-to-br from-slate-900 to-cyan-950 p-3 text-white overflow-hidden relative" },
+                  React.createElement("div", { className: "absolute inset-0 opacity-30", style: { background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.55), transparent 35%), radial-gradient(circle at 85% 60%, rgba(14,165,233,0.35), transparent 34%)' } }),
+                  React.createElement("div", { className: "relative z-10 text-[11px] font-bold text-cyan-100" }, __alloT('stem.aquarium.first_lab_goal', 'First lab goal')),
+                  React.createElement("div", { className: "relative z-10 text-[13px] font-black mt-1" }, __alloT('stem.aquarium.first_lab_goal_copy', 'Reach Day 3 with stable ammonia and at least one healthy fish.'))
+                )
+
+              ),
+
+              React.createElement("div", { className: "lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3" },
 
                 TANK_TYPES.map(function (tank) {
-
+                  var isSalt = tank.salinity > 0;
+                  var diffLabel = tank.diff <= 1 ? __alloT('stem.aquarium.beginner', 'Beginner') : tank.diff === 2 ? __alloT('stem.aquarium.intermediate', 'Intermediate') : __alloT('stem.aquarium.advanced', 'Advanced');
+                  var waterTone = isSalt ? 'from-blue-600 via-cyan-500 to-teal-300' : 'from-cyan-500 via-sky-400 to-emerald-300';
                   return React.createElement("button", { "aria-label": "Select tank: " + tank.name,
 
                     key: tank.id,
 
                     onClick: function () { initTank(tank.id); },
 
-                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-600 hover:border-cyan-400"
+                    className: "group rounded-2xl border-2 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 bg-white border-cyan-200 hover:border-cyan-500 overflow-hidden"
 
                   },
 
-                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
-
-                      React.createElement("span", { className: "text-xl" }, tank.name.split(' ')[0]),
-
-                      React.createElement("span", { className: "text-xs font-bold text-cyan-800" }, tank.name.split(' ').slice(1).join(' ')),
-
-                      React.createElement("span", { className: "ml-auto text-[11px] text-amber-600 font-bold" }, '\u2B50'.repeat(tank.diff))
-
+                    React.createElement("div", { className: "h-24 bg-gradient-to-br " + waterTone + " relative overflow-hidden" },
+                      React.createElement("div", { className: "absolute inset-x-0 top-0 h-7 opacity-40", style: { background: 'repeating-linear-gradient(110deg, rgba(255,255,255,0.45) 0 16px, rgba(255,255,255,0.08) 16px 34px)' } }),
+                      React.createElement("div", { className: "absolute bottom-0 inset-x-0 h-6 bg-amber-900/30" }),
+                      React.createElement("div", { className: "absolute left-4 top-4 text-3xl drop-shadow", 'aria-hidden': 'true' }, tank.name.split(' ')[0]),
+                      React.createElement("div", { className: "absolute right-3 top-3 rounded-full bg-white/85 text-[10px] font-black text-slate-800 px-2 py-1 border border-white" }, diffLabel),
+                      React.createElement("div", { className: "absolute left-5 bottom-4 flex gap-1" },
+                        [0, 1, 2, 3, 4].map(function (i) {
+                          return React.createElement("span", { key: i, className: "block w-1.5 h-1.5 rounded-full bg-white/70", style: { transform: 'translateY(' + ((i % 2) * 4) + 'px)' } });
+                        })
+                      )
                     ),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, tank.desc),
+                    React.createElement("div", { className: "p-4" },
+                      React.createElement("div", { className: "flex items-start gap-2" },
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "text-sm font-black text-slate-900 truncate" }, tank.name.split(' ').slice(1).join(' ') || tank.name),
+                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1" }, tank.desc)
+                        ),
+                        React.createElement("span", { className: "text-[11px] text-amber-600 font-black whitespace-nowrap" }, '\u2B50'.repeat(tank.diff))
+                      ),
 
-                    React.createElement("div", { className: "flex gap-2 text-[11px] text-cyan-600" },
+                      React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 text-[10px] font-bold" },
+                        React.createElement("span", { className: "rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 px-2 py-1" }, tank.size + " gal"),
+                        React.createElement("span", { className: "rounded-full bg-sky-50 text-sky-800 border border-sky-200 px-2 py-1" }, tank.temp + "\u00B0F"),
+                        React.createElement("span", { className: "rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-1" }, "pH " + tank.pH),
+                        tank.salinity > 0 && React.createElement("span", { className: "rounded-full bg-blue-50 text-blue-800 border border-blue-200 px-2 py-1" }, tank.salinity + " ppt")
+                      ),
 
-                      React.createElement("span", null, tank.size + " gal"),
-
-                      React.createElement("span", null, "\u2022"),
-
-                      React.createElement("span", null, tank.temp + "\u00B0F"),
-
-                      React.createElement("span", null, "\u2022"),
-
-                      React.createElement("span", null, "pH " + tank.pH),
-
-                      tank.salinity > 0 && React.createElement("span", null, "\u2022 " + tank.salinity + " ppt")
-
+                      React.createElement("div", { className: "mt-3 text-[11px] font-black text-cyan-800 group-hover:text-cyan-950" }, __alloT('stem.aquarium.start_this_tank', 'Start this tank') + ' \u2192')
                     )
 
                   );
@@ -19560,7 +19643,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         onClick: function () { updMulti({ quizCurrent: i, quizShowExplanation: answered }); },
                         title: 'Q' + (i + 1) + ' \u00b7 ' + q.category,
                         style: { background: bg, color: fg, boxShadow: ring },
-                        className: 'aspect-square rounded text-[9px] font-black flex items-center justify-center'
+                        className: 'aspect-square rounded text-[10px] font-black flex items-center justify-center'
                       }, i + 1);
                     })
                   )
@@ -19641,7 +19724,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             className: 'w-full relative z-10'
                           })
                         ),
-                        React.createElement('div', { className: 'flex justify-between text-[9px] font-mono text-slate-500' },
+                        React.createElement('div', { className: 'flex justify-between text-[10px] font-mono text-slate-500' },
                           React.createElement('span', null, c.min + ' ' + c.unit),
                           React.createElement('span', { className: 'text-green-700 font-bold' }, 'ideal: ' + c.ideal[0] + '\u2013' + c.ideal[1] + ' ' + c.unit),
                           React.createElement('span', null, c.max + ' ' + c.unit)
@@ -19993,7 +20076,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded-full flex-shrink-0', style: { background: f.color, border: '1px solid ' + f.accent } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
                               React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, f.common),
-                              React.createElement('div', { className: 'text-[9px] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
+                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, f.sci + ' \u00b7 ' + f.adultSize + '" \u00b7 ' + f.minGallons + 'g+ \u00b7 ' + f.careLevel)
                             ),
                             existing && React.createElement('span', { className: 'text-[10px] font-black text-pink-700 bg-pink-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )
@@ -20016,7 +20099,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                             React.createElement('span', { className: 'inline-block w-4 h-4 rounded flex-shrink-0', style: { background: pl.color } }),
                             React.createElement('div', { className: 'flex-1 min-w-0' },
                               React.createElement('div', { className: 'text-[11px] font-bold text-slate-800 truncate' }, pl.common),
-                              React.createElement('div', { className: 'text-[9px] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
+                              React.createElement('div', { className: 'text-[10px] text-slate-500 italic truncate' }, pl.sci + ' \u00b7 ' + pl.heightInches + '" \u00b7 ' + pl.light + ' light \u00b7 CO\u2082: ' + pl.co2)
                             ),
                             existing && React.createElement('span', { className: 'text-[10px] font-black text-green-700 bg-green-100 rounded-full px-1.5' }, '\u00d7' + existing.qty)
                           )

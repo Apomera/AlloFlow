@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T07:09:02.752Z",
+  "generatedAt": "2026-07-02T13:35:34.845Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 23
+    "monitoredMarkerCount": 24
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 23,
+    "markerPassCount": 24,
     "markerFailCount": 0,
     "monitoredIssueCount": 29,
     "monitoredErrorCount": 0,
@@ -390,7 +390,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17200,
+      "htmlBytes": 17209,
       "issues": [
         {
           "toolId": "playlab",
@@ -419,7 +419,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17200
+        "htmlBytes": 17209
       }
     },
     {
@@ -496,6 +496,22 @@
       }
     },
     {
+      "id": "aquarium",
+      "file": "stem_tool_aquarium.js",
+      "marker": "data-aquarium-focus-panel",
+      "label": "Aquarium mission panel",
+      "ok": true,
+      "htmlBytes": 28684,
+      "issues": [],
+      "metrics": {
+        "buttons": 22,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 28684
+      }
+    },
+    {
       "id": "bikeLab",
       "file": "stem_tool_bikelab.js",
       "marker": "data-bikelab-ride-focus",
@@ -545,7 +561,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46578,
+      "htmlBytes": 46587,
       "issues": [
         {
           "toolId": "throwlab",
@@ -574,7 +590,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46578
+        "htmlBytes": 46587
       }
     },
     {

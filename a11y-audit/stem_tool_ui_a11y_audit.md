@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T07:08:47.804Z
+Generated: 2026-07-02T13:35:36.534Z
 
 ## Scope
 
@@ -52,7 +52,7 @@ Generated: 2026-07-02T07:08:47.804Z
 | `anatomy` Human Anatomy Explorer | science | standard | 66 | 1 | 1 | 0 | 2 | 0 | canvas-focus x1, canvas-name x1 |
 | `appLab` AppLab | technology | standard | 26 | 7 | 0 | 0 | 1 | 0 | inline-contrast x1 |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 140 | 0 | 0 | 0 | 1 | 0 | heading x1 |
-| `aquarium` Aquarium Lab | science | standard | 20 | 0 | 0 | 0 | 0 | 0 |  |
+| `aquarium` Aquarium Lab | science | standard | 24 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
 | `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 1 | 1 | heading x1, metadata x1 |
 | `areamodel` Area Model | math | standard | 20 | 7 | 1 | 0 | 3 | 0 | canvas-focus x1, canvas-name x1, tiny-text x1 |

@@ -1,19 +1,19 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T07:09:02.752Z
+Generated: 2026-07-02T13:35:34.845Z
 
 ## Scope
 
 - Registered STEM tools: 113
 - STEM tool files: 110
-- Monitored student-facing visual markers: 23
+- Monitored student-facing visual markers: 24
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 23 |
+| Marker passes | 24 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 29 |
 | High-confidence monitored errors | 0 |
@@ -41,6 +41,7 @@ Generated: 2026-07-02T07:09:02.752Z
 | pass | `waterCycle` | `data-watercycle-focus` | Rendered |
 | pass | `playlab` | `data-playlab-gameplan` | Rendered |
 | pass | `plateTectonics` | `data-pt-sim-focus` | Rendered |
+| pass | `aquarium` | `data-aquarium-focus-panel` | Rendered |
 | pass | `bikeLab` | `data-bikelab-ride-focus` | Rendered |
 | pass | `throwlab` | `data-throwlab-run-focus` | Rendered |
 | pass | `echolocation` | `data-echolocation-run-focus` | Rendered |
