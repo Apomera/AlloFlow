@@ -164,6 +164,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-card-lift   { transition: transform 200ms ease, box-shadow 200ms ease; }',
       '.birdlab-card-lift:hover { transform: translateY(-3px); }',
       '.birdlab-card-lift:focus-visible { transform: translateY(-3px); }',
+      '.birdlab-shell { color: #0f172a; }',
+      '.birdlab-field-station {',
+      '  position: relative;',
+      '  overflow: hidden;',
+      '  border-radius: 22px;',
+      '  border: 2px solid rgba(16, 185, 129, 0.45);',
+      '  background: linear-gradient(135deg, #ecfdf5 0%, #fef9c3 54%, #e0f2fe 100%);',
+      '  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.11);',
+      '}',
+      '.birdlab-field-station::before {',
+      '  content: "";',
+      '  position: absolute;',
+      '  inset: auto -8% -36% -8%;',
+      '  height: 58%;',
+      '  background: linear-gradient(180deg, rgba(16, 185, 129, 0.0), rgba(5, 150, 105, 0.2));',
+      '  pointer-events: none;',
+      '}',
+      '.birdlab-field-inner { position: relative; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.85fr); gap: 18px; padding: 20px; align-items: stretch; }',
+      '.birdlab-field-copy { display: flex; flex-direction: column; justify-content: center; min-width: 0; }',
+      '.birdlab-kicker { font-size: 10px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase; color: #047857; }',
+      '.birdlab-field-title { margin-top: 3px; font-size: clamp(1.35rem, 2.2vw, 2.05rem); line-height: 1.05; font-weight: 900; color: #0f172a; }',
+      '.birdlab-field-copy p { color: #334155; line-height: 1.55; }',
+      '.birdlab-primary-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }',
+      '.birdlab-primary-actions button { min-height: 42px; }',
+      '.birdlab-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.birdlab-metric { background: rgba(255,255,255,0.78); border: 1px solid rgba(15, 23, 42, 0.12); border-radius: 14px; padding: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.75); }',
+      '.birdlab-metric strong { display: block; font-size: 1.25rem; line-height: 1; color: #065f46; }',
+      '.birdlab-metric span { display: block; margin-top: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #475569; }',
+      '.birdlab-mission-header { position: relative; overflow: hidden; border-radius: 22px; border: 2px solid #a7f3d0; background: linear-gradient(135deg, #064e3b 0%, #0f766e 48%, #1d4ed8 100%); color: #fff; box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16); }',
+      '.birdlab-mission-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.85fr); gap: 16px; padding: 18px; align-items: center; }',
+      '.birdlab-mission-header .birdlab-kicker { color: #bbf7d0; }',
+      '.birdlab-mission-title { margin-top: 4px; font-size: clamp(1.35rem, 2.4vw, 2.2rem); line-height: 1.05; font-weight: 900; }',
+      '.birdlab-mission-header p { color: #dcfce7; line-height: 1.5; }',
+      '.birdlab-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }',
+      '.birdlab-status-chip { border: 1px solid rgba(255,255,255,0.28); border-radius: 13px; background: rgba(255,255,255,0.14); padding: 10px; backdrop-filter: blur(8px); }',
+      '.birdlab-status-chip strong { display: block; font-size: 1.2rem; line-height: 1; color: #fff; }',
+      '.birdlab-status-chip span { display: block; margin-top: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #d1fae5; }',
+      '.birdlab-progress-rail { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.24); overflow: hidden; box-shadow: inset 0 1px 2px rgba(15,23,42,0.24); }',
+      '.birdlab-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fbbf24, #34d399); transition: width 220ms ease; }',
+      '.birdlab-habitat-brief { box-shadow: 0 12px 24px rgba(4, 120, 87, 0.12); }',
+      '.birdlab-scene-card { box-shadow: 0 22px 44px rgba(15, 23, 42, 0.18); border-color: rgba(15, 23, 42, 0.2); }',
+      '.birdlab-scene-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), inset 0 -48px 70px rgba(15,23,42,0.10); }',
+      '.birdlab-bird-list { box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08); }',
+      '@media (max-width: 760px) {',
+      '  .birdlab-field-inner, .birdlab-mission-inner { grid-template-columns: 1fr; padding: 16px; }',
+      '  .birdlab-metric-grid, .birdlab-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '}',
+      '@media (max-width: 520px) {',
+      '  .birdlab-metric-grid, .birdlab-status-grid { grid-template-columns: 1fr; }',
+      '}',
       // Bird-button reset (so buttons over SVG don't carry default browser styling)
       '.birdlab-bird-btn {',
       '  background: transparent;',
@@ -8961,6 +9011,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
+        var menuLifeList = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+        var menuLiferCount = Object.keys(menuLifeList).length;
+        var menuHabitatIds = Object.keys(HABITATS);
+        var menuHabitatBirds = menuHabitatIds.reduce(function(sum, hid) {
+          return sum + ((HABITATS[hid] && HABITATS[hid].birds) ? HABITATS[hid].birds.length : 0);
+        }, 0);
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -9017,7 +9073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           : (__month >= 8 && __month <= 10)
           ? 'Fall migration — hawks and waterfowl are passing through.'
           : 'Winter — feeder birds, irruptive owls, and resilient year-round residents.';
-        return h('div', { className: 'p-6 max-w-6xl mx-auto' },
+        return h('div', { className: 'birdlab-shell p-6 max-w-6xl mx-auto', 'data-birdlab-menu': 'true' },
           // ── Hero: layered SVG scene with title overlay ──
           h('div', { className: 'mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: 'var(--allo-stem-canvas, #0f172a)' } },
             h('svg', {
@@ -9235,18 +9291,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             );
           })(),
-          // Framing banner
-          h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('span', { className: 'text-2xl', 'aria-hidden': true }, '🪶'),
-              h('div', null,
-                h('div', { className: 'font-bold text-emerald-900 mb-1' }, __alloT('stem.birdlab.birdlab_teaches_the_skill_merlin_gives', 'BirdLab teaches the skill — Merlin gives you the senses')),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.birdlab.this_tool_teaches_you_how_to_identify_', 'This tool teaches you HOW to identify birds: what to look at, what to listen for, what their behavior tells you. For real photos and recorded songs, download Cornell Lab\'s '),
-                  h('strong', { className: 'font-mono' }, __alloT('stem.birdlab.merlin_bird_id', 'Merlin Bird ID')),
-                  __alloT('stem.birdlab.app_free_ios_android_and_if_you_want_t', ' app (free, iOS/Android). And if you want to log what you see, '),
-                  h('strong', { className: 'font-mono' }, 'eBird'),
-                  __alloT('stem.birdlab.also_from_cornell_lab_is_the_global_ci', ' (also from Cornell Lab) is the global citizen-science database every birder uses.'))
+          // Field station: one compact action point before the large tool grid.
+          h('section', { className: 'birdlab-field-station mb-6', 'data-birdlab-field-station': 'true' },
+            h('div', { className: 'birdlab-field-inner' },
+              h('div', { className: 'birdlab-field-copy' },
+                h('div', { className: 'birdlab-kicker' }, __alloT('stem.birdlab.field_station', 'Field station')),
+                h('h2', { className: 'birdlab-field-title' }, __alloT('stem.birdlab.start_with_observation', 'Start with observation, then sharpen the ID')),
+                h('p', { className: 'text-sm mt-2 max-w-3xl' },
+                  __alloT('stem.birdlab.pick_a_habitat_scan_for_movement', 'Pick a habitat, scan for movement, spot a bird in the scene, then use field marks to verify what you saw. Merlin and eBird stay available as real-world companions after the practice round.')),
+                h('div', { className: 'birdlab-primary-actions' },
+                  h('button', {
+                    onClick: function() { goto('ispy'); },
+                    className: 'px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-black shadow focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]'
+                  }, __alloT('stem.birdlab.start_i_spy', 'Start I-Spy')),
+                  h('button', {
+                    onClick: function() { goto('fieldMarks'); },
+                    className: 'px-4 py-2 rounded-xl bg-white text-emerald-900 border-2 border-emerald-500 hover:border-emerald-700 text-sm font-black shadow-sm focus:outline-none focus:ring-4 ring-emerald-500/40 active:scale-[0.97]'
+                  }, __alloT('stem.birdlab.train_field_marks', 'Train field marks'))
+                )
+              ),
+              h('div', { className: 'birdlab-metric-grid', 'aria-label': __alloT('stem.birdlab.birdlab_status_summary', 'BirdLab status summary') },
+                h('div', { className: 'birdlab-metric' },
+                  h('strong', null, menuLiferCount),
+                  h('span', null, __alloT('stem.birdlab.lifers_logged', 'Lifers logged'))
+                ),
+                h('div', { className: 'birdlab-metric' },
+                  h('strong', null, menuHabitatIds.length),
+                  h('span', null, __alloT('stem.birdlab.habitats_to_scan', 'Habitats to scan'))
+                ),
+                h('div', { className: 'birdlab-metric' },
+                  h('strong', null, menuHabitatBirds),
+                  h('span', null, __alloT('stem.birdlab.scene_birds', 'Scene birds'))
+                ),
+                h('div', { className: 'birdlab-metric' },
+                  h('strong', null, visitedCount + '/' + totalCount),
+                  h('span', null, __alloT('stem.birdlab.path_explored', 'Path explored'))
+                )
               )
             )
           ),
@@ -9273,11 +9353,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.birdlab.core_tools', 'Core Tools')),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
+          h('div', { className: 'birdlab-menu-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.birdlab.quick_labs', 'Quick Labs')),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
+          h('div', { className: 'birdlab-menu-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
@@ -9823,8 +9903,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var lifeListNow = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
         var totalSpecies = Object.keys(BIRDS).length;
         var liferCount = Object.keys(lifeListNow).length;
+        var habitatProgressPct = totalBirds > 0 ? Math.round((foundCount / totalBirds) * 100) : 0;
+        var missionPrompt = foundCount === 0
+          ? 'Scan the habitat for movement, posture, and shape before using a hint.'
+          : (foundCount >= totalBirds
+            ? 'Habitat complete. Try another habitat or re-run on a harder hint budget.'
+            : 'Keep scanning. The remaining birds are still moving in the scene.');
 
-        return h('div', { className: 'min-h-screen bg-slate-50' },
+        return h('div', { className: 'min-h-screen bg-slate-50', 'data-birdlab-ispy': 'true' },
           h(BackBar, { icon: '🔍', title: 'I-Spy Bird Spotter — ' + habitat.name }),
           // ── Lifer celebration overlay (one-shot, 3.2s, prefers-reduced-motion-aware via existing CSS) ──
           liferCelebration && h('div', {
@@ -9843,6 +9929,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           h('div', { className: 'p-4 max-w-6xl mx-auto space-y-4' },
+            h('section', { className: 'birdlab-mission-header', 'data-birdlab-mission': 'true' },
+              h('div', { className: 'birdlab-mission-inner' },
+                h('div', null,
+                  h('div', { className: 'birdlab-kicker' }, __alloT('stem.birdlab.i_spy_mission', 'I-Spy mission')),
+                  h('h1', { className: 'birdlab-mission-title' }, habitat.name + ' observation round'),
+                  h('p', { className: 'text-sm mt-2 max-w-3xl' }, __alloT('stem.birdlab.i_spy_mission_prompt', missionPrompt)),
+                  h('div', { className: 'birdlab-progress-rail mt-4', 'aria-hidden': true },
+                    h('div', { className: 'birdlab-progress-fill', style: { width: habitatProgressPct + '%' } })
+                  )
+                ),
+                h('div', { className: 'birdlab-status-grid', 'aria-label': __alloT('stem.birdlab.i_spy_status_summary', 'I-Spy status summary') },
+                  h('div', { className: 'birdlab-status-chip' },
+                    h('strong', null, foundCount + '/' + totalBirds),
+                    h('span', null, __alloT('stem.birdlab.birds_found', 'Birds found'))
+                  ),
+                  h('div', { className: 'birdlab-status-chip' },
+                    h('strong', null, hintMode ? hintsLeft + '/' + HINT_BUDGET : 'Direct'),
+                    h('span', null, hintMode ? __alloT('stem.birdlab.hints_left', 'Hints left') : __alloT('stem.birdlab.access_mode', 'Access mode'))
+                  ),
+                  h('div', { className: 'birdlab-status-chip' },
+                    h('strong', null, liferCount),
+                    h('span', null, __alloT('stem.birdlab.life_list', 'Life list'))
+                  ),
+                  h('div', { className: 'birdlab-status-chip' },
+                    h('strong', null, spotStreak),
+                    h('span', null, __alloT('stem.birdlab.current_streak', 'Current streak'))
+                  )
+                )
+              )
+            ),
             // ── Challenge of the Day ──
             h('div', { className: 'rounded-2xl border-2 shadow-sm overflow-hidden ' +
               (dailyComplete ? 'border-emerald-400 bg-gradient-to-r from-emerald-50 to-emerald-100' : 'border-indigo-300 bg-gradient-to-r from-indigo-50 via-fuchsia-50 to-amber-50')
@@ -9989,7 +10105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             ),
             // Habitat description + find counter + streak meter
-            h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap' },
+            h('div', { className: 'birdlab-habitat-brief bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 flex items-start justify-between gap-4 flex-wrap' },
               h('div', { className: 'flex-1 min-w-0' },
                 h('h2', { className: 'text-base font-black text-emerald-900 mb-1 flex items-center gap-2 flex-wrap' },
                   habitat.name + ' habitat',
@@ -10036,7 +10152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             ),
             // The habitat scene
-            h('div', { className: 'relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
+            h('div', { className: 'birdlab-scene-card relative bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden', 'data-birdlab-scene-shell': 'true', style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px' } },
               // ── Clean Habitat celebration overlay (auto-dismiss after ~3.6s) ──
               cleanCelebration && h('div', {
                 role: 'status',
@@ -10383,7 +10499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             ),
             // Birds in this scene — hint mode by default, accessibility toggle for direct ID
-            h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
+            h('div', { className: 'birdlab-bird-list bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
               h('div', { className: 'flex items-center justify-between mb-3 flex-wrap gap-2' },
                 h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' },
                   __alloT('stem.birdlab.birds_in_this_scene', 'Birds in this scene'),
