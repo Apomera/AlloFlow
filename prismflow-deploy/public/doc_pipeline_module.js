@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -482,6 +482,13 @@ var _alloAltQuality = function (alt, opts) {
   if (/\.(png|jpe?g|gif|webp|svg|bmp|tiff?)\s*$/i.test(trimmed) || /^(img|dsc|image|scan|screenshot|photo)[-_ ]?\d+$/i.test(trimmed)) {
     issues.push({ id: 'filename', label: 'looks like a filename, not a description' });
   }
+  // Raw LaTeX markup as alt (2026-07-02, Item E): "\frac{1}{2}mv^2" read by a screen reader
+  // is symbol soup — equations need the SPOKEN form. Tight pattern (explicit TeX commands,
+  // super/subscript braces, $-delimited math) so a Windows path like "C:\Users\docs" or an
+  // ordinary caret never false-flags.
+  if (/\\(frac|sqrt|sum|int|prod|lim|alpha|beta|gamma|delta|theta|lambda|mu|pi|sigma|omega|infty|cdot|times|div|pm|leq|geq|neq|approx|left|right|begin|end|over|text|mathrm|mathbf)\b|[\^_]\{|\$[^$\s][^$]*\$/.test(trimmed)) {
+    issues.push({ id: 'raw-latex', label: 'raw LaTeX markup — screen readers read this as symbol soup; use the spoken form (e.g. “one half m v squared”)' });
+  }
   // Redundant medium prefix on an otherwise-real description (SR already announces "graphic").
   if (issues.length === 0 && /^\s*(an?\s+)?(image|picture|photo(graph)?|graphic) (of|showing|depicting)\s+\S/i.test(trimmed)) {
     issues.push({ id: 'redundant-prefix', label: 'starts with "image of…" — screen readers already announce the element type' });
@@ -502,7 +509,7 @@ var _alloAltQuality = function (alt, opts) {
   if (nAlt && nAlt.length >= 12 && opts.nearbyText && norm(opts.nearbyText).indexOf(nAlt) !== -1) {
     issues.push({ id: 'nearby-echo', label: 'repeats adjacent body text verbatim — redundant announcement' });
   }
-  var severity = issues.some(function (i) { return i.id === 'placeholder' || i.id === 'boilerplate' || i.id === 'filename'; }) ? 'high' : (issues.length ? 'warn' : null);
+  var severity = issues.some(function (i) { return i.id === 'placeholder' || i.id === 'boilerplate' || i.id === 'filename' || i.id === 'raw-latex'; }) ? 'high' : (issues.length ? 'warn' : null);
   // Built as a var, NOT a 2-space `return {` — check-pipeline-integrity.js locates the
   // factory export block via the FIRST `\n  return {` in the file, and a module-level
   // function returning an object literal at that indent corrupts its parse (same trap
@@ -546,6 +553,90 @@ var _alloScanAltQuality = function (html) {
     return { total: imgs.length, flaggedCount: flagged.length, highCount: flagged.filter(function (f) { return f.severity === 'high'; }).length, flagged: flagged };
   } catch (_) { return null; }
 };
+// ── LaTeX → spoken English (hoisted to module level 2026-07-02, Item E) ──
+// Was a const nested inside the worksheet renderer; the spoken-math alt fallback in
+// _applyImageIntel needs it too, and referencing the nested const from there was a
+// free variable — swallowed by the fallback's catch, i.e. a silently dead feature
+// (cousin of the free-t() crash class). Pure (no closure captures, asserted at splice
+// time); exposed as the createDocPipeline.latexToSpeakable static for unit tests.
+var _alloLatexToSpeakable = function (raw) {
+  if (raw == null || raw === '') return '';
+  let s = String(raw);
+  // Strip math-mode delimiters
+  s = s.replace(/^\$\$/, '').replace(/\$\$$/, '').replace(/^\$/, '').replace(/\$$/, '');
+  // Structural commands first (these contain other math)
+  s = s.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2');
+  s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^}]+)\}/g, '$1th root of $2');
+  s = s.replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1');
+  s = s.replace(/\\binom\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 choose $2');
+  s = s.replace(/\\overline\{([^}]+)\}/g, 'the negation of $1');
+  s = s.replace(/\\underline\{([^}]+)\}/g, '$1');
+  s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^}]+)\}/g, '$2');
+  // Powers and subscripts (longest first so {^...{n}} is caught before {^n})
+  s = s.replace(/\^\{([^}]+)\}/g, ' to the power $1 ');
+  s = s.replace(/\^([0-9a-zA-Z+\-])/g, ' to the power $1 ');
+  s = s.replace(/_\{([^}]+)\}/g, ' sub $1 ');
+  s = s.replace(/_([0-9a-zA-Z])/g, ' sub $1 ');
+  // Big operators
+  s = s.replace(/\\sum/g, 'the sum of');
+  s = s.replace(/\\prod/g, 'the product of');
+  s = s.replace(/\\int/g, 'the integral of');
+  s = s.replace(/\\(iint|iiint)/g, 'the multiple integral of');
+  s = s.replace(/\\oint/g, 'the contour integral of');
+  s = s.replace(/\\lim/g, 'the limit of');
+  s = s.replace(/\\(min|max|sup|inf)/g, '$1 of');
+  // Comparison + arithmetic
+  const phraseMap = {
+      'leq': 'less than or equal to', 'le': 'less than or equal to',
+      'geq': 'greater than or equal to', 'ge': 'greater than or equal to',
+      'neq': 'not equal to', 'ne': 'not equal to',
+      'approx': 'approximately equal to', 'equiv': 'equivalent to',
+      'cong': 'congruent to', 'sim': 'similar to', 'simeq': 'similar to',
+      'propto': 'proportional to',
+      'times': 'times', 'div': 'divided by', 'cdot': 'times',
+      'pm': 'plus or minus', 'mp': 'minus or plus',
+      'rightarrow': 'goes to', 'to': 'goes to',
+      'Rightarrow': 'implies', 'Leftrightarrow': 'if and only if',
+      'mapsto': 'maps to',
+      'in': 'in', 'notin': 'not in', 'subset': 'a subset of', 'supset': 'a superset of',
+      'subseteq': 'a subset of or equal to', 'cup': 'union', 'cap': 'intersection',
+      'forall': 'for all', 'exists': 'there exists', 'nexists': 'there does not exist',
+      'neg': 'not', 'lnot': 'not', 'land': 'and', 'lor': 'or',
+      'wedge': 'and', 'vee': 'or',
+      'infty': 'infinity', 'partial': 'partial', 'nabla': 'gradient of',
+      'angle': 'angle', 'perp': 'perpendicular to', 'parallel': 'parallel to',
+      'therefore': 'therefore', 'because': 'because',
+      'ldots': 'and so on', 'cdots': 'and so on', 'dots': 'and so on',
+      'prime': 'prime', 'degree': 'degrees',
+      'sin': 'sine', 'cos': 'cosine', 'tan': 'tangent',
+      'arcsin': 'arc sine', 'arccos': 'arc cosine', 'arctan': 'arc tangent',
+      'log': 'log', 'ln': 'natural log', 'exp': 'e to the',
+      // Greek letters keep their Greek names; screen readers handle these well.
+      'alpha': 'alpha', 'beta': 'beta', 'gamma': 'gamma', 'delta': 'delta',
+      'epsilon': 'epsilon', 'theta': 'theta', 'lambda': 'lambda', 'mu': 'mu',
+      'pi': 'pi', 'rho': 'rho', 'sigma': 'sigma', 'tau': 'tau', 'phi': 'phi',
+      'chi': 'chi', 'psi': 'psi', 'omega': 'omega',
+      'Gamma': 'capital gamma', 'Delta': 'capital delta', 'Theta': 'capital theta',
+      'Lambda': 'capital lambda', 'Sigma': 'capital sigma', 'Pi': 'capital pi',
+      'Phi': 'capital phi', 'Psi': 'capital psi', 'Omega': 'capital omega',
+  };
+  const sortedKeys = Object.keys(phraseMap).sort((a, b) => b.length - a.length);
+  sortedKeys.forEach(cmd => {
+      const re = new RegExp('\\\\' + cmd + '(?![a-zA-Z])', 'g');
+      s = s.replace(re, ' ' + phraseMap[cmd] + ' ');
+  });
+  // Strip remaining LaTeX bookkeeping: backslashes, braces, &, \\
+  s = s.replace(/\\\\/g, ', ');
+  s = s.replace(/[{}\\]/g, ' ');
+  s = s.replace(/&/g, ' ');
+  // Operators in raw form become words
+  s = s.replace(/\+/g, ' plus ').replace(/(?<=[\d\w\)])\s*-\s*(?=[\d\w\(])/g, ' minus ').replace(/=/g, ' equals ');
+  // Collapse whitespace
+  s = s.replace(/\s+/g, ' ').trim();
+  // Quote-safe for HTML attribute
+  return s.replace(/"/g, '&quot;');
+};
+
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -11173,6 +11264,22 @@ HTML section ${chunkNum}/${chunks.length}:
     if (newAlt && (existingAlt.length < 12 || /^(image|figure|photo|img|picture)\b/i.test(existingAlt))) im.setAttribute('alt', newAlt);
     if (kind === 'decorative' && !existingAlt) { im.setAttribute('alt', ''); im.setAttribute('role', 'presentation'); }
     if (kind === 'equation' && parsed.latex && String(parsed.latex).length < 2000) im.setAttribute('data-allo-latex', String(parsed.latex));
+    // Spoken-math fallback (2026-07-02): the Vision prompt asks for a SPOKEN-form alt on
+    // equations, but when the model returns raw LaTeX (or nothing usable) the /Formula's
+    // /Alt would be gibberish to a screen reader. Derive a deterministic spoken form from
+    // the captured LaTeX via _alloLatexToSpeakable (previously wired only to generated
+    // worksheets). Never clobbers a substantive spoken alt.
+    if (kind === 'equation') {
+      try {
+        const _eqAlt = (im.getAttribute('alt') || '').trim();
+        const _eqLatex = im.getAttribute('data-allo-latex') || '';
+        const _looksRawLatex = /\\[a-zA-Z]+|[\^_]\{/.test(_eqAlt);
+        if (_eqLatex && (_eqAlt.length < 8 || _looksRawLatex)) {
+          const _spoken = _alloLatexToSpeakable(_eqLatex);
+          if (_spoken && _spoken.trim().length >= 8) im.setAttribute('alt', ('Equation: ' + _spoken.trim()).slice(0, 600));
+        }
+      } catch (_) { /* fallback is best-effort */ }
+    }
     if (kind === 'chart' && (parsed.chartSummary || (parsed.chartData && Array.isArray(parsed.chartData.rows) && parsed.chartData.rows.length))) {
       const det = htmlDoc2.createElement('details');
       det.setAttribute('class', 'allo-chart-data');
@@ -26117,83 +26224,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // We don't generate full MathML markup — that'd be a 500-line lift
           // for marginal gain over a well-formed aria-label. The label below
           // converts the most common LaTeX operators to plain English.
-          const _latexToSpeakable = (raw) => {
-              if (raw == null || raw === '') return '';
-              let s = String(raw);
-              // Strip math-mode delimiters
-              s = s.replace(/^\$\$/, '').replace(/\$\$$/, '').replace(/^\$/, '').replace(/\$$/, '');
-              // Structural commands first (these contain other math)
-              s = s.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2');
-              s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^}]+)\}/g, '$1th root of $2');
-              s = s.replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1');
-              s = s.replace(/\\binom\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 choose $2');
-              s = s.replace(/\\overline\{([^}]+)\}/g, 'the negation of $1');
-              s = s.replace(/\\underline\{([^}]+)\}/g, '$1');
-              s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^}]+)\}/g, '$2');
-              // Powers and subscripts (longest first so {^...{n}} is caught before {^n})
-              s = s.replace(/\^\{([^}]+)\}/g, ' to the power $1 ');
-              s = s.replace(/\^([0-9a-zA-Z+\-])/g, ' to the power $1 ');
-              s = s.replace(/_\{([^}]+)\}/g, ' sub $1 ');
-              s = s.replace(/_([0-9a-zA-Z])/g, ' sub $1 ');
-              // Big operators
-              s = s.replace(/\\sum/g, 'the sum of');
-              s = s.replace(/\\prod/g, 'the product of');
-              s = s.replace(/\\int/g, 'the integral of');
-              s = s.replace(/\\(iint|iiint)/g, 'the multiple integral of');
-              s = s.replace(/\\oint/g, 'the contour integral of');
-              s = s.replace(/\\lim/g, 'the limit of');
-              s = s.replace(/\\(min|max|sup|inf)/g, '$1 of');
-              // Comparison + arithmetic
-              const phraseMap = {
-                  'leq': 'less than or equal to', 'le': 'less than or equal to',
-                  'geq': 'greater than or equal to', 'ge': 'greater than or equal to',
-                  'neq': 'not equal to', 'ne': 'not equal to',
-                  'approx': 'approximately equal to', 'equiv': 'equivalent to',
-                  'cong': 'congruent to', 'sim': 'similar to', 'simeq': 'similar to',
-                  'propto': 'proportional to',
-                  'times': 'times', 'div': 'divided by', 'cdot': 'times',
-                  'pm': 'plus or minus', 'mp': 'minus or plus',
-                  'rightarrow': 'goes to', 'to': 'goes to',
-                  'Rightarrow': 'implies', 'Leftrightarrow': 'if and only if',
-                  'mapsto': 'maps to',
-                  'in': 'in', 'notin': 'not in', 'subset': 'a subset of', 'supset': 'a superset of',
-                  'subseteq': 'a subset of or equal to', 'cup': 'union', 'cap': 'intersection',
-                  'forall': 'for all', 'exists': 'there exists', 'nexists': 'there does not exist',
-                  'neg': 'not', 'lnot': 'not', 'land': 'and', 'lor': 'or',
-                  'wedge': 'and', 'vee': 'or',
-                  'infty': 'infinity', 'partial': 'partial', 'nabla': 'gradient of',
-                  'angle': 'angle', 'perp': 'perpendicular to', 'parallel': 'parallel to',
-                  'therefore': 'therefore', 'because': 'because',
-                  'ldots': 'and so on', 'cdots': 'and so on', 'dots': 'and so on',
-                  'prime': 'prime', 'degree': 'degrees',
-                  'sin': 'sine', 'cos': 'cosine', 'tan': 'tangent',
-                  'arcsin': 'arc sine', 'arccos': 'arc cosine', 'arctan': 'arc tangent',
-                  'log': 'log', 'ln': 'natural log', 'exp': 'e to the',
-                  // Greek letters keep their Greek names; screen readers handle these well.
-                  'alpha': 'alpha', 'beta': 'beta', 'gamma': 'gamma', 'delta': 'delta',
-                  'epsilon': 'epsilon', 'theta': 'theta', 'lambda': 'lambda', 'mu': 'mu',
-                  'pi': 'pi', 'rho': 'rho', 'sigma': 'sigma', 'tau': 'tau', 'phi': 'phi',
-                  'chi': 'chi', 'psi': 'psi', 'omega': 'omega',
-                  'Gamma': 'capital gamma', 'Delta': 'capital delta', 'Theta': 'capital theta',
-                  'Lambda': 'capital lambda', 'Sigma': 'capital sigma', 'Pi': 'capital pi',
-                  'Phi': 'capital phi', 'Psi': 'capital psi', 'Omega': 'capital omega',
-              };
-              const sortedKeys = Object.keys(phraseMap).sort((a, b) => b.length - a.length);
-              sortedKeys.forEach(cmd => {
-                  const re = new RegExp('\\\\' + cmd + '(?![a-zA-Z])', 'g');
-                  s = s.replace(re, ' ' + phraseMap[cmd] + ' ');
-              });
-              // Strip remaining LaTeX bookkeeping: backslashes, braces, &, \\
-              s = s.replace(/\\\\/g, ', ');
-              s = s.replace(/[{}\\]/g, ' ');
-              s = s.replace(/&/g, ' ');
-              // Operators in raw form become words
-              s = s.replace(/\+/g, ' plus ').replace(/(?<=[\d\w\)])\s*-\s*(?=[\d\w\(])/g, ' minus ').replace(/=/g, ' equals ');
-              // Collapse whitespace
-              s = s.replace(/\s+/g, ' ').trim();
-              // Quote-safe for HTML attribute
-              return s.replace(/"/g, '&quot;');
-          };
+          const _latexToSpeakable = _alloLatexToSpeakable; // hoisted to module scope 2026-07-02 (Item E) — see _alloLatexToSpeakable
           const formatMath = (t) => {
               const speakable = _latexToSpeakable(t);
               const labelAttr = speakable ? ` aria-label="${speakable}"` : '';
@@ -30489,6 +30520,12 @@ window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3
 window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: alt-text quality heuristics (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
+window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

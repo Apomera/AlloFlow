@@ -113,3 +113,66 @@ describe('scanAltQuality — whole-document behavior', () => {
     expect(r.flaggedCount).toBe(0);
   });
 });
+
+// ── Item E (2026-07-02): raw-LaTeX alt flag + LaTeX→spoken-English fallback ──
+describe('raw-latex flag — equations must use the spoken form', () => {
+  const LATEX_HIGH = [
+    '\\frac{1}{2}mv^2',
+    'x to the power: x^{2} + y_{i}',
+    '$E = mc^2$',
+    '\\sqrt{b^2 - 4ac} over 2a',
+    '\\sum_{i=1}^{n} x_i',
+  ];
+  for (const alt of LATEX_HIGH) {
+    it(`${JSON.stringify(alt)} → high (raw-latex)`, () => {
+      const q = altQuality(alt);
+      expect(q.severity).toBe('high');
+      expect(q.issues.map((i) => i.id)).toContain('raw-latex');
+    });
+  }
+  it('Windows path with backslashes is NOT raw-latex', () => {
+    const q = altQuality('Screenshot of the folder C:\\Users\\cabba\\Documents in File Explorer');
+    expect(q.issues.map((i) => i.id)).not.toContain('raw-latex');
+  });
+  it('spoken-form equation description is NOT flagged', () => {
+    const q = altQuality('Equation: one half m v squared equals kinetic energy');
+    expect(q.flagged).toBe(false);
+  });
+  it('ordinary caret (footnote marker, "x^2 shorthand" without braces or TeX commands) is NOT raw-latex', () => {
+    const q = altQuality('Graph of y = x^2 shifted two units upward on a coordinate grid');
+    expect(q.issues.map((i) => i.id)).not.toContain('raw-latex');
+  });
+});
+
+describe('latexToSpeakable static — deterministic spoken-math fallback source', () => {
+  let latexToSpeakable;
+  beforeAll(() => {
+    latexToSpeakable = window.AlloModules.createDocPipeline.latexToSpeakable;
+    expect(typeof latexToSpeakable).toBe('function');
+  });
+  it('fraction', () => {
+    expect(latexToSpeakable('\\frac{1}{2}')).toBe('1 over 2');
+  });
+  it('kinetic energy: frac + power', () => {
+    const s = latexToSpeakable('\\frac{1}{2}mv^2');
+    expect(s).toContain('1 over 2');
+    expect(s).toContain('to the power 2');
+  });
+  it('square root', () => {
+    expect(latexToSpeakable('\\sqrt{x+1}')).toBe('square root of x plus 1');
+  });
+  it('comparison words', () => {
+    const s = latexToSpeakable('a \\leq b \\neq c');
+    expect(s).toContain('less than or equal to');
+    expect(s).toContain('not equal to');
+  });
+  it('strips $ delimiters and equals becomes a word', () => {
+    const s = latexToSpeakable('$E = mc^2$');
+    expect(s.startsWith('E equals')).toBe(true);
+    expect(s).not.toContain('$');
+  });
+  it('empty/null → empty string (fallback stays silent)', () => {
+    expect(latexToSpeakable('')).toBe('');
+    expect(latexToSpeakable(null)).toBe('');
+  });
+});
