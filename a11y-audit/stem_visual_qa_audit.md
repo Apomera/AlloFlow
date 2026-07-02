@@ -1,25 +1,25 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T15:40:37.511Z
+Generated: 2026-07-02T16:16:59.126Z
 
 ## Scope
 
 - Registered STEM tools: 113
 - STEM tool files: 110
-- Monitored student-facing visual markers: 26
+- Monitored student-facing visual markers: 27
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 26 |
+| Marker passes | 27 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 29 |
+| Monitored first-screen findings | 30 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 0 |
-| Monitored file drift | 0 |
+| Source/public drift | 1 |
+| Any source/public/build drift | 1 |
+| Monitored file drift | 1 |
 
 ## Visual Marker Coverage
 
@@ -35,6 +35,7 @@ Generated: 2026-07-02T15:40:37.511Z
 | pass | `nutritionLab` | `data-nutrition-practice-path` | Rendered |
 | pass | `bakingScience` | `data-baking-kitchen-bench` | Rendered |
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
+| pass | `companionPlanting` | `data-companion-command` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
@@ -56,14 +57,16 @@ Generated: 2026-07-02T15:40:37.511Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 11 | `epidemicSim`, `climateExplorer`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
+| warning | `canvas-focus` | 12 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
 | warning | `canvas-name` | 7 | `epidemicSim`, `anatomy`, `waterCycle`, `plateTectonics`, `skatelab` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
 | notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `renewablesLab`, `cellularLab`, `birdLab`, `playlab`, `bikeLab`, `throwlab`, `echolocation`, `skatelab` |
 
 ## Sync Drift
 
-All source, public, and local build STEM tool copies match.
+| Status | File | Monitored | Hashes |
+| --- | --- | --- | --- |
+| source-public-drift | `stem_tool_watercycle.js` | yes | source `0C7A91306D64`, public `8B9DB4731B22`, build `8B9DB4731B22` |
 
 ## Gate Policy
 

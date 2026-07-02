@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-02T15:40:37.511Z",
+  "generatedAt": "2026-07-02T16:16:59.126Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 26
+    "monitoredMarkerCount": 27
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 26,
+    "markerPassCount": 27,
     "markerFailCount": 0,
-    "monitoredIssueCount": 29,
+    "monitoredIssueCount": 30,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 20,
+    "monitoredWarningCount": 21,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 0,
-    "sourcePublicDriftCount": 0,
-    "monitoredSyncDriftCount": 0
+    "syncDriftCount": 1,
+    "sourcePublicDriftCount": 1,
+    "monitoredSyncDriftCount": 1
   },
   "loadErrors": [],
   "markerResults": [
@@ -260,6 +260,31 @@
       }
     },
     {
+      "id": "companionPlanting",
+      "file": "stem_tool_companionplanting.js",
+      "marker": "data-companion-command",
+      "label": "Companion Planting command dashboard",
+      "ok": true,
+      "htmlBytes": 13679,
+      "issues": [
+        {
+          "toolId": "companionPlanting",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(3) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
+        }
+      ],
+      "metrics": {
+        "buttons": 17,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 13679
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -357,7 +382,7 @@
       "marker": "data-watercycle-focus",
       "label": "Water Cycle focus panel",
       "ok": true,
-      "htmlBytes": 17501,
+      "htmlBytes": 18180,
       "issues": [
         {
           "toolId": "waterCycle",
@@ -377,11 +402,11 @@
         }
       ],
       "metrics": {
-        "buttons": 17,
+        "buttons": 18,
         "fields": 4,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17501
+        "htmlBytes": 18180
       }
     },
     {
@@ -390,7 +415,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17204,
+      "htmlBytes": 17202,
       "issues": [
         {
           "toolId": "playlab",
@@ -419,7 +444,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17204
+        "htmlBytes": 17202
       }
     },
     {
@@ -517,14 +542,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13343,
+      "htmlBytes": 13348,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13343
+        "htmlBytes": 13348
       }
     },
     {
@@ -767,19 +792,74 @@
     }
   ],
   "sync": {
-    "drift": [],
-    "sourcePublicDrift": [],
-    "monitoredDrift": []
+    "drift": [
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0C7A91306D64",
+          "public": "8B9DB4731B22",
+          "build": "8B9DB4731B22"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "sourcePublicDrift": [
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0C7A91306D64",
+          "public": "8B9DB4731B22",
+          "build": "8B9DB4731B22"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "monitoredDrift": [
+      {
+        "file": "stem_tool_watercycle.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "0C7A91306D64",
+          "public": "8B9DB4731B22",
+          "build": "8B9DB4731B22"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ]
   },
   "topFindings": [
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 11,
-      "toolCount": 8,
+      "count": 12,
+      "toolCount": 9,
       "exampleTools": [
         "epidemicSim",
         "climateExplorer",
+        "companionPlanting",
         "brainAtlas",
         "anatomy",
         "waterCycle",

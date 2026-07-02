@@ -56,6 +56,7 @@ const EXPECTED_MARKERS = [
   { id: 'nutritionLab', file: 'stem_tool_nutritionlab.js', marker: 'data-nutrition-practice-path', label: 'Nutrition practice path' },
   { id: 'bakingScience', file: 'stem_tool_bakingscience.js', marker: 'data-baking-kitchen-bench', label: 'Baking kitchen bench' },
   { id: 'cellularLab', file: 'stem_tool_cellular.js', marker: 'data-cellularlab-focus-panel', label: 'Cellular focus panel' },
+  { id: 'companionPlanting', file: 'stem_tool_companionplanting.js', marker: 'data-companion-command', label: 'Companion Planting command dashboard' },
   { id: 'brainAtlas', file: 'stem_tool_brainatlas.js', marker: 'data-brainatlas-mission', label: 'Brain Atlas mission panel' },
   { id: 'anatomy', file: 'stem_tool_anatomy.js', marker: 'data-anatomy-mission', label: 'Anatomy mission panel' },
   { id: 'birdLab', file: 'stem_tool_birdlab.js', marker: 'data-birdlab-field-station', label: 'Bird Lab field station' },
@@ -110,6 +111,7 @@ const STARTER_DATA = {
       vehicleLoad: 150
     }
   },
+  companionPlanting: { companionPlanting: { gardenWorkspace: 'operate', gardenMode: 'sisters' } },
   birdLab: { birdLab: { view: 'menu' } },
   waterCycle: { waterCycle: { view: 'explore' } },
   playlab: { playlab: { sport: 'basketball' } },

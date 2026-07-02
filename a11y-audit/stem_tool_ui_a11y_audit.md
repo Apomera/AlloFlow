@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T15:40:53.680Z
+Generated: 2026-07-02T16:17:52.759Z
 
 ## Scope
 
@@ -77,7 +77,7 @@ Generated: 2026-07-02T15:40:53.680Z
 | `circuit` Circuit Builder | science | standard | 39 | 1 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `climateExplorer` Climate Explorer | science | standard | 39 | 0 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `codingPlayground` codingPlayground | creative | standard | 57 | 2 | 1 | 0 | 1 | 1 | canvas-focus x1, metadata x1 |
-| `companionPlanting` Companion Planting Lab | science | standard | 33 | 5 | 1 | 0 | 1 | 0 | canvas-focus x1 |
+| `companionPlanting` Companion Planting Lab | science | standard | 17 | 0 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `coordinate` Coordinate Grid | math | standard | 14 | 1 | 0 | 0 | 0 | 0 |  |
 | `cyberDefense` Cyber Defense Lab | tech | standard | 20 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `dataPlot` Data Plotter | creative | standard | 31 | 10 | 0 | 0 | 0 | 0 |  |
@@ -155,7 +155,7 @@ Generated: 2026-07-02T15:40:53.680Z
 | `unitConvert` Unit Converter | math | standard | 21 | 3 | 1 | 0 | 2 | 0 | canvas-focus x1, canvas-name x1 |
 | `universe` Universe Explorer | science | standard | 54 | 4 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `volume` 3D Volume Explorer | math | standard | 26 | 11 | 1 | 0 | 3 | 0 | canvas-focus x1, canvas-name x1, tiny-text x1 |
-| `waterCycle` Water Cycle | science | standard | 17 | 4 | 1 | 0 | 4 | 0 | canvas-focus x1, canvas-name x1, inline-contrast x1, tiny-text x1 |
+| `waterCycle` Water Cycle | science | standard | 18 | 4 | 1 | 0 | 4 | 0 | canvas-focus x1, canvas-name x1, inline-contrast x1, tiny-text x1 |
 | `wave` Wave Simulator | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `weldLab` WeldLab — Welding & Metal Joining | general | standard | 26 | 0 | 0 | 0 | 1 | 1 | metadata x1, tiny-text x1 |
 | `worldBuilder` WriteCraft | creative | standard | 14 | 10 | 0 | 0 | 1 | 0 | tiny-text x1 |

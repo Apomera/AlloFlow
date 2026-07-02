@@ -689,6 +689,29 @@ var d = (labToolData.companionPlanting) || {};
 
           // ── Canvas Renderer ──
 
+          var gardenWorkspace = d.gardenWorkspace || 'operate';
+          var plantedCount = (cornPlanted ? 1 : 0) + (beansPlanted ? 1 : 0) + (squashPlanted ? 1 : 0);
+          var avgSynergy = Math.round((synCornBeans + synBeansSoil + synSquashAll) / 3);
+          var ecosystemScore = Math.round((soilHealth * 0.45) + (plantHealth * 0.25) + (avgSynergy * 0.2) + ((100 - pestPressure) * 0.1));
+          var gardenAlerts = [];
+          if (moisture < 35) gardenAlerts.push({ label: 'Dry soil', action: 'Water soon', color: '#2563eb' });
+          if (nitrogenLevel < 35) gardenAlerts.push({ label: 'Low nitrogen', action: 'Compost or add beans', color: '#059669' });
+          if (pestPressure > 55) gardenAlerts.push({ label: 'Pest pressure', action: 'Inspect plants', color: '#dc2626' });
+          if (weedCover > 55) gardenAlerts.push({ label: 'Weeds spreading', action: 'Weed or mulch', color: '#ea580c' });
+          if (plantHealth < 55) gardenAlerts.push({ label: 'Plant stress', action: 'Stabilize the bed', color: '#be123c' });
+          var nextGardenMove = phase === 'plant'
+            ? (allPlanted ? 'Start the growth simulation' : 'Plant all three sisters')
+            : phase === 'grow'
+              ? (gardenAlerts[0] ? gardenAlerts[0].action : 'Advance the season')
+              : 'Review the harvest and begin another cycle';
+          var workspaceTabs = [
+            { id: 'operate', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.' },
+            { id: 'science', label: 'Science Lab', desc: 'Three Sisters evidence, soil science, and quiz.' },
+            { id: 'systems', label: 'Systems', desc: 'Food miles, water, carbon, and regenerative practices.' },
+            { id: 'reference', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.' },
+            { id: 'inquiry', label: 'Inquiry', desc: 'Run a density-ratio investigation.' }
+          ];
+
           var _lastGardenCanvas = null;
 
           var canvasRef = function (canvasEl) {
@@ -6057,7 +6080,7 @@ var d = (labToolData.companionPlanting) || {};
               renderCommunityGarden());
           }
 
-          return React.createElement("div", { className: "space-y-4 animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-6xl mx-auto space-y-4 animate-in fade-in duration-200", "data-companion-tool": true },
 
             // ── Tutorial ──
 
@@ -6098,7 +6121,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", {
 
-                  onClick: function () { upd('showCulture', !showCulture); },
+                  onClick: function () { upd('gardenWorkspace', 'reference'); upd('showCulture', !showCulture); },
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
@@ -6108,7 +6131,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", { "aria-label": __alloT('stem.companionplanting.compare', "Compare"),
 
-                  onClick: function () { upd('compareMode', !compareMode); },
+                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('compareMode', !compareMode); },
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
@@ -6116,7 +6139,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", { "aria-label": __alloT('stem.companionplanting.soil_science', "Soil Science"),
 
-                  onClick: function () { upd('showSoilDetail', !showSoilDetail); },
+                  onClick: function () { upd('gardenWorkspace', 'operate'); upd('showSoilDetail', !showSoilDetail); },
 
                   className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
@@ -6130,7 +6153,105 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Cultural Context Panel ──
 
-            showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
+            React.createElement("div", {
+              "data-companion-command": true,
+              className: "overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm"
+            },
+              React.createElement("div", { className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]", style: { background: 'linear-gradient(135deg,#f7fee7 0%,#ecfdf5 48%,#f8fafc 100%)' } },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Garden Operations"),
+                      React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" },
+                        phase === 'plant' ? "Design the mound" : phase === 'grow' ? "Manage the growing season" : "Harvest and reset"
+                      ),
+                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" },
+                        "Keep the live garden loop focused: plant the sisters, monitor soil signals, respond to events, then explore the science when ready."
+                      )
+                    ),
+                    React.createElement("div", { className: "rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-800" },
+                      seasonName + " | Day " + dayInSeason + "/30"
+                    )
+                  ),
+                  React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                    [
+                      { label: 'Phase', value: phase.charAt(0).toUpperCase() + phase.slice(1), sub: nextGardenMove },
+                      { label: 'Sisters planted', value: plantedCount + '/3', sub: allPlanted ? 'Polyculture ready' : 'Complete the trio' },
+                      { label: 'Ecosystem score', value: ecosystemScore + '%', sub: 'soil + health + synergy' },
+                      { label: 'Harvests', value: harvestCount, sub: totalScore + ' total score' }
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat.label, className: "rounded-lg border border-white bg-white/85 p-3 shadow-sm" },
+                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "mt-1 text-lg font-black text-slate-900" }, stat.value),
+                        React.createElement("div", { className: "text-[11px] text-slate-500" }, stat.sub)
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-emerald-100 bg-white/80 p-3" },
+                    React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                      React.createElement("span", { className: "text-xs font-black text-slate-700" }, "Sister Roles"),
+                      React.createElement("span", { className: "text-[11px] font-bold text-slate-500" }, "Synergy " + avgSynergy + "%")
+                    ),
+                    React.createElement("div", { className: "grid gap-2 sm:grid-cols-3" },
+                      [
+                        { key: 'cornPlanted', name: 'Corn', role: 'Living trellis', active: cornPlanted, color: '#ca8a04' },
+                        { key: 'beansPlanted', name: 'Beans', role: 'Nitrogen fixer', active: beansPlanted, color: '#16a34a' },
+                        { key: 'squashPlanted', name: 'Squash', role: 'Living mulch', active: squashPlanted, color: '#ea580c' }
+                      ].map(function(sister) {
+                        return React.createElement("button", {
+                          key: sister.name,
+                          onClick: function() {
+                            if (phase !== 'plant') return;
+                            upd(sister.key, !sister.active);
+                          },
+                          disabled: phase !== 'plant',
+                          className: "rounded-lg border p-3 text-left transition-all " + (sister.active ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-slate-200 hover:border-emerald-300') + (phase !== 'plant' ? ' cursor-default' : '')
+                        },
+                          React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                            React.createElement("span", { className: "text-sm font-black", style: { color: sister.color } }, sister.name),
+                            React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold " + (sister.active ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500') }, sister.active ? 'Planted' : 'Add')
+                          ),
+                          React.createElement("div", { className: "mt-1 text-[11px] text-slate-500" }, sister.role)
+                        );
+                      })
+                    )
+                  )
+                ),
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                    React.createElement("div", { className: "text-xs font-black text-slate-800" }, "Next Best Move"),
+                    React.createElement("div", { className: "mt-2 rounded-lg bg-emerald-50 p-3 text-sm font-black text-emerald-800" }, nextGardenMove),
+                    React.createElement("div", { className: "mt-3 space-y-2" },
+                      (gardenAlerts.length ? gardenAlerts.slice(0, 3) : [{ label: 'Garden stable', action: 'Keep observing', color: '#059669' }]).map(function(alert, ai) {
+                        return React.createElement("div", { key: ai, className: "flex items-center gap-2 rounded-lg border border-slate-100 bg-white px-2.5 py-2" },
+                          React.createElement("span", { className: "h-2.5 w-2.5 rounded-full", style: { background: alert.color } }),
+                          React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, alert.label),
+                          React.createElement("span", { className: "ml-auto text-[11px] text-slate-500" }, alert.action)
+                        );
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "grid gap-2", "data-companion-workspaces": true },
+                    workspaceTabs.map(function(tab) {
+                      var active = gardenWorkspace === tab.id;
+                      return React.createElement("button", {
+                        key: tab.id,
+                        onClick: function() { upd('gardenWorkspace', tab.id); },
+                        className: "rounded-lg border p-3 text-left transition-all " + (active ? 'border-emerald-400 bg-emerald-50 text-emerald-900 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-300')
+                      },
+                        React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                          React.createElement("span", { className: "text-sm font-black" }, tab.label),
+                          React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
+                        ),
+                        React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-500" }, tab.desc)
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+
+            gardenWorkspace === 'reference' && showCulture && React.createElement("div", { className: "bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 p-4 space-y-3" },
 
               React.createElement("h4", { className: "text-sm font-bold text-amber-900 flex items-center gap-2" }, __alloT('stem.companionplanting.cultural_origins_living_knowledge', "📜 Cultural Origins & Living Knowledge")),
 
@@ -6180,7 +6301,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Main Layout: Canvas + Dashboard ──
 
-            React.createElement("div", { className: "grid md:grid-cols-3 gap-4" },
+            gardenWorkspace === 'operate' && React.createElement("div", { className: "grid md:grid-cols-3 gap-4", "data-companion-garden-ops": true },
 
 
 
@@ -6188,19 +6309,36 @@ var d = (labToolData.companionPlanting) || {};
 
               React.createElement("div", { className: "md:col-span-2" },
 
-                React.createElement("canvas", {
+                React.createElement("div", { "data-companion-sim-frame": true, className: "overflow-hidden rounded-xl border border-emerald-200 bg-slate-950 shadow-xl" },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-slate-900 px-3 py-2" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-300" }, "Live Garden Bed"),
+                      React.createElement("div", { className: "text-sm font-black text-white" }, phase === 'plant' ? "Planning mound layout" : phase === 'grow' ? "Season simulation running" : "Harvest report ready")
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                      [
+                        { label: 'Health', value: Math.round(plantHealth) + '%' },
+                        { label: 'Soil', value: soilHealth + '%' },
+                        { label: 'Growth', value: Math.round(growthTime) + '%' }
+                      ].map(function(chip) {
+                        return React.createElement("span", { key: chip.label, className: "rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[11px] font-bold text-slate-100" }, chip.label + ' ' + chip.value);
+                      })
+                    )
+                  ),
+                  React.createElement("canvas", {
 
                   ref: canvasRef,
 
                   "data-companion-canvas": "true",
 
-                  className: "w-full rounded-xl border-2 border-emerald-200 shadow-lg",
+                  className: "w-full",
 
-                  style: { height: 320, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
+                  style: { height: 360, cursor: phase === 'plant' ? 'pointer' : 'default', background: 'linear-gradient(180deg, #87CEEB 0%, #E8F5E9 45%, #558B2F 45%, #33691E 100%)' },
 
                   role: "img", "aria-label": __alloT('stem.companionplanting.companion_planting_garden_visualizatio', "Companion planting garden visualization showing corn, beans, and squash growing together")
 
                 })
+                )
 
               ),
 
@@ -6304,7 +6442,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Event Popup ──
 
-            eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
+            gardenWorkspace === 'operate' && eventPopup && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-300 p-4 space-y-2 animate-in slide-in-from-top duration-300 shadow-xl" },
 
               React.createElement("div", { className: "flex items-center justify-between" },
 
@@ -6330,7 +6468,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Controls Bar ──
 
-            React.createElement("div", { className: "space-y-3" },
+            gardenWorkspace === 'operate' && React.createElement("div", { className: "space-y-3" },
 
 
 
@@ -6766,7 +6904,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Quiz Button ──
 
-            React.createElement("div", { className: "flex items-center gap-3" },
+            gardenWorkspace === 'science' && React.createElement("div", { className: "flex items-center gap-3", "data-companion-science-lab": true },
 
               React.createElement("div", { className: "flex-1" }),
 
@@ -6792,7 +6930,7 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Quiz Panel ──
 
-            showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
+            gardenWorkspace === 'science' && showSciencePanel && React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-4 space-y-4", style: { maxHeight: '60vh', overflowY: 'auto' } },
 
               React.createElement("h3", { className: "text-lg font-bold text-emerald-900 flex items-center gap-2" }, __alloT('stem.companionplanting.the_three_sisters_science_of_companion', "\uD83C\uDF3E The Three Sisters: Science of Companion Planting")),
 
@@ -6918,7 +7056,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-            quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
+            gardenWorkspace === 'science' && quizActive && React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4 space-y-3" },
 
               React.createElement("h4", { className: "text-sm font-bold text-indigo-900" }, "🧠 Question " + ((quizQ % quizzes.length) + 1) + " of " + quizzes.length),
 
@@ -6995,7 +7133,7 @@ var d = (labToolData.companionPlanting) || {};
             
             
             // === FARMING SYSTEMS COMPARISON ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-300 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7092,7 +7230,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === FOOD MILES & CARBON CALCULATOR ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-blue-50 to-sky-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7149,7 +7287,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === WATER FOOTPRINT ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl p-4 border border-cyan-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7180,7 +7318,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === PERMACULTURE PRINCIPLES ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7208,7 +7346,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === REGENERATIVE PRACTICES ===
-            React.createElement("div", {
+            gardenWorkspace === 'systems' && React.createElement("div", {
               className: "bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7241,7 +7379,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === GARDEN SCENARIO CHALLENGES ===
-            React.createElement("div", {
+            gardenWorkspace === 'science' && React.createElement("div", {
               className: "bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-4 border border-rose-200 mb-3"
             },
               React.createElement("h4", { className: "text-sm font-bold text-rose-800 mb-2" }, "\uD83C\uDFAF Garden Scenarios (" + (gardenScenarioIdx + 1) + "/" + GARDEN_SCENARIOS.length + ")"),
@@ -7311,7 +7449,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === DID YOU KNOW? ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-3 border border-indigo-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center gap-2" },
@@ -7328,7 +7466,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === QUICK REFERENCE CARDS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl p-4 border border-teal-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7355,7 +7493,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === NITROGEN CYCLE ===
-            React.createElement("div", {
+            gardenWorkspace === 'science' && React.createElement("div", {
               className: "bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7393,7 +7531,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === COMPOSTING GUIDE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7430,7 +7568,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SEASONAL PLANTING CALENDAR ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7466,7 +7604,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SOIL pH SCALE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7514,7 +7652,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
             // === COMPANION PLANTING PAIRS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7557,7 +7695,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === PLANT FAMILIES & ROTATION ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4 border border-violet-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7590,7 +7728,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === SOIL SCIENCE ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 border border-amber-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7622,7 +7760,7 @@ var d = (labToolData.companionPlanting) || {};
             ),
 
             // === PEST & BENEFICIAL INSECTS ===
-            React.createElement("div", {
+            gardenWorkspace === 'reference' && React.createElement("div", {
               className: "bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-4 border border-red-200 mb-3"
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -7699,7 +7837,7 @@ var d = (labToolData.companionPlanting) || {};
             }, __alloT('stem.companionplanting.snapshot_2', "📸 Snapshot")),
 
             // === H7b'' inquiry widget: Three Sisters synergy ===
-            (function() {
+            gardenWorkspace === 'inquiry' && (function() {
               var h = React.createElement;
               var iq = d.synergyHunt || { cornDensity: 50, beanDensity: 30, squashDensity: 20, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('synergyHunt', Object.assign({}, iq, patch)); }
