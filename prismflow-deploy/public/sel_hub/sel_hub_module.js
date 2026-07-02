@@ -7,7 +7,34 @@
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
+  function alloRestoreFocus() {
+    if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') {
+      try { _alloFocusTrigger.focus(); _alloFocusTrigger = null; return true; } catch(e) {}
+    }
+    _alloFocusTrigger = null;
+    return false;
+  }
+  function alloFocusSelHubStart() {
+    try {
+      var target = document.querySelector('[aria-label="For Educators: how to use this Hub responsibly"]')
+        || document.querySelector('[aria-label="Toggle theme (light / dark / high contrast)"]')
+        || document.querySelector('[aria-label="Close SEL Hub"]');
+      if (target && target.focus) target.focus();
+    } catch (e) {}
+  }
+  function alloRestoreOrFocusSelHubStart() {
+    setTimeout(function() {
+      if (!alloRestoreFocus()) alloFocusSelHubStart();
+    }, 0);
+  }
+  function alloFocusStationNameInput() {
+    setTimeout(function() {
+      try {
+        var input = document.getElementById('sel-station-name-input');
+        if (input && input.focus) input.focus();
+      } catch (e) {}
+    }, 50);
+  }
 
 
     // ── SelHub Plugin Registry ──
@@ -1063,11 +1090,12 @@
         if (!showEphemeralExplainer && !showForEducators && !showSharePacket) return;
         function onKey(e) {
           if (e.key === 'Escape') {
-            if (showSharePacket) { setShowSharePacket(false); }
-            else if (showForEducators) { setShowForEducators(false); }
+            if (showSharePacket) { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); }
+            else if (showForEducators) { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); }
             else if (showEphemeralExplainer) {
               setShowEphemeralExplainer(false);
               try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (err) {}
+              alloRestoreOrFocusSelHubStart();
             }
             return;
           }
@@ -1937,12 +1965,7 @@
         setSelToolSearch('');
         announceToSR('Teacher launch plan loaded into the station builder: ' + (plan.name || 'SEL routine'));
         if (typeof addToast === 'function') addToast('Teacher launch plan loaded into Station Builder.', 'success');
-        setTimeout(function() {
-          try {
-            var input = document.getElementById('sel-station-name-input');
-            if (input && input.focus) input.focus();
-          } catch (e) {}
-        }, 50);
+        alloFocusStationNameInput();
       }
 
       function _selRelativeTime(ts) {
@@ -2244,6 +2267,7 @@
         });
         setPacketSelections(nextSelections);
         setPacketSavedNotice('');
+        alloSaveFocus();
         setShowSharePacket(true);
         if (announceToSR) announceToSR('Create SEL Share Packet opened.');
       }
@@ -2314,7 +2338,7 @@
           ),
           // CHANGE 3: For-Educators link
           h('button', {
-            onClick: function() { setShowForEducators(true); announceToSR('For Educators guide opened'); },
+            onClick: function() { alloSaveFocus(); setShowForEducators(true); announceToSR('For Educators guide opened'); },
             'aria-label': 'For Educators: how to use this Hub responsibly',
             title: 'For Educators',
             style: { background: 'rgba(255,255,255,0.12)', border: 'none', color: _t.headerText, cursor: 'pointer', padding: isCompact ? '6px 8px' : '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, minHeight: isCompact ? 36 : 'auto' }
@@ -2366,6 +2390,7 @@
                 // measures from this dismissal.
                 _lastActivityRef.current = Date.now();
                 _lastExportRef.current = Date.now();
+                alloRestoreOrFocusSelHubStart();
               },
               'aria-label': 'Got it, start using the SEL Hub',
               style: { padding: '10px 28px', minHeight: 44, borderRadius: 10, border: 'none', background: _t.accent, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
@@ -2427,6 +2452,7 @@
           }
         } catch (e) {}
         setShowForEducators(false);
+        alloRestoreOrFocusSelHubStart();
         if (typeof addToast === 'function') addToast('Your SEL data has been cleared from this device.', 'success');
         if (announceToSR) announceToSR('Your SEL data has been cleared from this device.');
       };
@@ -2445,7 +2471,7 @@
             h('h2', { id: 'sel-for-educators-title', style: { margin: 0, fontSize: 16, fontWeight: 800 } }, '\uD83C\uDF93 For Educators'),
             h('button', {
               'data-primary-action': 'true',
-              onClick: function() { setShowForEducators(false); },
+              onClick: function() { setShowForEducators(false); alloRestoreOrFocusSelHubStart(); },
               'aria-label': 'Close For Educators guide',
               style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
             }, '\u2715')
@@ -2508,7 +2534,7 @@
               ),
               h('button', {
                 'data-primary-action': 'true',
-                onClick: function() { setShowSharePacket(false); },
+                onClick: function() { setShowSharePacket(false); alloRestoreOrFocusSelHubStart(); },
                 'aria-label': 'Close SEL Share Packet builder',
                 style: { background: 'none', border: 'none', color: _t.text, cursor: 'pointer', fontSize: 18, padding: 4 }
               }, '\u2715')
@@ -3195,7 +3221,7 @@
               ),
               // Open builder button
               !builderOpen && h('button', {
-                onClick: function () { setBuilderOpen(true); announceToSR('Station builder opened'); },
+                onClick: function () { alloSaveFocus(); setBuilderOpen(true); announceToSR('Station builder opened'); alloFocusStationNameInput(); },
                 'aria-label': 'Build a new custom SEL Station',
                 style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed ' + _t.pinkAccent, background: isContrast ? '#000000' : 'rgba(236, 72, 153, 0.05)', color: _t.pinkText, fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
               }, '+ Build a Custom Station'),
@@ -3252,7 +3278,7 @@
                   h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
                     h('div', { style: { fontSize: 12, fontWeight: 800, color: _t.pinkText } }, '🧑‍🏫 Station Builder'),
                     h('button', {
-                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); },
+                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); alloRestoreOrFocusSelHubStart(); },
                       'aria-label': 'Cancel station builder',
                       style: { fontSize: 11, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
                     }, '✕ Cancel')

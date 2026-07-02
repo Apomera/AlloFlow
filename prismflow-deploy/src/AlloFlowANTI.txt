@@ -154,10 +154,27 @@ window._upgradeAlloData = _upgradeAlloData;
 let stripUndefined = (obj) => obj;
 let sanitizeHistoryForCloud = (items) => items;
 let hydrateHistory = (items) => Array.isArray(items) ? items : [];
+let estimateJsonBytes = (value) => {
+    try { return JSON.stringify(value == null ? null : value).length; } catch (e) { return Infinity; }
+};
+let prepareSessionResourcesForWrite = (resources, options) => {
+    const source = Array.isArray(resources) ? resources : [];
+    return {
+        resources: source,
+        originalCount: source.length,
+        keptCount: source.length,
+        droppedCount: 0,
+        byteLength: estimateJsonBytes(source),
+        maxBytes: Number(options && options.maxBytes) || 850 * 1024,
+        overLimit: false,
+    };
+};
 function _upgradeFirestoreSync() {
     if (typeof window.stripUndefined === 'function') stripUndefined = window.stripUndefined;
     if (typeof window.sanitizeHistoryForCloud === 'function') sanitizeHistoryForCloud = window.sanitizeHistoryForCloud;
     if (typeof window.hydrateHistory === 'function') hydrateHistory = window.hydrateHistory;
+    if (typeof window.estimateJsonBytes === 'function') estimateJsonBytes = window.estimateJsonBytes;
+    if (typeof window.prepareSessionResourcesForWrite === 'function') prepareSessionResourcesForWrite = window.prepareSessionResourcesForWrite;
     console.log('[FirestoreSync] Monolith shim upgraded from CDN module.');
 }
 window._upgradeFirestoreSync = _upgradeFirestoreSync;
@@ -1256,8 +1273,9 @@ const StudentAnalyticsPanel = React.memo((props) => {
     const ExternalModule = window.AlloModules && window.AlloModules.StudentAnalytics;
     if (ExternalModule) return React.createElement(ExternalModule, props);
     if (!props.isOpen) return null;
+    const panelTheme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
     return ReactDOM.createPortal(
-        <div className="fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4" onClick={props.onClose}>
+        <div className={`fixed inset-0 z-[80] bg-black/60 flex items-center justify-center p-4 theme-${panelTheme}`} onClick={props.onClose}>
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Assessment Center' }) || 'Loading Assessment Center...'}</p>
@@ -2434,13 +2452,65 @@ const SESSION_TIER1_LEAVES = new Set([
   // bridgeReactions = { uid: { emoji (enum), timestamp } } — pseudonymous uid + an emoji
   // reaction + time; no free text; Tier-1-safe on its own merits.
   'bridgePayload', 'bridgeReactions',
+  // Teacher-shared class resources for live sessions. This field is allowed only
+  // through writeToSession(), which routes arrays through prepareSessionResourcesForWrite
+  // to strip binary payloads and keep the session doc under Firestore's 1 MiB limit.
+  'resources',
+  // Live Polling host presence (host-managed): { hostActive: boolean,
+  // hostOpenedAt: ms-timestamp }. Written by LivePolling.HostPanel when the
+  // teacher opens/closes the polling panel; students gate their WebRTC join
+  // attempts on it so they only dial while a host is listening (bounds
+  // signaling churn) and re-dial when hostOpenedAt changes. No student-typed
+  // content; Tier-1 safe.
+  'livePolling',
+  // Help signals: roster.{uid}.signal is an enum from LIVE_SIGNAL_OPTIONS
+  // ('stuck'|'slow'|'repeat'|'ready') + roster.{uid}.signalAt timestamp.
+  // Students cannot free-type; the teacher's Live Session Center shows the
+  // signal next to the (curated) codename and can clear it. Tier-1 safe.
+  'signal', 'signalAt',
+  // Group resource push nonce (teacher-managed): groups.{gid}.resourceAt is a
+  // ms-timestamp written with each push so student-paced consumers treat the
+  // push as ONE jump (and a re-push of the same resource yanks again).
+  // No student-typed content; Tier-1 safe.
+  'resourceAt',
+  // Per-student resource send (teacher-managed): roster.{uid}.resourceId is an
+  // auto-generated resource id (never student-typed) with precedence
+  // individual > group > class; paired with resourceAt above for consume-once
+  // semantics in student-paced mode. Tier-1 safe.
+  'resourceId',
+  // Delivery acknowledgment (student-written, id-only): roster.{uid}.viewingResourceId
+  // + viewingAt let the teacher's Live Session Center show who actually landed
+  // on a pushed resource. Resource ids are auto-generated, never student-typed;
+  // no content travels on this channel. Tier-1 safe.
+  'viewingResourceId', 'viewingAt',
 ]);
+// Help-signal vocabulary shared by the student sender and the teacher's Live
+// Session Center. Enum-only by design: keep free text out of this channel so
+// roster.{uid}.signal stays Tier-1 (see SESSION_TIER1_LEAVES above).
+const LIVE_SIGNAL_OPTIONS = [
+  { id: 'stuck', emoji: '✋', label: "I'm stuck" },
+  { id: 'slow', emoji: '🐢', label: 'Please slow down' },
+  { id: 'repeat', emoji: '🔁', label: 'Repeat that' },
+  { id: 'ready', emoji: '✅', label: "I'm ready" },
+];
+const LIVE_SIGNAL_FRESH_MS = 10 * 60 * 1000;
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
     return Promise.reject(new Error('writeToSession: invalid arguments'));
   }
+  let safePayload = payload;
+  if (Array.isArray(payload.resources)) {
+    const prepared = prepareSessionResourcesForWrite(payload.resources);
+    safePayload = { ...payload, resources: prepared.resources };
+    if (prepared.droppedCount > 0 || prepared.overLimit) {
+      warnLog(
+        `[Session Sync] Resource payload trimmed: kept ${prepared.keptCount}/${prepared.originalCount}, ${prepared.byteLength}/${prepared.maxBytes} bytes.`
+      );
+    }
+  }
+  safePayload = stripUndefined(safePayload);
   const violations = [];
-  Object.keys(payload).forEach(key => {
+  Object.keys(safePayload).forEach(key => {
     const leaf = key.split('.').pop();
     if (!SESSION_TIER1_LEAVES.has(leaf)) violations.push(key);
   });
@@ -2451,7 +2521,7 @@ const writeToSession = async (sessionRef, payload) => {
     );
     return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
   }
-  return updateDoc(sessionRef, payload);
+  return updateDoc(sessionRef, safePayload);
 };
 if (typeof window !== 'undefined') {
   window.__alloWriteToSession = writeToSession;
@@ -4528,7 +4598,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '211c2784';
+    var pluginCdnVersion = '6ff7c6cc';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4691,36 +4761,36 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=211c2784');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=211c2784');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=211c2784');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=211c2784');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=211c2784');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=211c2784');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=211c2784');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=211c2784');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=211c2784');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=211c2784');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=211c2784');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=211c2784');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=211c2784');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=211c2784');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=211c2784');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=211c2784');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=211c2784');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=211c2784');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=211c2784');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=211c2784');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=211c2784');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=211c2784');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=211c2784');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=211c2784');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=6ff7c6cc');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=6ff7c6cc');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=6ff7c6cc');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=6ff7c6cc');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=6ff7c6cc');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=6ff7c6cc');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=6ff7c6cc');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=6ff7c6cc');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=6ff7c6cc');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=6ff7c6cc');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6ff7c6cc');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=6ff7c6cc');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=6ff7c6cc');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=6ff7c6cc');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6ff7c6cc');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=6ff7c6cc');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=6ff7c6cc');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=6ff7c6cc');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=6ff7c6cc');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=6ff7c6cc');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=6ff7c6cc');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=6ff7c6cc');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=6ff7c6cc');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=6ff7c6cc');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=211c2784'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=211c2784'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=6ff7c6cc'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -4729,77 +4799,77 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=211c2784');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=211c2784');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=211c2784');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=211c2784');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=211c2784');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=211c2784');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=211c2784');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=211c2784');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=211c2784');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=211c2784');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=211c2784');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=211c2784');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=211c2784'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=211c2784'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=211c2784'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=211c2784'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=6ff7c6cc');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=6ff7c6cc');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=6ff7c6cc');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=6ff7c6cc');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=6ff7c6cc');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=6ff7c6cc');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=6ff7c6cc');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=6ff7c6cc');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=6ff7c6cc');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=6ff7c6cc');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=6ff7c6cc');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=6ff7c6cc');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=6ff7c6cc'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=211c2784');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=211c2784');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=211c2784');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=211c2784');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=211c2784');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=211c2784');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=211c2784');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=211c2784');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=211c2784');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=6ff7c6cc');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=6ff7c6cc');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=6ff7c6cc');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=6ff7c6cc');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=6ff7c6cc');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=6ff7c6cc');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=6ff7c6cc');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=6ff7c6cc');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=6ff7c6cc');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=211c2784'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=6ff7c6cc'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=211c2784');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=6ff7c6cc');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=211c2784');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=211c2784'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=211c2784'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=211c2784');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=211c2784');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=211c2784');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=211c2784');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=211c2784');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=211c2784');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=211c2784');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=211c2784');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=211c2784');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=211c2784'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=211c2784'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=211c2784'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=211c2784');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=211c2784');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=211c2784');
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=6ff7c6cc');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=6ff7c6cc'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=6ff7c6cc');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=6ff7c6cc');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=6ff7c6cc');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=6ff7c6cc');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=6ff7c6cc');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=6ff7c6cc');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=6ff7c6cc');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=6ff7c6cc');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=6ff7c6cc');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=6ff7c6cc'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=6ff7c6cc'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=6ff7c6cc');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=6ff7c6cc');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=6ff7c6cc');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=211c2784');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=211c2784');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=211c2784');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=211c2784');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=211c2784');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=211c2784');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=211c2784');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=211c2784');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=211c2784');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=6ff7c6cc');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=6ff7c6cc');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=6ff7c6cc');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=6ff7c6cc');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6ff7c6cc');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=6ff7c6cc');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=6ff7c6cc');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=6ff7c6cc');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=6ff7c6cc');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -4836,63 +4906,63 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=211c2784');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=211c2784');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=211c2784');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=6ff7c6cc');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=6ff7c6cc');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=6ff7c6cc');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=211c2784');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=211c2784');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=211c2784');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=211c2784');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=211c2784');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=211c2784');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=211c2784');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=211c2784');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=211c2784');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=211c2784');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=211c2784');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=211c2784');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=211c2784');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=211c2784');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=211c2784');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=211c2784');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=211c2784');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=211c2784');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=211c2784');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=211c2784');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=211c2784');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=211c2784');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=211c2784');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=211c2784');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=211c2784');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=211c2784');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=211c2784');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=211c2784');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=211c2784');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=211c2784');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=211c2784');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=211c2784');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=211c2784');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=211c2784');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=211c2784');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=211c2784');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=211c2784');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=211c2784');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=211c2784');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=211c2784');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=6ff7c6cc');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=6ff7c6cc');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=6ff7c6cc');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=6ff7c6cc');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=6ff7c6cc');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=6ff7c6cc');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=6ff7c6cc');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=6ff7c6cc');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=6ff7c6cc');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=6ff7c6cc');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=6ff7c6cc');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=6ff7c6cc');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=6ff7c6cc');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=6ff7c6cc');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=6ff7c6cc');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=6ff7c6cc');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=6ff7c6cc');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=6ff7c6cc');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=6ff7c6cc');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=6ff7c6cc');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=6ff7c6cc');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=6ff7c6cc');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=6ff7c6cc');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=6ff7c6cc');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=6ff7c6cc');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=6ff7c6cc');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=6ff7c6cc');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=6ff7c6cc');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=6ff7c6cc');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=6ff7c6cc');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=6ff7c6cc');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=6ff7c6cc');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=6ff7c6cc');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=6ff7c6cc');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6ff7c6cc');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=6ff7c6cc');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=6ff7c6cc');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=6ff7c6cc');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=6ff7c6cc');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=6ff7c6cc');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=211c2784');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=211c2784');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=211c2784');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=211c2784');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=211c2784');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=211c2784');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=211c2784');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=211c2784');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=211c2784');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=211c2784');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=6ff7c6cc');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=6ff7c6cc');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=6ff7c6cc');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6ff7c6cc');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=6ff7c6cc');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=6ff7c6cc');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=6ff7c6cc');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=6ff7c6cc');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=6ff7c6cc');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=6ff7c6cc');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -7000,6 +7070,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (concepts.length > 0) setPictionaryIncomingConcepts(concepts);
     setShowPictionaryHost(true);
   }, []);
+  // Live Session Center dock (teacher) + help signals (student). The dock is
+  // the single entry point for live activities; livePollPreset seeds the
+  // polling HostPanel composer for one-tap presets like Quick Check.
+  const [showLiveDock, setShowLiveDock] = useState(false);
+  const [livePollPreset, setLivePollPreset] = useState(null);
+  const [showStudentSignals, setShowStudentSignals] = useState(false);
   // sessionData useState moved up here (was at line ~5868) so the
   // _picMyRoleRaw / _picRoundActive const declarations below can reference
   // it without hitting the TDZ. Previously fired
@@ -7061,6 +7137,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isJoinPopoverOpen, setIsJoinPopoverOpen] = useState(false);
   const sessionUnsubscribeRef = useRef(null);
   const currentGenContentIdRef = useRef(null);
+  // Consume-once key for group resource pushes in student-paced mode:
+  // "{groupId}|{resourceId}|{resourceAt}". Without it, every unrelated
+  // session-doc snapshot (xp sync, quiz answers, help signals) re-yanked a
+  // grouped student back to the group resource after they navigated away —
+  // student-paced mode wasn't student-paced for grouped students.
+  const lastGroupPushKeyRef = useRef(null);
+  // Same consume-once pattern for per-student pushes (roster.{uid}.resourceId).
+  const lastIndividualPushKeyRef = useRef(null);
+  // Last viewingResourceId this student wrote to the session doc (delivery
+  // ack); guards against re-writing the same id on unrelated re-renders.
+  const lastViewingSyncRef = useRef(undefined);
   const hasConnectedRef = useRef(false);
   const [pptxLoaded, setPptxLoaded] = useState(false);
   const [progressionData, setProgressionData] = useState(null);
@@ -9286,6 +9373,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const unsubscribe = onSnapshot(sessionRef, async (docSnap) => {
           if (docSnap.exists()) {
               const data = docSnap.data();
+              // Terminal-state check: handleEndLiveSession soft-ends the session
+              // (isActive:false / status:'ended') WITHOUT deleting the doc, so the
+              // doc-not-found branch below never fires for that path. Without this
+              // check students stay in a zombie session (stale sessionData, live
+              // overlays still armed) after the teacher ends it from the quiz
+              // dashboard. Treat a soft-ended doc exactly like a deleted one.
+              if (data && (data.isActive === false || data.status === 'ended')) {
+                  if (hasConnectedRef.current) {
+                      addToast(t('session.toast_ended'), "error");
+                  }
+                  setActiveSessionCode(null);
+                  setSessionData(null);
+                  hasConnectedRef.current = false;
+                  lastResourcesStringRef.current = null;
+                  return;
+              }
               if (!hasConnectedRef.current) {
                   hasConnectedRef.current = true;
                   addToast(t('session.toast_connected'), "success");
@@ -9447,6 +9550,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               targetResourceId = data.groups[userGroupId].resourceId;
                           }
                       }
+                      // Per-student send outranks group and class targets. In sync
+                      // mode it inherits the locked-follow semantics of the branch.
+                      if (data.roster && data.roster[user.uid] && data.roster[user.uid].resourceId) {
+                          debugLog(`Differentiation: Overriding to individual resource ${data.roster[user.uid].resourceId}`);
+                          targetResourceId = data.roster[user.uid].resourceId;
+                      }
                       if (targetResourceId === 'adventure-sync') {
                           if (data.activeAdventureState) {
                               setAdventureState(prev => {
@@ -9493,12 +9602,37 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           }
                       }
                   }
+                  else if (data.roster && data.roster[user.uid] && data.roster[user.uid].resourceId) {
+                      // Student-paced mode, per-student send: consume each push ONCE
+                      // (same nonce pattern as group pushes below), then let the
+                      // student navigate freely.
+                      const myEntry = data.roster[user.uid];
+                      const individualPushKey = myEntry.resourceId + '|' + (myEntry.resourceAt || 0);
+                      const target = resourcesToRender.find(r => r.id === myEntry.resourceId);
+                      if (target && currentGenContentIdRef.current !== myEntry.resourceId && lastIndividualPushKeyRef.current !== individualPushKey) {
+                          lastIndividualPushKeyRef.current = individualPushKey;
+                          debugLog(`Individual Differentiation: Showing per-student resource ${myEntry.resourceId}`);
+                          setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+                          setActiveView(target.type);
+                          if (audioRef.current) {
+                              audioRef.current.pause();
+                              setIsPlaying(false);
+                          }
+                          addToast(t('toasts.individual_resource', { title: target.title || getDefaultTitle(target.type) }) || `For you: ${target.title || getDefaultTitle(target.type)}`, "info");
+                      }
+                  }
                   else if (data.roster && data.roster[user.uid] && data.roster[user.uid].groupId) {
                       const userGroupId = data.roster[user.uid].groupId;
                       if (data.groups && data.groups[userGroupId] && data.groups[userGroupId].resourceId) {
                           const groupResourceId = data.groups[userGroupId].resourceId;
+                          // Student-paced mode: consume each group push ONCE, then let the
+                          // student navigate freely. resourceAt (set by handleSetGroupResource)
+                          // lets the teacher re-push the same resource to yank again; legacy
+                          // pushes without it still dedupe on group+resource.
+                          const groupPushKey = userGroupId + '|' + groupResourceId + '|' + (data.groups[userGroupId].resourceAt || 0);
                           const target = resourcesToRender.find(r => r.id === groupResourceId);
-                          if (target && currentGenContentIdRef.current !== groupResourceId) {
+                          if (target && currentGenContentIdRef.current !== groupResourceId && lastGroupPushKeyRef.current !== groupPushKey) {
+                              lastGroupPushKeyRef.current = groupPushKey;
                               debugLog(`Group Differentiation: Showing group-specific resource ${groupResourceId}`);
                               setGeneratedContent({ type: target.type, data: target.data, id: target.id });
                               setActiveView(target.type);
@@ -9555,6 +9689,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
       }
   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+  // Delivery acknowledgment (spec §4.1 / roadmap #10): students report WHICH
+  // resource id they are viewing (id-only, Tier-1) so the teacher's Live
+  // Session Center can show who actually landed on a pushed resource. The ref
+  // guard keeps unrelated re-renders from repeating the same write.
+  useEffect(() => {
+      if (isTeacherMode || !activeSessionCode || !user || !user.uid) {
+          lastViewingSyncRef.current = undefined;
+          return;
+      }
+      const viewingId = (generatedContent && generatedContent.id) || null;
+      if (lastViewingSyncRef.current === viewingId) return;
+      lastViewingSyncRef.current = viewingId;
+      try {
+          const targetAppId = activeSessionAppId || appId;
+          const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+          writeToSession(sessionRef, {
+              [`roster.${user.uid}.viewingResourceId`]: viewingId,
+              [`roster.${user.uid}.viewingAt`]: Date.now()
+          }).catch(e => warnLog("Viewing ack skipped", e));
+      } catch (e) { /* session ref unavailable — ack is best-effort */ }
+  }, [generatedContent && generatedContent.id, activeSessionCode, isTeacherMode, user, activeSessionAppId]);
   useEffect(() => {
       if (isTeacherMode && activeSessionCode && activeView === 'adventure' && adventureState.currentScene) {
           const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
@@ -16779,7 +16934,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
       try {
         await updateDoc(sessionRef, {
-            [`groups.${groupId}.resourceId`]: resourceId
+            [`groups.${groupId}.resourceId`]: resourceId,
+            // Push nonce: lets student-paced consumers treat each push as a
+            // one-time jump (and lets the teacher re-push the same resource).
+            [`groups.${groupId}.resourceAt`]: Date.now()
         });
         setIsPushingResource(prev => ({...prev, [groupId]: 'success'}));
         addToast(t('toasts.resource_assigned'), "success");
@@ -16789,6 +16947,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       } catch (error) {
           warnLog("Error setting resource:", error);
           setIsPushingResource(prev => { const next = {...prev}; delete next[groupId]; return next; });
+          addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
+      }
+  };
+  // Per-student resource send (spec §4.1 / roadmap #9). Precedence on the
+  // student side: individual > group > class. Passing resourceId=null clears
+  // the override. resourceAt is the consume-once nonce for student-paced mode.
+  const handleSetStudentResource = async (uid, resourceId) => {
+      if (!activeSessionCode || !uid) return;
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      try {
+        await updateDoc(sessionRef, {
+            [`roster.${uid}.resourceId`]: resourceId || null,
+            [`roster.${uid}.resourceAt`]: resourceId ? Date.now() : null
+        });
+        addToast(resourceId
+          ? (t('toasts.resource_assigned') || 'Resource pushed.')
+          : (t('toasts.individual_resource_cleared') || 'Individual resource cleared.'), "success");
+      } catch (error) {
+          warnLog("Error setting student resource:", error);
           addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
       }
   };
@@ -17052,10 +17229,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const syncResourcesToSession = async () => {
           try {
               const resourcesToUpload = history.filter(h => h.id);
-              const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+              const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, activeSessionCode);
+              const prepared = prepareSessionResourcesForWrite(lightweightResources);
               const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              await updateDoc(sessionRef, stripUndefined({ resources: lightweightResources }));
-              debugLog("Session resources synced:", lightweightResources.length);
+              await writeToSession(sessionRef, { resources: prepared.resources });
+              debugLog("Session resources synced:", prepared.keptCount, "of", prepared.originalCount, "bytes", prepared.byteLength);
+              if (prepared.droppedCount > 0 || prepared.overLimit) {
+                  addToast('Live session resources were trimmed to keep sync reliable. Newest resources were shared.', 'info');
+              }
           } catch (e) {
               warnLog("Failed to sync resources to session:", e);
           }
@@ -24168,7 +24349,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     <ActiveViewContext.Provider value={_activeViewCtx}>
     <RoleContext.Provider value={_roleCtx}>
     <ThemeContext.Provider value={_themeCtx}>
-    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col theme-${theme} ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
         <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -24929,7 +25110,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100,
         .theme-contrast .bg-amber-50, .theme-contrast .bg-rose-50, .theme-contrast .bg-sky-50, .theme-contrast .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }
         .theme-contrast .bg-amber-50 *, .theme-contrast .bg-rose-50 *, .theme-contrast .bg-sky-50 *, .theme-contrast .bg-emerald-50 * { color: #ffff00 !important; }
-        .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li {
+        .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li, .theme-contrast label {
             color: #ffff00 !important;
         }
         .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; }
@@ -25191,7 +25372,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       )}
       {isPersonaChatOpen && (personaState.selectedCharacter || (personaState.mode === 'panel' && personaState.selectedCharacters.length > 0)) && window.AlloModules && window.AlloModules.PersonaChatView && ReactDOM.createPortal(
         React.createElement(window.AlloModules.PersonaChatView, {
-            personaState, t,
+            personaState, t, theme,
             isPersonaFreeResponse, showPersonaHints, personaAutoRead,
             personaInput, personaAutoSend,
             isPersonaReflectionOpen, personaDefinitionData, reflectionFeedback,
@@ -25227,7 +25408,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {(diffViewOpen && pdfFixResult) && window.AlloModules && window.AlloModules.PdfDiffViewer && React.createElement(window.AlloModules.PdfDiffViewer, {
           _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup, callGemini,
           diffChunks, diffGranularity, diffLibLoading, diffLibReady, diffSelection,
-          diffViewOpen, pdfFixResult, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
+          diffViewOpen, pdfFixResult, theme, setApplyingRemarkup, setDiffChunks, setDiffGranularity,
           setDiffSelection, setDiffViewOpen, setPdfFixResult, setRangeRejected, t, toggleDiffChunk,
           warnLog
       })}
@@ -27455,20 +27636,178 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* Live Polling (WebRTC peer-to-peer). Signaling docs at signaling/{sessionCode}/peers/{uid} */}
       {/* contain only SDP+ICE+codename and are deleted on connection. All poll/response data flows */}
       {/* browser-to-browser, never persisted. See live_polling_module.js + feedback_session_tier1_tier2. */}
-      {isTeacherMode && activeSessionCode && (
-        <button
-          onClick={() => setShowLivePollingPanel(true)}
-          aria-label={t('live_polling.open_aria') || 'Open live polling'}
-          style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
-        >
-          {t('live_polling.button') || 'Live Polling'}
-        </button>
-      )}
+      {/* Live Session Center: single teacher dock consolidating live activities */}
+      {/* (poll / quick check / pictionary), guidance (pacing, groups, session) */}
+      {/* and student help signals. Replaces the old per-feature floating buttons. */}
+      {isTeacherMode && activeSessionCode && (() => {
+        const dockSessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        const rosterEntries = (sessionData && sessionData.roster) || {};
+        const dockNow = Date.now();
+        const activeSignals = Object.keys(rosterEntries)
+          .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
+          .filter(({ entry }) => entry.signal && entry.signalAt && (dockNow - entry.signalAt) < LIVE_SIGNAL_FRESH_MS)
+          .sort((a, b) => (b.entry.signalAt || 0) - (a.entry.signalAt || 0));
+        const signalMeta = (id) => LIVE_SIGNAL_OPTIONS.find(o => o.id === id) || { emoji: '✋', label: id };
+        const clearSignal = (uid) => {
+          writeToSession(dockSessionRef, { [`roster.${uid}.signal`]: null, [`roster.${uid}.signalAt`]: null }).catch(() => {});
+        };
+        const dockCardStyle = { display:'flex', alignItems:'center', gap:8, width:'100%', textAlign:'left', padding:'0.5rem 0.6rem', borderRadius:8, border:'1px solid #e2e8f0', background:'white', cursor:'pointer', fontSize:'0.82rem', fontWeight:600, color:'#0f172a' };
+        const dockGroupLabel = { fontSize:'0.68rem', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.05em', color:'#64748b', margin:'0.6rem 0 0.3rem 0' };
+        return (
+          <>
+            <button
+              onClick={() => setShowLiveDock(v => !v)}
+              aria-label={t('live_dock.open_aria') || 'Open the live session center'}
+              aria-expanded={showLiveDock}
+              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+            >
+              {(t('live_dock.button') || '🎛️ Live Session') + (activeSignals.length > 0 ? ' · ✋' + activeSignals.length : '')}
+            </button>
+            {showLiveDock && (
+              <div role="dialog" aria-label={t('live_dock.title') || 'Live Session Center'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:300,maxHeight:'68vh',overflowY:'auto',background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.85rem'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+                  <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.95rem'}}>{t('live_dock.title') || 'Live Session Center'}</div>
+                  <button onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
+                </div>
+                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code'}>
+                  {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
+                </button>
+                <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
+                    <span aria-hidden="true">📊</span>{t('live_dock.poll') || 'Live Poll'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => {
+                    setLivePollPreset({
+                      type: 'rating',
+                      prompt: t('live_dock.quick_check_prompt') || 'How is this landing for you right now?',
+                      ratingMin: 1, ratingMax: 3,
+                      ratingLabels: (t('live_dock.quick_check_labels') || '1 = Confused\n2 = Okay\n3 = Ready'),
+                      afterSubmitMode: 'dismiss',
+                    });
+                    setShowLivePollingPanel(true); setShowLiveDock(false);
+                  }}>
+                    <span aria-hidden="true">⚡</span>{t('live_dock.quick_check') || 'Quick Check (confused → ready)'}
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setShowPictionaryHost(true); setShowLiveDock(false); }}>
+                    <span aria-hidden="true">🎨</span>{t('pictionary.button') || 'Concept Pictionary'}
+                  </button>
+                </div>
+                <div style={dockGroupLabel}>{t('live_dock.group_guide') || 'Guide'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                  <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
+                    <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '🧭'}</span>
+                    {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-paced') : (t('session.student_paced') || 'Student-paced')}
+                    <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.toggle') || 'toggle'}</span>
+                  </button>
+                  <button style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowGroupModalToTrue(); }}>
+                    <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
+                  </button>
+                </div>
+                {(() => {
+                  // Students: delivery status (which resource each student is
+                  // actually viewing vs their target) + per-student push of the
+                  // teacher's currently open resource. Precedence for target:
+                  // individual > group > class (sync mode only for class).
+                  const studentUids = Object.keys(rosterEntries);
+                  if (studentUids.length === 0) return null;
+                  const titleFor = (id) => {
+                    if (!id) return null;
+                    const h = (history || []).find(x => x && x.id === id);
+                    return h ? (h.title || getDefaultTitle(h.type)) : null;
+                  };
+                  const targetFor = (entry) => entry.resourceId
+                    || (entry.groupId && sessionData && sessionData.groups && sessionData.groups[entry.groupId] && sessionData.groups[entry.groupId].resourceId)
+                    || ((sessionData && sessionData.mode === 'sync') ? sessionData.currentResourceId : null);
+                  const canPushCurrent = !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type));
+                  const rows = studentUids
+                    .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
+                    .sort((a, b) => String(a.entry.name || '').localeCompare(String(b.entry.name || '')));
+                  return (
+                    <>
+                      <div style={dockGroupLabel}>{(t('live_dock.group_students') || 'Students') + ' (' + rows.length + ')'}</div>
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:170,overflowY:'auto'}}>
+                        {rows.map(({ uid, entry }) => {
+                          const target = targetFor(entry);
+                          const viewing = entry.viewingResourceId || null;
+                          const onTarget = !!(target && viewing === target);
+                          const statusDot = !target
+                            ? { glyph: '·', color: '#94a3b8', label: t('live_dock.status_free') || 'no target' }
+                            : onTarget
+                              ? { glyph: '●', color: '#16a34a', label: t('live_dock.status_on') || 'on it' }
+                              : viewing
+                                ? { glyph: '○', color: '#b45309', label: t('live_dock.status_elsewhere') || 'elsewhere' }
+                                : { glyph: '–', color: '#94a3b8', label: t('live_dock.status_unknown') || 'no signal' };
+                          const viewingTitle = titleFor(viewing);
+                          return (
+                            <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
+                              <span aria-hidden="true" style={{color:statusDot.color,fontWeight:900}}>{statusDot.glyph}</span>
+                              <span style={{fontWeight:700,color:'#0f172a',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:86}}>{entry.name || 'Student'}</span>
+                              <span style={{color:'#64748b',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
+                                {statusDot.label}{viewingTitle ? ' · ' + viewingTitle : ''}
+                              </span>
+                              {entry.resourceId ? (
+                                <button
+                                  onClick={() => handleSetStudentResource(uid, null)}
+                                  aria-label={(t('live_dock.clear_student_resource_aria') || 'Clear individual resource for') + ' ' + (entry.name || 'student')}
+                                  title={t('live_dock.clear_student_resource') || 'Clear individual resource'}
+                                  style={{background:'white',border:'1px solid #fca5a5',borderRadius:6,padding:'0.05rem 0.35rem',cursor:'pointer',fontSize:'0.68rem',fontWeight:700,color:'#b91c1c'}}
+                                >✕</button>
+                              ) : null}
+                              <button
+                                onClick={() => canPushCurrent && handleSetStudentResource(uid, generatedContent.id)}
+                                disabled={!canPushCurrent}
+                                aria-label={(t('live_dock.push_student_resource_aria') || 'Send the current resource to') + ' ' + (entry.name || 'student')}
+                                title={canPushCurrent ? (t('live_dock.push_student_resource') || 'Send current resource to this student') : (t('live_dock.push_student_resource_none') || 'Open a student-facing resource first')}
+                                style={{background: canPushCurrent ? '#1e3a8a' : '#e2e8f0', color: canPushCurrent ? 'white' : '#94a3b8', border:'none', borderRadius:6, padding:'0.05rem 0.45rem', cursor: canPushCurrent ? 'pointer' : 'default', fontSize:'0.7rem', fontWeight:800}}
+                              >→</button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
+                <div style={dockGroupLabel}>{(t('live_dock.group_signals') || 'Signals') + (activeSignals.length > 0 ? ' (' + activeSignals.length + ')' : '')}</div>
+                {activeSignals.length === 0 ? (
+                  <p style={{fontSize:'0.75rem',color:'#64748b',fontStyle:'italic',margin:'0 0 0.2rem 0'}}>{t('live_dock.no_signals') || 'No signals right now.'}</p>
+                ) : (
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {activeSignals.map(({ uid, entry }) => {
+                      const meta = signalMeta(entry.signal);
+                      return (
+                        <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.35rem 0.5rem',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,fontSize:'0.78rem'}}>
+                          <span aria-hidden="true">{meta.emoji}</span>
+                          <span style={{fontWeight:700,color:'#0f172a'}}>{entry.name || 'Student'}</span>
+                          <span style={{color:'#475569'}}>{t('live_signals.' + entry.signal) || meta.label}</span>
+                          <button onClick={() => clearSignal(uid)} aria-label={(t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student')} style={{marginLeft:'auto',background:'white',border:'1px solid #e2e8f0',borderRadius:6,padding:'0.05rem 0.4rem',cursor:'pointer',fontSize:'0.7rem',fontWeight:700,color:'#475569'}}>✓</button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => activeSignals.forEach(({ uid }) => clearSignal(uid))} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
+                      {t('live_dock.clear_all_signals') || 'Clear all'}
+                    </button>
+                  </div>
+                )}
+                <p style={{fontSize:'0.68rem',color:'#64748b',margin:'0.7rem 0 0 0',lineHeight:1.35}}>
+                  {t('live_dock.privacy_note') || '🔒 Poll answers, drawings and guesses travel device-to-device and are never stored. Signals share only a codename + a preset phrase.'}
+                </p>
+              </div>
+            )}
+          </>
+        );
+      })()}
       {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
         React.createElement(window.AlloModules.LivePolling.HostPanel, {
           sessionCode: activeSessionCode,
           isOpen: showLivePollingPanel,
-          onClose: () => setShowLivePollingPanel(false),
+          onClose: () => { setShowLivePollingPanel(false); setLivePollPreset(null); },
+          // One-tap presets from the Live Session Center (e.g. Quick Check)
+          // seed the composer; the teacher still reviews + broadcasts.
+          initialPoll: livePollPreset,
+          // Roster gate (defense-in-depth): the host ignores WebRTC offers
+          // from uids not present in the session roster.
+          allowedUids: sessionData && sessionData.roster ? Object.keys(sessionData.roster) : [],
         })
       }
       {!isTeacherMode && activeSessionCode && user && user.uid && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.GuestOverlay &&
@@ -27477,20 +27816,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           userUid: user.uid,
           codename: studentNickname || 'Guest',
           enabled: true,
+          // Presence gating (Tier-1 livePolling leaf): only dial the WebRTC
+          // host while the teacher's polling panel is actually open; a new
+          // hostOpenedAt re-arms guests' auto-rejoin budget.
+          hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive),
+          hostNonce: (sessionData && sessionData.livePolling && sessionData.livePolling.hostOpenedAt) || 0,
         })
       }
       {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}
       {/* flow browser-to-browser; only Tier-1 roster.{uid}.role markers touch Firestore. See  */}
       {/* concept_pictionary_module.js + feedback_session_tier1_tier2. */}
-      {isTeacherMode && activeSessionCode && (
-        <button
-          onClick={() => setShowPictionaryHost(true)}
-          aria-label={t('pictionary.open_aria') || 'Open Concept Pictionary'}
-          style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,background:'#9f1239',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(159,18,57,0.35)'}}
-        >
-          {t('pictionary.button') || '🎨 Pictionary'}
-        </button>
-      )}
+      {/* Pictionary's floating button now lives inside the Live Session Center dock above. */}
       {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
         React.createElement(window.AlloModules.ConceptPictionary.HostView, {
           isOpen: showPictionaryHost,
@@ -27527,6 +27863,59 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setShowPictionaryGuest(false),
         })
       }
+      {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
+      {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
+      {/* Session Center lists + clears them. No free text by design. */}
+      {!isTeacherMode && activeSessionCode && user && user.uid && (() => {
+        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
+        const myFresh = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
+        const myMeta = myFresh ? (LIVE_SIGNAL_OPTIONS.find(o => o.id === myFresh) || null) : null;
+        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+        const sendSignal = (id) => {
+          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {});
+          setShowStudentSignals(false);
+        };
+        const clearMySignal = () => {
+          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {});
+          setShowStudentSignals(false);
+        };
+        return (
+          <>
+            <button
+              onClick={() => setShowStudentSignals(v => !v)}
+              aria-label={t('live_signals.open_aria') || 'Send your teacher a quick signal'}
+              aria-expanded={showStudentSignals}
+              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background: myFresh ? '#b45309' : '#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+            >
+              {myMeta ? myMeta.emoji + ' ' + (t('live_signals.sent') || 'Sent') : (t('live_signals.button') || '✋ Signal')}
+            </button>
+            {showStudentSignals && (
+              <div role="dialog" aria-label={t('live_signals.title') || 'Send your teacher a signal'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:238,background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.7rem'}}>
+                <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.85rem',marginBottom:6}}>{t('live_signals.title') || 'Let your teacher know'}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                  {LIVE_SIGNAL_OPTIONS.map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => sendSignal(opt.id)}
+                      style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'0.45rem 0.55rem',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,color:'#0f172a',background: myFresh === opt.id ? '#eef2ff' : 'white',border: myFresh === opt.id ? '1.5px solid #1e3a8a' : '1px solid #e2e8f0'}}
+                    >
+                      <span aria-hidden="true">{opt.emoji}</span>{t('live_signals.' + opt.id) || opt.label}
+                    </button>
+                  ))}
+                  {myFresh && (
+                    <button onClick={clearMySignal} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
+                      {t('live_signals.clear') || 'Clear my signal'}
+                    </button>
+                  )}
+                </div>
+                <p style={{fontSize:'0.66rem',color:'#64748b',margin:'0.55rem 0 0 0',lineHeight:1.35}}>
+                  {t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.'}
+                </p>
+              </div>
+            )}
+          </>
+        );
+      })()}
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,
@@ -28005,6 +28394,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <StudentAnalyticsPanel
               isOpen={showClassAnalytics}
               onClose={handleCloseClassAnalytics}
+              theme={theme}
               t={t}
               isIndependentMode={isIndependentMode}
               globalPoints={globalPoints}

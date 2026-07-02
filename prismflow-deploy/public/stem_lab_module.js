@@ -482,6 +482,16 @@
           '.stem-catalog-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 11px; border-radius: 999px; font-size: 11px; font-weight: 900; border: 1px solid rgba(148,163,184,0.34); box-shadow: 0 6px 14px rgba(15,23,42,0.06); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
           '.stem-catalog-chip:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(15,23,42,0.10); border-color: rgba(99,102,241,0.55); }',
           '.stem-catalog-chip-icon { font-size: 14px; line-height: 1; }',
+          '.stem-tool-matchmaker { margin: 0 0 14px; padding: 12px; border-radius: 14px; border: 1px solid rgba(99,102,241,0.30); box-shadow: 0 10px 24px rgba(15,23,42,0.07); }',
+          '.stem-tool-matchmaker-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: stretch; }',
+          '.stem-tool-matchmaker-input { min-height: 42px; border-radius: 10px; padding: 0 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(148,163,184,0.45); outline: none; }',
+          '.stem-tool-matchmaker-button { min-height: 42px; padding: 0 14px; border-radius: 10px; font-size: 12px; font-weight: 900; border: 1px solid rgba(99,102,241,0.45); display: inline-flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap; }',
+          '.stem-tool-matchmaker-status { margin-top: 8px; font-size: 11px; font-weight: 800; }',
+          '.stem-tool-ai-suggestions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; margin-top: 10px; }',
+          '.stem-tool-ai-suggestion { text-align: left; min-height: 84px; padding: 10px 11px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.34); transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
+          '.stem-tool-ai-suggestion:hover { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(15,23,42,0.12); border-color: rgba(99,102,241,0.55); }',
+          '.stem-tool-ai-suggestion-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 950; margin-bottom: 4px; }',
+          '.stem-tool-ai-suggestion-reason { font-size: 11px; line-height: 1.35; font-weight: 700; }',
           '.stem-tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: stretch; }',
           '.stem-tool-category { grid-column: 1 / -1; }',
           '.stem-tool-card { min-height: 148px; border-radius: 14px !important; box-shadow: 0 8px 20px rgba(15,23,42,0.06); display: flex; flex-direction: column; }',
@@ -497,7 +507,7 @@
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100vh !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
@@ -722,6 +732,11 @@
 
 
       var [_stemToolSearch, _setStemToolSearch] = React.useState('');
+      var [_stemToolInterest, _setStemToolInterest] = React.useState('');
+      var [_stemToolSuggesting, _setStemToolSuggesting] = React.useState(false);
+      var [_stemToolSuggestions, _setStemToolSuggestions] = React.useState([]);
+      var [_stemToolSuggestError, _setStemToolSuggestError] = React.useState('');
+      var _stemToolSuggestRequestRef = React.useRef(0);
       var [_recentStemToolIds, _setRecentStemToolIds] = React.useState(function () {
         try {
           var saved = JSON.parse(localStorage.getItem('alloflow_stem_recent_tools') || '[]');
@@ -747,6 +762,85 @@
           if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
         }, 50);
         if (typeof announceToSR === 'function') announceToSR('Opening ' + (label || _formatStemToolId(id)));
+      }
+      function _stemToolCatalogText(tool) {
+        if (!tool) return '';
+        return [
+          tool.id,
+          tool.label,
+          tool.desc,
+          tool.description,
+          tool.category,
+          Array.isArray(tool.aliases) ? tool.aliases.join(' ') : '',
+          Array.isArray(tool.searchAliases) ? tool.searchAliases.join(' ') : ''
+        ].filter(Boolean).join(' ').toLowerCase();
+      }
+      function _extractStemSuggestionJson(raw) {
+        var txt = '';
+        if (raw == null) return null;
+        if (typeof raw === 'string') txt = raw;
+        else if (typeof raw.text === 'string') txt = raw.text;
+        else if (typeof raw.content === 'string') txt = raw.content;
+        else {
+          try { txt = JSON.stringify(raw); } catch (e) { txt = String(raw); }
+        }
+        txt = txt.replace(/```json/gi, '```').replace(/```/g, '').trim();
+        var start = txt.indexOf('[');
+        var end = txt.lastIndexOf(']');
+        if (start < 0 || end <= start) return null;
+        try { return JSON.parse(txt.slice(start, end + 1)); } catch (e2) { return null; }
+      }
+      function _normalizeStemSuggestions(items, tools) {
+        var byId = {};
+        var byLabel = {};
+        tools.forEach(function (tool) {
+          byId[String(tool.id || '').toLowerCase()] = tool;
+          byLabel[String(tool.label || '').toLowerCase()] = tool;
+        });
+        var seen = {};
+        var out = [];
+        (Array.isArray(items) ? items : []).forEach(function (item) {
+          if (out.length >= 4) return;
+          var rawId = typeof item === 'string' ? item : (item && (item.id || item.toolId || item.tool || item.label || item.name));
+          if (!rawId) return;
+          var key = String(rawId).trim().toLowerCase();
+          var tool = byId[key] || byLabel[key];
+          if (!tool || seen[tool.id]) return;
+          seen[tool.id] = true;
+          out.push({
+            id: tool.id,
+            label: tool.label,
+            icon: tool.icon || 'AI',
+            reason: String((item && (item.reason || item.why || item.match)) || (tool.desc || 'Good match for this interest.')).replace(/\s+/g, ' ').slice(0, 150),
+            starter: String((item && (item.starter || item.firstStep || item.start)) || '').replace(/\s+/g, ' ').slice(0, 120)
+          });
+        });
+        return out;
+      }
+      function _localStemToolMatches(interest, tools) {
+        var raw = String(interest || '').toLowerCase();
+        var words = raw.split(/[^a-z0-9]+/).filter(function (w) {
+          return w.length > 2 && ['the', 'and', 'for', 'with', 'about', 'learn', 'want', 'how', 'why'].indexOf(w) === -1;
+        });
+        if (!words.length) return [];
+        return tools.map(function (tool) {
+          var hay = _stemToolCatalogText(tool);
+          var score = 0;
+          words.forEach(function (w) {
+            if (hay.indexOf(w) !== -1) score += 1;
+            if (String(tool.label || '').toLowerCase().indexOf(w) !== -1) score += 2;
+          });
+          if (raw && hay.indexOf(raw) !== -1) score += 4;
+          return { tool: tool, score: score };
+        }).filter(function (row) { return row.score > 0; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 4).map(function (row) {
+          return {
+            id: row.tool.id,
+            label: row.tool.label,
+            icon: row.tool.icon || 'AI',
+            reason: row.tool.desc || 'This tool has related STEM activities for your interest.',
+            starter: ''
+          };
+        });
       }
 
       // ── Keyboard Help State ──
@@ -3834,9 +3928,66 @@
             function _findStemToolById(id) {
               return _allStemTools.find(function (tool) { return tool && !tool.category && tool.id === id; }) || null;
             }
-            var _quickStartIds = ['numberline', 'fractionViz', 'chemBalance', 'opticsLab', 'codingPlayground', 'dataStudio', 'solarSystem'];
-            var _quickStartTools = _quickStartIds.map(_findStemToolById).filter(Boolean);
+            var _availableStemTools = _allStemTools.filter(function (tool) { return tool && !tool.category && tool.id; });
             var _recentStemTools = (_recentStemToolIds || []).map(_findStemToolById).filter(Boolean);
+            function _requestStemToolSuggestions() {
+              var interest = String(_stemToolInterest || '').trim();
+              if (!interest) {
+                _setStemToolSuggestError('Add a topic, question, or project idea first.');
+                _setStemToolSuggestions([]);
+                if (typeof announceToSR === 'function') announceToSR('Add an interest first.');
+                return;
+              }
+              var reqId = _stemToolSuggestRequestRef.current + 1;
+              _stemToolSuggestRequestRef.current = reqId;
+              _setStemToolSuggesting(true);
+              _setStemToolSuggestError('');
+              _setStemToolSuggestions([]);
+              var catalogForPrompt = _availableStemTools.map(function (tool) {
+                return {
+                  id: tool.id,
+                  label: tool.label,
+                  category: tool.category || '',
+                  desc: String(tool.desc || tool.description || '').slice(0, 150),
+                  aliases: Array.isArray(tool.aliases) ? tool.aliases.slice(0, 8) : []
+                };
+              });
+              var prompt = [
+                'You are helping a student choose a STEM Lab tool.',
+                'Student interest: ' + interest,
+                'Choose up to 4 tools from this catalog. Use only exact ids from the catalog.',
+                'Return strict JSON only, no markdown, as an array of objects: [{"id":"toolId","reason":"short reason","starter":"first thing to try"}].',
+                'Catalog:',
+                JSON.stringify(catalogForPrompt)
+              ].join('\n');
+              var fallback = function (message) {
+                var local = _localStemToolMatches(interest, _availableStemTools);
+                if (_stemToolSuggestRequestRef.current !== reqId) return;
+                _setStemToolSuggesting(false);
+                _setStemToolSuggestions(local);
+                _setStemToolSuggestError(local.length ? '' : (message || 'No close matches yet. Try a more specific topic.'));
+                if (typeof announceToSR === 'function') announceToSR(local.length ? 'Suggested ' + local.length + ' STEM tools.' : 'No STEM tool suggestions found.');
+              };
+              if (typeof callGemini !== 'function') {
+                fallback('AI suggestions are unavailable right now; showing closest catalog matches.');
+                return;
+              }
+              callGemini(prompt, true).then(function (raw) {
+                if (_stemToolSuggestRequestRef.current !== reqId) return;
+                var parsed = _extractStemSuggestionJson(raw);
+                var suggestions = _normalizeStemSuggestions(parsed, _availableStemTools);
+                if (!suggestions.length) {
+                  fallback('AI did not return a usable tool list; showing closest catalog matches.');
+                  return;
+                }
+                _setStemToolSuggesting(false);
+                _setStemToolSuggestions(suggestions);
+                _setStemToolSuggestError('');
+                if (typeof announceToSR === 'function') announceToSR('Suggested ' + suggestions.length + ' STEM tools.');
+              }).catch(function () {
+                fallback('AI suggestions hit a snag; showing closest catalog matches.');
+              });
+            }
             var _hasCatalogFilter = !!(_searchLower || (!_activeStation && _catFilter));
             // ── Mastery Atlas: cross-tool engagement dashboard ──
             // Reads each tool's persistent window slot (with localStorage
@@ -4024,12 +4175,12 @@
             }, "\u2715", React.createElement("span", null, "Clear filters"))
           ),
 
-          !_activeStation && (_recentStemTools.length > 0 || (!_searchLower && !_catFilter)) && React.createElement("div", {
+          !_activeStation && _recentStemTools.length > 0 && React.createElement("div", {
             className: "stem-catalog-quickbar",
             role: "group",
-            "aria-label": "Recent and quick-start STEM tools"
+            "aria-label": "Recent STEM tools"
           },
-            _recentStemTools.length > 0 && React.createElement("span", {
+            React.createElement("span", {
               className: "stem-catalog-row-label",
               style: { color: _pal.textMuted }
             }, "Recent"),
@@ -4046,25 +4197,90 @@
                 },
                 "aria-label": "Open recent STEM tool " + tool.label
               }, React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, tool.icon), React.createElement("span", null, tool.label));
-            }),
-            (!_searchLower && !_catFilter) && React.createElement("span", {
-              className: "stem-catalog-row-label",
-              style: { color: _pal.textMuted }
-            }, "Quick starts"),
-            (!_searchLower && !_catFilter) && _quickStartTools.map(function (tool) {
-              return React.createElement("button", {
-                key: "quick-" + tool.id,
-                type: "button",
-                className: "stem-catalog-chip",
-                onClick: function () { _openStemTool(tool.id, tool.label); },
+            })
+          ),
+
+          !_activeStation && !_searchLower && !_catFilter && React.createElement("div", {
+            className: "stem-tool-matchmaker",
+            role: "region",
+            "aria-label": "AI STEM tool picker",
+            style: {
+              backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.76)' : '#ffffff'),
+              color: _pal.text,
+              borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.30)'
+            }
+          },
+            React.createElement("form", {
+              className: "stem-tool-matchmaker-form",
+              onSubmit: function (e) {
+                e.preventDefault();
+                _requestStemToolSuggestions();
+              }
+            },
+              React.createElement("label", { className: "sr-only", htmlFor: "stem-tool-interest" }, "Topic or project interest"),
+              React.createElement("input", {
+                id: "stem-tool-interest",
+                type: "text",
+                value: _stemToolInterest,
+                onChange: function (e) {
+                  _setStemToolInterest(e.target.value);
+                  if (_stemToolSuggestError) _setStemToolSuggestError('');
+                },
+                placeholder: "What do you want to learn about?",
+                className: "stem-tool-matchmaker-input",
                 style: {
-                  backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.82)' : '#f8fafc'),
+                  backgroundColor: isContrast ? '#000' : (isDark ? '#0f172a' : '#ffffff'),
                   color: _pal.text,
                   borderColor: _pal.border
                 },
-                "aria-label": "Open " + tool.label
-              }, React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, tool.icon), React.createElement("span", null, tool.label));
-            })
+                "aria-label": "What do you want to learn about?"
+              }),
+              React.createElement("button", {
+                type: "submit",
+                className: "stem-tool-matchmaker-button",
+                disabled: _stemToolSuggesting,
+                style: {
+                  backgroundColor: isContrast ? '#fbbf24' : '#4f46e5',
+                  color: isContrast ? '#000' : '#ffffff',
+                  cursor: _stemToolSuggesting ? 'wait' : 'pointer',
+                  opacity: _stemToolSuggesting ? 0.78 : 1
+                },
+                "aria-label": "Suggest STEM tools with AI"
+              }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
+            ),
+            (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {
+              className: "stem-tool-matchmaker-status",
+              role: "status",
+              "aria-live": "polite",
+              style: { color: _stemToolSuggestError ? (isContrast ? '#fbbf24' : '#b45309') : _pal.textMuted }
+            }, _stemToolSuggesting ? "Finding tool matches..." : _stemToolSuggestError),
+            _stemToolSuggestions.length > 0 && React.createElement("div", {
+              className: "stem-tool-ai-suggestions",
+              role: "group",
+              "aria-label": "Suggested STEM tools"
+            },
+              _stemToolSuggestions.map(function (suggestion) {
+                return React.createElement("button", {
+                  key: "ai-suggest-" + suggestion.id,
+                  type: "button",
+                  className: "stem-tool-ai-suggestion",
+                  onClick: function () { _openStemTool(suggestion.id, suggestion.label); },
+                  style: {
+                    backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.92)' : '#f8fafc'),
+                    color: _pal.text,
+                    borderColor: _pal.border
+                  },
+                  "aria-label": "Open suggested STEM tool " + suggestion.label + ". " + suggestion.reason
+                },
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-title" },
+                    React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, suggestion.icon),
+                    React.createElement("span", null, suggestion.label)
+                  ),
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-reason", style: { color: _pal.textMuted } }, suggestion.reason),
+                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-[10px] font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
+                );
+              })
+            )
           ),
 
           !_activeStation && React.createElement("div", { className: "stem-tool-filter-row flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
