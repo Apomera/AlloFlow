@@ -100,8 +100,14 @@ describe('multi-chunk text transform — failed chunks are auto-retried before p
     expect(out.stillFailed).toBe(0);
   });
 
-  it('anti-drift: the retry pass + residual-failure record are live in source', () => {
-    expect(src).toContain('Retry pass ${_att}: re-running');
-    expect(src).toContain('window.__lastTransformFragmentFailures = _retryIdx.length');
+  it('anti-drift: the live retry/self-heal mechanisms are present in source', () => {
+    // 2026-07-02 (deep dive S4): the original assertions here pinned the markdown-transform
+    // retry loop that lived ONLY inside the deleted dead `processSinglePdfForBatch` (nothing
+    // outside it ever set window.__lastTransformFragmentFailures). The behavioral tests above
+    // still document the retry SHAPE; these anchors now pin the mechanisms that actually ship:
+    // the chunked-audit throttle self-heal and the batch per-file retry pass.
+    expect(src).toContain('Throttle self-heal: recovered');
+    expect(src).toContain('_SELFHEAL_MAX_ROUNDS');
+    expect(src).toContain('_processOne(failedItem, idx, true)');
   });
 });

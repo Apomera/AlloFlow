@@ -8688,7 +8688,14 @@ Return ONLY valid JSON:
         auditPrompt.replace('Analyze this PDF', 'As an assistive technology expert testing with JAWS/NVDA, evaluate this PDF'),
         auditPrompt.replace('Analyze this PDF', 'As a university compliance officer reviewing for Title II ADA, assess this PDF'),
       ];
-      const numAuditors = Math.min(pdfAuditorCount, allVariants.length);
+      // $5 (deep dive 2026-07-02): each auditor re-uploads the ENTIRE PDF — the dominant token
+      // cost outside the fix loop. Start with 3 auditors and let the EXISTING adaptive pass
+      // below escalate to the user's configured count (the slider value is now the CAP) when
+      // scores diverge >20 or any auditor reports low confidence. Well-behaved docs save ~40%
+      // of initial-audit vision tokens; divergent docs still get the full panel, and the
+      // reported reliability stats always describe the auditors that actually ran (n is dynamic).
+      const _auditorCap = Math.min(pdfAuditorCount, allVariants.length);
+      const numAuditors = Math.min(3, _auditorCap);
       const auditVariants = allVariants.slice(0, numAuditors);
       // ── Size-aware routing: chunk-first for large docs, whole-document otherwise ──
       // A document big enough to break the whole-PDF Vision pass is audited in page
@@ -8790,7 +8797,9 @@ Return ONLY valid JSON:
 
       if (parsedAudits.length >= 2 && parsedAudits.length < allVariants.length && (initialRange > 20 || lowConfidence)) {
         const reason = initialRange > 20 ? `score divergence (${initialRange} point spread: ${initialScores.join(', ')})` : 'low confidence flagged by auditor';
-        const additionalCount = Math.min(2, allVariants.length - parsedAudits.length);
+        // $5: escalate to the user's configured auditor count (at least the historical +2),
+        // bounded by the variant pool — the 3-auditor start only sticks for well-behaved docs.
+        const additionalCount = Math.min(Math.max(2, _auditorCap - parsedAudits.length), allVariants.length - parsedAudits.length);
         warnLog(`[PDF Audit] Adaptive: adding ${additionalCount} auditor(s) due to ${reason}`);
         addToast && addToast(`Adding ${additionalCount} extra audit(s) — ${reason}`, 'info');
         const extraVariants = allVariants.slice(parsedAudits.length, parsedAudits.length + additionalCount);
@@ -14080,6 +14089,30 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return { fullText: single || '', pages: [{ pageNum: _rangeStart, text: single || '' }] };
           }
           const MAX_PARALLEL = 5;
+          // $6 (deep dive 2026-07-02): slice the PDF per chunk (pdf-lib, same approach as the
+          // audit path's _auditPdfInSlices) instead of re-uploading the WHOLE base64 with every
+          // 2-page prompt — a 60-page 8MB scan used to upload ~330MB across the extraction.
+          // Best-effort: if pdf-lib is unavailable or a slice fails to build, that chunk falls
+          // back to the full-document upload with the original prompt (previous behavior).
+          let _sliceSrcDoc = null;
+          const _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          if (_NSlib && _NSlib.PDFDocument && _mimeType === 'application/pdf' && numChunks > 2 && _base64.length > 2000000) {
+            try { _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false }); }
+            catch (e) { warnLog('[Vision] slice-source load failed — falling back to full-doc uploads: ' + (e && e.message)); _sliceSrcDoc = null; }
+          }
+          const _extractSliceB64 = async (startPage1, endPage1) => { // 1-based inclusive
+            const sub = await _NSlib.PDFDocument.create();
+            const idxs = []; for (let ii = startPage1 - 1; ii < endPage1; ii++) if (ii >= 0 && ii < _sliceSrcDoc.getPageCount()) idxs.push(ii);
+            if (!idxs.length) throw new Error('slice out of range');
+            const copied = await sub.copyPages(_sliceSrcDoc, idxs);
+            copied.forEach((p) => sub.addPage(p));
+            const outBytes = await sub.save();
+            let bin = ''; const CH = 0x8000;
+            for (let ii = 0; ii < outBytes.length; ii += CH) bin += String.fromCharCode.apply(null, outBytes.subarray(ii, ii + CH));
+            return btoa(bin);
+          };
+          const _EXTRACT_RULES = `RULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`;
+          let _slicedChunks = 0;
           const chunkPromises = [];
           for (let i = 0; i < numChunks; i++) {
             // Chunk's absolute page range in the full PDF: start at _rangeStart
@@ -14091,12 +14124,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // "pages 12 through 10" prompts (wasted Vision calls + out-of-range pseudo-pages).
             if (startPage > _rangeEnd) break;
             const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeEnd);
-            chunkPromises.push(
-              callGeminiVision(
-                `Extract ALL text content from pages ${startPage} through ${endPage} of this document${_pageRange ? ' ONLY (do not include pages outside this range)' : ''}.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`,
+            chunkPromises.push((async () => {
+              if (_sliceSrcDoc) {
+                try {
+                  const sb = await _extractSliceB64(startPage, endPage);
+                  _slicedChunks++;
+                  return await callGeminiVision(
+                    `This file contains ONLY pages ${startPage} through ${endPage} of a larger document. Extract ALL text content from it — every page, completely.\n\n${_EXTRACT_RULES}`,
+                    sb, 'application/pdf'
+                  );
+                } catch (se) { warnLog(`[Vision] slice ${startPage}-${endPage} failed (${se && se.message}) — falling back to full-doc upload for this chunk`); }
+              }
+              return callGeminiVision(
+                `Extract ALL text content from pages ${startPage} through ${endPage} of this document${_pageRange ? ' ONLY (do not include pages outside this range)' : ''}.\n\n${_EXTRACT_RULES}`,
                 _base64, _mimeType
-              ).catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} (pages ${startPage}-${endPage}) extraction failed:`, err); return null; })
-            );
+              );
+            })().catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} (pages ${startPage}-${endPage}) extraction failed:`, err); return null; }));
           }
           let chunkResults = [];
           for (let batch = 0; batch < chunkPromises.length; batch += MAX_PARALLEL) {
@@ -14105,6 +14148,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             chunkResults = chunkResults.concat(batchResults);
             if (batch + MAX_PARALLEL < chunkPromises.length) await new Promise(r => setTimeout(r, 500));
           }
+          if (_slicedChunks > 0) warnLog(`[Vision] ${_slicedChunks}/${chunkPromises.length} extraction chunk(s) uploaded as page-slices instead of the full document`);
           const chunks = chunkResults.map((chunk, i) => {
             if (!chunk || !chunk.trim()) return '';
             const fenced = chunk.trim()
