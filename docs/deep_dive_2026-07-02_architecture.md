@@ -295,14 +295,22 @@ S10 claims corrected.
 - REVERT: every wave-3 change is a single pathspec commit on
   doc_pipeline_source.jsx (+compiled copies) — `git revert 2f20b226`
   restores the inline loop cleanly.
-- REMAINING S2 phases (same recipe, next session): Step 0 deterministic
-  extraction (~14100-14400: isDocx/isPptx/isPdf + rescue + forceOCR →
-  `_runExtractionPhase(ctx)`; watch _forceFullOcr/_garbledFallbackText/
-  effectivePageCount/extractedText/window.__lastGroundTruth* flows),
-  Step 1b image extraction (~15300-15700 → `_extractPdfImages(ctx)`;
-  extractedImages + _imageFailureCount + _deferredImageMap out), final
-  audit + report assembly. Then S1: collapse the ctx objects into ONE
-  per-run ctx and retire _bindState's shared mutables.
+- S2 PHASES 2+3 DONE same day: @30f3eaaa `_extractPdfImages` (301 lines;
+  { base64, mimeType, silentMode, updateProgress } → { extractedImages };
+  _imageFailureCount had no post-step consumers) and @67351122
+  `_runExtractionPhase` (240 lines; { base64, fileName, pageRange,
+  forceOcrPages, forceFullOcr, effectivePageCount, updateProgress } →
+  { extractedText, effectivePageCount, forceFullOcr,
+  garbledFallbackText, officeMediaImages }; _alloAbortRun rethrow
+  propagates unchanged). fixAndVerifyPdf is ~810 lines lighter across
+  the three extractions; full suite 522/522.
+- FINAL-AUDIT ASSEMBLY deliberately NOT spliced: its in/out surface is
+  ~15 variables (finalAfterScore, verification, axeResults, eaResults,
+  deterministicScore, _structuralFidelityNotes, ocrAccuracy,
+  needsExpertReview, integrityWarning, …) — a contract that wide is
+  noise. Do S1 FIRST (one per-run ctx object threaded through the three
+  extracted phases + the entry points, retiring _bindState's ~50 shared
+  mutables), then the assembly consumes the single ctx naturally.
 
 ## Suggested sequence
 
