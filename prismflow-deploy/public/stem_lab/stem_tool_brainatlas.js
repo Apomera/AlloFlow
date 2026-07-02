@@ -25,6 +25,13 @@
     '.brainatlas-mission-copy{font-size:12px;line-height:1.55;color:#475569;margin:8px 0 12px;max-width:68ch;}',
     '.brainatlas-action-row{display:flex;flex-wrap:wrap;gap:8px;}',
     '.brainatlas-action-row button{border-radius:8px;min-height:34px;}',
+    '.brainatlas-route-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px;}',
+    '.brainatlas-route-card{min-height:92px;text-align:left;border:1px solid rgba(15,23,42,.12);border-radius:8px;background:#fff;padding:10px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+    '.brainatlas-route-card:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(15,23,42,.08);}',
+    '.brainatlas-route-card[aria-pressed="true"]{box-shadow:0 0 0 2px rgba(14,165,233,.24),0 12px 26px rgba(14,165,233,.12);}',
+    '.brainatlas-route-badge{display:inline-flex;align-items:center;border-radius:999px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:0;padding:3px 7px;margin-bottom:7px;}',
+    '.brainatlas-route-title{font-size:12px;font-weight:900;color:#0f172a;margin:0;}',
+    '.brainatlas-route-copy{font-size:10px;line-height:1.38;color:#64748b;margin:3px 0 0;}',
     '.brainatlas-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
     '.brainatlas-metric{border:1px solid rgba(15,23,42,.10);border-radius:8px;background:rgba(255,255,255,.78);padding:10px;min-height:70px;}',
     '.brainatlas-metric-label{font-size:10px;font-weight:900;text-transform:uppercase;color:#64748b;margin:0 0 4px;}',
@@ -48,10 +55,14 @@
     '.brainatlas-region-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}',
     '.brainatlas-region-list-title{font-size:12px;font-weight:900;color:#0f172a;margin:0;}',
     '.brainatlas-region-list-note{font-size:10px;font-weight:800;color:#64748b;margin:0;}',
+    '.brainatlas-study-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px;}',
+    '.brainatlas-study-step{border:1px solid rgba(15,23,42,.10);border-radius:8px;background:#f8fafc;padding:7px 8px;min-height:44px;}',
+    '.brainatlas-study-step strong{display:block;font-size:10px;color:#0f172a;}',
+    '.brainatlas-study-step span{display:block;font-size:9px;line-height:1.25;color:#64748b;margin-top:2px;}',
     '.brainatlas-region-list{max-height:380px;overflow:auto;padding-right:4px;}',
     '.brainatlas-detail-panel{border-radius:8px!important;}',
     '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-canvas-header{display:block;}.brainatlas-canvas-chip{display:inline-block;margin-top:8px;}.brainatlas-canvas-stage{padding:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}}',
-    '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}}'
+    '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}.brainatlas-study-strip{grid-template-columns:1fr;}}'
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -3590,6 +3601,13 @@ var d = labToolData.brainAtlas || {};
             ? t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.')
             : currentView.desc;
           var quizScoreLabel = (d.quizCorrect || 0) + ' correct';
+          var GUIDED_ROUTES = [
+            { id: 'lobes', view: 'lateral', badge: t('stem.brainatlas.route_badge_atlas', 'Atlas'), title: t('stem.brainatlas.route_lobes_title', 'Map the lobes'), copy: t('stem.brainatlas.route_lobes_copy', 'Start with the side view and connect each lobe to everyday function.'), color: '#7c3aed' },
+            { id: 'deep', view: 'medial', badge: t('stem.brainatlas.route_badge_deep', 'Deep'), title: t('stem.brainatlas.route_deep_title', 'Find hidden systems'), copy: t('stem.brainatlas.route_deep_copy', 'Trace memory, emotion, homeostasis, and midline structures.'), color: '#0f766e' },
+            { id: 'signals', view: 'neuron', badge: t('stem.brainatlas.route_badge_cells', 'Cells'), title: t('stem.brainatlas.route_signals_title', 'Follow a signal'), copy: t('stem.brainatlas.route_signals_copy', 'Zoom from neuron anatomy into firing, myelin, and synaptic flow.'), color: '#d97706' },
+            { id: 'rhythms', view: 'eegWaves', badge: t('stem.brainatlas.route_badge_rhythms', 'Rhythms'), title: t('stem.brainatlas.route_rhythms_title', 'Read brain waves'), copy: t('stem.brainatlas.route_rhythms_copy', 'Compare delta through gamma and connect waves to sleep and attention.'), color: '#be185d' },
+            { id: 'crossing', view: 'crossLateral', badge: t('stem.brainatlas.route_badge_wiring', 'Wiring'), title: t('stem.brainatlas.route_crossing_title', 'Trace left vs right'), copy: t('stem.brainatlas.route_crossing_copy', 'See why one hemisphere affects the opposite side of the body.'), color: '#dc2626' }
+          ];
           // Patient Simulator: an AI patient roleplays the real effect of a hidden
           // stimulation; the student guesses the region. Grounded in STIM_SCENARIOS.
           function startPatient() {
@@ -3697,6 +3715,30 @@ var d = labToolData.brainAtlas || {};
                       "aria-pressed": d.quizMode ? "true" : "false",
                       className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (d.quizMode ? 'border-sky-600 bg-sky-600 text-white' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100')
                     }, d.quizMode ? t('stem.brainatlas.quiz_active', 'Quiz active') : t('stem.brainatlas.start_quiz', 'Start quiz'))
+                  ),
+                  React.createElement("div", { className: "brainatlas-route-grid", "data-brainatlas-route-grid": "true" },
+                    GUIDED_ROUTES.map(function (route) {
+                      var routeActive = viewKey === route.view;
+                      return React.createElement("button", {
+                        key: route.id,
+                        type: "button",
+                        "aria-pressed": routeActive ? "true" : "false",
+                        className: "brainatlas-route-card",
+                        onClick: function () {
+                          upd('view', route.view);
+                          upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o[route.view] = true; return o; })());
+                          upd('selectedRegion', null);
+                          upd('quizMode', false);
+                          upd('search', '');
+                          upd('showNtInquiry', route.view === 'neurotransmitters');
+                        },
+                        style: routeActive ? { borderColor: route.color, background: route.color + '0d' } : {}
+                      },
+                        React.createElement("span", { className: "brainatlas-route-badge", style: { color: route.color, background: route.color + '17' } }, route.badge),
+                        React.createElement("p", { className: "brainatlas-route-title" }, route.title),
+                        React.createElement("p", { className: "brainatlas-route-copy" }, route.copy)
+                      );
+                    })
                   )
                 ),
                 React.createElement("div", { className: "brainatlas-metric-grid", "aria-label": t('stem.brainatlas.brain_atlas_progress_summary', 'Brain atlas progress summary') },
@@ -3987,6 +4029,7 @@ var d = labToolData.brainAtlas || {};
                 upd('fmStreak', newStreak);
                 upd('fmBest', newBest);
               }
+              if (!fmOpen && fmIdx < 0) return null;
               return React.createElement("div", { className: "brainatlas-function-match", "data-brainatlas-function-match": fmOpen ? "open" : "closed", style: { padding: 14, marginBottom: 14, borderRadius: 8, background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(255,255,255,0))', border: '2px solid rgba(124,58,237,0.30)' } },
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
                   React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
@@ -4964,6 +5007,25 @@ var d = labToolData.brainAtlas || {};
                       React.createElement("p", { className: "brainatlas-region-list-title" }, t('stem.brainatlas.region_directory', 'Region directory')),
 
                       React.createElement("p", { className: "brainatlas-region-list-note" }, filtered.length + " shown")
+
+                    ),
+
+                    React.createElement("div", { className: "brainatlas-study-strip", "data-brainatlas-study-strip": "true" },
+
+                      React.createElement("div", { className: "brainatlas-study-step" },
+                        React.createElement("strong", null, t('stem.brainatlas.study_step_select', '1. Select')),
+                        React.createElement("span", null, t('stem.brainatlas.study_step_select_note', 'Pick a region from the atlas or list.'))
+                      ),
+
+                      React.createElement("div", { className: "brainatlas-study-step" },
+                        React.createElement("strong", null, t('stem.brainatlas.study_step_connect', '2. Connect')),
+                        React.createElement("span", null, t('stem.brainatlas.study_step_connect_note', 'Read function, blood supply, and conditions.'))
+                      ),
+
+                      React.createElement("div", { className: "brainatlas-study-step" },
+                        React.createElement("strong", null, t('stem.brainatlas.study_step_practice', '3. Practice')),
+                        React.createElement("span", null, t('stem.brainatlas.study_step_practice_note', 'Use quiz or Function Match when ready.'))
+                      )
 
                     ),
 
