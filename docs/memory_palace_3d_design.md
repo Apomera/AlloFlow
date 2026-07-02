@@ -113,11 +113,23 @@ a match exists. E is an experiment, never the critical path.
 
 ### The shortcut that ships NOW: depth-relief "statues"
 
-transformers.js **officially supports depth-estimation pipelines** (Depth-Anything small,
-~25 MB — runs even on WASM). Popup: Imagen image → depth map → displace a plane mesh →
-a 2.5-D relief "statue" of any concept at its locus. Uses the already-shipping transformers.js
-popup stack, tiny download, no exotic ops. ~90% of the "generated 3D object" wow at ~5% of
-the porting risk. Recommended as the first "generated 3D" tier (E-lite).
+**Aaron's catch (2026-07-02): the building blocks already exist in Art Studio's stereogram
+generator.** Its "AI Stereogram Creator" generates depth maps *directly from Imagen* with a
+"closest parts pure white, furthest pure black" prompt
+([stem_tool_artstudio.js:4719](../stem_lab/stem_tool_artstudio.js)) — plus hand-drawn depth
+canvas, upload-as-depth, presets, and keyframe animation. So the v1 statue pipeline is
+**zero new ML, zero popup, in-Canvas today**:
+
+1. `callImagen(depth-map prompt)` → grayscale depth (the proven Art Studio trick), and
+   `callImagen(normal prompt)` → the color texture;
+2. three.js `PlaneGeometry` + `material.displacementMap` (built into MeshStandardMaterial)
+   → a lit, orbitable relief statue at the locus.
+
+The transformers.js **Depth-Anything** path (small, ~25 MB, officially supported — runs even
+on WASM) remains the *fidelity upgrade*: true monocular depth from any arbitrary image
+(Imagen's prompted "depth maps" are approximate/stylized, which is fine for statues, less
+fine for faithful reliefs of real photos). Recommended order: ship the Art-Studio-trick
+statues in P3, add Depth-Anything in the popup as P4a.
 
 ---
 
@@ -145,6 +157,27 @@ Yes — two lanes, both behind one shim:
   findings. Quality is below Gemini, so route it to bounded tasks first (hints, sentence
   frames, glossary glosses, translation gap-fill) with the honest "local model — lighter but
   private" label.
+
+### "Enormous download every time"? — No: the browser already IS the mini-Ollama
+
+Aaron's storage concern (2026-07-02), resolved:
+
+- **Weights download ONCE per browser profile, not per use.** transformers.js and WebLLM both
+  cache model weights in the browser's Cache Storage / IndexedDB automatically — the Video
+  Studio Whisper models already behave this way. Second launch loads from disk in seconds.
+- **Eviction protection is one API call**: `navigator.storage.persist()` requests persistent
+  storage — once granted, the browser won't evict the cache without explicit user action.
+  Pair with `navigator.storage.estimate()` to show real usage.
+- **The "mini Ollama clone" is ~90% already built**: Ollama's hard parts (inference runtime,
+  GPU kernels, weight format) are provided by WebLLM/transformers.js; the "registry" part we
+  own is just a small **model-manager panel** in the popup — list cached models with sizes,
+  download/delete buttons, persist-storage toggle. Roughly a day of UI, not a systems project.
+- **Optional deeper lane — File System Access folders**: let the user pick a real directory
+  where weights live (survives site-data clears; Chrome-only API, which Canvas guarantees).
+  This matters for one specific audience: **school Chromebooks with ephemeral profiles**,
+  where Cache Storage wipes on logout. Folder mode also enables the "teacher hands out a USB
+  stick with the model on it" classroom story for low-connectivity schools. Ship cache+persist
+  first; folder mode only if the pilot hits ephemeral-profile machines.
 
 ---
 
@@ -174,17 +207,25 @@ Each phase independently shippable; P1 has zero new infra.
 - Golden tests: layout generator is pure → golden-able; GL walk needs live Canvas smoke
   (same as cg3d).
 
-## 7. Decisions for Aaron
+## 7. Decisions (updated 2026-07-02 with Aaron)
 
-1. Palace = **15th organizer type** or a **mode on 3D Concept Space**? (Lean: separate type —
-   different prompt, different pedagogy, cleaner analytics.)
-2. Recall answer mode: **type the answer** (harder, better retrieval practice) vs **pick from
-   bank** (more accessible)? Both, teacher-selectable?
-3. Ship order for P4: depth-relief statues → local LLM → TripoSR spike — agree?
+1. ~~Type vs mode~~ **RESOLVED: separate 15th organizer type** (Aaron confirmed).
+2. ~~Recall answer mode~~ **RESOLVED: pick-from-bank is the DEFAULT; typed "Expert recall" is
+   an optional teacher-enabled mode.** Rationale (the "which is better?" answer): the
+   retrieval-practice literature says *free recall (typing) produces stronger retention than
+   recognition (picking)* — the testing effect scales with retrieval effort — **but only when
+   success rates stay reasonably high**; for ELLs, younger students, and students with
+   dysgraphia/motor barriers, forced typing turns a memory exercise into a spelling/typing
+   exercise and frustration erases the benefit. Bank-with-feedback is the right UDL default;
+   typed mode (with fuzzy/close-spelling matching) is the mastery stretch. Both report to the
+   same misconception dashboard.
+3. Ship order for P4: depth-relief statues (Art-Studio trick, in-Canvas) → Depth-Anything
+   popup → local LLM shim → TripoSR spike. (Aaron raised no objection; statues got cheaper
+   after his stereogram catch.)
 4. CC0 library curation: who picks the ~100 starter assets, and do we theme them
-   (science/history/ELA packs)?
+   (science/history/ELA packs)? **(open)**
 5. Local-LLM scope: which affordances go local-first when available (hints? frames? all
-   callGemini traffic behind a toggle)?
+   callGemini traffic behind a toggle)? **(open)**
 
 ---
 
