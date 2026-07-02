@@ -1524,6 +1524,12 @@
       const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
       const isPlayingAudioRef = React.useRef(false);
       React.useEffect(() => { isPlayingAudioRef.current = isPlayingAudio; }, [isPlayingAudio]);
+      // Visible cue when a requested clip never plays (network TTS failure or the
+      // phoneme bank not loading). Without this the tool just goes silent, which
+      // for an audio-first phonics task reads as "broken" with no guidance.
+      const [audioNotice, setAudioNotice] = React.useState(null);
+      const lastAudioRef = React.useRef(null);
+      const audioNoticeTimerRef = React.useRef(null);
       const [userAnswer, setUserAnswer] = React.useState("");
       const [showLetterHints, setShowLetterHints] = React.useState(false);
       React.useEffect(() => {
@@ -2352,11 +2358,35 @@
       React.useEffect(function() {
         wordSoundsAudioLibraryRef.current = wordSoundsAudioLibrary;
       });
+      const clearAudioNotice = React.useCallback(() => {
+        if (audioNoticeTimerRef.current) {
+          clearTimeout(audioNoticeTimerRef.current);
+          audioNoticeTimerRef.current = null;
+        }
+        setAudioNotice(null);
+      }, []);
+      const notifyAudioUnavailable = React.useCallback(() => {
+        const msg =
+          ts("word_sounds.audio_unavailable") ||
+          "Sound didn't load — check your connection, then tap the sound again.";
+        setAudioNotice(msg);
+        if (audioNoticeTimerRef.current) clearTimeout(audioNoticeTimerRef.current);
+        audioNoticeTimerRef.current = setTimeout(() => {
+          if (isMountedRef.current) setAudioNotice(null);
+        }, 8000);
+      }, []);
       const handleAudio = React.useCallback(
         async (input, playImmediately = true) => {
           if (!input) {
             warnLog("handleAudio called with null input");
             return Promise.resolve();
+          }
+          // Remember the last thing the child asked to hear so the "Try again"
+          // button can replay it, and clear any stale failure notice on a fresh
+          // request (a genuine failure below re-shows it).
+          if (playImmediately) {
+            lastAudioRef.current = input;
+            if (audioNotice) clearAudioNotice();
           }
           const textToPlay =
             typeof input === "object" && input.word ? input.word : input;
@@ -2761,8 +2791,21 @@
               }
             }
           }
-          if (!isPhoneme && playImmediately) {
-            warnLog("⚠️ All Gemini TTS attempts exhausted for word:", text, "- skipping audio (no browser TTS fallback)");
+          if (playImmediately) {
+            if (!isPhoneme) {
+              // A word we could not voice at all (TTS exhausted / unavailable).
+              warnLog("⚠️ All Gemini TTS attempts exhausted for word:", text, "- skipping audio (no browser TTS fallback)");
+              notifyAudioUnavailable();
+            } else if (
+              typeof window.__ALLO_PHONEME_AUDIO_BANK === "undefined" ||
+              !window.__ALLO_PHONEME_AUDIO_BANK["a"]
+            ) {
+              // Reaching here for a phoneme means the bank never loaded, so the
+              // whole activity would be silent. (A single unmapped phoneme with
+              // the bank present stays a deliberate silent skip above — we don't
+              // TTS isolated phonemes.)
+              notifyAudioUnavailable();
+            }
           }
           setIsPlayingAudio(false);
         },
@@ -2773,8 +2816,16 @@
           wordSoundsLanguage,
           ttsSpeed,
           wordSoundsAudioLibrary,
+          notifyAudioUnavailable,
+          clearAudioNotice,
+          audioNotice,
         ],
       );
+      const retryLastAudio = React.useCallback(() => {
+        clearAudioNotice();
+        const last = lastAudioRef.current;
+        if (last != null) handleAudio(last);
+      }, [handleAudio, clearAudioNotice]);
       const playBlending = React.useCallback(async () => {
         if (!wordSoundsPhonemes?.phonemes) return;
         try {
@@ -15184,6 +15235,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               (wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success") ? "🎉 " : "💡 ",
               wordSoundsFeedback.message,
             ),
+            audioNotice &&
+              /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  role: "status",
+                  className:
+                    "mt-3 p-3 rounded-xl text-center text-sm font-semibold bg-amber-50 text-amber-800 border-2 border-amber-200 flex flex-wrap items-center justify-center gap-3",
+                },
+                /*#__PURE__*/ React.createElement("span", null, "🔇 " + audioNotice),
+                /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: retryLastAudio,
+                    className:
+                      "px-3 py-1 rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400",
+                  },
+                  ts("word_sounds.audio_retry") || "🔊 Try again",
+                ),
+              ),
           ),
         ),
       );
