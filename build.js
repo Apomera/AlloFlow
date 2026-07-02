@@ -479,6 +479,13 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Method-of-loci 3D walk for the 'Memory Palace' organizer (lazy-loaded
+        // by view_renderers; shares the three.js download with ConceptGraph3D).
+        name: 'MemoryPalace',
+        filename: 'memory_palace_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'VisualPanelModule',
         filename: 'visual_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'

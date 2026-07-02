@@ -149,7 +149,7 @@
     size: 14
   }) : /*#__PURE__*/React.createElement(Share2, {
     size: 14
-  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.view_static') : t('outline.view_interactive')), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.view_static') : t('outline.view_interactive')), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       var vr = window.AlloModules && window.AlloModules.ViewRenderers;
       if (vr && typeof vr.openConceptMap3D === 'function') {

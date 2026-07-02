@@ -25123,6 +25123,56 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         </div>
                       </div>
                     </div>`;
+              } else if (type === 'Memory Palace') {
+                  // Print projection of the memory palace: the walking route as a
+                  // numbered room plan — one card per room, loci in walking order with
+                  // their mnemonics in italics (the mnemonic IS this organizer's
+                  // content; the 3D walk is only the delivery).
+                  innerContent = `
+                    <style>
+                      .palace-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .palace-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .palace-room { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .palace-print-wrapper { padding: 12px; }
+                        .palace-print-wrapper .palace-room { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="palace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
+                      <div style="text-align: center; margin-bottom: 26px;">
+                        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(30,27,75,0.4);">
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800;">&#127963; ${main}</h3>
+                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
+                        </div>
+                        <div style="font-size: 0.72em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">Memory Palace &mdash; walk the rooms in order, picture each image vividly</div>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 14px;">
+                        ${(() => { let locusNo = 0; return branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          const mnems = Array.isArray(b.mnemonics) ? b.mnemonics : [];
+                          return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${branches.length}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
+                            <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                              <span style="font-size: 0.68em; font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Room ${i + 1}</span>
+                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${b.title}</span>
+                              ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${b.title_en})</em>` : ''}
+                            </div>
+                            <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                              ${(b.items || []).map((it, k) => {
+                                locusNo += 1;
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                const mn = mnems[k] ? String(mnems[k]) : '';
+                                return `<li style="display: flex; gap: 10px; align-items: flex-start;">
+                                  <span aria-hidden="true" style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: ${c.border}; color: white; font-size: 0.75em; font-weight: 800; display: flex; align-items: center; justify-content: center;">${locusNo}</span>
+                                  <span style="color: ${c.accent};"><strong>${text}</strong>${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">Picture this: ${mn}</em>` : ''}</span>
+                                </li>`;
+                              }).join('')}
+                            </ol>
+                          </div>`;
+                        }).join(''); })()}
+                      </div>
+                      <div style="text-align: center; font-size: 0.75em; color: #64748b; margin-top: 14px; font-style: italic;">In the app, this palace is a walkable 3D space. On paper: cover the items, walk the numbers in order, and recall what lives at each locus.</div>
+                    </div>`;
               } else if (type === '3D Concept Space') {
                   // 2D print projection of the 3D concept space: each strand renders
                   // as one "depth plane" card, stacked with an increasing inset so
@@ -25286,6 +25336,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <p><strong>Topic:</strong> ${escape(main)}</p>
                       <p>Strands (each strand is one depth plane in the 3D view):</p>
                       ${branches.map((b, i) => `<p><strong>Plane ${i + 1}: ${escape(b.title)}</strong>${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Memory Palace') {
+                  body = `
+                      <p><strong>Palace:</strong> ${escape(main)}</p>
+                      <p>Walk the rooms in order; each locus pairs a fact with a vivid mental image:</p>
+                      ${branches.map((b, i) => {
+                          const mnems = Array.isArray(b.mnemonics) ? b.mnemonics : [];
+                          const lis = (b.items || []).map((it, k) => {
+                              const text = typeof it === 'object' ? (it.text || '') : String(it);
+                              const mn = mnems[k] ? ` — <em>Picture this: ${escape(String(mnems[k]))}</em>` : '';
+                              return `<li>${escape(text)}${mn}</li>`;
+                          }).join('');
+                          return `<p><strong>Room ${i + 1}: ${escape(b.title)}</strong></p><ol>${lis}</ol>`;
+                      }).join('')}
                   `;
               } else {
                   body = branches.map(b => `

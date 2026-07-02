@@ -22967,13 +22967,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       setGeneratedContent(updatedContent);
       setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: newData } : item));
   };
-  // Persist a 3D concept-space arrangement ({axes, axisValues, categories}) onto the
-  // current outline resource so spatial placement survives save/reload. key selects
-  // the store: 'conceptSpace' (generated-data node ids: root/b0/b0_i1…) vs
-  // 'conceptSpaceLive' (interactive-canvas node ids). Passing null clears it.
+  // Persist a 3D spatial store onto the current outline resource so it survives
+  // save/reload. key selects the store: 'conceptSpace' (generated-data node ids:
+  // root/b0/b0_i1…), 'conceptSpaceLive' (interactive-canvas node ids), or
+  // 'memoryPalace' ({images, generatedAt} for the method-of-loci walk). Passing
+  // null clears that store.
   const handleConceptSpacePersist = (arrangement, key = 'conceptSpace') => {
       if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return;
-      const storeKey = key === 'conceptSpaceLive' ? 'conceptSpaceLive' : 'conceptSpace';
+      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace') ? key : 'conceptSpace';
       const newData = { ...generatedContent.data };
       if (arrangement) newData[storeKey] = arrangement; else delete newData[storeKey];
       const updatedContent = { ...generatedContent, data: newData };
@@ -23059,6 +23060,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         handleRemoveFrayerImage,
         addToast,
         handleConceptSpacePersist,
+        callImagen,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };

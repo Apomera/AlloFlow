@@ -2442,6 +2442,7 @@ function OutlinePanel(props) {
                             <option value="Story Map">{t('outline.story_map') || 'Story Map (Plot Diagram)'}</option>
                             <option value="See-Think-Wonder">{t('outline.see_think_wonder') || 'See, Think, Wonder'}</option>
                             <option value="3D Concept Space">{t('outline.concept_space_3d') || '3D Concept Space (strands in depth)'}</option>
+                            <option value="Memory Palace">{t('outline.memory_palace') || 'Memory Palace (method of loci)'}</option>
                         </select>
                     </div>
                     <div>

@@ -2235,7 +2235,8 @@ function OutlinePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Claim-Evidence-Reasoning" }, t("outline.cer") || "Claim, Evidence, Reasoning (CER)"),
     /* @__PURE__ */ React.createElement("option", { value: "Story Map" }, t("outline.story_map") || "Story Map (Plot Diagram)"),
     /* @__PURE__ */ React.createElement("option", { value: "See-Think-Wonder" }, t("outline.see_think_wonder") || "See, Think, Wonder"),
-    /* @__PURE__ */ React.createElement("option", { value: "3D Concept Space" }, t("outline.concept_space_3d") || "3D Concept Space (strands in depth)")
+    /* @__PURE__ */ React.createElement("option", { value: "3D Concept Space" }, t("outline.concept_space_3d") || "3D Concept Space (strands in depth)"),
+    /* @__PURE__ */ React.createElement("option", { value: "Memory Palace" }, t("outline.memory_palace") || "Memory Palace (method of loci)")
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("outline.instructions_label")), /* @__PURE__ */ React.createElement(
     "textarea",
     {

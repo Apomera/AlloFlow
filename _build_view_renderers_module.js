@@ -81,7 +81,7 @@ function detectIconsAndComponents() {
     'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
     'FishboneSortGame', 'ProblemSolutionSortGame',
     'FrayerSortGame', 'SeeThinkWonderSortGame', 'StoryMapSortGame',
-    'GameButtonHint', 'ConceptSpace3DView',
+    'GameButtonHint', 'ConceptSpace3DView', 'MemoryPalaceView',
   ]);
 
   for (const ref of [...jsxRefs].sort()) {

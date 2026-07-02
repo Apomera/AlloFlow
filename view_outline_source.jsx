@@ -110,6 +110,7 @@ function OutlineView(props) {
                             )}
                             {!isInteractiveMap && !isInteractiveVenn && !isVennPlaying
                                 && generatedContent?.data?.structureType !== '3D Concept Space'
+                                && generatedContent?.data?.structureType !== 'Memory Palace'
                                 && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && (
                                 <button
                                     onClick={() => {

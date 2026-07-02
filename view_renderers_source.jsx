@@ -1669,6 +1669,26 @@ const renderOutlineContent = (deps) => {
             );
         }
 
+        if (type === 'Memory Palace' && !isEditingOutline) {
+            // Edit-text mode falls through to the generic branch grid (full inline
+            // editing of rooms/items; mnemonics ride along untouched).
+            return (
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <ErrorBoundary fallbackMessage="Memory Palace encountered an error.">
+                        <MemoryPalaceView
+                            data={generatedContent?.data}
+                            title={main}
+                            t={t}
+                            addToast={deps.addToast}
+                            onPersist={deps.handleConceptSpacePersist}
+                            callImagen={deps.callImagen}
+                        />
+                    </ErrorBoundary>
+                </div>
+            );
+        }
+
         if (type === '3D Concept Space' && !isEditingOutline) {
             // Edit-text mode falls through to the generic branch grid below, which
             // already provides full inline editing for {main, branches}.
@@ -1853,6 +1873,13 @@ function _voCg3dLoadScript(url) {
       document.head.appendChild(s);
     } catch (e) { reject(e); }
   });
+}
+function _voPalaceEnsure() {
+  if (window.AlloModules && window.AlloModules.MemoryPalace) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'memory_palace_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.MemoryPalace); })
+    .catch(function () { return false; });
 }
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
@@ -2307,6 +2334,150 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
             </div>
             <p className="text-xs text-slate-500 italic text-center mt-3">
                 {t('concept_space.caption') || 'Drag to orbit · scroll to zoom · click a concept for details. Drag a concept to place it on its strand plane — position is saved with the resource.'}
+            </p>
+        </div>
+    );
+};
+
+// ── Memory Palace (method of loci) — embedded 3D walk host ──────────
+// Rooms = branches, loci = items, mnemonics from generation ride on
+// branch.mnemonics[]. The palace module owns the walk + a11y route; this
+// wrapper owns the toolbar (Furnish with Imagen, per the Art Studio depth
+// trick's sibling pattern) and the visible mnemonic strip. Images persist
+// in data.memoryPalace.images (Frayer-image precedent) via onPersist.
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) => {
+    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+    const hostRef = React.useRef(null);
+    const handleRef = React.useRef(null);
+    const [ready, setReady] = React.useState(false);
+    const [failed, setFailed] = React.useState(false);
+    const [furnishing, setFurnishing] = React.useState(null);   // {done, total} | null
+    const [nonce, setNonce] = React.useState(0);
+    const [current, setCurrent] = React.useState(null);         // {label, mnemonic, idx, total}
+    const persist = typeof onPersist === 'function' ? onPersist : null;
+    const canImagen = typeof callImagen === 'function';
+    const images = data?.memoryPalace?.images || {};
+    const imageCount = Object.keys(images).length;
+    const dataKey = JSON.stringify({
+        m: data?.main,
+        b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
+        img: data?.memoryPalace?.generatedAt || 0,
+    });
+
+    React.useEffect(() => {
+        let alive = true;
+        _voPalaceEnsure().then((ok) => { if (alive) { if (ok) setReady(true); else setFailed(true); } });
+        return () => { alive = false; };
+    }, []);
+
+    React.useEffect(() => {
+        if (!ready || failed || !hostRef.current || !hasContent) return undefined;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP) { setFailed(true); return undefined; }
+        handleRef.current = MP.render(hostRef.current, data, {
+            t,
+            images: data?.memoryPalace?.images || {},
+            onLocusChange: (locus, idx, total) => {
+                if (locus) setCurrent({ label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === '__entry' });
+            },
+        });
+        return () => {
+            try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+            handleRef.current = null;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ready, failed, dataKey, nonce]);
+
+    // Furnish: one Imagen illustration per locus, driven by the MNEMONIC (the
+    // vivid image is the mnemonic made visible). Sequential to respect quota;
+    // per-item failures skipped; results persisted once at the end.
+    const handleFurnish = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !canImagen || !persist || furnishing) return;
+        const palace = MP.buildPalace(data || {});
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && !images[l.id]).slice(0, 16);
+        if (!targets.length) { if (addToast) addToast(t('memory_palace.furnish_done_already') || 'Every locus already has an image.', 'info'); return; }
+        setFurnishing({ done: 0, total: targets.length });
+        const out = {};
+        let failures = 0;
+        const step = (i) => {
+            if (i >= targets.length) {
+                setFurnishing(null);
+                if (Object.keys(out).length) {
+                    persist({ images: { ...images, ...out }, generatedAt: Date.now() }, 'memoryPalace');
+                    setNonce((n) => n + 1);
+                }
+                if (addToast) {
+                    if (failures) addToast((t('memory_palace.furnish_partial') || 'Furnished {ok} loci; {fail} could not be generated.').replace('{ok}', String(Object.keys(out).length)).replace('{fail}', String(failures)), 'info');
+                    else addToast(t('memory_palace.furnish_done') || '🖼 Palace furnished! Walk the route to lock the images in.', 'success');
+                }
+                return;
+            }
+            const l = targets[i];
+            const subject = l.mnemonic || l.label;
+            callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+                .then((base64) => { if (base64) out[l.id] = base64; })
+                .catch(() => { failures += 1; })
+                .then(() => { setFurnishing({ done: i + 1, total: targets.length }); step(i + 1); });
+        };
+        step(0);
+    };
+
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <div className="text-xs text-slate-500">
+                    {t('memory_palace.hint') || 'A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory.'}
+                </div>
+                <div className="flex items-center gap-2">
+                    {hasContent && !failed && canImagen && persist && (
+                        <button
+                            onClick={handleFurnish}
+                            disabled={!!furnishing}
+                            className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={t('memory_palace.furnish_tooltip') || 'Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)'}
+                        >
+                            🖼 {furnishing
+                                ? (t('memory_palace.furnishing') || 'Furnishing {done}/{total}…').replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))
+                                : (t('memory_palace.furnish') || 'Furnish with AI images')}
+                        </button>
+                    )}
+                    {hasContent && !failed && persist && imageCount > 0 && !furnishing && (
+                        <button
+                            onClick={() => { persist(null, 'memoryPalace'); setNonce((n) => n + 1); }}
+                            className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            title={t('memory_palace.clear_tooltip') || 'Remove the generated images from this palace'}
+                        >
+                            ↺ {t('memory_palace.clear_images') || 'Clear images'}
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
+                {!hasContent ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
+                        <div className="text-3xl" aria-hidden="true">🏛</div>
+                        <p className="text-sm font-bold text-slate-200">{t('memory_palace.empty_title') || 'No palace to walk yet'}</p>
+                        <p className="text-xs text-slate-400 max-w-sm">{t('memory_palace.empty_body') || 'Generate this organizer from a source text and the facts will become rooms and loci you can walk through.'}</p>
+                    </div>
+                ) : (
+                    <div ref={hostRef} className="absolute inset-0" />
+                )}
+            </div>
+            {current && !current.entry && (
+                <div className="mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
+                    <div className="text-xs font-bold text-indigo-700 mb-0.5">
+                        {(t('memory_palace.locus_of') || 'Locus {idx} of {total}').replace('{idx}', String(current.idx)).replace('{total}', String(current.total))} — {current.label}
+                    </div>
+                    {current.mnemonic && (
+                        <div className="text-sm text-indigo-900">
+                            <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {current.mnemonic}
+                        </div>
+                    )}
+                </div>
+            )}
+            <p className="text-xs text-slate-500 italic text-center mt-3">
+                {t('memory_palace.caption') || 'Method of loci: a practice strategy with strong evidence for remembering ordered material — the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself.'}
             </p>
         </div>
     );

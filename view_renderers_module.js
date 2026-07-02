@@ -1075,6 +1075,19 @@ const renderOutlineContent = (deps) => {
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white rounded-lg border border-slate-200 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("h5", { className: "text-xs font-black uppercase tracking-wider mb-2", style: { color: stage.color } }, stage.branch.title), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, items.length > 0 ? items.map((text, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-xs text-slate-700 leading-snug" }, "\u2022 ", text)) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "\u2014")));
     }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.story_map_caption") || "Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension."));
   }
+  if (type === "Memory Palace" && !isEditingOutline) {
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Memory Palace encountered an error." }, /* @__PURE__ */ React.createElement(
+      MemoryPalaceView,
+      {
+        data: generatedContent?.data,
+        title: main,
+        t,
+        addToast: deps.addToast,
+        onPersist: deps.handleConceptSpacePersist,
+        callImagen: deps.callImagen
+      }
+    )));
+  }
   if (type === "3D Concept Space" && !isEditingOutline) {
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "3D Concept Space encountered an error." }, /* @__PURE__ */ React.createElement(
       ConceptSpace3DView,
@@ -1215,6 +1228,15 @@ function _voCg3dLoadScript(url) {
     } catch (e) {
       reject(e);
     }
+  });
+}
+function _voPalaceEnsure() {
+  if (window.AlloModules && window.AlloModules.MemoryPalace) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + "memory_palace_module.js" + loc.query).then(function() {
+    return !!(window.AlloModules && window.AlloModules.MemoryPalace);
+  }).catch(function() {
+    return false;
   });
 }
 function _voCg3dEnsure() {
@@ -1697,6 +1719,120 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     },
     "\u2715"
   )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
+};
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) => {
+  const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+  const hostRef = React.useRef(null);
+  const handleRef = React.useRef(null);
+  const [ready, setReady] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const [furnishing, setFurnishing] = React.useState(null);
+  const [nonce, setNonce] = React.useState(0);
+  const [current, setCurrent] = React.useState(null);
+  const persist = typeof onPersist === "function" ? onPersist : null;
+  const canImagen = typeof callImagen === "function";
+  const images = data?.memoryPalace?.images || {};
+  const imageCount = Object.keys(images).length;
+  const dataKey = JSON.stringify({
+    m: data?.main,
+    b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
+    img: data?.memoryPalace?.generatedAt || 0
+  });
+  React.useEffect(() => {
+    let alive = true;
+    _voPalaceEnsure().then((ok) => {
+      if (alive) {
+        if (ok) setReady(true);
+        else setFailed(true);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!ready || failed || !hostRef.current || !hasContent) return void 0;
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP) {
+      setFailed(true);
+      return void 0;
+    }
+    handleRef.current = MP.render(hostRef.current, data, {
+      t,
+      images: data?.memoryPalace?.images || {},
+      onLocusChange: (locus, idx, total) => {
+        if (locus) setCurrent({ label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === "__entry" });
+      }
+    });
+    return () => {
+      try {
+        if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy();
+      } catch (e) {
+      }
+      handleRef.current = null;
+    };
+  }, [ready, failed, dataKey, nonce]);
+  const handleFurnish = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !canImagen || !persist || furnishing) return;
+    const palace = MP.buildPalace(data || {});
+    const targets = palace.loci.filter((l) => l.id !== "__entry" && !images[l.id]).slice(0, 16);
+    if (!targets.length) {
+      if (addToast) addToast(t("memory_palace.furnish_done_already") || "Every locus already has an image.", "info");
+      return;
+    }
+    setFurnishing({ done: 0, total: targets.length });
+    const out = {};
+    let failures = 0;
+    const step = (i) => {
+      if (i >= targets.length) {
+        setFurnishing(null);
+        if (Object.keys(out).length) {
+          persist({ images: { ...images, ...out }, generatedAt: Date.now() }, "memoryPalace");
+          setNonce((n) => n + 1);
+        }
+        if (addToast) {
+          if (failures) addToast((t("memory_palace.furnish_partial") || "Furnished {ok} loci; {fail} could not be generated.").replace("{ok}", String(Object.keys(out).length)).replace("{fail}", String(failures)), "info");
+          else addToast(t("memory_palace.furnish_done") || "\u{1F5BC} Palace furnished! Walk the route to lock the images in.", "success");
+        }
+        return;
+      }
+      const l = targets[i];
+      const subject = l.mnemonic || l.label;
+      callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400).then((base64) => {
+        if (base64) out[l.id] = base64;
+      }).catch(() => {
+        failures += 1;
+      }).then(() => {
+        setFurnishing({ done: i + 1, total: targets.length });
+        step(i + 1);
+      });
+    };
+    step(0);
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleFurnish,
+      disabled: !!furnishing,
+      className: "flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("memory_palace.furnish_tooltip") || "Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)"
+    },
+    "\u{1F5BC} ",
+    furnishing ? (t("memory_palace.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("memory_palace.furnish") || "Furnish with AI images"
+  ), hasContent && !failed && persist && imageCount > 0 && !furnishing && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        persist(null, "memoryPalace");
+        setNonce((n) => n + 1);
+      },
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
+      title: t("memory_palace.clear_tooltip") || "Remove the generated images from this palace"
+    },
+    "\u21BA ",
+    t("memory_palace.clear_images") || "Clear images"
+  ))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
 };
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
