@@ -551,6 +551,9 @@
         time: '10-15 min',
         format: 'Whole class',
         focus: 'Mood, breath, one next step',
+        studentView: 'Students privately check their zone, try a regulation option, then choose one need for the day or pass.',
+        teacherMove: 'Model the pass option first. Invite one-word or color sharing only after private practice.',
+        privacyBoundary: 'No journal text is collected; students decide later whether any checkpoint enters a Share Packet.',
         tools: ['zones', 'mindfulness', 'goals', 'journal'],
         note: 'Begin with a private zone check, then offer breathing or goal-setting. Students may share one word, a color, or pass.',
         quests: [
@@ -565,6 +568,9 @@
         time: '5-8 min',
         format: 'Whole class or calm corner',
         focus: 'Body regulation',
+        studentView: 'Students notice their current body state and choose one calm-body practice.',
+        teacherMove: 'Keep the routine low-talk and time-boxed. Offer movement, breathing, or quiet alternatives.',
+        privacyBoundary: 'Students can save a checkpoint for themselves; no one has to explain why they needed a reset.',
         tools: ['zones', 'coping', 'mindfulness'],
         note: 'Keep this low-talk. Students choose one regulation practice and notice what changed.',
         quests: [
@@ -579,6 +585,9 @@
         time: '15-25 min',
         format: 'Small group or advisory',
         focus: 'Perspective, repair, next action',
+        studentView: 'Students can use a real, hypothetical, or teacher-provided scenario to practice repair language.',
+        teacherMove: 'Set repair norms first and avoid public confession. Pause if the situation needs adult mediation.',
+        privacyBoundary: 'Students choose what to share; private conflict reflections should not become class evidence.',
         tools: ['conflict', 'perspective', 'restorativeCircle', 'peersupport'],
         note: 'Use after norms are set. Keep focus on repair language, not public confession.',
         quests: [
@@ -593,6 +602,9 @@
         time: '12-20 min',
         format: 'Advisory or health',
         focus: 'Phone, sleep, AI and boundaries',
+        studentView: 'Students review habits, choose one boundary to test, and keep the reason private if they want.',
+        teacherMove: 'Frame as habit design, not a phone audit. Avoid asking students to disclose screenshots or usage data.',
+        privacyBoundary: 'Students can share a boundary goal, but personal sleep, phone, or AI details stay optional.',
         tools: ['digitalWellbeing', 'sleep', 'mindfulness'],
         note: 'Frame as habit design, not a phone audit. Students choose one boundary to try.',
         quests: [
@@ -1976,6 +1988,25 @@
         });
       }
 
+      function _teacherPlanSensitiveLabels(plan) {
+        return _teacherPlanCatalogTools(plan).filter(function(toolId) {
+          var cue = _teacherToolCue(toolId);
+          return cue && cue.sensitive;
+        }).map(function(toolId) {
+          var tool = _selToolById(toolId);
+          return tool ? tool.label : toolId;
+        });
+      }
+
+      function _teacherPlanBuilderNote(plan) {
+        var parts = [];
+        if (plan && plan.studentView) parts.push('Student view: ' + plan.studentView);
+        if (plan && plan.teacherMove) parts.push('Teacher move: ' + plan.teacherMove);
+        if (plan && plan.privacyBoundary) parts.push('Sharing boundary: ' + plan.privacyBoundary);
+        if (plan && plan.note) parts.push('Teacher note: ' + plan.note);
+        return parts.join('\n');
+      }
+
       function _teacherPlanQuests(plan, selectedToolIds) {
         return (plan && Array.isArray(plan.quests) ? plan.quests : []).map(function(q) {
           var copy = Object.assign({}, q, { params: Object.assign({}, q.params || {}) });
@@ -1988,7 +2019,8 @@
 
       function _applyTeacherLaunchPlan(plan) {
         var selectedToolIds = _teacherPlanCatalogTools(plan);
-        if (selectedToolIds.length === 0) {
+        var pendingLabels = _teacherPlanPendingLabels(plan);
+        if (selectedToolIds.length === 0 || pendingLabels.length) {
           if (typeof addToast === 'function') addToast('Teacher launch tools are still loading. Try again in a moment.', 'info');
           announceToSR('Teacher launch tools are still loading.');
           return;
@@ -1996,7 +2028,7 @@
         var nextTools = {};
         selectedToolIds.forEach(function(toolId) { nextTools[toolId] = true; });
         setBuilderName(plan.name || 'SEL classroom routine');
-        setBuilderNote(plan.note || '');
+        setBuilderNote(_teacherPlanBuilderNote(plan));
         setBuilderTools(nextTools);
         setBuilderQuests(_teacherPlanQuests(plan, selectedToolIds));
         setBuilderOpen(true);
@@ -3260,6 +3292,7 @@
             )
           ),
           !activePathway && !activeStation && h('details', {
+            'aria-label': 'Teacher launch routines',
             style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
           },
             h('summary', {
@@ -3271,13 +3304,34 @@
                 style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 11, lineHeight: 1.45 }
               }, 'Class routines stay formative: no grades, no forced sharing, no teacher dashboard of private reflections. Students save or share only when you ask them to choose a file.'),
               h('div', {
+                role: 'list',
+                'aria-label': 'Teacher launch guardrails',
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 }
+              },
+                [
+                  { label: 'Set the boundary', body: 'Say what is private, what is optional, and how students can pass.' },
+                  { label: 'Run the routine', body: 'Use the tools as practice. Keep reflection formative and ungraded.' },
+                  { label: 'Close with choice', body: 'Students decide whether to save, export, or include a checkpoint later.' }
+                ].map(function(step) {
+                  return h('div', {
+                    key: step.label,
+                    role: 'listitem',
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 9, minWidth: 0 }
+                  },
+                    h('div', { style: { color: _t.text, fontSize: 11, fontWeight: 900, marginBottom: 3 } }, step.label),
+                    h('div', { style: { color: _t.textMuted, fontSize: 10.5, lineHeight: 1.4 } }, step.body)
+                  );
+                })
+              ),
+              h('div', {
                 style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
               },
                 SEL_TEACHER_LAUNCH_PLANS.map(function(plan) {
                   var labels = _teacherPlanToolLabels(plan);
                   var pendingLabels = _teacherPlanPendingLabels(plan);
+                  var sensitiveLabels = _teacherPlanSensitiveLabels(plan);
                   var catalogTools = _teacherPlanCatalogTools(plan);
-                  var disabled = catalogTools.length === 0;
+                  var disabled = catalogTools.length === 0 || pendingLabels.length > 0;
                   return h('div', {
                     key: plan.id,
                     style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
@@ -3290,17 +3344,32 @@
                       )
                     ),
                     h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft } },
+                      [
+                        { label: 'Student sees', body: plan.studentView || 'Students complete a private SEL routine and choose what to share.' },
+                        { label: 'Teacher move', body: plan.teacherMove || 'Frame this as practice, not assessment.' },
+                        { label: 'Sharing boundary', body: plan.privacyBoundary || 'Sharing remains student-controlled.' }
+                      ].map(function(row) {
+                        return h('div', { key: row.label, style: { minWidth: 0 } },
+                          h('span', { style: { display: 'block', color: _t.text, fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', marginBottom: 1 } }, row.label),
+                          h('span', { style: { display: 'block', color: _t.textMuted, fontSize: 10.5, lineHeight: 1.35, overflowWrap: 'anywhere' } }, row.body)
+                        );
+                      })
+                    ),
                     h('div', { style: { fontSize: 10, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
                       labels.length ? labels.join(', ') : 'Tools loading...',
                       pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: _t.warningText, fontWeight: 800 } }, 'Still loading: ' + pendingLabels.join(', ')) : null
                     ),
+                    sensitiveLabels.length ? h('div', { style: { fontSize: 10, color: _t.warningText, fontWeight: 900, lineHeight: 1.35 } },
+                      'Preview sensitive tools first: ' + sensitiveLabels.join(', ')
+                    ) : null,
                     h('button', {
                       type: 'button',
                       disabled: disabled,
                       onClick: function() { _applyTeacherLaunchPlan(plan); },
                       'aria-label': 'Load teacher launch plan: ' + plan.name,
                       style: { marginTop: 'auto', minHeight: 34, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
-                    }, disabled ? 'Loading' : 'Load plan')
+                    }, pendingLabels.length ? 'Waiting for tools' : disabled ? 'Loading' : 'Load into Station Builder')
                   );
                 })
               )
@@ -3581,6 +3650,11 @@
                   var found = registry.filter(function(tool) { return tool.id === toolId; })[0] || _selToolById(toolId);
                   return found ? (found.name || found.label || found.id) : toolId;
                 }).filter(Boolean);
+                function builderNoteLine(prefix, fallback) {
+                  var text = String(builderNote || '');
+                  var match = text.match(new RegExp(prefix + ':\\s*([^\\n]+)', 'i'));
+                  return match ? match[1] : fallback;
+                }
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
                     var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
@@ -3635,11 +3709,11 @@
                     h('div', { style: { minWidth: 0 } },
                       h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Student view preview'),
                       h('div', { style: { overflowWrap: 'anywhere' } },
-                        selectedBuilderToolLabels.length ? selectedBuilderToolLabels.slice(0, 5).join(', ') + (selectedBuilderToolLabels.length > 5 ? ' +' + (selectedBuilderToolLabels.length - 5) + ' more' : '') : 'No tools selected yet.')
+                        builderNoteLine('Student view', selectedBuilderToolLabels.length ? selectedBuilderToolLabels.slice(0, 5).join(', ') + (selectedBuilderToolLabels.length > 5 ? ' +' + (selectedBuilderToolLabels.length - 5) + ' more' : '') : 'No tools selected yet.'))
                     ),
                     h('div', { style: { minWidth: 0 } },
                       h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Sharing boundary'),
-                      h('div', null, 'Student saves and share packets stay student-controlled.')
+                      h('div', null, builderNoteLine('Sharing boundary', 'Student saves and share packets stay student-controlled.'))
                     )
                   ),
                   // Name
@@ -3657,7 +3731,7 @@
                     onChange: function (ev) { setBuilderNote(ev.target.value); },
                     placeholder: 'Optional teacher note (instructions students see when they activate this station)',
                     'aria-label': 'Teacher note',
-                    rows: 2,
+                    rows: 4,
                     style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
                   }),
                   h('div', {

@@ -407,10 +407,54 @@ async function runScenario(browser, scenario) {
       await page.keyboard.press('Escape');
       await page.locator('#sel-share-packet-modal').waitFor({ state: 'detached', timeout: 10000 });
 
+      const teacherSummary = page.locator('summary').filter({ hasText: /Teacher launch/i }).first();
+      await teacherSummary.scrollIntoViewIfNeeded();
+      await teacherSummary.click();
+      const launchPlan = page.getByRole('button', { name: /Load teacher launch plan: Morning advisory check-in/i }).first();
+      await launchPlan.waitFor({ state: 'visible', timeout: 10000 });
+      await launchPlan.click();
+      await page.waitForTimeout(350);
+      const customAfterLaunch = page.locator('summary').filter({ hasText: /Custom SEL Stations/i }).first();
+      if (!(await page.locator('#sel-station-name-input').isVisible().catch(function () { return false; }))) {
+        await customAfterLaunch.scrollIntoViewIfNeeded();
+        await customAfterLaunch.click();
+      }
+      await page.locator('#sel-station-name-input').waitFor({ state: 'visible', timeout: 10000 });
+      const teacherLaunch = await page.evaluate(function () {
+        const region = document.querySelector('[role="region"][aria-label="Station Builder"]');
+        const name = document.getElementById('sel-station-name-input');
+        const note = region ? region.querySelector('textarea') : null;
+        const text = (region && region.innerText || '').replace(/\s+/g, ' ').trim();
+        return {
+          name: name ? name.value : '',
+          note: note ? note.value : '',
+          hasStudentPreview: /Students privately check their zone/.test(text),
+          hasSharingBoundary: /No journal text is collected/.test(text),
+          hasTeacherMove: note ? /Teacher move:/.test(note.value) : false,
+          selectedTools: (text.match(/\d+ tools selected/) || [''])[0],
+          selectedQuests: (text.match(/\d+ quests/) || [''])[0]
+        };
+      });
+      result.checks.push({
+        id: 'teacher-launch-loads-station-preview',
+        pass: /Morning advisory check-in/.test(teacherLaunch.name)
+          && /Student view:/.test(teacherLaunch.note)
+          && teacherLaunch.hasStudentPreview
+          && teacherLaunch.hasSharingBoundary
+          && teacherLaunch.hasTeacherMove
+          && teacherLaunch.selectedTools === '4 tools selected'
+          && teacherLaunch.selectedQuests === '2 quests',
+        details: teacherLaunch
+      });
+      await page.getByRole('button', { name: /Cancel station builder/i }).first().click();
+      await page.waitForTimeout(150);
+
       const summary = page.locator('summary').filter({ hasText: /Custom SEL Stations/i }).first();
       await summary.scrollIntoViewIfNeeded();
-      await summary.click();
       const build = page.getByRole('button', { name: /Build a new custom SEL Station/i }).first();
+      if (!(await build.isVisible().catch(function () { return false; }))) {
+        await summary.click();
+      }
       await build.waitFor({ state: 'visible', timeout: 10000 });
       await build.focus();
       await build.click();

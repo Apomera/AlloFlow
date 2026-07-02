@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T16:32:02.144Z",
+  "generatedAt": "2026-07-02T16:57:12.937Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
-    "total": 35,
-    "passed": 35,
+    "total": 45,
+    "passed": 45,
     "failed": 0
   },
   "scenarios": [
@@ -123,6 +123,120 @@
       "screenshot": "a11y-audit\\sel_visual_qa\\sel-share-packet-desktop-light.png"
     },
     {
+      "name": "sel-teacher-launch-desktop-light",
+      "kind": "sel",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "surface": "teacher-launch",
+      "selector": "[aria-label=\"Teacher launch routines\"]",
+      "minText": 800,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 127690
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 2462,
+            "controlCount": 4
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 2462,
+        "controlCount": 4,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-teacher-launch-desktop-light.png"
+    },
+    {
+      "name": "sel-teacher-launch-mobile-high-contrast",
+      "kind": "sel",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "surface": "teacher-launch",
+      "selector": "[aria-label=\"Teacher launch routines\"]",
+      "minText": 800,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 39363
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 2462,
+            "controlCount": 4
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 390,
+            "viewportWidth": 390
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 2462,
+        "controlCount": 4,
+        "bodyScrollWidth": 390,
+        "viewportWidth": 390,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-teacher-launch-mobile-high-contrast.png"
+    },
+    {
       "name": "sel-station-builder-mobile-high-contrast",
       "kind": "sel",
       "theme": "high-contrast",
@@ -138,7 +252,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 38827
+            "bytes": 37845
           }
         },
         {
@@ -308,7 +422,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 102567
+            "bytes": 102556
           }
         },
         {

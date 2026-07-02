@@ -355,6 +355,15 @@ async function openSelSurface(page, surface) {
     await build.waitFor({ state: 'visible', timeout: 15000 });
     await build.click();
     await page.locator('#sel-station-name-input').waitFor({ state: 'visible', timeout: 15000 });
+  } else if (surface === 'teacher-launch') {
+    const summary = page.locator('summary').filter({ hasText: /Teacher launch/i }).first();
+    await summary.scrollIntoViewIfNeeded();
+    await summary.click();
+    await page.locator('[aria-label="Teacher launch routines"]').waitFor({ state: 'visible', timeout: 15000 });
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width < 600) {
+      await page.getByRole('button', { name: /Load teacher launch plan: Morning advisory check-in/i }).first().scrollIntoViewIfNeeded();
+    }
   } else if (surface === 'for-educators') {
     await page.getByRole('button', { name: /For Educators/i }).first().click();
     await page.locator('#sel-for-educators-modal').waitFor({ state: 'visible', timeout: 15000 });
@@ -481,6 +490,8 @@ function summarize(results) {
   const scenarios = [
     { name: 'sel-catalog-desktop-light', kind: 'sel', theme: 'light', viewport: { width: 1280, height: 900 }, surface: 'catalog', selector: '[role="dialog"][aria-label="SEL Hub"]', minText: 900 },
     { name: 'sel-share-packet-desktop-light', kind: 'sel', theme: 'light', viewport: { width: 1280, height: 900 }, surface: 'share-packet', selector: '#sel-share-packet-modal', minText: 500 },
+    { name: 'sel-teacher-launch-desktop-light', kind: 'sel', theme: 'light', viewport: { width: 1280, height: 900 }, surface: 'teacher-launch', selector: '[aria-label="Teacher launch routines"]', minText: 800 },
+    { name: 'sel-teacher-launch-mobile-high-contrast', kind: 'sel', theme: 'high-contrast', viewport: { width: 390, height: 844 }, surface: 'teacher-launch', selector: '[aria-label="Teacher launch routines"]', minText: 800 },
     { name: 'sel-station-builder-mobile-high-contrast', kind: 'sel', theme: 'high-contrast', viewport: { width: 390, height: 844 }, surface: 'station-builder', selector: '[role="region"][aria-label="Station Builder"]', minText: 400 },
     { name: 'sel-for-educators-tablet-dark', kind: 'sel', theme: 'dark', viewport: { width: 820, height: 900 }, surface: 'for-educators', selector: '#sel-for-educators-modal', minText: 700 },
     { name: 'allohaven-portfolio-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 500 },

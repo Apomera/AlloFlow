@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T16:30:47.526Z",
+  "generatedAt": "2026-07-02T16:50:18.044Z",
   "harness": "standalone SEL Hub browser fixture",
   "summary": {
-    "total": 14,
+    "total": 15,
     "failed": 0,
-    "passed": 14
+    "passed": 15
   },
   "scenarios": [
     {
@@ -351,6 +351,19 @@
             "updatedSamePacket": true,
             "version": 2,
             "notice": true
+          }
+        },
+        {
+          "id": "teacher-launch-loads-station-preview",
+          "pass": true,
+          "details": {
+            "name": "Morning advisory check-in",
+            "note": "Student view: Students privately check their zone, try a regulation option, then choose one need for the day or pass.\nTeacher move: Model the pass option first. Invite one-word or color sharing only after private practice.\nSharing boundary: No journal text is collected; students decide later whether any checkpoint enters a Share Packet.\nTeacher note: Begin with a private zone check, then offer breathing or goal-setting. Students may share one word, a color, or pass.",
+            "hasStudentPreview": true,
+            "hasSharingBoundary": true,
+            "hasTeacherMove": true,
+            "selectedTools": "4 tools selected",
+            "selectedQuests": "2 quests"
           }
         },
         {

@@ -1,6 +1,6 @@
 # SEL Visual QA
 
-Generated: 2026-07-02T16:32:02.144Z
+Generated: 2026-07-02T16:57:12.937Z
 
 Harness: public module visual fixture
 
@@ -8,9 +8,9 @@ Screenshots: a11y-audit\sel_visual_qa
 
 ## Summary
 
-- Passed: 35
+- Passed: 45
 - Failed: 0
-- Scenarios: 7
+- Scenarios: 9
 
 ## Checks
 
@@ -24,6 +24,22 @@ Screenshots: a11y-audit\sel_visual_qa
 
 ### sel-share-packet-desktop-light
 - Screenshot: a11y-audit\sel_visual_qa\sel-share-packet-desktop-light.png
+- PASS nonblank-screenshot
+- PASS readable-surface
+- PASS no-horizontal-page-overflow
+- PASS no-unexpected-container-overflow
+- PASS no-clipped-controls
+
+### sel-teacher-launch-desktop-light
+- Screenshot: a11y-audit\sel_visual_qa\sel-teacher-launch-desktop-light.png
+- PASS nonblank-screenshot
+- PASS readable-surface
+- PASS no-horizontal-page-overflow
+- PASS no-unexpected-container-overflow
+- PASS no-clipped-controls
+
+### sel-teacher-launch-mobile-high-contrast
+- Screenshot: a11y-audit\sel_visual_qa\sel-teacher-launch-mobile-high-contrast.png
 - PASS nonblank-screenshot
 - PASS readable-surface
 - PASS no-horizontal-page-overflow

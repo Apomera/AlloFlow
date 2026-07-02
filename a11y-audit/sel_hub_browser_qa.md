@@ -1,12 +1,12 @@
 # SEL Hub Browser QA
 
-Generated: 2026-07-02T16:30:47.526Z
+Generated: 2026-07-02T16:50:18.044Z
 
 Harness: standalone SEL Hub browser fixture
 
 ## Summary
 
-- Passed: 14
+- Passed: 15
 - Failed: 0
 - Scenarios: 4
 
@@ -20,6 +20,7 @@ Harness: standalone SEL Hub browser fixture
 - PASS share-packet-focus-trap
 - PASS share-packet-lifecycle-reopen-draft
 - PASS share-packet-lifecycle-update-in-place
+- PASS teacher-launch-loads-station-preview
 - PASS station-builder-focus-handoff
 
 ### desktop-dark-responsive
