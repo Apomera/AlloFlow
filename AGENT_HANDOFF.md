@@ -2,7 +2,7 @@
 
 Purpose: a shared, human-readable coordination note for Aaron, Claude Code, and Codex. Update this before and after meaningful work so agents do not step on each other.
 
-Last updated: 2026-07-01 by Codex.
+Last updated: 2026-07-02 by Codex.
 
 ## Repo Map
 
@@ -27,6 +27,7 @@ Last updated: 2026-07-01 by Codex.
 
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-07-02 | Codex | `stem_lab/stem_tool_anatomy.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_anatomy.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_anatomy.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Refined Anatomy with a clearer body-systems mission dashboard, compact challenge/readiness metrics, stronger model/workspace framing, responsive structure panel, and visual QA render markers. |
 | 2026-07-01 | Claude (Fable) | `AlloFlowANTI.txt`, `docs/DATA_PRIVACY_POSTURE.md` (NEW), `tests/session_soft_end_terminal.test.js`, `AGENT_HANDOFF.md` | Committed locally, not deployed | FERPA-ironclad pass: session-end data wipe — quiz-dashboard soft-end now schedules a delayed deleteDoc so ALL end paths converge on deletion (session metadata doesn't outlive the class; pinned by test). NEW district-facing docs/DATA_PRIVACY_POSTURE.md: exhaustive stored-data table + retention, two-backend reality, honest exceptions (live-quiz structured answers on session doc; persistent conceptMastery) with remediation plans (quiz→WebRTC transport; conceptMastery→device-local/project-file). check_build_smoke + 28 pinned tests green. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_birdlab.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_birdlab.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_birdlab.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Refined Bird Lab's default menu/I-Spy path with a clearer field-station entry, mission/status dashboard, polished habitat scene framing, responsive layout, and visual QA render markers. |
 | 2026-07-01 | Codex | `stem_lab/stem_tool_watercycle.js`, matching `prismflow-deploy/public/stem_lab/stem_tool_watercycle.js`, local ignored `prismflow-deploy/build/stem_lab/stem_tool_watercycle.js`, `AGENT_HANDOFF.md` | Done locally, not deployed | Refined Water Cycle's default explorer with a clearer live cycle mission/status surface, polished canvas frame, challenge-aware climate sliders, tighter control styling, and visual QA render markers while leaving the watershed campaign mode intact. |
@@ -75,6 +76,10 @@ Last updated: 2026-07-01 by Codex.
 
 ## Validation Log
 
+- `node --check stem_lab\stem_tool_anatomy.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_anatomy.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_anatomy.js` - passed after Anatomy mission/workspace refinements.
+- Focused jsdom/React server renders for Anatomy passed for default and selected-structure states; confirmed `data-anatomy-tool`, `data-anatomy-mission`, `data-anatomy-workspace`, `data-anatomy-model-shell`, `data-anatomy-canvas`, and `data-anatomy-structure-list` render.
+- `node dev-tools\check_stem_render.cjs --quiet` - passed across 113 registered STEM tools after Anatomy refinements.
+- `git diff --check -- AGENT_HANDOFF.md stem_lab\stem_tool_anatomy.js prismflow-deploy\public\stem_lab\stem_tool_anatomy.js` - passed; source, public, and local ignored build Anatomy copies share SHA-256 `91A7344937642AC13A641B9EE24455B1E65DB41B89E3D113CC04AFC88DA4A581`.
 - `node --check stem_lab\stem_tool_birdlab.js`, `node --check prismflow-deploy\public\stem_lab\stem_tool_birdlab.js`, and `node --check prismflow-deploy\build\stem_lab\stem_tool_birdlab.js` - passed after Bird Lab field-station/I-Spy refinements.
 - Focused jsdom/React server renders for Bird Lab passed for default menu and I-Spy view; confirmed `data-birdlab-menu`, `data-birdlab-field-station`, `data-birdlab-ispy`, `data-birdlab-mission`, and `data-birdlab-scene-shell` render.
 - `node dev-tools\check_stem_render.cjs --quiet` - passed after Bird Lab refinements with no app-crash render failures across 113 STEM tools.
