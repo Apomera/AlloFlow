@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T20:42:09.983Z",
+  "generatedAt": "2026-07-02T21:25:53.326Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 176,
+    "issueCount": 175,
     "errorCount": 0,
-    "warningCount": 159,
+    "warningCount": 158,
     "noticeCount": 17,
-    "toolsWithIssues": 74,
+    "toolsWithIssues": 73,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 68,
+    "toolsWithWarnings": 67,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 74,
+        "warningCount": 73,
         "noticeCount": 6
       },
       "technology": {
@@ -214,21 +214,21 @@
     {
       "code": "heading",
       "severity": "warning",
-      "count": 18,
-      "toolCount": 18,
+      "count": 17,
+      "toolCount": 17,
       "exampleTools": [
         "archStudio",
         "astronomy",
         "bridgeLab",
         "cellularLab",
         "cephalopodLab",
-        "fisherLab",
         "flightSim",
         "funcGrapher",
         "geoSandbox",
         "geometryWorld",
         "graphCalc",
-        "kitchenLab"
+        "kitchenLab",
+        "lumen"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
@@ -1939,7 +1939,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16026,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2328,7 +2328,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22798,
+      "renderedBytes": 22814,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2409,32 +2409,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, and Gulf of Maine fish ID + DMR regs in an immersive 3D sim.",
-      "renderedBytes": 20409,
+      "renderedBytes": 20395,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 18,
+        "buttons": 24,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
-        "svgs": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "fisherLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "flightSim",
@@ -2791,7 +2784,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1575,
+      "renderedBytes": 1598,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3349,7 +3342,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13378,
+      "renderedBytes": 13339,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3814,7 +3807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17340,
+      "renderedBytes": 17344,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4620,7 +4613,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46590,
+      "renderedBytes": 46581,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,
@@ -4880,7 +4873,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30470,
+      "renderedBytes": 30468,
       "standardShell": true,
       "issueCount": 5,
       "errorCount": 0,

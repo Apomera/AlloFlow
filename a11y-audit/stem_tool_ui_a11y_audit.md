@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T20:42:09.983Z
+Generated: 2026-07-02T21:25:53.326Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-02T20:42:09.983Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 176 |
+| Total findings | 175 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 159 |
+| Tool-level warnings | 158 |
 | Review notices | 17 |
-| Tools with any finding | 74 |
+| Tools with any finding | 73 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -27,7 +27,7 @@ Generated: 2026-07-02T20:42:09.983Z
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `heading` | 18 | 18 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab | Start each tool with a semantic heading so screen-reader users can orient quickly. |
+| warning | `heading` | 17 | 17 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, flightSim, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 67 | 17 | algebraCAS, appLab, atcTower, cell, cellularLab, companionPlanting, dataStudio, dnaLab, echoTrainer, fireEcology, kitchenLab, llmLiteracy | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
@@ -94,7 +94,7 @@ Generated: 2026-07-02T20:42:09.983Z
 | `evoLab` EvoLab — Evolution | general | standard | 28 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 29 | 1 | 0 | 0 | 2 | 0 | inline-contrast x2 |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
-| `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 18 | 0 | 0 | 0 | 1 | 0 | heading x1 |
+| `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 24 | 0 | 0 | 0 | 0 | 0 |  |
 | `flightSim` SkySchool | applied | standard | 45 | 2 | 0 | 0 | 1 | 0 | heading x1 |
 | `forge` Tool Forge | coding | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `fractionViz` Fraction Lab | math | standard | 41 | 2 | 1 | 0 | 0 | 0 |  |

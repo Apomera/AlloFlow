@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T20:42:26.386Z",
+  "generatedAt": "2026-07-02T21:25:53.164Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 35
+    "monitoredMarkerCount": 36
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 35,
+    "markerPassCount": 36,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
@@ -489,6 +489,22 @@
       }
     },
     {
+      "id": "fisherLab",
+      "file": "stem_tool_fisherlab.js",
+      "marker": "data-fisherlab-command",
+      "label": "FisherLab harbor briefing",
+      "ok": true,
+      "htmlBytes": 20395,
+      "issues": [],
+      "metrics": {
+        "buttons": 24,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 20395
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -619,7 +635,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17204,
+      "htmlBytes": 17202,
       "issues": [
         {
           "toolId": "playlab",
@@ -648,7 +664,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17204
+        "htmlBytes": 17202
       }
     },
     {
@@ -746,14 +762,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13364,
+      "htmlBytes": 13365,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13364
+        "htmlBytes": 13365
       }
     },
     {
@@ -822,7 +838,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46587,
+      "htmlBytes": 46588,
       "issues": [
         {
           "toolId": "throwlab",
@@ -851,7 +867,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46587
+        "htmlBytes": 46588
       }
     },
     {

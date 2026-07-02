@@ -1,19 +1,19 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T20:42:26.386Z
+Generated: 2026-07-02T21:25:53.164Z
 
 ## Scope
 
 - Registered STEM tools: 113
 - STEM tool files: 110
-- Monitored student-facing visual markers: 35
+- Monitored student-facing visual markers: 36
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 35 |
+| Marker passes | 36 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 37 |
 | High-confidence monitored errors | 0 |
@@ -44,6 +44,7 @@ Generated: 2026-07-02T20:42:26.386Z
 | pass | `musicSynth` | `data-music-command` | Rendered |
 | pass | `molecule` | `data-molecule-command` | Rendered |
 | pass | `printingPress` | `data-printingpress-command` | Rendered |
+| pass | `fisherLab` | `data-fisherlab-command` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |

@@ -9071,6 +9071,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
+    var missionDrawerHook = useState(false);
+    var missionDrawerOpen = missionDrawerHook[0], setMissionDrawerOpen = missionDrawerHook[1];
 
     var checkpointHook = useState(null);
     var checkpointSpecimen = checkpointHook[0], setCheckpointSpecimen = checkpointHook[1];
@@ -9592,9 +9594,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── HOME tab
     function homeTab() {
-      var completedCount = Object.keys(loadState().completedMissions || {}).length;
-      var caughtCount = Object.keys(loadState().speciesCaught || {}).length;
+      var saved = loadState();
+      var completedState = saved.completedMissions || {};
+      var speciesState = saved.speciesCaught || {};
+      var completedCount = Object.keys(completedState).length;
+      var caughtCount = Object.keys(speciesState).length;
+      var activeRegion = REGIONS[region] || REGIONS.maine;
+      var nextMission = MISSIONS.filter(function(m) { return !completedState[m.id]; })[0] || MISSIONS[0];
+      var missionProgress = MISSIONS.length ? Math.round((completedCount / MISSIONS.length) * 100) : 0;
+      var routeCards = [
+        { tab: 'sim', step: 'Cast off', title: 'Launch the skiff', detail: 'Load the harbor sim, follow the channel, and fish the waypoint.', metric: sim.threeLoaded ? '3D ready' : 'Loads on demand', color: '#38bdf8' },
+        { tab: 'chart', step: 'Plot', title: 'Read the chart', detail: 'Check landmarks, hazards, and the route to the grounds before throttle.', metric: activeRegion.portName || 'Portland Harbor', color: '#fbbf24' },
+        { tab: 'colregs', step: 'Yield', title: 'Practice rules', detail: 'Use right-of-way decisions before crossing traffic in the sim.', metric: 'COLREGS warmup', color: '#c4b5fd' },
+        { tab: 'species', step: 'Identify', title: 'Know the catch', detail: 'Compare marks, habitat, and season clues before keeping a fish.', metric: caughtCount + ' species logged', color: '#86efac' },
+        { tab: 'regs', step: 'Measure', title: 'Check keeper rules', detail: 'Review size, slot, bag, and release rules for the active region.', metric: activeRegion.dmrAuthority || 'Regulations', color: '#fb923c' }
+      ];
       return h('div', null,
+        h('section', {
+          'data-fisherlab-command': 'true',
+          'aria-labelledby': 'fl-command-title',
+          style: Object.assign({}, cardStyle, {
+            padding: 16,
+            background: 'linear-gradient(135deg, rgba(8,47,73,0.96), rgba(6,78,59,0.86) 58%, rgba(17,24,39,0.94))',
+            border: '1px solid rgba(125,211,252,0.34)',
+            boxShadow: '0 18px 45px rgba(2,8,23,0.28)',
+            overflow: 'hidden'
+          })
+        },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 6 }) }, 'FisherLab Harbor Briefing'),
+              h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 24, lineHeight: 1.1, color: '#f8fafc', fontWeight: 900 } }, 'Choose a route, then cast off'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#dbeafe', maxWidth: 660 } },
+                'Start with the sim when you want motion and decisions, or warm up with chart, rules, species, and regulations before leaving the harbor. The full curriculum stays below when you need it.'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                [
+                  'Region: ' + (activeRegion.label || region),
+                  'Next mission: ' + (nextMission ? nextMission.title : 'Open water practice'),
+                  'Mission progress: ' + missionProgress + '%'
+                ].map(function(label, idx) {
+                  var colors = ['#bae6fd', '#fde68a', '#bbf7d0'];
+                  return h('span', {
+                    key: label,
+                    style: {
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      minHeight: 28,
+                      padding: '5px 9px',
+                      borderRadius: 8,
+                      background: 'rgba(2,6,23,0.42)',
+                      border: '1px solid rgba(226,232,240,0.16)',
+                      color: colors[idx],
+                      fontSize: 11,
+                      fontWeight: 800
+                    }
+                  }, label);
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(110px, 0.55fr)', gap: 10, minWidth: 0 } },
+              h('svg', { viewBox: '0 0 340 184', role: 'img', 'aria-label': 'Route from harbor to fishing grounds', style: { width: '100%', height: '100%', minHeight: 160, borderRadius: 8, background: '#082f49', border: '1px solid rgba(186,230,253,0.24)', display: 'block' } },
+                h('rect', { x: 0, y: 0, width: 340, height: 184, fill: '#082f49' }),
+                h('path', { d: 'M0 135 C52 116 76 132 118 106 C160 80 192 92 224 62 C252 36 294 35 340 20 L340 184 L0 184 Z', fill: '#064e3b', opacity: 0.78 }),
+                h('path', { d: 'M42 142 C88 118 126 108 166 92 C204 76 236 58 292 42', fill: 'none', stroke: '#fde68a', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: '8 8' }),
+                h('circle', { cx: 42, cy: 142, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 3 }),
+                h('circle', { cx: 166, cy: 92, r: 8, fill: '#f97316', stroke: '#ffedd5', strokeWidth: 3 }),
+                h('circle', { cx: 292, cy: 42, r: 10, fill: '#22c55e', stroke: '#dcfce7', strokeWidth: 3 }),
+                h('rect', { x: 72, y: 116, width: 10, height: 28, rx: 2, fill: '#ef4444' }),
+                h('rect', { x: 103, y: 103, width: 10, height: 28, rx: 2, fill: '#22c55e' }),
+                h('text', { x: 20, y: 166, fill: '#e0f2fe', fontSize: 12, fontWeight: 800 }, 'Harbor'),
+                h('text', { x: 132, y: 82, fill: '#ffedd5', fontSize: 12, fontWeight: 800 }, 'Buoys'),
+                h('text', { x: 244, y: 30, fill: '#dcfce7', fontSize: 12, fontWeight: 800 }, 'Grounds'),
+                h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, 'Red right returning')
+              ),
+              h('div', { style: { display: 'grid', gap: 8 } },
+                [
+                  { label: 'Keepers', value: (lifeLog || []).length, color: '#c4b5fd' },
+                  { label: 'Species', value: caughtCount + '/' + MAINE_SPECIES.length, color: '#86efac' },
+                  { label: 'Missions', value: completedCount + '/' + MISSIONS.length, color: '#fde68a' }
+                ].map(function(stat) {
+                  return h('div', { key: stat.label, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.46)', border: '1px solid rgba(226,232,240,0.14)' } },
+                    h('div', { style: { fontSize: 20, lineHeight: 1, fontWeight: 900, color: stat.color, marginBottom: 4 } }, stat.value),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', fontWeight: 800, textTransform: 'uppercase' } }, stat.label));
+                })
+              )
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(158px, 1fr))', gap: 10, marginTop: 14 } },
+            routeCards.map(function(route) {
+              return h('button', {
+                key: route.tab,
+                type: 'button',
+                className: 'fl-btn',
+                'aria-label': route.title + '. ' + route.detail,
+                onClick: function() {
+                  setTab(route.tab);
+                  flAnnounce(route.title + ' route open');
+                },
+                style: {
+                  minHeight: 126,
+                  textAlign: 'left',
+                  padding: 12,
+                  borderRadius: 8,
+                  border: '1px solid rgba(226,232,240,0.16)',
+                  background: 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
+                  color: '#e2e8f0',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: 8
+                }
+              },
+                h('span', { style: { display: 'inline-flex', width: 'fit-content', padding: '3px 7px', borderRadius: 8, background: route.color, color: '#04141f', fontSize: 10, fontWeight: 900 } }, route.step),
+                h('span', { style: { display: 'block', fontSize: 14, color: '#f8fafc', fontWeight: 900, lineHeight: 1.2 } }, route.title),
+                h('span', { style: { display: 'block', fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, route.detail),
+                h('span', { style: { display: 'block', fontSize: 10, color: route.color, fontWeight: 800 } }, route.metric));
+            })
+          )
+        ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🎣 FisherLab — Boating & Fishing Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -9614,7 +9732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           )),
         // Life-list histogram — catches by species (only renders once you've caught something).
         (function() {
-          var sc = loadState().speciesCaught || {};
+          var sc = speciesState;
           var ids = Object.keys(sc);
           if (!ids.length) return null;
           var ALL = MAINE_SPECIES.concat(CHESAPEAKE_SPECIES, PNW_SPECIES, GREATLAKES_SPECIES);
@@ -9635,16 +9753,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           );
         })(),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Missions (v1)'),
-          MISSIONS.map(function(m, i) {
-            var done = !!(loadState().completedMissions || {})[m.id];
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+            h('div', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Mission Log'),
+            h('button', {
+              type: 'button',
+              className: 'fl-btn',
+              onClick: function() {
+                setMissionDrawerOpen(!missionDrawerOpen);
+                flAnnounce(missionDrawerOpen ? 'Mission details collapsed' : 'Mission details expanded');
+              },
+              style: { padding: '7px 10px', borderRadius: 8, border: '1px solid rgba(56,189,248,0.35)', background: missionDrawerOpen ? '#0ea5e9' : 'rgba(15,23,42,0.68)', color: missionDrawerOpen ? '#04141f' : '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+            }, missionDrawerOpen ? 'Hide details' : 'Show details')
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(56,189,248,0.16)', marginBottom: 10 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc' } }, nextMission ? nextMission.title : 'All missions complete'),
+              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#86efac' } }, completedCount + ' of ' + MISSIONS.length + ' complete')
+            ),
+            h('div', { style: { height: 10, borderRadius: 8, background: 'rgba(2,6,23,0.65)', overflow: 'hidden', marginBottom: 8 } },
+              h('div', { style: { width: missionProgress + '%', height: '100%', borderRadius: 8, background: 'linear-gradient(90deg,#22c55e,#38bdf8)' } })),
+            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, nextMission ? nextMission.brief : 'You have cleared the current mission set. Use the chart, species, and regulations routes to keep practicing.')),
+          missionDrawerOpen ? MISSIONS.map(function(m, i) {
+            var done = !!completedState[m.id];
             return h('div', { key: m.id, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '3px solid ' + (done ? '#86efac' : '#38bdf8') } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: done ? '#86efac' : '#bae6fd', marginBottom: 4 } },
                 (done ? '✓ ' : (i + 1) + '. ') + m.title),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 6 } }, m.brief),
               h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })));
-          })),
+          }) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.36)', color: '#94a3b8', fontSize: 11, lineHeight: 1.45 } },
+            'Mission objectives are tucked away until needed. Use Show details for the full expedition list.')),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'How to play'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
