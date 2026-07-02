@@ -3596,11 +3596,12 @@ var createDocPipeline = function(deps) {
     if (_hasImages) warnLog(`[aiFixChunked:${label}] stripped ${_imgCounter} base64 image data URLs before AI processing`);
     const _restoreImages = function(fixedHtml) {
       if (!_hasImages) return fixedHtml;
-      var restored = fixedHtml;
-      for (var key in _imgDataMap) {
-        restored = restored.split(key).join(_imgDataMap[key]);
-      }
-      return restored;
+      // P3 (deep dive 2026-07-02): was one full-document split/join PER image — 50 images on a
+      // 10MB doc allocated ~500MB of transient strings per fix pass. One regex pass restores
+      // every token; unknown tokens are left as-is (same behavior as before).
+      return fixedHtml.replace(/__IMG_DATA_(\d+)__/g, function(tok) {
+        return Object.prototype.hasOwnProperty.call(_imgDataMap, tok) ? _imgDataMap[tok] : tok;
+      });
     };
     const chunks = splitHtmlOnTagBoundary(_hasImages ? strippedHtml : html, HTML_FIX_CHUNK);
     if (chunks.length === 1) {
@@ -6003,7 +6004,13 @@ var createDocPipeline = function(deps) {
     if (raw.length * 0.75 > _MAX_PDF_BYTES) {
       throw new Error('File is too large (~' + Math.round(raw.length * 0.75 / (1024 * 1024)) + ' MB). The accessibility pipeline handles up to ' + Math.round(_MAX_PDF_BYTES / (1024 * 1024)) + ' MB — please split the document into smaller parts.');
     }
-    return Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+    // P4 (deep dive 2026-07-02): was Uint8Array.from(atob(raw), c => c.charCodeAt(0)) — a JS
+    // callback PER BYTE (50M invocations ≈ seconds of main-thread block on a 50MB file, and
+    // this helper runs several times per pipeline run). Plain indexed loop is ~10× faster.
+    const bin = atob(raw);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
   };
 
   // Extract text from a PDF using pdf.js's native text layer. Zero AI calls, zero truncation.
@@ -6131,10 +6138,17 @@ var createDocPipeline = function(deps) {
     };
   };
 
+  // P1 (deep dive 2026-07-02): also accepts a Uint8Array. The tagged-PDF round-trip
+  // verification used to re-ENCODE both the original and the shipped PDF to base64 (≈134MB
+  // of transient strings for a 50MB doc) at the exact peak-memory moment, only for this
+  // function to immediately decode them back. Bytes are CLONED before pdf.js sees them —
+  // getDocument({data}) transfers the buffer to the worker and would detach the caller's copy.
   const extractPdfTextDeterministic = async (base64) => {
+    const _isBytes = (typeof Uint8Array !== 'undefined') && (base64 instanceof Uint8Array);
     // Transcript chokepoint: EVERY caller (skip-to-extraction, the audit
     // baseline, the fix flow's Step 0) inherits transcript awareness here.
-    const _transcript = decodeTranscriptPayload(base64);
+    // (Byte inputs are never transcripts — transcripts only arrive as upload base64.)
+    const _transcript = _isBytes ? null : decodeTranscriptPayload(base64);
     if (_transcript !== null) {
       return {
         fullText: _transcript,
@@ -6148,7 +6162,7 @@ var createDocPipeline = function(deps) {
     try {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
-      const bytes = _b64ToBytes(base64);
+      const bytes = _isBytes ? new Uint8Array(base64) : _b64ToBytes(base64); // clone: pdf.js detaches the buffer it is given
       pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (text layer)');
       const pages = [];
       // 2026-06-08: per-page try/catch — a single-page parse error previously
@@ -7373,9 +7387,44 @@ var createDocPipeline = function(deps) {
   // empty page and continues exactly as before (no downstream behavior change on success).
   const _OCR_RECOGNIZE_TIMEOUT_FIRST_MS = 120000; // 1st attempt: covers first-page model download + OCR on slow links
   const _OCR_RECOGNIZE_TIMEOUT_NEXT_MS = 60000;   // later attempts: model cached / hang already established → tighter
+  // P7 (deep dive 2026-07-02): shared per-language Tesseract worker. The functional API spawns
+  // a FRESH worker (WASM boot + traineddata init, ~1-3s) per call — a 200-page scan paid ~200
+  // boots, minutes of pure overhead. One worker is created lazily per language and reused
+  // across pages; ANY shared-path failure tears it down and _ocrRecognize falls back to the
+  // fresh-spawn functional attempts below, preserving the self-healing property the 2026-06-18
+  // reliability chain was built on. Released in the OCR loops' finally blocks.
+  let _ocrSharedWorker = null;
+  let _ocrSharedWorkerLang = null;
+  const _ocrWorkerRelease = async () => {
+    const w = _ocrSharedWorker;
+    _ocrSharedWorker = null; _ocrSharedWorkerLang = null;
+    if (w) { try { await w.terminate(); } catch (_) {} }
+  };
+  const _ocrSharedRecognize = async (canvas, lang, label) => {
+    const _boot = !_ocrSharedWorker || _ocrSharedWorkerLang !== lang;
+    if (_boot) {
+      await _ocrWorkerRelease();
+      _ocrSharedWorker = await _withTimeout(window.Tesseract.createWorker(lang), _OCR_RECOGNIZE_TIMEOUT_FIRST_MS, 'Tesseract.createWorker (' + (label || '?') + ' lang=' + lang + ')');
+      _ocrSharedWorkerLang = lang;
+    }
+    return _withTimeout(
+      _ocrSharedWorker.recognize(canvas, undefined, { blocks: true, text: true }),
+      _boot ? _OCR_RECOGNIZE_TIMEOUT_FIRST_MS : _OCR_RECOGNIZE_TIMEOUT_NEXT_MS,
+      'worker.recognize (' + (label || '?') + ' lang=' + lang + ')'
+    );
+  };
   const _ocrRecognize = async (canvas, lang, label) => {
     if (!canvas) throw new Error('OCR recognize: canvas missing'); // can't happen at current call sites; clear error if it ever does
     const useLang = lang || 'eng';
+    // P7 fast path: reuse the shared worker; on failure release it and run the fresh-spawn chain.
+    if (window.Tesseract && typeof window.Tesseract.createWorker === 'function') {
+      try {
+        return await _ocrSharedRecognize(canvas, useLang, label);
+      } catch (eShared) {
+        try { warnLog('[Tesseract] shared-worker path failed (' + (eShared && eShared.message) + ') — falling back to fresh-spawn attempts (' + (label || '?') + ')'); } catch (_) {}
+        await _ocrWorkerRelease();
+      }
+    }
     const attempts = [{ l: useLang, b: true }, { l: useLang, b: false }];
     if (useLang !== 'eng') attempts.push({ l: 'eng', b: true }, { l: 'eng', b: false });
     let lastErr = null;
@@ -7467,7 +7516,10 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       warnLog('[Tesseract] extractPdfTextTesseract failed:', e && e.message);
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: [] };
-    } finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
+    } finally {
+      if (pdf) { try { pdf.destroy(); } catch (_) {} }
+      try { await _ocrWorkerRelease(); } catch (_) {} // P7: free the shared worker at end-of-document
+    }
   };
 
   // Render + OCR a SPECIFIC SET of 1-indexed pages (Tesseract only — zero API cost). Used to
@@ -7508,7 +7560,10 @@ var createDocPipeline = function(deps) {
         finally { if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} } }
       }
     } catch (_e) { try { warnLog('[Mixed-page OCR] setup failed (keeping text-layer): ' + (_e && _e.message)); } catch (_) {} }
-    finally { if (pdf) { try { pdf.destroy(); } catch (_) {} } }
+    finally {
+      if (pdf) { try { pdf.destroy(); } catch (_) {} }
+      try { await _ocrWorkerRelease(); } catch (_) {} // P7: free the shared worker at end-of-batch
+    }
     return out;
   };
 
@@ -8256,12 +8311,9 @@ var createDocPipeline = function(deps) {
   const _AUDIT_SLICE_PAGES   = 20;      // page-count threshold: above this, chunk-first even if bytes are modest (output-truncation risk)
   const _AUDIT_SLICE_PAGES_PER = 4;     // pages per slice — small enough to fit the model reliably
   const _AUDIT_SLICE_MAX     = 40;      // cap total slices (throttle/cost guard); pages-per-slice grows past this
-  const _auditB64ToBytes = (b64) => {
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return bytes;
-  };
+  // P4 (deep dive 2026-07-02): delegate to _b64ToBytes — this duplicate had NO 200MB OOM cap,
+  // so the audit path could still crash the tab on an input the fix path would have rejected.
+  const _auditB64ToBytes = (b64) => _b64ToBytes(b64);
   const _pdfAuditPageCount = async (base64Data) => {
     try {
       const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
@@ -14393,6 +14445,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // feed the render stalls. The immediate crops below use the live lossless canvas, so
                   // only the re-crop-UI cache is slightly lossy. (2026-06-19)
                   if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
+                  // P2 (deep dive 2026-07-02): FIFO-cap the re-crop cache at 30 pages. It used to
+                  // retain a full-page JPEG data URL (0.5-1.5MB each) for EVERY image-bearing page
+                  // for the rest of the session — 100-300MB after an image-heavy textbook run,
+                  // stacking on top of the result HTML right when the tab is at peak memory. The
+                  // cache only serves the in-session re-crop UI; evicted pages just lose one-click
+                  // re-crop (the image itself is already in the document).
+                  {
+                    const _pcKeys = Object.keys(window.__pdfPageCanvases);
+                    if (_pcKeys.length >= 30 && !(pg in window.__pdfPageCanvases)) delete window.__pdfPageCanvases[_pcKeys[0]];
+                  }
                   window.__pdfPageCanvases[pg] = canvas.toDataURL('image/jpeg', 0.82);
 
                   // ── Solid-fill / near-uniform crop rejector (2026-06-14) ──
@@ -14488,7 +14550,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                             // placeholder (its description) downstream.
                             warnLog(`[PDF Fix] Skipped near-uniform (solid-fill) crop on page ${pg} — degrading to text placeholder`);
                           } else {
-                            const dataUrl = crop.toDataURL('image/png');
+                            // P3 (deep dive 2026-07-02): JPEG, not PNG — PDF page renders are opaque
+                            // (no alpha to preserve) and PNG crops were ~10× larger, then string-churned
+                            // through every fix pass via the data-URL strip/restore cycle.
+                            const dataUrl = crop.toDataURL('image/jpeg', 0.85);
                             extractedImages[img.idx].generatedSrc = dataUrl;
                             extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
                             warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
@@ -15947,7 +16012,7 @@ window.__pdfCropImage = function(imgId) {
       var c = document.createElement('canvas');
       c.width = Math.round(sw); c.height = Math.round(sh);
       c.getContext('2d').drawImage(tmpImg, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, c.width, c.height);
-      var dataUrl = c.toDataURL('image/png');
+      var dataUrl = c.toDataURL('image/jpeg', 0.85); // P3: source is the opaque JPEG page cache — PNG only inflated size ~10×
       var container = document.getElementById(imgId + '-container');
       var img = container && container.querySelector('img');
       if (img) { img.src = dataUrl; }
@@ -21549,20 +21614,13 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // is no worse than the pre-existing behavior (no text diff at all).
     if (_roundTrip && _roundTrip.ok !== null) {
       try {
-        const _u8ToB64 = (u8) => {
-          let s = '';
-          const CHUNK = 0x8000;
-          for (let i = 0; i < u8.length; i += CHUNK) {
-            s += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK));
-          }
-          return btoa(s);
-        };
+        // P1 (deep dive 2026-07-02): pass bytes directly — the base64 round-trip here built two
+        // ~1.33× copies of both PDFs (≈134MB transient for a 50MB doc) at the tagging phase's
+        // peak-memory moment. extractPdfTextDeterministic clones internally before pdf.js.
         const _origU8 = (originalPdfBytes instanceof Uint8Array) ? originalPdfBytes : new Uint8Array(originalPdfBytes);
         const _shipU8 = _bytes;
-        const _origB64 = _u8ToB64(_origU8);
-        const _shipB64 = _u8ToB64(_shipU8);
-        const _origDet = await extractPdfTextDeterministic(_origB64);
-        const _shipDet = await extractPdfTextDeterministic(_shipB64);
+        const _origDet = await extractPdfTextDeterministic(_origU8);
+        const _shipDet = await extractPdfTextDeterministic(_shipU8);
         const _origText = (_origDet && _origDet.fullText) || '';
         const _shipText = (_shipDet && _shipDet.fullText) || '';
         if (_origText && _shipText) {
