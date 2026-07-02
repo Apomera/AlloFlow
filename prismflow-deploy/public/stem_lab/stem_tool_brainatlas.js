@@ -8,6 +8,54 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// Brain Atlas visual shell: scoped so the lab can be refined without touching shared chrome.
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-brainatlas-refine-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-brainatlas-refine-css';
+  st.textContent = [
+    '.brainatlas-tool-shell{--ba-purple:#7c3aed;--ba-sky:#0ea5e9;--ba-teal:#0f766e;--ba-amber:#d97706;--ba-rose:#e11d48;color:#0f172a;}',
+    '.brainatlas-topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px;}',
+    '.brainatlas-mission{position:relative;overflow:hidden;border:1px solid rgba(15,23,42,.12);border-radius:8px;background:linear-gradient(135deg,#ffffff 0%,#f8fbff 46%,#f4f8f7 100%);box-shadow:0 16px 36px rgba(15,23,42,.08);margin-bottom:12px;}',
+    '.brainatlas-mission:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--ba-teal),var(--ba-sky),var(--ba-purple),var(--ba-amber));}',
+    '.brainatlas-mission-inner{position:relative;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.8fr);gap:14px;padding:18px;}',
+    '.brainatlas-mission-kicker{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:var(--ba-teal);margin:0 0 4px;}',
+    '.brainatlas-mission-title{font-size:22px;line-height:1.12;font-weight:900;margin:0;color:#172554;}',
+    '.brainatlas-mission-copy{font-size:12px;line-height:1.55;color:#475569;margin:8px 0 12px;max-width:68ch;}',
+    '.brainatlas-action-row{display:flex;flex-wrap:wrap;gap:8px;}',
+    '.brainatlas-action-row button{border-radius:8px;min-height:34px;}',
+    '.brainatlas-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
+    '.brainatlas-metric{border:1px solid rgba(15,23,42,.10);border-radius:8px;background:rgba(255,255,255,.78);padding:10px;min-height:70px;}',
+    '.brainatlas-metric-label{font-size:10px;font-weight:900;text-transform:uppercase;color:#64748b;margin:0 0 4px;}',
+    '.brainatlas-metric-value{font-size:18px;line-height:1.1;font-weight:900;color:#0f172a;margin:0;}',
+    '.brainatlas-metric-note{font-size:10px;line-height:1.35;color:#64748b;margin:4px 0 0;}',
+    '.brainatlas-view-rail{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding:2px 1px 8px;margin-bottom:10px;}',
+    '.brainatlas-view-rail button{white-space:nowrap;border-radius:8px;}',
+    '.brainatlas-mode-card{border-radius:8px!important;}',
+    '.brainatlas-controls{align-items:center;border:1px solid rgba(15,23,42,.10);border-radius:8px;background:#fff;padding:10px;box-shadow:0 8px 22px rgba(15,23,42,.05);}',
+    '.brainatlas-function-match{border-radius:8px!important;}',
+    '.brainatlas-main-stack{display:grid;gap:12px;}',
+    '.brainatlas-canvas-shell{border:1px solid rgba(15,23,42,.12);border-radius:8px;background:linear-gradient(180deg,#ffffff,#f8fafc);box-shadow:0 18px 38px rgba(15,23,42,.08);overflow:hidden;}',
+    '.brainatlas-canvas-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(15,23,42,.08);background:linear-gradient(90deg,rgba(14,165,233,.08),rgba(15,118,110,.06));}',
+    '.brainatlas-canvas-title{font-size:13px;font-weight:900;color:#0f172a;margin:0;}',
+    '.brainatlas-canvas-subtitle{font-size:11px;line-height:1.45;color:#64748b;margin:2px 0 0;}',
+    '.brainatlas-canvas-chip{flex:0 0 auto;border-radius:999px;background:#e0f2fe;color:#075985;font-size:10px;font-weight:900;padding:5px 8px;}',
+    '.brainatlas-canvas-stage{display:flex;justify-content:center;padding:12px;background:radial-gradient(circle at 50% 20%,rgba(124,58,237,.10),transparent 42%),#fbfdff;}',
+    '.brainatlas-canvas{border-radius:8px!important;border-color:rgba(124,58,237,.24)!important;box-shadow:0 12px 30px rgba(124,58,237,.10);}',
+    '.brainatlas-nt-inquiry{border-radius:8px!important;box-shadow:0 16px 32px rgba(15,23,42,.16);}',
+    '.brainatlas-region-list-card{border:1px solid rgba(15,23,42,.12);border-radius:8px;background:#fff;padding:12px;box-shadow:0 12px 30px rgba(15,23,42,.06);}',
+    '.brainatlas-region-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}',
+    '.brainatlas-region-list-title{font-size:12px;font-weight:900;color:#0f172a;margin:0;}',
+    '.brainatlas-region-list-note{font-size:10px;font-weight:800;color:#64748b;margin:0;}',
+    '.brainatlas-region-list{max-height:380px;overflow:auto;padding-right:4px;}',
+    '.brainatlas-detail-panel{border-radius:8px!important;}',
+    '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-canvas-header{display:block;}.brainatlas-canvas-chip{display:inline-block;margin-top:8px;}.brainatlas-canvas-stage{padding:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}}',
+    '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_brainatlas.js - Brain Atlas Explorer plugin
 // Extracted from stem_tool_science.js
 var prefersReducedMotion = (function() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
@@ -3531,6 +3579,17 @@ var d = labToolData.brainAtlas || {};
             { target: 'the prefrontal association cortex', options: ['An immediate hand twitch', 'A loud ringing', 'Usually little or no obvious effect', 'A bright flash of light'], correctIdx: 2, note: t('stem.brainatlas.much_of_association_cortex_including_p', 'Much of association cortex (including prefrontal) is electrically quiet: stimulation produces no dramatic response. Not every brain area maps to one obvious output.') }
           ];
           var VIEW_KEYS = Object.keys(VIEWS);
+          var viewsExploredCount = Object.keys(d.viewsExplored || {}).length;
+          var atlasCompletion = VIEW_KEYS.length ? Math.min(100, Math.round((viewsExploredCount / VIEW_KEYS.length) * 100)) : 0;
+          var selectedLabel = sel && sel.name ? sel.name : t('stem.brainatlas.none_selected', 'None selected');
+          var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
+          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
+          var atlasW = specialAtlasView ? 600 : 520;
+          var atlasH = specialAtlasView ? 500 : 460;
+          var missionText = sel
+            ? t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.')
+            : currentView.desc;
+          var quizScoreLabel = (d.quizCorrect || 0) + ' correct';
           // Patient Simulator: an AI patient roleplays the real effect of a hidden
           // stimulation; the student guesses the region. Grounded in STIM_SCENARIOS.
           function startPatient() {
@@ -3578,8 +3637,9 @@ var d = labToolData.brainAtlas || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto animate-in fade-in duration-200",
+              className: "brainatlas-tool-shell max-w-6xl mx-auto animate-in fade-in duration-200",
               role: "region",
+              "data-brainatlas-tool": "true",
               "aria-label": "Brain Atlas. Keyboard shortcuts: 1 through " + VIEW_KEYS.length + " switch views, Q toggles quiz, / focuses search, Escape closes region detail.",
               tabIndex: 0,
               onKeyDown: onBrainKey
@@ -3587,7 +3647,7 @@ var d = labToolData.brainAtlas || {};
 
             // Header
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "brainatlas-topbar" },
 
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': t('stem.brainatlas.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
@@ -3599,6 +3659,69 @@ var d = labToolData.brainAtlas || {};
 
               )
 
+            ),
+
+            React.createElement("section", { className: "brainatlas-mission", "data-brainatlas-mission": "true" },
+              React.createElement("div", { className: "brainatlas-mission-inner" },
+                React.createElement("div", null,
+                  React.createElement("p", { className: "brainatlas-mission-kicker" }, t('stem.brainatlas.neural_systems_lab', 'Neural systems lab')),
+                  React.createElement("h2", { className: "brainatlas-mission-title" }, currentView.name),
+                  React.createElement("p", { className: "brainatlas-mission-copy" }, missionText),
+                  React.createElement("div", { className: "brainatlas-action-row", role: "group", "aria-label": t('stem.brainatlas.brain_atlas_modes', 'Brain atlas modes') },
+                    React.createElement("button", {
+                      onClick: function () {
+                        if (viewKey === 'neurotransmitters') {
+                          upd('view', 'lateral');
+                          upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o.lateral = true; return o; })());
+                        }
+                        upd('quizMode', false); upd('selectedRegion', null); upd('search', ''); upd('showNtInquiry', false);
+                      },
+                      className: "px-3 py-1.5 text-xs font-black border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors active:scale-[0.97]"
+                    }, t('stem.brainatlas.atlas_view', 'Atlas view')),
+                    React.createElement("button", {
+                      onClick: function () {
+                        upd('view', 'neurotransmitters');
+                        upd('viewsExplored', (function () { var o = Object.assign({}, d.viewsExplored); o.neurotransmitters = true; return o; })());
+                        upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); upd('showNtInquiry', true);
+                      },
+                      "aria-pressed": showNtInquiry ? "true" : "false",
+                      className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (showNtInquiry ? 'border-emerald-500 bg-emerald-600 text-white' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100')
+                    }, t('stem.brainatlas.neurochemistry_lab', 'Neurochemistry')),
+                    React.createElement("button", {
+                      onClick: function () { upd('fmOpen', !d.fmOpen); },
+                      "aria-pressed": d.fmOpen ? "true" : "false",
+                      className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (d.fmOpen ? 'border-violet-500 bg-violet-600 text-white' : 'border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100')
+                    }, d.fmOpen ? t('stem.brainatlas.hide_function_match', 'Hide Function Match') : t('stem.brainatlas.function_match_2', 'Function Match')),
+                    React.createElement("button", {
+                      onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+                      "aria-pressed": d.quizMode ? "true" : "false",
+                      className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (d.quizMode ? 'border-sky-600 bg-sky-600 text-white' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100')
+                    }, d.quizMode ? t('stem.brainatlas.quiz_active', 'Quiz active') : t('stem.brainatlas.start_quiz', 'Start quiz'))
+                  )
+                ),
+                React.createElement("div", { className: "brainatlas-metric-grid", "aria-label": t('stem.brainatlas.brain_atlas_progress_summary', 'Brain atlas progress summary') },
+                  React.createElement("div", { className: "brainatlas-metric" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.views_explored', 'Views explored')),
+                    React.createElement("p", { className: "brainatlas-metric-value" }, viewsExploredCount + " / " + VIEW_KEYS.length),
+                    React.createElement("p", { className: "brainatlas-metric-note" }, atlasCompletion + "% map coverage")
+                  ),
+                  React.createElement("div", { className: "brainatlas-metric" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.current_targets', 'Current targets')),
+                    React.createElement("p", { className: "brainatlas-metric-value" }, filtered.length),
+                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.regions_in_this_view', 'regions in this view'))
+                  ),
+                  React.createElement("div", { className: "brainatlas-metric" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.quiz_score', 'Quiz score')),
+                    React.createElement("p", { className: "brainatlas-metric-value" }, quizScoreLabel),
+                    React.createElement("p", { className: "brainatlas-metric-note" }, t('stem.brainatlas.damage_pattern_practice', 'damage-pattern practice'))
+                  ),
+                  React.createElement("div", { className: "brainatlas-metric" },
+                    React.createElement("p", { className: "brainatlas-metric-label" }, t('stem.brainatlas.selected', 'Selected')),
+                    React.createElement("p", { className: "brainatlas-metric-value", style: { fontSize: selectedLabel.length > 18 ? 13 : 18 } }, selectedLabel),
+                    React.createElement("p", { className: "brainatlas-metric-note" }, sel ? t('stem.brainatlas.detail_panel_ready', 'detail panel ready') : t('stem.brainatlas.pick_a_region', 'pick a region on the atlas'))
+                  )
+                )
+              )
             ),
 
             // \u2550\u2550 NEUROTRANSMITTER INQUIRY widget (H7b'') \u2550\u2550
@@ -3630,8 +3753,9 @@ var d = labToolData.brainAtlas || {};
                 { k: 'glutamate', label: t('stem.brainatlas.glutamate', 'Glutamate'), short: 'Glu', col: '#f87171' },
                 { k: 'norepi', label: t('stem.brainatlas.norepinephrine', 'Norepinephrine'), short: 'NE', col: '#facc15' }
               ];
+              if (!showNtInquiry) return null;
               // SVG: bars
-              return React.createElement('div', { className: 'p-3 rounded-xl mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+              return React.createElement('div', { className: 'brainatlas-nt-inquiry p-3 mb-3', "data-brainatlas-nt-inquiry": "true", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                 React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.brainatlas.neurotransmitter_inquiry_predict_the_s', '\uD83D\uDD2C Neurotransmitter Inquiry \u2014 Predict the State')),
                 React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.brainatlas.set_five_neurotransmitter_levels_predi', 'Set five neurotransmitter levels. Predict the felt state before reading it. No score, no reveal \u2014 and no clinical interpretation.')),
                 React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
@@ -3704,9 +3828,9 @@ var d = labToolData.brainAtlas || {};
 
             // View tabs
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+            React.createElement("div", { className: "brainatlas-view-rail", "data-brainatlas-view-rail": "true" },
 
-              Object.keys(VIEWS).map(function (key) {
+              VIEW_KEYS.map(function (key) {
 
                 var v = VIEWS[key];
 
@@ -3737,10 +3861,12 @@ var d = labToolData.brainAtlas || {};
               };
               var meta = VIEW_META[viewKey] || VIEW_META.lateral;
               return React.createElement('div', {
+                className: 'brainatlas-mode-card',
+                "data-brainatlas-mode-card": "true",
                 style: {
                   marginBottom: '12px',
                   padding: '12px 14px',
-                  borderRadius: 12,
+                  borderRadius: 8,
                   background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
@@ -3757,7 +3883,7 @@ var d = labToolData.brainAtlas || {};
 
             // Controls
 
-            React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },
+            React.createElement("div", { className: "brainatlas-controls flex gap-2 mb-3 flex-wrap", "data-brainatlas-controls": "true" },
 
               React.createElement("input", {
 
@@ -3861,7 +3987,7 @@ var d = labToolData.brainAtlas || {};
                 upd('fmStreak', newStreak);
                 upd('fmBest', newBest);
               }
-              return React.createElement("div", { style: { padding: 14, marginBottom: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(255,255,255,0))', border: '2px solid rgba(124,58,237,0.30)' } },
+              return React.createElement("div", { className: "brainatlas-function-match", "data-brainatlas-function-match": fmOpen ? "open" : "closed", style: { padding: 14, marginBottom: 14, borderRadius: 8, background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(255,255,255,0))', border: '2px solid rgba(124,58,237,0.30)' } },
                 React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
                   React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     React.createElement("span", { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
@@ -3972,7 +4098,7 @@ var d = labToolData.brainAtlas || {};
 
             // Main: canvas (full width) + detail below
 
-            React.createElement("div", { className: "space-y-3" },
+            React.createElement("div", { className: "brainatlas-main-stack", "data-brainatlas-main": "true" },
 
               // ─── Simulation scenario buttons (NT view only) ───
 
@@ -4000,15 +4126,31 @@ var d = labToolData.brainAtlas || {};
 
               // ─── Canvas ───
 
-              React.createElement("div", { style: { display: 'flex', justifyContent: 'center' } },
+              React.createElement("div", { className: "brainatlas-canvas-shell", "data-brainatlas-canvas-shell": "true" },
+
+                React.createElement("div", { className: "brainatlas-canvas-header" },
+
+                  React.createElement("div", null,
+
+                    React.createElement("p", { className: "brainatlas-canvas-title" }, currentView.name),
+
+                    React.createElement("p", { className: "brainatlas-canvas-subtitle" }, sel ? (t('stem.brainatlas.selected_region', 'Selected region') + ': ' + sel.name) : t('stem.brainatlas.select_a_region_or_switch_views', 'Select a region on the atlas, or switch views to compare systems.'))
+
+                  ),
+
+                  React.createElement("span", { className: "brainatlas-canvas-chip" }, filtered.length + " targets")
+
+                ),
+
+                React.createElement("div", { className: "brainatlas-canvas-stage" },
 
                 React.createElement("canvas", {
 
                   ref: canvasRef,
 
-                  width: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral) ? 600 : 520,
+                  width: atlasW,
 
-                  height: (currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral) ? 500 : 460,
+                  height: atlasH,
 
                   onClick: handleClick,
 
@@ -4016,11 +4158,15 @@ var d = labToolData.brainAtlas || {};
 
                   "aria-label": "Brain atlas showing " + (currentView && currentView.name ? currentView.name : 'lateral') + " view" + (sel && sel.name ? ", selected region: " + sel.name : ""),
 
-                  className: "rounded-xl border-2 border-purple-200 cursor-crosshair",
+                  className: "brainatlas-canvas border-2 cursor-crosshair",
+
+                  "data-brainatlas-canvas": "true",
 
                   style: { background: '#faf8ff', maxWidth: '100%' }
 
                 })
+
+                )
 
               ),
 
@@ -4174,7 +4320,7 @@ var d = labToolData.brainAtlas || {};
 
               d.quizMode ? (
 
-                quizQ ? React.createElement("div", { className: "bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
+                quizQ ? React.createElement("div", { className: "brainatlas-detail-panel bg-white rounded-xl border-2 border-green-200 p-4 space-y-3" },
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -4248,11 +4394,11 @@ var d = labToolData.brainAtlas || {};
 
                 ) : null
 
-              ) : (
+              ) : React.createElement(React.Fragment, null,
 
               // ─── Brainwave Visualizer ───
 
-              React.createElement("div", { className: "rounded-xl border-2 border-purple-200 overflow-hidden", style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)' } },
+              currentView.isEEG && React.createElement("div", { className: "rounded-xl border-2 border-purple-200 overflow-hidden", "data-brainatlas-eeg-panel": "true", style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)' } },
 
                 React.createElement("div", { className: "p-3" },
 
@@ -4406,7 +4552,7 @@ var d = labToolData.brainAtlas || {};
 
               // ─── Brainwave canvas renderer (async) ───
 
-              (function () {
+              currentView.isEEG && (function () {
 
                 setTimeout(function () {
 
@@ -4579,7 +4725,7 @@ var d = labToolData.brainAtlas || {};
 
                 sel ? (
 
-                  React.createElement("div", { className: "bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
+                  React.createElement("div", { className: "brainatlas-detail-panel bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3" },
 
                     React.createElement("div", { className: "flex items-start justify-between" },
 
@@ -4811,7 +4957,17 @@ var d = labToolData.brainAtlas || {};
 
                 ) : (
 
-                  React.createElement("div", { className: "space-y-1 max-h-[380px] overflow-y-auto pr-1" },
+                  React.createElement("div", { className: "brainatlas-region-list-card", "data-brainatlas-region-list": "true" },
+
+                    React.createElement("div", { className: "brainatlas-region-list-head" },
+
+                      React.createElement("p", { className: "brainatlas-region-list-title" }, t('stem.brainatlas.region_directory', 'Region directory')),
+
+                      React.createElement("p", { className: "brainatlas-region-list-note" }, filtered.length + " shown")
+
+                    ),
+
+                    React.createElement("div", { className: "brainatlas-region-list space-y-1" },
 
                     filtered.length === 0 && React.createElement("p", { className: "text-xs text-slate-600 italic py-4 text-center" }, t('stem.brainatlas.no_regions_match_your_search', "No regions match your search.")),
 
@@ -4834,6 +4990,8 @@ var d = labToolData.brainAtlas || {};
                       );
 
                     })
+
+                    )
 
                   )
 
