@@ -51,6 +51,33 @@ describe('pipeline factory runs headless with injected state (Phase 1 seam)', ()
   });
 });
 
+describe('brainstorm mind-map renders (regression: undeclared sourceTopic/pageTitle threw)', () => {
+  // 2026-07-02: the mind-map center label read two UNDECLARED identifiers — a ReferenceError
+  // that killed the WHOLE resource export whenever a brainstorm rendered in mind-map mode.
+  // Fixed to use the section title (escaped). This exercises the exact branch.
+  const brainstormItem = {
+    id: 'brainstorm-1',
+    type: 'brainstorm',
+    title: 'Photosynthesis <Ideas>',
+    data: [
+      { title: 'Light energy', description: 'Chlorophyll absorbs light' },
+      { title: 'Water uptake', connection: 'Roots to leaves' },
+    ],
+  };
+  // NB: brainstorm is a teacher-copy resource (generateResourceHTML returns '' for
+  // !isTeacher) — pass isTeacher=true to reach the mind-map branch.
+  it('interactive mode: renders the escaped title as the center bubble + one spoke per idea', () => {
+    const html = pipeline.generateResourceHTML(brainstormItem, true, {}, { brainstormDisplayMode: 'mindmap' });
+    expect(html).toContain('Photosynthesis &lt;Ideas&gt;'); // escaped — this is AI/user content in HTML
+    expect((html.match(/data-spoke-idx=/g) || []).length).toBe(2); // one interactive spoke per idea
+  });
+  it('worksheet mode: same branch, blank spokes for students', () => {
+    const html = pipeline.generateResourceHTML(brainstormItem, true, {}, { brainstormDisplayMode: 'mindmap', isWorksheet: true });
+    expect(html).toContain('alloflow-mindmap-spoke');
+    expect(html).toContain('How to use:');
+  });
+});
+
 // Synthetic before/after audit data (shape matches the live call site in
 // view_pdf_audit_source.jsx). Structural (axe) 100 vs semantic (AI) 64 -> 36-pt divergence.
 const beforeAfter = {

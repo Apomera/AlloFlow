@@ -25617,7 +25617,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // spoke bubbles for each idea. CSS-only layout (no SVG connectors
               // in v1). In worksheet mode, spokes are empty for students to
               // fill; in interactive mode, spoke clicks expand to show details.
-              const centerLabel = (sourceTopic || pageTitle || 'Topic').slice(0, 60);
+              // Bug fix (S1 step-0 find, 2026-07-02): `sourceTopic`/`pageTitle` were UNDECLARED —
+              // this line threw a ReferenceError whenever a brainstorm rendered in mind-map mode,
+              // killing the whole resource export. Use the section title (item.title with the
+              // getDefaultTitle fallback, always a string) and escape it — it is AI/user content
+              // landing in HTML.
+              const centerLabel = _escTxt(String(title || 'Topic').slice(0, 60));
               const spokeColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
               const spokesHtml = item.data.map((idea, idx) => {
                   const color = spokeColors[idx % spokeColors.length];
