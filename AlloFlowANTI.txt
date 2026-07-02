@@ -7377,7 +7377,35 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               showSpotlight(element, title, text);
           }
       };
-      const FALLBACK_HELP = "Help for this isn't written yet. If a tip here would help, let us know and we'll add one.";
+      const INTERACTIVE_HELP_SELECTOR = 'button, a, input, select, textarea, label, [role="button"], [role="link"], [role="checkbox"], [role="tab"], [role="switch"], [tabindex]';
+      const describeInteractiveControl = (element, labelText = '') => {
+          const tag = (element && element.tagName ? element.tagName.toLowerCase() : '');
+          const role = (element && element.getAttribute && element.getAttribute('role')) || '';
+          const type = (element && element.getAttribute && element.getAttribute('type')) || '';
+          const label = String(labelText || '').replace(/\s+/g, ' ').trim();
+          const name = label ? `"${label}"` : 'this control';
+          if (tag === 'select') return `This menu is labeled ${name}. Open it to choose from the available options.`;
+          if (tag === 'textarea') return `This writing area is labeled ${name}. Enter, revise, or review longer text here.`;
+          if (tag === 'input') {
+              if (/checkbox|radio/i.test(type) || role === 'checkbox' || role === 'switch') return `This option is labeled ${name}. Select it to change that setting.`;
+              if (/range/i.test(type)) return `This slider is labeled ${name}. Adjust it to change the related value.`;
+              return `This field is labeled ${name}. Enter or edit information here.`;
+          }
+          if (role === 'switch' || role === 'checkbox') return `This toggle is labeled ${name}. Use it to turn the related setting on or off.`;
+          if (role === 'tab') return `This tab is labeled ${name}. Open it to switch the visible panel.`;
+          if (tag === 'a' || role === 'link') return `This link is labeled ${name}. Open it to navigate to the related resource or view.`;
+          return `This control is labeled ${name}. Use it to run the action named by its label.`;
+      };
+      const describeHelpArea = (title = 'this area') => {
+          const cleanTitle = String(title || 'this area').replace(/\s+/g, ' ').trim();
+          return `This area is ${cleanTitle}. Use the controls inside it to review, configure, or act on that part of AlloFlow.`;
+      };
+      const describeHelpTarget = (element, title) => {
+          try {
+              if (element && element.matches && element.matches(INTERACTIVE_HELP_SELECTOR)) return describeInteractiveControl(element, title);
+          } catch (_) {}
+          return describeHelpArea(title);
+      };
       const deriveTitle = (k) => {
           if (!k) return 'This control';
           const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
@@ -7409,20 +7437,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             const idx = tourSteps.findIndex(s => s.id === key);
             if (idx !== -1) { helpText = tourSteps[idx].text; helpTitle = tourSteps[idx].title; }
             else {
-                // Graceful fallback: a documented element with no text shouldn't be a dead click.
-                warnLog(`[Help Mode] No help text for key: ${key} — showing graceful fallback`);
-                helpText = FALLBACK_HELP;
+                // Graceful fallback: a documented element with no exact string still gets contextual help.
+                warnLog(`[Help Mode] No help text for key: ${key} - showing contextual fallback`);
+                helpText = describeHelpTarget(explicitHelp, helpTitle);
             }
         }
         setTimeout(() => expandAndShow(explicitHelp, key, helpTitle, helpText), 100);
         return;
       }
-      // No data-help-key ancestor: if an interactive control was clicked, still show a
-      // friendly "no help yet" popup so help mode never feels broken. Plain background is left alone.
-      const interactive = e.target.closest('button, a, input, select, textarea, label, [role="button"], [role="link"], [role="checkbox"], [role="tab"], [role="switch"], [tabindex]');
+      // No data-help-key ancestor: if an interactive control was clicked, still show contextual help. Plain background is left alone.
+      const interactive = e.target.closest(INTERACTIVE_HELP_SELECTOR);
       if (interactive) {
         const label = (interactive.getAttribute && (interactive.getAttribute('aria-label') || interactive.getAttribute('title'))) || (interactive.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 48);
-        showSpotlight(interactive, label || 'This control', FALLBACK_HELP);
+        showSpotlight(interactive, label || 'This control', describeInteractiveControl(interactive, label));
       }
     };
     document.addEventListener('click', handleHelpClick, true);
