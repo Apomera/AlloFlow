@@ -5409,7 +5409,17 @@
       }, []);
       const getEffectiveDifficulty = React.useCallback(() => {
         if (wordSoundsDifficulty !== "auto") return wordSoundsDifficulty;
-        const recentHistory = (wordSoundsHistory || []).slice(-10);
+        const hist = wordSoundsHistory || [];
+        // Adapt per-activity, not on a pooled window: a learner who is strong at
+        // blending but weak at segmentation shouldn't get one averaged difficulty
+        // that fits neither. Fall back to the pooled window until this activity
+        // has enough of its own signal (a fresh activity would otherwise adapt off
+        // 1-2 noisy items right after a switch).
+        const perActivity = hist
+          .filter((h) => h && h.activity === wordSoundsActivity)
+          .slice(-10);
+        const recentHistory =
+          perActivity.length >= 4 ? perActivity : hist.slice(-10);
         if (recentHistory.length < 3) return "easy";
         const correctCount = recentHistory.filter((h) => h.correct).length;
         const accuracy = correctCount / recentHistory.length;
@@ -5417,7 +5427,7 @@
         if (accuracy >= 0.85 - levelBoost) return "hard";
         if (accuracy >= 0.6 - levelBoost) return "medium";
         return "easy";
-      }, [wordSoundsDifficulty, wordSoundsHistory, wordSoundsLevel]);
+      }, [wordSoundsDifficulty, wordSoundsHistory, wordSoundsActivity, wordSoundsLevel]);
       const categorizedPool = React.useMemo(() => {
         return wordPool.map((entry) => ({
           ...entry,
