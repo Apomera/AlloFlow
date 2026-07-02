@@ -187,6 +187,54 @@ function HeaderBar(props) {
     voiceVolume
   } = props;
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const _setupMenuRef = React.useRef(null);
+  const _setupMenuReturnRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!showSetupPathMenu) return;
+    _setupMenuReturnRef.current = typeof document !== "undefined" ? document.activeElement : null;
+    const root = _setupMenuRef.current;
+    try {
+      if (root) {
+        const f = root.querySelector('button, a[href], [tabindex]:not([tabindex="-1"])');
+        (f || root).focus();
+      }
+    } catch (_) {
+    }
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setShowSetupPathMenu(false);
+        return;
+      }
+      if (e.key === "Tab" && root) {
+        const items = root.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          try {
+            last.focus();
+          } catch (_) {
+          }
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          try {
+            first.focus();
+          } catch (_) {
+          }
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      try {
+        const r = _setupMenuReturnRef.current;
+        if (r && r.focus && document.contains(r)) r.focus();
+      } catch (_) {
+      }
+    };
+  }, [showSetupPathMenu]);
   const openQuickStartSetup = () => {
     try {
       if (safeRemoveItem) safeRemoveItem("allo_wizard_completed");
@@ -883,22 +931,18 @@ function HeaderBar(props) {
   )))))), showSetupPathMenu && /* @__PURE__ */ React.createElement(
     "div",
     {
-      role: "button",
-      tabIndex: 0,
-      onKeyDown: (e) => {
-        if (e.key === "Escape") setShowSetupPathMenu(false);
-      },
       className: "fixed inset-0 z-[12000] bg-slate-950/70 backdrop-blur-sm flex items-start justify-end p-4 md:p-8",
-      onClick: () => setShowSetupPathMenu(false),
-      "aria-label": t("toolbar.setup_options_close") || "Close setup options"
+      onClick: () => setShowSetupPathMenu(false)
     },
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: _setupMenuRef,
+        tabIndex: -1,
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "header-setup-options-title",
-        className: "w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden",
+        className: "w-full max-w-sm rounded-2xl border border-white/15 bg-slate-950 text-white shadow-2xl overflow-hidden outline-none",
         onClick: (e) => e.stopPropagation()
       },
       /* @__PURE__ */ React.createElement("div", { className: "px-5 py-4 border-b border-white/10 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "header-setup-options-title", className: "text-sm font-black" }, t("toolbar.setup_options_title") || "Choose a setup path"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-300 mt-1 leading-relaxed" }, t("toolbar.setup_options_desc") || "Restart the setup wizard or turn on Guided Mode for step-by-step lesson building.")), /* @__PURE__ */ React.createElement(
@@ -909,7 +953,7 @@ function HeaderBar(props) {
           className: "p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors",
           "aria-label": t("common.close") || "Close"
         },
-        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "x")
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
       )),
       /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3" }, /* @__PURE__ */ React.createElement(
         "button",

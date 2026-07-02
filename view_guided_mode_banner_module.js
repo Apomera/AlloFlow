@@ -210,7 +210,7 @@ Date,Grade,Activity,Items Attempted,Items Correct,Accuracy %,Items/Min,Duration
       "Visual style (effectiveVisualStyle)",
       "Layout mode (visualLayoutMode: single / auto / forced template)",
       "Reading grade level + target language (label/altText language)",
-      "Toggles: noText, fillInTheBlank, creativeMode, useLowQualityVisuals"
+      "Toggles: noText, fillInTheBlank, creativeMode (labeled 'Enhanced'), useLowQualityVisuals"
     ],
     "outputs": [
       "Single path: { prompt, style, imageUrl (base64), altText }",
@@ -675,7 +675,7 @@ COGNITIVE LOAD \xB7 Aligned \u2014 claimed 45 min, estimated 41 min.
 CULTURAL RESPONSIVENESS \xB7 Not applicable.
 
 FULL RESOURCE PACK DOWNLOAD
-One self-contained .html file bundling every kept artifact (Analysis, Glossary, Simplified Text, Visual Organizer, Exit Ticket, Lesson Plan) + this report, ready to open offline or re-import. (Answer key included only in Teacher mode.)`
+One self-contained .html file bundling every kept artifact (Analysis, Glossary, Simplified Text, Visual Organizer, Exit Ticket, Lesson Plan) + this report, ready to open or print offline; students can save their answers to a file to hand in. (Answer keys and rubrics render only in the teacher answer-key section, which is included when the export's teacher-key option is on.)`
   }
 };
 function GuidedModeBanner({
