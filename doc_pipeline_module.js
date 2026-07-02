@@ -13980,6 +13980,323 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations };
   };
 
+  // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 1b image extraction ──
+  // Extracted VERBATIM from fixAndVerifyPdf. Contract:
+  //   in : { base64, mimeType, silentMode, updateProgress }
+  //   out: { extractedImages }  (the aggregate failure warning is emitted internally;
+  //         _imageFailureCount had no post-step consumers)
+  // Side effects unchanged: window.__pdfPageCanvases re-crop cache (P2 FIFO-capped),
+  // per-image toasts, pdf.js CDN load. Helpers (callGeminiVision, callImagen,
+  // _b64ToBytes, _withTimeout, _pipeLog, addToast) resolve from the factory closure.
+  const _extractPdfImages = async (imgCtx) => {
+    const _base64 = imgCtx.base64;
+    const _mimeType = imgCtx.mimeType;
+    const _silentMode = imgCtx.silentMode;
+    const updateProgress = imgCtx.updateProgress || function () {};
+      // ── Step 1b: Auto-extract images from PDF ──
+      updateProgress(1, 'Extracting images...');
+      let extractedImages = [];
+      // Track image-step failures (outer Vision refusal, PDF.js extraction
+      // errors, per-image regen errors). If 3 or more pile up, we emit a
+      // single aggregate warning toast at the end of the step so the teacher
+      // doesn't discover broken alt-text stubs in the final HTML only by
+      // reading the output. Small counts (0-2) stay quiet — occasional
+      // decorative failures are expected and already surfaced in imgReport.
+      let _imageFailureCount = 0;
+      // Deep dive 2026-07-02 ($/H11): Vision image extraction supports only PDF — the audit
+      // path documents the same limitation. For Office inputs this call used to fire anyway
+      // with an Office MIME type, always fail (swallowed), and count toward the aggregate
+      // "image extraction problems" warning. Office embedded media now rides the deterministic
+      // extractor + the H1 post-transform splice instead.
+      if (_mimeType !== 'application/pdf') {
+        _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
+      } else try {
+        const imgResult = await callGeminiVision(
+          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
+          _base64, _mimeType
+        );
+        if (imgResult) {
+          const cleaned = _stripCodeFence(imgResult);
+          const parsed = JSON.parse(cleaned);
+          extractedImages = (parsed.images || []).filter(img => img.type !== 'decorative');
+          warnLog(`[PDF Fix] Found ${extractedImages.length} meaningful images`);
+
+          // Extract images algorithmically from PDF pages using canvas rendering
+          // No API calls needed — renders PDF pages to canvas, captures as base64
+          if (extractedImages.length > 0) {
+            updateProgress(1, `Extracting ${extractedImages.length} images from PDF pages...`);
+            let pdfDoc = null; // H-2 (audit 2026-06-23): hoisted so the finally can destroy() it — this was the only getDocument site that leaked the pdf.js worker/transport (Canvas-iframe OOM contributor)
+            try {
+              // Load PDF.js from CDN if not already available
+              if (!window.pdfjsLib) {
+                await new Promise((resolve, reject) => {
+                  if (document.querySelector('script[data-pdfjs]')) {
+                    const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
+                    setTimeout(() => { clearInterval(wait); reject(new Error('PDF.js timeout')); }, 10000);
+                    return;
+                  }
+                  const script = document.createElement('script');
+                  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                  script.setAttribute('data-pdfjs', 'true');
+                  script.onload = () => {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve();
+                  };
+                  script.onerror = () => reject(new Error('Failed to load PDF.js'));
+                  document.head.appendChild(script);
+                });
+              }
+              // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
+              const pdfBytes = _b64ToBytes(_base64);
+              pdfDoc = await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)');
+
+              // Group images by page for efficient rendering
+              const pageGroups = {};
+              extractedImages.forEach((img, idx) => {
+                const pg = img.page || 1;
+                if (!pageGroups[pg]) pageGroups[pg] = [];
+                pageGroups[pg].push({ ...img, idx });
+              });
+
+              // Reset the per-page canvas cache at the START of each extraction so a
+              // previous document's full-page PNG dataURLs (1–4 MB each at scale:2)
+              // don't accumulate across runs → session memory growth → Canvas-iframe
+              // OOM mid-pipeline (2026-06-15 review fix; a likely "doesn't work every
+              // time" contributor). The cache is still populated below for this doc's
+              // in-session re-cropping.
+              window.__pdfPageCanvases = {};
+              // Extract actual image objects from each page using PDF.js getOperatorList
+              for (const [pageNum, imgs] of Object.entries(pageGroups)) {
+                try {
+                  const pg = parseInt(pageNum);
+                  if (pg < 1 || pg > pdfDoc.numPages) continue;
+                  updateProgress(1, `Extracting images from page ${pg}...`);
+                  const page = await pdfDoc.getPage(pg);
+                  const opList = await _withTimeout(page.getOperatorList(), 30000, 'getOperatorList p' + pg);
+                  const OPS = window.pdfjsLib.OPS;
+
+                  // Find paintImageXObject operations — these are actual images in the PDF
+                  const imageOps = [];
+                  for (let opIdx = 0; opIdx < opList.fnArray.length; opIdx++) {
+                    if (opList.fnArray[opIdx] === OPS.paintImageXObject || opList.fnArray[opIdx] === OPS.paintJpegXObject) {
+                      imageOps.push(opList.argsArray[opIdx][0]); // image name
+                    }
+                  }
+
+                  // Strategy: render the page, then use page.getOperatorList to find image
+                  // transforms (position/size), and crop exactly those regions from the rendered page
+                  // Render at 1.5x (was 2x — ~44% less rasterization/encode/memory, still ample for
+                  // small accessibility figures); on a stall/timeout retry once at 1x. A page that
+                  // stalls at 1.5x (pdf.js render contention) usually renders fine at 1x, recovering
+                  // its images instead of dropping them after the timeout — mirrors the OCR render
+                  // retry. viewport + canvas track the scale that actually rendered, so the crop math
+                  // below (viewport.scale / canvas dims) stays consistent. (2026-06-19)
+                  let viewport = null, canvas = null;
+                  for (const _sc of [1.5, 1.0]) {
+                    const _vp = page.getViewport({ scale: _sc });
+                    const _c = document.createElement('canvas');
+                    _c.width = _vp.width; _c.height = _vp.height;
+                    try {
+                      await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 1.5 ? 30000 : 20000, 'page.render p' + pg + ' @' + _sc + 'x');
+                      viewport = _vp; canvas = _c; break;
+                    } catch (_rErr) {
+                      try { _c.width = 0; _c.height = 0; } catch (_) {}
+                      if (_sc <= 1.0) throw _rErr; // both scales failed → per-page catch (logs + degrades to text placeholder)
+                    }
+                  }
+
+                  // Store the full-page canvas for in-session re-cropping. JPEG (was PNG): ~10x smaller
+                  // + far faster to encode → less synchronous main-thread cost + memory pressure that
+                  // feed the render stalls. The immediate crops below use the live lossless canvas, so
+                  // only the re-crop-UI cache is slightly lossy. (2026-06-19)
+                  if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
+                  // P2 (deep dive 2026-07-02): FIFO-cap the re-crop cache at 30 pages. It used to
+                  // retain a full-page JPEG data URL (0.5-1.5MB each) for EVERY image-bearing page
+                  // for the rest of the session — 100-300MB after an image-heavy textbook run,
+                  // stacking on top of the result HTML right when the tab is at peak memory. The
+                  // cache only serves the in-session re-crop UI; evicted pages just lose one-click
+                  // re-crop (the image itself is already in the document).
+                  {
+                    const _pcKeys = Object.keys(window.__pdfPageCanvases);
+                    if (_pcKeys.length >= 30 && !(pg in window.__pdfPageCanvases)) delete window.__pdfPageCanvases[_pcKeys[0]];
+                  }
+                  window.__pdfPageCanvases[pg] = canvas.toDataURL('image/jpeg', 0.82);
+
+                  // ── Solid-fill / near-uniform crop rejector (2026-06-14) ──
+                  // A complex table or vector "visual organizer" is often tagged as an
+                  // image but has NO paintImageXObject, so the crop math (or the blind
+                  // fallback band-crop below) lands on a flat background-fill region —
+                  // shipping a giant solid-colour block (the "it just looks all blue"
+                  // bug). Downscale the crop to 24×24 (averaging) and reject it if it's
+                  // mostly transparent OR >92% within a tight delta of its mean colour:
+                  // a real figure keeps colour variance at 24×24; a fill collapses to one
+                  // colour. Rejected crops fall through to the text placeholder (the
+                  // figure's description) instead of a meaningless coloured rectangle.
+                  const _cropPixelsAreFill = (data, strict) => {
+                    const total = data.length / 4;
+                    let count = 0, transparent = 0, sumR = 0, sumG = 0, sumB = 0;
+                    const buckets = Object.create(null);
+                    for (let i = 0; i < data.length; i += 4) {
+                      if (data[i + 3] < 16) { transparent++; continue; }
+                      sumR += data[i]; sumG += data[i + 1]; sumB += data[i + 2]; count++;
+                      const key = (data[i] >> 5) * 64 + (data[i + 1] >> 5) * 8 + (data[i + 2] >> 5);
+                      buckets[key] = (buckets[key] || 0) + 1;
+                    }
+                    if (transparent / total > 0.9) return true;
+                    if (!count) return true;
+                    const mR = sumR / count, mG = sumG / count, mB = sumB / count;
+                    let near = 0;
+                    for (let i = 0; i < data.length; i += 4) {
+                      if (data[i + 3] < 16) continue;
+                      if (Math.abs(data[i] - mR) + Math.abs(data[i + 1] - mG) + Math.abs(data[i + 2] - mB) < 24) near++;
+                    }
+                    // Geometry-confirmed (non-strict) crops keep a distinct-quantized-color
+                    // escape: a sparse line-chart/diagram has white + ink + a few series
+                    // colours (>=4 32-level buckets each holding >2% of pixels) and must NOT
+                    // be rejected as a solid fill, so we only treat it as fill at a much
+                    // tighter near-mean cutoff. The blind band-crop (strict) keeps the
+                    // original 0.92 gate where false positives are cheap. (crop-sparse-chart)
+                    if (!strict) {
+                      let distinct = 0;
+                      for (const k in buckets) { if (buckets[k] / count > 0.02) distinct++; }
+                      if (distinct >= 4) return false;
+                      return near / count > 0.985;
+                    }
+                    return near / count > 0.92;
+                  };
+                  const _cropIsNearUniform = (srcCanvas, strict) => {
+                    try {
+                      const S = 24;
+                      const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
+                      const tctx = tiny.getContext('2d');
+                      tctx.drawImage(srcCanvas, 0, 0, S, S);
+                      const data = tctx.getImageData(0, 0, S, S).data;
+                      return _cropPixelsAreFill(data, strict !== false);
+                    } catch (_) { return false; }
+                  };
+
+                  if (imageOps.length > 0) {
+                    // Find image positions from the transform matrices in the operator list
+                    const imagePositions = [];
+                    let currentTransform = [1, 0, 0, 1, 0, 0]; // identity
+                    for (let opIdx = 0; opIdx < opList.fnArray.length; opIdx++) {
+                      const fn = opList.fnArray[opIdx];
+                      if (fn === OPS.transform) {
+                        currentTransform = opList.argsArray[opIdx];
+                      } else if (fn === OPS.paintImageXObject || fn === OPS.paintJpegXObject) {
+                        // The transform tells us where and how big the image is
+                        const [a, b, c, d, e, f] = currentTransform;
+                        // In PDF coordinates: e,f is bottom-left position, a=width, d=height (roughly)
+                        const w = Math.abs(a) * viewport.scale;
+                        const h = Math.abs(d) * viewport.scale;
+                        const x = e * viewport.scale;
+                        const y = viewport.height - (f * viewport.scale) - h; // flip Y
+                        imagePositions.push({ x: Math.max(0, x), y: Math.max(0, y), w: Math.min(w, canvas.width), h: Math.min(h, canvas.height) });
+                      }
+                    }
+
+                    // Sort by Y position (top-to-bottom) to match visual reading order
+                    imagePositions.sort((a, b) => a.y - b.y);
+                    // Crop each image region from the rendered page
+                    let imgOpIdx = 0;
+                    for (const img of imgs) {
+                      const pos = imagePositions[imgOpIdx] || imagePositions[0];
+                      imgOpIdx++;
+                      if (pos && pos.w > 20 && pos.h > 20) {
+                        try {
+                          const crop = document.createElement('canvas');
+                          crop.width = Math.round(pos.w);
+                          crop.height = Math.round(pos.h);
+                          crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
+                          if (_cropIsNearUniform(crop, false)) { // geometry-confirmed XObject — looser fill test so sparse charts survive (crop-sparse-chart)
+                            // Solid-fill crop (a vector organizer's background, or a bad
+                            // transform landing off the real glyphs) — don't embed a blue
+                            // block; leave generatedSrc unset so it degrades to the text
+                            // placeholder (its description) downstream.
+                            warnLog(`[PDF Fix] Skipped near-uniform (solid-fill) crop on page ${pg} — degrading to text placeholder`);
+                          } else {
+                            // P3 (deep dive 2026-07-02): JPEG, not PNG — PDF page renders are opaque
+                            // (no alpha to preserve) and PNG crops were ~10× larger, then string-churned
+                            // through every fix pass via the data-URL strip/restore cycle.
+                            const dataUrl = crop.toDataURL('image/jpeg', 0.85);
+                            extractedImages[img.idx].generatedSrc = dataUrl;
+                            extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
+                            warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
+                          }
+                        } catch(cropErr) { warnLog(`[PDF Fix] Image crop failed:`, cropErr); }
+                      }
+                    }
+                  }
+
+                  // Fallback: assign to any images that didn't get extracted
+                  for (const img of imgs) {
+                    if (!extractedImages[img.idx].generatedSrc) {
+                      const pos = (img.position || 'top').toLowerCase();
+                      let y = 0, h = canvas.height * 0.2;
+                      if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
+                      else if (pos.includes('middle')) { y = canvas.height * 0.3; h = canvas.height * 0.35; }
+                      const crop = document.createElement('canvas');
+                      crop.width = canvas.width; crop.height = h;
+                      crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+                      // The fallback is a blind position-guess (no XObject geometry), so it
+                      // is the most likely to land on a solid fill / wrong band — the prime
+                      // source of the "all blue" block and misplaced crops. Only keep it if
+                      // it actually captured a varied (image-like) region.
+                      if (_cropIsNearUniform(crop)) {
+                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (${pos}) — degrading to text placeholder`);
+                      } else {
+                        extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
+                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
+                      }
+                    }
+                  }
+                  // Free the per-page render canvas now that crops + the dataURL are
+                  // done — releases the render backing store (1.5x, or 1x on retry)
+                  // immediately instead of waiting on GC (2026-06-15 review fix).
+                  try { canvas.width = 0; canvas.height = 0; } catch (_) {}
+                } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
+              }
+            } catch(pdfJsErr) {
+              _imageFailureCount++;
+              warnLog('[PDF Fix] PDF.js extraction failed, trying Imagen fallback:', pdfJsErr?.message);
+              // Fallback: use Imagen to regenerate from descriptions
+              if (callImagen && extractedImages.length <= 5) {
+                for (let imgI = 0; imgI < extractedImages.length; imgI++) {
+                  if (extractedImages[imgI].generatedSrc) continue; // already extracted
+                  try {
+                    updateProgress(1, `Regenerating image ${imgI + 1} via AI...`);
+                    const imgUrl = await _withTimeout(callImagen(
+                      `Recreate this image for an educational document: ${extractedImages[imgI].description}. Clean, professional style. No text overlays.`,
+                      300, 0.8
+                    ), 90000, 'callImagen (image regen)'); // callImagen does a raw fetch with no per-request bound
+                    if (imgUrl) { extractedImages[imgI].generatedSrc = imgUrl; extractedImages[imgI].isRegenerated = true; }
+                    else { _imageFailureCount++; }
+                  } catch(genErr) { _imageFailureCount++; }
+                }
+              }
+            } finally {
+              if (pdfDoc) { try { pdfDoc.destroy(); } catch (_) {} pdfDoc = null; } // H-2: release the pdf.js worker/transport on every path (success, per-page error, throw)
+            }
+          }
+        }
+      } catch (imgErr) {
+        // Catastrophic failure of the whole image step (Vision refusal, JSON
+        // parse, network). Treat as a large failure count so the aggregate
+        // toast below fires regardless of how many individual images the
+        // teacher expected.
+        _imageFailureCount += 99;
+        warnLog('[PDF Fix] Image extraction failed (non-blocking):', imgErr);
+      }
+      // Aggregate user-visible warning. Stays quiet for small counts so
+      // occasional decorative-image failures don't nag. The UI's per-image
+      // regenerate buttons (imgReport panel) still cover detailed recovery.
+      if (_imageFailureCount >= 3 && !_silentMode && typeof addToast === 'function') {
+        const _displayCount = _imageFailureCount >= 99 ? 'all' : String(_imageFailureCount);
+        addToast(`⚠ ${_displayCount} image${_imageFailureCount === 1 ? '' : 's'} couldn't be extracted or regenerated — the final HTML may have missing images. Check the image review panel to retry individually.`, 'warning');
+      }
+    return { extractedImages };
+  };
+
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     const _isBatch = !!batchOverrides;
@@ -14923,307 +15240,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         warnLog(`[PDF Fix] WARNING: Low extraction density (${charsPerPage} chars/page) — possible truncation or scanned/image-only document`);
       }
 
-      // ── Step 1b: Auto-extract images from PDF ──
-      updateProgress(1, 'Extracting images...');
-      let extractedImages = [];
-      // Track image-step failures (outer Vision refusal, PDF.js extraction
-      // errors, per-image regen errors). If 3 or more pile up, we emit a
-      // single aggregate warning toast at the end of the step so the teacher
-      // doesn't discover broken alt-text stubs in the final HTML only by
-      // reading the output. Small counts (0-2) stay quiet — occasional
-      // decorative failures are expected and already surfaced in imgReport.
-      let _imageFailureCount = 0;
-      // Deep dive 2026-07-02 ($/H11): Vision image extraction supports only PDF — the audit
-      // path documents the same limitation. For Office inputs this call used to fire anyway
-      // with an Office MIME type, always fail (swallowed), and count toward the aggregate
-      // "image extraction problems" warning. Office embedded media now rides the deterministic
-      // extractor + the H1 post-transform splice instead.
-      if (_mimeType !== 'application/pdf') {
-        _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
-      } else try {
-        const imgResult = await callGeminiVision(
-          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
-          _base64, _mimeType
-        );
-        if (imgResult) {
-          const cleaned = _stripCodeFence(imgResult);
-          const parsed = JSON.parse(cleaned);
-          extractedImages = (parsed.images || []).filter(img => img.type !== 'decorative');
-          warnLog(`[PDF Fix] Found ${extractedImages.length} meaningful images`);
-
-          // Extract images algorithmically from PDF pages using canvas rendering
-          // No API calls needed — renders PDF pages to canvas, captures as base64
-          if (extractedImages.length > 0) {
-            updateProgress(1, `Extracting ${extractedImages.length} images from PDF pages...`);
-            let pdfDoc = null; // H-2 (audit 2026-06-23): hoisted so the finally can destroy() it — this was the only getDocument site that leaked the pdf.js worker/transport (Canvas-iframe OOM contributor)
-            try {
-              // Load PDF.js from CDN if not already available
-              if (!window.pdfjsLib) {
-                await new Promise((resolve, reject) => {
-                  if (document.querySelector('script[data-pdfjs]')) {
-                    const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
-                    setTimeout(() => { clearInterval(wait); reject(new Error('PDF.js timeout')); }, 10000);
-                    return;
-                  }
-                  const script = document.createElement('script');
-                  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-                  script.setAttribute('data-pdfjs', 'true');
-                  script.onload = () => {
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                    resolve();
-                  };
-                  script.onerror = () => reject(new Error('Failed to load PDF.js'));
-                  document.head.appendChild(script);
-                });
-              }
-              // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
-              const pdfBytes = _b64ToBytes(_base64);
-              pdfDoc = await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)');
-
-              // Group images by page for efficient rendering
-              const pageGroups = {};
-              extractedImages.forEach((img, idx) => {
-                const pg = img.page || 1;
-                if (!pageGroups[pg]) pageGroups[pg] = [];
-                pageGroups[pg].push({ ...img, idx });
-              });
-
-              // Reset the per-page canvas cache at the START of each extraction so a
-              // previous document's full-page PNG dataURLs (1–4 MB each at scale:2)
-              // don't accumulate across runs → session memory growth → Canvas-iframe
-              // OOM mid-pipeline (2026-06-15 review fix; a likely "doesn't work every
-              // time" contributor). The cache is still populated below for this doc's
-              // in-session re-cropping.
-              window.__pdfPageCanvases = {};
-              // Extract actual image objects from each page using PDF.js getOperatorList
-              for (const [pageNum, imgs] of Object.entries(pageGroups)) {
-                try {
-                  const pg = parseInt(pageNum);
-                  if (pg < 1 || pg > pdfDoc.numPages) continue;
-                  updateProgress(1, `Extracting images from page ${pg}...`);
-                  const page = await pdfDoc.getPage(pg);
-                  const opList = await _withTimeout(page.getOperatorList(), 30000, 'getOperatorList p' + pg);
-                  const OPS = window.pdfjsLib.OPS;
-
-                  // Find paintImageXObject operations — these are actual images in the PDF
-                  const imageOps = [];
-                  for (let opIdx = 0; opIdx < opList.fnArray.length; opIdx++) {
-                    if (opList.fnArray[opIdx] === OPS.paintImageXObject || opList.fnArray[opIdx] === OPS.paintJpegXObject) {
-                      imageOps.push(opList.argsArray[opIdx][0]); // image name
-                    }
-                  }
-
-                  // Strategy: render the page, then use page.getOperatorList to find image
-                  // transforms (position/size), and crop exactly those regions from the rendered page
-                  // Render at 1.5x (was 2x — ~44% less rasterization/encode/memory, still ample for
-                  // small accessibility figures); on a stall/timeout retry once at 1x. A page that
-                  // stalls at 1.5x (pdf.js render contention) usually renders fine at 1x, recovering
-                  // its images instead of dropping them after the timeout — mirrors the OCR render
-                  // retry. viewport + canvas track the scale that actually rendered, so the crop math
-                  // below (viewport.scale / canvas dims) stays consistent. (2026-06-19)
-                  let viewport = null, canvas = null;
-                  for (const _sc of [1.5, 1.0]) {
-                    const _vp = page.getViewport({ scale: _sc });
-                    const _c = document.createElement('canvas');
-                    _c.width = _vp.width; _c.height = _vp.height;
-                    try {
-                      await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 1.5 ? 30000 : 20000, 'page.render p' + pg + ' @' + _sc + 'x');
-                      viewport = _vp; canvas = _c; break;
-                    } catch (_rErr) {
-                      try { _c.width = 0; _c.height = 0; } catch (_) {}
-                      if (_sc <= 1.0) throw _rErr; // both scales failed → per-page catch (logs + degrades to text placeholder)
-                    }
-                  }
-
-                  // Store the full-page canvas for in-session re-cropping. JPEG (was PNG): ~10x smaller
-                  // + far faster to encode → less synchronous main-thread cost + memory pressure that
-                  // feed the render stalls. The immediate crops below use the live lossless canvas, so
-                  // only the re-crop-UI cache is slightly lossy. (2026-06-19)
-                  if (!window.__pdfPageCanvases) window.__pdfPageCanvases = {};
-                  // P2 (deep dive 2026-07-02): FIFO-cap the re-crop cache at 30 pages. It used to
-                  // retain a full-page JPEG data URL (0.5-1.5MB each) for EVERY image-bearing page
-                  // for the rest of the session — 100-300MB after an image-heavy textbook run,
-                  // stacking on top of the result HTML right when the tab is at peak memory. The
-                  // cache only serves the in-session re-crop UI; evicted pages just lose one-click
-                  // re-crop (the image itself is already in the document).
-                  {
-                    const _pcKeys = Object.keys(window.__pdfPageCanvases);
-                    if (_pcKeys.length >= 30 && !(pg in window.__pdfPageCanvases)) delete window.__pdfPageCanvases[_pcKeys[0]];
-                  }
-                  window.__pdfPageCanvases[pg] = canvas.toDataURL('image/jpeg', 0.82);
-
-                  // ── Solid-fill / near-uniform crop rejector (2026-06-14) ──
-                  // A complex table or vector "visual organizer" is often tagged as an
-                  // image but has NO paintImageXObject, so the crop math (or the blind
-                  // fallback band-crop below) lands on a flat background-fill region —
-                  // shipping a giant solid-colour block (the "it just looks all blue"
-                  // bug). Downscale the crop to 24×24 (averaging) and reject it if it's
-                  // mostly transparent OR >92% within a tight delta of its mean colour:
-                  // a real figure keeps colour variance at 24×24; a fill collapses to one
-                  // colour. Rejected crops fall through to the text placeholder (the
-                  // figure's description) instead of a meaningless coloured rectangle.
-                  const _cropPixelsAreFill = (data, strict) => {
-                    const total = data.length / 4;
-                    let count = 0, transparent = 0, sumR = 0, sumG = 0, sumB = 0;
-                    const buckets = Object.create(null);
-                    for (let i = 0; i < data.length; i += 4) {
-                      if (data[i + 3] < 16) { transparent++; continue; }
-                      sumR += data[i]; sumG += data[i + 1]; sumB += data[i + 2]; count++;
-                      const key = (data[i] >> 5) * 64 + (data[i + 1] >> 5) * 8 + (data[i + 2] >> 5);
-                      buckets[key] = (buckets[key] || 0) + 1;
-                    }
-                    if (transparent / total > 0.9) return true;
-                    if (!count) return true;
-                    const mR = sumR / count, mG = sumG / count, mB = sumB / count;
-                    let near = 0;
-                    for (let i = 0; i < data.length; i += 4) {
-                      if (data[i + 3] < 16) continue;
-                      if (Math.abs(data[i] - mR) + Math.abs(data[i + 1] - mG) + Math.abs(data[i + 2] - mB) < 24) near++;
-                    }
-                    // Geometry-confirmed (non-strict) crops keep a distinct-quantized-color
-                    // escape: a sparse line-chart/diagram has white + ink + a few series
-                    // colours (>=4 32-level buckets each holding >2% of pixels) and must NOT
-                    // be rejected as a solid fill, so we only treat it as fill at a much
-                    // tighter near-mean cutoff. The blind band-crop (strict) keeps the
-                    // original 0.92 gate where false positives are cheap. (crop-sparse-chart)
-                    if (!strict) {
-                      let distinct = 0;
-                      for (const k in buckets) { if (buckets[k] / count > 0.02) distinct++; }
-                      if (distinct >= 4) return false;
-                      return near / count > 0.985;
-                    }
-                    return near / count > 0.92;
-                  };
-                  const _cropIsNearUniform = (srcCanvas, strict) => {
-                    try {
-                      const S = 24;
-                      const tiny = document.createElement('canvas'); tiny.width = S; tiny.height = S;
-                      const tctx = tiny.getContext('2d');
-                      tctx.drawImage(srcCanvas, 0, 0, S, S);
-                      const data = tctx.getImageData(0, 0, S, S).data;
-                      return _cropPixelsAreFill(data, strict !== false);
-                    } catch (_) { return false; }
-                  };
-
-                  if (imageOps.length > 0) {
-                    // Find image positions from the transform matrices in the operator list
-                    const imagePositions = [];
-                    let currentTransform = [1, 0, 0, 1, 0, 0]; // identity
-                    for (let opIdx = 0; opIdx < opList.fnArray.length; opIdx++) {
-                      const fn = opList.fnArray[opIdx];
-                      if (fn === OPS.transform) {
-                        currentTransform = opList.argsArray[opIdx];
-                      } else if (fn === OPS.paintImageXObject || fn === OPS.paintJpegXObject) {
-                        // The transform tells us where and how big the image is
-                        const [a, b, c, d, e, f] = currentTransform;
-                        // In PDF coordinates: e,f is bottom-left position, a=width, d=height (roughly)
-                        const w = Math.abs(a) * viewport.scale;
-                        const h = Math.abs(d) * viewport.scale;
-                        const x = e * viewport.scale;
-                        const y = viewport.height - (f * viewport.scale) - h; // flip Y
-                        imagePositions.push({ x: Math.max(0, x), y: Math.max(0, y), w: Math.min(w, canvas.width), h: Math.min(h, canvas.height) });
-                      }
-                    }
-
-                    // Sort by Y position (top-to-bottom) to match visual reading order
-                    imagePositions.sort((a, b) => a.y - b.y);
-                    // Crop each image region from the rendered page
-                    let imgOpIdx = 0;
-                    for (const img of imgs) {
-                      const pos = imagePositions[imgOpIdx] || imagePositions[0];
-                      imgOpIdx++;
-                      if (pos && pos.w > 20 && pos.h > 20) {
-                        try {
-                          const crop = document.createElement('canvas');
-                          crop.width = Math.round(pos.w);
-                          crop.height = Math.round(pos.h);
-                          crop.getContext('2d').drawImage(canvas, Math.round(pos.x), Math.round(pos.y), Math.round(pos.w), Math.round(pos.h), 0, 0, crop.width, crop.height);
-                          if (_cropIsNearUniform(crop, false)) { // geometry-confirmed XObject — looser fill test so sparse charts survive (crop-sparse-chart)
-                            // Solid-fill crop (a vector organizer's background, or a bad
-                            // transform landing off the real glyphs) — don't embed a blue
-                            // block; leave generatedSrc unset so it degrades to the text
-                            // placeholder (its description) downstream.
-                            warnLog(`[PDF Fix] Skipped near-uniform (solid-fill) crop on page ${pg} — degrading to text placeholder`);
-                          } else {
-                            // P3 (deep dive 2026-07-02): JPEG, not PNG — PDF page renders are opaque
-                            // (no alpha to preserve) and PNG crops were ~10× larger, then string-churned
-                            // through every fix pass via the data-URL strip/restore cycle.
-                            const dataUrl = crop.toDataURL('image/jpeg', 0.85);
-                            extractedImages[img.idx].generatedSrc = dataUrl;
-                            extractedImages[img.idx].cropData = { page: pg, x: Math.round(pos.x), y: Math.round(pos.y), w: Math.round(pos.w), h: Math.round(pos.h), canvasW: canvas.width, canvasH: canvas.height };
-                            warnLog(`[PDF Fix] Cropped image from page ${pg}: ${Math.round(pos.w)}x${Math.round(pos.h)} at (${Math.round(pos.x)},${Math.round(pos.y)})`);
-                          }
-                        } catch(cropErr) { warnLog(`[PDF Fix] Image crop failed:`, cropErr); }
-                      }
-                    }
-                  }
-
-                  // Fallback: assign to any images that didn't get extracted
-                  for (const img of imgs) {
-                    if (!extractedImages[img.idx].generatedSrc) {
-                      const pos = (img.position || 'top').toLowerCase();
-                      let y = 0, h = canvas.height * 0.2;
-                      if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
-                      else if (pos.includes('middle')) { y = canvas.height * 0.3; h = canvas.height * 0.35; }
-                      const crop = document.createElement('canvas');
-                      crop.width = canvas.width; crop.height = h;
-                      crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
-                      // The fallback is a blind position-guess (no XObject geometry), so it
-                      // is the most likely to land on a solid fill / wrong band — the prime
-                      // source of the "all blue" block and misplaced crops. Only keep it if
-                      // it actually captured a varied (image-like) region.
-                      if (_cropIsNearUniform(crop)) {
-                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (${pos}) — degrading to text placeholder`);
-                      } else {
-                        extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
-                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
-                      }
-                    }
-                  }
-                  // Free the per-page render canvas now that crops + the dataURL are
-                  // done — releases the render backing store (1.5x, or 1x on retry)
-                  // immediately instead of waiting on GC (2026-06-15 review fix).
-                  try { canvas.width = 0; canvas.height = 0; } catch (_) {}
-                } catch(pgErr) { _imageFailureCount++; warnLog(`[PDF Fix] Page ${pageNum} extraction failed:`, pgErr); }
-              }
-            } catch(pdfJsErr) {
-              _imageFailureCount++;
-              warnLog('[PDF Fix] PDF.js extraction failed, trying Imagen fallback:', pdfJsErr?.message);
-              // Fallback: use Imagen to regenerate from descriptions
-              if (callImagen && extractedImages.length <= 5) {
-                for (let imgI = 0; imgI < extractedImages.length; imgI++) {
-                  if (extractedImages[imgI].generatedSrc) continue; // already extracted
-                  try {
-                    updateProgress(1, `Regenerating image ${imgI + 1} via AI...`);
-                    const imgUrl = await _withTimeout(callImagen(
-                      `Recreate this image for an educational document: ${extractedImages[imgI].description}. Clean, professional style. No text overlays.`,
-                      300, 0.8
-                    ), 90000, 'callImagen (image regen)'); // callImagen does a raw fetch with no per-request bound
-                    if (imgUrl) { extractedImages[imgI].generatedSrc = imgUrl; extractedImages[imgI].isRegenerated = true; }
-                    else { _imageFailureCount++; }
-                  } catch(genErr) { _imageFailureCount++; }
-                }
-              }
-            } finally {
-              if (pdfDoc) { try { pdfDoc.destroy(); } catch (_) {} pdfDoc = null; } // H-2: release the pdf.js worker/transport on every path (success, per-page error, throw)
-            }
-          }
-        }
-      } catch (imgErr) {
-        // Catastrophic failure of the whole image step (Vision refusal, JSON
-        // parse, network). Treat as a large failure count so the aggregate
-        // toast below fires regardless of how many individual images the
-        // teacher expected.
-        _imageFailureCount += 99;
-        warnLog('[PDF Fix] Image extraction failed (non-blocking):', imgErr);
-      }
-      // Aggregate user-visible warning. Stays quiet for small counts so
-      // occasional decorative-image failures don't nag. The UI's per-image
-      // regenerate buttons (imgReport panel) still cover detailed recovery.
-      if (_imageFailureCount >= 3 && !_silentMode && typeof addToast === 'function') {
-        const _displayCount = _imageFailureCount >= 99 ? 'all' : String(_imageFailureCount);
-        addToast(`⚠ ${_displayCount} image${_imageFailureCount === 1 ? '' : 's'} couldn't be extracted or regenerated — the final HTML may have missing images. Check the image review panel to retry individually.`, 'warning');
-      }
+      // ── Step 1b (S2-extracted → _extractPdfImages) ──
+      const _imgOut = await _extractPdfImages({ base64: _base64, mimeType: _mimeType, silentMode: _silentMode, updateProgress });
+      let extractedImages = _imgOut.extractedImages; // consumed by the placeholder splice, image report, and return payload
 
       _pipeStepEnd(1, extractedText.length + ' chars extracted');
 
