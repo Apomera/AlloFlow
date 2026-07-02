@@ -22596,9 +22596,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Add print instructions
     const printBanner = printWindow.document.createElement('div');
     printBanner.id = 'print-banner';
-    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, to download as a tagged PDF." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
+    // Honesty (export-format review, 2026-07-01): this banner claimed the browser print
+    // would produce "a tagged PDF". That is BROWSER-DEPENDENT (Chromium-family browsers
+    // carry document structure into printed PDFs; Firefox/Safari generally do not) and
+    // either way it is not AlloFlow's verified tagged output — the in-app tagged-PDF
+    // download is. Say what this path actually is: a print-style copy.
+    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, for a print-style copy. For the verified tagged PDF, use AlloFlow's Download Tagged PDF button." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
       <span style="font-weight:bold"><span aria-hidden="true">♿ </span>Accessible Document Ready</span>
-      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> to download as a tagged PDF</span>
+      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> for a print-style copy · tag preservation depends on your browser — AlloFlow's <strong>Download Tagged PDF</strong> is the verified accessible version</span>
       <button onclick="document.getElementById('print-banner').remove();window.print()" aria-label="Save as PDF" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px"><span aria-hidden="true">📥 </span>Save as PDF</button>
       <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
