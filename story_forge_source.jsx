@@ -1267,6 +1267,50 @@ const StoryForge = React.memo(({
     if (addToast) addToast(t('toasts.storyforge_assignment_saved_lesson'), 'success');
   };
 
+  const saveStoryForgeArtifactToAlloHaven = (submission) => {
+    if (!submission) return;
+    try {
+      const ts = Date.now();
+      const createdAt = new Date(ts).toISOString();
+      const paragraphsForShelf = Array.isArray(submission.paragraphs) ? submission.paragraphs : [];
+      const words = submission.analytics?.totalWords || 0;
+      const items = paragraphsForShelf
+        .map((p, idx) => ({
+          id: p.id || `storyforge-paragraph-${idx}`,
+          title: `Paragraph ${idx + 1}`,
+          text: p.text || '',
+          toolLabel: 'StoryForge',
+          privacy: 'full',
+        }))
+        .filter(item => item.text.trim());
+      const artifact = {
+        id: `storyforge-${ts}`,
+        type: 'storyforge-submission',
+        source: 'storyforge',
+        sourceLabel: 'StoryForge',
+        kindLabel: 'StoryForge Story',
+        title: submission.storyTitle || 'My Story',
+        summary: `${words} words across ${paragraphsForShelf.length} paragraph${paragraphsForShelf.length === 1 ? '' : 's'}`,
+        privacy: 'student-controlled',
+        createdAt,
+        updatedAt: createdAt,
+        itemCount: items.length,
+        items,
+        artifact: submission,
+      };
+      let existing = [];
+      if (Array.isArray(window.__alloflowStudentArtifacts)) {
+        existing = window.__alloflowStudentArtifacts;
+      } else {
+        try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (_) { existing = []; }
+      }
+      const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+      window.__alloflowStudentArtifacts = next;
+      localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'storyforge' } }));
+    } catch (_) {}
+  };
+
   // ── Save completed story as submission resource ──
   const saveAsSubmission = () => {
     if (!onSaveSubmission) return;
@@ -1289,6 +1333,7 @@ const StoryForge = React.memo(({
       xp: { totalXP: xpData.totalXP, level: currentLevel.name },
     };
     onSaveSubmission(submission);
+    saveStoryForgeArtifactToAlloHaven(submission);
     if (addToast) addToast(t('toasts.story_saved_portfolio'), 'success');
     awardXP(10, 'Saved story to portfolio');
   };

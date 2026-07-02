@@ -6,6 +6,7 @@
   if (window.AlloModules && window.AlloModules.SelHub) { console.log('[CDN] SelHub already loaded, skipping duplicate'); } else {
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
+  var _alloLastToolCardId = null;
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
   function alloRestoreFocus() {
     if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') {
@@ -34,6 +35,32 @@
         if (input && input.focus) input.focus();
       } catch (e) {}
     }, 50);
+  }
+  function alloFocusToolStart() {
+    setTimeout(function() {
+      try {
+        var target = document.querySelector('[aria-label="Back to SEL tools"]')
+          || document.querySelector('[aria-label="Back to tools"]')
+          || document.querySelector('[aria-label="Back to Tools"]');
+        if (target && target.focus) target.focus();
+      } catch (e) {}
+    }, 60);
+  }
+  function alloFocusToolCard(toolId) {
+    setTimeout(function() {
+      try {
+        var id = toolId || _alloLastToolCardId;
+        var target = null;
+        if (id) {
+          var cards = document.querySelectorAll('[data-sel-tool-card-id]');
+          for (var i = 0; i < cards.length; i++) {
+            if (cards[i].getAttribute('data-sel-tool-card-id') === id) { target = cards[i]; break; }
+          }
+        }
+        if (!target) target = document.querySelector('[aria-label="Search SEL tools"]');
+        if (target && target.focus) target.focus();
+      } catch (e) {}
+    }, 80);
   }
 
 
@@ -163,6 +190,7 @@
           function goBack() {
             if (typeof ctx.setSelHubTool === 'function') ctx.setSelHubTool(null);
             if (typeof ctx.announceToSR === 'function') ctx.announceToSR('Returned to tool grid');
+            alloFocusToolCard(id);
           }
 
           function pill(label) {
@@ -1380,9 +1408,11 @@
       function openSelToolById(toolId, label) {
         if (!toolId) return;
         if (window.SelHub && window.SelHub.isRegistered(toolId)) {
+          _alloLastToolCardId = toolId;
           trackToolOpen(toolId);
           setSelHubTool(toolId);
           announceToSR('Opened ' + (label || toolId));
+          alloFocusToolStart();
           if (activePathway && activePathway.tools && activePathway.tools.indexOf(toolId) >= 0) {
             setPathwayProgress(function(prev) {
               var n = Object.assign({}, prev);
@@ -1543,11 +1573,11 @@
         function handleKeyDown(e) {
           if (!showSelHub) return;
           if (e.key === 'Escape') {
-            if (selHubTool) { setSelHubTool(null); announceToSR('Returned to tool grid'); }
+            if (selHubTool) { setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(selHubTool); }
             else { setShowSelHub(false); }
           }
           if (e.altKey) {
-            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setSelHubTool(null); announceToSR('Returned to tool grid'); }
+            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); var fromTool = selHubTool; setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(fromTool); }
           }
         }
         document.addEventListener('keydown', handleKeyDown);
@@ -2136,9 +2166,13 @@
           type: 'sel-share-packet',
           source: 'sel_hub',
           sourceLabel: 'SEL Hub',
+          kindLabel: 'SEL Share Packet',
           title: 'SEL Share Packet',
           summary: items.length + (items.length === 1 ? ' selected SEL checkpoint' : ' selected SEL checkpoints'),
           privacy: 'student-controlled',
+          audience: 'student-selected',
+          sharingModel: 'item-level-privacy',
+          exportKinds: ['text', 'print', 'allohaven'],
           createdAt: createdAt,
           updatedAt: createdAt,
           itemCount: items.length,
@@ -2233,9 +2267,13 @@
           type: 'sel-share-packet',
           source: 'sel_hub',
           sourceLabel: 'SEL Hub',
+          kindLabel: 'SEL Share Packet',
           title: packet.title,
           summary: packet.summary,
           privacy: packet.privacy,
+          audience: packet.audience,
+          sharingModel: packet.sharingModel,
+          exportKinds: packet.exportKinds,
           createdAt: packet.createdAt,
           updatedAt: packet.updatedAt,
           itemCount: packet.itemCount,
@@ -2290,7 +2328,7 @@
       },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: isCompact ? 8 : 12, minWidth: 0 } },
           selHubTool && h('button', {
-            onClick: function() { setSelHubTool(null); announceToSR('Returned to tool grid'); },
+            onClick: function() { var fromTool = selHubTool; setSelHubTool(null); announceToSR('Returned to tool grid'); alloFocusToolCard(fromTool); },
             'aria-label': 'Back to tools',
             style: { background: 'none', border: 'none', color: _t.headerText, cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }
           }, ArrowLeft ? h(ArrowLeft, { size: 20 }) : '\u2190'),
@@ -2540,6 +2578,22 @@
               }, '\u2715')
             ),
             h('div', { style: { flex: 1, overflow: 'auto', padding: isCompact ? '14px' : '18px 20px' } },
+              h('div', {
+                role: 'note',
+                style: {
+                  marginBottom: 12,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid ' + _t.border,
+                  background: _t.bgSoft,
+                  color: _t.textMuted,
+                  fontSize: 11.5,
+                  lineHeight: 1.45
+                }
+              },
+                h('strong', { style: { color: _t.text } }, 'Student-controlled packet. '),
+                'Choose what appears, then set the sharing label for each checkpoint. Private entries appear only as private labels.'
+              ),
               packetItems.length ? h('div', {
                 style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'minmax(0, 1.15fr) minmax(280px, 0.85fr)', gap: 14, alignItems: 'start' }
               },
@@ -3248,6 +3302,10 @@
                   }));
                 });
                 var builderEstimatedMinutes = selectedBuilderToolIds.length ? Math.max(5, (selectedBuilderToolIds.length * 4) + (builderQuests.length * 2)) : 0;
+                var selectedBuilderToolLabels = selectedBuilderToolIds.map(function(toolId) {
+                  var found = registry.filter(function(tool) { return tool.id === toolId; })[0] || _selToolById(toolId);
+                  return found ? (found.name || found.label || found.id) : toolId;
+                }).filter(Boolean);
                 var QUEST_PRESETS = [
                   { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
                     var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
@@ -3282,6 +3340,32 @@
                       'aria-label': 'Cancel station builder',
                       style: { fontSize: 11, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
                     }, '✕ Cancel')
+                  ),
+                  h('div', {
+                    role: 'note',
+                    'aria-label': 'Student view preview for this station',
+                    style: {
+                      display: 'grid',
+                      gridTemplateColumns: isCompact ? '1fr' : 'minmax(0, 1fr) minmax(160px, 0.45fr)',
+                      gap: 8,
+                      padding: '9px 10px',
+                      borderRadius: 8,
+                      border: '1px solid ' + _t.border,
+                      background: _t.bgSoft,
+                      color: _t.textMuted,
+                      fontSize: 11,
+                      lineHeight: 1.4
+                    }
+                  },
+                    h('div', { style: { minWidth: 0 } },
+                      h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Student view preview'),
+                      h('div', { style: { overflowWrap: 'anywhere' } },
+                        selectedBuilderToolLabels.length ? selectedBuilderToolLabels.slice(0, 5).join(', ') + (selectedBuilderToolLabels.length > 5 ? ' +' + (selectedBuilderToolLabels.length - 5) + ' more' : '') : 'No tools selected yet.')
+                    ),
+                    h('div', { style: { minWidth: 0 } },
+                      h('div', { style: { color: _t.text, fontWeight: 900, marginBottom: 2 } }, 'Sharing boundary'),
+                      h('div', null, 'Student saves and share packets stay student-controlled.')
+                    )
                   ),
                   // Name
                   h('input', {
@@ -3429,6 +3513,7 @@
 
               return h('button', {
                 key: tool.id,
+                'data-sel-tool-card-id': tool.id,
                 onClick: function() {
                   openSelToolById(tool.id, tool.label);
                 },
@@ -3669,7 +3754,7 @@
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
             h('button', { 'aria-label': 'Back to Tools',
-              onClick: function() { setSelHubTool(null); },
+              onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
               style: { padding: '8px 20px', borderRadius: 8, background: _t.accent, color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
             }, '\u2190 Back to Tools')
           );
@@ -3688,7 +3773,7 @@
           h('p', { style: { fontWeight: 700, fontSize: 16, marginBottom: 4, color: _t.text } }, 'Loading tool...'),
           h('p', { style: { fontSize: 12 } }, 'The plugin file is still being fetched.'),
           h('button', {
-            onClick: function() { setSelHubTool(null); },
+            onClick: function() { var fromTool = selHubTool; setSelHubTool(null); alloFocusToolCard(fromTool); },
             style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: _t.btnBg, color: _t.btnText, fontWeight: 600, border: _t.btnBorder, cursor: 'pointer' }
           }, '\u2190 Back to Tools')
         );

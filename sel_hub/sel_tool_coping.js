@@ -26567,14 +26567,14 @@ window.SelHub = window.SelHub || {
 
           // Strategy cards
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-            filteredStrats.map(function(strat) {
+            filteredStrats.map(function(strat, stratIdx) {
               var typeObj = STRATEGY_TYPES.find(function(t) { return t.id === strat.type; });
               var isExpanded = expandedStrat === strat.id;
               var steps = strat.steps[band] || strat.steps.elementary;
               var wasViewed = viewedStrats[strat.id];
               var zoneColors = { blue: '#3b82f6', green: _copFg('#22c55e'), yellow: '#eab308', red: _copFg('#ef4444') };
 
-              return h('div', {                 key: strat.id,
+              return h('div', {                 key: strat.id + '-' + strat.type + '-' + stratIdx,
                 style: { borderRadius: 14, border: '1px solid ' + (typeObj ? typeObj.color + '44' : _copBg('#334155')), background: _copBg('#1e293b'), overflow: 'hidden' }
               },
                 // Header (always visible)

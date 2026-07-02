@@ -559,6 +559,41 @@
         savedAt: new Date().toISOString()
       };
       onSaveSubmission(submission);
+      try {
+        var ts = Date.now();
+        var createdAt = new Date(ts).toISOString();
+        var performanceItems = (script.lines || []).map(function (line, idx) {
+          return {
+            id: line.id || ('line-' + idx),
+            title: (line.character || line.speaker || 'Line') + ' ' + (idx + 1),
+            text: line.text || line.line || '',
+            toolLabel: 'Story Stage',
+            privacy: 'full'
+          };
+        }).filter(function (item) { return item.text; });
+        var artifact = {
+          id: 'story-stage-' + ts,
+          type: 'story-stage-submission',
+          source: 'story-stage',
+          sourceLabel: 'Story Stage',
+          kindLabel: 'Performance',
+          title: submission.storyTitle || 'My Performance',
+          summary: submission.characterCount + ' characters - ' + submission.lineCount + ' lines',
+          privacy: 'student-controlled',
+          createdAt: createdAt,
+          updatedAt: createdAt,
+          itemCount: performanceItems.length,
+          items: performanceItems,
+          artifact: submission
+        };
+        var existing = [];
+        if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
+        else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
+        var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+        window.__alloflowStudentArtifacts = next;
+        localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'story-stage' } }));
+      } catch (e) {}
       addToast && addToast('Performance saved to portfolio!', 'success');
     }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
 

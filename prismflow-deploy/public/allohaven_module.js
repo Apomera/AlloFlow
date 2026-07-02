@@ -23310,6 +23310,7 @@
       if (!artifact || typeof artifact !== 'object') return {};
       if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
       if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+      if (artifact.data && typeof artifact.data === 'object') return artifact.data;
       return artifact;
     }
 
@@ -23327,15 +23328,145 @@
       });
     }
 
+    function portfolioPlainText(value, depth) {
+      depth = depth || 0;
+      if (value == null || depth > 3) return '';
+      if (typeof value === 'string') return value.replace(/\s+/g, ' ').trim();
+      if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+      if (Array.isArray(value)) {
+        return value.map(function(part) { return portfolioPlainText(part, depth + 1); }).filter(Boolean).join(' ');
+      }
+      if (typeof value === 'object') {
+        var preferred = ['text', 'content', 'summary', 'reflection', 'response', 'poemText', 'scriptTitle', 'storyTitle', 'title', 'body'];
+        for (var i = 0; i < preferred.length; i++) {
+          if (value[preferred[i]] !== undefined) {
+            var direct = portfolioPlainText(value[preferred[i]], depth + 1);
+            if (direct) return direct;
+          }
+        }
+        var best = '';
+        Object.keys(value).forEach(function(key) {
+          if (/^(id|ts|timestamp|createdAt|updatedAt|savedAt|image|imageUrl|coverArt|portrait|illustration)$/i.test(key)) return;
+          var text = portfolioPlainText(value[key], depth + 1);
+          if (text.length > best.length) best = text;
+        });
+        return best;
+      }
+      return '';
+    }
+
+    function portfolioShortText(value, maxLen) {
+      var text = portfolioPlainText(value, 0);
+      if (!text) return '';
+      if (maxLen && text.length > maxLen) return text.slice(0, maxLen - 1).trim() + '...';
+      return text;
+    }
+
+    function portfolioSourceLabel(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      if (artifact.sourceLabel || packet.sourceLabel) return artifact.sourceLabel || packet.sourceLabel;
+      var source = String(artifact.source || packet.source || artifact.type || packet.type || '').toLowerCase();
+      if (source.indexOf('sel') >= 0) return 'SEL Hub';
+      if (source.indexOf('storyforge') >= 0 || source.indexOf('story-forge') >= 0) return 'StoryForge';
+      if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
+      if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
+      if (source.indexOf('litlab') >= 0 || source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0) return 'Story Stage';
+      return 'Student work';
+    }
+
+    function portfolioKindLabel(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      if (artifact.kindLabel || packet.kindLabel) return artifact.kindLabel || packet.kindLabel;
+      var type = String(artifact.type || packet.type || artifact.kind || packet.kind || '').toLowerCase();
+      if (type === 'sel-share-packet') return 'SEL Share Packet';
+      if (type.indexOf('storyforge') >= 0 || type.indexOf('story-forge') >= 0) return 'StoryForge Story';
+      if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
+      if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
+      if (type.indexOf('litlab') >= 0 || type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0) return 'Performance';
+      return 'Student Product';
+    }
+
+    function portfolioNormalizeItems(items, sourceLabel, fallbackTitle) {
+      if (!Array.isArray(items)) return [];
+      return items.map(function(item, idx) {
+        if (typeof item === 'string') {
+          return {
+            id: 'text-' + idx,
+            title: fallbackTitle || ('Part ' + (idx + 1)),
+            toolLabel: sourceLabel,
+            privacy: 'full',
+            text: item
+          };
+        }
+        item = item || {};
+        var text = item.text || item.content || item.summary || item.body || portfolioShortText(item, 1200);
+        return {
+          id: item.id || ('item-' + idx),
+          title: item.title || item.heading || item.label || item.name || (fallbackTitle ? fallbackTitle + ' ' + (idx + 1) : 'Portfolio entry'),
+          toolLabel: item.toolLabel || item.sourceLabel || sourceLabel,
+          privacy: item.privacy || 'full',
+          privacyLabel: item.privacyLabel,
+          followUpRequested: !!item.followUpRequested,
+          text: text || 'Saved product details are available in the source module.'
+        };
+      }).filter(function(item) { return !!(item && (item.text || item.summary || item.title)); });
+    }
+
+    function portfolioArtifactItems(artifact, packet) {
+      artifact = artifact || {};
+      packet = packet || {};
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var fallbackTitle = artifact.title || packet.title || portfolioKindLabel(artifact, packet);
+      var direct = packet.items || artifact.items;
+      if (Array.isArray(direct) && direct.length) return portfolioNormalizeItems(direct, sourceLabel, fallbackTitle);
+      var sections = packet.sections || artifact.sections || packet.pages || artifact.pages || packet.scenes || artifact.scenes || packet.chapters || artifact.chapters || packet.steps || artifact.steps;
+      if (Array.isArray(sections) && sections.length) return portfolioNormalizeItems(sections, sourceLabel, fallbackTitle);
+      var paragraphs = packet.paragraphs || artifact.paragraphs;
+      if (Array.isArray(paragraphs) && paragraphs.length) {
+        return portfolioNormalizeItems(paragraphs.map(function(p, idx) {
+          return {
+            id: p && p.id ? p.id : 'paragraph-' + idx,
+            title: 'Paragraph ' + (idx + 1),
+            text: (p && (p.text || p.content || p.summary)) || '',
+            toolLabel: sourceLabel
+          };
+        }), sourceLabel, 'Paragraph');
+      }
+      if (packet.poemText || artifact.poemText) {
+        return [{ id: 'poem', title: packet.poemTitle || artifact.poemTitle || fallbackTitle, toolLabel: sourceLabel, privacy: 'full', text: packet.poemText || artifact.poemText }];
+      }
+      var script = packet.script || artifact.script;
+      if (script && Array.isArray(script.lines) && script.lines.length) {
+        return portfolioNormalizeItems(script.lines.map(function(line, idx) {
+          return {
+            id: line.id || ('line-' + idx),
+            title: (line.character || line.speaker || 'Line') + ' ' + (idx + 1),
+            text: line.text || line.line || '',
+            toolLabel: sourceLabel
+          };
+        }), sourceLabel, 'Line');
+      }
+      var text = artifact.text || artifact.content || artifact.summary || packet.text || packet.content || packet.summary;
+      text = portfolioShortText(text, 1800);
+      if (text) {
+        return [{ id: 'summary', title: fallbackTitle, toolLabel: sourceLabel, privacy: artifact.privacy || packet.privacy || 'full', text: text }];
+      }
+      return [];
+    }
+
     function printPortfolioArtifact(artifact) {
       var packet = portfolioArtifactPacket(artifact);
-      var items = Array.isArray(packet.items) ? packet.items : [];
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var kindLabel = portfolioKindLabel(artifact, packet);
+      var items = portfolioArtifactItems(artifact, packet);
       var created = artifact.createdAt || packet.createdAt || new Date().toISOString();
       var body = items.map(function(item, idx) {
-        var text = item.text || item.summary || 'No reflection text shared.';
+        var text = item.text || item.summary || 'Saved product details are available in the source module.';
         return '<section style="border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin:0 0 12px;">'
           + '<h2 style="font-size:16px;margin:0 0 4px;">' + (idx + 1) + '. ' + portfolioEscape(item.title || 'Portfolio item') + '</h2>'
-          + '<p style="margin:0 0 8px;color:#475569;font-size:12px;">' + portfolioEscape(item.toolLabel || artifact.sourceLabel || 'AlloFlow') + ' | ' + portfolioEscape(item.privacyLabel || portfolioPrivacyLabel(item.privacy)) + '</p>'
+          + '<p style="margin:0 0 8px;color:#475569;font-size:12px;">' + portfolioEscape(item.toolLabel || sourceLabel) + ' | ' + portfolioEscape(item.privacyLabel || portfolioPrivacyLabel(item.privacy)) + '</p>'
           + (item.followUpRequested ? '<p style="font-weight:700;color:#92400e;">Follow-up requested.</p>' : '')
           + '<p style="white-space:pre-wrap;line-height:1.55;margin:0;">' + portfolioEscape(text) + '</p>'
           + '</section>';
@@ -23343,7 +23474,7 @@
       var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + portfolioEscape(artifact.title || 'Portfolio') + '</title></head>'
         + '<body style="font-family:Arial,sans-serif;color:#0f172a;margin:28px;">'
         + '<h1 style="margin:0 0 4px;">' + portfolioEscape(artifact.title || 'Student Portfolio Artifact') + '</h1>'
-        + '<p style="margin:0 0 16px;color:#475569;">' + portfolioEscape(artifact.sourceLabel || 'Student work') + ' | ' + portfolioEscape(new Date(created).toLocaleString()) + '</p>'
+        + '<p style="margin:0 0 16px;color:#475569;">' + portfolioEscape(sourceLabel) + ' | ' + portfolioEscape(kindLabel) + ' | ' + portfolioEscape(new Date(created).toLocaleString()) + '</p>'
         + body
         + '<script>window.onload=function(){setTimeout(function(){window.print();},80);};<\/script>'
         + '</body></html>';
@@ -23417,8 +23548,12 @@
             artifacts.map(function(artifact, idx) {
               artifact = artifact || {};
               var packet = portfolioArtifactPacket(artifact);
-              var items = Array.isArray(packet.items) ? packet.items : [];
-              var sourceLabel = artifact.sourceLabel || packet.sourceLabel || (artifact.source === 'sel_hub' ? 'SEL Hub' : 'Student work');
+              var items = portfolioArtifactItems(artifact, packet);
+              var sourceLabel = portfolioSourceLabel(artifact, packet);
+              var kindLabel = portfolioKindLabel(artifact, packet);
+              var privacyLabel = (artifact.privacy || packet.privacy) === 'student-controlled'
+                ? 'Student controlled'
+                : portfolioPrivacyLabel(artifact.privacy || packet.privacy);
               return h('section', {
                 key: artifact.id || ('portfolio-artifact-' + idx),
                 'aria-label': (artifact.title || 'Portfolio item') + ' from ' + sourceLabel,
@@ -23435,17 +23570,28 @@
                     h('h4', { style: { margin: 0, fontSize: '14px', fontWeight: 800, color: palette.text, overflowWrap: 'anywhere' } }, artifact.title || packet.title || 'Portfolio Item'),
                     h('div', { style: { marginTop: '3px', fontSize: '11px', color: palette.textDim } }, sourceLabel + ' - ' + formatDate(artifact.createdAt || packet.createdAt))
                   ),
-                  h('span', {
-                    style: {
-                      flex: '0 0 auto',
-                      padding: '4px 8px',
-                      borderRadius: '999px',
-                      border: '1px solid ' + palette.border,
-                      color: palette.textDim,
-                      fontSize: '10px',
-                      fontWeight: 800
-                    }
-                  }, artifact.privacy === 'student-controlled' ? 'Student controlled' : portfolioPrivacyLabel(artifact.privacy))
+                  h('div', { style: { flex: '0 0 auto', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                    h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, kindLabel),
+                    h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, privacyLabel)
+                  )
                 ),
                 h('p', { style: { margin: '0 0 10px', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
                   artifact.summary || packet.summary || (items.length ? items.length + ' saved items' : 'Saved product')),
@@ -23455,7 +23601,7 @@
                 },
                   items.map(function(item, itemIdx) {
                     var label = item.privacyLabel || portfolioPrivacyLabel(item.privacy);
-                    var text = item.text || item.summary || 'No reflection text shared.';
+                    var text = item.text || item.summary || 'Saved product details are available in the source module.';
                     return h('li', {
                       key: (item.id || 'item') + '-' + itemIdx,
                       role: 'listitem',
@@ -23468,7 +23614,7 @@
                     },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline', marginBottom: '4px' } },
                         h('strong', { style: { fontSize: '12px', color: palette.text, overflowWrap: 'anywhere' } }, item.title || 'Portfolio entry'),
-                        h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? '#b91c1c' : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
+                        h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? (palette.warn || palette.textDim) : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
                       ),
                       item.followUpRequested ? h('div', { style: { color: '#92400e', fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, 'Follow-up requested.') : null,
                       h('p', { style: { margin: 0, color: palette.textDim, fontSize: '11.5px', lineHeight: '1.45', overflowWrap: 'anywhere' } }, text)
@@ -23483,7 +23629,7 @@
               );
             })
           ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
-            'No portfolio products are loaded yet. Create one in a module such as SEL Hub, then save or load the student project file.'),
+            'No portfolio products are loaded yet. Create one in SEL Hub, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
             h('button', {
               onClick: function() { setStateField('activeModal', null); },

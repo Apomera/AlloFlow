@@ -880,6 +880,32 @@
         savedAt: new Date().toISOString()
       };
       onSaveSubmission(submission);
+      try {
+        var ts = Date.now();
+        var createdAt = new Date(ts).toISOString();
+        var artifact = {
+          id: 'poettree-' + ts,
+          type: 'poettree-submission',
+          source: 'poettree',
+          sourceLabel: 'PoetTree',
+          kindLabel: 'Poem',
+          title: submission.poemTitle || 'My Poem',
+          summary: submission.lineCount + ' lines - ' + submission.wordCount + ' words',
+          privacy: 'student-controlled',
+          createdAt: createdAt,
+          updatedAt: createdAt,
+          itemCount: 1,
+          items: [{ id: 'poem', title: submission.poemTitle || 'My Poem', text: submission.poemText, toolLabel: 'PoetTree', privacy: 'full' }],
+          artifact: submission
+        };
+        var existing = [];
+        if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
+        else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
+        var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+        window.__alloflowStudentArtifacts = next;
+        localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'poettree' } }));
+      } catch (e) {}
       announcePT('Poem saved to portfolio.');
       addToast && addToast('Poem saved to your portfolio!', 'success');
     }, [onSaveSubmission, poemText, poemTitle, form, aiFeedback, meterAnalysis, studentNickname, gradeLevel, addToast]);

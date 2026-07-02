@@ -707,6 +707,55 @@ const createExport = (deps) => {
             const strFooter = t('output.generated_via');
             const strUser = t('export.storybook.user_label');
             const strSeparator = t('export.storybook.chapter_separator');
+            try {
+                const ts = Date.now();
+                const createdAt = new Date(ts).toISOString();
+                const storyItems = [{
+                    id: 'epilogue',
+                    title: 'Epilogue',
+                    text: summary,
+                    toolLabel: 'Adventure Mode',
+                    privacy: 'full',
+                }].concat(fullStory.map((entry, idx) => ({
+                    id: `adventure-${idx}`,
+                    title: entry.type === 'choice' ? 'Student choice' : entry.type === 'feedback' ? 'Outcome' : `Scene ${idx + 1}`,
+                    text: entry.text || '',
+                    image: includeImages ? entry.image || null : null,
+                    toolLabel: 'Adventure Mode',
+                    privacy: 'full',
+                }))).filter(item => (item.text || '').trim());
+                const artifact = {
+                    id: `adventure-storybook-${ts}`,
+                    type: 'adventure-storybook',
+                    source: 'adventure',
+                    sourceLabel: 'Adventure Mode',
+                    kindLabel: 'Adventure Storybook',
+                    title,
+                    summary: `Adventure storybook with ${Math.max(0, storyItems.length - 1)} journey entries`,
+                    privacy: 'student-controlled',
+                    createdAt,
+                    updatedAt: createdAt,
+                    itemCount: storyItems.length,
+                    items: storyItems,
+                    artifact: {
+                        title,
+                        summary,
+                        level: adventureState.level,
+                        includeImages,
+                        items: storyItems,
+                    },
+                };
+                let existing = [];
+                if (Array.isArray(window.__alloflowStudentArtifacts)) {
+                    existing = window.__alloflowStudentArtifacts;
+                } else {
+                    try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (_) { existing = []; }
+                }
+                const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+                window.__alloflowStudentArtifacts = next;
+                localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+                window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'adventure' } }));
+            } catch (_) {}
             let storyHtml = `
               <!DOCTYPE html>
               <html>
