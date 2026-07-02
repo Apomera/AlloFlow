@@ -58,6 +58,7 @@ const EXPECTED_MARKERS = [
   { id: 'cellularLab', file: 'stem_tool_cellular.js', marker: 'data-cellularlab-focus-panel', label: 'Cellular focus panel' },
   { id: 'companionPlanting', file: 'stem_tool_companionplanting.js', marker: 'data-companion-workspace-stage', label: 'Companion Planting workspace stage' },
   { id: 'dnaLab', file: 'stem_tool_dna.js', marker: 'data-dna-mission', label: 'DNA mission control' },
+  { id: 'cell', file: 'stem_tool_cell.js', marker: 'data-cell-mission', label: 'Cell Simulator mission panel' },
   { id: 'brainAtlas', file: 'stem_tool_brainatlas.js', marker: 'data-brainatlas-mission', label: 'Brain Atlas mission panel' },
   { id: 'anatomy', file: 'stem_tool_anatomy.js', marker: 'data-anatomy-mission', label: 'Anatomy mission panel' },
   { id: 'birdLab', file: 'stem_tool_birdlab.js', marker: 'data-birdlab-field-station', label: 'Bird Lab field station' },
@@ -113,6 +114,7 @@ const STARTER_DATA = {
     }
   },
   companionPlanting: { companionPlanting: { gardenWorkspace: 'operate', gardenMode: 'sisters' } },
+  cell: { cell: { mode: 'observe' } },
   birdLab: { birdLab: { view: 'menu' } },
   waterCycle: { waterCycle: { view: 'explore' } },
   playlab: { playlab: { sport: 'basketball' } },

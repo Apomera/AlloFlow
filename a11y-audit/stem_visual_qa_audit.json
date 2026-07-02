@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-02T18:16:47.601Z",
+  "generatedAt": "2026-07-02T18:50:32.626Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 28
+    "monitoredMarkerCount": 29
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 28,
+    "markerPassCount": 29,
     "markerFailCount": 0,
-    "monitoredIssueCount": 30,
+    "monitoredIssueCount": 31,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 21,
+    "monitoredWarningCount": 22,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 4,
+    "syncDriftCount": 7,
     "sourcePublicDriftCount": 1,
-    "monitoredSyncDriftCount": 2
+    "monitoredSyncDriftCount": 4
   },
   "loadErrors": [],
   "markerResults": [
@@ -148,23 +148,31 @@
       "marker": "data-climate-mission-panel",
       "label": "Climate mission panel",
       "ok": true,
-      "htmlBytes": 32842,
+      "htmlBytes": 33302,
       "issues": [
+        {
+          "toolId": "climateExplorer",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div > div:nth-of-type(2) > canvas"
+        },
         {
           "toolId": "climateExplorer",
           "severity": "warning",
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div:nth-of-type(5) > div > div:nth-of-type(7) > canvas"
+          "index": 1,
+          "selector": "div > div:nth-of-type(6) > div > div:nth-of-type(7) > canvas"
         }
       ],
       "metrics": {
         "buttons": 39,
         "fields": 0,
-        "canvases": 1,
+        "canvases": 2,
         "headings": 2,
-        "htmlBytes": 32842
+        "htmlBytes": 33302
       }
     },
     {
@@ -301,12 +309,28 @@
       }
     },
     {
+      "id": "cell",
+      "file": "stem_tool_cell.js",
+      "marker": "data-cell-mission",
+      "label": "Cell Simulator mission panel",
+      "ok": true,
+      "htmlBytes": 20358,
+      "issues": [],
+      "metrics": {
+        "buttons": 38,
+        "fields": 3,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 20358
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 14502,
+      "htmlBytes": 15172,
       "issues": [
         {
           "toolId": "brainAtlas",
@@ -322,7 +346,7 @@
         "fields": 1,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 14502
+        "htmlBytes": 15172
       }
     },
     {
@@ -431,7 +455,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17214,
+      "htmlBytes": 17202,
       "issues": [
         {
           "toolId": "playlab",
@@ -460,7 +484,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17214
+        "htmlBytes": 17202
       }
     },
     {
@@ -558,14 +582,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13327,
+      "htmlBytes": 13343,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13327
+        "htmlBytes": 13343
       }
     },
     {
@@ -634,7 +658,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46575,
+      "htmlBytes": 46585,
       "issues": [
         {
           "toolId": "throwlab",
@@ -663,7 +687,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46575
+        "htmlBytes": 46585
       }
     },
     {
@@ -818,13 +842,47 @@
           "build": true
         },
         "hashes": {
-          "source": "B11CEB0B53CE",
+          "source": "A5708CD4CD10",
           "public": "C6F8EE753C13",
           "build": "C6F8EE753C13"
         },
         "sourcePublicMatch": false,
         "sourceBuildMatch": false,
         "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_climateExplorer.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "71B2052063D8",
+          "public": "71B2052063D8",
+          "build": "8AE33F49F04E"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_geo.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "810421B9BF73",
+          "public": "810421B9BF73",
+          "build": "03B45AB06BDC"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_geosandbox.js",
@@ -876,6 +934,23 @@
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_wave.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "643338F9D0B1",
+          "public": "643338F9D0B1",
+          "build": "176A86AA1EFD"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       }
     ],
     "sourcePublicDrift": [
@@ -888,7 +963,7 @@
           "build": true
         },
         "hashes": {
-          "source": "B11CEB0B53CE",
+          "source": "A5708CD4CD10",
           "public": "C6F8EE753C13",
           "build": "C6F8EE753C13"
         },
@@ -907,13 +982,30 @@
           "build": true
         },
         "hashes": {
-          "source": "B11CEB0B53CE",
+          "source": "A5708CD4CD10",
           "public": "C6F8EE753C13",
           "build": "C6F8EE753C13"
         },
         "sourcePublicMatch": false,
         "sourceBuildMatch": false,
         "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_climateExplorer.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "71B2052063D8",
+          "public": "71B2052063D8",
+          "build": "8AE33F49F04E"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_watercycle.js",
@@ -927,6 +1019,23 @@
           "source": "E85421A360B0",
           "public": "E85421A360B0",
           "build": "8B9DB4731B22"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_wave.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "643338F9D0B1",
+          "public": "643338F9D0B1",
+          "build": "176A86AA1EFD"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -955,10 +1064,11 @@
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 7,
-      "toolCount": 5,
+      "count": 8,
+      "toolCount": 6,
       "exampleTools": [
         "epidemicSim",
+        "climateExplorer",
         "anatomy",
         "waterCycle",
         "plateTectonics",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T18:16:50.663Z",
+  "generatedAt": "2026-07-02T18:50:33.687Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,9 +8,9 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 177,
+    "issueCount": 179,
     "errorCount": 0,
-    "warningCount": 160,
+    "warningCount": 162,
     "noticeCount": 17,
     "toolsWithIssues": 76,
     "toolsWithErrors": 0,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 74,
+        "warningCount": 76,
         "noticeCount": 6
       },
       "technology": {
@@ -235,12 +235,13 @@
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 66,
-      "toolCount": 16,
+      "count": 67,
+      "toolCount": 17,
       "exampleTools": [
         "algebraCAS",
         "appLab",
         "atcTower",
+        "cell",
         "cellularLab",
         "companionPlanting",
         "dataStudio",
@@ -248,20 +249,20 @@
         "echoTrainer",
         "fireEcology",
         "kitchenLab",
-        "llmLiteracy",
-        "probability"
+        "llmLiteracy"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 18,
-      "toolCount": 15,
+      "count": 19,
+      "toolCount": 16,
       "exampleTools": [
         "anatomy",
         "areamodel",
         "chemBalance",
+        "climateExplorer",
         "dissection",
         "economicsLab",
         "epidemicSim",
@@ -269,8 +270,7 @@
         "musicSynth",
         "plateTectonics",
         "rockCycle",
-        "rocks",
-        "skatelab"
+        "rocks"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
     },
@@ -1227,7 +1227,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
-      "renderedBytes": 14502,
+      "renderedBytes": 15172,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -1327,25 +1327,37 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 14782,
+      "renderedBytes": 20358,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 34,
+        "buttons": 38,
         "roleButtons": 0,
         "fields": 3,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 16,
         "fixedWidthRiskCount": 0
       },
       "issues": [
+        {
+          "toolId": "cell",
+          "severity": "warning",
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 16,
+          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(1) > div.mb-1.flex > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 3.3,
+          "color": "#fff",
+          "background": "#16a34a",
+          "text": "Active"
+        },
         {
           "toolId": "cell",
           "severity": "warning",
@@ -1566,17 +1578,17 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Carbon calculator, renewables simulator, climate justice & solutions.",
-      "renderedBytes": 32842,
+      "renderedBytes": 33302,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
         "buttons": 39,
         "roleButtons": 0,
         "fields": 0,
-        "canvases": 1,
+        "canvases": 2,
         "svgs": 0,
         "images": 0,
         "headings": 2,
@@ -1588,10 +1600,18 @@
         {
           "toolId": "climateExplorer",
           "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div > div:nth-of-type(2) > canvas"
+        },
+        {
+          "toolId": "climateExplorer",
+          "severity": "warning",
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div:nth-of-type(5) > div > div:nth-of-type(7) > canvas"
+          "index": 1,
+          "selector": "div > div:nth-of-type(6) > div > div:nth-of-type(7) > canvas"
         }
       ]
     },
@@ -1932,7 +1952,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2330,7 +2350,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22808,
+      "renderedBytes": 22779,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3351,7 +3371,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13343,
+      "renderedBytes": 13350,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3816,7 +3836,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17340,
+      "renderedBytes": 17336,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4622,7 +4642,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46588,
+      "renderedBytes": 46576,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

@@ -19659,13 +19659,44 @@ var d = labToolData.cell || {};
 
           var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
 
+          var activeCellMode = d.mode || 'observe';
+          var observedCount = (ext.organismsObserved || []).length;
+          var discoveredCount = (d.discoveries || []).length;
+          var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
+          var organellesExplored = (ext.organellesClicked || []).length + (d.interiorSeen || []).length;
+          var cellModeCategoryHint = {
+            observe: 'interactive', interior: 'interactive', play: 'interactive', quiz: 'interactive',
+            encyclopedia: 'browse', filter: 'browse', compare: 'browse',
+            history: 'knowledge', biologists: 'knowledge', lab: 'knowledge', disease: 'knowledge', ecology: 'knowledge',
+            glossary: 'reference', finale: 'reference'
+          };
+          var cellModeLabelMap = {
+            observe: 'Observe', interior: 'Inside the Cell', play: 'Play', quiz: 'Quiz',
+            encyclopedia: 'Encyclopedia', filter: 'Filter', compare: 'Compare',
+            history: 'History', biologists: 'Biologists', lab: 'Lab Techniques', disease: 'Diseases', ecology: 'Ecology',
+            glossary: 'Glossary', finale: 'Finale'
+          };
+          function jumpCellMode(m) {
+            upd('mode', m);
+            upd('_cellPicked', true);
+            if (cellModeCategoryHint[m]) upd('_cellCategory', cellModeCategoryHint[m]);
+            if (m === 'quiz') { upd('quizMode', true); upd('quizIdx', 0); upd('quizScore', 0); upd('quizStreak', 0); upd('quizFeedback', null); }
+            else { upd('quizMode', false); }
+            if (m !== 'play') {
+              upd('playAsOrganism', null);
+              var cv = document.querySelector('[data-cell-sim-canvas]');
+              if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null);
+            }
+            if (typeof announceToSR === 'function') announceToSR('Cell Simulator mode: ' + (cellModeLabelMap[m] || m));
+          }
 
 
-          return React.createElement("div", { ref: cleanupRef, className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+
+          return React.createElement("div", { ref: cleanupRef, className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-cell-tool": true },
 
             // Header
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
@@ -19696,6 +19727,12 @@ var d = labToolData.cell || {};
                   disease: '🦠 Diseases', ecology: '🌍 Ecology',
                   glossary: '📖 Glossary', finale: '🎆 Finale'
                 };
+                var CELL_CATEGORY_STYLE = {
+                  interactive: { border: '#86efac', active: '#15803d', bg: '#f0fdf4', text: '#166534' },
+                  browse: { border: '#67e8f9', active: '#0e7490', bg: '#ecfeff', text: '#155e75' },
+                  knowledge: { border: '#fcd34d', active: '#b45309', bg: '#fffbeb', text: '#92400e' },
+                  reference: { border: '#a5b4fc', active: '#4f46e5', bg: '#eef2ff', text: '#3730a3' }
+                };
                 var CELL_MODE_TO_CATEGORY = {};
                 CELL_CATEGORIES.forEach(function(c) { c.modes.forEach(function(mid) { CELL_MODE_TO_CATEGORY[mid] = c.id; }); });
 
@@ -19709,18 +19746,7 @@ var d = labToolData.cell || {};
                 var searchResults = searchTerm ? allModes.filter(function(m) { return (CELL_MODE_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
 
                 function setMode(m) {
-                  upd('mode', m);
-                  upd('_cellPicked', true);
-                  if (CELL_MODE_TO_CATEGORY[m] && CELL_MODE_TO_CATEGORY[m] !== d._cellCategory) {
-                    upd('_cellCategory', CELL_MODE_TO_CATEGORY[m]);
-                  }
-                  if (m === 'quiz') { upd('quizMode', true); upd('quizIdx', 0); upd('quizScore', 0); upd('quizStreak', 0); upd('quizFeedback', null); }
-                  else { upd('quizMode', false); }
-                  if (m !== 'play') {
-                    upd('playAsOrganism', null);
-                    var cv = document.querySelector('[data-cell-sim-canvas]');
-                    if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null);
-                  }
+                  jumpCellMode(m);
                 }
                 function setCat(cid) { upd('_cellCategory', cid); upd('_cellSearch', ''); }
 
@@ -19760,17 +19786,19 @@ var d = labToolData.cell || {};
 
                 // Hub: category cards
                 if (atHub) {
-                  els.push(React.createElement('div', { key: 'hub', className: 'grid grid-cols-2 gap-3 w-full' },
+                  els.push(React.createElement('div', { key: 'hub', className: 'grid gap-3 w-full sm:grid-cols-2 lg:grid-cols-4', "data-cell-mode-hub": true },
                     CELL_CATEGORIES.map(function(c) {
+                      var theme = CELL_CATEGORY_STYLE[c.id] || CELL_CATEGORY_STYLE.interactive;
                       return React.createElement('button', {
                         key: c.id,
                         onClick: function() { setCat(c.id); setMode(c.modes[0]); },
-                        className: 'text-left p-3 rounded-xl bg-white border-2 border-' + c.color + 'transition-colors -200 hover:border-' + c.color + 'transition-colors -500 hover:bg- active:scale-[0.97]' + c.color + '-50 transition-all'
+                        className: 'text-left p-3 rounded-xl border-2 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]',
+                        style: { borderColor: theme.border, background: theme.bg }
                       },
                         React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
-                        React.createElement('div', { className: 'text-sm font-bold text-' + c.color + '-700 mb-1' }, c.label),
+                        React.createElement('div', { className: 'text-sm font-black mb-1', style: { color: theme.text } }, c.label),
                         React.createElement('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
-                        React.createElement('div', { className: 'text-[10px] text-' + c.color + '-600 font-mono' }, c.modes.length + ' modes')
+                        React.createElement('div', { className: 'text-[10px] font-mono', style: { color: theme.text } }, c.modes.length + ' modes')
                       );
                     })
                   ));
@@ -19778,6 +19806,7 @@ var d = labToolData.cell || {};
 
                 // Category open: show that category's modes
                 if (!atHub && activeCat && !searchTerm) {
+                  var activeTheme = CELL_CATEGORY_STYLE[activeCat.id] || CELL_CATEGORY_STYLE.interactive;
                   els.push(React.createElement('div', { key: 'cat-modes', className: 'flex flex-wrap gap-1 w-full' },
                     activeCat.modes.map(function(m) {
                       var isActive = d.mode === m;
@@ -19785,10 +19814,8 @@ var d = labToolData.cell || {};
                         key: m,
                         'aria-current': isActive ? 'true' : undefined,
                         onClick: function() { setMode(m); },
-                        className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
-                          (isActive
-                            ? 'bg-' + activeCat.color + '-700 text-white'
-                            : 'transition-colors bg-slate-100 text-slate-600 hover:bg- active:scale-[0.97]' + activeCat.color + '-50')
+                        className: 'px-3 py-1 rounded-lg border text-xs font-bold transition-all active:scale-[0.97]',
+                        style: isActive ? { background: activeTheme.active, borderColor: activeTheme.active, color: '#fff' } : { background: '#fff', borderColor: activeTheme.border, color: activeTheme.text }
                       }, CELL_MODE_LABELS[m] || m);
                     })
                   ));
@@ -19800,6 +19827,65 @@ var d = labToolData.cell || {};
             ),
 
             // ── Challenges Progress checklist card ──
+            React.createElement("div", {
+              "data-cell-mission": true,
+              className: "overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm mb-3"
+            },
+              React.createElement("div", {
+                className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]",
+                style: { background: 'linear-gradient(135deg,#f0fdf4 0%,#f8fafc 55%,#ecfeff 100%)' }
+              },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Cell Lab Command Deck"),
+                      React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" }, cellModeLabelMap[activeCellMode] || "Observe"),
+                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, "Start with the living petri dish, jump inside a single cell, then use play and quiz modes to connect structures to behavior.")
+                    ),
+                    React.createElement("span", { className: "rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-700 shadow-sm" },
+                      d.mode === 'play' ? "Playing" : d.quizMode ? "Quiz active" : "Explore ready"
+                    )
+                  ),
+                  React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                    [
+                      { label: 'Observed', value: observedCount + '/' + ORGANISMS.length, sub: 'organisms selected' },
+                      { label: 'Facts', value: discoveredCount, sub: 'biology clues unlocked' },
+                      { label: 'Organelles', value: organellesExplored, sub: 'structures inspected' },
+                      { label: 'Quests', value: completedChallengeCount + '/' + CELL_CHALLENGES.length, sub: 'mission progress' }
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat.label, className: "min-w-0 rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "mt-1 truncate text-lg font-black text-slate-900" }, stat.value),
+                        React.createElement("div", { className: "truncate text-[11px] text-slate-500" }, stat.sub)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2" },
+                  [
+                    { id: 'observe', label: 'Petri Dish', desc: 'Watch organisms move, feed, split, and interact.', accent: '#16a34a' },
+                    { id: 'interior', label: 'Inside a Cell', desc: 'Compare animal, plant, and bacterial structures.', accent: '#0e7490' },
+                    { id: 'play', label: 'Play as Cell', desc: 'Control an organism and learn its survival strategy.', accent: '#7c3aed' },
+                    { id: 'quiz', label: 'Concept Check', desc: 'Practice organelles, movement, and cell type clues.', accent: '#0284c7' }
+                  ].map(function(route) {
+                    var active = activeCellMode === route.id || (route.id === 'quiz' && d.quizMode);
+                    return React.createElement("button", {
+                      key: route.id,
+                      onClick: function() { jumpCellMode(route.id); },
+                      className: "rounded-lg border p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]",
+                      style: { borderColor: active ? route.accent : route.accent + '33', background: active ? route.accent + '12' : '#fff' }
+                    },
+                      React.createElement("div", { className: "mb-1 flex items-center justify-between gap-2" },
+                        React.createElement("span", { className: "text-sm font-black text-slate-900" }, route.label),
+                        React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? route.accent : route.accent + '18', color: active ? '#fff' : route.accent } }, active ? 'Active' : 'Open')
+                      ),
+                      React.createElement("p", { className: "text-[11px] leading-snug text-slate-500" }, route.desc)
+                    );
+                  })
+                )
+              )
+            ),
+
             React.createElement('div', { className: 'bg-white rounded-xl border border-green-200 p-3 mb-3 shadow-sm' },
               React.createElement('div', { className: 'flex justify-between items-center mb-2' },
                 React.createElement('h4', { className: 'text-xs font-bold text-green-800 uppercase tracking-wider flex items-center gap-1.5' },
@@ -19859,7 +19945,19 @@ var d = labToolData.cell || {};
 
             // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
-            d.mode !== 'interior' && React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-green-200 bg-green-50", style: { height: '520px' } },
+            d.mode !== 'interior' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
+
+              React.createElement("div", { className: "absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur" },
+                React.createElement("div", { className: "min-w-0" },
+                  React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wide text-emerald-200" }, d.mode === 'play' ? "Live Cell Control" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
+                  React.createElement("div", { className: "truncate text-[11px] text-slate-300" }, selDef ? selDef.label + " selected" : "Click an organism to inspect behavior and anatomy")
+                ),
+                React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                  React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
+                  React.createElement("span", { className: "rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
+                  React.createElement("span", { className: "rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100" }, d.paused ? "Paused" : "Running")
+                )
+              ),
 
               React.createElement("canvas", {
 
@@ -20069,7 +20167,7 @@ var d = labToolData.cell || {};
 
             // 🔬 Petri Dish Filters: Select Visible Cell Types
 
-            React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
+            d.mode !== 'interior' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
 
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
@@ -20199,7 +20297,7 @@ var d = labToolData.cell || {};
 
             // Organism selector buttons
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+            d.mode !== 'interior' && !d.quizMode && React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
               ORGANISMS.map(function (org) {
 
@@ -20261,7 +20359,7 @@ var d = labToolData.cell || {};
 
             // Info card for selected organism
 
-            selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
+            d.mode !== 'interior' && !d.quizMode && selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
 
               React.createElement("div", { className: "flex items-start justify-between" },
 
@@ -20761,7 +20859,7 @@ var d = labToolData.cell || {};
               var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
               var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
               function pick(key) { upd('interiorSel', key); if (CELL_ORGANELLES[key] && seen.indexOf(key) < 0) upd('interiorSeen', seen.concat([key])); }
-              return h('div', { className: 'mt-4' },
+              return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
                 h('p', { className: 'text-[13px] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
                 // cell-type toggle
                 h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
@@ -20771,7 +20869,7 @@ var d = labToolData.cell || {};
                   })),
                 h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),
                 // the living cell
-                h('div', { className: 'rounded-xl overflow-hidden border-2 border-slate-800', style: { background: '#04181d' } },
+                h('div', { className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
                   h('canvas', { key: 'interior-' + ctype + '-' + (sel || 'none'), width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
                     style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
