@@ -39,6 +39,53 @@ var _alloAxeWeightedScore = function (ax) {
     (ax.moderate || []).length * SEVERITY_WEIGHTS.moderate +
     (ax.minor || []).length * SEVERITY_WEIGHTS.minor)));
 };
+// ── S3 (deep dive 2026-07-02): fix-loop decision policy, extracted PURE ──
+// Four live loops (fixAndVerifyPdf's pass loop, runAutonomousRemediation, ANTI's
+// runAutoFixLoop, autoFixAxeViolations) historically re-implemented these decisions and
+// every convergence bugfix (2026-06-15 noise, 2026-06-19 AND-only guard) had to be found
+// and re-applied per loop. This is the canonical policy for the SHIPPED main loop —
+// extracted verbatim (goldens: tests/fix_loop_policy_golden.test.js pin the boundaries).
+// Tolerances default to the long-standing values: aiTol 5 (AI-rubric noise), axeTol 2
+// (±2 axe-violation noise), minDetectable floor 2 (plateau).
+var _alloLoopPolicy = {
+  // Revert when axe (structural WCAG) regressed beyond tolerance — ALWAYS — or the AI
+  // rubric dropped meaningfully WITHOUT an axe gain to justify it. (2026-06-19: the
+  // AND-only version let a pass drop the rubric 89→78 with axe unchanged and ship it.)
+  shouldRevert: function (p) {
+    var aiTol = (p.aiTol == null) ? 5 : p.aiTol;
+    var axeTol = (p.axeTol == null) ? 2 : p.axeTol;
+    var aiWorse = p.newAi < p.bestAi - aiTol;
+    var axeMuchWorse = p.newAxe > p.bestAxe + axeTol;
+    var axeBetter = p.newAxe < p.bestAxe;
+    return axeMuchWorse || (aiWorse && !axeBetter);
+  },
+  // Human-readable reason for the revert log/toast (same strings the loop always emitted).
+  revertReason: function (p) {
+    var aiTol = (p.aiTol == null) ? 5 : p.aiTol;
+    var axeTol = (p.axeTol == null) ? 2 : p.axeTol;
+    var aiWorse = p.newAi < p.bestAi - aiTol;
+    var axeWorse = p.newAxe > p.bestAxe;
+    var axeMuchWorse = p.newAxe > p.bestAxe + axeTol;
+    return (axeMuchWorse && !aiWorse)
+      ? ('introduced ' + (p.newAxe - p.bestAxe) + ' new axe/WCAG violation(s) despite AI gains')
+      : ((aiWorse && !axeWorse) ? ('AI rubric dropped ' + p.bestAi + '→' + p.newAi + ' without fixing any axe violation') : 'both scores got worse');
+  },
+  // Keep-best promotion: a genuinely at-least-as-good pass — higher AI score, or fewer axe
+  // violations without an AI regression. Under a PARTIAL audit the AI score is inflated, so
+  // promote only on a real (full-doc) axe gain.
+  isBest: function (p) {
+    return p.partial
+      ? (p.newAxe < p.bestAxe)
+      : ((p.newAi > p.bestAi) || (p.newAxe < p.bestAxe && p.newAi >= p.bestAi - 5));
+  },
+  // Plateau accounting: this pass counts as improvement only on an axe gain or an AI gain
+  // beyond the minimum-detectable floor (constant 2 since $1 removed the duplicate-audit
+  // SEM, which was ~0 by construction anyway).
+  improved: function (p) {
+    return (p.newAxe < p.prevBestAxe) || (p.newAi > p.prevBestAi + Math.max(2, p.minDetectable || 0));
+  },
+};
+
 // ── S7 (deep dive 2026-07-02): canonical unicode token fold for missing-word diffs ──
 // Was TRIPLICATED (here + twice in view_pdf_audit) — adding a fold class in one copy (as
 // happened 2026-06-23) silently made the pipeline's residual count disagree with the view's
@@ -16786,26 +16833,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const _rePartial = _reCoverage < 0.8;
           if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
 
-          // Regression guard: revert if BOTH scores got worse, OR if axe (structural
-          // WCAG) regressed by more than a small noise tolerance even when the AI
-          // rubric improved. Previously the AND-only check let a pass that traded a
-          // real WCAG violation for AI-perceived gains survive silently — accessibility
-          // compliance shouldn't be tradeable against the rubric score.
-          const aiWorse = newAiScore < bestAiScore - 5;            // allow 5-point AI tolerance
-          const AXE_TOL = 2;                                       // allow ±2 axe-violation noise
-          const axeWorse = newAxeViolations > bestAxeViolations;
-          const axeMuchWorse = newAxeViolations > bestAxeViolations + AXE_TOL;
-          const axeBetter = newAxeViolations < bestAxeViolations;
-
-          // Revert if a big axe regression (always), OR the AI rubric dropped meaningfully WITHOUT
-          // fixing any axe/WCAG violation to justify it. (2026-06-19: the guard previously only
-          // reverted when axe ALSO worsened — so a pass that dropped the AI rubric 89→78 while axe
-          // stayed clean was ACCEPTED, letting the loop degrade a good doc on rubric noise and ship
-          // it. A pass that lowers the rubric is only worth keeping if it fixed a real axe violation.)
-          if (axeMuchWorse || (aiWorse && !axeBetter)) {
-            const _why = axeMuchWorse && !aiWorse
-              ? `introduced ${newAxeViolations - bestAxeViolations} new axe/WCAG violation(s) despite AI gains`
-              : (aiWorse && !axeWorse ? `AI rubric dropped ${bestAiScore}→${newAiScore} without fixing any axe violation` : 'both scores got worse');
+          // Regression guard — decisions via the canonical, golden-tested policy (S3 2026-07-02;
+          // tests/fix_loop_policy_golden.test.js pins the boundaries). Semantics unchanged: an
+          // axe regression beyond ±2 always reverts; an AI drop >5 reverts only when no axe
+          // violation was fixed to justify it (the 2026-06-19 AND-only guard fix).
+          const _policyArgs = { newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations };
+          if (_alloLoopPolicy.shouldRevert(_policyArgs)) {
+            const _why = _alloLoopPolicy.revertReason(_policyArgs);
             // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
             // from the last-good state (best*/axeResults/verification are untouched here, so
             // the next pass re-attempts the same remaining violations). Give up only after
@@ -16843,9 +16877,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // bestHtml is what the pipeline ships (restored after the loop).
           // Under a partial audit the AI score is inflated, so promote ONLY on a real axe gain
           // (full-doc, reliable); otherwise use the normal AI-or-axe rule.
-          const _passIsBest = _rePartial
-            ? (newAxeViolations < bestAxeViolations)
-            : ((newAiScore > bestAiScore) || (newAxeViolations < bestAxeViolations && newAiScore >= bestAiScore - 5));
+          const _passIsBest = _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: _rePartial }); // S3: golden-tested policy
           if (_passIsBest) {
             bestHtml = accessibleHtml;
             bestAiScore = newAiScore;
@@ -16887,13 +16919,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             break;
           }
 
-          // Plateau detection with statistical significance threshold — compare against the
-          // PREVIOUS best (captured before the best* update above), not the just-updated value.
-          const axeImproved = newAxeViolations < prevBestAxeViolations;
-          // Only count AI improvement if it exceeds 1 SEM (statistically meaningful)
-          const minDetectable = Math.max(2, Math.round(reSEM * 1.5));
-          const aiImproved = newAiScore > prevBestAiScore + minDetectable;
-          if (!axeImproved && !aiImproved && fixPass > 0) {
+          // Plateau detection — compare against the PREVIOUS best (captured before the best*
+          // update above), not the just-updated value. Policy: axe gain always counts; AI gain
+          // must clear the minimum-detectable floor (S3 golden-tested; reSEM is 0 since $1, so
+          // the floor of 2 governs).
+          if (!_alloLoopPolicy.improved({ newAi: newAiScore, prevBestAi: prevBestAiScore, newAxe: newAxeViolations, prevBestAxe: prevBestAxeViolations, minDetectable: Math.round(reSEM * 1.5) }) && fixPass > 0) {
             // One flat pass isn't a plateau — AI is stochastic, so the next pass often makes
             // progress. Require 2 CONSECUTIVE non-improving passes before giving up (we're
             // still below target here). Any improvement resets the counter.
@@ -29883,6 +29913,7 @@ window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeduction
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
 window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; // static: S7 (2026-07-02) — the view's missing-word/restoration UI folds tokens with the SAME function the pipeline's residual count uses
+window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
