@@ -2698,16 +2698,21 @@ var createDocPipeline = function(deps) {
   var getDefaultTitle = deps.getDefaultTitle || function() { return ''; };
   // Proxy all state access through window.__docPipelineState
   var _s = function() { return window.__docPipelineState || {}; };
-  // Re-expose state vars as getters so existing code works unchanged
-  var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
-      selectedFont, responses, history, inputText, gradeLevel,
-      projectName, studentNickname, isTeacherMode, generatedContent,
+  // Re-expose state vars as getters so existing code works unchanged.
+  // S1 step 0 (deep dive 2026-07-02): 12 DEAD bindings deleted — projectName (never even
+  // published by the host), pdfFixModeRef, inputText, gradeLevel, studentNickname,
+  // isTeacherMode, generatedContent, exportPreviewMode, pdfExperimentMode,
+  // pdfExperimentRuns, history (comment-only hits), responses (shadowed by the
+  // generateResourceHTML/generateFullPackHTML params). Each verified zero bare reads
+  // outside this block before deletion.
+  var exportTheme, exportConfig, leveledTextLanguage,
+      selectedFont,
       currentUiLanguage, isIndependentMode, isParentMode,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
-      pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
-      customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore,
+      pdfBatchQueue, pdfBatchSummary,
+      customExportCSS, exportStylePrompt, pdfPreviewRef, pdfTargetScore,
       setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
       setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
       setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
@@ -2719,11 +2724,8 @@ var createDocPipeline = function(deps) {
   var _bindState = function() {
     var s = _s();
     exportTheme = s.exportTheme; exportConfig = s.exportConfig;
-    exportPreviewMode = s.exportPreviewMode; leveledTextLanguage = s.leveledTextLanguage;
-    selectedFont = s.selectedFont; responses = s.responses; history = s.history;
-    inputText = s.inputText; gradeLevel = s.gradeLevel;
-    projectName = s.projectName; studentNickname = s.studentNickname;
-    isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
+    leveledTextLanguage = s.leveledTextLanguage;
+    selectedFont = s.selectedFont;
     currentUiLanguage = s.currentUiLanguage || 'English';
     isIndependentMode = s.isIndependentMode; isParentMode = s.isParentMode;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
@@ -2733,10 +2735,8 @@ var createDocPipeline = function(deps) {
     pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
     pdfPreviewA11yInspect = s.pdfPreviewA11yInspect;
     pdfBatchQueue = s.pdfBatchQueue; pdfBatchSummary = s.pdfBatchSummary;
-    pdfExperimentMode = s.pdfExperimentMode;
-    pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
-    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+    pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
     setPdfAuditResult = s.setPdfAuditResult; setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult; setPdfFixLoading = s.setPdfFixLoading;
     setPdfFixStep = s.setPdfFixStep; setPendingPdfBase64 = s.setPendingPdfBase64;
