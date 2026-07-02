@@ -250,7 +250,33 @@ const useAlloMotionDisabled = (disableAnimations) => {
   return !!disableAnimations || !!prefersReducedMotion;
 };
 // @section ALLOBOT — Embodied pedagogical tour agent
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+// STEM Lab: map the active tool -> its discipline -> a themed accessory.
+// Discipline is read from the tool's registered category (window.STEM_TOOL_REGISTRY,
+// populated by registerTool at load), so new tools auto-inherit the right accessory;
+// a few known edge cases are pinned in the override table.
+const STEM_DISCIPLINE_ACCESSORY = { math: 'math-tools', engineering: 'gear', creative: 'artist', strategy: 'game-pad', applied: 'hard-hat', science: 'microscope' };
+const STEM_DISCIPLINE_OVERRIDE = { cellularLab: 'science', geoSandbox: 'science', lumen: 'science', dataPlot: 'math', dataStudio: 'math', alloBotSage: 'engineering', worldBuilder: 'creative', echoTrainer: 'science' };
+function alloStemDiscipline(toolId) {
+    if (!toolId) return null;
+    if (STEM_DISCIPLINE_OVERRIDE[toolId]) return STEM_DISCIPLINE_OVERRIDE[toolId];
+    let cat = '';
+    try {
+        const reg = (typeof window !== 'undefined') && window.STEM_TOOL_REGISTRY;
+        if (reg) { for (let i = 0; i < reg.length; i++) { if (reg[i] && reg[i].id === toolId) { cat = (reg[i].tags && reg[i].tags[0]) || ''; break; } } }
+    } catch (e) {}
+    const s = (String(cat) + ' ' + String(toolId)).toLowerCase();
+    if (/\bmath\b|algebra|calc|geometr|fraction|number|arithmet|\bdata\b|statist|probab|graph|\blogic|coordinate|areamodel|base10|multtable|unitconv|volume|inequal|moneymath|protractor/.test(s)) return 'math';
+    if (/coding|\bcs\b|technology|\btech\b|comput|applab|cyber|semiconductor|llm|algorithm|robot|history-engineering|circuit|bridge|archstudio|a11y|assessmentlit/.test(s)) return 'engineering';
+    if (/creativ|\bart\b|music|paint|draw|design|story|film|photo|animat|poet|singing|oratory/.test(s)) return 'creative';
+    if (/strateg|\bgames?\b|puzzle|arccity|gamestudio|arcade/.test(s)) return 'strategy';
+    if (/applied|life-?skill|\bgeo\b|econom|finance|career|nutri|baking|cooking|garden|aquacultur|farm|roadready|driver|behavior|literacy|firstaid|firstrespon|pets|skate|swim|typing|recreation|autorepair|bikelab/.test(s)) return 'applied';
+    return 'science';
+}
+function alloStemAccessory(toolId) {
+    const d = alloStemDiscipline(toolId);
+    return d ? (STEM_DISCIPLINE_ACCESSORY[d] || 'microscope') : null;
+}
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
@@ -1270,7 +1296,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return c;
   };
   const colors = getColors();
-  const targetAccessory = isSleeping ? 'sleep-cap' : accessory;
+  // When a STEM tool is open, the bot dresses for that tool's discipline.
+  const stemAccessory = (showStemLab && stemLabTool) ? alloStemAccessory(stemLabTool) : null;
+  const targetAccessory = isSleeping ? 'sleep-cap' : (stemAccessory || accessory);
   // Exit transition: render the *displayed* (delayed) accessory so a view switch
   // briefly keeps the old one mounted to animate it out before the new enters.
   const effectiveAccessory = displayedAccessory;
@@ -2590,6 +2618,48 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                     <path d="M34 11 Q29 1 25 -8" stroke="#FBCFE8" strokeWidth="1" fill="none" opacity="0.85" />
                                 </g>
                             </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'math-tools' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
+                                <g className="animate-allobot-float" style={{ animationDelay: '0.5s' }}>
+                                    <ellipse cx="18" cy="48" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M2 46 L2 20 L30 46 Z" fill="#93C5FD" stroke="#1D4ED8" strokeWidth="1.4" />
+                                    <line x1="2" y1="26" x2="6" y2="26" stroke="#1E3A8A" strokeWidth="0.8" /><line x1="2" y1="32" x2="6" y2="32" stroke="#1E3A8A" strokeWidth="0.8" /><line x1="2" y1="38" x2="6" y2="38" stroke="#1E3A8A" strokeWidth="0.8" />
+                                    <path d="M8 22 A 13 13 0 0 1 34 22 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
+                                    <path d="M11 22 A 10 10 0 0 1 31 22" fill="#FFFBEB" stroke="#B45309" strokeWidth="0.8" />
+                                    <circle cx="21" cy="22" r="1.4" fill="#B45309" />
+                                    <line x1="21" y1="22" x2="21" y2="11" stroke="#B45309" strokeWidth="0.7" /><line x1="21" y1="22" x2="13" y2="15" stroke="#B45309" strokeWidth="0.7" /><line x1="21" y1="22" x2="29" y2="15" stroke="#B45309" strokeWidth="0.7" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'gear' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <g className="animate-allobot-perk" style={{ animationDelay: '1.5s' }}>
+                                    <g transform="translate(50, 15)">
+                                        <g fill="#B0B8C4" stroke="#475569" strokeWidth="1.1">
+                                            <rect x="-2.5" y="-15" width="5" height="6" rx="1" /><rect x="-2.5" y="9" width="5" height="6" rx="1" />
+                                            <rect x="-15" y="-2.5" width="6" height="5" rx="1" /><rect x="9" y="-2.5" width="6" height="5" rx="1" />
+                                            <rect x="-12" y="-12" width="5" height="6" rx="1" transform="rotate(45 -9.5 -9)" /><rect x="7" y="6" width="5" height="6" rx="1" transform="rotate(45 9.5 9)" />
+                                            <rect x="7" y="-12" width="5" height="6" rx="1" transform="rotate(-45 9.5 -9)" /><rect x="-12" y="6" width="5" height="6" rx="1" transform="rotate(-45 -9.5 9)" />
+                                        </g>
+                                        <circle cx="0" cy="0" r="11" fill="#CBD5E1" stroke="#475569" strokeWidth="1.4" />
+                                        <circle cx="0" cy="0" r="4.5" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+                                        <circle cx="-3" cy="-3" r="1.6" fill="#fff" opacity="0.5" />
+                                    </g>
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'game-pad' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)">
+                                <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
+                                    <ellipse cx="19" cy="34" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z" fill="#5B6472" stroke="#1F2937" strokeWidth="1.4" />
+                                    <rect x="7" y="21" width="9" height="3" rx="1" fill="#1F2937" /><rect x="10" y="18" width="3" height="9" rx="1" fill="#1F2937" />
+                                    <circle cx="26" cy="20" r="2.3" fill="#F472B6" stroke="#9D174D" strokeWidth="0.6" />
+                                    <circle cx="31" cy="24" r="2.3" fill="#34D399" stroke="#065F46" strokeWidth="0.6" />
+                                    <circle cx="21" cy="25" r="2.3" fill="#FBBF24" stroke="#92400E" strokeWidth="0.6" />
+                                </g>
                             </g>
                         )}
                     </g>

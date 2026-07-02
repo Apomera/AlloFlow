@@ -29058,6 +29058,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             isListening={isDictationMode}
             isIdleDisabled={showUDLGuide}
             disableAnimations={disableAnimations}
+            stemLabTool={stemLabTool}
+            showStemLab={showStemLab}
             soundEnabled={soundEnabled}
             selectedVoice={selectedVoice}
             voiceSpeed={voiceSpeed}

@@ -79,8 +79,18 @@ describe('AlloBot accessory integrity', () => {
     expect(/\[class\*="animate-"\][^}]*animation:\s*none/.test(MOD), 'reduce-motion kill rule missing').toBe(true);
     // SMIL (held items + microscope/historian/thinking-cap) gated via pauseAnimations
     expect(MOD.includes('pauseAnimations'), 'SMIL pause gate missing').toBe(true);
-    // JS blink timer self-gates on the motion toggle
-    expect(MOD.includes('isSleeping || disableAnimations'), 'blink reduce-motion gate missing').toBe(true);
+    // JS blink timer self-gates on the motion toggle (via disableAnimations or a
+    // motionDisabled abstraction over it + prefers-reduced-motion).
+    expect(/isSleeping \|\| (motionDisabled|disableAnimations)/.test(MOD), 'blink reduce-motion gate missing').toBe(true);
+  });
+
+  it('STEM discipline accessories + mapping are present', () => {
+    for (const k of ['math-tools', 'gear', 'game-pad']) {
+      expect(MOD.includes(`effectiveAccessory === "${k}"`) || MOD.includes(`effectiveAccessory === '${k}'`), `missing STEM accessory block ${k}`).toBe(true);
+    }
+    expect(MOD.includes('STEM_DISCIPLINE_ACCESSORY') && MOD.includes('alloStemAccessory'), 'STEM discipline mapping missing').toBe(true);
+    // reads the tool's registered discipline at runtime (new tools auto-inherit)
+    expect(MOD.includes('STEM_TOOL_REGISTRY'), 'STEM registry lookup missing').toBe(true);
   });
 
   it('mood-reactive + signature animation hooks are present', () => {
