@@ -9993,7 +9993,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           }
         }
         if (surgApplied > 0) {
-          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (3 parallel diagnoses, merged)');
+          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (2 diagnoses, merged)'); // was "3 parallel" — code runs 2, sequentially ($7c honesty, 2026-07-02)
         }
       }
     } catch(surgErr) {
@@ -10549,7 +10549,7 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const telemetry = {
       version: '1.0',
       timestamp: new Date().toISOString(),
-      pipelineConfig: { auditorCount: pdfAuditorCount, autoFixPasses: pdfAutoFixPasses, polishPasses: pdfPolishPasses, verificationSamples: 3 },
+      pipelineConfig: { auditorCount: pdfAuditorCount, autoFixPasses: pdfAutoFixPasses, polishPasses: pdfPolishPasses, verificationSamples: 1 }, // was hardcoded 3 while the loop ran 2; now 1 AI re-audit/pass + axe ($1/$7c, 2026-07-02)
       summary: pdfBatchSummary,
       files: pdfBatchQueue.map(f => ({
         fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
@@ -10804,6 +10804,23 @@ Return ONLY JSON:
   // can span more than 400 chars at a chunk boundary and slip past the audit.
   const AUDIT_CHUNK_SIZE = 16000; // with maxOutputTokens=65536, well within model capacity
   const AUDIT_CHUNK_OVERLAP = 800;
+  // $2 (deep dive 2026-07-02): chunk-level audit memoization. Audit calls run at temperature=0
+  // (deterministic by design), yet the fix loop re-audits ALL chunks every pass even though a
+  // typical pass changes only a minority of them — re-auditing unchanged chunks was the single
+  // largest recoverable API cost in a run. Keyed by a hash of the EXACT prompt (so content,
+  // position framing, and rubric version are all captured), FIFO-capped. Values are stored as
+  // JSON strings and cloned on read because the merge stage mutates issue objects (pages[],
+  // locator) — returning a shared reference would accumulate mutations across passes.
+  const _AUDIT_MEMO_MAX = 240;
+  const _auditChunkMemo = new Map();
+  const _auditMemoHash = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36) + ':' + s.length; };
+  const _auditMemoGet = (key) => { try { const v = _auditChunkMemo.get(key); return v ? JSON.parse(v) : null; } catch (_) { return null; } };
+  const _auditMemoPut = (key, parsed) => {
+    try {
+      if (_auditChunkMemo.size >= _AUDIT_MEMO_MAX) { const k0 = _auditChunkMemo.keys().next().value; _auditChunkMemo.delete(k0); }
+      _auditChunkMemo.set(key, JSON.stringify(parsed));
+    } catch (_) {}
+  };
   // Audit HTML for WCAG 2.1 AA compliance
   // Short docs (≤8KB): single Gemini call. Long docs: chunked with deduplication.
   const auditOutputAccessibility = async (htmlContent) => {
@@ -10814,7 +10831,14 @@ Return ONLY JSON:
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
         const sampleHtml = htmlContent;
-        const result = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`, true, false, 0 /* temperature=0: deterministic, reproducible scoring */);
+        const _shortPrompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`;
+        // $2: identical short doc re-audited (e.g. baseline vs final with no changes) → memo.
+        // The memo stores the fully post-processed result (suppression/locators/tone are all
+        // deterministic functions of this same content), keyed on the exact prompt.
+        const _shortKey = _auditMemoHash(_shortPrompt);
+        const _shortHit = _auditMemoGet(_shortKey);
+        if (_shortHit) { try { warnLog('[Output Audit] document unchanged since a prior audit — served from the temp-0 memo (no API call)'); } catch (_) {} return _shortHit; }
+        const result = await callGemini(_shortPrompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */);
         const parsed = parseAuditJson(result);
         if (parsed.issues && Array.isArray(parsed.issues)) {
           // Drop AI false-positives the deterministic ground truth contradicts BEFORE scoring (2026-06-15).
@@ -10874,6 +10898,7 @@ Return ONLY JSON:
           parsed.summary = (parsed.summary ? parsed.summary + ' ' : '') +
             `(Score note: the AI auditor self-reported ${parsed._aiReportedScore}/100; the displayed ${parsed.score}/100 is the stricter deduction-grounded recalculation — they diverged by more than 12 points.)`;
         }
+        _auditMemoPut(_shortKey, parsed); // $2: cache the post-processed result for identical re-audits
         return parsed;
       }
       // For long documents, chunk into overlapping sections and audit each
@@ -10900,6 +10925,7 @@ Return ONLY JSON:
       // One chunk's audit call, framed by its position (chunk 1 carries the global checks). Returns the parsed
       // audit object, or null on a transient throttle / empty-body / parse miss. Hoisted so the throttle
       // self-heal pass below can re-invoke EXACTLY the same call for a specific failed section.
+      let _memoHits = 0;
       const _auditOneChunk = (chunk, chunkNum) => {
         const isFirst = chunkNum === 1;
         const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
@@ -10909,8 +10935,12 @@ ${AUDIT_RUBRIC_PROMPT}
 
 HTML section ${chunkNum}/${chunks.length}:
 """${_neutralizePromptFence(chunk)}"""`;
+        // $2: unchanged chunk at the same position → identical prompt → memoized temp-0 result.
+        const _memoKey = _auditMemoHash(prompt);
+        const _hit = _auditMemoGet(_memoKey);
+        if (_hit) { _memoHits++; return Promise.resolve(_hit); }
         return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
-          try { return parseAuditJson(r); } catch { return null; }
+          try { const p = parseAuditJson(r); if (p) _auditMemoPut(_memoKey, p); return p; } catch { return null; }
         }).catch(() => null);
       };
       for (let b = 0; b < chunks.length; b += batchSize) {
@@ -10946,6 +10976,7 @@ HTML section ${chunkNum}/${chunks.length}:
       }
       const _recovered = _failedIdx.length - _stillFailed.length;
       if (_recovered > 0) warnLog(`[Output Audit] Throttle self-heal: recovered ${_recovered}/${_failedIdx.length} previously-failed section(s) across retry rounds`);
+      if (_memoHits > 0) warnLog(`[Output Audit] ${_memoHits}/${chunks.length} section(s) unchanged since a prior audit — served from the temp-0 memo (no API call)`);
       if (chunkResults.length === 0) return null;
       // Merge: deduplicate issues across chunks using WCAG code + violation category
       // This prevents length-penalty: "missing alt on page 5" and "missing alt on page 20" count as ONE issue type.
@@ -17196,13 +17227,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const beforeAxeResult = await runAxeAudit(accessibleHtml);
       const beforeAxeScore = beforeAxeResult ? beforeAxeResult.score : null;
 
-      // ── Steps 3+4: Run quick AI verification + axe-core IN PARALLEL ──
-      // Uses quick mode (sample-based) for speed — full chunked audit runs at the end
-      updateProgress(3, 'Running quick verification...');
-      let [verification, axeResultsRaw] = await Promise.all([
-        auditOutputAccessibility(accessibleHtml),
-        runAxeAudit(accessibleHtml)
-      ]);
+      // ── Step 3b: Baseline AI verification ──
+      // ($7a, deep dive 2026-07-02): this used to ALSO fire a second runAxeAudit in parallel —
+      // on HTML byte-identical to the beforeAxeResult run 3 lines up (each axe call is a full
+      // hidden-iframe document.write + settle, seconds of jank on a big doc). Reuse that result.
+      // (Comment honesty: the old text claimed "quick mode (sample-based)" — auditOutputAccessibility
+      // has no quick mode; this is the full chunked audit.)
+      updateProgress(3, 'Running baseline AI verification...');
+      let verification = await auditOutputAccessibility(accessibleHtml);
+      let axeResultsRaw = beforeAxeResult;
       const afterScore = verification ? verification.score : null;
       let axeResults = axeResultsRaw;
 
@@ -17491,6 +17524,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         let consecutiveRegressions = 0;
         let stallCount = 0;
         let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
+        let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
           try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
@@ -17510,7 +17544,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const aiInstructions = verification && verification.issues
             ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
             : [];
-          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n');
+          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n')
+            + (_lastPassFeedback ? '\n\n' + _lastPassFeedback : '');
+          _lastPassFeedback = '';
 
           try {
             // Chunked fix across the entire document (no truncation)
@@ -17552,23 +17588,40 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // audit-detected language, then a word-form fallback, then 'en'. (shared helper, 2026-06-20)
           accessibleHtml = _applyDetectedLang(accessibleHtml);
 
-          // Re-audit with 2 AI engines + axe-core (2 provides averaging + disagreement detection while saving ~33% API calls vs 3)
+          // $3 (deep dive 2026-07-02): a pass where the AI fix returned the original (all chunks
+          // rejected) AND every deterministic cleanup was a no-op used to pay a full chunked
+          // re-audit + an axe iframe run on byte-identical HTML — results guaranteed identical
+          // to the current verification/axeResults. Skip the re-audit, count it as a stall
+          // (bounded exactly like a no-improvement pass), and tell the next pass what happened.
+          if (accessibleHtml === snapshotHtml) {
+            autoFixPasses++;
+            stallCount++;
+            _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: no changes produced — skipping re-audit of identical HTML (stall ${stallCount}/2)`);
+            if (stallCount >= 2) {
+              warnLog(`[Auto-fix] Plateau: no changes for ${stallCount} consecutive passes, stopping`);
+              break;
+            }
+            continue;
+          }
+
+          // Re-audit with 1 AI engine + axe-core ($1, deep dive 2026-07-02): this used to fire
+          // TWO auditOutputAccessibility calls — but they were byte-identical prompts at
+          // temperature=0, so the "second opinion" was a near-duplicate: reSD/reSEM computed from
+          // the pair were ~0 and the documented 1.5×SEM plateau threshold always degenerated to
+          // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
+          // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          const [reVerify1, reVerify2, reAxe] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml),
+          const [reVerify1, reAxe] = await Promise.all([
             auditOutputAccessibility(accessibleHtml),
             runAxeAudit(accessibleHtml)
           ]);
 
-          // Average 2 AI scores & compute SEM for significance testing
-          const reScores = [reVerify1, reVerify2].map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) (vision-parseaudit-nan)
+          const reScores = [reVerify1].map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) (vision-parseaudit-nan)
           const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
-          const reSD = reScores.length > 1 ? Math.sqrt(reScores.reduce((s, x) => s + (x - newAiScore) ** 2, 0) / (reScores.length - 1)) : 0;
-          const reSEM = reScores.length > 1 ? reSD / Math.sqrt(reScores.length) : 0;
-          // Pick auditor with HIGHEST score for issues list
-          const reVerify = [reVerify1, reVerify2]
-            .filter(Boolean)
-            .sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
+          const reSD = 0; // single audit — dispersion unknown; minDetectable's constant floor (2) governs
+          const reSEM = 0;
+          const reVerify = reVerify1 || null;
           if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
           const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
           autoFixPasses++;
@@ -17581,7 +17634,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // loss on EITHER engine as non-authoritative for this pass's AI-driven gating. (axe runs on
           // the FULL doc, so newAxeViolations stays trustworthy and still drives axe-only progress.)
           const _auditCoverage = function(v) { return (v && v.chunksRequested) ? (v.chunksAudited || 0) / v.chunksRequested : 1; };
-          const _reCoverage = Math.min(_auditCoverage(reVerify1), _auditCoverage(reVerify2));
+          const _reCoverage = _auditCoverage(reVerify1);
           const _rePartial = _reCoverage < 0.8;
           if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
 
@@ -17610,6 +17663,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             // the next pass re-attempts the same remaining violations). Give up only after
             // 2 CONSECUTIVE regressions.
             accessibleHtml = snapshotHtml;
+            // $7b: a bare retry re-sends the identical prompt against the identical (reverted)
+            // HTML — pure re-roll. Tell the model what just failed so the retry distribution
+            // actually changes.
+            _lastPassFeedback = 'NOTE: the previous fix attempt was REVERTED because it ' + _why + '. Take a different, more conservative approach: change only what each violation requires and leave all other content untouched.';
             consecutiveRegressions++;
             if (consecutiveRegressions >= 2) {
               warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — ${consecutiveRegressions} consecutive reverts, stopping`);
@@ -17668,7 +17725,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // silently attributed to dual verification. The loop falls through (bounded by
           // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
           if (!reVerify) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (both engines failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
             if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
           } else if (newAxeViolations === 0 && !_rePartial && (!reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
