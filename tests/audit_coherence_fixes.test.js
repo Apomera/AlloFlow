@@ -179,3 +179,30 @@ describe('export-format review round 2 (ePub/txt/md/BRF)', () => {
     expect(ve).not.toMatch(/const text = html\.replace\(\/<\[\^>\]\*>\/g, '\n'\)/);
   });
 });
+
+describe('th-scope geometry v2 (export-format review #3)', () => {
+  const dpNow = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const m = dpNow.match(/function _stampThScopeGeometryAware\(html\) \{[\s\S]*?\n\}/);
+  if (!m) throw new Error('could not extract _stampThScopeGeometryAware');
+  const stamp = new Function(m[0] + '\n; return _stampThScopeGeometryAware;')();
+
+  it('C19: pure row-header table → EVERY th gets scope="row" (incl. the first row)', () => {
+    const out = stamp('<table><tr><th>Alice</th><td>90</td></tr><tr><th>Bob</th><td>82</td></tr></table>');
+    expect(out).toBe('<table><tr><th scope="row">Alice</th><td>90</td></tr><tr><th scope="row">Bob</th><td>82</td></tr></table>');
+  });
+  it('C20: classic thead table unchanged (col for header row, row for later th)', () => {
+    const out = stamp('<table><thead><tr><th>Name</th><th>Score</th></tr></thead><tbody><tr><th>Alice</th><td>90</td></tr></tbody></table>');
+    expect(out).toContain('<th scope="col">Name</th>');
+    expect(out).toContain('<th scope="row">Alice</th>');
+  });
+  it('C21: matrix with corner <td> keeps first-row th as col headers', () => {
+    const out = stamp('<table><tr><td></td><th>Jan</th><th>Feb</th></tr><tr><th>Sales</th><td>1</td><td>2</td></tr></table>');
+    expect(out).toContain('<th scope="col">Jan</th>');
+    expect(out).toContain('<th scope="row">Sales</th>');
+  });
+  it('C22: explicit AI-declared scope is never overwritten', () => {
+    const out = stamp('<table><tr><th scope="col">Keep</th><td>x</td></tr><tr><th scope="col">Keep2</th><td>y</td></tr></table>');
+    expect(out).toContain('scope="col">Keep<');
+    expect(out).toContain('scope="col">Keep2<');
+  });
+});

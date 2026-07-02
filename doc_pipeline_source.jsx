@@ -1580,12 +1580,23 @@ function _chunkHtmlPreview(s) {
 function _stampThScopeGeometryAware(html) {
   try {
     return String(html).replace(/<table\b[\s\S]*?<\/table>/gi, function (tableHtml) {
+      // Row-header-style pre-scan (export-format review #3, 2026-07-01): a table with NO
+      // header row — every <tr> LEADS with a <th> and the first row also carries <td>
+      // data — is a row-header table (gradebook style: "Alice | 90 | 82"). The old rule
+      // stamped the FIRST row's <th> as scope="col" (a row label announced as a column
+      // header). Matrix tables keep the old behavior: an all-<th> first row (column
+      // headers) or a corner <td> first cell both fail this strict predicate.
+      const _trs = tableHtml.match(/<tr\b[\s\S]*?<\/tr\s*>/gi) || [];
+      const _leadTh = function (r) { return /<tr\b[^>]*>\s*(?:<!--[\s\S]*?-->\s*)*<th\b/i.test(r); };
+      const _rowHeaderStyle = !/<thead\b/i.test(tableHtml) && _trs.length >= 2
+        && _trs.every(_leadTh)
+        && /<td\b/i.test(_trs[0]);
       let inThead = false, rowIdx = -1;
       return tableHtml.replace(/<thead\b[^>]*>|<\/thead\s*>|<tr\b[^>]*>|<th(?![^>]*scope)([^>]*)>/gi, function (m, attrs) {
         if (/^<thead/i.test(m)) { inThead = true; return m; }
         if (/^<\/thead/i.test(m)) { inThead = false; return m; }
         if (/^<tr/i.test(m)) { rowIdx++; return m; }
-        const sc = (inThead || rowIdx <= 0) ? 'col' : 'row'; // header row → col; later row → row
+        const sc = _rowHeaderStyle ? 'row' : ((inThead || rowIdx <= 0) ? 'col' : 'row'); // header row → col; later row → row
         return '<th scope="' + sc + '"' + (attrs || '') + '>';
       });
     });
