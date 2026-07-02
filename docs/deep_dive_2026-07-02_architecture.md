@@ -278,6 +278,32 @@ S10 claims corrected.
   loadModule — deploy-surface change, coordinate with Aaron), P9 web
   workers (pdf-lib save + base64 codecs first), S7 escaper unification.
 
+## OUTCOMES — wave 3: S2 phase 1 (Aaron: "I think you can do it, go ahead")
+
+- @2f20b226 **fix loop extracted from fixAndVerifyPdf** → `_runMainFixLoop`
+  (269 lines, byte-identical body, explicit in/out contract; the two
+  run-scoped callbacks updateProgress/_applyDetectedLang threaded via ctx).
+  VERIFICATION RECIPE (reuse for the remaining phases): (1) assert-guarded
+  Node splice (boundary lines pinned; a failed assertion leaves the file
+  untouched), (2) free-var scan of the extracted body against
+  fixAndVerifyPdf locals (caught updateProgress + _applyDetectedLang —
+  the rename-dangler crash class), (3) TDZ check for pre-caller reads of
+  returned lets, (4) gate 29/29 + 227 loop/pipeline tests + goldens.
+  NOTE: git renders the block move as a ~3,150-line mega-hunk; the real
+  delta is 538/508 (-w) and an exhaustive line-presence check confirmed
+  zero content loss — don't panic at the stat.
+- REVERT: every wave-3 change is a single pathspec commit on
+  doc_pipeline_source.jsx (+compiled copies) — `git revert 2f20b226`
+  restores the inline loop cleanly.
+- REMAINING S2 phases (same recipe, next session): Step 0 deterministic
+  extraction (~14100-14400: isDocx/isPptx/isPdf + rescue + forceOCR →
+  `_runExtractionPhase(ctx)`; watch _forceFullOcr/_garbledFallbackText/
+  effectivePageCount/extractedText/window.__lastGroundTruth* flows),
+  Step 1b image extraction (~15300-15700 → `_extractPdfImages(ctx)`;
+  extractedImages + _imageFailureCount + _deferredImageMap out), final
+  audit + report assembly. Then S1: collapse the ctx objects into ONE
+  per-run ctx and retire _bindState's shared mutables.
+
 ## Suggested sequence
 
 1. **H1-H3** (Office image/alt injection + honest toast; v2 fingerprint; rescue
