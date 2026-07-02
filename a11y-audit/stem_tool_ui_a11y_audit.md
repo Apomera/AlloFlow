@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T13:40:51.933Z
+Generated: 2026-07-02T15:40:53.680Z
 
 ## Scope
 
@@ -143,7 +143,7 @@ Generated: 2026-07-02T13:40:51.933Z
 | `semiconductor` Semiconductor Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `singing` Singing Lab | art | standard | 29 | 0 | 2 | 0 | 2 | 0 | canvas-focus x2 |
 | `skatelab` SkateLab | science | standard | 58 | 10 | 1 | 0 | 3 | 1 | canvas-focus x1, canvas-name x1, horizontal-overflow-risk x1, inline-contrast x1 |
-| `solarSystem` Solar System Explorer | science | standard | 13 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
+| `solarSystem` Solar System Explorer | science | standard | 25 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
 | `spaceColony` Kepler Colony | strategy | standard | 13 | 7 | 0 | 0 | 0 | 0 |  |
 | `spaceExplorer` Space Explorer | Simulations | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
 | `statsLab` Statistics Lab | math | standard | 20 | 0 | 0 | 0 | 0 | 0 |  |

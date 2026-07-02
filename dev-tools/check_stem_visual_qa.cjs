@@ -64,6 +64,7 @@ const EXPECTED_MARKERS = [
   { id: 'plateTectonics', file: 'stem_tool_platetectonics.js', marker: 'data-pt-sim-focus', label: 'Plate Tectonics sim focus' },
   { id: 'aquarium', file: 'stem_tool_aquarium.js', marker: 'data-aquarium-focus-panel', label: 'Aquarium mission panel' },
   { id: 'moonMission', file: 'stem_tool_moonmission.js', marker: 'data-moonmission-control', label: 'Moon Mission control panel' },
+  { id: 'solarSystem', file: 'stem_tool_solarsystem.js', marker: 'data-solarsystem-command-center', label: 'Solar System command center' },
   { id: 'bikeLab', file: 'stem_tool_bikelab.js', marker: 'data-bikelab-ride-focus', label: 'BikeLab ride focus' },
   { id: 'throwlab', file: 'stem_tool_throwlab.js', marker: 'data-throwlab-run-focus', label: 'ThrowLab run focus' },
   { id: 'echolocation', file: 'stem_tool_echolocation.js', marker: 'data-echolocation-run-focus', label: 'Echolocation run focus' },
@@ -115,6 +116,7 @@ const STARTER_DATA = {
   plateTectonics: { plateTectonics: { simTab: 'sim' } },
   aquarium: { _aquarium: { mode: 'tank', selectedTank: null, tutorialDismissed: true } },
   moonMission: { moonMission: { missionPhase: 0, difficulty: 'pilot' } },
+  solarSystem: { solarSystem: { tutorialDismissed: true, orreryMode: false, simSpeed: 1, paused: false } },
   bikeLab: { bikeLab: { view: 'sandbox' } },
   echolocation: { echolocation: { tab: 'sonar', playableSpecies: 'insectivore' } },
   wave: {

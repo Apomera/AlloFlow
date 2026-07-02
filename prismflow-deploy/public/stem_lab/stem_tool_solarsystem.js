@@ -821,6 +821,19 @@ const d = labToolData.solarSystem || {};
           const simSpeed = d.simSpeed || 1;
 
           const paused = d.paused || false;
+          var selectedAccent = sel ? sel.color : '#6366f1';
+          var selectedName = sel ? sel.name : 'Free orbit';
+          var nextWorld = PLANETS.find(function(p) { return planetsVisited.indexOf(p.name) === -1; }) || PLANETS[0];
+          var visitProgress = Math.round((planetsVisited.length / Math.max(PLANETS.length, 1)) * 100);
+          var sampleCount = (d.collectedSamples || []).length;
+          var journalCount = journalEntries.length;
+          var challengeProgress = completedChallenges.length + '/' + CHALLENGES.length;
+          var vocabProgress = (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length;
+          var activePath = d.learningPath && LEARNING_PATHS[d.learningPath] ? LEARNING_PATHS[d.learningPath] : null;
+          var currentModeLabel = d.orreryMode ? 'Orrery Lab' : '3D Explorer';
+          var nextAction = sel
+            ? 'Open ' + ((d.viewTab || 'overview') === 'overview' ? 'surface' : (d.viewTab || 'overview')) + ' evidence for ' + sel.name
+            : 'Select ' + (nextWorld ? nextWorld.name : 'a world') + ' to begin the tour';
 
 
 
@@ -1992,7 +2005,7 @@ const d = labToolData.solarSystem || {};
             };
           }, [_orrPaused, _orrSpeed]);
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", "data-solarsystem-tool": true },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
@@ -2038,6 +2051,145 @@ const d = labToolData.solarSystem || {};
             ),
 
             // ═══ ORRERY MODE ═══
+            React.createElement("div", {
+              "data-solarsystem-command-center": true,
+              className: "mb-4 overflow-hidden rounded-xl border " + (isDark ? 'bg-slate-950 border-indigo-500/30 text-slate-100' : 'bg-white border-indigo-100 text-slate-900'),
+              style: {
+                boxShadow: isDark ? '0 18px 50px rgba(2,6,23,0.5)' : '0 18px 45px rgba(79,70,229,0.12)'
+              }
+            },
+              React.createElement("div", {
+                className: "p-4 md:p-5",
+                style: {
+                  background: isDark
+                    ? 'linear-gradient(135deg, rgba(15,23,42,0.98), rgba(30,41,59,0.92))'
+                    : 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 58%, #f8fafc 100%)'
+                }
+              },
+                React.createElement("div", { className: "grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] items-stretch" },
+                  React.createElement("div", { className: "space-y-4" },
+                    React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                      React.createElement("div", null,
+                        React.createElement("div", { className: "text-[11px] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Mission Control"),
+                        React.createElement("h4", { className: "mt-1 text-xl font-black " + (isDark ? 'text-white' : 'text-slate-900') }, selectedName + " Survey"),
+                        React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed " + (isDark ? 'text-slate-300' : 'text-slate-600') },
+                          sel ? sel.fact : "World fieldwork, scale comparisons, and orbital mechanics share one flight plan."
+                        )
+                      ),
+                      React.createElement("div", { className: "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black " + (isDark ? 'bg-indigo-500/15 text-indigo-200 border border-indigo-400/25' : 'bg-indigo-50 text-indigo-700 border border-indigo-100') },
+                        currentModeLabel,
+                        React.createElement("span", { className: "h-1.5 w-1.5 rounded-full", style: { background: selectedAccent, boxShadow: '0 0 10px ' + selectedAccent } })
+                      )
+                    ),
+                    React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                      [
+                        { label: 'Worlds visited', value: planetsVisited.length + '/' + PLANETS.length, sub: visitProgress + '% complete' },
+                        { label: 'Research points', value: researchPoints, sub: totalRP + ' lifetime' },
+                        { label: 'Challenges', value: challengeProgress, sub: 'active badges' },
+                        { label: 'Samples + notes', value: sampleCount + ' / ' + journalCount, sub: 'samples / journal' }
+                      ].map(function(stat) {
+                        return React.createElement("div", { key: stat.label, className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/80 border-white shadow-sm') },
+                          React.createElement("div", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.label),
+                          React.createElement("div", { className: "mt-1 text-lg font-black " + (isDark ? 'text-white' : 'text-slate-900') }, stat.value),
+                          React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, stat.sub)
+                        );
+                      })
+                    ),
+                    React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-white/75 border-white shadow-sm') },
+                      React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                        React.createElement("span", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-700') }, "Grand Tour Progress"),
+                        React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-400' : 'text-slate-500') }, nextAction)
+                      ),
+                      React.createElement("div", { className: "h-2 overflow-hidden rounded-full " + (isDark ? 'bg-slate-800' : 'bg-slate-200') },
+                        React.createElement("div", { className: "h-full rounded-full", style: { width: visitProgress + '%', background: 'linear-gradient(90deg,#22c55e,#38bdf8,#6366f1)' } })
+                      ),
+                      React.createElement("div", { "data-solarsystem-orbit-map": true, className: "mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-9" },
+                        PLANETS.map(function(p) {
+                          var visited = planetsVisited.indexOf(p.name) !== -1;
+                          var active = sel && sel.name === p.name;
+                          return React.createElement("button", {
+                            key: 'orbit-' + p.name,
+                            "aria-label": "Select " + p.name + " from mission control",
+                            onClick: function() {
+                              upd('selectedPlanet', p.name);
+                              playPlanetSelect(p.dist || 1);
+                              startPlanetAmbience(p.name);
+                              var cv = document.querySelector('.solar3d-canvas');
+                              if (cv) cv.dataset.flyTo = p.name;
+                            },
+                            className: "min-h-[56px] rounded-lg border px-2 py-2 text-left transition-all " + (active
+                              ? (isDark ? 'bg-indigo-900 border-indigo-400 text-white shadow-lg' : 'bg-indigo-600 border-indigo-500 text-white shadow-lg')
+                              : (isDark ? 'bg-slate-950/70 border-slate-700 text-slate-300 hover:border-indigo-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:shadow-sm')),
+                            style: active ? { borderColor: p.color, boxShadow: 'inset 0 0 0 1px ' + p.color + ', 0 10px 24px rgba(79,70,229,0.22)' } : {}
+                          },
+                            React.createElement("div", { className: "flex items-center justify-between gap-1" },
+                              React.createElement("span", { className: "text-base" }, p.emoji),
+                              React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: visited ? '#22c55e' : (isDark ? '#475569' : '#cbd5e1') } })
+                            ),
+                            React.createElement("div", { className: "mt-1 truncate text-[11px] font-black" }, p.name)
+                          );
+                        })
+                      )
+                    )
+                  ),
+                  React.createElement("div", { className: "flex flex-col gap-3" },
+                    React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
+                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Explorer Route"),
+                      React.createElement("div", { className: "mt-3 grid gap-2" },
+                        [
+                          { id: '3d', label: '3D Explorer', desc: 'Planet fieldwork, surface evidence, and rover logs.' },
+                          { id: 'orrery', label: 'Orrery Lab', desc: 'Orbit mechanics, Kepler laws, and transfer paths.' }
+                        ].map(function(route) {
+                          var active = route.id === 'orrery' ? d.orreryMode : !d.orreryMode;
+                          return React.createElement("button", {
+                            key: route.id,
+                            onClick: function() {
+                              if (route.id === 'orrery' && !d.orreryMode) updMulti({ orreryMode: true, orrery_explored_once: true });
+                              if (route.id === '3d' && d.orreryMode) upd('orreryMode', false);
+                            },
+                            className: "rounded-lg border p-3 text-left transition-all " + (active
+                              ? (isDark ? 'bg-indigo-500/15 border-indigo-400/50 text-indigo-100' : 'bg-indigo-50 border-indigo-200 text-indigo-900')
+                              : (isDark ? 'bg-slate-950/70 border-slate-700 text-slate-300 hover:border-indigo-400' : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-200'))
+                          },
+                            React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                              React.createElement("span", { className: "text-sm font-black" }, route.label),
+                              React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
+                            ),
+                            React.createElement("p", { className: "mt-1 text-[11px] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-500') }, route.desc)
+                          );
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "rounded-lg border p-3 " + (isDark ? 'bg-slate-900/80 border-slate-700' : 'bg-white/85 border-white shadow-sm') },
+                      React.createElement("div", { className: "text-xs font-black " + (isDark ? 'text-slate-200' : 'text-slate-800') }, "Learning Focus"),
+                      React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
+                        [
+                          { label: 'Path', value: activePath ? activePath.name : 'Free Explore' },
+                          { label: 'Vocab', value: vocabProgress },
+                          { label: 'Next', value: nextWorld ? nextWorld.name : 'Grand tour' }
+                        ].map(function(item) {
+                          return React.createElement("span", { key: item.label, className: "rounded-lg px-2.5 py-1.5 text-[11px] font-bold " + (isDark ? 'bg-slate-950 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-600 border border-slate-200') },
+                            item.label + ': ' + item.value
+                          );
+                        })
+                      ),
+                      nextWorld && React.createElement("button", {
+                        onClick: function() {
+                          upd('selectedPlanet', nextWorld.name);
+                          playPlanetSelect(nextWorld.dist || 1);
+                          startPlanetAmbience(nextWorld.name);
+                          var cvNext = document.querySelector('.solar3d-canvas');
+                          if (cvNext) cvNext.dataset.flyTo = nextWorld.name;
+                        },
+                        className: "mt-3 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-black text-white transition-all hover:bg-indigo-500",
+                        style: { borderLeft: '4px solid ' + nextWorld.color }
+                      }, "Survey " + nextWorld.name)
+                    )
+                  )
+                )
+              )
+            ),
+
             d.orreryMode ? (function() {
   var h = React.createElement;
 
@@ -5659,7 +5811,7 @@ const d = labToolData.solarSystem || {};
             })() : null,
 
             // 3D Canvas container (hidden in orrery mode)
-            !d.orreryMode && React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)' } },
+            !d.orreryMode && React.createElement("div", { "data-solarsystem-canvas-shell": true, className: "relative rounded-2xl overflow-hidden border-2 border-indigo-800/40", style: { background: '#0a0e27', boxShadow: '0 0 30px rgba(79,70,229,0.1), 0 8px 32px rgba(0,0,0,0.4)' } },
 
               d.webglError ? React.createElement("div", {
                 className: "flex flex-col items-center justify-center p-6 text-center text-white",

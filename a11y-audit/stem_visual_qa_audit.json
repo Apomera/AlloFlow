@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T13:40:50.426Z",
+  "generatedAt": "2026-07-02T15:40:37.511Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 25
+    "monitoredMarkerCount": 26
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 25,
+    "markerPassCount": 26,
     "markerFailCount": 0,
     "monitoredIssueCount": 29,
     "monitoredErrorCount": 0,
@@ -390,7 +390,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17200,
+      "htmlBytes": 17204,
       "issues": [
         {
           "toolId": "playlab",
@@ -419,7 +419,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17200
+        "htmlBytes": 17204
       }
     },
     {
@@ -517,14 +517,30 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13350,
+      "htmlBytes": 13343,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13350
+        "htmlBytes": 13343
+      }
+    },
+    {
+      "id": "solarSystem",
+      "file": "stem_tool_solarsystem.js",
+      "marker": "data-solarsystem-command-center",
+      "label": "Solar System command center",
+      "ok": true,
+      "htmlBytes": 16664,
+      "issues": [],
+      "metrics": {
+        "buttons": 25,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 16664
       }
     },
     {
@@ -577,7 +593,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46587,
+      "htmlBytes": 46581,
       "issues": [
         {
           "toolId": "throwlab",
@@ -606,7 +622,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46587
+        "htmlBytes": 46581
       }
     },
     {
