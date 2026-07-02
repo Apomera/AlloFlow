@@ -123,6 +123,11 @@
         </select>
       </div>
       <div class="status" id="capNote"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="quiet" id="importBtn">📁 Import a video to edit/caption…</button>
+        <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv" hidden>
+        <span class="status" id="importStatus" style="margin-top:0">Or drop a video file anywhere on this page. Imported videos get the same trim, caption, and export tools as recordings.</span>
+      </div>
     </div>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
@@ -170,6 +175,8 @@
           <h2>Captions</h2>
           <div class="row" style="margin-bottom:8px">
             <button class="quiet" id="addCueBtn">＋ Add caption at playhead</button>
+            <button class="quiet" id="importCapBtn">📄 Import captions (.vtt / .srt)</button>
+            <input type="file" id="importCapInput" accept=".vtt,.srt,text/vtt" hidden>
             <span class="status" id="cueCount"></span>
           </div>
           <div style="max-height:46vh;overflow-y:auto">
@@ -212,7 +219,7 @@
       <h2>Finished video</h2>
       <video id="resultVideo" controls playsinline style="width:100%;max-height:40vh;background:#000;border-radius:10px"></video>
       <div class="row" style="margin-top:10px">
-        <button class="action" id="downloadBtn">⬇ Download .webm</button>
+        <button class="action" id="downloadBtn">⬇ Download video</button>
         <button class="quiet" id="downloadVttBtn" hidden>⬇ Download captions (.vtt)</button>
         <button class="action" id="sendBtn" style="background:#059669">📤 Send to AlloFlow</button>
         <span class="status" id="resultStatus"></span>
@@ -706,7 +713,7 @@ function vsMakePackReference(meta) {
       var take = {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
-        blob: blob, url: URL.createObjectURL(blob),
+        blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
         duration: dur, captions: cuesLive.slice(), createdAt: new Date().toISOString()
       };
       takes.push(take);
@@ -722,6 +729,88 @@ function vsMakePackReference(meta) {
   $('startBtn').addEventListener('click', startRecording);
   $('pauseBtn').addEventListener('click', pauseResume);
   $('stopBtn').addEventListener('click', stopRecording);
+
+  // ── Import external videos (mp4/webm/mov/…) as takes ──
+  // Browsers decode these natively, so the same trim/caption/export pipeline
+  // applies. Some files (and other recorders' WebMs) report duration=Infinity
+  // until forced to seek — the 1e7 seek below is the standard workaround.
+  function probeDuration(url) {
+    return new Promise(function (resolve) {
+      var v = document.createElement('video');
+      var done = false;
+      var finish = function (dur, err) { if (done) return; done = true; resolve({ duration: dur, error: !!err }); v.removeAttribute('src'); };
+      v.preload = 'metadata'; v.muted = true; v.src = url;
+      v.addEventListener('loadedmetadata', function () {
+        if (isFinite(v.duration) && v.duration > 0) { finish(v.duration); return; }
+        v.addEventListener('timeupdate', function onTu() {
+          v.removeEventListener('timeupdate', onTu);
+          finish(isFinite(v.duration) && v.duration > 0 ? v.duration : Math.max(0, v.currentTime));
+        });
+        try { v.currentTime = 1e7; } catch (_) { finish(0); }
+      });
+      v.addEventListener('error', function () { finish(0, true); });
+      setTimeout(function () { finish(0, true); }, 10000);
+    });
+  }
+
+  function importVideoFile(file) {
+    if (!file) return;
+    var looksVideo = /^video\//.test(file.type || '') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(file.name || '');
+    if (!looksVideo) { setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
+    setStatus($('importStatus'), 'Reading ' + file.name + '…');
+    var url = URL.createObjectURL(file);
+    probeDuration(url).then(function (probe) {
+      if (probe.error && !probe.duration) {
+        URL.revokeObjectURL(url);
+        setStatus($('importStatus'), 'This browser can’t decode “' + file.name + '” — MP4 (H.264) and WebM work best. Try re-exporting it from its source app.', 'bad');
+        return;
+      }
+      var take = {
+        id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: '📁 ' + (file.name || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
+        blob: file, url: url, type: file.type || 'video/webm',
+        duration: probe.duration, captions: [], imported: true, createdAt: new Date().toISOString()
+      };
+      takes.push(take);
+      saveDraft(take);
+      selectTake(take.id);
+      renderTakes();
+      setStatus($('importStatus'), 'Imported (' + fmtBytes(file.size) + '). Opening the editor…', 'ok');
+      announce('Video imported');
+      showTab('tabEdit');
+    });
+  }
+  $('importBtn').addEventListener('click', function () { $('importInput').click(); });
+  $('importInput').addEventListener('change', function () { importVideoFile($('importInput').files[0]); $('importInput').value = ''; });
+  document.addEventListener('dragover', function (ev) { ev.preventDefault(); });
+  document.addEventListener('drop', function (ev) {
+    ev.preventDefault();
+    var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (!f) return;
+    if (/\.(vtt|srt)$/i.test(f.name || '')) importCaptionFile(f);
+    else importVideoFile(f);
+  });
+
+  // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
+  function importCaptionFile(file) {
+    var t = currentTake();
+    if (!t) { setStatus($('importStatus'), 'Import or record a video first, then add its captions.', 'warn'); return; }
+    file.text().then(function (text) {
+      var cues = vsParseVtt(text);
+      if (!cues.length) { alert('No captions found in “' + file.name + '” — it needs .vtt or .srt timestamps.'); return; }
+      if (t.captions.length && !confirm('Replace the ' + t.captions.length + ' existing caption(s) with ' + cues.length + ' from ' + file.name + '?\n(Cancel keeps both.)')) {
+        t.captions = t.captions.concat(cues).sort(function (a, b) { return a.start - b.start; });
+      } else {
+        t.captions = cues;
+      }
+      saveDraft(t);
+      renderCues();
+      announce(cues.length + ' captions imported');
+      showTab('tabEdit');
+    });
+  }
+  $('importCapBtn').addEventListener('click', function () { $('importCapInput').click(); });
+  $('importCapInput').addEventListener('change', function () { if ($('importCapInput').files[0]) importCaptionFile($('importCapInput').files[0]); $('importCapInput').value = ''; });
 
   // ── Takes / editor ──
   function currentTake() { return takes.find(function (t) { return t.id === selectedTakeId; }) || null; }
@@ -849,8 +938,17 @@ function vsMakePackReference(meta) {
     try {
       var outBlob, outDur;
       if (!needReencode) {
-        outBlob = t.blob; outDur = t.duration;
-        setStatus($('exportStatus'), 'No re-encode needed — using the original take.', 'ok');
+        outDur = t.duration;
+        var srcType = t.type || t.blob.type || 'video/webm';
+        if (/webm/i.test(srcType)) {
+          // Recorded takes are already Duration-patched (patching again is a
+          // no-op); imported WebMs from other recorders often aren't.
+          var fbuf = await t.blob.arrayBuffer();
+          outBlob = new Blob([vsPatchWebmDuration(new Uint8Array(fbuf), outDur * 1000)], { type: 'video/webm' });
+        } else {
+          outBlob = t.blob; // mp4/mov import: pass through, keep its container
+        }
+        setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
         var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null);
@@ -858,7 +956,7 @@ function vsMakePackReference(meta) {
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
       var vtt = (capMode !== 'none' && cues.length) ? vsBuildVtt(cues) : null;
-      lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob) };
+      lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type) };
       $('resultCard').hidden = false;
       $('resultVideo').src = lastExport.url;
       $('downloadVttBtn').hidden = !(vtt && capMode === 'vtt');
@@ -962,10 +1060,16 @@ function vsMakePackReference(meta) {
   }
 
   function safeName(title) { return (title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video'; }
+  function extFor(type) {
+    if (/mp4|m4v/i.test(type || '')) return '.mp4';
+    if (/quicktime/i.test(type || '')) return '.mov';
+    if (/matroska/i.test(type || '')) return '.mkv';
+    return '.webm';
+  }
   $('downloadBtn').addEventListener('click', function () {
     if (!lastExport) return;
     var a = document.createElement('a');
-    a.href = lastExport.url; a.download = safeName(lastExport.title) + '.webm';
+    a.href = lastExport.url; a.download = safeName(lastExport.title) + (lastExport.ext || '.webm');
     document.body.appendChild(a); a.click(); a.remove();
   });
   $('downloadVttBtn').addEventListener('click', function () {
@@ -1019,7 +1123,7 @@ function vsMakePackReference(meta) {
   }
   function saveDraft(take) {
     withDb(function (db) {
-      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, duration: take.duration, captions: take.captions, createdAt: take.createdAt }); } catch (_) {}
+      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, createdAt: take.createdAt }); } catch (_) {}
     });
   }
   function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
@@ -1034,7 +1138,7 @@ function vsMakePackReference(meta) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), duration: r.duration || 0, captions: r.captions || [], createdAt: r.createdAt });
+              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], createdAt: r.createdAt });
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }

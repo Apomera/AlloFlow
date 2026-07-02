@@ -104,7 +104,7 @@ function buildAlloCommands(ctx) {
       c.openSymbolStudio();
       return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
     } },
-    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open the Video Studio"), aliases: ["video studio", "screen record", "screen recording", "record my screen", "record a video", "video demo", "screencast"], hint: t("cmd.open_video_studio_hint", "Record, trim & caption video demos"), run: (c) => {
+    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open the Video Studio"), aliases: ["video studio", "screen record", "screen recording", "record my screen", "record a video", "video demo", "screencast", "caption a video", "add captions", "edit a video", "import a video", "trim a video"], hint: t("cmd.open_video_studio_hint", "Record, import, trim & caption videos"), run: (c) => {
       c.openVideoStudio();
       return t("cmd.open_video_studio_done", "Video Studio opened.");
     } },

@@ -268,6 +268,12 @@
     if (el) el.textContent = msg;
   }
 
+  function extFor(type) {
+    if (/mp4|m4v/i.test(type || '')) return '.mp4';
+    if (/quicktime/i.test(type || '')) return '.mov';
+    if (/matroska/i.test(type || '')) return '.mkv';
+    return '.webm';
+  }
   function fmtBytes(n) {
     n = Number(n) || 0;
     if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
@@ -383,7 +389,7 @@
     var copyPackRef = useCallback(function (v) {
       var ref = vsMakePackReference({
         title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
-        fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.webm',
+        fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type),
         hasCaptions: !!v.vtt, thumb: v.thumb, createdAt: v.createdAt
       });
       var text = JSON.stringify(ref, null, 2);
@@ -446,9 +452,9 @@
                       fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '')),
                     h('div', { className: 'flex flex-wrap gap-2' },
                       h('button', {
-                        onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.webm'); },
+                        onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type)); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-semibold hover:bg-slate-700'
-                      }, T('video_studio.download_video', '⬇ Video (.webm)')),
+                      }, T('video_studio.download_video', '⬇ Video file')),
                       v.vtt && h('button', {
                         onClick: function () { downloadBlob(new Blob([v.vtt], { type: 'text/vtt' }), (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.vtt'); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold hover:bg-slate-500'

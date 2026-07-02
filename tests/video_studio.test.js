@@ -92,6 +92,19 @@ describe('WebVTT build + parse', () => {
     const back = VS.vsParseVtt('WEBVTT\r\n\r\n1\r\n00:00:01.000 --> 00:00:02.000\r\nHello\r\n');
     expect(back).toEqual([{ start: 1, end: 2, text: 'Hello' }]);
   });
+  // Wave 2 (import feature): the popup's "Import captions" accepts .srt files
+  // through this same parser — comma milliseconds, numeric ids, no WEBVTT header.
+  it('parser reads SRT files (comma timestamps, no header)', () => {
+    const srt = '1\n00:00:01,000 --> 00:00:02,500\nHola\n\n2\n00:01:03,250 --> 00:01:04,000\nAdiós\n';
+    const back = VS.vsParseVtt(srt);
+    expect(back).toHaveLength(2);
+    expect(back[0]).toEqual({ start: 1, end: 2.5, text: 'Hola' });
+    expect(back[1].start).toBeCloseTo(63.25);
+  });
+  it('parser ignores cue settings after the end timestamp', () => {
+    const back = VS.vsParseVtt('WEBVTT\n\n00:00:01.000 --> 00:00:02.000 align:start line:90%\nPositioned cue\n');
+    expect(back).toEqual([{ start: 1, end: 2, text: 'Positioned cue' }]);
+  });
 });
 
 // ─── vsComputeSegments ───────────────────────────────────────────────────────
