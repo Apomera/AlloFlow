@@ -2342,6 +2342,92 @@ function _resolveIssueLocator(location, normHaystack, fallbackPages) {
   return _re;
 }
 
+// ── $4 violation→chunk routing (deep dive 2026-07-02) ──
+// aiFixChunked used to broadcast EVERY violation to EVERY chunk — a 40-chunk document with
+// one missing alt sent 40 prompts each carrying the full violation list, and every chunk
+// paid an AI call even when nothing in it could possibly be fixed. This router assigns
+// element-scoped violations to the single chunk that contains their element so untouched
+// chunks can be SKIPPED outright (byte-identical passthrough, no model call).
+//
+// CONSERVATIVE BY DESIGN — routing precision must never cost recall:
+//   • Only allowlisted element-scoped axe rules route; document-scoped rules (heading-order,
+//     landmarks, document-title, duplicate-id, region, bypass, aria-required-children/parent)
+//     and ANY unknown id stay global (sent to every chunk — exactly today's behavior).
+//   • axe entries route by their nodeDetails[].html snippet matched RAW in exactly one chunk
+//     exactly once (never by CSS selector — chunks are strings, not a DOM). Multi-node
+//     entries route only when EVERY node snippet lands in the SAME chunk.
+//   • v.nodes > nodeHtmls.length means axe truncated the node list (it caps at 3) — some
+//     failing elements are unlocated, so the entry stays global.
+//   • Data-URL-bearing snippets stay global (aiFixChunked strips data URLs into __IMG_DATA_N__
+//     tokens BEFORE splitting, so such a snippet can never match a chunk).
+//   • AI-flagged entries route by their resolved exact-locator snippet matched in
+//     _normLocatorText space (same normalization as the locator itself); coarse locators
+//     (page/document/none) stay global.
+//   • A needle that matches zero chunks, several chunks, or twice anywhere → global.
+// Returns { assign, routedCount } where assign[i] is the target chunk index for entries[i]
+// or -1 for global; null when there is nothing to route over (caller keeps legacy behavior).
+// Pure; unit-tested via the createDocPipeline.routeViolationsToChunks static.
+var _ALLO_ROUTABLE_AXE = {
+  'image-alt': 1, 'input-image-alt': 1, 'area-alt': 1, 'object-alt': 1, 'svg-img-alt': 1,
+  'image-redundant-alt': 1, 'button-name': 1, 'link-name': 1, 'link-in-text-block': 1,
+  'label': 1, 'select-name': 1, 'input-button-name': 1, 'td-headers-attr': 1,
+  'th-has-data-cells': 1, 'color-contrast': 1, 'color-contrast-enhanced': 1,
+  'list': 1, 'listitem': 1, 'definition-list': 1, 'dlitem': 1, 'empty-heading': 1,
+};
+function _routeViolationsToChunks(entries, chunks) {
+  if (!Array.isArray(entries) || entries.length === 0 || !Array.isArray(chunks) || chunks.length < 2) return null;
+  // Occurrence counter that stops at 2 — "exactly once" is all we ever need to know.
+  var _countIn = function (hay, needle) {
+    var n = 0, i = hay.indexOf(needle);
+    while (i !== -1) { n++; if (n > 1) break; i = hay.indexOf(needle, i + 1); }
+    return n;
+  };
+  // Normalized visible-text space for AI locator snippets (computed once per chunk).
+  var _normChunks = null;
+  var _getNormChunks = function () {
+    if (!_normChunks) _normChunks = chunks.map(function (c) { return _normLocatorText(c).replace(/\x00/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase(); });
+    return _normChunks;
+  };
+  var assign = entries.map(function () { return -1; });
+  for (var ei = 0; ei < entries.length; ei++) {
+    var e = entries[ei] || {};
+    var placed = -1;
+    if (e.axeId && _ALLO_ROUTABLE_AXE[e.axeId] && Array.isArray(e.nodeHtmls) && e.nodeHtmls.length > 0 && !((e.nodes || 0) > e.nodeHtmls.length)) {
+      var ok = true;
+      for (var ni = 0; ni < e.nodeHtmls.length && ok; ni++) {
+        var needle = String(e.nodeHtmls[ni] || '');
+        if (needle.length < 12 || /src="data:/i.test(needle)) { ok = false; break; }
+        var found = -1, multi = false;
+        for (var ci = 0; ci < chunks.length; ci++) {
+          var cnt = _countIn(chunks[ci], needle);
+          if (cnt > 1) { multi = true; break; }
+          if (cnt === 1) { if (found !== -1) { multi = true; break; } found = ci; }
+        }
+        if (multi || found === -1) { ok = false; break; }
+        if (placed === -1) placed = found;
+        else if (placed !== found) { ok = false; break; } // nodes straddle chunks → global
+      }
+      if (!ok) placed = -1;
+    } else if (!e.axeId && e.snippet && String(e.snippet).trim().length >= 8) {
+      var needleAi = String(e.snippet).trim().replace(/\s+/g, ' ').toLowerCase();
+      var nc = _getNormChunks();
+      var foundAi = -1, multiAi = false;
+      for (var cj = 0; cj < nc.length; cj++) {
+        var cntAi = _countIn(nc[cj], needleAi);
+        if (cntAi > 1) { multiAi = true; break; }
+        if (cntAi === 1) { if (foundAi !== -1) { multiAi = true; break; } foundAi = cj; }
+      }
+      if (!multiAi && foundAi !== -1) placed = foundAi;
+    }
+    assign[ei] = placed;
+  }
+  var routedCount = 0;
+  for (var ai = 0; ai < assign.length; ai++) { if (assign[ai] !== -1) routedCount++; }
+  // Built as a var, NOT a 2-space `return {` — the check-pipeline-integrity.js export-parse trap.
+  var _routeRes = { assign: assign, routedCount: routedCount };
+  return _routeRes;
+}
+
 // Apply a mutation to the element an axe-core "target" selector points at — the deterministic,
 // fail-SAFE alternative to ordinal "Nth-of-tag" targeting (Slice 3, 2026-06-16). axe attaches an
 // exact CSS-selector target to every violation node; resolving it against the CURRENT html means a
@@ -3957,7 +4043,14 @@ var createDocPipeline = function(deps) {
 
   // aiFixChunked: run AI WCAG fix across the entire document by chunking on tag boundaries.
   // Each chunk is individually validated — if AI shrinks it, the original chunk is kept.
-  const aiFixChunked = async (html, violationsText, label) => {
+  // $4 (2026-07-02): optional `_routing` = { entries, feedback }. `entries` are structured
+  // violations ({ text, axeId, nodes, nodeHtmls, snippet }) that _routeViolationsToChunks
+  // assigns to chunks — a chunk with nothing applicable is returned VERBATIM with no model
+  // call. Absent/empty → fully legacy behavior (every chunk gets `violationsText`).
+  // `feedback` (the previous-pass revert/no-op note) is appended to every NON-skipped
+  // chunk's violations text; it never un-skips a chunk, and when routing is inactive it is
+  // appended to the global text exactly like the old caller-side append (byte-identical).
+  const aiFixChunked = async (html, violationsText, label, _routing) => {
     if (!html) return html;
     // Strip base64 image data URLs before sending to AI — too large for model to reproduce
     // Replace with short placeholders, then restore after AI fixes
@@ -3980,6 +4073,26 @@ var createDocPipeline = function(deps) {
       });
     };
     const chunks = splitHtmlOnTagBoundary(_hasImages ? strippedHtml : html, HTML_FIX_CHUNK);
+    // ── $4 violation→chunk routing (2026-07-02): see _routeViolationsToChunks ──
+    // _perChunkText[ci] = violations text for chunk ci, or null → skip the chunk entirely.
+    let _perChunkText = null;
+    if (_routing && Array.isArray(_routing.entries) && _routing.entries.length > 0 && chunks.length > 1) {
+      const _r = _routeViolationsToChunks(_routing.entries, chunks);
+      if (_r && _r.routedCount > 0) {
+        const _fb = _routing.feedback ? '\n\n' + _routing.feedback : '';
+        _perChunkText = chunks.map((_c, ci) => {
+          const _list = _routing.entries.filter((e, ei) => _r.assign[ei] === -1 || _r.assign[ei] === ci);
+          return _list.length === 0 ? null : (_list.map((e) => e.text).join('\n') + _fb);
+        });
+        const _skipped = _perChunkText.filter((t) => t === null).length;
+        warnLog(`[aiFixChunked:${label}] $4 routing: ${_r.routedCount}/${_routing.entries.length} violation(s) element-routed, ${_skipped}/${chunks.length} chunk(s) skipped`);
+      }
+    }
+    // Routing inactive (legacy caller, single chunk, or nothing routed): the previous-pass
+    // feedback joins the global text exactly like the pre-$4 caller-side append.
+    if (_perChunkText === null && _routing && _routing.feedback) {
+      violationsText = String(violationsText || '') + '\n\n' + _routing.feedback;
+    }
     if (chunks.length === 1) {
       // Short doc: single call with full document (use stripped html without base64 images)
       try {
@@ -4005,13 +4118,18 @@ var createDocPipeline = function(deps) {
     warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (parallel)`);
     const _deferredIdx = []; // chunk indices a Canvas THROTTLE skipped — revisited by the catch-up drain below
     const _fixOneChunk = async (part, ci) => {
+      // $4: this chunk's routed violations text; null → nothing here is fixable by this
+      // pass, so skip the model call and return the split string VERBATIM (byte-identical
+      // on join — $3's identical-HTML stall accounting sees exactly what it saw before).
+      const _chunkV = _perChunkText ? _perChunkText[ci] : violationsText;
+      if (_perChunkText && _chunkV === null) return part;
       const isFirst = ci === 0, isLast = ci === chunks.length - 1;
       const fragNote = isFirst
         ? 'This is FRAGMENT 1 — it may begin with <!DOCTYPE>/<html>/<head>/<body>/<main>.'
         : isLast
           ? `This is the LAST fragment (${ci + 1} of ${chunks.length}) — it may end with </main></body></html>.`
           : `This is fragment ${ci + 1} of ${chunks.length} — starts and ends mid-document.`;
-      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n${fragNote}\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence. Same opening and closing boundaries as the input.`;
+      const prompt = `Fix these WCAG violations in the HTML fragment below. Change ONLY what's needed. Preserve ALL content, text, and inline styles. Do NOT summarize or shorten.\n\nIMAGE PLACEHOLDERS: Any src value or token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__ and __IMG_DATA_N__) is a reference to an extracted image. Do NOT remove the containing <img> or <figure> element, do NOT modify the token text, do NOT replace the src with a description. Keep every such token exactly as-is.\n\n${fragNote}\n\nVIOLATIONS:\n${_chunkV}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence. Same opening and closing boundaries as the input.`;
       try {
         let out = stripFence(await callGemini(prompt, false));
         if (_isJsonWrapped(out)) {
@@ -4032,7 +4150,7 @@ var createDocPipeline = function(deps) {
           const _lost = _finalBefore.length - _finalAfter.length;
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} dropped ${_lost} image FINAL token(s) — retrying with explicit preservation instructions`);
           try {
-            const retryPrompt = `Re-fix this HTML fragment. Your previous response REMOVED image placeholder tokens matching __ALLOFLOW_DATAURL_FINAL_N__ — these are extracted images that MUST be preserved. Every <img src="__ALLOFLOW_DATAURL_FINAL_*__"> and <figure> containing such a token must appear in your output verbatim.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON. Keep ALL __ALLOFLOW_DATAURL_FINAL_*__ tokens intact.`;
+            const retryPrompt = `Re-fix this HTML fragment. Your previous response REMOVED image placeholder tokens matching __ALLOFLOW_DATAURL_FINAL_N__ — these are extracted images that MUST be preserved. Every <img src="__ALLOFLOW_DATAURL_FINAL_*__"> and <figure> containing such a token must appear in your output verbatim.\n\nVIOLATIONS:\n${_chunkV}\n\nHTML FRAGMENT:\n"""\n${part}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON. Keep ALL __ALLOFLOW_DATAURL_FINAL_*__ tokens intact.`;
             let retried = stripFence(await callGemini(retryPrompt, false));
             if (_isJsonWrapped(retried)) {
               const unwrappedRetry = _tryUnwrapJsonHtml(retried);
@@ -4058,7 +4176,7 @@ var createDocPipeline = function(deps) {
           const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
           const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
             try {
-              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${violationsText}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence.`;
+              const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${_chunkV}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence.`;
               let halfOut = stripFence(await callGemini(halfPrompt, false));
               if (_isJsonWrapped(halfOut)) {
                 const unwrappedHalf = _tryUnwrapJsonHtml(halfOut);
@@ -14150,21 +14268,31 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // Save snapshot before fix attempt
           const snapshotHtml = accessibleHtml;
 
-          // AI attempts targeted fixes for remaining violations from BOTH engines
-          const axeInstructions = []
-            .concat((axeResults ? axeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
-          const aiInstructions = verification && verification.issues
-            ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
-            : [];
-          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n')
-            + (_lastPassFeedback ? '\n\n' + _lastPassFeedback : '');
+          // AI attempts targeted fixes for remaining violations from BOTH engines.
+          // $4 (2026-07-02): built as structured ENTRIES so aiFixChunked can route
+          // element-scoped violations to the chunk containing the element (and skip the
+          // rest). The rendered text below is byte-identical to the old string build; the
+          // previous-pass feedback now travels in the routing arg so it reaches only
+          // non-skipped chunks (aiFixChunked re-appends it identically when routing is
+          // inactive, so legacy prompts don't change by a byte).
+          const _axeEntry = (v, line) => ({ text: line, axeId: v.id, nodes: v.nodes || 0, nodeHtmls: Array.isArray(v.nodeDetails) ? v.nodeDetails.map((n) => n && n.html).filter(Boolean) : [], snippet: null });
+          const _fixEntries = []
+            .concat((axeResults ? axeResults.critical || [] : []).map(v => _axeEntry(v, `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
+            .concat((axeResults ? axeResults.serious || [] : []).map(v => _axeEntry(v, `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`)))
+            .concat((axeResults ? axeResults.moderate || [] : []).map(v => _axeEntry(v, `MODERATE (axe-core): ${v.description} (${v.id})`)))
+            .concat((verification && verification.issues ? verification.issues : []).map(i => ({
+              text: `AI-FLAGGED: ${i.issue || i}`,
+              axeId: null, nodes: 0, nodeHtmls: [],
+              snippet: (i && i.locator && i.locator.kind === 'exact' && i.locator.snippet) ? i.locator.snippet : null,
+            })));
+          let violationInstructions = _fixEntries.map((e) => e.text).join('\n');
+          const _routingArg = _fixEntries.length > 0 ? { entries: _fixEntries, feedback: _lastPassFeedback } : null;
+          if (!_routingArg && _lastPassFeedback) violationInstructions = violationInstructions + '\n\n' + _lastPassFeedback;
           _lastPassFeedback = '';
 
           try {
             // Chunked fix across the entire document (no truncation)
-            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
+            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`, _routingArg);
             if (fixedHtml && fixedHtml !== accessibleHtml) {
               accessibleHtml = fixedHtml;
             }
@@ -30450,6 +30578,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
+    aiFixChunked: aiFixChunked,
     // Pure content-fidelity nets — exposed so the re-fix lanes (Fix Remaining) can run the SAME WARN-only
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
     // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
@@ -30563,5 +30692,6 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsToChunks; // static: $4 violation→chunk router (2026-07-02), unit-tested
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
