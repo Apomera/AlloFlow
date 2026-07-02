@@ -312,6 +312,47 @@ S10 claims corrected.
   extracted phases + the entry points, retiring _bindState's ~50 shared
   mutables), then the assembly consumes the single ctx naturally.
 
+## OUTCOMES — wave 4: S1 COMPLETE (plan-approved, 10 commits @6345d8b0..@77113a2c)
+
+The mid-run-rebind hazard is retired. Async runs snapshot their VALUES at
+entry via `_makeRunCtx` (11 fields); React setters stay on `_bindState`
+(identity-stable); `__alloPdfRunGen` remains as the watchdog-invalidation
+channel only. Plan: .claude/plans/ok-maybe-just-do-replicated-waffle.md.
+
+- @6345d8b0 step 0: 12 dead bindings deleted (56→44 assignments, pinned).
+  check_free_vars note: 10 PRE-EXISTING flags identical on HEAD (env
+  globals, typeof-guarded inner-scope reads, window contracts) — plus one
+  genuinely suspicious pre-existing pair: `sourceTopic`/`pageTitle` at
+  ~25513 are undeclared bare reads in generateResourceHTML's center-label
+  branch (would throw if that organizer path runs) — NOT fixed, needs its
+  own look.
+- @3b99dcbf step 0b: deps.state seam — the headless test's `state:{}`
+  is finally honored; snapshot semantics now unit-testable.
+- @0453dd58/@740a4f51/@4eb712fa/@ee79c54c steps 1-4: style-gen, transform
+  (document-mixing fix), audit (options ?? ctx; batch callers pin config),
+  chunk-resume session identity.
+- @ddf2275e step 5 (highest risk): fixAndVerifyPdf + _runMainFixLoop lock
+  document/settings/file identity at entry (incl. the multi-session save
+  key fileSize and telemetry attribution); loop stop-conditions immutable
+  mid-run. Verified zero non-comment bound-value reads across 13700-18290.
+- @9c72fbcb step 6 (+bug fix): the whole batch runs on ONE entry-time
+  configuration; the per-file remediation cache key no longer reads LIVE
+  vars mid-batch (drifted-key entries age out via 7-day TTL).
+- @511129e5 step 7: Download-All builds CSV/telemetry/report from the
+  entry queue — a new batch mid-ZIP can't corrupt the manifest.
+- @6500be15 step 8: updatePdfPreview gains previewOpts.sourceHtml; the
+  word-restoration flow passes restored HTML EXPLICITLY (the module-var
+  patch + 30ms React race that could silently REVERT a restoration in
+  preview/export is gone); delayed audit timers capture their setters.
+- @77113a2c step 9: anti-drift pins (8 functions × legacy names = 0 reads;
+  read-fresh exemptions documented as deliberate). Suite 534/534, gate 29/29.
+
+SEMANTIC CHANGES (user-approved): settings LOCK at run start — a mid-run
+slider change applies to the NEXT run (UI copy note still to add, host
+side); batch cache keys now derive from the batch's own settings.
+Canvas smoke: add "change target-score mid-run → applies to next run"
+and the restoration flow (restore → preview → export) to the checklist.
+
 ## Suggested sequence
 
 1. **H1-H3** (Office image/alt injection + honest toast; v2 fingerprint; rescue
