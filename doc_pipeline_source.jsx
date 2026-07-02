@@ -84,6 +84,73 @@ var _alloLoopPolicy = {
   },
 };
 
+// ── Document Safety scan (dive-1 A1, built 2026-07-02): detect + DISCLOSE active content ──
+// The tagging path preserves original bytes by design (its fidelity guarantee), so it also
+// preserves whatever the source carried: auto-run actions, JavaScript, launch actions,
+// embedded files. The 🧼 Rebuild-clean export DROPS all of it — but until now nothing
+// DETECTED it, so the disclosure was generic. Pure pdf-lib walk (module-level: no factory
+// deps — the pdf-lib doc + namespace come in as params); detection only, no mutation,
+// fail-soft (returns null when pdf-lib/parse unavailable).
+function _alloScanActiveContent(pdfDoc, PDFLibNS) {
+  try {
+    var NS = PDFLibNS || (typeof window !== 'undefined' && window.PDFLib) || null;
+    if (!pdfDoc || !NS || !NS.PDFName) return null;
+    var nm = function (s) { return NS.PDFName.of(s); };
+    var ctx = pdfDoc.context;
+    var _resolve = function (o) { try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; } catch (_) { return o; } };
+    var counts = { openAction: 0, javascript: 0, launch: 0, embeddedFiles: 0, additionalActions: 0, externalLinks: 0 };
+    var catalog = pdfDoc.catalog;
+    if (catalog.get(nm('OpenAction'))) counts.openAction = 1;
+    if (catalog.get(nm('AA'))) counts.additionalActions++;
+    var names = _resolve(catalog.get(nm('Names')));
+    if (names && names.get) {
+      var jsTree = _resolve(names.get(nm('JavaScript')));
+      if (jsTree && jsTree.get) {
+        var jsNames = _resolve(jsTree.get(nm('Names')));
+        counts.javascript += (jsNames && jsNames.size) ? Math.ceil(jsNames.size() / 2) : 1;
+      }
+      var efTree = _resolve(names.get(nm('EmbeddedFiles')));
+      if (efTree && efTree.get) {
+        var efNames = _resolve(efTree.get(nm('Names')));
+        counts.embeddedFiles += (efNames && efNames.size) ? Math.ceil(efNames.size() / 2) : 1;
+      }
+    }
+    var pages = pdfDoc.getPages ? pdfDoc.getPages() : [];
+    for (var pi = 0; pi < pages.length; pi++) {
+      var pg = pages[pi];
+      try {
+        if (pg.node.get(nm('AA'))) counts.additionalActions++;
+        var annots = _resolve(pg.node.get(nm('Annots')));
+        if (annots && annots.size) {
+          for (var i = 0; i < annots.size(); i++) {
+            var an = _resolve(annots.get(i));
+            if (!an || !an.get) continue;
+            if (an.get(nm('AA'))) counts.additionalActions++;
+            var act = _resolve(an.get(nm('A')));
+            if (act && act.get) {
+              var sType = String(act.get(nm('S')) || '');
+              if (sType === '/JavaScript') counts.javascript++;
+              else if (sType === '/Launch') counts.launch++;
+              else if (sType === '/URI') counts.externalLinks++;
+            }
+          }
+        }
+      } catch (_) { /* per-page fail-soft */ }
+    }
+    var findings = [];
+    if (counts.openAction) findings.push({ type: 'open-action', count: counts.openAction, label: 'auto-run action on open (/OpenAction)' });
+    if (counts.javascript) findings.push({ type: 'javascript', count: counts.javascript, label: 'embedded JavaScript action(s)' });
+    if (counts.launch) findings.push({ type: 'launch', count: counts.launch, label: 'launch-external-program action(s)' });
+    if (counts.embeddedFiles) findings.push({ type: 'embedded-files', count: counts.embeddedFiles, label: 'embedded file attachment(s)' });
+    if (counts.additionalActions) findings.push({ type: 'additional-actions', count: counts.additionalActions, label: 'additional-action (/AA) trigger(s)' });
+    // externalLinks reported separately (ordinary links are NOT active content — context only).
+    // Built as a var, NOT a 2-space `return {` — the check-pipeline-integrity.js export-parse trap.
+    var _sc = { any: findings.length > 0, findings: findings, externalLinks: counts.externalLinks };
+    return _sc;
+  } catch (_) { return null; }
+}
+
+
 // ── S7 (deep dive 2026-07-02): canonical unicode token fold for missing-word diffs ──
 // Was TRIPLICATED (here + twice in view_pdf_audit) — adding a fold class in one copy (as
 // happened 2026-06-23) silently made the pipeline's residual count disagree with the view's
@@ -8655,68 +8722,6 @@ var createDocPipeline = function(deps) {
   // P4 (deep dive 2026-07-02): delegate to _b64ToBytes — this duplicate had NO 200MB OOM cap,
   // so the audit path could still crash the tab on an input the fix path would have rejected.
   const _auditB64ToBytes = (b64) => _b64ToBytes(b64);
-  // ── Document Safety scan (dive-1 A1, built 2026-07-02): detect + DISCLOSE active content ──
-  // The tagging path preserves original bytes by design (its fidelity guarantee), so it also
-  // preserves whatever the source carried: auto-run actions, JavaScript, launch actions,
-  // embedded files. The 🧼 Rebuild-clean export DROPS all of it — but until now nothing
-  // DETECTED it, so the disclosure was generic. Pure pdf-lib walk; detection only, no
-  // mutation, fail-soft (returns null when pdf-lib/parse unavailable).
-  const _alloScanActiveContent = (pdfDoc, PDFLibNS) => {
-    try {
-      const NS = PDFLibNS || (typeof window !== 'undefined' && window.PDFLib) || null;
-      if (!pdfDoc || !NS || !NS.PDFName) return null;
-      const nm = (s) => NS.PDFName.of(s);
-      const ctx = pdfDoc.context;
-      const _resolve = (o) => { try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; } catch (_) { return o; } };
-      const counts = { openAction: 0, javascript: 0, launch: 0, embeddedFiles: 0, additionalActions: 0, externalLinks: 0 };
-      const catalog = pdfDoc.catalog;
-      if (catalog.get(nm('OpenAction'))) counts.openAction = 1;
-      if (catalog.get(nm('AA'))) counts.additionalActions++;
-      const names = _resolve(catalog.get(nm('Names')));
-      if (names && names.get) {
-        const jsTree = _resolve(names.get(nm('JavaScript')));
-        if (jsTree && jsTree.get) {
-          const jsNames = _resolve(jsTree.get(nm('Names')));
-          counts.javascript += (jsNames && jsNames.size) ? Math.ceil(jsNames.size() / 2) : 1;
-        }
-        const efTree = _resolve(names.get(nm('EmbeddedFiles')));
-        if (efTree && efTree.get) {
-          const efNames = _resolve(efTree.get(nm('Names')));
-          counts.embeddedFiles += (efNames && efNames.size) ? Math.ceil(efNames.size() / 2) : 1;
-        }
-      }
-      const pages = pdfDoc.getPages ? pdfDoc.getPages() : [];
-      for (const pg of pages) {
-        try {
-          if (pg.node.get(nm('AA'))) counts.additionalActions++;
-          const annots = _resolve(pg.node.get(nm('Annots')));
-          if (annots && annots.size) {
-            for (let i = 0; i < annots.size(); i++) {
-              const an = _resolve(annots.get(i));
-              if (!an || !an.get) continue;
-              if (an.get(nm('AA'))) counts.additionalActions++;
-              const act = _resolve(an.get(nm('A')));
-              if (act && act.get) {
-                const sType = String(act.get(nm('S')) || '');
-                if (sType === '/JavaScript') counts.javascript++;
-                else if (sType === '/Launch') counts.launch++;
-                else if (sType === '/URI') counts.externalLinks++;
-              }
-            }
-          }
-        } catch (_) { /* per-page fail-soft */ }
-      }
-      const findings = [];
-      if (counts.openAction) findings.push({ type: 'open-action', count: counts.openAction, label: 'auto-run action on open (/OpenAction)' });
-      if (counts.javascript) findings.push({ type: 'javascript', count: counts.javascript, label: 'embedded JavaScript action(s)' });
-      if (counts.launch) findings.push({ type: 'launch', count: counts.launch, label: 'launch-external-program action(s)' });
-      if (counts.embeddedFiles) findings.push({ type: 'embedded-files', count: counts.embeddedFiles, label: 'embedded file attachment(s)' });
-      if (counts.additionalActions) findings.push({ type: 'additional-actions', count: counts.additionalActions, label: 'additional-action (/AA) trigger(s)' });
-      // externalLinks reported separately (ordinary links are NOT active content — context only)
-      const _sc = { any: findings.length > 0, findings: findings, externalLinks: counts.externalLinks };
-      return _sc;
-    } catch (_) { return null; }
-  };
   const _pdfAuditPageCount = async (base64Data) => {
     try {
       try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
