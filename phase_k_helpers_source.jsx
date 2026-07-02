@@ -1141,6 +1141,21 @@ const executeSaveFile = async (deps) => {
               selSnapshots: selSnapshots,
               studentProgressSummary: studentProgressSummary,
               studentArtifacts: Array.isArray(studentArtifacts) ? studentArtifacts : [],
+              // Word Sounds session data previously rode ONLY the student-mode
+              // save, so a teacher/interventionist running Word Sounds on the
+              // teacher device (the common K-2 RTI setup) lost history, phoneme
+              // mastery, and confusion patterns on save→load. Same shape as the
+              // student branch below; the load side restores it for both modes.
+              wordSoundsState: {
+                  history: wordSoundsHistory,
+                  badges: wordSoundsBadges,
+                  phonemeMastery: phonemeMastery,
+                  dailyProgress: wordSoundsDailyProgress,
+                  confusionPatterns: wordSoundsConfusionPatterns,
+                  families: wordSoundsFamilies,
+                  audioLibrary: wordSoundsAudioLibrary,
+                  sessionScore: wordSoundsScore
+              },
               // Stickers (annotation overlays placed on the output area) ride
               // the project JSON so a teacher's feedback / a student's marks
               // survive save→load. Without this they're wiped on reload.

@@ -413,15 +413,6 @@ const handleLoadProject = (e, deps) => {
                      if (rawData.gameCompletions) setGameCompletions(rawData.gameCompletions);
                      if (rawData.labelChallengeResults) setLabelChallengeResults(rawData.labelChallengeResults);
                      if (rawData.socraticChatHistory?.messages) setSocraticMessages(rawData.socraticChatHistory.messages);
-                     if (rawData.wordSoundsState) {
-                         if (rawData.wordSoundsState.history) setWordSoundsHistory(rawData.wordSoundsState.history);
-                         if (rawData.wordSoundsState.families) setWordSoundsFamilies(rawData.wordSoundsState.families);
-                         if (rawData.wordSoundsState.audioLibrary) setWordSoundsAudioLibrary(rawData.wordSoundsState.audioLibrary);
-                         if (rawData.wordSoundsState.badges) setWordSoundsBadges(rawData.wordSoundsState.badges);
-                         if (rawData.wordSoundsState.phonemeMastery) setPhonemeMastery(rawData.wordSoundsState.phonemeMastery);
-                         if (rawData.wordSoundsState.dailyProgress) setWordSoundsDailyProgress(rawData.wordSoundsState.dailyProgress);
-                         if (rawData.wordSoundsState.confusionPatterns) setWordSoundsConfusionPatterns(rawData.wordSoundsState.confusionPatterns);
-                     }
                      if (rawData.conceptMastery && rawData.conceptMastery.attempts) {
                          // Student re-loading their own work: restore device-local mastery.
                          if (typeof setConceptMasteryLocal === 'function') setConceptMasteryLocal({ attempts: rawData.conceptMastery.attempts });
@@ -440,6 +431,20 @@ const handleLoadProject = (e, deps) => {
                               setCompletedActivities(new Map(rawData.completedActivities));
                           } catch(e) { warnLog("Failed to restore completed activities", e); }
                      }
+                }
+                // Word Sounds state restores for BOTH save modes (was inside the
+                // isStudentSave guard, which silently dropped it from teacher-mode
+                // projects — the common K-2 RTI setup where the interventionist
+                // runs Word Sounds on the teacher device; the teacher save now
+                // persists it too, see phase_k_helpers saveType === 'teacher').
+                if (rawData.wordSoundsState) {
+                    if (rawData.wordSoundsState.history) setWordSoundsHistory(rawData.wordSoundsState.history);
+                    if (rawData.wordSoundsState.families) setWordSoundsFamilies(rawData.wordSoundsState.families);
+                    if (rawData.wordSoundsState.audioLibrary) setWordSoundsAudioLibrary(rawData.wordSoundsState.audioLibrary);
+                    if (rawData.wordSoundsState.badges) setWordSoundsBadges(rawData.wordSoundsState.badges);
+                    if (rawData.wordSoundsState.phonemeMastery) setPhonemeMastery(rawData.wordSoundsState.phonemeMastery);
+                    if (rawData.wordSoundsState.dailyProgress) setWordSoundsDailyProgress(rawData.wordSoundsState.dailyProgress);
+                    if (rawData.wordSoundsState.confusionPatterns) setWordSoundsConfusionPatterns(rawData.wordSoundsState.confusionPatterns);
                 }
                 if (rawData.probeHistory) setProbeHistory(rawData.probeHistory);
                 if (rawData.interventionLogs) setInterventionLogs(rawData.interventionLogs);
