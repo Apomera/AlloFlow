@@ -31,15 +31,9 @@ function LearningHubModal(props) {
               <button onClick={() => setShowLearningHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('learning_hub.close_aria') || 'Close learning hub'}>{'\u2715'}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {isTeacherMode && (
-              <button onClick={() => { setShowLearningHub(false); setBridgeSendOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
-                <span className="text-4xl">🌉</span>
-                <div>
-                  <h3 className="font-bold text-cyan-800">{t('learning_hub.bridge_title') || 'Family Bridge'}</h3>
-                  <p className="text-xs text-cyan-700 mt-1">{t('learning_hub.bridge_desc') || 'Talk across languages in real time: speak or type, and hear it read back.'}</p>
-                </div>
-              </button>
-              )}
+              {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
+                  single entry point now. setBridgeSendOpen prop stays accepted (unused)
+                  so hosts that still pass it render unchanged. */}
               <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDD2C'}</span>
                 <div>

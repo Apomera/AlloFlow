@@ -163,13 +163,9 @@ function EducatorHubModal(props) {
               <button onClick={() => setShowEducatorHub(false)} className="p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button data-help-key="educator_hub_bridge_card" onClick={() => { setShowEducatorHub(false); setBridgeSendOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🌉</span>
-                <div>
-                  <h3 className="font-bold text-cyan-800">{t('educator_hub.bridge_title') || 'Family Bridge'}</h3>
-                  <p className="text-xs text-cyan-700 mt-1">{t('educator_hub.bridge_desc') || 'Live two-way translation to connect with multilingual families and students: speak or type, hear it read back, and save key terms.'}</p>
-                </div>
-              </button>
+              {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
+                  single entry point now. setBridgeSendOpen prop stays accepted (unused)
+                  so hosts that still pass it render unchanged. */}
               <button data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🧠</span>
                 <div>
@@ -184,18 +180,15 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
                 </div>
               </button>
-              <button data-help-key="educator_hub_cinematic_studio_card" onClick={() => { setShowEducatorHub(false); setShowCinematicStudio(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🎬</span>
-                <div>
-                  <h3 className="font-bold text-rose-800">{t('educator_hub.cinematic_studio_title') || 'Cinematic Studio'}</h3>
-                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.cinematic_studio_desc') || 'Craft strong NotebookLM video prompts, then diagnose and re-prompt weak results'}</p>
-                </div>
-              </button>
+              {/* Cinematic Studio card removed 2026-07-02 (Aaron): it now lives INSIDE
+                  Video Studio as the "NotebookLM / AI-video tools" entry — one video
+                  card instead of two confusing ones. setShowCinematicStudio prop stays
+                  accepted (unused) so hosts that still pass it render unchanged. */}
               <button data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🎥</span>
                 <div>
                   <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
-                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record your screen, trim, caption, and export video demos — all on your device'}</p>
+                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export video demos — plus prompt tools for NotebookLM and other AI video generators'}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">

@@ -29487,7 +29487,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             {(VideoStudio) => React.createElement(VideoStudio, {
                 onClose: () => setIsVideoStudioOpen(false),
                 addToast,
-                t
+                t,
+                onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
         </CDNModuleGate>
 

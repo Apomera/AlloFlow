@@ -585,6 +585,18 @@
             ),
             h('p', { className: 'text-xs text-slate-500 mt-3' }, T('video_studio.privacy_note', 'Nothing uploads anywhere: recording, editing, and captioning all run in your browser. Finished videos appear below and can be saved as .webm files. Before recording, close anything with student data — prefer sharing a single tab.'))
           ),
+          // Cinematic Studio lives HERE now (its hub card was removed 2026-07-02):
+          // it is the prompt-craft companion for NotebookLM and other AI video
+          // GENERATORS, while this panel records/edits real footage.
+          props.onOpenCinematicStudio && h('div', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-3 mb-4 flex items-center justify-between gap-3 flex-wrap' },
+            h('p', { className: 'text-xs text-slate-600 flex-1', style: { minWidth: '200px' } },
+              T('video_studio.cinematic_hint', 'Generating a video with AI instead of recording one? Cinematic Studio helps you craft and debug prompts for NotebookLM Video Overviews and other AI video generators — and caption their output.')),
+            h('button', {
+              onClick: function () { try { props.onOpenCinematicStudio(); } catch (_) {} },
+              className: 'px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 shrink-0',
+              'data-help-key': 'video_studio_cinematic_entry'
+            }, T('video_studio.cinematic_open', '🎬 Cinematic Studio'))
+          ),
           // Gallery
           h('h3', { className: 'font-semibold text-slate-700 text-sm mb-2' }, T('video_studio.gallery', 'Videos from this session')),
           videos.length === 0
