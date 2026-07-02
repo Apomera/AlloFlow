@@ -158,35 +158,22 @@ Every audit starts at 100 and deducts points per unique violation type:
 
 **Important:** Each violation TYPE is counted once, regardless of how many times it appears. A document with 50 images missing alt text gets one -15 deduction for "images without alt text," not 50 × -15.
 
-### Pass Factor (Proportional Credit)
+### Pass Credit — removed (2026-06-21)
 
-Documents that pass more accessibility checks get proportional credit, reflecting that remaining violations are a smaller proportion of the overall document:
+An earlier design granted proportional deduction credit for model-asserted "passing checks" (`passFactor`). This was removed: unverified model-asserted passes no longer buy back deductions. Every displayed AI score is the deduction-grounded recalculation from the issue list — never the model's self-reported number.
 
-**Formula:** `passRatio = passes / (passes + issues)`, then `passFactor = 1 - (passRatio × 0.4)`
+### Dual-Engine Verification (weakest layer governs)
 
-| Scenario | Passes | Issues | Ratio | Deduction Reduction |
-|----------|--------|--------|-------|-------------------|
-| Short doc, many problems | 5 | 5 | 50% | 20% |
-| Average doc | 10 | 5 | 67% | 27% |
-| Good long doc, few issues | 15 | 3 | 83% | 33% |
-| Excellent long doc, 1 issue | 20 | 1 | 95% | 38% |
+The headline score is **`min(AI Rubric Score, deterministic engine score)`** — the weakest verified layer, not an average:
 
-**Why this matters:** A 35-page document with 20 passing checks and 3 remaining violations receives more credit than a 3-page document with 3 passes and 3 violations. This reflects reality — the longer document demonstrated compliance across far more content.
+1. **AI Rubric Score** — Gemini evaluates the HTML against the WCAG rubric (chunked for long documents, deduplicated), recomputed from the issue deductions
+2. **Deterministic engines** — axe-core, plus IBM Equal Access when available (the more conservative of the two governs); local, zero API cost, no AI variance
 
-### Dual-Engine Verification
-
-The final score is a 50/50 blend of two independent engines:
-
-1. **AI Rubric Score** — Gemini evaluates the HTML against the WCAG rubric (chunked for long documents, deduplicated)
-2. **axe-core Score** — Deque's industry-standard automated WCAG checker runs locally in the browser (zero API cost, deterministic, no AI variance)
-
-**Blended Score = (AI Score + axe-core Score) / 2**
-
-This prevents either engine from dominating. If the AI gives 90 but axe-core finds violations (score 70), the blended score is 80 — reflecting that there are real issues the AI missed.
+Averaging was abandoned (2026-06-21) because the two engines measure different things — the midpoint described neither, and an inflated automated half could mask a failing content half. Both layer scores are shown separately in the UI, and the independent PDF/UA verdict is veraPDF's own badge.
 
 ### Multi-Auditor Triangulation
 
-For the initial PDF audit, the pipeline runs **2-10 independent AI auditors** (default 5), each with a slightly different perspective:
+For the initial PDF audit, the pipeline runs **2-10 independent AI auditors** — starting with 3 and adaptively escalating to the configured count (the auditor slider sets the cap) when scores diverge or confidence is low (2026-07-02). Each auditor takes a slightly different perspective:
 
 - Base WCAG evaluator
 - Document remediation specialist
@@ -195,7 +182,7 @@ For the initial PDF audit, the pipeline runs **2-10 independent AI auditors** (d
 - Screen reader user perspective
 - (and more, up to 10 variants)
 
-Each auditor's self-reported score is validated against a rubric calculation. If their score diverges by more than 12 points from what the rubric calculates, it's overridden. The final score is the arithmetic mean of all auditors.
+Each auditor's score is **always** the deduction-grounded rubric recalculation of its issue list — the model's self-reported number is never displayed (it is preserved for disclosure, and a >12-point divergence is additionally logged). The final score is the arithmetic mean of all auditors.
 
 **Statistical reliability metrics reported:**
 - Standard Deviation (SD) — how much auditors disagree
@@ -215,18 +202,23 @@ After the initial remediation, the pipeline enters a self-correcting loop:
 ```
 For each pass (up to 8 by default):
   1. Send remaining violations to Gemini for AI fix
+     (a reverted or no-op previous pass adds a note saying WHY, so the
+      retry isn't an identical re-roll)
   2. Run deterministic cleanup (list, contrast, ARIA roles, lang)
-  3. Run 3 parallel AI audits + axe-core
-  4. Check:
+  3. If the pass changed nothing, skip re-audit (results are identical) and count a stall
+  4. Run 1 AI audit + axe-core (unchanged sections come from a temp-0 memo, not re-billed)
+  5. Check:
      - Target score reached (AI ≥ target AND axe = 0)? → STOP
-     - Plateau detected (no improvement above statistical noise)? → STOP
-     - Regression (score dropped >5 AND violations increased)? → REVERT & STOP
+     - Plateau (2 consecutive passes with no meaningful improvement)? → STOP
+     - Regression (axe much worse, OR AI dropped >5 without an axe gain)? → REVERT
+       (retry once with feedback; 2 consecutive reverts → STOP)
      - Otherwise → continue to next pass
+  Keep-best: the shipped HTML is the best VERIFIED pass, never a degraded working state.
 ```
 
-**The target score** is configurable via a slider (default 90/100). Users can set it higher for critical documents or lower for quick processing.
+**The target score** is configurable via a slider (default 95/100, raised from 90 on 2026-06-23). Users can set it higher for critical documents or lower for quick processing.
 
-**Plateau detection** uses the Standard Error of Mean from the 3 parallel audits. If the score improvement is less than 1.5× SEM, it's indistinguishable from measurement noise, and the loop stops rather than wasting API calls.
+**Plateau detection** requires improvement beyond a 2-point noise floor; audits run at temperature 0, so re-prompt variance is engineered out rather than estimated per pass (the earlier "1.5× SEM across parallel audits" design measured near-zero variance between byte-identical temp-0 calls — it always degenerated to this floor).
 
 **Hands-off / autonomous mode.** `runAutonomousRemediation()` wraps the loop as a self-driving, bounded (default 5-pass) orchestration with target-score gating, plateau detection (stops after 2 non-improving passes), and permanent-failure skipping. Chunk-level transforms additionally auto-retry transient failures (timeout / quota / RECITATION) with backoff, and every bare PDF.js/OCR/network await is wrapped with a per-request `AbortController` timeout — so a hung call can't stall the whole run. This is the reliability work behind "it works every time" for institutional use.
 
@@ -345,7 +337,7 @@ This is the independent, third-party-standard validation layer (not AlloFlow's o
 
 2. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
 
-3. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this (low text density per page) and OCRs client-side via **Tesseract.js** (deterministic, on-device, no hallucination), with **Gemini Vision** as a fallback and word-level reconciliation between the two engines; document language is auto-detected first. OCR accuracy still depends on scan quality.
+3. **Scanned image-only PDFs** — PDFs that are purely scanned images (no text layer) require OCR first. The pipeline detects this (low text density per page) and OCRs client-side via **Tesseract.js** (deterministic, on-device, no hallucination) in parallel with **Gemini Vision**, then reconciles the two **page by page** (winner-take-all per page with junk-ratio and confidence overrides — not word-level token merging; page boundaries come from a model-emitted sentinel with an equal-split fallback). Document language is auto-detected first. OCR accuracy still depends on scan quality, and low-confidence pages are flagged for review.
 
 ---
 
@@ -370,15 +362,15 @@ Input: PDF/DOCX/PPTX
   │   └── axe-core automated check
   │
   ├── Phase 5: Self-correcting fix loop (up to 8 passes)
-  │   ├── AI fix attempt
+  │   ├── AI fix attempt (revert/no-op feedback on retries)
   │   ├── Deterministic cleanup (ARIA roles, lang, lists, contrast)
-  │   ├── 3 parallel AI audits + axe-core
-  │   └── Plateau/regression/target detection
+  │   ├── 1 AI audit (chunk-memoized) + axe-core
+  │   └── Plateau/regression/target detection + keep-best
   │
-  ├── Phase 6: Final audit + blended scoring
+  ├── Phase 6: Final audit + weakest-layer headline
   │   ├── Full chunked AI audit + structural pass detection
-  │   ├── axe-core verification
-  │   └── 50/50 blended score
+  │   ├── axe-core + Equal Access verification
+  │   └── headline = min(AI, deterministic)
   │
   └── Phase 7: Native tagged-PDF emit + PDF/UA validation
       ├── createTaggedPdf (pdf-lib): /StructTreeRoot, MarkInfo, /Lang, /Alt, /Scope
@@ -395,9 +387,9 @@ Output: Native tagged PDF + Accessible HTML + Audit Report + ePub3/DAISY/ODT
 
 | File | Size | Purpose |
 |------|------|---------|
-| `doc_pipeline_source.jsx` | ~26,000 lines | Core pipeline logic — auditing, fixes, scoring, native tagged-PDF emit, font embedding, OCR, reports, exports |
+| `doc_pipeline_source.jsx` | ~29,900 lines | Core pipeline logic — auditing, fixes, scoring, native tagged-PDF emit, font embedding, OCR, reports, exports |
 | `doc_pipeline_module.js` | compiled | Browser-ready version loaded via CDN |
-| `view_pdf_audit_source.jsx` | ~12,800 lines | Audit/remediation UI, tagging export, veraPDF (CheerpJ) integration + closed-loop auto-fix, format exports |
+| `view_pdf_audit_source.jsx` | ~14,700 lines | Audit/remediation UI, tagging export, veraPDF (CheerpJ) integration + closed-loop auto-fix, format exports |
 | `view_pdf_validator_module.js` | module | In-browser post-export PDF/UA structural self-check (Conformance Report) |
 | `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, style seed picker, AI restyle, settings |
 

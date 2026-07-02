@@ -197,10 +197,13 @@ describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (pale
 // ── Audit batch 4 (2026-06-29): reduce audit-section throttle failures + manual re-audit ──
 
 describe('B4: audit call-volume + pacing reductions to cut throttle failures', () => {
-  it('per-pass auditors lowered 3 → 2 (adaptive tiebreaker still adds a 3rd on divergence)', () => {
-    expect(dp).toMatch(/const numAudits = 2;/);
-    // the adaptive tiebreaker that makes 2 safe must still be present
-    expect(dp).toMatch(/rvScores\.length === 2 && Math\.abs\(rvScores\[0\] - rvScores\[1\]\) > 15/);
+  it('per-pass re-audit is a single memoized call (2026-07-02 $1/$2; the old 2-audit anchors lived in the deleted dead batch loop)', () => {
+    // One AI audit + axe per pass — the former "2 parallel audits" were byte-identical
+    // temperature-0 prompts (zero information gain); the numAudits=2 + rvScores tiebreaker
+    // this test used to pin existed only inside the deleted processSinglePdfForBatch.
+    expect(dp).toMatch(/const \[reVerify1, reAxe\] = await Promise\.all/);
+    // …and unchanged chunks must be served from the temp-0 memo, not re-billed
+    expect(dp).toMatch(/_auditChunkMemo/);
   });
   it('audit batchSize lowered 6 → 3 to match the concurrency gate (no backlog aging out)', () => {
     expect(dp).toMatch(/const batchSize = 3;/);
