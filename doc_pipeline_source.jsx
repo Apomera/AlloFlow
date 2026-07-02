@@ -13754,10 +13754,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   //          updateProgress, applyDetectedLang }   — the run state after Step 3 + the two
   //          run-scoped callbacks that close over fixAndVerifyPdf's onProgress/lang state
   //   out: { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations }
-  // All other helpers (aiFixChunked, audits, deterministic nets) and host bindings
-  // (addToast, pdfAutoFixPasses, pdfTargetScore) resolve from the factory closure exactly
-  // as before. First phase carved out of the ~4,100-line fixAndVerifyPdf (S2); precondition
-  // work for the per-run ctx (S1).
+  // All other helpers (aiFixChunked, audits, deterministic nets) and addToast resolve from
+  // the factory closure. S1 step 5: the run SETTINGS (maxFixPasses, targetScore) arrive via
+  // loopCtx — snapshotted by fixAndVerifyPdf at run entry — so a concurrent call's rebind
+  // can't change the loop's stop conditions mid-run.
   const _runMainFixLoop = async (loopCtx) => {
     let accessibleHtml = loopCtx.accessibleHtml;
     let verification = loopCtx.verification;
@@ -13767,14 +13767,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const updateProgress = loopCtx.updateProgress || function () {};
     const _applyDetectedLang = loopCtx.applyDetectedLang || function (h) { return h; };
       let autoFixPasses = 0;
-      const maxFixPasses = pdfAutoFixPasses;
+      const maxFixPasses = loopCtx.maxFixPasses; // S1: run-entry snapshot, not the live bound var
       let bestHtml = accessibleHtml;
       let bestAiScore = verification ? verification.score : 0;
       let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _totalIssues = bestAxeViolations + _aiIssueCount;
-      const _targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+      const _targetScore = loopCtx.targetScore; // S1: run-entry snapshot
       // A PARTIAL audit (throttle failed some sections) scored only PART of the document, so a high score does
       // NOT verifiably meet the target — the un-audited sections could still have issues. Don't let a partial
       // "target met" stop the loop before it starts; keep going to try for complete coverage. This mirrors the
@@ -13997,7 +13997,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
 
           // If BOTH engines are satisfied, stop
-          const targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+          const targetScore = loopCtx.targetScore; // S1: run-entry snapshot
           if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
             warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
             break;
@@ -14622,16 +14622,25 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
+    // S1 step 5: run-entry snapshot. batchOverrides win (the batch runner pins a whole batch
+    // to one configuration); otherwise the ctx captured HERE governs every read for the rest
+    // of this multi-minute run — a concurrent wrapped call's rebind can no longer swap the
+    // document, settings, or file identity mid-remediation.
+    const _run = _makeRunCtx();
     const _isBatch = !!batchOverrides;
-    const _base64 = batchOverrides?.base64 || pendingPdfBase64;
-    const _fileName = batchOverrides?.fileName || pendingPdfFile?.name || 'document.pdf';
+    const _base64 = batchOverrides?.base64 || _run.base64;
+    const _fileName = batchOverrides?.fileName || (_run.file && _run.file.name) || 'document.pdf';
+    const _runFileSize = batchOverrides?.fileSize || (_run.file && _run.file.size) || null;
+    const _polishPasses = (batchOverrides && batchOverrides.polishPasses != null) ? batchOverrides.polishPasses : _run.polishPasses;
+    const _runTargetScore = (batchOverrides && batchOverrides.targetScore != null) ? batchOverrides.targetScore : _run.targetScore;
+    const _runMaxFixPasses = (batchOverrides && batchOverrides.autoFixPasses != null) ? batchOverrides.autoFixPasses : _run.autoFixPasses;
     // Case-INSENSITIVE extension match (deep dive 2026-07-02 H11): this used to be
     // endsWith('.docx') while the Step-0 isDocx/isPptx branches and the audit router
     // use /\.docx$/i — an uppercase ".DOCX" was extracted as Office but then fell
     // through the `_mimeType === 'application/pdf'` OCR gate: Tesseract fed a zip to
     // pdf.js and Vision got DOCX bytes labeled application/pdf.
     const _mimeType = /\.docx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : /\.pptx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
-    const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
+    const _auditResult = batchOverrides?.auditResult || _run.auditResult;
     const _onProgress = batchOverrides?.onProgress || null;
     // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
     // pages and auto-save the remediated HTML to the multi-session store keyed by doc fingerprint.
@@ -16342,12 +16351,12 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           }
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
-          if (pdfPolishPasses > 0) {
+          if (_polishPasses > 0) {
             const POLISH_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
-              updateProgress(2, `Polish pass ${polishIdx + 1}/${pdfPolishPasses} (style + table unification)...`);
+              updateProgress(2, `Polish pass ${polishIdx + 1}/${_polishPasses} (style + table unification)...`);
               _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
               try {
                 // Strip <style> block before chunking — CSS classes don't need polishing
@@ -17122,7 +17131,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
       _pipeStepStart(4);
       // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
-      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang });
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore });
       accessibleHtml = _loopOut.accessibleHtml;
       verification = _loopOut.verification;
       axeResults = _loopOut.axeResults;
@@ -17462,7 +17471,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // so a run could declare "target 95 reached" and then display 88 with no explanation.
         // Say so explicitly when it happens.
         {
-          const _tgt = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+          const _tgt = _runTargetScore; // S1: run-entry snapshot
           if (bestAiScore >= _tgt && governingFinal < _tgt) {
             warnLog(`[PDF Fix] Note: the fix loop reached its AI target (${bestAiScore} >= ${_tgt}) but a deterministic engine governs the headline at ${governingFinal} — the displayed score is the weakest verified layer, not the loop's stop score.`);
           }
@@ -18059,7 +18068,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // the saved range was orphaned and the next session never found it. (2026-06-20 data-loss fix)
           const _msMeta = {
             fileName: _fileName,
-            fileSize: (pendingPdfFile && pendingPdfFile.size) || 0,
+            fileSize: _runFileSize || 0, // S1: run-entry snapshot — the bound var could be another upload by now
             pageCount: fullPageCount,
           };
           const _msSessionId = _multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount);
@@ -18151,10 +18160,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             pageCount,
             elapsed: Math.round((Date.now() - _startTime) / 1000),
             // Non-identifying: file extension only, never the (PII-bearing) name.
-            fileExt: ((pendingPdfFile && pendingPdfFile.name || '').match(/\.([A-Za-z0-9]+)$/) || [])[1] || '',
+            fileExt: ((_fileName || '').match(/\.([A-Za-z0-9]+)$/) || [])[1] || '', // S1: run-stable identity
           };
           if (_telemetryConsent) {
-            _payload.fileName = (pendingPdfFile && pendingPdfFile.name) || 'unknown';
+            _payload.fileName = _fileName || 'unknown'; // S1: run-stable identity
             _payload.user = (typeof window !== 'undefined' && window.__alloUser && (window.__alloUser.displayName || window.__alloUser.email)) || 'anonymous';
             _payload.email = (typeof window !== 'undefined' && window.__alloUser && window.__alloUser.email) || null;
           }
