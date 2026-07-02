@@ -149,3 +149,15 @@ describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)
     expect(ve).toMatch(/window\.__alloBuilderEditedPack = \{ html: '<!DOCTYPE html>\\n' \+ doc\.documentElement\.outerHTML, at: Date\.now\(\) \}/);
   });
 });
+
+describe('export-format review (round 3)', () => {
+  it('C16: NotebookLM/markdown export gates the answer key (default OFF, teacher opt-in only)', () => {
+    const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+    expect(ve).toMatch(/exportConfig\.includeAnswerKey === true/);
+    expect(ve).toMatch(/Answer key omitted from this export \(assessment integrity/);
+    // the unconditional emit is gone: every Answer Key push lives inside the gate
+    const idx = ve.indexOf("out.push('### Answer Key', '')");
+    const gateIdx = ve.indexOf('exportConfig.includeAnswerKey === true');
+    expect(idx).toBeGreaterThan(gateIdx);
+  });
+});

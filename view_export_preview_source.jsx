@@ -1079,11 +1079,21 @@ function ExportPreviewView(props) {
                                 else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
                                   d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '. ' + esc(q.question) + '**', '');
                                     (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
-                                  out.push('### Answer Key', '');
-                                  d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                                    out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
-                                    if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
-                                  out.push('');
+                                  // Answer-key gating (export-format review #13, 2026-07-01): this export
+                                  // travels — students, shared drives, NotebookLM — and it EMBEDDED the
+                                  // full answer key unconditionally, while the HTML pack gates keys behind
+                                  // an explicit teacher opt-in (default OFF). Same rule here: include only
+                                  // when exportConfig.includeAnswerKey is explicitly true; otherwise say
+                                  // where the key lives so teachers aren't surprised.
+                                  if (exportConfig && exportConfig.includeAnswerKey === true) {
+                                    out.push('### Answer Key', '');
+                                    d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                                      out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
+                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
+                                    out.push('');
+                                  } else {
+                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Use the Teacher Copy export for the key.*', '');
+                                  }
                                 }
                                 else if (ty === 'outline' && d && Array.isArray(d.branches)) {
                                   if (d.main) out.push('**' + esc(d.main) + '**', '');
