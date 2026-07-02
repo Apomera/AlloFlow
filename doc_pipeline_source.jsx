@@ -10406,9 +10406,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     setPdfBatchStep('');
     // Tier 4: clear persisted batch state once everything that's going to
     // succeed has succeeded (failures are surfaced in the summary; user can
-    // re-upload to retry). If the loop broke via user abort, leave the state
-    // in place so Resume can pick it up on next page load.
-    if (!_batchAbortCtrl.signal.aborted) {
+    // re-upload to retry). If the loop broke via user abort OR the quota
+    // circuit-breaker, leave the state in place so Resume can pick it up —
+    // the quota stop PROMISES "remaining files stay queued; resume after the
+    // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
+    // very resume it advertised.
+    if (!_batchAbortCtrl.signal.aborted && !_quotaStopped) {
       _clearActiveBatch().catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
@@ -10432,7 +10435,13 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const _failList = failed.length > 0
       ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
       : '';
+    // A quota stop is a PAUSE, not a completion \u2014 saying "Batch complete" while
+    // most files are still queued misreports the run.
+    if (_quotaStopped) {
+      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. Remaining files stay queued \u2014 use Resume after the quota resets.`, 'warning');
+    } else {
     addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
+    }
     // Audio: triumphant chord when batch finishes
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };

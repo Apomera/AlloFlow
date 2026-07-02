@@ -261,4 +261,12 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     expect(dpNow).toMatch(/replace\('cdn\.jsdelivr\.net', 'fastly\.jsdelivr\.net'\)/);
     expect(dpNow).toMatch(/const _fetchFont = async \(u\) => \{\s*\n\s*try \{ return await _fetchFontOnce\(u\); \}/);
   });
+  it('C32: quota-stopped batch PRESERVES its persisted resume state and does not toast "complete" (deep dive 2026-07-01)', () => {
+    // The quota circuit-breaker promises "remaining files stay queued; resume after the quota
+    // resets" — clearing the Tier-4 persisted batch (pre-fix behavior: only user-abort was
+    // spared) destroyed the very resume it advertised, and the completion toast misreported
+    // a paused run as finished.
+    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped\) \{\s*\n\s*_clearActiveBatch\(\)/);
+    expect(dpNow).toMatch(/if \(_quotaStopped\) \{\s*\n\s*addToast\(`⏸ Batch paused at the AI quota/);
+  });
 });
