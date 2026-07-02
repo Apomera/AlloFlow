@@ -618,3 +618,25 @@ describe('B13: audit logic fixes #10, #11, #12, #8', () => {
     expect(vpx).toMatch(/got only partial text/);
   });
 });
+
+describe('pdf-lib slice gating is DETERMINISTIC (live bug 2026-07-02: "document may be too large")', () => {
+  // Root cause: every page-slice path gated on window.PDFLib being ALREADY loaded, but the
+  // pipeline never loaded it — only the ANTI host does, lazily, on tagged-PDF export. Fresh
+  // sessions remediating a large scan had slicing silently OFF → whole-doc base64 inline to
+  // Vision → "Vision API returned invalid response. The document may be too large." These
+  // pins keep every slice gate on the loader so the fix can't regress to hope-based gating.
+  it('ensurePdfLibLoaded exists, honors the host script tag, and uses the shared CDN loader', () => {
+    expect(dp).toContain('const ensurePdfLibLoaded = async ()');
+    expect(dp).toContain("document.getElementById('pdflib-cdn')");
+    expect(dp).toMatch(/_loadCdnScript\('pdflib',/);
+  });
+  it('all four slice gates await the loader (audit slice-capable, page-count probe, slice auditor, $6 extraction)', () => {
+    expect((dp.match(/ensurePdfLibLoaded\(\)/g) || []).length).toBeGreaterThanOrEqual(5); // def + 4 gates + retry
+    // audit gate loads when the doc crosses the probe threshold
+    expect(dp).toMatch(/dataSizeKB > _AUDIT_SLICE_PROBE_KB && !\(typeof window !== 'undefined' && window\.PDFLib/);
+  });
+  it('a full-doc Vision chunk that hits the size limit retries once as a page-slice', () => {
+    expect(dp).toMatch(/too large\|invalid response/);
+    expect(dp).toContain('retrying as a page-slice');
+  });
+});

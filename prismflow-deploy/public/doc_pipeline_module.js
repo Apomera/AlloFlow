@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -6202,6 +6202,31 @@ var createDocPipeline = function(deps) {
     return p;
   };
 
+  // ── ensurePdfLibLoaded (live-bug fix, 2026-07-02) ──
+  // Every page-slice path (audit slicing AND the $6 extraction slicing) used to gate on
+  // window.PDFLib being ALREADY loaded — but nothing in the pipeline loaded it; only the
+  // ANTI host does, lazily, when a tagged-PDF export runs (script#pdflib-cdn). Result: a
+  // FRESH session remediating a large scan had slicing silently disabled, whole-document
+  // base64 went inline to Vision, and the teacher saw "Vision API returned invalid
+  // response. The document may be too large" — load-order-dependent, which is why it
+  // looked fixed and then "regressed". This loader makes slice capability deterministic.
+  // Cooperates with the host's loader: honors an in-flight script#pdflib-cdn tag before
+  // injecting via the shared _loadCdnScript machinery (same mirror chain as the host).
+  const ensurePdfLibLoaded = async () => {
+    const _ready = () => !!(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument);
+    if (_ready()) return true;
+    try {
+      if (typeof document !== 'undefined' && document.getElementById('pdflib-cdn')) {
+        if (await _waitForGlobal(_ready, 12000)) return true;
+      }
+    } catch (_) {}
+    return _loadCdnScript('pdflib', [
+      'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+    ], _ready, { timeout: 15000 });
+  };
+
   const ensurePdfJsLoaded = async () => {
     const ok = await _loadCdnScript('pdfjs', [
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
@@ -8634,6 +8659,7 @@ var createDocPipeline = function(deps) {
   const _auditB64ToBytes = (b64) => _b64ToBytes(b64);
   const _pdfAuditPageCount = async (base64Data) => {
     try {
+      try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
       const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
       if (!NS || !NS.PDFDocument) return null;
       const doc = await NS.PDFDocument.load(_auditB64ToBytes(base64Data), { ignoreEncryption: true, updateMetadata: false });
@@ -8641,6 +8667,7 @@ var createDocPipeline = function(deps) {
     } catch (_) { return null; }
   };
   const _auditPdfInSlices = async (base64Data, auditPromptBase) => {
+    try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
     const NS = (typeof window !== 'undefined' && window.PDFLib) || null;
     if (!NS || !NS.PDFDocument) return null;
     let srcDoc;
@@ -9033,6 +9060,12 @@ Return ONLY valid JSON:
       // cross-auditor agreement from what are really different pages.
       let parsedAudits = [];
       let _auditedViaSlices = false;
+      // Live-bug fix (2026-07-02): slice capability is now DETERMINISTIC — load pdf-lib when
+      // the document is big enough to need slicing, instead of silently degrading to the
+      // doomed whole-document Vision pass whenever the host hadn't happened to load it yet.
+      if (dataSizeKB > _AUDIT_SLICE_PROBE_KB && !(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument)) {
+        try { await ensurePdfLibLoaded(); } catch (_) {}
+      }
       const _sliceCapable = !!(typeof window !== 'undefined' && window.PDFLib && window.PDFLib.PDFDocument);
       let _chunkFirst = false;
       if (_sliceCapable) {
@@ -15160,10 +15193,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // Best-effort: if pdf-lib is unavailable or a slice fails to build, that chunk falls
           // back to the full-document upload with the original prompt (previous behavior).
           let _sliceSrcDoc = null;
-          const _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
-          if (_NSlib && _NSlib.PDFDocument && _mimeType === 'application/pdf' && numChunks > 2 && _base64.length > 2000000) {
-            try { _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false }); }
-            catch (e) { warnLog('[Vision] slice-source load failed — falling back to full-doc uploads: ' + (e && e.message)); _sliceSrcDoc = null; }
+          let _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
+          if (_mimeType === 'application/pdf' && numChunks > 2 && _base64.length > 2000000) {
+            // Live-bug fix (2026-07-02): LOAD pdf-lib instead of hoping the host already did —
+            // on fresh sessions this gate silently fell through to full-document uploads and
+            // large scans died with "The document may be too large". Fail-soft: loader failure
+            // keeps the old fallback.
+            if (!_NSlib || !_NSlib.PDFDocument) {
+              try { await ensurePdfLibLoaded(); } catch (_) {}
+              _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
+            }
+            if (_NSlib && _NSlib.PDFDocument) {
+              try { _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false }); }
+              catch (e) { warnLog('[Vision] slice-source load failed — falling back to full-doc uploads: ' + (e && e.message)); _sliceSrcDoc = null; }
+            } else {
+              warnLog('[Vision] pdf-lib unavailable (CDN blocked?) — large-document extraction falls back to full-doc uploads and may hit the Vision size limit.');
+            }
           }
           const _extractSliceB64 = async (startPage1, endPage1) => { // 1-based inclusive
             const sub = await _NSlib.PDFDocument.create();
@@ -15190,20 +15235,41 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             if (startPage > _rangeEnd) break;
             const endPage = Math.min(_rangeStart + (i + 1) * PAGES_PER_CHUNK - 1, _rangeEnd);
             chunkPromises.push((async () => {
+              const _slicePrompt = `This file contains ONLY pages ${startPage} through ${endPage} of a larger document. Extract ALL text content from it — every page, completely.\n\n${_EXTRACT_RULES}`;
               if (_sliceSrcDoc) {
                 try {
                   const sb = await _extractSliceB64(startPage, endPage);
                   _slicedChunks++;
-                  return await callGeminiVision(
-                    `This file contains ONLY pages ${startPage} through ${endPage} of a larger document. Extract ALL text content from it — every page, completely.\n\n${_EXTRACT_RULES}`,
-                    sb, 'application/pdf'
-                  );
+                  return await callGeminiVision(_slicePrompt, sb, 'application/pdf');
                 } catch (se) { warnLog(`[Vision] slice ${startPage}-${endPage} failed (${se && se.message}) — falling back to full-doc upload for this chunk`); }
               }
-              return callGeminiVision(
-                `Extract ALL text content from pages ${startPage} through ${endPage} of this document${_pageRange ? ' ONLY (do not include pages outside this range)' : ''}.\n\n${_EXTRACT_RULES}`,
-                _base64, _mimeType
-              );
+              try {
+                return await callGeminiVision(
+                  `Extract ALL text content from pages ${startPage} through ${endPage} of this document${_pageRange ? ' ONLY (do not include pages outside this range)' : ''}.\n\n${_EXTRACT_RULES}`,
+                  _base64, _mimeType
+                );
+              } catch (fe) {
+                // Live-bug hardening (2026-07-02): a full-doc upload that dies on the Vision
+                // size limit gets ONE retry as a page-slice — covering the case where the
+                // slice source wasn't available up front (loader raced, doc under the size
+                // gate but still too big inline, etc.).
+                if (/too large|invalid response/i.test(String(fe && fe.message || '')) && _mimeType === 'application/pdf') {
+                  try {
+                    if (!_sliceSrcDoc) {
+                      await ensurePdfLibLoaded();
+                      _NSlib = (typeof window !== 'undefined' && window.PDFLib) || null;
+                      if (_NSlib && _NSlib.PDFDocument) _sliceSrcDoc = await _NSlib.PDFDocument.load(_b64ToBytes(_base64), { ignoreEncryption: true, updateMetadata: false });
+                    }
+                    if (_sliceSrcDoc) {
+                      warnLog(`[Vision] chunk ${startPage}-${endPage} hit the size limit on a full-doc upload — retrying as a page-slice`);
+                      const sb2 = await _extractSliceB64(startPage, endPage);
+                      _slicedChunks++;
+                      return await callGeminiVision(_slicePrompt, sb2, 'application/pdf');
+                    }
+                  } catch (re) { warnLog(`[Vision] slice retry for ${startPage}-${endPage} also failed: ` + (re && re.message)); }
+                }
+                throw fe;
+              }
             })().catch(err => { warnLog(`[PDF Fix] Chunk ${i + 1} (pages ${startPage}-${endPage}) extraction failed:`, err); return null; }));
           }
           let chunkResults = [];
@@ -30324,11 +30390,6 @@ window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; /
 window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested
 window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: alt-text quality heuristics (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
