@@ -9589,6 +9589,18 @@ Return ONLY valid JSON:
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
 
+  // C4 (deep dive 2026-07-01 → fixed 2026-07-02): tagged-PDF byte cache for the batch ZIP.
+  // Every "Download All" click used to re-run createTaggedPdf — and for scanned files, full
+  // OCR — for EVERY file in the batch. Keyed per batch item on a stamp of the remediated
+  // HTML, so a re-remediation/edit regenerates and an unchanged file reuses its bytes.
+  const _batchTaggedCache = new Map(); // f.id -> { stamp, bytes, note, entryName }
+  const _BATCH_TAGGED_CACHE_MAX = 40;
+  const _batchTaggedCachePut = (id, entry) => {
+    if (_batchTaggedCache.size >= _BATCH_TAGGED_CACHE_MAX && !_batchTaggedCache.has(id)) {
+      const k0 = _batchTaggedCache.keys().next().value; _batchTaggedCache.delete(k0);
+    }
+    _batchTaggedCache.set(id, entry);
+  };
   const downloadBatchResults = async () => {
     if (!window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
     const zip = new window.JSZip();
@@ -9614,6 +9626,16 @@ Return ONLY valid JSON:
       const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
       try {
         if (!f.result || !f.result.accessibleHtml) { _taggedNotes.set(f.id, 'skipped (no remediated HTML)'); continue; }
+        // C4: byte-identical reuse — same remediated HTML → same tagged PDF; skip the
+        // regeneration (and any per-file OCR) this click.
+        const _tagStamp = _auditMemoHash(String(f.result.accessibleHtml));
+        const _tagHit = _batchTaggedCache.get(f.id);
+        if (_tagHit && _tagHit.stamp === _tagStamp && _tagHit.bytes) {
+          zip.file(_tagHit.entryName, _tagHit.bytes);
+          _taggedCount++;
+          _taggedNotes.set(f.id, _tagHit.note);
+          continue;
+        }
         // Transcript entries have no PDF bytes to tag — typeset instead
         // (sweep 2026-06-11 LOW[7]): clean generated layout through the
         // same tagger + gates, exactly like the single-file button.
@@ -9628,7 +9650,9 @@ Return ONLY valid JSON:
             zip.file(`${safeName}_typeset_tagged.pdf`, _tsBytes);
             _taggedCount++;
             const _tsS = _ts && _ts.summary;
-            _taggedNotes.set(f.id, (_tsS && _tsS.uaDeclared ? 'yes (typeset, PDF/UA-1 declared)' : 'yes (typeset, declaration withheld)') + (_tsS && _tsS.unicodeTypesetWarning ? ' — some text needs the HTML export (' + _tsS.unicodeTypesetWarning.script + ')' : ''));
+            const _tsNote = (_tsS && _tsS.uaDeclared ? 'yes (typeset, PDF/UA-1 declared)' : 'yes (typeset, declaration withheld)') + (_tsS && _tsS.unicodeTypesetWarning ? ' — some text needs the HTML export (' + _tsS.unicodeTypesetWarning.script + ')' : '');
+            _taggedNotes.set(f.id, _tsNote);
+            _batchTaggedCachePut(f.id, { stamp: _tagStamp, bytes: _tsBytes, note: _tsNote, entryName: `${safeName}_typeset_tagged.pdf` }); // C4
             continue;
           }
           _taggedNotes.set(f.id, 'n/a (no PDF bytes — Office input; use the Word/HTML artifacts)');
@@ -9646,7 +9670,9 @@ Return ONLY valid JSON:
         zip.file(`${safeName}_tagged.pdf`, tBytes);
         _taggedCount++;
         const s = tagged && tagged.summary;
-        _taggedNotes.set(f.id, s && s.uaDeclared ? 'yes (PDF/UA-1 declared)' : 'yes (declaration withheld — partial linkage)');
+        const _tgNote = s && s.uaDeclared ? 'yes (PDF/UA-1 declared)' : 'yes (declaration withheld — partial linkage)';
+        _taggedNotes.set(f.id, _tgNote);
+        _batchTaggedCachePut(f.id, { stamp: _tagStamp, bytes: tBytes, note: _tgNote, entryName: `${safeName}_tagged.pdf` }); // C4
       } catch (te) { _taggedNotes.set(f.id, 'failed (' + (((te && te.message) || 'error')).slice(0, 80) + ')'); }
     }
     try { setPdfBatchStep(''); } catch (_) {}
@@ -9689,6 +9715,18 @@ Return ONLY valid JSON:
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} remediated file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+    // C5 (deep dive 2026-07-01 \u2192 fixed 2026-07-02): files whose tagged PDF was EXCLUDED
+    // (failed verification) or failed to generate used to be disclosed only as a CSV notes
+    // column \u2014 easy to miss on an unattended batch. Name them in their own warning toast.
+    try {
+      const _noTagged = results
+        .map(f => ({ name: f.fileName, note: _taggedNotes.get(f.id) || '' }))
+        .filter(x => /^(EXCLUDED|failed|typeset failed)/.test(x.note));
+      if (_noTagged.length > 0) {
+        const _names = _noTagged.slice(0, 3).map(x => x.name).join(', ') + (_noTagged.length > 3 ? ` +${_noTagged.length - 3} more` : '');
+        addToast(`\u26a0 ${_noTagged.length} file${_noTagged.length === 1 ? ' has' : 's have'} NO tagged PDF in the ZIP (${_names}) \u2014 their HTML versions are included; the CSV's Tagged PDF column explains each.`, 'warning');
+      }
+    } catch (_) {}
   };
 
 
