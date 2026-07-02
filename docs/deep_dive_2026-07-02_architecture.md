@@ -391,3 +391,66 @@ and the restoration flow (restore → preview → export) to the checklist.
 7. **S6+S7** (PIPELINE_DEFAULTS/SEVERITY_WEIGHTS/LIMITS; export shared helpers).
 8. Long-term: S1→S2→S3 (per-run ctx, phase extraction, one fix-loop controller),
    S5 (view split), S8 (export-pack module), P9 (workers for pdf-lib save/codecs).
+
+## Wave 6 (2026-07-02, same day) — self-verifiable wave + the "too large" live-bug fix
+
+Aaron's ask: enhancements buildable WITHOUT his live testing, mid-planning he reported the
+`[Vision] ... document may be too large` error recurring. Plan: `.claude/plans/ok-maybe-just-do-replicated-waffle.md`.
+
+- @95062dec **Item 0 — the live bug**: slice paths were gated on `window.PDFLib` being
+  ALREADY loaded but the pipeline never loaded it (only the ANTI host does, lazily, on
+  export) → fresh sessions silently uploaded whole documents inline. `ensurePdfLibLoaded()`
+  (shared `_loadCdnScript`, honors the host's `pdflib-cdn` tag) awaited fail-soft at all 4
+  slice gates + a too-large retry-as-slice in the extraction chunk. Pins in
+  pdf_pipeline_quick_bugs.
+- @711bfc56+@47569349 **Item B — Document Safety scan**: `_alloScanActiveContent` pure
+  pdf-lib walk (OpenAction, JS actions, launch, embedded files, page/annot /AA; external
+  links as context) → `audit.activeContent` + fidelity note pointing at 🧼 Rebuild-clean.
+  (Second commit: scanner hoisted to module scope — static-export ReferenceError caught by
+  the headless suite.)
+- @9dfb4fd6 **Item E — spoken math**: `_applyImageIntel` equation fallback derives a
+  deterministic spoken-English alt from `data-allo-latex` via `_alloLatexToSpeakable`
+  (HOISTED from the worksheet renderer — referencing the nested const was a free variable
+  silently eaten by the fallback catch); `_alloAltQuality` gains a raw-latex HIGH flag
+  (tight TeX-command pattern; Windows paths/carets safe). 38/38 alt-quality goldens.
+- @74e171d6 **Item A — E2E corpus** (`tests/e2e/remediation_corpus_golden.spec.ts`, 5/5):
+  real bytes (committed fixtures + pdf-lib-synthesized big/active docs), prompt-shape
+  Gemini mock recording payload sizes, pipeline page loaded with NO pdf-lib. Proves Item 0
+  live (self-load + every Vision payload < document), Item B's 3 classes, full
+  fixAndVerifyPdf → tagged invariants. **The corpus caught a real data-loss defect on its
+  first run**: refusal-shaped `{}` passed `repairSingle`, rendered an empty body, shipped an
+  all-boilerplate shell scoring 98. Fixed two-layer: arrays-only block coercion
+  (`_asBlockArray`, mirrors renderJsonToHtml's keys) + empty-body honesty guard at the wrap
+  (splices deterministic extraction as disclosed paragraphs — "Formatting notice"). Test 5
+  pins the refusal scenario end-to-end.
+- @429564b1 **Item C — $4 violation→chunk routing**: `_routeViolationsToChunks` (allowlist
+  element-scoped axe rules by nodeDetails[].html raw-matched exactly-once-in-exactly-one
+  chunk; AI issues by exact-locator snippet in _normLocatorText space; everything else
+  global). aiFixChunked optional 4th arg {entries, feedback}; chunks with nothing
+  applicable SKIP the model call (verbatim passthrough); legacy callers byte-identical;
+  feedback reaches only non-skipped chunks. 20 goldens incl. factory-under-jsdom
+  integration (routed run = exactly 1 model call, output === input).
+- @53a59c51 **Item D — P5 shared-doc loop**: `_applyToAxeTargetDoc` core + wrapper; 7
+  target-capable tools share one mutator per tool between fn/fnDoc (read-then-single-write
+  contract); direct-map loop = {html, doc, dirty} state machine (parse once, flush only
+  when dirty/string-tool/end; throw → checkpoint). 21 goldens: equivalence incl. declines,
+  parse-count 5→1, fail-safe, head-hoist caveat pin.
+
+Suite state at close: my touched suites all green (corpus 5/5; routing 20; shared-doc 21;
+alt-quality 38; quick-bugs 97; axe-selector 13; contrast-pair 12; +171 aggregate over
+aiFixChunked-adjacent suites). **28 pre-existing full-suite vitest failures reproduce at a
+clean HEAD worktree baseline (or need other sessions' uncommitted STEM files) — none from
+this wave**; biggest: recovery_residual_source (7), prompt_fence_injection (2-3),
+figure_caption_dedup (2) — flagged for the owning sessions.
+
+Concurrent-session note: a deploy (@0726647d post-deploy hash refs) landed mid-wave and
+took Item E + the Item A pipeline fixes live (module content verified rebuild-identical);
+Aaron is testing on that build. Items C+D are committed but NOT deployed.
+
+LESSONS (wave 6): (1) `git show HEAD:file > out` in PowerShell writes UTF-16 — pipe through
+node/execSync for byte-faithful baselines. (2) Bash-tool heredocs halve `\` in JS string
+literals — write backslash-bearing literals via the Edit tool. (3) eval-slice test harnesses
+(new Function on a source slice) break when a refactor makes the sliced function call a
+helper defined OUTSIDE the slice — move the extraction marker up to include it. (4) A
+`git worktree add` + node_modules junction gives a safe full-suite baseline in a shared
+tree (never bare-stash); junction must be rmdir'd before `git worktree remove`.
