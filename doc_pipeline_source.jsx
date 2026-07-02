@@ -20346,18 +20346,21 @@ tr { page-break-inside: avoid; }
     // keeps Stage-3's existing /P MCID 0 wraps untouched. Worst case: PAC stops
     // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
     // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
-    // ── b0d24ae3 per-leaf experiment (DIAGNOSTIC — default OFF) ──
-    // fixResult._experimentPerLeafScanned is set ONLY by
-    // dev-tools/debug/tag_tree_live_harness.cjs. When on, the unify pass assigns each
-    // scanned leaf its OWN MCID (instead of the shared MCID 0) and records a per-page
-    // draw plan; the page loop then draws each leaf's text as its own BDC/EMC run and
-    // the Stage-3 wrap skips the flat /P for planned pages (ParentTree maps
-    // mcid → leaf). This re-creates the reverted b0d24ae3 attempt MINUS its two
-    // un-exonerated moves (early getPages(); build-time /K), inside the REAL
-    // orchestration, so the instrumented harness can observe the content loss —
-    // or prove this construction safe. Production behavior is byte-identical
-    // while the flag is absent.
-    const _perLeafExp = !!(fixResult && fixResult._experimentPerLeafScanned) && isScanned;
+    // ── Per-leaf MCIDs: DEFAULT ON for scanned documents (flipped 2026-07-01) ──
+    // The b0d24ae3 construction, validated end-to-end before this flip: 9 clean-room
+    // repro variants (June), the instrumented Node harness (object AND content-stream
+    // level — zero loss, every MCR backed by a real BDC, no multi-claimed MCIDs), the
+    // Playwright golden (26/26 incl. "MCRs stream-verified: 11/11"), veraPDF ua1 (zero
+    // structure/tagging failures), and Aaron's PAC 2026 run on the sample (Structure
+    // elements 7/7, Structure tree 19/19, Role mapping 19/19, Content 26/26 — zero
+    // logical-structure failures; only the offline-harness font/identifier artifacts).
+    // Each scanned leaf gets its OWN MCID + BDC/EMC run; the Stage-3 flat /P is skipped
+    // on planned pages; ParentTree maps mcid → leaf. This retires the shared-MCID-0
+    // multi-claim (ISO 32000 §14.7.4 violation, PAC/Acrobat-flaggable) that shipped as
+    // the safe interim. ESCAPE HATCH: fixResult._perLeafScannedOptOut === true restores
+    // the shared-MCID behavior instantly if a real-world regression ever appears.
+    // (The old _experimentPerLeafScanned flag is now a no-op — default is on.)
+    const _perLeafExp = isScanned && !(fixResult && fixResult._perLeafScannedOptOut === true);
     const _perLeafPlan = _perLeafExp ? new Map() : null; // pageIdx → [{ref, role, text, mcid}]
     if (isScanned && pages.length >= 1 && _unifiableLeafRefs.length > 0) {
       try {
@@ -20398,7 +20401,7 @@ tr { page-break-inside: avoid; }
             _unifyPatched++;
           } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
         }
-        const _sliceLabel = _perLeafExp ? 'PER-LEAF EXPERIMENT' : (_pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)');
+        const _sliceLabel = _perLeafExp ? 'Per-leaf MCIDs' : (_pageCount === 1 ? 'Slice 1 (single-page, shared-MCID opt-out)' : 'Slice 2 (multi-page, shared-MCID opt-out)');
         warnLog('[Tag-Tree Unify ' + _sliceLabel + '] Patched ' + _unifyPatched + '/' + _leafCount + ' leaves across ' + _pageCount + ' page(s)');
       } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
     }
@@ -20664,7 +20667,7 @@ tr { page-break-inside: avoid; }
             return _drew;
           };
           if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
-            // ── b0d24ae3 PER-LEAF EXPERIMENT draw path (harness-only) ──
+            // ── Per-leaf MCID draw path (default for scanned; see gate above) ──
             // Draw each planned leaf's text as its OWN marked-content run:
             //   /<role> <</MCID n>> BDC → invisible drawText → EMC
             // pushOperators + drawText interleave in content-stream order (proven
@@ -20820,7 +20823,7 @@ tr { page-break-inside: avoid; }
           const _mkCS = (s) => context.register(context.stream(new TextEncoder().encode(s)));
           let newArr;
           if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
-            // ── b0d24ae3 PER-LEAF EXPERIMENT wrap (harness-only) ──
+            // ── Per-leaf MCID wrap (default for scanned; see gate above) ──
             // The appended OCR streams already carry their own per-leaf BDC/EMC
             // runs (drawn above), so they must stay BARE — wrapping them in the
             // flat /P MCID-0 would nest marked content and double-claim it. The
@@ -20869,7 +20872,7 @@ tr { page-break-inside: avoid; }
           if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
 
-        // b0d24ae3 PER-LEAF EXPERIMENT: the page's ParentTree slot maps each MCID to its
+        // Per-leaf MCIDs (default for scanned): the page's ParentTree slot maps each MCID to its
         // OWN leaf StructElem (array index = MCID) — no flat /P element exists for this page.
         if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi) && !_pageArtifactOnly) {
           try {
