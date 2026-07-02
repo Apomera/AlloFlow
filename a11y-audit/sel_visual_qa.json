@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T01:56:10.775Z",
+  "generatedAt": "2026-07-02T02:37:30.424Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
@@ -81,15 +81,15 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 137379
+            "bytes": 140995
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1502,
-            "controlCount": 10
+            "textLength": 1673,
+            "controlCount": 11
           }
         },
         {
@@ -113,8 +113,8 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1502,
-        "controlCount": 10,
+        "textLength": 1673,
+        "controlCount": 11,
         "bodyScrollWidth": 1280,
         "viewportWidth": 1280,
         "overflowOffenders": [],
@@ -251,7 +251,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 106853
+            "bytes": 106851
           }
         },
         {
@@ -307,7 +307,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 40755
+            "bytes": 40753
           }
         },
         {

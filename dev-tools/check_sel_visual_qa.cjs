@@ -158,7 +158,9 @@ async function mountSelHub(page, scenario) {
   await page.setViewportSize(scenario.viewport);
   await basePage(page, 'SEL Visual QA');
   await addReact(page);
-  await page.evaluate(function (snapshots) {
+  await page.evaluate(function (args) {
+    const snapshots = args.snapshots;
+    const artifacts = args.artifacts;
     function iconStub(props) {
       const next = Object.assign({}, props || {});
       next['aria-hidden'] = 'true';
@@ -172,14 +174,15 @@ async function mountSelHub(page, scenario) {
     window.callImagen = null;
     window.callGeminiVision = null;
     window.__alloflowSelSnapshots = snapshots;
-    window.__alloflowStudentArtifacts = [];
+    window.__alloflowStudentArtifacts = artifacts;
     window.Audio = function Audio() { return { play: function () { return Promise.resolve(); } }; };
     window.matchMedia = window.matchMedia || function () {
       return { matches: false, addEventListener: function () {}, removeEventListener: function () {}, addListener: function () {}, removeListener: function () {} };
     };
     try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (e) {}
     try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(snapshots)); } catch (e) {}
-  }, SAMPLE_SNAPSHOTS);
+    try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(artifacts)); } catch (e) {}
+  }, { snapshots: SAMPLE_SNAPSHOTS, artifacts: SAMPLE_ARTIFACTS });
 
   await applyTheme(page, scenario.theme);
   for (const file of selFiles()) await page.addScriptTag({ path: file });

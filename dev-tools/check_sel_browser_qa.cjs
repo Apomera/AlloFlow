@@ -48,6 +48,43 @@ const SAMPLE_SNAPSHOTS = [
   }
 ];
 
+const SAMPLE_ARTIFACTS = [
+  {
+    id: 'browser-qa-sel-packet',
+    type: 'sel-share-packet',
+    source: 'sel_hub',
+    sourceLabel: 'SEL Hub',
+    kindLabel: 'SEL Share Packet',
+    title: 'SEL Share Packet',
+    summary: '2 selected SEL checkpoints',
+    privacy: 'student-controlled',
+    audience: 'student-selected',
+    sharingModel: 'item-level-privacy',
+    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    itemCount: 2,
+    artifact: {
+      id: 'browser-qa-sel-packet',
+      type: 'sel-share-packet',
+      source: 'sel_hub',
+      sourceLabel: 'SEL Hub',
+      kindLabel: 'SEL Share Packet',
+      title: 'SEL Share Packet',
+      summary: '2 selected SEL checkpoints',
+      privacy: 'student-controlled',
+      audience: 'student-selected',
+      sharingModel: 'item-level-privacy',
+      createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+      itemCount: 2,
+      items: [
+        { id: 'browser-qa-zone', title: 'Zone check reflection', toolLabel: 'Emotion Zones', privacy: 'summary', privacyLabel: 'Share summary only', summary: 'Student noticed a yellow-zone signal and chose grounding.' },
+        { id: 'browser-qa-strengths', title: 'Strengths checkpoint', toolLabel: 'Strengths Finder', privacy: 'followup', privacyLabel: 'Ask adult to follow up', summary: 'Student wants an adult to notice perseverance and kindness.', followUpRequested: true }
+      ]
+    }
+  }
+];
+
 function selFiles() {
   const files = fs.readdirSync(SEL_DIR).filter(function (f) {
     return /^sel_tool_.*\.js$/.test(f);
@@ -91,7 +128,9 @@ async function mountSelHub(page, scenario) {
 
   await page.addScriptTag({ path: path.join(MODULES, 'react', 'umd', 'react.development.js') });
   await page.addScriptTag({ path: path.join(MODULES, 'react-dom', 'umd', 'react-dom.development.js') });
-  await page.evaluate(function (snapshots) {
+  await page.evaluate(function (args) {
+    const snapshots = args.snapshots;
+    const artifacts = args.artifacts;
     function iconStub(props) {
       const next = Object.assign({}, props || {});
       next['aria-hidden'] = 'true';
@@ -105,7 +144,7 @@ async function mountSelHub(page, scenario) {
     window.callImagen = null;
     window.callGeminiVision = null;
     window.__alloflowSelSnapshots = snapshots;
-    window.__alloflowStudentArtifacts = [];
+    window.__alloflowStudentArtifacts = artifacts;
     window.Audio = function Audio() {
       return { play: function () { return Promise.resolve(); } };
     };
@@ -114,7 +153,8 @@ async function mountSelHub(page, scenario) {
     };
     try { sessionStorage.setItem('alloflow_sel_seen_ephemeral_explainer', '1'); } catch (e) {}
     try { localStorage.setItem('alloflow_sel_snapshots', JSON.stringify(snapshots)); } catch (e) {}
-  }, SAMPLE_SNAPSHOTS);
+    try { localStorage.setItem('alloflow_student_artifacts', JSON.stringify(artifacts)); } catch (e) {}
+  }, { snapshots: SAMPLE_SNAPSHOTS, artifacts: SAMPLE_ARTIFACTS });
 
   await applyTheme(page, scenario.theme);
   for (const file of selFiles()) {
@@ -321,6 +361,51 @@ async function runScenario(browser, scenario) {
       await page.getByRole('button', { name: /Create SEL Share Packet/i }).first().focus();
       await page.getByRole('button', { name: /Create SEL Share Packet/i }).first().click();
       result.checks.push(Object.assign({ id: 'share-packet-focus-trap' }, await auditFocusTrap(page, 'sel-share-packet-modal', 'Create SEL Share Packet')));
+
+      await page.getByRole('button', { name: /Create SEL Share Packet/i }).first().click();
+      await page.locator('#sel-share-packet-modal').waitFor({ state: 'visible', timeout: 10000 });
+      await page.getByRole('button', { name: /Reopen saved SEL Share Packet as draft/i }).first().click();
+      await page.waitForTimeout(250);
+      const lifecycle = await page.evaluate(function () {
+        const modal = document.getElementById('sel-share-packet-modal');
+        const update = modal ? modal.querySelector('[aria-label="Update this saved SEL Share Packet in AlloHaven"]') : null;
+        const status = modal ? (modal.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        const checked = modal ? Array.from(modal.querySelectorAll('input[type="checkbox"]')).filter(function (el) { return el.checked; }).length : 0;
+        return {
+          hasSavedPanel: !!(modal && modal.querySelector('[aria-label="Saved SEL Share Packets"]')),
+          hasUpdateAction: !!update,
+          loadedDraftText: /Loaded saved packet as a draft|Draft loaded from saved packet/.test(status),
+          checkedCount: checked
+        };
+      });
+      result.checks.push({
+        id: 'share-packet-lifecycle-reopen-draft',
+        pass: lifecycle.hasSavedPanel && lifecycle.hasUpdateAction && lifecycle.loadedDraftText && lifecycle.checkedCount >= 2,
+        details: lifecycle
+      });
+      await page.getByRole('button', { name: /Update this saved SEL Share Packet in AlloHaven/i }).first().click();
+      await page.waitForTimeout(300);
+      const updateResult = await page.evaluate(function () {
+        const artifacts = Array.isArray(window.__alloflowStudentArtifacts) ? window.__alloflowStudentArtifacts : [];
+        const packets = artifacts.filter(function (artifact) {
+          return artifact && artifact.type === 'sel-share-packet';
+        });
+        const packet = packets.filter(function (artifact) { return artifact.id === 'browser-qa-sel-packet'; })[0] || null;
+        const status = (document.getElementById('sel-share-packet-modal') || document.body).textContent || '';
+        return {
+          packetCount: packets.length,
+          updatedSamePacket: !!packet,
+          version: packet ? packet.version : null,
+          notice: /Updated the saved AlloHaven portfolio copy/.test(status)
+        };
+      });
+      result.checks.push({
+        id: 'share-packet-lifecycle-update-in-place',
+        pass: updateResult.packetCount === 1 && updateResult.updatedSamePacket && updateResult.version === 2 && updateResult.notice,
+        details: updateResult
+      });
+      await page.keyboard.press('Escape');
+      await page.locator('#sel-share-packet-modal').waitFor({ state: 'detached', timeout: 10000 });
 
       const summary = page.locator('summary').filter({ hasText: /Custom SEL Stations/i }).first();
       await summary.scrollIntoViewIfNeeded();

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T01:55:20.563Z",
+  "generatedAt": "2026-07-02T02:39:15.138Z",
   "harness": "standalone SEL Hub browser fixture",
   "summary": {
-    "total": 12,
+    "total": 14,
     "failed": 0,
-    "passed": 12
+    "passed": 14
   },
   "scenarios": [
     {
@@ -226,6 +226,18 @@
             {
               "key": "Tab",
               "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Reopen",
+                "aria": "Reopen saved SEL Share Packet as draft: SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
                 "tag": "input",
                 "id": "",
                 "text": "",
@@ -277,7 +289,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "Download text",
-                "aria": "",
+                "aria": "Download this SEL Share Packet as text",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -289,7 +301,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "Print / Save PDF",
-                "aria": "",
+                "aria": "Print or save this SEL Share Packet as a PDF",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -301,19 +313,7 @@
                 "tag": "button",
                 "id": "",
                 "text": "Save to AlloHaven",
-                "aria": "",
-                "inExplainer": false,
-                "inSharePacket": true,
-                "inEducators": false
-              }
-            },
-            {
-              "key": "Tab",
-              "active": {
-                "tag": "button",
-                "id": "",
-                "text": "✕",
-                "aria": "Close SEL Share Packet builder",
+                "aria": "Save this SEL Share Packet to AlloHaven",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -324,14 +324,34 @@
               "active": {
                 "tag": "button",
                 "id": "",
-                "text": "Save to AlloHaven",
-                "aria": "",
+                "text": "Print / Save PDF",
+                "aria": "Print or save this SEL Share Packet as a PDF",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
               }
             }
           ]
+        },
+        {
+          "id": "share-packet-lifecycle-reopen-draft",
+          "pass": true,
+          "details": {
+            "hasSavedPanel": true,
+            "hasUpdateAction": true,
+            "loadedDraftText": true,
+            "checkedCount": 2
+          }
+        },
+        {
+          "id": "share-packet-lifecycle-update-in-place",
+          "pass": true,
+          "details": {
+            "packetCount": 1,
+            "updatedSamePacket": true,
+            "version": 2,
+            "notice": true
+          }
         },
         {
           "id": "station-builder-focus-handoff",

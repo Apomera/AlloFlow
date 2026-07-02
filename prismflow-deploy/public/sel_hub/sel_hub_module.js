@@ -1054,6 +1054,9 @@
       var _packetSavedNotice = React.useState('');
       var packetSavedNotice = _packetSavedNotice[0];
       var setPacketSavedNotice = _packetSavedNotice[1];
+      var _activeSharePacketArtifactId = React.useState(null);
+      var activeSharePacketArtifactId = _activeSharePacketArtifactId[0];
+      var setActiveSharePacketArtifactId = _activeSharePacketArtifactId[1];
 
       // Listen for export events fired by either the parent app or our own
       // Export-now CTA. Clears dirty + resets the 20-min idle-export timer.
@@ -2111,8 +2114,40 @@
         return text;
       }
 
+      function _selArtifactPacket(artifact) {
+        if (!artifact || typeof artifact !== 'object') return {};
+        if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+        if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+        if (artifact.data && typeof artifact.data === 'object') return artifact.data;
+        return artifact;
+      }
+
+      function _selSavedSharePacketArtifacts() {
+        return (Array.isArray(studentArtifacts) ? studentArtifacts : []).filter(function(artifact) {
+          if (!artifact || typeof artifact !== 'object') return false;
+          var packet = _selArtifactPacket(artifact);
+          return artifact.type === 'sel-share-packet'
+            || packet.type === 'sel-share-packet'
+            || artifact.kindLabel === 'SEL Share Packet'
+            || packet.kindLabel === 'SEL Share Packet';
+        }).sort(function(a, b) {
+          return Date.parse((b && (b.updatedAt || b.createdAt)) || (_selArtifactPacket(b).updatedAt || _selArtifactPacket(b).createdAt) || 0)
+            - Date.parse((a && (a.updatedAt || a.createdAt)) || (_selArtifactPacket(a).updatedAt || _selArtifactPacket(a).createdAt) || 0);
+        });
+      }
+
+      function _selActiveSharePacketArtifact() {
+        if (!activeSharePacketArtifactId) return null;
+        var saved = _selSavedSharePacketArtifacts();
+        for (var i = 0; i < saved.length; i++) {
+          var packet = _selArtifactPacket(saved[i]);
+          if (saved[i].id === activeSharePacketArtifactId || packet.id === activeSharePacketArtifactId) return saved[i];
+        }
+        return null;
+      }
+
       function _selSharePacketItems() {
-        return (Array.isArray(selSnapshots) ? selSnapshots : []).map(function(snap, idx) {
+        var items = (Array.isArray(selSnapshots) ? selSnapshots : []).map(function(snap, idx) {
           if (!snap) return null;
           var toolId = snap.tool || snap.toolId;
           var tool = _selToolById(toolId);
@@ -2129,12 +2164,40 @@
             summary: text ? _selPacketCleanText(text, 220) : ('Saved checkpoint from ' + (tool ? tool.label : 'SEL Hub') + '.'),
             ts: snap.ts || snap.timestamp || 0
           };
-        }).filter(Boolean).sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
+        }).filter(Boolean);
+        var seen = {};
+        items.forEach(function(item) { seen[item.id] = true; });
+        var activeArtifact = _selActiveSharePacketArtifact();
+        var activePacket = activeArtifact ? _selArtifactPacket(activeArtifact) : null;
+        if (activePacket && Array.isArray(activePacket.items)) {
+          activePacket.items.forEach(function(savedItem, idx) {
+            if (!savedItem) return;
+            var savedId = String(savedItem.id || ('saved-packet-item-' + idx));
+            if (seen[savedId]) return;
+            var savedText = _selPacketCleanText(savedItem.text || savedItem.summary || '', 1800);
+            items.push({
+              id: savedId,
+              raw: savedItem,
+              toolId: savedItem.toolId || null,
+              toolLabel: savedItem.toolLabel || 'SEL Hub',
+              icon: '\uD83D\uDCC4',
+              title: savedItem.title || 'Saved packet item',
+              text: savedText,
+              summary: savedItem.summary || _selPacketCleanText(savedText, 220) || 'Saved in the previous packet.',
+              ts: Date.parse(savedItem.savedAt || activePacket.updatedAt || activePacket.createdAt || 0) || 0,
+              fromSavedPacket: true
+            });
+            seen[savedId] = true;
+          });
+        }
+        return items.sort(function(a, b) { return (b.ts || 0) - (a.ts || 0); });
       }
 
-      function _buildSelSharePacket(ts) {
+      function _buildSelSharePacket(ts, baseArtifact) {
         var packetTs = ts || Date.now();
-        var createdAt = new Date(packetTs).toISOString();
+        var basePacket = baseArtifact ? _selArtifactPacket(baseArtifact) : null;
+        var createdAt = (baseArtifact && baseArtifact.createdAt) || (basePacket && basePacket.createdAt) || new Date(packetTs).toISOString();
+        var updatedAt = new Date(packetTs).toISOString();
         var selected = _selSharePacketItems().filter(function(item) {
           return !!(packetSelections && packetSelections[item.id]);
         });
@@ -2162,20 +2225,21 @@
           return shared;
         });
         return {
-          id: 'sel-share-packet-' + String(packetTs),
+          id: (baseArtifact && baseArtifact.id) || (basePacket && basePacket.id) || ('sel-share-packet-' + String(packetTs)),
           type: 'sel-share-packet',
           source: 'sel_hub',
           sourceLabel: 'SEL Hub',
           kindLabel: 'SEL Share Packet',
-          title: 'SEL Share Packet',
+          title: (basePacket && basePacket.title) || 'SEL Share Packet',
           summary: items.length + (items.length === 1 ? ' selected SEL checkpoint' : ' selected SEL checkpoints'),
           privacy: 'student-controlled',
           audience: 'student-selected',
           sharingModel: 'item-level-privacy',
           exportKinds: ['text', 'print', 'allohaven'],
           createdAt: createdAt,
-          updatedAt: createdAt,
+          updatedAt: updatedAt,
           itemCount: items.length,
+          lifecycleStatus: baseArtifact ? 'revised' : 'saved',
           items: items
         };
       }
@@ -2255,13 +2319,15 @@
         win.document.close();
       }
 
-      function _saveSelSharePacketToPortfolio() {
+      function _saveSelSharePacketToPortfolio(replaceExisting) {
         var ts = Date.now();
-        var packet = _buildSelSharePacket(ts);
+        var existingArtifact = replaceExisting ? _selActiveSharePacketArtifact() : null;
+        var packet = _buildSelSharePacket(ts, existingArtifact);
         if (!packet.items.length) {
           setPacketSavedNotice('Choose at least one saved checkpoint first.');
           return;
         }
+        var previousVersion = existingArtifact ? Number(existingArtifact.version || _selArtifactPacket(existingArtifact).version || 1) : 0;
         var artifact = {
           id: packet.id,
           type: 'sel-share-packet',
@@ -2276,13 +2342,27 @@
           exportKinds: packet.exportKinds,
           createdAt: packet.createdAt,
           updatedAt: packet.updatedAt,
+          lifecycleStatus: packet.lifecycleStatus,
+          version: existingArtifact ? previousVersion + 1 : 1,
           itemCount: packet.itemCount,
           artifact: packet
         };
         setStudentArtifacts(function(prev) {
-          var next = [artifact].concat(Array.isArray(prev) ? prev : []);
+          var existingMatched = false;
+          var next = Array.isArray(prev) ? prev.slice() : [];
+          if (existingArtifact) {
+            next = next.map(function(candidate) {
+              var candidatePacket = _selArtifactPacket(candidate);
+              if (candidate && (candidate.id === artifact.id || candidatePacket.id === artifact.id)) {
+                existingMatched = true;
+                return artifact;
+              }
+              return candidate;
+            });
+          }
+          if (!existingMatched) next = [artifact].concat(next);
           next.sort(function(a, b) {
-            return Date.parse(b.createdAt || b.updatedAt || 0) - Date.parse(a.createdAt || a.updatedAt || 0);
+            return Date.parse(b.updatedAt || b.createdAt || 0) - Date.parse(a.updatedAt || a.createdAt || 0);
           });
           next = next.slice(0, 60);
           try {
@@ -2292,19 +2372,38 @@
           } catch (e) {}
           return next;
         });
-        setPacketSavedNotice('Saved to AlloHaven Portfolio.');
-        if (typeof addToast === 'function') addToast('Saved to AlloHaven Portfolio.', 'success');
-        if (announceToSR) announceToSR('SEL Share Packet saved to AlloHaven Portfolio.');
+        setActiveSharePacketArtifactId(artifact.id);
+        setPacketSavedNotice(existingArtifact ? 'Updated the saved AlloHaven portfolio copy.' : 'Saved to AlloHaven Portfolio.');
+        if (typeof addToast === 'function') addToast(existingArtifact ? 'Updated SEL Share Packet in AlloHaven.' : 'Saved to AlloHaven Portfolio.', 'success');
+        if (announceToSR) announceToSR(existingArtifact ? 'Saved SEL Share Packet updated in AlloHaven Portfolio.' : 'SEL Share Packet saved to AlloHaven Portfolio.');
       }
 
-      function _openSelSharePacketBuilder() {
-        var packetItems = _selSharePacketItems();
+      function _startNewSelSharePacketDraft() {
+        var packetItems = _selSharePacketItems().filter(function(item) { return !item.fromSavedPacket; });
         var nextSelections = {};
         packetItems.slice(0, Math.min(4, packetItems.length)).forEach(function(item) {
           nextSelections[item.id] = 'summary';
         });
+        setActiveSharePacketArtifactId(null);
         setPacketSelections(nextSelections);
         setPacketSavedNotice('');
+      }
+
+      function _loadSelSharePacketDraft(artifact) {
+        var packet = _selArtifactPacket(artifact);
+        var nextSelections = {};
+        (Array.isArray(packet.items) ? packet.items : []).forEach(function(item) {
+          if (!item) return;
+          nextSelections[String(item.id || item.title || Object.keys(nextSelections).length)] = item.privacy || 'summary';
+        });
+        setActiveSharePacketArtifactId((artifact && artifact.id) || packet.id || null);
+        setPacketSelections(nextSelections);
+        setPacketSavedNotice('Loaded saved packet as a draft. Review choices before updating or saving a new copy.');
+        if (announceToSR) announceToSR('Saved SEL Share Packet loaded as draft.');
+      }
+
+      function _openSelSharePacketBuilder() {
+        _startNewSelSharePacketDraft();
         alloSaveFocus();
         setShowSharePacket(true);
         if (announceToSR) announceToSR('Create SEL Share Packet opened.');
@@ -2550,7 +2649,10 @@
       // ══════════════════════════════════════════════════════════════
       var sharePacketModal = showSharePacket && (function() {
         var packetItems = _selSharePacketItems();
-        var previewPacket = _buildSelSharePacket(Date.now());
+        var savedSharePacketArtifacts = _selSavedSharePacketArtifacts();
+        var activeSharePacketArtifact = _selActiveSharePacketArtifact();
+        var activePacket = activeSharePacketArtifact ? _selArtifactPacket(activeSharePacketArtifact) : null;
+        var previewPacket = _buildSelSharePacket(Date.now(), activeSharePacketArtifact);
         var selectedCount = previewPacket.items.length;
         var privacyChoices = _selPacketPrivacyChoices();
         var actionDisabledStyle = selectedCount ? {} : { opacity: 0.55, cursor: 'not-allowed' };
@@ -2594,6 +2696,80 @@
                 h('strong', { style: { color: _t.text } }, 'Student-controlled packet. '),
                 'Choose what appears, then set the sharing label for each checkpoint. Private entries appear only as private labels.'
               ),
+              h('div', {
+                role: 'status',
+                'aria-live': 'polite',
+                style: {
+                  marginBottom: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  flexWrap: 'wrap',
+                  padding: '9px 11px',
+                  borderRadius: 8,
+                  border: '1px solid ' + (activeSharePacketArtifact ? _t.successText : _t.border),
+                  background: activeSharePacketArtifact ? (isContrast ? '#000000' : 'rgba(15,118,110,0.08)') : _t.bgSoft,
+                  color: _t.textMuted,
+                  fontSize: 11.5,
+                  lineHeight: 1.4
+                }
+              },
+                h('span', null,
+                  activeSharePacketArtifact
+                    ? 'Draft loaded from saved packet: ' + ((activePacket && activePacket.title) || 'SEL Share Packet') + '. Updating keeps the same AlloHaven portfolio item.'
+                    : 'New packet draft. Save it to AlloHaven when the sharing choices look right.'
+                ),
+                activeSharePacketArtifact && h('button', {
+                  type: 'button',
+                  onClick: _startNewSelSharePacketDraft,
+                  'aria-label': 'Start a new SEL Share Packet draft',
+                  style: { minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '5px 10px' }
+                }, 'Start new')
+              ),
+              savedSharePacketArtifacts.length ? h('section', {
+                'aria-label': 'Saved SEL Share Packets',
+                style: {
+                  marginBottom: 12,
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  border: '1px solid ' + _t.border,
+                  background: _t.bgSoft
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+                  h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 900, color: _t.text } }, 'Saved Packets'),
+                  h('span', { style: { fontSize: 11, color: _t.textMuted } }, savedSharePacketArtifacts.length + (savedSharePacketArtifacts.length === 1 ? ' packet' : ' packets') + ' in AlloHaven')
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
+                  savedSharePacketArtifacts.slice(0, 4).map(function(artifact) {
+                    var packet = _selArtifactPacket(artifact);
+                    var updated = Date.parse(artifact.updatedAt || packet.updatedAt || artifact.createdAt || packet.createdAt || 0) || 0;
+                    var isActivePacket = !!(activeSharePacketArtifactId && (artifact.id === activeSharePacketArtifactId || packet.id === activeSharePacketArtifactId));
+                    var itemCount = Number(artifact.itemCount || packet.itemCount || (Array.isArray(packet.items) ? packet.items.length : 0));
+                    return h('div', {
+                      key: artifact.id || packet.id || ('saved-share-packet-' + updated),
+                      style: { border: '1px solid ' + (isActivePacket ? _t.successText : _t.border), borderRadius: 8, background: _t.bgCard, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                    },
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 2 } },
+                          h('strong', { style: { fontSize: 12, color: _t.text, overflowWrap: 'anywhere' } }, packet.title || artifact.title || 'SEL Share Packet'),
+                          isActivePacket && h('span', { style: { fontSize: 9.5, fontWeight: 900, color: _t.successText, textTransform: 'uppercase' } }, 'current draft')
+                        ),
+                        h('div', { style: { fontSize: 10.5, color: _t.textMuted, lineHeight: 1.35 } },
+                          (itemCount || 0) + ((itemCount || 0) === 1 ? ' checkpoint' : ' checkpoints') + (updated ? ' | updated ' + _selRelativeTime(updated) : '')
+                        )
+                      ),
+                      h('button', {
+                        type: 'button',
+                        onClick: function() { _loadSelSharePacketDraft(artifact); },
+                        'aria-label': 'Reopen saved SEL Share Packet as draft: ' + (packet.title || artifact.title || 'SEL Share Packet'),
+                        style: { alignSelf: 'flex-start', minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.accent, background: isActivePacket ? _t.accent : _t.accentSoftBg, color: isActivePacket ? _t.accentText : _t.accentSoftText, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '5px 10px' }
+                      }, isActivePacket ? 'Reload draft' : 'Reopen')
+                    );
+                  })
+                )
+              ) : null,
               packetItems.length ? h('div', {
                 style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'minmax(0, 1.15fr) minmax(280px, 0.85fr)', gap: 14, alignItems: 'start' }
               },
@@ -2683,20 +2859,30 @@
                   type: 'button',
                   disabled: !selectedCount,
                   onClick: _downloadSelSharePacket,
+                  'aria-label': 'Download this SEL Share Packet as text',
                   style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: '7px 12px' }, actionDisabledStyle)
                 }, 'Download text'),
                 h('button', {
                   type: 'button',
                   disabled: !selectedCount,
                   onClick: _printSelSharePacket,
+                  'aria-label': 'Print or save this SEL Share Packet as a PDF',
                   style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: '7px 12px' }, actionDisabledStyle)
                 }, 'Print / Save PDF'),
+                activeSharePacketArtifact && h('button', {
+                  type: 'button',
+                  disabled: !selectedCount,
+                  onClick: function() { _saveSelSharePacketToPortfolio(true); },
+                  'aria-label': 'Update this saved SEL Share Packet in AlloHaven',
+                  style: Object.assign({ minHeight: 36, borderRadius: 8, border: '1px solid ' + _t.successText, background: isContrast ? '#000000' : 'rgba(15,118,110,0.10)', color: _t.successText, cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 12px' }, actionDisabledStyle)
+                }, 'Update saved copy'),
                 h('button', {
                   type: 'button',
                   disabled: !selectedCount,
-                  onClick: _saveSelSharePacketToPortfolio,
+                  onClick: function() { _saveSelSharePacketToPortfolio(false); },
+                  'aria-label': activeSharePacketArtifact ? 'Save this SEL Share Packet as a new AlloHaven copy' : 'Save this SEL Share Packet to AlloHaven',
                   style: Object.assign({ minHeight: 36, borderRadius: 8, border: 'none', background: _t.accent, color: _t.accentText, cursor: 'pointer', fontSize: 12, fontWeight: 900, padding: '7px 14px' }, actionDisabledStyle)
-                }, 'Save to AlloHaven')
+                }, activeSharePacketArtifact ? 'Save as new copy' : 'Save to AlloHaven')
               )
             )
           )
@@ -2733,6 +2919,7 @@
         ];
         var _recentWorkItems = (!activePathway && !activeStation) ? _selRecentWorkItems() : [];
         var _shareableSnapshotCount = (!activePathway && !activeStation) ? _selSharePacketItems().length : 0;
+        var _savedSharePacketCount = (!activePathway && !activeStation) ? _selSavedSharePacketArtifacts().length : 0;
         // Search filter
         var _searchLower = selToolSearch.toLowerCase().trim();
         var _filteredTools = _searchLower ? _allSelTools.filter(function(tool) {
@@ -3039,12 +3226,12 @@
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, 'Recent SEL work'),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                 h('span', { style: { fontSize: 11, color: _t.textMuted } }, 'Saved here. Export to keep it after closing.'),
-                _shareableSnapshotCount > 0 && h('button', {
+                (_shareableSnapshotCount > 0 || _savedSharePacketCount > 0) && h('button', {
                   type: 'button',
                   onClick: _openSelSharePacketBuilder,
-                  'aria-label': 'Create SEL Share Packet from saved checkpoints',
+                  'aria-label': _shareableSnapshotCount > 0 ? 'Create SEL Share Packet from saved checkpoints' : 'Review saved SEL Share Packets',
                   style: { minHeight: 32, borderRadius: 8, border: '1px solid ' + _t.accent, background: _t.accentSoftBg, color: _t.accentSoftText, cursor: 'pointer', fontSize: 11, fontWeight: 900, padding: '6px 10px' }
-                }, 'Create Share Packet')
+                }, _shareableSnapshotCount > 0 ? 'Create Share Packet' : 'Review Share Packets')
               )
             ),
             h('div', {
