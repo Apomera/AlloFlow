@@ -4523,7 +4523,7 @@ var createDocPipeline = function(deps) {
   // (see SURGICAL_TOOL_PROMPT below) so adding or renaming a tool updates the AI diagnosis
   // prompt automatically — no chance of the prompt drifting out of sync with the implementation.
   //
-  // Referenced by remediateSurgicallyThenAI, processSinglePdfForBatch, and the chunked fix paths
+  // Referenced by remediateSurgicallyThenAI and the chunked fix paths
   // via the runSurgical() helper (handles both new {fn} entries and legacy direct-function entries).
   const SURGICAL_TOOL_REGISTRY = {
     fix_alt_text: {
@@ -5779,6 +5779,13 @@ var createDocPipeline = function(deps) {
   // Wrap the AI fix call with the structural prompt scoping. Returns the same
   // shape as the inner call. Caller is responsible for applying its own
   // regression guard around our return value.
+  //
+  // STATUS (deep dive 2026-07-02 S4): exported + gate-required (check_pdf_pipeline.cjs
+  // CRITICAL_EXPORTS "3-tier surgical fix system") but currently has ZERO in-repo callers —
+  // no pipeline path escalates to Tier 3 yet; it is reachable only via the module's public
+  // API. Kept (unlike the deleted legacy batch loop) because it is a small, coherent,
+  // documented tier of the surgical system; wire it or delete it deliberately, don't
+  // "fix bugs" in it believing it runs.
   const runTier3StructuralFix = async (htmlContent, axeResult, aiVerification, label) => {
     if (!callGemini) return { html: htmlContent, skipped: true, reason: 'no-callGemini' };
     const violationInstructions = buildTier3StructuralPromptText(axeResult, aiVerification);
@@ -9063,1152 +9070,12 @@ Return ONLY valid JSON:
   // Processes multiple PDFs sequentially: audit → remediate → verify → auto-fix
   // ═══════════════════════════════════════════════════════════════════
 
-  const processSinglePdfForBatch = async (base64Data, fileName, onProgress) => {
-    const log = (msg) => { warnLog(`[Batch/${fileName}] ${msg}`); if (onProgress) onProgress(msg); };
-    const beforeStartTime = Date.now();
-
-    // ── Phase 1: Multi-auditor scoring ──
-    log('Phase 1: Running accessibility audit...');
-    const batchAuditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.
-
-Check for these specific issues:
-1. STRUCTURE: Missing heading hierarchy, no logical reading order, flat text without sections
-2. IMAGES: Images without alt text or descriptions
-3. TABLES: Data tables without header rows, missing row/column associations
-4. CONTRAST: Text that may have insufficient color contrast
-5. FORMS: Form fields without labels
-6. LANGUAGE: Missing document language tag
-7. LINKS: Links that say "click here" instead of descriptive text
-8. LISTS: Content that should be formatted as lists but isn't
-9. TEXT: Scanned image-only pages (no searchable text layer)
-10. METADATA: Missing document title, author, or subject
-
-SCORING RUBRIC — Start at 100, deduct points for each unique violation:
-  CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
-  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
-
-Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 sentence overview","critical":[{"issue":"description","wcag":"SC number"}],"serious":[{"issue":"...","wcag":"..."}],"moderate":[{"issue":"...","wcag":"..."}],"minor":[{"issue":"...","wcag":"..."}],"passes":["what's already accessible"],"pageCount":N,"hasSearchableText":true/false,"hasImages":true/false,"hasTables":true/false,"hasForms":true/false,"documentLanguage":"BCP-47 ISO code detected from text content (e.g. 'en','es','fr','zh-CN','ar','vi'); pick dominant if multilingual"}` + ((typeof leveledTextLanguage === 'string' && leveledTextLanguage && leveledTextLanguage !== 'English')
-        ? `\n\nIMPORTANT — write all human-readable values ("issue", "summary", "passes") in ${leveledTextLanguage}. JSON keys + WCAG codes + documentLanguage stay English/numeric.`
-        : '');
-
-    const batchAllVariants = [
-      batchAuditPrompt,
-      batchAuditPrompt.replace('accessibility auditor', 'document remediation specialist'),
-      batchAuditPrompt.replace('Analyze this PDF', 'Perform a deep-dive accessibility review of this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'As a strict WCAG compliance officer, audit this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'From the perspective of a screen reader user, assess this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'As a disability rights advocate, critically review this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'Using Section 508 federal standards, evaluate this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'As a university Title II compliance officer, assess this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'As an assistive technology expert, test this PDF'),
-      batchAuditPrompt.replace('Analyze this PDF', 'Conduct an independent accessibility evaluation of this PDF'),
-    ];
-    const batchNumAuditors = Math.min(pdfAuditorCount, batchAllVariants.length);
-    const batchAuditVariants = batchAllVariants.slice(0, batchNumAuditors);
-    const batchAuditResults = await Promise.all(batchAuditVariants.map(p => callGeminiVision(p, base64Data, 'application/pdf').catch(() => null)));
-    const batchParsedAudits = batchAuditResults.filter(Boolean).map(r => { try { return parseAuditJson(r); } catch { return null; } }).filter(Boolean);
-
-    // ── Retry backfill for batch audits (same pattern as single-file audit) ──
-    let batchRetryRound = 0;
-    while (batchParsedAudits.length < batchNumAuditors && batchParsedAudits.length > 0 && batchRetryRound < 2) {
-      batchRetryRound++;
-      const shortfall = batchNumAuditors - batchParsedAudits.length;
-      log(`Audit retry round ${batchRetryRound}: ${batchParsedAudits.length}/${batchNumAuditors}, retrying ${shortfall}...`);
-      await new Promise(r => setTimeout(r, 1000 * batchRetryRound));
-      const retryVariants = batchAllVariants.slice(batchNumAuditors).concat(
-        batchAllVariants.slice(0, batchNumAuditors).map(p => p + `\n\n(Retry attempt ${batchRetryRound + 1})`)
-      ).slice(0, shortfall);
-      const retryResults = [];
-      for (const p of retryVariants) {
-        try { retryResults.push(await callGeminiVision(p, base64Data, 'application/pdf')); } catch { retryResults.push(null); }
-        await new Promise(r => setTimeout(r, 500));
-      }
-      const retryParsed = retryResults.filter(Boolean).map(r => { try { return parseAuditJson(r); } catch { return null; } }).filter(Boolean);
-      if (retryParsed.length > 0) batchParsedAudits.push(...retryParsed);
-    }
-
-    if (batchParsedAudits.length === 0) throw new Error('All audit attempts failed');
-
-    // Recalculate scores from issue counts
-    batchParsedAudits.forEach(a => {
-      const critCount = (a.critical || []).length;
-      const seriousCount = (a.serious || a.major || []).length;
-      const modCount = (a.moderate || []).length;
-      const minCount = (a.minor || []).length;
-      const passCount = (a.passes || []).length;
-      const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
-      const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back
-      if (typeof a.score === 'number' && Math.abs(a.score - calculatedScore) > 12) {
-        a.score = calculatedScore;
-      }
-    });
-
-    const batchScores = batchParsedAudits.map(a => Number(a.score)).filter(s => !isNaN(s));
-    const beforeScore = batchScores.length > 0 ? Math.round(batchScores.reduce((a, b) => a + b, 0) / batchScores.length) : 0;
-    const pageCount = batchParsedAudits.find(a => a.pageCount)?.pageCount || 1;
-
-    // Merge issues (4-tier: critical/serious/moderate/minor)
-    const allCrit = [...new Map(batchParsedAudits.flatMap(a => (a.critical || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allSer = [...new Map(batchParsedAudits.flatMap(a => (a.serious || a.major || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allMod = [...new Map(batchParsedAudits.flatMap(a => (a.moderate || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-    const allMin = [...new Map(batchParsedAudits.flatMap(a => (a.minor || []).map(i => [(i.issue || '').substring(0, 40), i])).filter(([k]) => k)).values()];
-
-    log(`Audit: score ${beforeScore}/100 (${batchParsedAudits.length} auditors, ${allCrit.length}C/${allSer.length}S/${allMod.length}M/${allMin.length}m)`);
-
-    // ── Phase 2: Extract text ──
-    log('Phase 2: Extracting text...');
-    const batchIssueList = []
-      .concat(allCrit.map(i => '\ud83d\udd34 ' + i.issue))
-      .concat(allSer.map(i => '\ud83d\udfe0 ' + i.issue))
-      .concat(allMod.map(i => '\ud83d\udfe1 ' + i.issue))
-      .concat(allMin.map(i => '\u26aa ' + i.issue))
-      .slice(0, 25).join('\n');
-
-    let extractedText = '';
-    const BATCH_PAGES_PER_CHUNK = 5;
-    const batchChunks = Math.max(1, Math.ceil(pageCount / BATCH_PAGES_PER_CHUNK));
-    if (batchChunks <= 1) {
-      extractedText = await callGeminiVision(
-      `Extract ALL text content from this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- Preserve ALL hyperlinks as [link text](URL)\n- Keep ALL content\n\nReturn ONLY plain text with markdown formatting.`,
-      base64Data, 'application/pdf'
-      );
-    } else {
-      log(`Extracting ${batchChunks} chunks (${pageCount} pages)...`);
-      const cPromises = [];
-      for (let ci = 0; ci < batchChunks; ci++) {
-        const sp = ci * BATCH_PAGES_PER_CHUNK + 1;
-        const ep = Math.min((ci + 1) * BATCH_PAGES_PER_CHUNK, pageCount);
-        cPromises.push(callGeminiVision(`Extract ALL text content from pages ${sp} through ${ep} of this document.\n\nRULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- Preserve ALL hyperlinks as [link text](URL)\n- Keep ALL content\n\nReturn ONLY plain text with markdown formatting.`, base64Data, 'application/pdf').catch(() => null));
-      }
-      let cResults = [];
-      for (let b = 0; b < cPromises.length; b += 5) {
-        const batch = cPromises.slice(b, b + 5);
-        cResults = cResults.concat(await Promise.all(batch));
-        if (b + 5 < cPromises.length) await new Promise(r => setTimeout(r, 500));
-      }
-      extractedText = cResults.filter(Boolean).join('\n\n---\n\n');
-    }
-
-    if (!extractedText || extractedText.length < 20) {
-      throw new Error('Could not extract sufficient text from this PDF');
-    }
-
-    extractedText = extractedText
-      .replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n')
-      .replace(/\\"/g, '"').replace(/\\t/g, '\t')
-      .replace(/\n{4,}/g, '\n\n\n').trim();
-
-    log(`Extracted ${extractedText.length} chars`);
-
-    // ── Phase 3: Generate accessible HTML ──
-    log('Phase 3: Generating accessible HTML...');
-
-    let batchDocStyle = { headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', headerBg: '#1e3a5f', headerText: '#ffffff', bodyFont: 'system-ui, sans-serif', tableBg: '#f1f5f9', tableBorder: '#cbd5e1' };
-    // Check brand mode: 'auto' = extract from this PDF (default), 'upload' = use uploaded brand, 'none' = defaults only
-    const _brandMode = typeof window !== 'undefined' ? (window.__pdfBrandMode || 'auto') : 'auto';
-    const _brandOverride = typeof window !== 'undefined' ? window.__pdfBrandOverride : null;
-    if (_brandMode === 'upload' && _brandOverride) {
-      // Use colors extracted from uploaded brand reference. Sanitize like the
-      // auto-extract path below — _brandOverride is Vision-parsed from a user-uploaded
-      // reference doc and flows into a style="" attribute, so drop any breakout chars.
-      batchDocStyle = { ...batchDocStyle, ..._sanitizeStyleObj(_brandOverride) };
-      log('Using uploaded brand colors');
-    } else if (_brandMode === 'none') {
-      // Skip brand extraction, use defaults
-      log('Using default palette (no branding)');
-    } else {
-      // Auto-extract from this PDF
-      try {
-        const styleRes = await callGeminiVision(
-          `Analyze the visual design of this PDF. Extract the exact color scheme.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex","bgColor":"hex","headerBg":"hex","headerText":"hex","tableBg":"hex","tableBorder":"hex"}`,
-          base64Data, 'application/pdf'
-        );
-        if (styleRes) {
-          let sc = styleRes.trim();
-          if (sc.indexOf('`' + '``') !== -1) { const ps = sc.split('`' + '``'); sc = ps[1] || ps[0]; if (sc.indexOf('\n') !== -1) sc = sc.split('\n').slice(1).join('\n'); if (sc.lastIndexOf('`' + '``') !== -1) sc = sc.substring(0, sc.lastIndexOf('`' + '``')); }
-          batchDocStyle = { ...batchDocStyle, ..._sanitizeStyleObj(JSON.parse(sc)) };
-          log('Extracted brand colors from original PDF');
-        }
-      } catch(e) { warnLog && warnLog('[batchDocStyle] PDF brand-color extraction failed; falling back to defaults:', e); }
-    }
-
-    // ── Boring-palette detection: if the source document has minimal color variation,
-    // give the AI creative freedom to apply smart beautification instead of replicating boring styling ──
-    const _isBoringPalette = (() => {
-      try {
-        const hexToGray = (hex) => {
-          if (!hex || typeof hex !== 'string') return -1;
-          const h = hex.replace('#', '');
-          if (h.length < 6) return -1;
-          const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
-          return 0.299 * r + 0.587 * g + 0.114 * b; // perceived brightness
-        };
-        const colors = [batchDocStyle.headingColor, batchDocStyle.accentColor, batchDocStyle.headerBg, batchDocStyle.tableBg].filter(Boolean);
-        if (colors.length === 0) return true;
-        const grays = colors.map(hexToGray).filter(v => v >= 0);
-        if (grays.length === 0) return true;
-        // Check if all text colors are very dark (< 80 brightness) or very light (> 220 brightness)
-        const allDarkOrLight = grays.every(g => g < 80 || g > 220);
-        // Check if there's very low color variation (all grays within 60 units of each other)
-        const maxGray = Math.max(...grays), minGray = Math.min(...grays);
-        const lowVariation = (maxGray - minGray) < 60;
-        // Also check the background — if it's pure white or near-white with dark text, that's boring
-        const bgGray = hexToGray(batchDocStyle.bgColor);
-        const isBoring = allDarkOrLight && lowVariation && bgGray > 240;
-        if (isBoring) warnLog('[Style] Source document has a boring palette (grayscale/minimal color) — enabling smart beautification');
-        return isBoring;
-      } catch(e) { return false; }
-    })();
-
-    // Check for user style seed (set via UI before remediation) — unified with STYLE_SEEDS
-    const _styleSeedId = typeof window !== 'undefined' ? (window.__pdfStyleSeed || window.__pdfStylePreference || '') : '';
-    const _styleSeed = STYLE_SEEDS[_styleSeedId];
-    // If the source is boring and user hasn't explicitly chosen a style, inject smart beautification instructions
-    const _boringBeautify = _isBoringPalette && (!_styleSeedId || _styleSeedId === 'matchOriginal')
-      ? '\nSTYLE ENHANCEMENT: The source document uses minimal/plain styling (mostly black text on white background). Do NOT replicate the boring appearance. Instead, apply smart professional beautification:\n' +
-        '- Use a harmonious color scheme: navy (#1e3a5f) for headings, blue (#2563eb) for accents, subtle warm gray (#f8fafc) for callout/highlight blocks\n' +
-        '- Add visual hierarchy: colored left-border accent blocks for key sections, subtle background shading for important callouts or definitions\n' +
-        '- Use professional spacing: generous padding between sections, clear visual separation between content areas\n' +
-        '- Add subtle design touches: rounded corners on callout blocks, thin colored top-border on the main heading, soft box-shadows on card-like sections\n' +
-        '- Keep it professional and readable — enhance, don\'t overwhelm. The goal is a document people want to read.\n'
-      : '';
-    const _styleInstructions = (_styleSeed?.promptInstructions ? '\n' + _styleSeed.promptInstructions : '') + _boringBeautify;
-
-    // If boring palette detected and no explicit style chosen, override the extracted colors
-    // so the VISUAL STYLING section of the prompt gives the AI professional defaults instead of black-on-white
-    if (_boringBeautify) {
-      batchDocStyle = { ...batchDocStyle, headingColor: '#1e3a5f', accentColor: '#2563eb', headerBg: '#1e3a5f', headerText: '#ffffff', tableBg: '#f1f5f9', tableBorder: '#cbd5e1' };
-      warnLog('[Style] Overrode boring palette with professional defaults for transform prompt');
-    }
-
-    // (WCAG AA contrast clamp relocated to the LIVE fixAndVerifyPdf path — see ~15428. This
-    // processSinglePdfForBatch loop is legacy/never-awaited, so clamping here did nothing. Audit wo72lu4mh #2.)
-
-    // Deterministic prescan of the source — feed structured hints into the prompt
-    const _sourceHints = scanSourceHints(extractedText);
-    const _hintBlock = formatHintsForPrompt(_sourceHints);
-    if (_sourceHints.hasNonLatinScripts) warnLog(`[Hints] Non-Latin scripts detected: ${_sourceHints.detectedScripts.join(', ')}`);
-
-    // ── Chunked transform: split large text on paragraph boundaries, transform each chunk as fragment ──
-    // Stays under 8192-token output ceiling and eliminates silent truncation at 30K char mark.
-    const TEXT_TRANSFORM_CHUNK = 12000;
-    const splitTextForTransform = (text, size) => {
-      if (!text || text.length <= size) return [text || ''];
-      const chunks = [];
-      let i = 0;
-      while (i < text.length) {
-        let end = Math.min(i + size, text.length);
-        if (end < text.length) {
-          const paraBreak = text.lastIndexOf('\n\n', end);
-          if (paraBreak > i + size * 0.5) {
-            end = paraBreak;
-          } else {
-            const sentBreak = text.lastIndexOf('. ', end);
-            if (sentBreak > i + size * 0.5) end = sentBreak + 1;
-          }
-        }
-        chunks.push(text.slice(i, end));
-        i = end;
-      }
-      return chunks;
-    };
-
-    // Build the shared prompt suffix (all rules + styling) so each chunk uses identical instructions
-    const buildTransformPrompt = (chunkText, fragMeta) => {
-      const { isFirst, isLast, chunkIdx, totalChunks } = fragMeta;
-      const fragmentHeader = totalChunks > 1
-        ? `\n\nFRAGMENT ${chunkIdx + 1} of ${totalChunks}. ` +
-          (isFirst ? 'START the document — include <!DOCTYPE html>, <html lang="en">, <head> with <title>, <meta charset>, skip-to-content link, and opening <main id="main-content" role="main">. ' : 'CONTINUE the document — do NOT include <!DOCTYPE>, <html>, <head>, or <main> opening. Start with content elements only. ') +
-          (isLast ? 'END the document — close </main></body></html>.' : 'Do NOT close </main></body></html> — more fragments follow.')
-        : '';
-      return `You are a senior accessibility remediation specialist. Transform this extracted document text into a fully accessible, professionally styled HTML document that meets WCAG 2.1 Level AA compliance.${_styleInstructions}
-
-ORIGINAL ACCESSIBILITY ISSUES FOUND:
-${batchIssueList}${_hintBlock}
-${fragmentHeader}
-
-TEXT CONTENT TO TRANSFORM:
-"""
-${chunkText}
-"""
-
-Create accessible HTML following ALL of these requirements:
-
-STRUCTURAL ACCESSIBILITY:
-- ${totalChunks > 1 && !isFirst ? 'Continue the existing hierarchy (h2/h3/h4) — do NOT start a new <h1>' : '<!DOCTYPE html>, <html lang="en">, <head> with <meta charset="UTF-8">, meaningful <title>'}
-${totalChunks > 1 && !isFirst ? '' : '- <meta name="viewport" content="width=device-width, initial-scale=1.0">\n- Skip-to-content link: <a href="#main-content" class="sr-only">Skip to main content</a>\n- <main id="main-content" role="main"> wrapping all content'}
-- <nav>, <header>, <footer>, <section> landmarks where appropriate
-- ${totalChunks > 1 && !isFirst ? 'Use h2/h3/h4 only — the h1 is in the first fragment' : 'Exactly ONE <h1>, and it MUST be the document main/cover title (the first prominent title line, or a leading markdown # line) — render that title text as <h1>, never inside a styled <div> or <p>. Use <h2> for the first content section, then a proper h2→h3→h4 hierarchy (no skipped levels)'}
-
-TABLE ACCESSIBILITY:
-- <table> with <caption> describing the table's purpose
-- <thead> with <th scope="col"> for column headers
-- <th scope="row"> for row headers where applicable
-- <tbody> wrapping data rows
-
-CONTENT QUALITY:
-- Map markdown heading markers to semantic tags: a leading "# " line → <h1> (the document title), "## " → <h2>, "### " → <h3> — never leave a title/heading as a styled <div> or bold <p>
-- Convert bullet characters (•, -, *) to semantic <ul>/<ol> lists
-- Convert [Image: description] markers to <figure> with <img alt="description"> and <figcaption>
-- Preserve all hyperlinks as <a href="..."> with descriptive link text
-- Preserve ALL content — do not summarize, shorten, or drop any paragraphs, tables, or list items
-- Use <blockquote> for quoted text, <code> for code snippets
-- Use <abbr> for abbreviations on first use
-
-VISUAL STYLING (inline CSS):
-- Font: font-family: ${batchDocStyle.bodyFont}
-- Headings: color: ${batchDocStyle.headingColor}; accent elements: ${batchDocStyle.accentColor}
-- Background: ${batchDocStyle.bgColor}; max-width: 800px; margin: 0 auto; padding: 2rem
-- Tables: border-collapse:collapse; th background: ${batchDocStyle.tableBg}; border: 1px solid ${batchDocStyle.tableBorder}
-- Color contrast: ALL text must meet 4.5:1 ratio against its background
-- Line-height: 1.7 for body text (readability)
-- Print styles: @media print { body { max-width: 100%; } .sr-only { display: none; } }
-- High contrast support: @media (forced-colors: active) { a { text-decoration: underline; } th, td { border: 1px solid CanvasText; } }
-- Reduced motion: @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-
-Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, no <html>)' : (totalChunks > 1 ? 'the opening through this fragment\'s content (do NOT close </main></body></html>)' : 'the complete HTML document (<!DOCTYPE html> to </html>)')}.`;
-    };
-
-    const textChunks = splitTextForTransform(extractedText, TEXT_TRANSFORM_CHUNK);
-    warnLog(`[Transform] Splitting ${extractedText.length} chars into ${textChunks.length} chunk(s) of ~${TEXT_TRANSFORM_CHUNK} chars`);
-
-    let accessibleHtml;
-    if (textChunks.length === 1) {
-      // Short document: single call, same as before
-      const singlePrompt = buildTransformPrompt(textChunks[0], { isFirst: true, isLast: true, chunkIdx: 0, totalChunks: 1 });
-      accessibleHtml = await callGemini(singlePrompt, false);
-      accessibleHtml = _stripJsonWrapperArtifacts(accessibleHtml);
-    } else {
-      // Long document: parallel chunks in batches of 5
-      const MAX_PARALLEL = 5;
-      const chunkResults = new Array(textChunks.length);
-      for (let batch = 0; batch < textChunks.length; batch += MAX_PARALLEL) {
-        const batchEnd = Math.min(batch + MAX_PARALLEL, textChunks.length);
-        const batchPromises = [];
-        for (let ci = batch; ci < batchEnd; ci++) {
-          const meta = { isFirst: ci === 0, isLast: ci === textChunks.length - 1, chunkIdx: ci, totalChunks: textChunks.length };
-          const prompt = buildTransformPrompt(textChunks[ci], meta);
-          batchPromises.push(
-            callGemini(prompt, false).then(r => ({ ci, result: r })).catch(err => {
-              warnLog(`[Transform] Chunk ${ci + 1} failed:`, err?.message);
-              return { ci, result: null };
-            })
-          );
-        }
-        const batchResults = await Promise.all(batchPromises);
-        for (const { ci, result } of batchResults) chunkResults[ci] = result;
-        if (batchEnd < textChunks.length) await new Promise(r => setTimeout(r, 500));
-      }
-      // Auto-retry any chunk that came back null. callGemini's _withRetry only retries transient
-      // errors WITHIN a single attempt; a FRESH attempt after the batch recovers a chunk that hit
-      // a momentary timeout / quota / RECITATION blip — so a transient failure no longer silently
-      // becomes a dropped page. Up to 2 sequential retries with backoff; whatever still fails falls
-      // through to the honest placeholder below AND the text-loss integrity gate (which now demotes
-      // the success toast). (failed-chunk auto-retry, 2026-06-15)
-      let _retryIdx = [];
-      for (let ci = 0; ci < textChunks.length; ci++) if (!chunkResults[ci]) _retryIdx.push(ci);
-      for (let _att = 1; _att <= 2 && _retryIdx.length > 0; _att++) {
-        warnLog(`[Transform] Retry pass ${_att}: re-running ${_retryIdx.length} failed chunk(s)`);
-        const _stillFailed = [];
-        for (const ci of _retryIdx) {
-          const meta = { isFirst: ci === 0, isLast: ci === textChunks.length - 1, chunkIdx: ci, totalChunks: textChunks.length };
-          try {
-            const r = await callGemini(buildTransformPrompt(textChunks[ci], meta), false);
-            if (r) chunkResults[ci] = r; else _stillFailed.push(ci);
-          } catch (e) { warnLog(`[Transform] Chunk ${ci + 1} retry ${_att} failed:`, e && e.message); _stillFailed.push(ci); }
-          await new Promise(res => setTimeout(res, 400));
-        }
-        _retryIdx = _stillFailed;
-      }
-      try { if (typeof window !== 'undefined') window.__lastTransformFragmentFailures = _retryIdx.length; } catch (_) {}
-      if (_retryIdx.length > 0) warnLog(`[Transform] ${_retryIdx.length} chunk(s) still failed after 2 retries — placeholder + integrity warning will flag them`);
-      // Strip markdown fences from each chunk and join
-      const cleanChunks = chunkResults.map((r, i) => {
-        if (!r) return `<section aria-label="Fragment ${i + 1} failed to process"><p>[Fragment ${i + 1} could not be transformed]</p></section>`;
-        let c = r.trim();
-        if (c.includes('`' + '``')) {
-          const parts = c.split('`' + '``');
-          c = parts[1] || parts[0];
-          if (c.startsWith('html\n') || c.startsWith('html\r\n')) c = c.substring(c.indexOf('\n') + 1);
-          if (c.lastIndexOf('`' + '``') !== -1) c = c.substring(0, c.lastIndexOf('`' + '``'));
-        }
-        c = c.trim();
-        // Strip JSON array/object wrapper artifacts. Some Gemini responses return `["<html>..."]`
-        // or leave a trailing `[ "` fragment when truncated. Detect and unwrap/recover.
-        if (/^\s*\[\s*"/.test(c)) {
-          // Wrapped in JSON array-of-string form → unwrap leading `["` and trailing `"]`.
-          c = c.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
-          // Unescape common JSON escapes that survived the unwrap.
-          c = c.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-          // Decode \uXXXX surrogate-pair escapes (otherwise 📷 renders as literal
-          // "\ud83d\udcf7" and … renders as "\u2026" in the final HTML).
-          c = c.replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
-        }
-        // Strip a stray trailing `[ "` or `[ "}` left by truncated JSON — common cause of the
-        // `[ "` fragment that occasionally appears at the bottom of a rendered page.
-        // Also strip leading `["` so that when chunk N+1 is joined to chunk N, the two
-        // wrappers can't collide into a `" ][ "` artifact between real content.
-        // Widened to also catch `"}]`, `"} ]`, `" } ]` — Gemini's JSON-object wrapping
-        // (`[{"html":"…"}]`) leaves a stray `}` between the quote and the `]` that the
-        // original narrow `" ]` pattern missed, producing visible artifacts in output.
-        c = c.replace(/\[\s*"?\s*$/, '').replace(/"[\s}\],]*\]\s*$/, '').trim();
-        c = c.replace(/^\s*\[\s*"\s*/, '').replace(/^\s*"\s*[}\]][\s}\],]*/, '').trim();
-        // If a chunk is ENTIRELY partial JSON (no visible HTML tags), drop it with a recovery placeholder.
-        if (c && !/<[a-z][\s\S]*?>/i.test(c) && /^\s*[\[\{]/.test(c)) {
-          warnLog(`[Transform] Chunk ${i + 1} returned non-HTML JSON fragment — replacing with placeholder`);
-          return `<section aria-label="Fragment ${i + 1} recovery"><p>[Fragment ${i + 1} could not be transformed]</p></section>`;
-        }
-        return c;
-      });
-      accessibleHtml = cleanChunks.join('\n');
-      accessibleHtml = _stripJsonWrapperArtifacts(accessibleHtml);
-      // Ensure the document is properly closed (in case the last chunk's AI forgot)
-      if (!accessibleHtml.includes('</html>')) {
-        if (!accessibleHtml.includes('</body>')) {
-          if (!accessibleHtml.includes('</main>')) accessibleHtml += '\n</main>';
-          accessibleHtml += '\n</body>';
-        }
-        accessibleHtml += '\n</html>';
-      }
-      warnLog(`[Transform] Joined ${cleanChunks.length} chunks → ${accessibleHtml.length} chars HTML`);
-    }
-
-    if (!accessibleHtml || accessibleHtml.length < 100) {
-      throw new Error('HTML generation failed');
-    }
-
-    // Strip markdown fencing
-    if (accessibleHtml.includes('`' + '``')) {
-      const parts = accessibleHtml.split('`' + '``');
-      accessibleHtml = parts[1] || parts[0];
-      if (accessibleHtml.startsWith('html\n') || accessibleHtml.startsWith('html\r\n')) {
-        accessibleHtml = accessibleHtml.substring(accessibleHtml.indexOf('\n') + 1);
-      }
-      if (accessibleHtml.lastIndexOf('`' + '``') !== -1) {
-        accessibleHtml = accessibleHtml.substring(0, accessibleHtml.lastIndexOf('`' + '``'));
-      }
-    }
-
-    log(`Generated ${accessibleHtml.length} chars HTML`);
-
-    // ── Phase 3b: Deterministic a11y fixes (full set — mirroring single-file pipeline) ──
-    let aiFixCount = 0;
-
-    // 1. Missing alt on images — derive from src/title or add descriptive placeholder
-    accessibleHtml = accessibleHtml.replace(/<img([^>]*)>/gi, (match, attrs) => {
-      if (/alt\s*=/.test(attrs)) return match;
-      aiFixCount++;
-      var srcMatch = attrs.match(/src\s*=\s*["']([^"']+)["']/i);
-      var titleMatch = attrs.match(/title\s*=\s*["']([^"']+)["']/i);
-      var altText = 'Image';
-      if (titleMatch && titleMatch[1]) { altText = titleMatch[1]; }
-      else if (srcMatch && srcMatch[1]) { var fname = srcMatch[1].split('/').pop().split('?')[0].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').trim(); if (fname && fname.length > 2 && !/^(img|image|photo|pic|figure)\d*$/i.test(fname)) altText = fname.charAt(0).toUpperCase() + fname.slice(1); }
-      return `<img alt="${altText}"${attrs}>`;
-    });
-
-    // 2. Ensure exactly one h1
-    const batchH1Count = (accessibleHtml.match(/<h1[\s>]/gi) || []).length;
-    if (batchH1Count === 0) {
-      accessibleHtml = accessibleHtml.replace(/<h2([^>]*)>/, '<h1$1>');
-      accessibleHtml = accessibleHtml.replace(/<\/h2>/, '</h1>');
-      aiFixCount++;
-    } else if (batchH1Count > 1) {
-      let bH1Idx = 0;
-      accessibleHtml = accessibleHtml.replace(/<h1([^>]*)>/gi, (m, attrs) => {
-        bH1Idx++;
-        if (bH1Idx === 1) return m;
-        aiFixCount++;
-        return `<h2${attrs}>`;
-      });
-      let bH1CloseIdx = 0;
-      accessibleHtml = accessibleHtml.replace(/<\/h1>/gi, () => {
-        bH1CloseIdx++;
-        if (bH1CloseIdx === 1) return '</h1>';
-        return '</h2>';
-      });
-    }
-
-    // 3. Ensure <html> has valid lang attribute (BCP 47)
-    if (!accessibleHtml.includes('lang=')) {
-      accessibleHtml = accessibleHtml.replace(/<html/, '<html lang="en"'); aiFixCount++;
-    } else {
-      // Validate existing lang value — fix common AI mistakes like "English", "en_US", empty string
-      const validLangPattern = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-      accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
-        const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-        if (!trimmed || !validLangPattern.test(trimmed)) {
-          // Map common invalid values to valid BCP 47 codes
-          const langMap = { 'english': 'en', 'spanish': 'es', 'french': 'fr', 'german': 'de', 'portuguese': 'pt', 'chinese': 'zh', 'japanese': 'ja', 'korean': 'ko', 'arabic': 'ar', 'russian': 'ru', 'italian': 'it', 'dutch': 'nl', 'hindi': 'hi' };
-          const fixed = langMap[trimmed] || 'en';
-          aiFixCount++;
-          warnLog(`[Det Fix] Invalid lang="${langVal}" → lang="${fixed}"`);
-          return `<html${before}lang="${fixed}"`;
-        }
-        if (trimmed !== langVal) {
-          aiFixCount++;
-          return `<html${before}lang="${trimmed}"`;
-        }
-        return m;
-      });
-    }
-
-    // 4. Ensure <title> is non-empty
-    if (/<title>\s*<\/title>/.test(accessibleHtml) || !accessibleHtml.includes('<title>')) {
-      const titleText = fileName.replace(/\.pdf$/i, '');
-      if (accessibleHtml.includes('<title>')) { accessibleHtml = accessibleHtml.replace(/<title>[^<]*<\/title>/, `<title>${titleText}</title>`); }
-      else { accessibleHtml = accessibleHtml.replace('</head>', `<title>${titleText}</title>\n</head>`); }
-      aiFixCount++;
-    }
-
-    // 5. Ensure all tables have scope on th elements
-    { const _thN = (accessibleHtml.match(/<th(?![^>]*scope)/gi) || []).length; accessibleHtml = _stampThScopeGeometryAware(accessibleHtml); aiFixCount += _thN; } // geometry-aware scope (th-scope-geometry)
-
-    // 6. Ensure all links have descriptive text (not empty)
-    accessibleHtml = accessibleHtml.replace(/<a([^>]*)>\s*<\/a>/gi, (match, attrs) => {
-      const href = attrs.match(/href="([^"]*)"/);
-      aiFixCount++;
-      return `<a${attrs}>${href ? href[1].replace(/https?:\/\//, '').substring(0, 40) : 'Link'}</a>`;
-    });
-
-    // 7. Ensure skip-to-content link exists (visible on focus, high contrast)
-    if (!accessibleHtml.includes('Skip to') && !accessibleHtml.includes('skip-nav')) {
-      accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => {
-        aiFixCount++;
-        return m + '\n<a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:10000;background:#1e293b;color:#ffffff;padding:8px 16px;font-size:14px;font-weight:bold;text-decoration:none;border-radius:0 0 8px 0;border:2px solid #fbbf24">Skip to main content</a>';
-      });
-      // Add CSS to make skip link visible on focus with WCAG AA contrast
-      if (accessibleHtml.includes('</head>')) {
-        accessibleHtml = accessibleHtml.replace('</head>', '<style>.skip-link:focus{position:fixed!important;left:0!important;top:0!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;z-index:10000!important;background:#1e293b!important;color:#ffffff!important;padding:12px 20px!important;font-size:16px!important;font-weight:bold!important;outline:3px solid #1e3a8a!important;outline-offset:2px!important;box-shadow:0 0 0 2px #ffffff!important;text-decoration:underline!important}</style>\n</head>');
-        aiFixCount++;
-      }
-    }
-
-    // 8. Ensure main landmark exists (collapse any duplicate <main> first — one-main dedup)
-    { const _mb = (accessibleHtml.match(/<main\b[^>]*>/gi) || []).length; accessibleHtml = _collapseExtraMains(accessibleHtml); if (_mb > 1) aiFixCount++; }
-    if (!accessibleHtml.includes('<main')) {
-      accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (m) => { aiFixCount++; return m + '\n<main id="main-content" role="main">'; });
-      accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
-    }
-
-    // 8b. Ensure nav landmark exists (wrap any table of contents or link lists)
-    if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
-      // Look for a TOC-like structure (heading + list of links at the top)
-      var tocMatch = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
-      if (tocMatch) {
-        var tocIdx = accessibleHtml.indexOf(tocMatch[0]);
-        if (tocIdx >= 0) {
-          accessibleHtml = accessibleHtml.substring(0, tocIdx) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx);
-          // Find the closing </ul> or </ol> after the TOC
-          var listTag = tocMatch[3];
-          var closingTag = '</' + listTag + '>';
-          var closeIdx = accessibleHtml.indexOf(closingTag, tocIdx + tocMatch[0].length);
-          if (closeIdx >= 0) {
-            accessibleHtml = accessibleHtml.substring(0, closeIdx + closingTag.length) + '</nav>' + accessibleHtml.substring(closeIdx + closingTag.length);
-            aiFixCount++;
-          }
-        }
-      }
-    }
-
-    // 8c. Ensure footer landmark exists (wrap any footer-like content at the end)
-    if (!accessibleHtml.includes('<footer') && !accessibleHtml.includes('role="contentinfo"')) {
-      // Look for common footer patterns (copyright, date, attribution near end of body)
-      var footerPatterns = [/(<p[^>]*>.*?(?:copyright|©|\u00a9|generated|created|source:|author:).*?<\/p>)\s*<\/main>/i,
-                           /(<div[^>]*>.*?(?:copyright|©|\u00a9|AlloFlow|generated on).*?<\/div>)\s*<\/main>/i];
-      for (var fpi = 0; fpi < footerPatterns.length; fpi++) {
-        var footerMatch = accessibleHtml.match(footerPatterns[fpi]);
-        if (footerMatch) {
-          accessibleHtml = accessibleHtml.replace(footerMatch[0], '</main>\n<footer role="contentinfo">' + footerMatch[1] + '</footer>');
-          aiFixCount++;
-          break;
-        }
-      }
-    }
-
-    // 9. Fix heading level skips (h1→h3 becomes h1→h2). POSITIONAL (2026-06-13):
-    // the old code used a NON-GLOBAL regex that always rewrote the FIRST <hN> in
-    // the whole doc — so a VALID <h4> appearing before a later SKIPPING <h4> got
-    // demoted while the real skip survived (and the in-memory level array then
-    // diverged from the HTML), degrading the SR outline this is meant to repair.
-    // Now each heading is rewritten by its OWN position (open + its matching
-    // close); headings don't nest, so the first </hN> after an open is
-    // unambiguously that open's close. Mirrors fixHeadingHierarchy's approach.
-    { const _hr = _collapseHeadingSkipsStrict(accessibleHtml); if (_hr.fixCount) { accessibleHtml = _hr.html; aiFixCount += _hr.fixCount; } } // (deduped into shared helper #8)
-
-    // 10. Remove empty headings
-    accessibleHtml = accessibleHtml.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, () => { aiFixCount++; return ''; });
-
-    // 11. Fix "click here" / "read more" link text
-    accessibleHtml = accessibleHtml.replace(/<a([^>]*href="([^"]*)"[^>]*)>(click here|read more|here|learn more|more)<\/a>/gi, (match, attrs, href, text) => {
-      aiFixCount++;
-      const domain = href.replace(/https?:\/\//, '').split('/')[0].substring(0, 30);
-      return `<a${attrs}>${domain || 'Link'}</a>`;
-    });
-
-    // 12. Ensure viewport meta tag
-    if (!accessibleHtml.includes('viewport')) {
-      accessibleHtml = accessibleHtml.replace('</head>', '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>');
-      aiFixCount++;
-    }
-
-    // 13. Fix duplicate IDs
-    const batchIdMatches = [...accessibleHtml.matchAll(/id="([^"]+)"/g)];
-    const batchIdCounts = {};
-    batchIdMatches.forEach(m => { batchIdCounts[m[1]] = (batchIdCounts[m[1]] || 0) + 1; });
-    Object.entries(batchIdCounts).filter(([, c]) => c > 1).forEach(([id]) => {
-      let counter = 0;
-      accessibleHtml = accessibleHtml.replace(new RegExp(`id="${id}"`, 'g'), () => {
-        counter++;
-        if (counter === 1) return `id="${id}"`;
-        aiFixCount++;
-        return `id="${id}-${counter}"`;
-      });
-    });
-
-    // 14. Fix orphaned <li> elements not inside <ul> or <ol>
-    accessibleHtml = accessibleHtml.replace(/(?<!\n\s*<\/[uo]l>)\s*(<li[\s>])/gi, (match, li, offset) => {
-      // Check if this <li> is already inside a <ul> or <ol> by looking back
-      const before = accessibleHtml.substring(Math.max(0, offset - 200), offset);
-      const lastUlOl = Math.max(before.lastIndexOf('<ul'), before.lastIndexOf('<ol'));
-      const lastClose = Math.max(before.lastIndexOf('</ul'), before.lastIndexOf('</ol'));
-      if (lastUlOl > lastClose) return match; // already inside a list
-      aiFixCount++;
-      return '<ul>' + li;
-    });
-    // Close any unclosed <ul> we just opened (simplified — catches most cases)
-    const openUls = (accessibleHtml.match(/<ul[\s>]/gi) || []).length;
-    const closeUls = (accessibleHtml.match(/<\/ul>/gi) || []).length;
-    if (openUls > closeUls) {
-      // Single-pass balance (2026-06-15 review perf fix): the old loop ran a
-      // full-document negative-lookahead regex once PER missing </ul> (O(missing·n),
-      // a main-thread stall on malformed list-heavy AI output). The lookahead always
-      // stacked the closers after the LAST </li>, so do exactly that in one splice.
-      const _missingUls = openUls - closeUls;
-      const _pad = '</ul>'.repeat(_missingUls);
-      const _liAt = accessibleHtml.lastIndexOf('</li>');
-      if (_liAt !== -1) {
-        const _at = _liAt + 5; // '</li>'.length
-        accessibleHtml = accessibleHtml.slice(0, _at) + _pad + accessibleHtml.slice(_at);
-      } else if (/<\/(?:body|main)>/i.test(accessibleHtml)) {
-        accessibleHtml = accessibleHtml.replace(/<\/(?:body|main)>/i, _pad + '$&');
-      } else {
-        accessibleHtml += _pad;
-      }
-      aiFixCount += _missingUls;
-    }
-
-    // 15. Fix form inputs without labels
-    accessibleHtml = accessibleHtml.replace(/<input([^>]*)>/gi, (match, attrs) => {
-      if (/aria-label|aria-labelledby|id="[^"]*"/.test(attrs) && /<label[^>]*for=/.test(accessibleHtml)) return match;
-      if (/aria-label/.test(attrs)) return match;
-      const type = (attrs.match(/type="([^"]*)"/i) || [])[1] || 'text';
-      const placeholder = (attrs.match(/placeholder="([^"]*)"/i) || [])[1] || '';
-      const name = (attrs.match(/name="([^"]*)"/i) || [])[1] || '';
-      const label = placeholder || name || type;
-      if (label && label !== 'hidden' && label !== 'submit') {
-        aiFixCount++;
-        return `<input aria-label="${label}"${attrs}>`;
-      }
-      return match;
-    });
-
-    // 16. Fix buttons without accessible names
-    accessibleHtml = accessibleHtml.replace(/<button([^>]*)>\s*<\/button>/gi, (match, attrs) => {
-      if (/aria-label/.test(attrs)) return match;
-      aiFixCount++;
-      return `<button aria-label="Button"${attrs}></button>`;
-    });
-
-    // 17. Fix iframes without titles
-    accessibleHtml = accessibleHtml.replace(/<iframe([^>]*)>/gi, (match, attrs) => {
-      if (/title=/.test(attrs)) return match;
-      const src = (attrs.match(/src="([^"]*)"/i) || [])[1] || '';
-      const domain = src.replace(/https?:\/\//, '').split('/')[0].substring(0, 30) || 'Embedded content';
-      aiFixCount++;
-      return `<iframe title="${domain}"${attrs}>`;
-    });
-
-    // 18. Fix positive tabindex values (should be 0 or -1)
-    accessibleHtml = accessibleHtml.replace(/tabindex="(\d+)"/gi, (match, val) => {
-      if (val === '0' || val === '-1') return match;
-      aiFixCount++;
-      return 'tabindex="0"';
-    });
-
-    // 19. Fix role="img" without alt/aria-label
-    accessibleHtml = accessibleHtml.replace(/role="img"([^>]*)>/gi, (match, attrs) => {
-      if (/aria-label|alt=/.test(attrs)) return match;
-      aiFixCount++;
-      return `role="img" aria-label="Image"${attrs}>`;
-    });
-
-    // 20. Fix <svg> without accessible name
-    accessibleHtml = accessibleHtml.replace(/<svg([^>]*)>/gi, (match, attrs) => {
-      if (/aria-label|aria-hidden|role="presentation"/.test(attrs)) return match;
-      if (/<title>/.test(accessibleHtml.substring(accessibleHtml.indexOf(match), accessibleHtml.indexOf(match) + 500))) return match;
-      aiFixCount++;
-      return `<svg aria-hidden="true"${attrs}>`;
-    });
-
-    // 21. Ensure <html> has both lang and dir attributes
-    if (accessibleHtml.includes('lang="ar"') || accessibleHtml.includes('lang="he"') || accessibleHtml.includes('lang="fa"') || accessibleHtml.includes('lang="ur"')) {
-      if (!accessibleHtml.includes('dir=')) {
-        accessibleHtml = accessibleHtml.replace(/<html([^>]*)>/, '<html dir="rtl"$1>');
-        aiFixCount++;
-      }
-    }
-
-    // 22. Ensure all <table> elements have role="table" for screen readers
-    accessibleHtml = accessibleHtml.replace(/<table(?![^>]*role=)([^>]*)>/gi, () => { aiFixCount++; return '<table role="table"$1>'; });
-
-    // 23. Add aria-current="page" to self-referencing links (common a11y best practice)
-    // (skipped — requires knowing the current page URL)
-
-    // 24. Ensure <nav> elements have aria-label
-    accessibleHtml = accessibleHtml.replace(/<nav(?![^>]*aria-label)([^>]*)>/gi, () => { aiFixCount++; return '<nav aria-label="Navigation"$1>'; });
-
-    // 25. Strip user-scalable=no and maximum-scale=1 (prevents pinch-to-zoom — WCAG 1.4.4)
-    accessibleHtml = accessibleHtml.replace(/user-scalable\s*=\s*no/gi, () => { aiFixCount++; return 'user-scalable=yes'; });
-    accessibleHtml = accessibleHtml.replace(/maximum-scale\s*=\s*1(\.0)?/gi, () => { aiFixCount++; return 'maximum-scale=5'; });
-
-    // 26. Fix invalid ARIA roles (correct or strip unknown roles)
-    const validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
-    // Common AI mistakes and their corrections
-    const roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region', 'radiobutton': 'radio', 'check-box': 'checkbox', 'drop-down': 'listbox', 'text-box': 'textbox', 'search-box': 'searchbox', 'progress-bar': 'progressbar', 'scroll-bar': 'scrollbar', 'tab-panel': 'tabpanel', 'tab-list': 'tablist', 'tree-item': 'treeitem', 'menu-item': 'menuitem', 'list-item': 'listitem' };
-    accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
-      const lower = role.toLowerCase().trim();
-      if (validRoles.includes(lower)) return `role="${lower}"`;
-      if (roleCorrections[lower]) {
-        aiFixCount++;
-        warnLog(`[Det Fix] Corrected ARIA role: "${role}" → "${roleCorrections[lower]}"`);
-        return `role="${roleCorrections[lower]}"`;
-      }
-      aiFixCount++;
-      warnLog('[Det Fix] Removed invalid ARIA role: ' + role);
-      return '';
-    });
-
-    // 27. Fix <select> elements without accessible names
-    accessibleHtml = accessibleHtml.replace(/<select(?![^>]*aria-label)(?![^>]*id="([^"]*)")([^>]*)>/gi, (match, id, attrs) => {
-      if (/aria-label/.test(match)) return match;
-      const name = (match.match(/name="([^"]*)"/i) || [])[1] || 'Selection';
-      aiFixCount++;
-      return `<select aria-label="${name}"${attrs}>`;
-    });
-
-    // 28. Fix <object> and <embed> without alt/aria-label
-    accessibleHtml = accessibleHtml.replace(/<(object|embed)(?![^>]*aria-label)(?![^>]*alt=)([^>]*)>/gi, (match, tag, attrs) => {
-      aiFixCount++;
-      return `<${tag} aria-label="Embedded content"${attrs}>`;
-    });
-
-    // 29. Ensure <aside> elements have aria-label
-    accessibleHtml = accessibleHtml.replace(/<aside(?![^>]*aria-label)([^>]*)>/gi, () => { aiFixCount++; return '<aside aria-label="Supplementary content"$1>'; });
-
-    // 30. Fix definition lists: ensure <dt>/<dd> are inside <dl>
-    accessibleHtml = accessibleHtml.replace(/<(dt|dd)([^>]*)>/gi, (match, tag, attrs, offset) => {
-      const before = accessibleHtml.substring(Math.max(0, offset - 300), offset);
-      const lastDl = before.lastIndexOf('<dl');
-      const lastCloseDl = before.lastIndexOf('</dl');
-      if (lastDl > lastCloseDl) return match; // already inside dl
-      aiFixCount++;
-      return '<dl>' + match;
-    });
-
-    // 31. Add role="presentation" to layout tables (tables without th/thead)
-    accessibleHtml = accessibleHtml.replace(/<table([^>]*)>([\s\S]*?)<\/table>/gi, (match, attrs, content) => {
-      if (/<th[\s>]/i.test(content) || /<thead/i.test(content) || /role=/.test(attrs)) return match;
-      // No headers = likely a layout table
-      if (/<td[\s>]/i.test(content)) {
-        aiFixCount++;
-        return `<table role="presentation"${attrs}>${content}</table>`;
-      }
-      return match;
-    });
-
-    // 32. Ensure <footer> has role="contentinfo" if it doesn't have a role
-    accessibleHtml = accessibleHtml.replace(/<footer(?![^>]*role=)([^>]*)>/gi, () => { aiFixCount++; return '<footer role="contentinfo"$1>'; });
-
-    // 33. Ensure <header> has role="banner" if it doesn't have a role
-    accessibleHtml = accessibleHtml.replace(/<header(?![^>]*role=)([^>]*)>/gi, () => { aiFixCount++; return '<header role="banner"$1>'; });
-
-    // 34. Fix aria-hidden="true" on elements containing focusable children
-    accessibleHtml = accessibleHtml.replace(/aria-hidden="true"([^>]*>[\s\S]*?(?:<a\b|<button\b|<input\b|<select\b|<textarea\b|tabindex="0"))/gi, (match) => {
-      aiFixCount++;
-      return match.replace('aria-hidden="true"', 'aria-hidden="false"');
-    });
-
-    // 35. Fix scope attribute on <td> (only valid on <th>)
-    accessibleHtml = accessibleHtml.replace(/<td([^>]*)\bscope="[^"]*"([^>]*)>/gi, (match, before, after) => {
-      aiFixCount++;
-      return `<td${before}${after}>`;
-    });
-
-    // 36. Ensure all <section> elements have aria-label or aria-labelledby
-    accessibleHtml = accessibleHtml.replace(/<section(?![^>]*aria-label)([^>]*)>/gi, (match, attrs) => {
-      // Try to find a heading inside for labelling
-      const afterMatch = accessibleHtml.substring(accessibleHtml.indexOf(match));
-      const headingMatch = afterMatch.match(/<h[1-6][^>]*>([^<]+)/i);
-      const label = headingMatch ? headingMatch[1].trim().substring(0, 60) : 'Content section';
-      aiFixCount++;
-      return `<section aria-label="${label}"${attrs}>`;
-    });
-
-    // 37. Ensure <figure> elements have figcaption or aria-label
-    accessibleHtml = accessibleHtml.replace(/<figure(?![^>]*aria-label)([^>]*)>([\s\S]*?)<\/figure>/gi, (match, attrs, content) => {
-      if (/<figcaption/i.test(content)) return match; // has figcaption, fine
-      const altMatch = content.match(/alt="([^"]*)"/i);
-      const label = altMatch ? altMatch[1] : 'Figure';
-      aiFixCount++;
-      return `<figure aria-label="${label}"${attrs}>${content}</figure>`;
-    });
-
-    // 38. Add lang attribute to non-English text patterns (WCAG 3.1.2: Language of Parts)
-    // Detect script-based languages and wrap in lang spans. Skip already-tagged content.
-    var langPatterns = [
-      { regex: /([\u0600-\u06FF]{5,})/g, lang: 'ar' },        // Arabic
-      { regex: /([\u4E00-\u9FFF]{3,})/g, lang: 'zh' },        // Chinese (CJK Unified)
-      { regex: /([\u3040-\u309F\u30A0-\u30FF]{3,})/g, lang: 'ja' }, // Japanese (Hiragana + Katakana)
-      { regex: /([\uAC00-\uD7AF]{3,})/g, lang: 'ko' },        // Korean (Hangul)
-      { regex: /([\u0900-\u097F]{5,})/g, lang: 'hi' },        // Hindi (Devanagari)
-      { regex: /([\u0E00-\u0E7F]{5,})/g, lang: 'th' },        // Thai
-      { regex: /([\u0400-\u04FF]{5,})/g, lang: 'ru' },        // Russian (Cyrillic)
-      { regex: /([\u0590-\u05FF]{5,})/g, lang: 'he' }         // Hebrew
-    ];
-    langPatterns.forEach(function(lp) {
-      accessibleHtml = accessibleHtml.replace(lp.regex, function(match, p1, offset) {
-        var preceding = accessibleHtml.substring(Math.max(0, offset - 200), offset);
-        // zh shares the Han range with Japanese kanji. A Han run that is part of a JAPANESE passage
-        // has kana NEARBY; one in a CHINESE passage does not. Check a WINDOW around this run (not the
-        // whole doc — doc-wide wrongly stripped Chinese tagging from mixed zh+ja docs): kana near ->
-        // defer to the ja pass / VLM rather than mis-tag Han as Chinese. (lang-zh-ja / #9)
-        if (lp.lang === 'zh' && /[\u3040-\u309F\u30A0-\u30FF]/.test(accessibleHtml.substring(Math.max(0, offset - 60), offset + match.length + 60))) return match;
-        // Skip if already tagged with this language
-        if (new RegExp('lang=["\']' + lp.lang + '["\'][^>]*>[^<]*$', 'i').test(preceding)) return match;
-        // Skip if inside <code>, <pre>, or <script> blocks (don't corrupt code examples)
-        if (/<(?:code|pre|script)[^>]*>[^<]*$/i.test(preceding)) return match;
-        aiFixCount++;
-        return '<span lang="' + lp.lang + '">' + match + '</span>';
-      });
-    });
-
-    // 39. Ensure all <ul>/<ol> have role="list" for Safari VoiceOver compatibility
-    // Safari strips list semantics from styled lists even without list-style:none.
-    // Always add role="list" to ensure screen readers announce list structure.
-    accessibleHtml = accessibleHtml.replace(/<(ul|ol)(?![^>]*role=)([^>]*)>/gi, (match, tag, attrs) => {
-      aiFixCount++;
-      return `<${tag} role="list"${attrs}>`;
-    });
-
-    if (aiFixCount > 0) log(`Applied ${aiFixCount} deterministic fixes`);
-
-    // ── Phase 3c: Surgical AI-diagnosed fixes ──
-    // AI diagnoses specific issues → deterministic micro-tools fix each one precisely.
-    // Runs BEFORE the full AI rewrite loop — cheaper, safer, more precise.
-    // Whatever remains after this goes to the full rewrite loop (Phase 5).
-    log('Phase 3c: Surgical AI-diagnosed fixes...');
-    const surgicalTools = SHARED_SURGICAL_TOOLS;
-
-    // Run surgical diagnosis (1 API call) + deterministic execution
-    try {
-      var preAxe = await runAxeAudit(accessibleHtml);
-      if (preAxe && preAxe.totalViolations > 0) {
-        var surgViolations = []
-          .concat((preAxe.critical || []).map(function(v) { return 'CRITICAL: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)'; }))
-          .concat((preAxe.serious || []).map(function(v) { return 'SERIOUS: ' + v.description + ' (' + v.id + ', ' + v.nodes + ' elements)'; }))
-          .concat((preAxe.moderate || []).map(function(v) { return 'MODERATE: ' + v.description + ' (' + v.id + ')'; }))
-          .slice(0, 12).join('\n');
-
-        var surgDiagnosis = await callGemini('You are an accessibility remediation expert. Analyze these axe-core violations and prescribe SPECIFIC targeted fixes.\n\n' +
-          'VIOLATIONS:\n' + surgViolations + '\n\n' +
-          'HTML (stratified sample for context):\n"""\n' + _neutralizePromptFence(sampleHtml(accessibleHtml, 9000)) + '\n"""\n\n' +
-          'Prescribe fixes using these tools (return ONLY a JSON array):\n\n' +
-          'CONTENT FIXES:\n' +
-          '- fix_alt_text: { "tool": "fix_alt_text", "index": <img# 0-based>, "alt": "descriptive text" }\n' +
-          '- fix_heading: { "tool": "fix_heading", "index": <heading# 0-based>, "newLevel": <1-6> }\n' +
-          '- fix_link_text: { "tool": "fix_link_text", "index": <link# 0-based>, "newText": "descriptive text" }\n' +
-          '- fix_figcaption: { "tool": "fix_figcaption", "index": <figure# 0-based>, "caption": "description" }\n' +
-          '- fix_title: { "tool": "fix_title", "title": "document title" }\n' +
-          '- fix_lang: { "tool": "fix_lang", "lang": "language code" }\n' +
-          '- fix_lang_span: { "tool": "fix_lang_span", "text": "foreign text to wrap", "lang": "code" }\n\n' +
-          'TABLE FIXES:\n' +
-          '- fix_table_caption: { "tool": "fix_table_caption", "index": <table# 0-based>, "caption": "description" }\n' +
-          '- fix_th_scope: { "tool": "fix_th_scope", "index": <th# 0-based or omit for ALL>, "scope": "col" or "row" }\n\n' +
-          'FORM/INTERACTIVE FIXES:\n' +
-          '- fix_input_label: { "tool": "fix_input_label", "index": <input# 0-based>, "label": "description" }\n' +
-          '- fix_button_name: { "tool": "fix_button_name", "index": <button# 0-based>, "label": "description" }\n' +
-          '- fix_iframe_title: { "tool": "fix_iframe_title", "index": <iframe# 0-based>, "title": "description" }\n\n' +
-          'STRUCTURE FIXES:\n' +
-          '- fix_aria_label: { "tool": "fix_aria_label", "tag": "element", "index": <0-based>, "label": "description" }\n' +
-          '- fix_add_landmark: { "tool": "fix_add_landmark", "tag": "main", "label": "Main content" }\n' +
-          '- fix_remove_empty_heading: { "tool": "fix_remove_empty_heading", "index": <empty heading# 0-based> }\n' +
-          '- fix_duplicate_id: { "tool": "fix_duplicate_id", "id": "the-duplicate-id" }\n\n' +
-          'VISUAL/READABILITY FIXES:\n' +
-          '- fix_contrast: { "tool": "fix_contrast", "oldColor": "#hex", "newColor": "#hex" }\n' +
-          '- fix_image_decorative: { "tool": "fix_image_decorative", "index": <img# 0-based> }\n' +
-          '- fix_abbreviation: { "tool": "fix_abbreviation", "abbr": "WCAG", "title": "Web Content Accessibility Guidelines" }\n' +
-          '- fix_text_spacing: { "tool": "fix_text_spacing", "letterSpacing": "0.05em", "lineHeight": "1.7" }\n\n' +
-          'TABLE/LIST FIXES:\n' +
-          '- fix_table_header_row: { "tool": "fix_table_header_row", "index": <table# 0-based> }\n' +
-          '- fix_list_wrap: { "tool": "fix_list_wrap", "ordered": false }\n' +
-          '- fix_skip_nav: { "tool": "fix_skip_nav" }\n\n' +
-          'Be specific — use the actual document content to write accurate alt text, labels, and descriptions.\n' +
-          'Return ONLY a valid JSON array, no explanation or markdown.', true);
-
-        // Run 2 diagnoses and merge — primary (general) + second opinion (content + structural combined)
-        var surgPromptBase = 'VIOLATIONS:\n' + surgViolations + '\n\nHTML (stratified sample):\n"""\n' + _neutralizePromptFence(sampleHtml(accessibleHtml, 9000)) + '\n"""\n\nUse the same tool format. Return ONLY a valid JSON array.';
-        var surgDiagnosis2 = await callGemini('You are an independent accessibility expert (second opinion). Focus on BOTH content fixes (alt text quality, link descriptions, heading structure) AND structural fixes (landmarks, ARIA, table headers, form labels). Be thorough — catch anything the first auditor may have missed.\n\n' + surgPromptBase, true);
-
-        // Parse both diagnoses
-        var parseSurgical = function(raw) {
-          if (!raw) return [];
-          var fixes = [];
-          try { fixes = JSON.parse(raw); } catch(e) {
-            try { fixes = JSON.parse(raw.replace(/```json?\s*/gi, '').replace(/```/g, '').trim()); } catch(e2) { fixes = []; }
-          }
-          return Array.isArray(fixes) ? fixes : [];
-        };
-        var fixes1 = parseSurgical(surgDiagnosis);
-        var fixes2 = parseSurgical(surgDiagnosis2);
-
-        // Merge both: deduplicate by tool+index
-        var seenKeys = {};
-        var surgFixes = [];
-        [].concat(fixes1, fixes2).forEach(function(fix) {
-          if (!fix || !fix.tool) return;
-          var key = fix.tool + '-' + (fix.index || 0) + '-' + (fix.tag || '');
-          if (!seenKeys[key]) { seenKeys[key] = true; surgFixes.push(fix); }
-        });
-
-        var surgApplied = 0;
-        for (var si = 0; si < surgFixes.length; si++) {
-          var fix = surgFixes[si];
-          var tool = fix && fix.tool && surgicalTools[fix.tool];
-          if (tool) {
-            var before = accessibleHtml;
-            accessibleHtml = tool(accessibleHtml, fix);
-            if (accessibleHtml !== before) surgApplied++;
-          }
-        }
-        if (surgApplied > 0) {
-          log('Surgical fixes: ' + surgApplied + '/' + surgFixes.length + ' applied (2 diagnoses, merged)'); // was "3 parallel" — code runs 2, sequentially ($7c honesty, 2026-07-02)
-        }
-      }
-    } catch(surgErr) {
-      warnLog('[Surgical] Diagnosis failed (non-blocking):', surgErr?.message);
-    }
-
-    // ── Phase 4: Verify with both engines ──
-    log('Phase 4: Dual-engine verification...');
-    const [batchVerification, batchAxeResults] = await Promise.all([
-      auditOutputAccessibility(accessibleHtml),
-      runAxeAudit(accessibleHtml)
-    ]);
-
-    let afterScore = batchVerification ? batchVerification.score : null;
-
-    // Deterministic contrast fix
-    if (batchAxeResults && batchAxeResults.critical.concat(batchAxeResults.serious).some(v => v.id === 'color-contrast')) {
-      const cf = fixContrastViolations(accessibleHtml);
-      if (cf.fixCount > 0) { accessibleHtml = cf.html; log(`Fixed ${cf.fixCount} contrast violations`); }
-    }
-    // Deterministic list-structure fix
-    if (batchAxeResults && batchAxeResults.critical.concat(batchAxeResults.serious).some(v => v.id === 'list')) {
-      const lf = fixListViolations(accessibleHtml);
-      if (lf.fixCount > 0) { accessibleHtml = lf.html; log(`Fixed ${lf.fixCount} list-structure violations`); }
-    }
-    // Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans)
-    accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
-
-    // ── Phase 5: Self-correcting AI fix loop ──
-    let autoFixPasses = 0;
-    const batchMaxFix = pdfAutoFixPasses;
-    let bestAiScore = batchVerification ? batchVerification.score : 0;
-    let bestAxeViolations = batchAxeResults ? batchAxeResults.totalViolations : 0;
-    let curVerification = batchVerification;
-    let curAxeResults = batchAxeResults;
-
-    if (batchMaxFix > 0 && ((curAxeResults && curAxeResults.totalViolations > 0) || bestAiScore < 90)) {
-      for (let fp = 0; fp < batchMaxFix; fp++) {
-        log(`Fix pass ${fp + 1}/${batchMaxFix} (AI: ${bestAiScore}, axe: ${bestAxeViolations})...`);
-        const snap = accessibleHtml;
-
-        const axeIns = []
-          .concat((curAxeResults ? curAxeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-          .concat((curAxeResults ? curAxeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-          .concat((curAxeResults ? curAxeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
-        const aiIns = curVerification && curVerification.issues
-          ? curVerification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
-          : [];
-        const violIns = axeIns.concat(aiIns).join('\n');
-
-        try {
-          // Use chunked fix across the entire document (no truncation)
-          const fixed = await aiFixChunked(accessibleHtml, violIns, `audit-pass-${fp + 1}`);
-          if (fixed && fixed !== accessibleHtml) {
-            accessibleHtml = fixed;
-          }
-        } catch(fixErr) {
-          log(`Fix pass ${fp + 1} failed: ${fixErr.message}`);
-          break;
-        }
-
-        // Run deterministic fixes after each AI pass to clean up structural issues + AI mistakes
-        const postListFix = fixListViolations(accessibleHtml);
-        if (postListFix.fixCount > 0) { accessibleHtml = postListFix.html; log(`  Deterministic: fixed ${postListFix.fixCount} list issues`); }
-        const postContrastFix = fixContrastViolations(accessibleHtml);
-        if (postContrastFix.fixCount > 0) { accessibleHtml = postContrastFix.html; log(`  Deterministic: fixed ${postContrastFix.fixCount} contrast issues`); }
-        // Deterministic WCAG gap closures (form labels, decorative images, complex tables, lang spans)
-        accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
-        // Fix invalid ARIA roles that AI may have introduced
-        const _validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
-        const _roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
-        let _roleFixCount = 0;
-        accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (match, role) => {
-          const lower = role.toLowerCase().trim();
-          if (_validRoles.includes(lower)) return `role="${lower}"`;
-          if (_roleCorrections[lower]) { _roleFixCount++; return `role="${_roleCorrections[lower]}"`; }
-          _roleFixCount++; return '';
-        });
-        if (_roleFixCount > 0) log(`  Deterministic: fixed ${_roleFixCount} invalid ARIA roles`);
-        // Fix invalid lang attribute — use source language detected by the
-        // multi-auditor pass when present (each auditor returns a
-        // documentLanguage field). Fall back to 'en' only if no auditor
-        // detected a language. This stops Spanish/bilingual source PDFs
-        // from being wrongly tagged as English.
-        const _validLangPat = /^[a-z]{2,3}(-[A-Za-z]{2,4})?$/;
-        const _detectedLangs = (typeof batchParsedAudits !== 'undefined' && Array.isArray(batchParsedAudits))
-          ? batchParsedAudits.map(a => (a && a.documentLanguage) ? String(a.documentLanguage).trim().toLowerCase().replace(/_/g, '-') : null).filter(Boolean)
-          : [];
-        // Majority-vote: pick the most common BCP-47 code among auditors
-        let _detectedLang = 'en';
-        if (_detectedLangs.length > 0) {
-          const _counts = {};
-          _detectedLangs.forEach(l => { if (_validLangPat.test(l)) _counts[l] = (_counts[l] || 0) + 1; });
-          const _entries = Object.entries(_counts).sort((a, b) => b[1] - a[1]);
-          if (_entries.length > 0) _detectedLang = _entries[0][0];
-        }
-        accessibleHtml = accessibleHtml.replace(/<html([^>]*)lang="([^"]*)"/, (m, before, langVal) => {
-          const trimmed = langVal.trim().toLowerCase().replace(/_/g, '-');
-          const invalid = !trimmed || !_validLangPat.test(trimmed);
-          // Also override a VALID-but-wrong lang="en" to the audit-detected non-English language — the same
-          // upgrade the single-doc path got, which the batch path had been missing (a Spanish/Somali source
-          // emitted as valid en mis-announces the whole doc to a screen reader). Base-code compare preserves
-          // a region subtag (es-MX). (lang-ell-2 + -3, 2026-06-21)
-          const _dBase = _detectedLang.split('-')[0];
-          const overrideToDetected = !invalid && _detectedLang && _detectedLang !== 'en' && _dBase !== trimmed.split('-')[0];
-          if (invalid || overrideToDetected) {
-            log(`  Deterministic: ${invalid ? 'fixed invalid' : 'overrode valid'} lang="${langVal}" → "${_detectedLang}" (${_detectedLang === 'en' ? 'fallback' : 'detected from audit'})`);
-            return `<html${before}lang="${_detectedLang}"`;
-          }
-          return m;
-        });
-
-        // Run axe-core (local, zero API calls) + Gemini audits per pass.
-        // 2 parallel audits every pass (was 3): the adaptive tiebreaker below adds a 3rd ONLY when the
-        // two diverge >15 points, so consensus is preserved where it matters while ~⅓ fewer audit calls
-        // hit the Canvas proxy — fewer of the throttle/timeout failures that cap coverage ("N of M
-        // sections audited"). (audit-throttle 2026-06-29)
-        const numAudits = 2;
-        const auditPromises = [];
-        for (let ai = 0; ai < numAudits; ai++) auditPromises.push(auditOutputAccessibility(accessibleHtml));
-        auditPromises.push(runAxeAudit(accessibleHtml)); // axe-core is local — no API cost
-        const auditResults = await Promise.all(auditPromises);
-        const rAxe = auditResults[auditResults.length - 1]; // last result is axe
-        const rvAll = auditResults.slice(0, -1); // all but last are AI audits
-
-        let rvScores = rvAll.map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) so they can't poison the mean (vision-parseaudit-nan)
-
-        // Adaptive: if 2 auditors diverge by >15 points, add a tiebreaker 3rd
-        if (rvScores.length === 2 && Math.abs(rvScores[0] - rvScores[1]) > 15) {
-          log(`Score divergence (${rvScores[0]} vs ${rvScores[1]}) — adding tiebreaker audit`);
-          const tiebreaker = await auditOutputAccessibility(accessibleHtml);
-          if (tiebreaker && typeof tiebreaker.score === 'number') {
-            rvAll.push(tiebreaker);
-            rvScores.push(tiebreaker.score);
-          }
-        }
-
-        const newAi = rvScores.length > 0 ? Math.round(rvScores.reduce((a, b) => a + b, 0) / rvScores.length) : bestAiScore;
-        const rvSD = rvScores.length > 1 ? Math.sqrt(rvScores.reduce((s, x) => s + (x - newAi) ** 2, 0) / (rvScores.length - 1)) : 0;
-        const rvSEM = rvScores.length > 1 ? rvSD / Math.sqrt(rvScores.length) : 0;
-        const rv = rvAll.filter(Boolean).sort((a, b) => (b.score || 0) - (a.score || 0))[0] || null;
-        if (rv) { rv.score = newAi; rv._sem = rvSEM; rv._sd = rvSD; rv._scores = rvScores; }
-        const newAxe = rAxe ? rAxe.totalViolations : bestAxeViolations;
-        autoFixPasses++;
-
-        if (newAi < bestAiScore - 5 && newAxe > bestAxeViolations) {
-          log(`Pass ${fp + 1} REGRESSED \u2014 REVERTING`);
-          accessibleHtml = snap;
-          break;
-        }
-
-        if (rv) curVerification = rv;
-        if (rAxe) curAxeResults = rAxe;
-        bestAiScore = newAi;
-        bestAxeViolations = newAxe;
-
-        log(`Pass ${fp + 1}: AI ${newAi}/100, axe ${newAxe} violations`);
-
-        const targetScore = pdfTargetScore || 95;
-        if (newAxe === 0 && newAi >= targetScore) { log(`Target score ${targetScore} reached (${newAi}) with 0 violations \u2014 stopping`); break; }
-        const bMinDet = Math.max(2, Math.round(rvSEM * 1.5));
-        if (newAxe >= bestAxeViolations && newAi <= bestAiScore + bMinDet && fp > 0) { log(`Plateau (SEM\u00b1${rvSEM.toFixed(1)}, threshold=${bMinDet}) \u2014 stopping`); break; }
-      }
-    }
-
-    // Increment 2 (table-caption cascade, AI tier): caption-less tables with NO adjacent heading
-    // (deterministic heading-inference can't reach them) get a Gemini-authored caption from the
-    // table's own data, so the "missing table caption" finding clears BEFORE the final audit below.
-    try {
-      const _capRes = await addAiTableCaptions(accessibleHtml);
-      if (_capRes.fixCount > 0) { accessibleHtml = _capRes.html; log(`  AI: authored ${_capRes.fixCount} table caption(s) for headingless tables`); }
-    } catch (_capErr) { warnLog('[Batch] addAiTableCaptions failed (non-fatal): ' + (_capErr && _capErr.message)); }
-
-    // ── Final authoritative audit: full audit (not quickMode) for accurate scoring ──
-    // quickMode only samples head+tail of long docs, missing violations in the middle
-    try {
-      const batchFinalAudit = await auditOutputAccessibility(accessibleHtml);
-      if (batchFinalAudit) {
-        curVerification = batchFinalAudit;
-        log(`Final audit: score ${batchFinalAudit.score}, ${(batchFinalAudit.issues || []).length} remaining issues, ${(batchFinalAudit.passes || []).length} passes`);
-      }
-    } catch(batchFinalErr) {
-      log('Final audit failed (using loop result): ' + batchFinalErr.message);
-    }
-
-    // Headline = weakest layer (min), same method as the initial audit for a consistent comparison.
-    let finalScore = curVerification ? curVerification.score : afterScore;
-    if (finalScore !== null && curAxeResults && typeof curAxeResults.score === 'number') {
-      const governingFinal = _alloComputeHeadline(finalScore, curAxeResults.score);
-      warnLog(`[Batch] Final headline (weakest-layer): min(AI ${finalScore}, axe ${curAxeResults.score}) = ${governingFinal}`);
-      finalScore = governingFinal;
-    }
-    const needsExpertReview = (finalScore !== null && finalScore < 70) || (curAxeResults ? curAxeResults.critical.length : 0) > 0;
-    const elapsed = Math.round((Date.now() - beforeStartTime) / 1000);
-
-    log(`Done in ${elapsed}s: ${beforeScore}\u2192${finalScore} (+${(finalScore || 0) - beforeScore}) | ${autoFixPasses} fix passes`);
-
-    // ── Inject accessibility remediation footer into the output ──
-    const axeViolationCount = curAxeResults ? curAxeResults.totalViolations : 0;
-    const remediationFooter = `<footer role="contentinfo" style="margin-top:48px;padding:16px 20px;border-top:2px solid ${batchDocStyle.accentColor || '#6366f1'};font-family:system-ui,sans-serif;font-size:11px;color:#475569;page-break-inside:avoid">` +
-      `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">` +
-      `<span>\u267f Accessibility remediated by AlloFlow \u2014 Score: ${finalScore || '?'}/100 | ${axeViolationCount} axe violation${axeViolationCount !== 1 ? 's' : ''} | ${autoFixPasses} fix pass${autoFixPasses !== 1 ? 'es' : ''}</span>` +
-      `<span>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>` +
-      `</div></footer>`;
-    if (accessibleHtml.includes('</main>')) {
-      accessibleHtml = accessibleHtml.replace('</main>', remediationFooter + '\n</main>');
-    } else if (accessibleHtml.includes('</body>')) {
-      accessibleHtml = accessibleHtml.replace('</body>', remediationFooter + '\n</body>');
-    } else {
-      warnLog('[PDF Fix] WARNING: No </main> or </body> tag found — appending remediation footer to end of document');
-      accessibleHtml += '\n' + remediationFooter;
-    }
-
-    return { accessibleHtml, beforeScore, afterScore: finalScore, autoFixPasses, needsExpertReview, axeViolations: axeViolationCount, elapsed, docStyle: batchDocStyle };
-  };
+  // (S4, deep dive 2026-07-02) The ~1,150-line legacy `processSinglePdfForBatch` loop that
+  // lived here was DELETED. It had ZERO call sites (the live batch path is _processOne inside
+  // runPdfBatchRemediation below, which delegates to fixAndVerifyPdf) but carried a full third
+  // copy of the audit rubric prompt and a fifth fix loop with real-looking bugs (an always-true
+  // plateau check, the pre-2026-06-19 AND-only regression guard) that repeatedly burned audit
+  // and agent-verification cycles diagnosing batch behavior in code that never ran.
 
   const runPdfBatchRemediation = async (opts) => {
     // opts.resumeQueue — optional explicit queue (Tier 4 resume path).
@@ -18102,6 +16969,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // same by-construction reason before the switch to min.)
         const governingFinal = _alloComputeHeadline(finalAfterScore, deterministicScore);
         warnLog(`[PDF Fix] Final headline (weakest-layer): min(AI ${finalAfterScore}, deterministic ${deterministicScore} [axe ${axeResults.score}${eaScoreAvailable ? ', EqualAccess ' + eaResults.score + ', using the more conservative' : ', EA unavailable'}]) = ${governingFinal}`);
+        // H5 (deep dive 2026-07-02): the fix loop stops on raw AI mean ≥ target + axe==0, but
+        // EqualAccess only runs HERE, post-loop, and the shipped headline is the min() above —
+        // so a run could declare "target 95 reached" and then display 88 with no explanation.
+        // Say so explicitly when it happens.
+        {
+          const _tgt = pdfTargetScore || 95;
+          if (bestAiScore >= _tgt && governingFinal < _tgt) {
+            warnLog(`[PDF Fix] Note: the fix loop reached its AI target (${bestAiScore} >= ${_tgt}) but a deterministic engine governs the headline at ${governingFinal} — the displayed score is the weakest verified layer, not the loop's stop score.`);
+          }
+        }
         finalAfterScore = governingFinal;
       } else if (_aiDegraded && deterministicScore !== null) {
         // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
@@ -18117,10 +16994,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       }
 
       // Score divergence check
-      if (verification && verification.score !== null && afterScore !== null) {
-        const divergence = Math.abs(verification.score - afterScore);
+      // H5/F12 (deep dive 2026-07-02): this used to compare against `afterScore` — the PRE-loop
+      // baseline — so every successful remediation (+16 or more) logged a spurious "diverged"
+      // warning, burying real final-vs-loop disagreements in noise. Compare against the loop's
+      // own conclusion (bestAiScore) instead.
+      if (verification && verification.score !== null && Number.isFinite(bestAiScore) && bestAiScore > 0) {
+        const divergence = Math.abs(verification.score - bestAiScore);
         if (divergence > 15) {
-          warnLog(`[PDF Fix] WARNING: Final audit score diverged by ${divergence} points from loop result (final: ${verification.score}, loop: ${afterScore})`);
+          warnLog(`[PDF Fix] WARNING: Final audit score diverged by ${divergence} points from the loop's best (final: ${verification.score}, loop best: ${bestAiScore})`);
         }
       }
 
@@ -23432,6 +22313,16 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     let prevScore = 0;
     let plateauCount = 0;
     let changedByAgent = false;
+    // H4 (deep dive 2026-07-02): keep-best. This loop mutates currentHtml in place via surgical
+    // tools; plateau detection only STOPPED — it never restored a higher-scoring earlier pass,
+    // so a degrading pass (e.g. fix_heading scrambling the outline) SHIPPED. Track the best
+    // audited state and restore it at the end if the final state scores lower (same guarantee
+    // the main fix loop's bestHtml promotion gives).
+    let bestScore = -1;
+    let bestHtml = null;
+    let bestPass = 0;
+    // axe-only score on the same -15/-10/-5/-2 weights used throughout this loop
+    const _axeOnlyScore = (ax) => Math.max(0, Math.min(100, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)));
     const activityLog = [];
 
     function logActivity(msg, type) {
@@ -23460,9 +22351,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       catch (e) { logActivity('\u274C Audit failed: ' + (e.message || e), 'error'); break; }
       if (!axeResult) { logActivity('\u274C Audit returned no results.', 'error'); break; }
 
-      var currentScore = 100 - ((axeResult.critical || []).length * 15 + (axeResult.serious || []).length * 10 + (axeResult.moderate || []).length * 5 + (axeResult.minor || []).length * 2);
-      currentScore = Math.max(0, Math.min(100, currentScore));
+      var currentScore = _axeOnlyScore(axeResult);
       logActivity('\uD83D\uDCCA Score: ' + currentScore + '/100 (' + axeResult.totalViolations + ' violations)', 'score');
+      if (currentScore > bestScore) { bestScore = currentScore; bestHtml = currentHtml; bestPass = passCount; } // H4 keep-best
 
       if (currentScore >= targetScore) {
         logActivity('\u2705 Target score ' + targetScore + ' reached! Final: ' + currentScore + '/100', 'success');
@@ -23576,7 +22467,17 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
 
     // Final audit summary.
     var finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
-    var finalScore = finalAxe ? Math.max(0, 100 - ((finalAxe.critical || []).length * 15 + (finalAxe.serious || []).length * 10 + (finalAxe.moderate || []).length * 5 + (finalAxe.minor || []).length * 2)) : prevScore;
+    var finalScore = finalAxe ? _axeOnlyScore(finalAxe) : prevScore;
+    // H4 keep-best restore: if the end state audits LOWER than an earlier pass we already
+    // verified as better, ship that earlier state instead (run the same deterministic net on
+    // it, then re-audit so the reported score describes what is actually returned).
+    if (bestHtml !== null && finalAxe && finalScore < bestScore && bestHtml !== currentHtml) {
+      logActivity('⤴️ Final state scored ' + finalScore + '/100 but pass ' + bestPass + ' scored ' + bestScore + '/100 — restoring the best verified version.', 'plateau');
+      currentHtml = bestHtml;
+      try { currentHtml = runDeterministicWcagFixes(currentHtml); } catch (e) { warnLog('[Agent] deterministic net failed on restore: ' + (e && e.message || e)); }
+      finalAxe = await runAxeAudit(currentHtml).catch(function() { return null; });
+      finalScore = finalAxe ? _axeOnlyScore(finalAxe) : bestScore;
+    }
     // Heading-outline regression guard: axe (WCAG-tagged only) is BLIND to outline order, so a residual
     // skip / missing-h1 the net above couldn't fix is invisible to finalScore \u2014 /auto must not claim a
     // perfect score over a scrambled outline. SAFETY-SCOPED: cap ONLY on missingH1 (a stable DOM-only fact);
@@ -25588,6 +24489,52 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         </div>
                       </div>
                     </div>`;
+              } else if (type === '3D Concept Space') {
+                  // 2D print projection of the 3D concept space: each strand renders
+                  // as one "depth plane" card, stacked with an increasing inset so
+                  // the planes read front-to-back on paper. The live app renders this
+                  // type as an orbitable WebGL scene; print keeps the same
+                  // strand → plane semantics without requiring 3D.
+                  innerContent = `
+                    <style>
+                      .cspace-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .cspace-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .cspace-plane { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .cspace-print-wrapper { padding: 12px; }
+                        .cspace-print-wrapper .cspace-plane { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="cspace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
+                      <div style="text-align: center; margin-bottom: 26px;">
+                        <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(49,46,129,0.4);">
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800;">${main}</h3>
+                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
+                        </div>
+                        <div style="font-size: 0.72em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">3D Concept Space &mdash; each strand is a depth plane</div>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 14px;">
+                        ${branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          const inset = Math.min(i * 22, 88);
+                          return `<div class="cspace-plane" role="group" aria-label="Depth plane ${i + 1} of ${branches.length}: ${b.title}" style="margin-left: ${inset}px; margin-right: ${Math.max(0, 88 - inset)}px; background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 12px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
+                            <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+                              <span style="font-size: 0.68em; font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Plane ${i + 1}</span>
+                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${b.title}</span>
+                              ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${b.title_en})</em>` : ''}
+                            </div>
+                            <ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 7px; padding: 0; margin: 0;">
+                              ${(b.items || []).map((it, k) => {
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                return `<li style="font-size: 0.85em; font-weight: 600; color: ${c.accent}; background: white; border: 1.5px solid ${c.soft}; border-radius: 999px; padding: 4px 12px;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                              }).join('')}
+                            </ul>
+                          </div>`;
+                        }).join('')}
+                      </div>
+                      <div style="text-align: center; font-size: 0.75em; color: #64748b; margin-top: 14px; font-style: italic;">In the app, this organizer is an orbitable 3D space: left &rarr; right = sequence, higher = more abstract, depth = strand.</div>
+                    </div>`;
               } else {
                   // Generic fallback: pair-coded branch cards rotating through
                   // _PAIR_PALETTE so each section reads as a distinct chunk
@@ -25700,6 +24647,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const tag = isDecision ? '<em>(decision)</em> ' : '';
                       return `<li>${tag}<strong>${escape(b.title)}</strong>${b.title_en ? ` <em>(${escape(b.title_en)})</em>` : ''}${renderItems(b.items, b.items_en)}</li>`;
                   }).join('') + '</ol>';
+              } else if (type === '3D Concept Space') {
+                  body = `
+                      <p><strong>Topic:</strong> ${escape(main)}</p>
+                      <p>Strands (each strand is one depth plane in the 3D view):</p>
+                      ${branches.map((b, i) => `<p><strong>Plane ${i + 1}: ${escape(b.title)}</strong>${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
               } else {
                   body = branches.map(b => `
                       <h4>${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</h4>
