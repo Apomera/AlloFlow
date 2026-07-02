@@ -306,6 +306,97 @@ describe('vsGainAt', () => {
   });
 });
 
+// ─── vsDetectFillerSpans (on-device "um" scrubber) ───────────────────────────
+describe('vsDetectFillerSpans', () => {
+  const w = (word, start, end) => ({ word, start, end });
+  it('finds um/uh variants with 50ms padding', () => {
+    const spans = VS.vsDetectFillerSpans([w(' So', 0, 0.3), w(' um', 0.4, 0.7), w(' fractions', 0.9, 1.5)]);
+    expect(spans).toHaveLength(1);
+    expect(spans[0].start).toBeCloseTo(0.35);
+    expect(spans[0].end).toBeCloseTo(0.75);
+    expect(spans[0].text).toBe('um');
+  });
+  it('catches stretched fillers (ummm, uhh, erm) case-insensitively', () => {
+    const spans = VS.vsDetectFillerSpans([w('Ummm', 1, 1.6), w('UHH', 3, 3.4), w('erm', 5, 5.2), w('hmm', 7, 7.3)]);
+    expect(spans).toHaveLength(4);
+  });
+  it('does NOT flag real words like "like", "so", "well", "a"', () => {
+    const spans = VS.vsDetectFillerSpans([w('like', 0, 0.3), w('so', 0.5, 0.7), w('well', 1, 1.3), w('a', 1.5, 1.6)]);
+    expect(spans).toHaveLength(0);
+  });
+  it('flags immediate stutter repeats and silences the FIRST occurrence', () => {
+    const spans = VS.vsDetectFillerSpans([w('the', 2.0, 2.2), w('the', 2.3, 2.5), w('graph', 2.6, 3.0)]);
+    expect(spans).toHaveLength(1);
+    expect(spans[0].start).toBeCloseTo(1.95);
+    expect(spans[0].end).toBeCloseTo(2.25);
+  });
+  it('ignores distant repeats (not stutters) and merges adjacent spans', () => {
+    expect(VS.vsDetectFillerSpans([w('go', 0, 0.2), w('go', 5, 5.2)])).toHaveLength(0);
+    const merged = VS.vsDetectFillerSpans([w('um', 1, 1.3), w('uh', 1.35, 1.6)]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].text).toContain('um');
+    expect(merged[0].text).toContain('uh');
+  });
+  it('tolerates malformed word entries', () => {
+    expect(VS.vsDetectFillerSpans([null, w('', 1, 2), w('um', NaN, 2), w('um', 3, 3)])).toHaveLength(0);
+    expect(VS.vsDetectFillerSpans('nope')).toEqual([]);
+  });
+});
+
+// ─── vsSanitizeAiSuggestions (untrusted model output → safe proposals) ──────
+describe('vsSanitizeAiSuggestions', () => {
+  it('passes well-formed suggestions of every type', () => {
+    const out = VS.vsSanitizeAiSuggestions([
+      { type: 'trim_start', seconds: 3.5, reason: 'dead air' },
+      { type: 'mute_span', start: 10, end: 12, reason: 'aside' },
+      { type: 'zoom', t: 20, x: 0.3, y: 0.4, scale: 2, dur: 4, reason: 'points at graph' },
+      { type: 'title', text: 'Equivalent fractions in 3 minutes' },
+    ], 60);
+    expect(out.map((s) => s.type)).toEqual(['trim_start', 'mute_span', 'zoom', 'title']);
+  });
+  it('drops unknown types and executable-looking garbage entirely', () => {
+    const out = VS.vsSanitizeAiSuggestions([
+      { type: 'run_script', code: 'alert(1)' },
+      { type: 'delete_take' },
+      'just a string',
+      null,
+    ], 60);
+    expect(out).toHaveLength(0);
+  });
+  it('clamps every number into the take duration and legal ranges', () => {
+    const out = VS.vsSanitizeAiSuggestions([
+      { type: 'mute_span', start: -5, end: 900 },
+      { type: 'zoom', t: 900, x: 7, y: -2, scale: 99, dur: 500 },
+    ], 60);
+    expect(out[0]).toMatchObject({ start: 0, end: 60 });
+    expect(out[1].t).toBe(60);
+    expect(out[1].x).toBe(1);
+    expect(out[1].y).toBe(0);
+    expect(out[1].scale).toBe(4);
+    expect(out[1].dur).toBe(30);
+  });
+  it('rejects impossible trims and inverted spans', () => {
+    const out = VS.vsSanitizeAiSuggestions([
+      { type: 'trim_start', seconds: 61 },
+      { type: 'trim_end', seconds: 0 },
+      { type: 'mute_span', start: 20, end: 20 },
+    ], 60);
+    expect(out).toHaveLength(0);
+  });
+  it('accepts the {suggestions:[...]} wrapper shape and caps at 20', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ type: 'mute_span', start: i, end: i + 0.5 }));
+    const out = VS.vsSanitizeAiSuggestions({ suggestions: many }, 60);
+    expect(out).toHaveLength(20);
+    expect(VS.vsSanitizeAiSuggestions('garbage', 60)).toEqual([]);
+  });
+  it('caps title/reason strings and strips newlines', () => {
+    const out = VS.vsSanitizeAiSuggestions([{ type: 'title', text: 'x'.repeat(500) + '\nline2', reason: 'r'.repeat(500) }], 60);
+    expect(out[0].text.length).toBeLessThanOrEqual(120);
+    expect(out[0].reason.length).toBeLessThanOrEqual(300);
+    expect(out[0].text).not.toContain('\n');
+  });
+});
+
 // ─── vsMakePackReference ─────────────────────────────────────────────────────
 describe('vsMakePackReference (pack-size guard)', () => {
   it('produces metadata only — never video bytes', () => {

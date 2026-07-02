@@ -4779,7 +4779,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1'); }; })();
+    window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=1e5f07c6'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
@@ -29724,6 +29724,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 onClose: () => setIsVideoStudioOpen(false),
                 addToast,
                 t,
+                callGemini: callGemini,
                 onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
         </CDNModuleGate>

@@ -362,9 +362,87 @@
     }
     return vol;
   }
+
+  // Filler-word scan → proposed mute spans. words: [{word, start, end}] from a
+  // word-level transcript. Detects pure verbal fillers (um/uh/erm/hmm variants)
+  // and immediate stutter repeats ("the the"). Deliberately NOT "like"/"so"/
+  // "well" — those are real words most of the time, and a false silence is
+  // worse than a kept filler. Spans get 50ms padding and overlaps merge.
+  function vsDetectFillerSpans(words) {
+    var list = Array.isArray(words) ? words : [];
+    var FILLER = /^(u+m+|u+h+|e+r+m*|h+m+m*|m+h?m+|a+h+e?m*)$/;
+    var norm = function (w) { return String(w || '').toLowerCase().replace(/[^a-z']/g, ''); };
+    var out = [];
+    var prev = null;
+    for (var i = 0; i < list.length; i++) {
+      var w = list[i] || {};
+      var s = Number(w.start), e = Number(w.end);
+      var word = norm(w.word);
+      if (!word || !isFinite(s) || !isFinite(e) || e <= s) { prev = null; continue; }
+      if (FILLER.test(word)) {
+        out.push({ start: Math.max(0, s - 0.05), end: e + 0.05, text: String(w.word || '').trim() });
+      } else if (prev && word === prev.word && word.length >= 2 && !FILLER.test(prev.word) && (s - prev.end) < 0.4) {
+        // Silence the FIRST of the pair so the sentence keeps its real word.
+        out.push({ start: Math.max(0, prev.start - 0.05), end: prev.end + 0.05, text: 'repeated "' + String(w.word || '').trim() + '"' });
+      }
+      prev = { word: word, start: s, end: e };
+    }
+    out.sort(function (a, b) { return a.start - b.start; });
+    var merged = [];
+    for (var j = 0; j < out.length; j++) {
+      var cur = out[j];
+      var last = merged[merged.length - 1];
+      if (last && cur.start <= last.end + 0.05) { last.end = Math.max(last.end, cur.end); last.text += ', ' + cur.text; }
+      else merged.push({ start: cur.start, end: cur.end, text: cur.text });
+    }
+    return merged;
+  }
+
+  // AI edit suggestions arrive as UNTRUSTED JSON (model output). This is the
+  // only door they come through: unknown types are dropped, every number is
+  // clamped into the take's duration, strings are length-capped, and at most
+  // 20 survive — so a hallucinated or hostile response can only ever propose
+  // valid, human-reviewable edits, never execute anything.
+  function vsSanitizeAiSuggestions(raw, duration) {
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.suggestions) ? raw.suggestions : []);
+    var clampT = function (v) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(dur, v)) : null; };
+    var out = [];
+    for (var i = 0; i < list.length && out.length < 20; i++) {
+      var s = list[i] || {};
+      var type = String(s.type || '');
+      var why = String(s.reason || s.why || '').replace(/[\r\n]+/g, ' ').slice(0, 300);
+      if (type === 'trim_start' || type === 'trim_end') {
+        var secs = clampT(s.seconds);
+        if (secs == null || secs <= 0 || secs >= dur) continue;
+        out.push({ type: type, seconds: secs, reason: why });
+      } else if (type === 'mute_span') {
+        var a = clampT(s.start), b = clampT(s.end);
+        if (a == null || b == null || b <= a) continue;
+        out.push({ type: 'mute_span', start: a, end: b, reason: why });
+      } else if (type === 'zoom') {
+        var t = clampT(s.t != null ? s.t : s.start);
+        if (t == null) continue;
+        var x = Number(s.x), y = Number(s.y), sc = Number(s.scale), d = Number(s.dur);
+        out.push({
+          type: 'zoom', t: t,
+          x: isFinite(x) ? Math.max(0, Math.min(1, x)) : 0.5,
+          y: isFinite(y) ? Math.max(0, Math.min(1, y)) : 0.5,
+          scale: isFinite(sc) ? Math.max(1.2, Math.min(4, sc)) : 2,
+          dur: isFinite(d) ? Math.max(0.5, Math.min(30, d)) : 3,
+          reason: why
+        });
+      } else if (type === 'title') {
+        var txt = String(s.text || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120);
+        if (!txt) continue;
+        out.push({ type: 'title', text: txt, reason: why });
+      }
+    }
+    return out;
+  }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -447,6 +525,38 @@
         if (ev.data.type === 'allostudio-ready') {
           setStudioState('open');
           announce(T('video_studio.ready', 'Video Studio window is ready.'));
+        } else if (ev.data.type === 'allostudio-ai-request') {
+          // The Studio popup has no Gemini access of its own — it sends the
+          // TRANSCRIPT TEXT here (never video/audio bytes) and this relays it
+          // through the app's normal callGemini. The popup hard-sanitizes the
+          // response (vsSanitizeAiSuggestions) before showing anything.
+          var req = ev.data;
+          var replyTo = studioWinRef.current;
+          var respond = function (payload) {
+            try { if (replyTo && !replyTo.closed) replyTo.postMessage(Object.assign({ type: 'allostudio-ai-response', id: req.id }, payload), '*'); } catch (_) {}
+          };
+          if (typeof props.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }
+          var durSec = Math.max(1, Math.round(Number(req.duration) || 0));
+          var prompt = 'You are reviewing the transcript of a teacher\'s instructional video to suggest a FEW high-value edits.\n' +
+            'Respond with ONLY a JSON array (no prose, no markdown fences). Each item has "type", "reason" (short, plain), and type-specific fields:\n' +
+            '- {"type":"trim_start","seconds":N} or {"type":"trim_end","seconds":N} — cut dead air or false starts at the edges\n' +
+            '- {"type":"mute_span","start":S,"end":S} — silence ONLY off-topic asides or spoken personal names (audio is muted, video keeps playing)\n' +
+            '- {"type":"zoom","t":S,"x":0..1,"y":0..1,"scale":1.5-3,"dur":S} — only when the speaker clearly directs attention ("look here", "this graph")\n' +
+            '- {"type":"title","text":"..."} — a clearer video title\n' +
+            'Rules: at most 8 suggestions; only clearly beneficial ones; an empty array [] is a good answer for a clean video; never invent timestamps outside 0-' + durSec + 's.\n' +
+            'Video duration: ' + durSec + ' seconds. Current title: ' + String(req.title || '(none)').slice(0, 120) + '\n' +
+            'Transcript with [start-end] second markers:\n' + String(req.transcript || '').slice(0, 24000);
+          Promise.resolve().then(function () { return props.callGemini(prompt, false, true); }).then(function (res) {
+            var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var parsed = null;
+            try { parsed = JSON.parse(text); } catch (_) {
+              var m = /\[[\s\S]*\]/.exec(String(text || ''));
+              if (m) { try { parsed = JSON.parse(m[0]); } catch (_2) {} }
+            }
+            respond({ suggestions: parsed || [] });
+          }).catch(function (e) {
+            respond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
         } else if (ev.data.type === 'allostudio-closed') {
           setStudioState('closed');
         } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {

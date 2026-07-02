@@ -191,6 +191,26 @@
           </div>
           <div id="muteList"></div>
         </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Narration &amp; sound clips</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="narrateBtn">🎙 Record narration over the video</button>
+            <span class="status" id="narrInfo" style="margin-top:0"></span>
+            <button class="danger" id="narrDelBtn" hidden>✕ Remove narration</button>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <label for="narrVol">Narration volume</label>
+            <input type="range" id="narrVol" min="0" max="2" step="0.05" value="1" style="width:120px">
+            <span class="status" id="narrVolLabel" style="margin-top:0">100%</span>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="addClipFileBtn">📎 Add sound clip at playhead…</button>
+            <input type="file" id="clipFileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.webm" hidden>
+            <button class="quiet" id="recClipBtn">🎙 Record clip at playhead</button>
+          </div>
+          <div id="clipList"></div>
+          <p class="status">Narration records from your mic while the video plays silently, lined up from 0:00 — press the button again to stop. To REPLACE the original sound, also tick “Remove audio entirely” above. Clips and narration play in the preview and mix together permanently on export.</p>
+        </div>
       </div>
       <div>
         <div class="card">
@@ -218,6 +238,20 @@
             </table>
           </div>
           <p class="status">Captions come from live speech recognition while you record (fix any errors here) — they export as a .vtt subtitle file or can be burned into the video.</p>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>AI edit review</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="fillerScanBtn" title="Runs entirely on this computer using the same local engine as Auto-caption.">🔎 Find filler words (on-device)</button>
+            <button class="quiet" id="aiSuggestBtn" title="Sends the transcript TEXT (never the video or audio) to Gemini through AlloFlow.">✨ Ask Gemini for suggestions</button>
+          </div>
+          <progress id="aiReviewProgress" max="100" value="0" hidden></progress>
+          <div class="status" id="aiReviewStatus">Suggestions appear here as a checklist — nothing changes until you review them and press Apply.</div>
+          <div id="suggestList" style="margin-top:8px"></div>
+          <div class="row" id="suggestActions" hidden style="margin-top:8px">
+            <button class="action" id="applySuggestBtn">✅ Apply checked</button>
+            <button class="quiet" id="clearSuggestBtn">Dismiss all</button>
+          </div>
         </div>
       </div>
     </div>
@@ -576,6 +610,84 @@ function vsGainAt(muteSpans, volume, tSec) {
     if (isFinite(a) && isFinite(b) && t >= Math.min(a, b) && t < Math.max(a, b)) return 0;
   }
   return vol;
+}
+
+// Filler-word scan → proposed mute spans. words: [{word, start, end}] from a
+// word-level transcript. Detects pure verbal fillers (um/uh/erm/hmm variants)
+// and immediate stutter repeats ("the the"). Deliberately NOT "like"/"so"/
+// "well" — those are real words most of the time, and a false silence is
+// worse than a kept filler. Spans get 50ms padding and overlaps merge.
+function vsDetectFillerSpans(words) {
+  var list = Array.isArray(words) ? words : [];
+  var FILLER = /^(u+m+|u+h+|e+r+m*|h+m+m*|m+h?m+|a+h+e?m*)$/;
+  var norm = function (w) { return String(w || '').toLowerCase().replace(/[^a-z']/g, ''); };
+  var out = [];
+  var prev = null;
+  for (var i = 0; i < list.length; i++) {
+    var w = list[i] || {};
+    var s = Number(w.start), e = Number(w.end);
+    var word = norm(w.word);
+    if (!word || !isFinite(s) || !isFinite(e) || e <= s) { prev = null; continue; }
+    if (FILLER.test(word)) {
+      out.push({ start: Math.max(0, s - 0.05), end: e + 0.05, text: String(w.word || '').trim() });
+    } else if (prev && word === prev.word && word.length >= 2 && !FILLER.test(prev.word) && (s - prev.end) < 0.4) {
+      // Silence the FIRST of the pair so the sentence keeps its real word.
+      out.push({ start: Math.max(0, prev.start - 0.05), end: prev.end + 0.05, text: 'repeated "' + String(w.word || '').trim() + '"' });
+    }
+    prev = { word: word, start: s, end: e };
+  }
+  out.sort(function (a, b) { return a.start - b.start; });
+  var merged = [];
+  for (var j = 0; j < out.length; j++) {
+    var cur = out[j];
+    var last = merged[merged.length - 1];
+    if (last && cur.start <= last.end + 0.05) { last.end = Math.max(last.end, cur.end); last.text += ', ' + cur.text; }
+    else merged.push({ start: cur.start, end: cur.end, text: cur.text });
+  }
+  return merged;
+}
+
+// AI edit suggestions arrive as UNTRUSTED JSON (model output). This is the
+// only door they come through: unknown types are dropped, every number is
+// clamped into the take's duration, strings are length-capped, and at most
+// 20 survive — so a hallucinated or hostile response can only ever propose
+// valid, human-reviewable edits, never execute anything.
+function vsSanitizeAiSuggestions(raw, duration) {
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.suggestions) ? raw.suggestions : []);
+  var clampT = function (v) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(dur, v)) : null; };
+  var out = [];
+  for (var i = 0; i < list.length && out.length < 20; i++) {
+    var s = list[i] || {};
+    var type = String(s.type || '');
+    var why = String(s.reason || s.why || '').replace(/[\r\n]+/g, ' ').slice(0, 300);
+    if (type === 'trim_start' || type === 'trim_end') {
+      var secs = clampT(s.seconds);
+      if (secs == null || secs <= 0 || secs >= dur) continue;
+      out.push({ type: type, seconds: secs, reason: why });
+    } else if (type === 'mute_span') {
+      var a = clampT(s.start), b = clampT(s.end);
+      if (a == null || b == null || b <= a) continue;
+      out.push({ type: 'mute_span', start: a, end: b, reason: why });
+    } else if (type === 'zoom') {
+      var t = clampT(s.t != null ? s.t : s.start);
+      if (t == null) continue;
+      var x = Number(s.x), y = Number(s.y), sc = Number(s.scale), d = Number(s.dur);
+      out.push({
+        type: 'zoom', t: t,
+        x: isFinite(x) ? Math.max(0, Math.min(1, x)) : 0.5,
+        y: isFinite(y) ? Math.max(0, Math.min(1, y)) : 0.5,
+        scale: isFinite(sc) ? Math.max(1.2, Math.min(4, sc)) : 2,
+        dur: isFinite(d) ? Math.max(0.5, Math.min(30, d)) : 3,
+        reason: why
+      });
+    } else if (type === 'title') {
+      var txt = String(s.text || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120);
+      if (!txt) continue;
+      out.push({ type: 'title', text: txt, reason: why });
+    }
+  }
+  return out;
 }
 // [VS_SHARED_END]
 
@@ -1200,6 +1312,307 @@ function vsGainAt(muteSpans, volume, tSec) {
     try { $('editVideo').volume = Math.min(1, g); } catch (_) {}
   });
 
+  // ── AI edit review: on-device filler scan + Gemini transcript suggestions ──
+  // Both produce the SAME thing: a checklist of proposed edits mapped onto
+  // primitives that already exist (mute spans, trim, zoom, title). Nothing is
+  // applied until the teacher reviews the list and presses Apply.
+  var pendingSuggestions = [];
+
+  function describeSuggestion(s) {
+    if (s.type === 'mute_span') return '🤫 Silence ' + vsFormatTimestamp(s.start).slice(3) + '–' + vsFormatTimestamp(s.end).slice(3) + (s.reason ? ' — ' + s.reason : '');
+    if (s.type === 'trim_start') return '✂ Cut first ' + s.seconds.toFixed(1) + 's' + (s.reason ? ' — ' + s.reason : '');
+    if (s.type === 'trim_end') return '✂ Cut last ' + s.seconds.toFixed(1) + 's' + (s.reason ? ' — ' + s.reason : '');
+    if (s.type === 'zoom') return '🔍 Zoom ' + s.scale + '× at ' + vsFormatTimestamp(s.t).slice(3) + (s.reason ? ' — ' + s.reason : '');
+    if (s.type === 'title') return '🏷 Title: "' + s.text + '"' + (s.reason ? ' — ' + s.reason : '');
+    return JSON.stringify(s);
+  }
+
+  function renderSuggestions() {
+    var host = $('suggestList');
+    host.innerHTML = '';
+    $('suggestActions').hidden = pendingSuggestions.length === 0;
+    pendingSuggestions.forEach(function (s, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
+      var chk = document.createElement('input');
+      chk.type = 'checkbox'; chk.checked = !!s.checked; chk.id = 'sug' + idx;
+      chk.addEventListener('change', function () { s.checked = chk.checked; });
+      var lbl = document.createElement('label');
+      lbl.setAttribute('for', 'sug' + idx);
+      lbl.style.cssText = 'flex:1;font-size:13px;cursor:pointer';
+      lbl.textContent = describeSuggestion(s);
+      row.appendChild(chk); row.appendChild(lbl);
+      var at = (s.type === 'mute_span') ? s.start : (s.type === 'zoom') ? s.t : (s.type === 'trim_end') ? null : (s.type === 'trim_start') ? 0 : null;
+      if (at != null) {
+        var play = document.createElement('button'); play.className = 'quiet'; play.textContent = '▶';
+        play.setAttribute('aria-label', 'Play this moment');
+        play.addEventListener('click', function () {
+          var v = $('editVideo');
+          v.currentTime = Math.max(0, at - 0.7); v.play();
+          setTimeout(function () { try { v.pause(); } catch (_) {} }, 2600);
+        });
+        row.appendChild(play);
+      }
+      host.appendChild(row);
+    });
+  }
+
+  $('clearSuggestBtn').addEventListener('click', function () { pendingSuggestions = []; renderSuggestions(); setStatus($('aiReviewStatus'), 'Dismissed.'); });
+
+  $('applySuggestBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    var applied = 0;
+    pendingSuggestions.filter(function (s) { return s.checked; }).forEach(function (s) {
+      if (s.type === 'mute_span') { ensureAudio(t).muteSpans.push({ start: s.start, end: s.end }); applied++; }
+      else if (s.type === 'trim_start') { $('trimStart').value = String(Math.max(Number($('trimStart').value) || 0, s.seconds)); applied++; }
+      else if (s.type === 'trim_end') { $('trimEnd').value = String(Math.max(Number($('trimEnd').value) || 0, s.seconds)); applied++; }
+      else if (s.type === 'zoom') { (t.zooms = t.zooms || []).push({ id: 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: s.t, x: s.x, y: s.y, scale: s.scale, dur: s.dur }); applied++; }
+      else if (s.type === 'title') { $('titleInput').value = s.text; applied++; }
+    });
+    pendingSuggestions = pendingSuggestions.filter(function (s) { return !s.checked; });
+    saveDraft(t);
+    renderAudio(); renderZooms(); renderSuggestions();
+    setStatus($('aiReviewStatus'), applied + ' edit' + (applied === 1 ? '' : 's') + ' applied — check the Audio/Zoom/Trim panels; everything stays adjustable there.', 'ok');
+    announce(applied + ' suggested edits applied');
+  });
+
+  async function fillerScan() {
+    var t = currentTake();
+    if (!t) { setStatus($('aiReviewStatus'), 'Record or import a video first.', 'warn'); return; }
+    var btn = $('fillerScanBtn'), prog = $('aiReviewProgress');
+    btn.disabled = true;
+    try {
+      setStatus($('aiReviewStatus'), 'Loading the on-device engine… (shares the Auto-caption model — downloads once)');
+      prog.hidden = false; prog.value = 0;
+      var asr = await loadAsr($('whisperModel').value, function (p) {
+        if (p && typeof p.progress === 'number') prog.value = Math.round(p.progress);
+      });
+      setStatus($('aiReviewStatus'), 'Extracting audio…');
+      var pcm = await extractPcm16k(t.blob);
+      setStatus($('aiReviewStatus'), 'Listening for fillers on this device… nothing is uploaded.');
+      prog.removeAttribute('value');
+      var res = await asr(pcm, { chunk_length_s: 30, stride_length_s: 5, return_timestamps: 'word' });
+      var words = (res && res.chunks ? res.chunks : []).map(function (c) {
+        var ts = c.timestamp || [];
+        return { word: c.text, start: Number(ts[0]), end: Number(ts[1]) };
+      });
+      var spans = vsDetectFillerSpans(words);
+      if (!spans.length) { setStatus($('aiReviewStatus'), 'No filler words detected — clean take! 🎉', 'ok'); }
+      else {
+        spans.forEach(function (sp) { pendingSuggestions.push({ type: 'mute_span', start: sp.start, end: sp.end, reason: sp.text, checked: true }); });
+        renderSuggestions();
+        setStatus($('aiReviewStatus'), spans.length + ' filler moment' + (spans.length === 1 ? '' : 's') + ' found — preview each ▶, uncheck any you want to keep, then Apply.', 'ok');
+        announce(spans.length + ' filler moments found');
+      }
+    } catch (e) {
+      setStatus($('aiReviewStatus'), 'Filler scan failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    }
+    prog.hidden = true; prog.value = 0;
+    btn.disabled = false;
+  }
+  $('fillerScanBtn').addEventListener('click', fillerScan);
+
+  var aiReqSeq = 0;
+  function aiSuggest() {
+    var t = currentTake();
+    if (!t) { setStatus($('aiReviewStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('aiReviewStatus'), 'Gemini suggestions need the AlloFlow window (they run through the app’s AI connection). Open the Studio from AlloFlow.', 'warn'); return; }
+    if (!t.captions.length) { setStatus($('aiReviewStatus'), 'Run Auto-caption (or add captions) first — Gemini reads the transcript text, never the video itself.', 'warn'); return; }
+    var btn = $('aiSuggestBtn');
+    btn.disabled = true;
+    setStatus($('aiReviewStatus'), 'Asking Gemini (transcript text only)…');
+    var id = 'ai' + (++aiReqSeq) + '-' + Date.now().toString(36);
+    var transcript = t.captions.map(function (c) { return '[' + (Math.round(c.start * 10) / 10) + '-' + (Math.round(c.end * 10) / 10) + '] ' + c.text; }).join('\n');
+    var timer = setTimeout(function () { done({ error: 'timed out after 90s' }); }, 90000);
+    function done(data) {
+      clearTimeout(timer);
+      window.removeEventListener('message', onResp);
+      btn.disabled = false;
+      if (!data || data.error) {
+        setStatus($('aiReviewStatus'), 'Gemini suggestions unavailable: ' + ((data && data.error) || 'no response') + '. The on-device filler scan still works.', 'bad');
+        return;
+      }
+      var sugs = vsSanitizeAiSuggestions(data.suggestions, t.duration);
+      if (!sugs.length) { setStatus($('aiReviewStatus'), 'Gemini had no edits to suggest — it thinks the video reads well as-is.', 'ok'); return; }
+      // AI content suggestions default UNCHECKED — bolder than filler scrubs,
+      // so the teacher opts each one in.
+      sugs.forEach(function (s) { s.checked = false; pendingSuggestions.push(s); });
+      renderSuggestions();
+      setStatus($('aiReviewStatus'), sugs.length + ' suggestion' + (sugs.length === 1 ? '' : 's') + ' from Gemini — all unchecked until you approve them.', 'ok');
+      announce(sugs.length + ' Gemini suggestions received');
+    }
+    function onResp(ev) {
+      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-ai-response' && ev.data.id === id) done(ev.data);
+    }
+    window.addEventListener('message', onResp);
+    postToOpener({ type: 'allostudio-ai-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' });
+  }
+  $('aiSuggestBtn').addEventListener('click', aiSuggest);
+
+  // ── Narration & sound clips ──
+  var narrRec = null, narrStreams = [];
+  function renderNarration() {
+    var t = currentTake();
+    var n = t && t.narration;
+    $('narrInfo').textContent = n ? ('Narration recorded (' + fmtBytes(n.blob.size) + ')') : 'No narration yet.';
+    $('narrDelBtn').hidden = !n;
+    $('narrVol').value = String(n && n.volume != null ? n.volume : 1);
+    $('narrVolLabel').textContent = Math.round((n && n.volume != null ? n.volume : 1) * 100) + '%';
+  }
+  async function toggleNarration() {
+    var t = currentTake(); if (!t) return;
+    var v = $('editVideo');
+    if (narrRec) { try { narrRec.stop(); } catch (_) {} return; }
+    var mic;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+    catch (e) { setStatus($('aiReviewStatus'), 'Microphone unavailable: ' + (e && e.name), 'bad'); return; }
+    narrStreams = [mic];
+    var mime = (window.MediaRecorder && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) ? 'audio/webm;codecs=opus' : '';
+    var chunks = [];
+    try { narrRec = new MediaRecorder(mic, mime ? { mimeType: mime } : undefined); } catch (e) { mic.getTracks().forEach(function (tr) { tr.stop(); }); return; }
+    narrRec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    var onEnded = function () { try { if (narrRec) narrRec.stop(); } catch (_) {} };
+    v.addEventListener('ended', onEnded);
+    narrRec.onstop = function () {
+      v.removeEventListener('ended', onEnded);
+      narrStreams.forEach(function (s) { try { s.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} });
+      narrStreams = []; narrRec = null;
+      try { v.pause(); } catch (_) {}
+      v.muted = false;
+      $('narrateBtn').textContent = '🎙 Record narration over the video';
+      var blob = new Blob(chunks, { type: 'audio/webm' });
+      if (blob.size > 200) {
+        var oldVol = t.narration && t.narration.volume;
+        t.narration = { blob: blob, volume: oldVol != null ? oldVol : 1 };
+        saveDraft(t);
+        announce('Narration saved');
+      }
+      resetPreviewAudio();
+      renderNarration();
+    };
+    // Play the video silently from the start so narration lines up with 0:00.
+    v.muted = true; v.currentTime = 0;
+    try { await v.play(); } catch (_) {}
+    narrRec.start(500);
+    $('narrateBtn').textContent = '⏹ Stop narration';
+    announce('Narration recording — the video is playing silently');
+  }
+  $('narrateBtn').addEventListener('click', toggleNarration);
+  $('narrDelBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    t.narration = null; saveDraft(t); resetPreviewAudio(); renderNarration();
+  });
+  $('narrVol').addEventListener('input', function () {
+    var t = currentTake(); if (!t || !t.narration) { $('narrVolLabel').textContent = Math.round(Number($('narrVol').value) * 100) + '%'; return; }
+    t.narration.volume = Number($('narrVol').value);
+    $('narrVolLabel').textContent = Math.round(t.narration.volume * 100) + '%';
+    saveDraft(t);
+  });
+
+  function renderClips() {
+    var t = currentTake();
+    var host = $('clipList');
+    host.innerHTML = '';
+    var clips = t ? (t.audioClips = t.audioClips || []) : [];
+    clips.sort(function (a, b) { return a.t - b.t; });
+    clips.forEach(function (c, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px';
+      var nm = document.createElement('span'); nm.style.cssText = 'font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; nm.textContent = c.name || ('clip ' + (idx + 1));
+      row.appendChild(nm);
+      var atL = document.createElement('label'); atL.textContent = 'at (s) ';
+      var at = document.createElement('input'); at.type = 'number'; at.step = '0.1'; at.min = '0'; at.style.width = '70px';
+      at.value = (Math.round((c.t || 0) * 10) / 10).toFixed(1);
+      at.setAttribute('aria-label', 'Start time of clip ' + (idx + 1));
+      at.addEventListener('change', function () { c.t = Number(at.value) || 0; saveDraft(t); resetPreviewAudio(); });
+      atL.appendChild(at); row.appendChild(atL);
+      var vol = document.createElement('input'); vol.type = 'range'; vol.min = '0'; vol.max = '2'; vol.step = '0.05'; vol.style.width = '80px';
+      vol.value = String(c.volume != null ? c.volume : 1);
+      vol.setAttribute('aria-label', 'Volume of clip ' + (idx + 1));
+      vol.addEventListener('input', function () { c.volume = Number(vol.value); saveDraft(t); });
+      row.appendChild(vol);
+      var prev = document.createElement('button'); prev.className = 'quiet'; prev.textContent = '▶';
+      prev.setAttribute('aria-label', 'Preview clip ' + (idx + 1));
+      prev.addEventListener('click', function () {
+        var a = new Audio(URL.createObjectURL(c.blob));
+        a.volume = Math.min(1, c.volume != null ? c.volume : 1);
+        a.play();
+        a.addEventListener('ended', function () { URL.revokeObjectURL(a.src); });
+      });
+      row.appendChild(prev);
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Delete clip ' + (idx + 1));
+      del.addEventListener('click', function () { t.audioClips.splice(t.audioClips.indexOf(c), 1); saveDraft(t); resetPreviewAudio(); renderClips(); });
+      row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+  $('addClipFileBtn').addEventListener('click', function () { $('clipFileInput').click(); });
+  $('clipFileInput').addEventListener('change', function () {
+    var t = currentTake(); var f = $('clipFileInput').files[0];
+    $('clipFileInput').value = '';
+    if (!t || !f) return;
+    (t.audioClips = t.audioClips || []).push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: f.name, blob: f, t: $('editVideo').currentTime || 0, volume: 1 });
+    saveDraft(t); resetPreviewAudio(); renderClips();
+  });
+  var clipRec = null;
+  $('recClipBtn').addEventListener('click', async function () {
+    var t = currentTake(); if (!t) return;
+    if (clipRec) { try { clipRec.stop(); } catch (_) {} return; }
+    var mic;
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { return; }
+    var chunks = [], atTime = $('editVideo').currentTime || 0;
+    try { clipRec = new MediaRecorder(mic); } catch (e) { mic.getTracks().forEach(function (tr) { tr.stop(); }); return; }
+    clipRec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    clipRec.onstop = function () {
+      mic.getTracks().forEach(function (tr) { tr.stop(); });
+      clipRec = null;
+      $('recClipBtn').textContent = '🎙 Record clip at playhead';
+      var blob = new Blob(chunks, { type: 'audio/webm' });
+      if (blob.size > 200) {
+        (t.audioClips = t.audioClips || []).push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: 'mic clip', blob: blob, t: atTime, volume: 1 });
+        saveDraft(t); resetPreviewAudio(); renderClips();
+      }
+    };
+    clipRec.start(500);
+    $('recClipBtn').textContent = '⏹ Stop clip';
+  });
+
+  // Preview scheduler: keeps narration + clips in sync with the edit player.
+  var previewAudios = {};
+  function resetPreviewAudio() {
+    Object.keys(previewAudios).forEach(function (k) {
+      try { previewAudios[k].el.pause(); URL.revokeObjectURL(previewAudios[k].el.src); } catch (_) {}
+    });
+    previewAudios = {};
+  }
+  function syncPreviewAudio() {
+    var t = currentTake(); if (!t) return;
+    var v = $('editVideo');
+    var items = [];
+    if (t.narration && t.narration.blob && !narrRec) items.push({ key: 'narr', blob: t.narration.blob, at: 0, vol: t.narration.volume });
+    (t.audioClips || []).forEach(function (c) { items.push({ key: c.id, blob: c.blob, at: c.t, vol: c.volume }); });
+    items.forEach(function (it) {
+      var pa = previewAudios[it.key];
+      if (!pa || pa.blob !== it.blob) {
+        if (pa) { try { pa.el.pause(); URL.revokeObjectURL(pa.el.src); } catch (_) {} }
+        pa = previewAudios[it.key] = { el: new Audio(URL.createObjectURL(it.blob)), blob: it.blob };
+      }
+      pa.el.volume = Math.min(1, Math.max(0, Number(it.vol != null ? it.vol : 1)));
+      var rel = v.currentTime - (it.at || 0);
+      var within = rel >= 0 && rel < (pa.el.duration || Infinity);
+      if (!v.paused && within) {
+        if (pa.el.paused) { try { pa.el.currentTime = Math.max(0, rel); pa.el.play(); } catch (_) {} }
+        else if (Math.abs(pa.el.currentTime - rel) > 0.35) { try { pa.el.currentTime = rel; } catch (_) {} }
+      } else if (!pa.el.paused) { pa.el.pause(); }
+    });
+  }
+  ['play', 'pause', 'seeked', 'timeupdate'].forEach(function (evName) {
+    $('editVideo').addEventListener(evName, syncPreviewAudio);
+  });
+
   // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
   function importCaptionFile(file) {
     var t = currentTake();
@@ -1261,9 +1674,12 @@ function vsGainAt(muteSpans, volume, tSec) {
     $('trimEnd').value = '0';
     setStatus($('trimStatus'), 'Full length ' + fmtClock(t.duration) + '.');
     aimingZoomId = null;
+    resetPreviewAudio();
     renderCues();
     renderZooms();
     renderAudio();
+    renderNarration();
+    renderClips();
   }
 
   // Trim preview: clamp playback into the kept window.
@@ -1347,7 +1763,8 @@ function vsGainAt(muteSpans, volume, tSec) {
       .map(function (c) { return { start: Math.max(0, c.start - seg.segments[0].start), end: Math.max(0.2, c.end - seg.segments[0].start), text: c.text }; });
     var zooms = (t.zooms || []).filter(function (z) { return z && Number(z.scale) > 1; });
     var audioCfg = t.audio || null;
-    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || !audioIsDefault(audioCfg);
+    var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length);
+    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     $('exportBtn').disabled = true;
     try {
       var outBlob, outDur;
@@ -1406,8 +1823,26 @@ function vsGainAt(muteSpans, volume, tSec) {
             gainNode.connect(dest);
           } catch (_) { gainNode = null; }
         }
+        // Narration + sound clips mix in through their own gain nodes, timed
+        // against take-absolute video time — they play even when the original
+        // track is removed (the "replace my audio" workflow).
+        var mixItems = [];
+        if (take.narration && take.narration.blob) mixItems.push({ blob: take.narration.blob, at: 0, vol: take.narration.volume });
+        (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
+        mixItems.forEach(function (m) {
+          try {
+            var el = document.createElement('audio');
+            el.src = URL.createObjectURL(m.blob);
+            el.preload = 'auto';
+            var g = ac.createGain();
+            g.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
+            ac.createMediaElementSource(el).connect(g);
+            g.connect(dest);
+            m._el = el; m._started = false;
+          } catch (_) { m._el = null; }
+        });
         var stream = cv.captureStream(30);
-        if (!removeAudio && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
+        if ((!removeAudio || mixItems.length) && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
         var mime = pickMime();
         var mr;
         try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { reject(e); return; }
@@ -1460,6 +1895,14 @@ function vsGainAt(muteSpans, volume, tSec) {
               var tgtGain = vsGainAt(audioCfg && audioCfg.muteSpans, audioCfg ? audioCfg.volume : 1, v.currentTime);
               try { gainNode.gain.setTargetAtTime(tgtGain, ac.currentTime, 0.015); } catch (_) { gainNode.gain.value = tgtGain; }
             }
+            // Start narration/clips as the playhead crosses their start times.
+            for (var mi = 0; mi < mixItems.length; mi++) {
+              var m2 = mixItems[mi];
+              if (m2._el && !m2._started && v.currentTime >= m2.at) {
+                m2._started = true;
+                try { m2._el.currentTime = Math.max(0, v.currentTime - m2.at); m2._el.play(); } catch (_) {}
+              }
+            }
             // Zoom keyframes use take-absolute time (v.currentTime), so a
             // trimmed start doesn't shift where the teacher aimed them.
             var zs = vsZoomState(zooms || [], v.currentTime);
@@ -1476,6 +1919,7 @@ function vsGainAt(muteSpans, volume, tSec) {
             if (v.currentTime >= seg.end || v.ended) {
               cancelAnimationFrame(raf);
               try { v.pause(); } catch (_) {}
+              mixItems.forEach(function (m3) { try { if (m3._el) m3._el.pause(); } catch (_) {} });
               setTimeout(function () { try { mr.stop(); } catch (_) {} }, 150);
               return;
             }
@@ -1563,7 +2007,7 @@ function vsGainAt(muteSpans, volume, tSec) {
   }
   function saveDraft(take) {
     withDb(function (db) {
-      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, createdAt: take.createdAt }); } catch (_) {}
+      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt }); } catch (_) {}
     });
   }
   function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
@@ -1578,7 +2022,7 @@ function vsGainAt(muteSpans, volume, tSec) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, createdAt: r.createdAt });
+              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt });
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }
