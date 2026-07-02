@@ -441,6 +441,47 @@
     return out;
   }
 
+  // AI narration scripts are untrusted model output. Clamp times into the
+  // take, require text, cap 20 segments, sort, and push overlapping starts
+  // apart so generated TTS clips never pile onto the same moment.
+  function vsSanitizeNarrationCues(raw, duration) {
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.segments) ? raw.segments : (raw && Array.isArray(raw.narration) ? raw.narration : []));
+    var out = [];
+    for (var i = 0; i < list.length && out.length < 20; i++) {
+      var s = list[i] || {};
+      var text = String(s.text || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220);
+      var a = Number(s.start), b = Number(s.end);
+      if (!text || !isFinite(a)) continue;
+      a = Math.max(0, Math.min(dur, a));
+      b = isFinite(b) ? b : a + 4;
+      b = Math.min(dur, Math.max(a + 0.8, b));
+      if (b <= a) continue;
+      out.push({ start: a, end: b, text: text });
+    }
+    out.sort(function (x, y) { return x.start - y.start; });
+    for (var j = 1; j < out.length; j++) {
+      if (out[j].start < out[j - 1].start + 0.5) out[j].start = out[j - 1].start + 0.5;
+    }
+    return out;
+  }
+
+  // 16-bit mono PCM bytes → WAV container (24kHz default — Gemini TTS output).
+  // Mirrors the app's tts_module pcmToWav; pure byte assembly.
+  function vsPcmToWav(pcmBytes, sampleRate) {
+    var pcm = pcmBytes instanceof Uint8Array ? pcmBytes : new Uint8Array(pcmBytes || 0);
+    var sr = Number(sampleRate) > 0 ? Math.round(Number(sampleRate)) : 24000;
+    var out = new Uint8Array(44 + pcm.length);
+    var dv = new DataView(out.buffer);
+    var wstr = function (off, s) { for (var i = 0; i < s.length; i++) out[off + i] = s.charCodeAt(i); };
+    wstr(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length, true); wstr(8, 'WAVE');
+    wstr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    wstr(36, 'data'); dv.setUint32(40, pcm.length, true);
+    out.set(pcm, 44);
+    return out;
+  }
+
   // PCM samples → N peak buckets (0..1) for waveform drawing. Peak (not RMS)
   // per bucket so brief loud moments — the ones worth finding — stay visible.
   function vsComputePeaks(samples, buckets) {
@@ -460,7 +501,7 @@
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -574,6 +615,52 @@
             respond({ suggestions: parsed || [] });
           }).catch(function (e) {
             respond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-narrate-request') {
+          // AI narration: the popup sends ONE contact-sheet JPEG (sampled
+          // frames with burned-in timestamps) — never the raw video — and we
+          // relay it through the app's vision call. The popup sanitizes the
+          // returned script (vsSanitizeNarrationCues) before showing it.
+          var nreq = ev.data;
+          var nReplyTo = studioWinRef.current;
+          var nRespond = function (payload) {
+            try { if (nReplyTo && !nReplyTo.closed) nReplyTo.postMessage(Object.assign({ type: 'allostudio-narrate-response', id: nreq.id }, payload), '*'); } catch (_) {}
+          };
+          var visionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
+          if (typeof visionFn !== 'function') { nRespond({ error: 'vision-unavailable' }); return; }
+          var nDur = Math.max(1, Math.round(Number(nreq.duration) || 0));
+          var stamps = Array.isArray(nreq.timestamps) ? nreq.timestamps.map(function (x) { return Math.round(Number(x) || 0); }).join('s, ') + 's' : '';
+          var nPrompt = 'You are writing a short TEACHER NARRATION script for an instructional video.\n' +
+            'The image is a contact sheet of frames from the video, in reading order; each cell has its timestamp (in seconds) burned into its corner. Frame timestamps: ' + stamps + '. Total video length: ' + nDur + ' seconds.\n' +
+            (nreq.context ? ('Existing transcript/captions for context:\n' + String(nreq.context).slice(0, 6000) + '\n') : '') +
+            'Write 5-12 narration segments that a teacher could speak over this video: plain, warm, grade-appropriate language; describe what is happening on screen and why it matters; never invent details you cannot see.\n' +
+            'Respond with ONLY a JSON array (no prose, no fences): [{"start": seconds, "end": seconds, "text": "one or two spoken sentences"}]. Segments must be in order, within 0-' + nDur + 's, and short enough to speak in their time window.';
+          Promise.resolve().then(function () { return visionFn(nPrompt, nreq.imageBase64, nreq.mimeType || 'image/jpeg'); }).then(function (res) {
+            var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var parsed = null;
+            try { parsed = JSON.parse(text); } catch (_) {
+              var mm = /\[[\s\S]*\]/.exec(String(text || ''));
+              if (mm) { try { parsed = JSON.parse(mm[0]); } catch (_2) {} }
+            }
+            nRespond({ segments: parsed || [] });
+          }).catch(function (e) {
+            nRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-tts-request') {
+          // Text → spoken audio through the app's existing Gemini TTS path.
+          // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
+          var treq = ev.data;
+          var tReplyTo = studioWinRef.current;
+          var tRespond = function (payload) {
+            try { if (tReplyTo && !tReplyTo.closed) tReplyTo.postMessage(Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload), '*'); } catch (_) {}
+          };
+          var ttsFn = (typeof window !== 'undefined') ? window.fetchTTSBytes : null;
+          if (typeof ttsFn !== 'function') { tRespond({ error: 'tts-unavailable' }); return; }
+          Promise.resolve().then(function () { return ttsFn(String(treq.text || '').slice(0, 600), treq.voice || 'Puck', 1, treq.language || 'English'); }).then(function (r) {
+            if (r && r.bytes && r.bytes.length) tRespond({ pcm: r.bytes, sampleRate: 24000 });
+            else tRespond({ error: 'no audio returned' });
+          }).catch(function (e) {
+            tRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-closed') {
           setStudioState('closed');

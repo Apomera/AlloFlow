@@ -214,7 +214,24 @@
             <button class="quiet" id="recClipBtn">🎙 Record clip at playhead</button>
           </div>
           <div id="clipList"></div>
-          <p class="status">Narration records from your mic while the video plays silently, lined up from 0:00 — press the button again to stop. To REPLACE the original sound, also tick “Remove audio entirely” above. Clips and narration play in the preview and mix together permanently on export.</p>
+          <div class="row" style="margin:10px 0 8px">
+            <button class="quiet" id="aiNarrateBtn" title="Gemini reads a contact sheet of sampled frames plus your captions — never the raw video — and drafts a narration script you edit before anything is added.">🤖 AI narration (no mic needed)</button>
+            <select id="ttsVoice" aria-label="Spoken narration voice" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+              <option value="Puck">Voice: Puck (bright)</option>
+              <option value="Kore">Voice: Kore (firm)</option>
+              <option value="Charon">Voice: Charon (deep)</option>
+              <option value="Aoede">Voice: Aoede (breezy)</option>
+              <option value="Leda">Voice: Leda (youthful)</option>
+            </select>
+          </div>
+          <div class="status" id="aiNarrStatus"></div>
+          <div id="aiNarrList" style="margin-top:8px"></div>
+          <div class="row" id="aiNarrActions" hidden style="margin-top:8px">
+            <button class="action" id="narrAsTtsBtn" style="background:#059669">🔊 Generate spoken narration</button>
+            <button class="quiet" id="narrAsCapsBtn">Add as captions</button>
+            <button class="quiet" id="narrDismissBtn">Dismiss</button>
+          </div>
+          <p class="status">Narration records from your mic while the video plays silently, lined up from 0:00 — press the button again to stop. Or let AI draft it: review and edit the script, then generate spoken audio (each line becomes a sound clip at its timestamp) and/or add it as captions. To REPLACE the original sound, also tick “Remove audio entirely” above. Everything mixes together permanently on export.</p>
         </div>
       </div>
       <div>
@@ -692,6 +709,47 @@ function vsSanitizeAiSuggestions(raw, duration) {
       out.push({ type: 'title', text: txt, reason: why });
     }
   }
+  return out;
+}
+
+// AI narration scripts are untrusted model output. Clamp times into the
+// take, require text, cap 20 segments, sort, and push overlapping starts
+// apart so generated TTS clips never pile onto the same moment.
+function vsSanitizeNarrationCues(raw, duration) {
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.segments) ? raw.segments : (raw && Array.isArray(raw.narration) ? raw.narration : []));
+  var out = [];
+  for (var i = 0; i < list.length && out.length < 20; i++) {
+    var s = list[i] || {};
+    var text = String(s.text || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 220);
+    var a = Number(s.start), b = Number(s.end);
+    if (!text || !isFinite(a)) continue;
+    a = Math.max(0, Math.min(dur, a));
+    b = isFinite(b) ? b : a + 4;
+    b = Math.min(dur, Math.max(a + 0.8, b));
+    if (b <= a) continue;
+    out.push({ start: a, end: b, text: text });
+  }
+  out.sort(function (x, y) { return x.start - y.start; });
+  for (var j = 1; j < out.length; j++) {
+    if (out[j].start < out[j - 1].start + 0.5) out[j].start = out[j - 1].start + 0.5;
+  }
+  return out;
+}
+
+// 16-bit mono PCM bytes → WAV container (24kHz default — Gemini TTS output).
+// Mirrors the app's tts_module pcmToWav; pure byte assembly.
+function vsPcmToWav(pcmBytes, sampleRate) {
+  var pcm = pcmBytes instanceof Uint8Array ? pcmBytes : new Uint8Array(pcmBytes || 0);
+  var sr = Number(sampleRate) > 0 ? Math.round(Number(sampleRate)) : 24000;
+  var out = new Uint8Array(44 + pcm.length);
+  var dv = new DataView(out.buffer);
+  var wstr = function (off, s) { for (var i = 0; i < s.length; i++) out[off + i] = s.charCodeAt(i); };
+  wstr(0, 'RIFF'); dv.setUint32(4, 36 + pcm.length, true); wstr(8, 'WAVE');
+  wstr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  wstr(36, 'data'); dv.setUint32(40, pcm.length, true);
+  out.set(pcm, 44);
   return out;
 }
 
@@ -1606,6 +1664,177 @@ function vsComputePeaks(samples, buckets) {
     $('recClipBtn').textContent = '⏹ Stop clip';
   });
 
+  // ── AI narration: contact sheet → Gemini vision → editable script → TTS ──
+  var aiNarrSegments = [];
+  var aiNarrSeq = 0;
+
+  // Sample N frames into one labeled grid image so ONE vision call can "see"
+  // the whole video. Timestamps are burned into each cell so the model can
+  // reference real times instead of guessing.
+  function buildContactSheet(t, count) {
+    return new Promise(function (resolve, reject) {
+      var v = document.createElement('video');
+      v.src = t.url; v.muted = true; v.playsInline = true; v.preload = 'auto';
+      var died = setTimeout(function () { reject(new Error('could not read video frames')); }, 30000);
+      v.addEventListener('error', function () { clearTimeout(died); reject(new Error('could not decode the video')); });
+      v.addEventListener('loadedmetadata', function () {
+        var dur = t.duration || v.duration || 1;
+        var n = Math.max(4, Math.min(12, count || 12));
+        var times = [];
+        for (var i = 0; i < n; i++) times.push(dur * (i + 0.5) / n);
+        var cols = 3, rows = Math.ceil(n / cols);
+        var cellW = 320;
+        var cellH = Math.max(60, Math.round(cellW * (v.videoHeight || 720) / (v.videoWidth || 1280)));
+        var cv = document.createElement('canvas');
+        cv.width = cols * cellW; cv.height = rows * cellH;
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+        var idx = 0;
+        var drawNext = function () {
+          if (idx >= n) {
+            clearTimeout(died);
+            resolve({ dataUrl: cv.toDataURL('image/jpeg', 0.62), times: times });
+            return;
+          }
+          var onSeek = function () {
+            v.removeEventListener('seeked', onSeek);
+            var x = (idx % cols) * cellW, y = Math.floor(idx / cols) * cellH;
+            try { ctx.drawImage(v, x, y, cellW, cellH); } catch (_) {}
+            ctx.fillStyle = 'rgba(0,0,0,0.75)';
+            ctx.fillRect(x, y, 62, 20);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(Math.round(times[idx]) + 's', x + 5, y + 15);
+            idx += 1;
+            drawNext();
+          };
+          v.addEventListener('seeked', onSeek);
+          try { v.currentTime = Math.min(Math.max(0.05, times[idx]), Math.max(0.05, dur - 0.05)); } catch (_) { onSeek(); }
+        };
+        drawNext();
+      });
+    });
+  }
+
+  function renderAiNarr() {
+    var host = $('aiNarrList');
+    host.innerHTML = '';
+    $('aiNarrActions').hidden = aiNarrSegments.length === 0;
+    aiNarrSegments.forEach(function (s, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
+      var at = document.createElement('input');
+      at.type = 'number'; at.step = '0.1'; at.min = '0'; at.style.width = '70px';
+      at.value = (Math.round(s.start * 10) / 10).toFixed(1);
+      at.setAttribute('aria-label', 'Start time of narration line ' + (idx + 1));
+      at.addEventListener('change', function () { s.start = Number(at.value) || 0; });
+      var txt = document.createElement('input');
+      txt.type = 'text'; txt.value = s.text; txt.style.flex = '1';
+      txt.setAttribute('aria-label', 'Narration line ' + (idx + 1));
+      txt.addEventListener('change', function () { s.text = txt.value; });
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Delete narration line ' + (idx + 1));
+      del.addEventListener('click', function () { aiNarrSegments.splice(idx, 1); renderAiNarr(); });
+      row.appendChild(at); row.appendChild(txt); row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+
+  function bridgeRequest(type, payload, timeoutMs) {
+    return new Promise(function (resolve) {
+      if (!opener || opener.closed) { resolve({ error: 'needs the AlloFlow window' }); return; }
+      var id = 'nr' + (++aiNarrSeq) + '-' + Date.now().toString(36);
+      var responseType = type.replace('-request', '-response');
+      var timer = setTimeout(function () { window.removeEventListener('message', onMsg); resolve({ error: 'timed out' }); }, timeoutMs || 90000);
+      function onMsg(ev) {
+        if (opener && ev.source === opener && ev.data && ev.data.type === responseType && ev.data.id === id) {
+          clearTimeout(timer);
+          window.removeEventListener('message', onMsg);
+          resolve(ev.data);
+        }
+      }
+      window.addEventListener('message', onMsg);
+      postToOpener(Object.assign({ type: type, id: id }, payload));
+    });
+  }
+
+  $('aiNarrateBtn').addEventListener('click', async function () {
+    var t = currentTake();
+    if (!t) { setStatus($('aiNarrStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('aiNarrStatus'), 'AI narration needs the AlloFlow window (it uses the app’s Gemini connection).', 'warn'); return; }
+    var btn = $('aiNarrateBtn');
+    btn.disabled = true;
+    try {
+      setStatus($('aiNarrStatus'), 'Sampling frames into a contact sheet…');
+      var sheet = await buildContactSheet(t, 12);
+      setStatus($('aiNarrStatus'), 'Asking Gemini to draft a narration script (one image + your captions — never the raw video)…');
+      var context = t.captions.length ? t.captions.map(function (c) { return '[' + (Math.round(c.start * 10) / 10) + 's] ' + c.text; }).join('\n') : '';
+      var resp = await bridgeRequest('allostudio-narrate-request', {
+        imageBase64: sheet.dataUrl.split(',')[1],
+        mimeType: 'image/jpeg',
+        timestamps: sheet.times,
+        duration: t.duration,
+        context: context
+      });
+      if (resp.error) {
+        setStatus($('aiNarrStatus'), 'AI narration unavailable: ' + resp.error + '.', 'bad');
+      } else {
+        aiNarrSegments = vsSanitizeNarrationCues(resp.segments, t.duration);
+        renderAiNarr();
+        setStatus($('aiNarrStatus'), aiNarrSegments.length
+          ? aiNarrSegments.length + ' narration lines drafted — edit the words and times, then generate spoken audio and/or add captions. Nothing is in the video yet.'
+          : 'Gemini returned no usable script — try again, or record narration with the mic.', aiNarrSegments.length ? 'ok' : 'warn');
+        announce(aiNarrSegments.length + ' narration lines drafted');
+      }
+    } catch (e) {
+      setStatus($('aiNarrStatus'), 'AI narration failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    }
+    btn.disabled = false;
+  });
+
+  $('narrDismissBtn').addEventListener('click', function () { aiNarrSegments = []; renderAiNarr(); setStatus($('aiNarrStatus'), 'Dismissed.'); });
+
+  $('narrAsCapsBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t || !aiNarrSegments.length) return;
+    var cues = aiNarrSegments.map(function (s) { return { start: s.start, end: s.end, text: s.text }; });
+    if (t.captions.length && !confirm('Replace the ' + t.captions.length + ' existing caption(s) with the ' + cues.length + ' narration lines?\n(Cancel keeps both.)')) {
+      t.captions = t.captions.concat(cues).sort(function (a, b) { return a.start - b.start; });
+    } else {
+      t.captions = cues;
+    }
+    saveDraft(t); renderCues();
+    setStatus($('aiNarrStatus'), 'Added as captions — fine-tune them in the Captions panel.', 'ok');
+  });
+
+  $('narrAsTtsBtn').addEventListener('click', async function () {
+    var t = currentTake(); if (!t || !aiNarrSegments.length) return;
+    var btn = $('narrAsTtsBtn');
+    btn.disabled = true;
+    var voice = $('ttsVoice').value;
+    var made = 0, failed = 0;
+    for (var i = 0; i < aiNarrSegments.length; i++) {
+      var s = aiNarrSegments[i];
+      if (!s.text.trim()) continue;
+      setStatus($('aiNarrStatus'), 'Generating speech ' + (i + 1) + '/' + aiNarrSegments.length + '…');
+      var resp = await bridgeRequest('allostudio-tts-request', { text: s.text, voice: voice }, 60000);
+      if (resp.error || !resp.pcm) { failed += 1; continue; }
+      var wav = vsPcmToWav(resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm), resp.sampleRate || 24000);
+      (t.audioClips = t.audioClips || []).push({
+        id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        name: '🤖 ' + s.text.slice(0, 30) + (s.text.length > 30 ? '…' : ''),
+        blob: new Blob([wav], { type: 'audio/wav' }),
+        t: s.start, volume: 1
+      });
+      made += 1;
+    }
+    saveDraft(t); resetPreviewAudio(); renderClips();
+    setStatus($('aiNarrStatus'), made + ' spoken line' + (made === 1 ? '' : 's') + ' added as sound clips' + (failed ? ' (' + failed + ' failed — try those again)' : '') + '. Play the preview to hear the mix; tip: tick “Remove audio entirely” if the AI voice should replace the original sound.', failed ? 'warn' : 'ok');
+    announce(made + ' spoken narration clips added');
+    btn.disabled = false;
+  });
+
   // Preview scheduler: keeps narration + clips in sync with the edit player.
   var previewAudios = {};
   function resetPreviewAudio() {
@@ -1813,12 +2042,14 @@ function vsComputePeaks(samples, buckets) {
     $('trimEnd').value = '0';
     setStatus($('trimStatus'), 'Full length ' + fmtClock(t.duration) + '.');
     aimingZoomId = null;
+    aiNarrSegments = [];
     resetPreviewAudio();
     renderCues();
     renderZooms();
     renderAudio();
     renderNarration();
     renderClips();
+    renderAiNarr();
     drawWave();
     ensurePeaks(t).then(drawWave);
   }

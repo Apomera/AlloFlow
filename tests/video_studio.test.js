@@ -430,6 +430,68 @@ describe('vsComputePeaks', () => {
   });
 });
 
+// ─── vsSanitizeNarrationCues (AI narration scripts) ─────────────────────────
+describe('vsSanitizeNarrationCues', () => {
+  it('passes well-formed segments and sorts them', () => {
+    const out = VS.vsSanitizeNarrationCues([
+      { start: 10, end: 14, text: 'Now watch the denominator.' },
+      { start: 2, end: 5, text: 'This is a fraction wall.' },
+    ], 60);
+    expect(out.map((s) => s.text)).toEqual(['This is a fraction wall.', 'Now watch the denominator.']);
+  });
+  it('clamps times, invents a sensible end when missing, drops textless items', () => {
+    const out = VS.vsSanitizeNarrationCues([
+      { start: -5, text: 'clamped start' },
+      { start: 20, end: 900, text: 'clamped end' },
+      { start: 30, end: 32 },
+      { start: NaN, end: 5, text: 'bad start' },
+    ], 60);
+    expect(out).toHaveLength(2);
+    expect(out[0].start).toBe(0);
+    expect(out[0].end).toBeGreaterThan(0);
+    expect(out[1].end).toBe(60);
+  });
+  it('pushes overlapping starts apart so TTS clips never stack', () => {
+    const out = VS.vsSanitizeNarrationCues([
+      { start: 10, end: 12, text: 'a' },
+      { start: 10, end: 12, text: 'b' },
+      { start: 10.1, end: 12, text: 'c' },
+    ], 60);
+    expect(out[1].start).toBeCloseTo(10.5);
+    expect(out[2].start).toBeCloseTo(11.0);
+  });
+  it('accepts wrapper shapes, caps at 20, strips newlines, caps text length', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ start: i * 2, end: i * 2 + 1, text: 'line\n' + 'x'.repeat(400) }));
+    const out = VS.vsSanitizeNarrationCues({ segments: many }, 120);
+    expect(out).toHaveLength(20);
+    expect(out[0].text).not.toContain('\n');
+    expect(out[0].text.length).toBeLessThanOrEqual(220);
+    expect(VS.vsSanitizeNarrationCues('garbage', 60)).toEqual([]);
+  });
+});
+
+// ─── vsPcmToWav ──────────────────────────────────────────────────────────────
+describe('vsPcmToWav', () => {
+  it('produces a valid 44-byte-header mono 16-bit WAV', () => {
+    const pcm = new Uint8Array([1, 2, 3, 4]);
+    const wav = VS.vsPcmToWav(pcm, 24000);
+    expect(wav.length).toBe(48);
+    expect(String.fromCharCode(...wav.slice(0, 4))).toBe('RIFF');
+    expect(String.fromCharCode(...wav.slice(8, 12))).toBe('WAVE');
+    const dv = new DataView(wav.buffer);
+    expect(dv.getUint32(24, true)).toBe(24000);   // sample rate
+    expect(dv.getUint16(22, true)).toBe(1);       // mono
+    expect(dv.getUint16(34, true)).toBe(16);      // bit depth
+    expect(dv.getUint32(40, true)).toBe(4);       // data length
+    expect(Array.from(wav.slice(44))).toEqual([1, 2, 3, 4]);
+  });
+  it('defaults bad sample rates to 24000 and tolerates empty input', () => {
+    const wav = VS.vsPcmToWav(null, -1);
+    expect(wav.length).toBe(44);
+    expect(new DataView(wav.buffer).getUint32(24, true)).toBe(24000);
+  });
+});
+
 // ─── vsMakePackReference ─────────────────────────────────────────────────────
 describe('vsMakePackReference (pack-size guard)', () => {
   it('produces metadata only — never video bytes', () => {
