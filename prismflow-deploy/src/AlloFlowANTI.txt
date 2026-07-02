@@ -2369,8 +2369,11 @@ const countWords = (text) => {
 };
 const generateSessionCode = () => {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  // 5 chars over the 31-symbol confusable-stripped alphabet ≈ 28.6M codes
+  // (was 4 ≈ 923k) — raises the enumeration bar for drive-by join attempts
+  // while staying easy to read aloud. See LIVE_SESSION_HARDENING_PROPOSAL §5.
   let result = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
@@ -4529,7 +4532,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
       Volume2, VolumeX, Wrench, X, Zap,
       ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
-      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug,
+      Bold, Italic, Highlighter
     };
   }
   React.useEffect(() => {
@@ -4586,7 +4590,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
       Volume2, VolumeX, Wrench, X, Zap,
       ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
-      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug,
+      Bold, Italic, Highlighter
     };
   }, []);
   React.useEffect(() => {
@@ -4598,7 +4603,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
     var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
-    var pluginCdnVersion = '0afab722';
+    var pluginCdnVersion = '0ebd500d';
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts
     // beyond the defaults if their connection is slow. Modules read these
@@ -4761,36 +4766,36 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=0afab722');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=0afab722');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=0afab722');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=0afab722');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=0afab722');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=0afab722');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=0afab722');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=0afab722');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=0afab722');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=0afab722');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=0afab722');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=0afab722');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=0afab722');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0afab722');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=0afab722');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=0afab722');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=0afab722');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=0afab722');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=0afab722');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=0afab722');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=0afab722');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=0afab722');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=0afab722');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=0afab722');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=0ebd500d');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=0ebd500d');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=0ebd500d');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=0ebd500d');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=0ebd500d');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=0ebd500d');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=0ebd500d');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=0ebd500d');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=0ebd500d');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=0ebd500d');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=0ebd500d');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=0ebd500d');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=0ebd500d');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0ebd500d');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=0ebd500d');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=0ebd500d');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=0ebd500d');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=0ebd500d');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=0ebd500d');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=0ebd500d');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=0ebd500d');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=0ebd500d');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=0ebd500d');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=0ebd500d');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=0afab722'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=0afab722'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=0ebd500d'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -4799,77 +4804,77 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=0afab722');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=0afab722');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=0afab722');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=0afab722');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=0afab722');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=0afab722');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=0afab722');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=0afab722');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=0afab722');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=0afab722');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=0afab722');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=0afab722');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=0afab722'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=0afab722'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=0afab722'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=0afab722'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=0ebd500d');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=0ebd500d');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=0ebd500d');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=0ebd500d');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=0ebd500d');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=0ebd500d');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=0ebd500d');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=0ebd500d');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=0ebd500d');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=0ebd500d');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=0ebd500d');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=0ebd500d');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=0ebd500d'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=0afab722');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=0afab722');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=0afab722');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0afab722');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=0afab722');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=0afab722');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=0afab722');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=0afab722');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=0afab722');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=0ebd500d');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=0ebd500d');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=0ebd500d');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0ebd500d');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=0ebd500d');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=0ebd500d');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=0ebd500d');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=0ebd500d');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=0ebd500d');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=0afab722'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=0ebd500d'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=0afab722');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=0ebd500d');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=0afab722');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0afab722'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=0afab722'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=0afab722');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=0afab722');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=0afab722');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=0afab722');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=0afab722');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=0afab722');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=0afab722');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=0afab722');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=0afab722');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=0afab722'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=0afab722'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=0afab722'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=0afab722');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=0afab722');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=0afab722');
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=0ebd500d');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=0ebd500d'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=0ebd500d');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=0ebd500d');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=0ebd500d');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=0ebd500d');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=0ebd500d');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=0ebd500d');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=0ebd500d');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=0ebd500d');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=0ebd500d');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=0ebd500d'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=0ebd500d');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=0ebd500d');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=0ebd500d');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=0afab722');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=0afab722');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=0afab722');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=0afab722');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=0afab722');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=0afab722');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=0afab722');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=0afab722');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=0afab722');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=0ebd500d');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=0ebd500d');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=0ebd500d');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=0ebd500d');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=0ebd500d');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=0ebd500d');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=0ebd500d');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=0ebd500d');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=0ebd500d');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -4906,63 +4911,63 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=0afab722');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=0afab722');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=0afab722');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=0ebd500d');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=0ebd500d');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=0ebd500d');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=0afab722');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=0afab722');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=0afab722');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=0afab722');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=0afab722');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=0afab722');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=0afab722');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=0afab722');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=0afab722');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=0afab722');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=0afab722');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=0afab722');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=0afab722');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=0afab722');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=0afab722');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=0afab722');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=0afab722');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=0afab722');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=0afab722');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=0afab722');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=0afab722');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=0afab722');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=0afab722');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=0afab722');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=0afab722');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=0afab722');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=0afab722');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=0afab722');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=0afab722');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0afab722');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=0afab722');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=0afab722');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=0afab722');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=0afab722');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=0afab722');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=0afab722');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=0afab722');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=0afab722');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=0afab722');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=0afab722');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=0ebd500d');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=0ebd500d');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=0ebd500d');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=0ebd500d');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=0ebd500d');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=0ebd500d');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=0ebd500d');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=0ebd500d');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=0ebd500d');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=0ebd500d');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=0ebd500d');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=0ebd500d');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=0ebd500d');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=0ebd500d');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=0ebd500d');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=0ebd500d');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=0ebd500d');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=0ebd500d');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=0ebd500d');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=0ebd500d');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=0ebd500d');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=0ebd500d');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=0ebd500d');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=0ebd500d');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=0ebd500d');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=0ebd500d');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=0ebd500d');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=0ebd500d');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=0ebd500d');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0ebd500d');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=0ebd500d');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=0ebd500d');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=0ebd500d');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=0ebd500d');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=0ebd500d');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=0ebd500d');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=0ebd500d');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=0ebd500d');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=0ebd500d');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=0ebd500d');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=0afab722');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=0afab722');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=0afab722');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=0afab722');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=0afab722');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=0afab722');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=0afab722');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=0afab722');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=0afab722');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=0afab722');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=0ebd500d');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=0ebd500d');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=0ebd500d');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=0ebd500d');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=0ebd500d');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=0ebd500d');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=0ebd500d');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=0ebd500d');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=0ebd500d');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=0ebd500d');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -5670,6 +5675,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!lzLoaded) return;
       try { safeSetItem('allo_phoneme_mastery', JSON.stringify(phonemeMastery)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [phonemeMastery, lzLoaded]);
+  // Concept mastery is DEVICE-LOCAL by design (FERPA posture): the per-concept
+  // attempt history that used to live in the cloud conceptMastery/{uid} doc now
+  // stays on the student's device. It reaches the teacher only through
+  // user-controlled channels: (a) live peer-to-peer snapshots over the quiz
+  // WebRTC channel, (b) the student's saved project file. Never Firestore.
+  const [conceptMasteryLocal, setConceptMasteryLocal] = useState(() => {
+      try {
+          const parsed = JSON.parse(localStorage.getItem('allo_concept_mastery') || 'null');
+          return (parsed && parsed.attempts) ? parsed : { attempts: {} };
+      } catch(e) { return { attempts: {} }; }
+  });
+  useEffect(() => {
+      try { safeSetItem('allo_concept_mastery', JSON.stringify(conceptMasteryLocal)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [conceptMasteryLocal]);
+  // Teacher-side bank of mastery blocks imported from student project files
+  // (keyed by the student's uid when present, else a nickname-derived key) so
+  // the retention dashboard works from submitted files, not cloud reads.
+  const [importedConceptMastery, setImportedConceptMastery] = useState(() => {
+      try { return JSON.parse(localStorage.getItem('allo_imported_mastery') || '{}') || {}; } catch(e) { return {}; }
+  });
+  useEffect(() => {
+      try { safeSetItem('allo_imported_mastery', JSON.stringify(importedConceptMastery)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [importedConceptMastery]);
   useEffect(() => {
       if (!lzLoaded) return;
       try { safeSetItem('allo_word_sounds_daily', JSON.stringify(wordSoundsDailyProgress)); } catch(e) { warnLog('localStorage write failed', e); }
@@ -6272,24 +6300,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // synchronously at useCallback call time. The closure still resolves
     // `addToast` at click time when it's safely initialized.
   }, [voiceRecording]);
-  // Ctrl/Cmd+Z keyboard shortcut. Scoped to the document so it works from
-  // anywhere on the page; ignored if a textarea/input is focused so the
-  // user can still use system undo inside text fields.
-  React.useEffect(() => {
-    const onKey = (e) => {
-      if (!(e.key === 'z' || e.key === 'Z')) return;
-      if (!(e.ctrlKey || e.metaKey)) return;
-      if (e.shiftKey) return; // redo is reserved
-      const tag = (e.target && e.target.tagName) || '';
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.target && e.target.isContentEditable) return;
-      if (annotationUndoStackRef.current.length === 0) return;
-      e.preventDefault();
-      handleAnnotationUndo();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [handleAnnotationUndo]);
+  // (2026-07-02) Ctrl/Cmd+Z no longer binds annotation undo directly — the
+  // global TEXT undo/redo system (search "_recordTextChange") owns Ctrl+Z /
+  // Ctrl+Y / Ctrl+Shift+Z now. Annotation undo keeps its toolbar button, and
+  // the text-undo handler falls back to handleAnnotationUndo when the text
+  // history is empty, so existing sticker muscle memory still works.
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -7149,6 +7164,182 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // ack); guards against re-writing the same id on unrelated re-renders.
   const lastViewingSyncRef = useRef(undefined);
   const hasConnectedRef = useRef(false);
+  // ── Live-quiz peer-to-peer channel (FERPA: answers never stored) ──────
+  // Quiz answers ride a dedicated WebRTC star on the 'quiz-signaling'
+  // collection (same hardened transport as Live Polling, Pictionary-style
+  // coexistence). Students also stream their device-local concept-mastery
+  // snapshot over it (reserved pollId '__mastery__'). Firestore
+  // quizState.allResponses remains ONLY as a fallback when the channel
+  // isn't up; teacher consumers read the merged view below.
+  const quizHostRef = useRef(null);
+  const quizGuestRef = useRef(null);
+  const [quizJoinNonce, setQuizJoinNonce] = useState(0);
+  const quizRetryCountRef = useRef(0);
+  const quizRetryTimerRef = useRef(null);
+  const [liveQuizAnswers, setLiveQuizAnswers] = useState({});     // { uid: { qIdx: responsePayload } }
+  const [liveMasteryByUid, setLiveMasteryByUid] = useState({});   // { uid: { attempts } } — session-scoped, memory only
+  // Class-vs-boss answers received over the quiz channel for the CURRENT
+  // question: { qIdx: string, byUid: { uid: optionIndex } }. Merged into
+  // quizState.responses for teacher consumers; Firestore remains fallback.
+  const [liveBossResponses, setLiveBossResponses] = useState(null);
+  // Anonymous class results the teacher shared over the quiz channel
+  // (students render these in a lightweight overlay; nothing stored).
+  const [quizSharedResults, setQuizSharedResults] = useState(null);
+  // Live answer-progress ('14/22 answered') broadcast by the teacher's quiz
+  // host during boss/presentation questions; shown as a student-side pill.
+  const [quizProgress, setQuizProgress] = useState(null);
+  const quizProgressSentRef = useRef('');
+  const conceptMasteryLocalRef = useRef(null);
+  useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
+  // Teacher: headless quiz host while a live quiz is armed.
+  useEffect(() => {
+      const LP = window.AlloModules && window.AlloModules.LivePolling;
+      const quizActive = !!(isTeacherMode && activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive);
+      if (!quizActive || !LP || !LP.PollingHost) {
+          if (quizHostRef.current) { try { quizHostRef.current.stop(); } catch(e) {} quizHostRef.current = null; }
+          setLiveQuizAnswers({});
+          setLiveMasteryByUid({});
+          return undefined;
+      }
+      if (quizHostRef.current) return undefined;
+      const host = new LP.PollingHost({
+          sessionCode: activeSessionCode,
+          signalingPath: 'quiz-signaling',
+          onResponse: (uid, codename, payload) => {
+              if (!payload) return;
+              if (payload.pollId === '__mastery__') {
+                  setLiveMasteryByUid(prev => ({ ...prev, [uid]: payload.response }));
+              } else if (typeof payload.pollId === 'string' && payload.pollId.indexOf('boss:') === 0) {
+                  // Class-vs-boss answer (P2P): pollId = 'boss:{qIdx}', response = optionIndex.
+                  const qIdx = payload.pollId.slice(5);
+                  setLiveBossResponses(prev => (prev && prev.qIdx === qIdx)
+                      ? { qIdx, byUid: { ...prev.byUid, [uid]: payload.response } }
+                      : { qIdx, byUid: { [uid]: payload.response } });
+              } else {
+                  setLiveQuizAnswers(prev => ({ ...prev, [uid]: { ...(prev[uid] || {}), [payload.pollId]: payload.response } }));
+              }
+          },
+      });
+      host.start().catch(e => warnLog('Quiz channel host start failed:', e && e.message));
+      quizHostRef.current = host;
+      // Teacher hook for the results dashboard: broadcast an anonymous
+      // aggregate summary to every connected student (peer-to-peer).
+      window.__alloQuizShareResults = (summary) => {
+          try { host.broadcastPollResults('quiz-results', summary); return true; } catch(e) { return false; }
+      };
+      return () => {
+          try { host.stop(); } catch(e) {}
+          quizHostRef.current = null;
+          if (window.__alloQuizShareResults) { try { delete window.__alloQuizShareResults; } catch(e) { window.__alloQuizShareResults = undefined; } }
+      };
+  }, [isTeacherMode, activeSessionCode, sessionData && sessionData.quizState && sessionData.quizState.isActive]);
+  // New boss question ⇒ drop channel answers from the previous one (the
+  // teacher's advance also resets quizState.responses in Firestore).
+  useEffect(() => {
+      const qIdx = sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex;
+      setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx)) ? null : prev);
+  }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex]);
+  // Teacher → students: broadcast answer progress for the current question
+  // (pacing pressure without revealing who/what). Rides the quiz channel as
+  // a reserved poll id; dedupe on question+count so unrelated re-renders
+  // don't rebroadcast.
+  useEffect(() => {
+      const host = quizHostRef.current;
+      if (!isTeacherMode || !host || !sessionData || !sessionData.quizState || !sessionData.quizState.isActive) return;
+      const qs = (quizMergedSessionData && quizMergedSessionData.quizState) || {};
+      if (qs.phase !== 'answering') return;
+      const answered = Object.keys(qs.responses || {}).length;
+      const total = Object.keys((sessionData.roster) || {}).length;
+      const key = String(qs.currentQuestionIndex) + ':' + answered + '/' + total;
+      if (quizProgressSentRef.current === key) return;
+      quizProgressSentRef.current = key;
+      try { host.broadcastPoll({ id: '__progress__', answered: answered, total: total, qIdx: qs.currentQuestionIndex }); } catch(e) {}
+  }, [isTeacherMode, quizMergedSessionData, sessionData]);
+  // Keep the quiz host's roster gate current as students join.
+  useEffect(() => {
+      if (quizHostRef.current && typeof quizHostRef.current.setAllowedUids === 'function') {
+          quizHostRef.current.setAllowedUids(Object.keys((sessionData && sessionData.roster) || {}));
+      }
+  }, [sessionData && sessionData.roster]);
+  // Student: headless quiz guest with capped auto-rejoin (mirrors the polling
+  // GuestOverlay's reconnect budget). On connect, shares the device-local
+  // mastery snapshot peer-to-peer so review-mode dashboards work live.
+  useEffect(() => {
+      const LP = window.AlloModules && window.AlloModules.LivePolling;
+      const quizActive = !!(!isTeacherMode && activeSessionCode && user && user.uid && sessionData && sessionData.quizState && sessionData.quizState.isActive);
+      if (!quizActive || !LP || !LP.PollingGuest) return undefined;
+      let disposed = false;
+      const REJOIN_DELAYS_MS = [2000, 5000, 10000, 20000, 30000];
+      const scheduleRejoin = () => {
+          if (disposed || quizRetryCountRef.current >= 8) return;
+          const delay = REJOIN_DELAYS_MS[Math.min(quizRetryCountRef.current, REJOIN_DELAYS_MS.length - 1)];
+          quizRetryCountRef.current += 1;
+          if (quizRetryTimerRef.current) clearTimeout(quizRetryTimerRef.current);
+          quizRetryTimerRef.current = setTimeout(() => {
+              quizRetryTimerRef.current = null;
+              setQuizJoinNonce(n => n + 1);
+          }, delay);
+      };
+      const guest = new LP.PollingGuest({
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          signalingPath: 'quiz-signaling',
+          onConnected: () => {
+              quizRetryCountRef.current = 0;
+              try {
+                  const m = conceptMasteryLocalRef.current;
+                  if (m && m.attempts && Object.keys(m.attempts).length > 0) guest.sendResponse('__mastery__', m);
+              } catch(e) {}
+          },
+          onPollResults: (summary) => setQuizSharedResults(summary || null),
+          onPoll: (p) => {
+              if (p && p.id === '__progress__') setQuizProgress({ answered: p.answered || 0, total: p.total || 0, qIdx: p.qIdx, at: Date.now() });
+          },
+          onDisconnected: scheduleRejoin,
+          onFailed: scheduleRejoin,
+          onHostClosed: () => { setQuizProgress(null); },
+      });
+      guest.join().catch(() => scheduleRejoin());
+      quizGuestRef.current = guest;
+      // Channel-first send hook for CDN modules (StudentQuizOverlay's boss
+      // answers): returns false when the channel is down so callers fall
+      // back to Firestore.
+      window.__alloQuizChannelSend = (pollId, response) => {
+          try { return !!guest.sendResponse(pollId, response); } catch(e) { return false; }
+      };
+      return () => {
+          disposed = true;
+          if (quizRetryTimerRef.current) { clearTimeout(quizRetryTimerRef.current); quizRetryTimerRef.current = null; }
+          try { guest.leave(); } catch(e) {}
+          quizGuestRef.current = null;
+          if (window.__alloQuizChannelSend) { try { delete window.__alloQuizChannelSend; } catch(e) { window.__alloQuizChannelSend = undefined; } }
+      };
+  }, [isTeacherMode, activeSessionCode, user && user.uid, sessionData && sessionData.quizState && sessionData.quizState.isActive, quizJoinNonce]);
+  // Merged teacher views: channel-received answers/mastery layered over the
+  // Firestore fallback so every consumer (dashboards, aggregators, routing
+  // rules) sees one coherent map regardless of which path each student used.
+  const quizMergedAllResponses = React.useMemo(() => {
+      const fsAll = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+      const liveUids = Object.keys(liveQuizAnswers);
+      if (liveUids.length === 0) return fsAll;
+      const merged = { ...fsAll };
+      liveUids.forEach(uid => { merged[uid] = { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
+      return merged;
+  }, [sessionData, liveQuizAnswers]);
+  const quizMergedSessionData = React.useMemo(() => {
+      if (!sessionData) return sessionData;
+      const qs = sessionData.quizState || {};
+      // Boss answers received P2P overlay the Firestore fallback for the
+      // CURRENT question only (teacher advance resets both sides).
+      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex))
+          ? { ...(qs.responses || {}), ...liveBossResponses.byUid }
+          : (qs.responses || {});
+      return { ...sessionData, quizState: { ...qs, allResponses: quizMergedAllResponses, responses: bossByUid } };
+  }, [sessionData, quizMergedAllResponses, liveBossResponses]);
+  const teacherConceptMasteryByUid = React.useMemo(() => (
+      { ...importedConceptMastery, ...liveMasteryByUid }
+  ), [importedConceptMastery, liveMasteryByUid]);
   const [pptxLoaded, setPptxLoaded] = useState(false);
   const [progressionData, setProgressionData] = useState(null);
   const [isGeneratingProgression, setIsGeneratingProgression] = useState(false);
@@ -7374,7 +7565,35 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               showSpotlight(element, title, text);
           }
       };
-      const FALLBACK_HELP = "Help for this isn't written yet. If a tip here would help, let us know and we'll add one.";
+      const INTERACTIVE_HELP_SELECTOR = 'button, a, input, select, textarea, label, [role="button"], [role="link"], [role="checkbox"], [role="tab"], [role="switch"], [tabindex]';
+      const describeInteractiveControl = (element, labelText = '') => {
+          const tag = (element && element.tagName ? element.tagName.toLowerCase() : '');
+          const role = (element && element.getAttribute && element.getAttribute('role')) || '';
+          const type = (element && element.getAttribute && element.getAttribute('type')) || '';
+          const label = String(labelText || '').replace(/\s+/g, ' ').trim();
+          const name = label ? `"${label}"` : 'this control';
+          if (tag === 'select') return `This menu is labeled ${name}. Open it to choose from the available options.`;
+          if (tag === 'textarea') return `This writing area is labeled ${name}. Enter, revise, or review longer text here.`;
+          if (tag === 'input') {
+              if (/checkbox|radio/i.test(type) || role === 'checkbox' || role === 'switch') return `This option is labeled ${name}. Select it to change that setting.`;
+              if (/range/i.test(type)) return `This slider is labeled ${name}. Adjust it to change the related value.`;
+              return `This field is labeled ${name}. Enter or edit information here.`;
+          }
+          if (role === 'switch' || role === 'checkbox') return `This toggle is labeled ${name}. Use it to turn the related setting on or off.`;
+          if (role === 'tab') return `This tab is labeled ${name}. Open it to switch the visible panel.`;
+          if (tag === 'a' || role === 'link') return `This link is labeled ${name}. Open it to navigate to the related resource or view.`;
+          return `This control is labeled ${name}. Use it to run the action named by its label.`;
+      };
+      const describeHelpArea = (title = 'this area') => {
+          const cleanTitle = String(title || 'this area').replace(/\s+/g, ' ').trim();
+          return `This area is ${cleanTitle}. Use the controls inside it to review, configure, or act on that part of AlloFlow.`;
+      };
+      const describeHelpTarget = (element, title) => {
+          try {
+              if (element && element.matches && element.matches(INTERACTIVE_HELP_SELECTOR)) return describeInteractiveControl(element, title);
+          } catch (_) {}
+          return describeHelpArea(title);
+      };
       const deriveTitle = (k) => {
           if (!k) return 'This control';
           const _rawTitle = t('help_mode.' + k + '_title', { defaultValue: '' });
@@ -7406,20 +7625,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             const idx = tourSteps.findIndex(s => s.id === key);
             if (idx !== -1) { helpText = tourSteps[idx].text; helpTitle = tourSteps[idx].title; }
             else {
-                // Graceful fallback: a documented element with no text shouldn't be a dead click.
-                warnLog(`[Help Mode] No help text for key: ${key} — showing graceful fallback`);
-                helpText = FALLBACK_HELP;
+                // Graceful fallback: a documented element with no exact string still gets contextual help.
+                warnLog(`[Help Mode] No help text for key: ${key} - showing contextual fallback`);
+                helpText = describeHelpTarget(explicitHelp, helpTitle);
             }
         }
         setTimeout(() => expandAndShow(explicitHelp, key, helpTitle, helpText), 100);
         return;
       }
-      // No data-help-key ancestor: if an interactive control was clicked, still show a
-      // friendly "no help yet" popup so help mode never feels broken. Plain background is left alone.
-      const interactive = e.target.closest('button, a, input, select, textarea, label, [role="button"], [role="link"], [role="checkbox"], [role="tab"], [role="switch"], [tabindex]');
+      // No data-help-key ancestor: if an interactive control was clicked, still show contextual help. Plain background is left alone.
+      const interactive = e.target.closest(INTERACTIVE_HELP_SELECTOR);
       if (interactive) {
         const label = (interactive.getAttribute && (interactive.getAttribute('aria-label') || interactive.getAttribute('title'))) || (interactive.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 48);
-        showSpotlight(interactive, label || 'This control', FALLBACK_HELP);
+        showSpotlight(interactive, label || 'This control', describeInteractiveControl(interactive, label));
       }
     };
     document.addEventListener('click', handleHelpClick, true);
@@ -9394,6 +9612,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   addToast(t('session.toast_connected'), "success");
               }
               setSessionData(data);
+              // Stale bridge-payload cleanup (24h TTL) runs on BOTH roles: under
+              // Firestore rules only the session host's delete succeeds (students'
+              // attempts fail silently via the .catch), so this must not live in
+              // the student-only branch or the TTL never fires post-rules.
+              if (data.bridgePayload && data.bridgePayload.timestamp && (Date.now() - data.bridgePayload.timestamp > 86400000)) {
+                try {
+                  const staleRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+                  updateDoc(staleRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(() => {});
+                } catch(e) { /* ignore */ }
+              }
               if (!isTeacherMode) {
                   let resourcesToRender = [];
                   if (data.resources && Array.isArray(data.resources)) {
@@ -9414,12 +9642,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
                       }
-                  }
-                  if (data.bridgePayload && data.bridgePayload.timestamp && (Date.now() - data.bridgePayload.timestamp > 86400000)) {
-                    try {
-                      const staleRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
-                      updateDoc(staleRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(() => {});
-                    } catch(e) { /* ignore */ }
                   }
                   if (data.bridgePayload && data.bridgePayload.timestamp) {
                     const payloadTs = data.bridgePayload.timestamp;
@@ -11232,7 +11454,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // minimal monolith state needed to drive template-type selection and
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
-  const [anchorChartType, setAnchorChartType] = useState('reference');
+  const [anchorChartType, setAnchorChartType] = useState('auto');
   const [showNotebook, setShowNotebook] = useState(false);
   const handleNoteUpdate = useCallback((key, value) => {
     setGeneratedContent(prev => {
@@ -12353,7 +12575,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           // measurement-reliability floor by averaging across >=2 items. Letting
           // a length-1 acrossQuestions slip through would defeat the floor.
           if (when.acrossQuestions.length < 2) return null;
-          const allByUidLocal = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+          const allByUidLocal = quizMergedAllResponses || {};
           const uidEntry = allByUidLocal[uid];
           if (!uidEntry) return null;
           const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
@@ -12426,10 +12648,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const responseValue = (typeof raw === 'number' && options[raw] !== undefined) ? options[raw] : raw;
           _applyMatch(uid, responseValue);
       });
-      const allMap = (sessionData.quizState.allResponses && sessionData.quizState.allResponses[qIdx]) || null;
       // allResponses is keyed { uid: { answer, itemType, ... } }, not { questionIdx: { uid: ... } }.
-      // Iterate the outer (uid) keys and only act on responses for the current questionIdx.
-      const allByUid = sessionData.quizState.allResponses || {};
+      // Iterate the outer (uid) keys and only act on responses for the current
+      // questionIdx. Reads the MERGED view (peer-to-peer channel + Firestore
+      // fallback) so routing rules fire regardless of transport.
+      const allByUid = quizMergedAllResponses || {};
       Object.keys(allByUid).forEach(uid => {
           if (already[uid]) return;
           const entry = allByUid[uid] && allByUid[uid][qIdx];
@@ -12441,7 +12664,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           _applyMatch(uid, responseValue);
       });
       routedQuizRef.current[qIdx] = already;
-  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, sessionData?.quizState?.allResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
+  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, quizMergedAllResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
   useEffect(() => {
       setUdlStandardGrade(gradeLevel);
   }, [gradeLevel]);
@@ -16886,21 +17109,34 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (isStructured) {
           responsePayload.answer = payload.answer;
       }
+      // FERPA-first transport: prefer the peer-to-peer quiz channel (answer
+      // lands only on the teacher's device, nothing stored). Firestore
+      // quizState.allResponses remains strictly as the fallback for students
+      // whose WebRTC connection isn't up (blocked UDP, mid-reconnect) —
+      // teacher consumers read the merged view either way.
+      let sentViaChannel = false;
       try {
-        await updateDoc(sessionRef, {
-            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
-        });
-      } catch (error) {
-           warnLog("Error submitting live answer:", error);
+          const g = quizGuestRef.current;
+          if (g) sentViaChannel = g.sendResponse(payload.questionIdx, responsePayload);
+      } catch (e) { sentViaChannel = false; }
+      if (!sentViaChannel) {
+          try {
+            await updateDoc(sessionRef, {
+                [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
+            });
+          } catch (error) {
+               warnLog("Error submitting live answer:", error);
+          }
       }
-      // Plan T v3: cross-session concept-mastery store. Skip silently when
-      // the submission has no conceptLabel (older quizzes or items without
-      // tags). Path is in /public/data/ so teachers can read other students'
-      // mastery during their sessions for retention dashboard.
+      // Plan T v3 (FERPA refit 2026-07-01): cross-session concept mastery is
+      // DEVICE-LOCAL now — the cloud conceptMastery/{uid} write was removed.
+      // The teacher's retention dashboard gets this data only through
+      // user-controlled channels: a live peer-to-peer snapshot on the quiz
+      // channel (below) and the student's saved project file. Skip silently
+      // when the submission has no conceptLabel (older quizzes/untagged items).
       if (payload.conceptLabel && typeof payload.conceptLabel === 'string') {
-          // Plan T v3+ Chunk 5: use shared normalizeConceptId so write path
-          // and aggregateRetentionCurve agree on which concept a label refers
-          // to. Falls back to inline trim+lowercase if module not yet loaded.
+          // Shared normalizeConceptId keeps the write path and
+          // aggregateRetentionCurve agreeing on which concept a label means.
           const _qla = window.AlloModules && window.AlloModules.QuizLiveAggregators;
           const conceptId = (_qla && typeof _qla.normalizeConceptId === 'function')
               ? _qla.normalizeConceptId(payload.conceptLabel)
@@ -16909,12 +17145,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           let status = 'submitted';
           if (payload.answer && payload.answer.idk === true) status = 'idk';
           else if (payload.answer && typeof payload.answer.status === 'string') status = payload.answer.status;
-          const masteryRef = doc(db, 'artifacts', appId, 'public', 'data', 'conceptMastery', user.uid);
-          try {
-              const snap = await getDoc(masteryRef);
-              const existing = snap.exists() ? (snap.data() || {}) : {};
-              const attempts = existing.attempts || {};
-              const concept = attempts[conceptId] || { label: payload.conceptLabel, totalAttempts: 0, correctAttempts: 0, idkCount: 0, recent: [], firstSeenTs: payload.timestamp || Date.now() };
+          setConceptMasteryLocal(prev => {
+              const attempts = { ...((prev && prev.attempts) || {}) };
+              const concept = { ...(attempts[conceptId] || { label: payload.conceptLabel, totalAttempts: 0, correctAttempts: 0, idkCount: 0, recent: [], firstSeenTs: payload.timestamp || Date.now() }) };
               concept.totalAttempts = (concept.totalAttempts || 0) + 1;
               if (status === 'correct') concept.correctAttempts = (concept.correctAttempts || 0) + 1;
               if (status === 'idk') concept.idkCount = (concept.idkCount || 0) + 1;
@@ -16923,10 +17156,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               concept.label = payload.conceptLabel;
               const newAttempt = { ts: payload.timestamp || Date.now(), status: status, sessionCode: activeSessionCode };
               concept.recent = ((concept.recent || []).concat(newAttempt)).slice(-10);
-              await setDoc(masteryRef, { uid: user.uid, attempts: { [conceptId]: concept } }, { merge: true });
-          } catch (mErr) {
-              warnLog("Error writing concept mastery:", mErr);
-          }
+              attempts[conceptId] = concept;
+              const next = { attempts };
+              // Opportunistic live share to the teacher (peer-to-peer, never stored).
+              try {
+                  const g = quizGuestRef.current;
+                  if (g && g.dc && g.dc.readyState === 'open') g.sendResponse('__mastery__', next);
+              } catch (e) {}
+              return next;
+          });
       }
   };
   const handleSetGroupResource = async (groupId, resourceId) => {
@@ -17031,6 +17269,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   quizState: { isActive: false },
                   status: 'ended',
               });
+              // Data hygiene: session metadata (roster codenames, xp, signals,
+              // quiz answers) must not outlive the class period. The soft-end
+              // marker above gives connected students their terminal signal;
+              // the delayed delete then removes the doc entirely — student
+              // listeners handle doc-not-found identically, so laggy clients
+              // still exit cleanly. With this, ALL end paths (session modal,
+              // quiz dashboard, teacher tab close) converge on deletion.
+              setTimeout(() => { deleteDoc(sessionRef).catch(() => {}); }, 8000);
           } catch (e) {
               warnLog("Firestore soft-end failed (Canvas sandbox):", e.message);
           }
@@ -17916,6 +18162,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         applyGlobalCitations,
         chunkText,
         stickers,
+        conceptMasteryLocal,
+        user,
       });
     throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
   };
@@ -17994,6 +18242,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         warnLog,
         hydrateHistory,
         setStickers,
+        setConceptMasteryLocal,
+        // Teacher-side mastery bank for imported student files (retention
+        // dashboard reads this via teacherConceptMasteryByUid).
+        bankImportedConceptMastery: (m) => {
+            if (!m || !m.attempts) return;
+            const key = m.uid || ('file:' + (m.nickname || 'student'));
+            setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
+        },
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
@@ -21295,7 +21551,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         - persona — Interview historical figures.
         - dbq — Document-Based Question activity.
         - note-taking — Scaffolded note templates (Cornell / Lab Report / Reading Response).
-        - anchor-chart — EL-style class anchor chart.
+        - anchor-chart — classroom visual reference poster.
         - math — Opens STEM Lab.
         - lesson-plan — Teacher synthesis. ALWAYS place LAST.
         - gemini-bridge — Interactive sim/app generator.
@@ -21311,6 +21567,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
          - Update "recommendedResources" array to add/remove tools (ensure valid tool IDs).
          - Update "globalSettings" (gradeLevel, tone) if requested.
          - Update "toolDirectives" to add specific instructions for tools if requested.
+         - Preserve "lessonDNA" exactly unless the teacher explicitly asks to revise the golden thread, essential question, or key vocabulary.
+         - When the teacher asks for a focus or emphasis, prefer updating "toolDirectives" and resource choices. Only revise "lessonDNA" if the request clearly requires it and remains compatible with the source, standards, and grade level.
+         - Never remove "lessonDNA" from the blueprint.
       Valid Tools (tool_id — when to use):
 ${_toolList}
       Return ONLY the updated valid JSON.
@@ -23158,6 +23417,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleSimplifiedTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    _recordTextChange('simplified', generatedContent.id, typeof generatedContent.data === 'string' ? generatedContent.data : '', value);
     const updatedContent = { ...generatedContent, data: value };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: value } : item));
@@ -23706,6 +23966,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleAnalysisTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'analysis') return;
+    _recordTextChange('analysis', generatedContent.id, (generatedContent.data && generatedContent.data.originalText) || '', value);
     const newStats = calculateReadability(value);
     const newData = {
         ...generatedContent?.data,
@@ -23716,6 +23977,126 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
+  // ── Global text undo/redo (2026-07-02) ─────────────────────────────
+  // One chronological stack across the three editable text surfaces:
+  //   'input'      → the source textarea (inputText): typing, paste, AI
+  //                  generation, refine — anything that changes inputText
+  //   'analysis'   → the analysis artifact's Original Source Text editor
+  //   'simplified' → the leveled-text editor
+  // Ctrl/Cmd+Z undoes, Ctrl+Y / Ctrl/Cmd+Shift+Z redoes. Typing bursts are
+  // coalesced (~0.9s idle or 4s max per step; a >100-char jump — paste or a
+  // generation — always starts its own step). Focus rules: the three tracked
+  // textareas carry data-allo-textundo and are owned by this system; every
+  // other input/textarea/contentEditable keeps the browser's native undo.
+  const textUndoRef = useRef({ undo: [], redo: [], prevInput: null, applyingInput: false, lastKey: null, burstUntil: 0, burstStart: 0 });
+  const _textUndoLiveRef = useRef({});
+  React.useEffect(() => { _textUndoLiveRef.current = { inputText, history, generatedContent }; });
+  const _recordTextChange = (domain, id, prev, next) => {
+    const h = textUndoRef.current;
+    if (prev === next) return;
+    const now = Date.now();
+    const key = domain + ':' + (id || '');
+    const bigJump = Math.abs(String(next == null ? '' : next).length - String(prev == null ? '' : prev).length) > 100;
+    const sameBurst = key === h.lastKey && now < h.burstUntil && (now - h.burstStart) < 4000 && !bigJump;
+    if (!sameBurst) {
+      h.undo.push({ domain, id, value: String(prev == null ? '' : prev) });
+      h.redo.length = 0;
+      h.burstStart = now;
+      // Caps: 60 steps / ~8MB retained so giant pasted docs can't bloat memory.
+      let total = 0;
+      for (let i = h.undo.length - 1; i >= 0; i--) total += h.undo[i].value.length;
+      while (h.undo.length > 60 || (total > 8000000 && h.undo.length > 1)) { total -= h.undo[0].value.length; h.undo.shift(); }
+    }
+    h.lastKey = key; h.burstUntil = now + 900;
+  };
+  React.useEffect(() => {
+    const h = textUndoRef.current;
+    if (h.prevInput === null) { h.prevInput = inputText; return; }
+    if (inputText === h.prevInput) return;
+    if (h.applyingInput) { h.applyingInput = false; h.prevInput = inputText; return; }
+    _recordTextChange('input', '', h.prevInput, inputText);
+    h.prevInput = inputText;
+  }, [inputText]);
+  const _readTextDomain = (entry) => {
+    const live = _textUndoLiveRef.current;
+    if (entry.domain === 'input') return { ok: true, value: live.inputText || '' };
+    const item = (live.history || []).find(it => it && it.id === entry.id && it.type === entry.domain);
+    if (!item) return { ok: false };
+    if (entry.domain === 'analysis') return { ok: true, value: (item.data && item.data.originalText) || '' };
+    return { ok: true, value: typeof item.data === 'string' ? item.data : '' };
+  };
+  const _applyTextDomain = (entry) => {
+    if (entry.domain === 'input') {
+      textUndoRef.current.applyingInput = true;
+      setInputText(entry.value);
+      return;
+    }
+    const patch = (item) => entry.domain === 'analysis'
+      ? { ...item, data: { ...item.data, originalText: entry.value, localStats: calculateReadability(entry.value) } }
+      : { ...item, data: entry.value };
+    setHistory(prev => prev.map(item => (item && item.id === entry.id && item.type === entry.domain) ? patch(item) : item));
+    setGeneratedContent(prev => (prev && prev.id === entry.id && prev.type === entry.domain) ? patch(prev) : prev);
+  };
+  const _textDomainLabel = (domain) => domain === 'input'
+    ? (t('toasts.undo_domain_source') || 'source text')
+    : domain === 'analysis' ? (t('toasts.undo_domain_analysis') || 'analysis source text')
+    : (t('toasts.undo_domain_simplified') || 'leveled text');
+  const _shiftTextStack = (from, to, verb) => {
+    const h = textUndoRef.current;
+    while (from.length) {
+      const entry = from.pop();
+      const cur = _readTextDomain(entry);
+      if (!cur.ok) continue;                       // artifact was deleted — skip to the next step
+      if (cur.value === entry.value) continue;     // no-op step — keep walking
+      to.push({ domain: entry.domain, id: entry.id, value: cur.value });
+      h.lastKey = null; h.burstUntil = 0;          // an undo/redo always ends the typing burst
+      _applyTextDomain(entry);
+      const label = _textDomainLabel(entry.domain);
+      const msg = verb === 'undo'
+        ? (t('toasts.text_undone', { domain: label }) || ('Undid the last ' + label + ' change.'))
+        : (t('toasts.text_redone', { domain: label }) || ('Redid the last ' + label + ' change.'));
+      addToast(msg, 'info');
+      try { if (window.alloAnnounce) window.alloAnnounce(msg, 'polite'); } catch (_) {}
+      return true;
+    }
+    return false;
+  };
+  const handleTextUndo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.undo, h.redo, 'undo')) return true;
+    // Nothing in the text history — fall back to annotation undo so the old
+    // Ctrl+Z behavior still reaches sticker users, then report empty.
+    if (annotationUndoStackRef.current.length > 0) { handleAnnotationUndo(); return true; }
+    addToast(t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
+    return false;
+  };
+  const handleTextRedo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.redo, h.undo, 'redo')) return true;
+    addToast(t('toasts.nothing_redo_yet') || 'Nothing to redo.', 'info');
+    return false;
+  };
+  const _textUndoHandlersRef = useRef({});
+  React.useEffect(() => { _textUndoHandlersRef.current = { undo: handleTextUndo, redo: handleTextRedo }; });
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = (e.key || '').toLowerCase();
+      const isUndo = k === 'z' && !e.shiftKey;
+      const isRedo = (k === 'z' && e.shiftKey) || k === 'y';
+      if (!isUndo && !isRedo) return;
+      if (e.isComposing) return;                   // never fight an IME composition
+      const el = e.target;
+      const tracked = el && el.closest && el.closest('[data-allo-textundo]');
+      const inField = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+      if (inField && !tracked) return;             // untracked fields keep native undo
+      e.preventDefault();
+      const fns = _textUndoHandlersRef.current;
+      if (isUndo && fns.undo) fns.undo(); else if (isRedo && fns.redo) fns.redo();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
   const handleAiRefineSource = async () => {
       if (!generatedContent || generatedContent.type !== 'analysis' || !sourceRefineInstruction.trim()) return;
       const currentText = generatedContent?.data.originalText || inputText;
@@ -24736,6 +25117,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             background: #000 !important;
             background-color: #000 !important;
         }
+        /* Inline light/pastel support tiles and panels -> pure black so forced yellow text remains readable. */
+        .theme-contrast [style*="background: white"],
+        .theme-contrast [style*="background:#fff"],
+        .theme-contrast [style*="background: #fff"],
+        .theme-contrast [style*="background:#ffffff"],
+        .theme-contrast [style*="background: #ffffff"],
+        .theme-contrast [style*="background: rgb(255, 255, 255"],
+        .theme-contrast [style*="background: #fef9c3"],
+        .theme-contrast [style*="background: rgb(254, 249, 195"],
+        .theme-contrast [style*="background: #dcfce7"],
+        .theme-contrast [style*="background: rgb(220, 252, 231"],
+        .theme-contrast [style*="background: #dbeafe"],
+        .theme-contrast [style*="background: rgb(219, 234, 254"],
+        .theme-contrast [style*="background: #f3f4f6"],
+        .theme-contrast [style*="background: rgb(243, 244, 246"],
+        .theme-contrast [style*="background: #fafafa"],
+        .theme-contrast [style*="background: rgb(250, 250, 250"],
+        .theme-contrast [style*="background: #f8fafc"],
+        .theme-contrast [style*="background: rgb(248, 250, 252"],
+        .theme-contrast [style*="background: #fffbeb"],
+        .theme-contrast [style*="background: rgb(255, 251, 235"],
+        .theme-contrast [style*="background: #eff6ff"],
+        .theme-contrast [style*="background: rgb(239, 246, 255"],
+        .theme-contrast [style*="background: #f0fdf4"],
+        .theme-contrast [style*="background: rgb(240, 253, 244"],
+        .theme-contrast [style*="background: #eef2ff"],
+        .theme-contrast [style*="background: rgb(238, 242, 255"],
+        .theme-contrast [style*="background: #e0e7ff"],
+        .theme-contrast [style*="background: rgb(224, 231, 255"] {
+            background: #000 !important;
+            background-color: #000 !important;
+        }
         /* Light text on dark → high-contrast yellow */
         .theme-contrast [style*="color: #cbd5e1"],
         .theme-contrast [style*="color:#cbd5e1"],
@@ -24980,7 +25393,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-dark .text-slate-700 { color: #f8fafc !important; }
         .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* slate-300 — secondary text, AAA on dark bg */
         .theme-dark .text-slate-500 { color: #94a3b8 !important; } /* slate-400 — helper/label text */
-        .theme-dark .text-slate-400 { color: #64748b !important; } /* slate-500 — muted/disabled text */
+        .theme-dark .text-slate-400 { color: #94a3b8 !important; } /* slate-400 — muted/helper text, AA on dark panels */
         .theme-dark .border-slate-100,
         .theme-dark .border-slate-200,
         .theme-dark .border-slate-300 { border-color: #334155 !important; }
@@ -24988,6 +25401,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-dark .text-indigo-800 { color: #a5b4fc !important; } /* Indigo-300 */
         .theme-dark .text-indigo-700 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg */
         .theme-dark .text-indigo-600 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg, passes WCAG AA */
+        .theme-dark .text-indigo-500 { color: #a5b4fc !important; } /* Indigo-300 — keep small modal action labels AA */
         .theme-dark .bg-indigo-700,
         .theme-dark .bg-indigo-800,
         .theme-dark .bg-indigo-900 { background-color: #312e81 !important; border-color: #4338ca !important; }
@@ -25090,7 +25504,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             background-color: #1e293b !important;
             color: #f8fafc !important;
         }
-        .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b !important; }
+        .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #94a3b8 !important; }
         .theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus {
             border-color: #818cf8 !important;
             --tw-ring-color: #4338ca !important;
@@ -26274,8 +26688,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             });
                         })()}
                         {/* Annotation undo (Phase 7b). Disabled when the
-                            undo stack is empty. Keyboard shortcut Ctrl/Cmd+Z
-                            works document-wide except inside text fields. */}
+                            undo stack is empty. This button is the primary
+                            trigger; Ctrl/Cmd+Z reaches it only as a fallback
+                            when the global TEXT undo history is empty. */}
                         {(() => {
                             const canUndo = annotationUndoCount > 0;
                             return (
@@ -26285,7 +26700,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
                                     className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
-                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
+                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available)'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
                                     aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
                                 >
                                     {t('annotation.undo_button') || '↩ Undo'}
@@ -26811,7 +27226,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })}
                 {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
                     t, isTeacherMode, isParentMode, isIndependentMode,
-                    activeSessionCode, sessionData,
+                    // Merged session view: peer-to-peer quiz answers layered over
+                    // the Firestore fallback (see quizMergedSessionData).
+                    activeSessionCode, sessionData: quizMergedSessionData,
+                    // Retention-dashboard mastery: live P2P snapshots + project-file
+                    // imports (device-local model; no cloud conceptMastery reads).
+                    conceptMasteryByUid: teacherConceptMasteryByUid,
                     onSubmitLiveAnswer: handleSubmitLiveAnswer,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
@@ -27383,7 +27803,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
               t={t}
               gradeLevel={gradeLevel || 'K-2'}
-              onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+              onStartGame={(words, sequence, lessonPlanConfig, configSummary, probeOptions) => {
+                   // 5th arg (optional): the setup screen's Practice/Assessment choice.
+                   // A probe is a single timed skill, so it ignores any lesson-plan
+                   // sequence and pins the activity the teacher selected.
+                   const _isProbe = !!(probeOptions && probeOptions.isProbe);
+                   const _probeAct = probeOptions && probeOptions.activity;
                    const resourceId = `ws-${Date.now()}`;
                    const wordSoundsResource = {
                        id: resourceId,
@@ -27394,12 +27819,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        lessonPlanSequence: sequence || [],
                        lessonPlanConfig: lessonPlanConfig || null,
                        configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
+                       isProbeMode: _isProbe,
+                       probeActivity: _isProbe ? (_probeAct || null) : null,
                    };
                    setGeneratedContent(wordSoundsResource);
                    setHistory(prev => [wordSoundsResource, ...prev]);
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
-                   const initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   setIsProbeMode(_isProbe);
+                   let initialActivity;
+                   if (_isProbe && _probeAct) {
+                       setProbeActivity(_probeAct);
+                       initialActivity = _probeAct;
+                   } else {
+                       initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   }
                    setWordSoundsActivity(initialActivity);
                    setWordSoundsAutoReview(true);
                    setIsWordSoundsMode(false);
@@ -27863,6 +28297,43 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setShowPictionaryGuest(false),
         })
       }
+      {/* Live answer-progress pill (students): pacing pressure without names. */}
+      {!isTeacherMode && activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive && quizProgress && quizProgress.total > 0 && (
+        <div role="status" aria-live="polite" style={{position:'fixed',bottom:'1rem',left:'1rem',zIndex:9999,background:'white',border:'1px solid #e2e8f0',borderRadius:24,padding:'0.4rem 0.8rem',boxShadow:'0 8px 20px rgba(15,23,42,0.18)',display:'flex',alignItems:'center',gap:8,fontSize:'0.78rem',fontWeight:700,color:'#0f172a'}}>
+          <span aria-hidden="true">✅</span>
+          <span>{quizProgress.answered}/{quizProgress.total} {t('quiz.progress_answered') || 'answered'}</span>
+          <span style={{width:64,height:6,borderRadius:999,background:'#e2e8f0',overflow:'hidden'}}>
+            <span style={{display:'block',height:'100%',width: Math.min(100, Math.round((quizProgress.answered / quizProgress.total) * 100)) + '%',background: quizProgress.answered >= quizProgress.total ? '#16a34a' : '#2563eb',transition:'width 300ms ease'}} />
+          </span>
+        </div>
+      )}
+      {/* Anonymous quiz results the teacher shared over the P2P quiz channel. */}
+      {!isTeacherMode && quizSharedResults && (
+        <div role="dialog" aria-modal="true" aria-label={t('quiz.shared_results_title') || 'Class results'} style={{position:'fixed',inset:0,background:'rgba(15,23,42,0.55)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+          <div style={{background:'white',maxWidth:560,width:'100%',maxHeight:'80vh',overflowY:'auto',borderRadius:12,padding:'1.25rem',boxShadow:'0 20px 50px rgba(0,0,0,0.3)'}}>
+            <div style={{fontSize:'0.75rem',color:'#1e3a8a',fontWeight:800,textTransform:'uppercase',marginBottom:4}}>{t('quiz.shared_results_kicker') || 'Anonymous class results'}</div>
+            <h2 style={{margin:'0 0 0.8rem 0',fontSize:'1.1rem',color:'#0f172a'}}>{quizSharedResults.title || (t('quiz.shared_results_title') || 'How the class did')}</h2>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {(Array.isArray(quizSharedResults.items) ? quizSharedResults.items : []).map((item, i) => {
+                const pct = Math.max(0, Math.min(100, Number(item.percent) || 0));
+                return (
+                  <div key={i} style={{border:'1px solid #e2e8f0',borderRadius:8,padding:'0.55rem'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:'0.82rem',color:'#0f172a',marginBottom:4}}>
+                      <span style={{fontWeight:700,overflowWrap:'anywhere'}}>{item.label || ('#' + (i + 1))}</span>
+                      <span style={{color:'#475569',whiteSpace:'nowrap'}}>{item.count != null ? item.count + ' · ' : ''}{pct}%</span>
+                    </div>
+                    <div style={{height:8,borderRadius:999,background:'#e2e8f0',overflow:'hidden'}}>
+                      <div style={{width:pct + '%',height:'100%',background: pct >= 70 ? '#16a34a' : pct >= 40 ? '#f59e0b' : '#dc2626'}} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p style={{fontSize:'0.72rem',color:'#64748b',margin:'0.7rem 0 0.8rem 0'}}>{t('quiz.shared_results_note') || 'Class totals only — no names, and nothing is stored.'}</p>
+            <button onClick={() => setQuizSharedResults(null)} style={{padding:'0.6rem 1.2rem',borderRadius:6,border:'none',background:'#1e3a8a',color:'white',cursor:'pointer',fontWeight:700,width:'100%'}}>{t('common.close') || 'Close'}</button>
+          </div>
+        </div>
+      )}
       {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
       {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
       {/* Session Center lists + clears them. No free text by design. */}

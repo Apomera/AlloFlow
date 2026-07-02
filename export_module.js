@@ -1133,7 +1133,7 @@ const createExport = deps => {
           image: includeImages ? entry.image || null : null,
           toolLabel: 'Adventure Mode',
           privacy: 'full'
-        }))).filter((item) => (item.text || '').trim());
+        }))).filter(item => (item.text || '').trim());
         const artifact = {
           id: `adventure-storybook-${ts}`,
           type: 'adventure-storybook',
@@ -1168,9 +1168,12 @@ const createExport = deps => {
         const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
         window.__alloflowStudentArtifacts = next;
         localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'adventure' } }));
-      } catch (_) {
-      }
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+          detail: {
+            source: 'adventure'
+          }
+        }));
+      } catch (_) {}
       let storyHtml = `
               <!DOCTYPE html>
               <html>
