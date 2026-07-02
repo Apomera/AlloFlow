@@ -8625,17 +8625,26 @@ var createDocPipeline = function(deps) {
     // In either mode, the final audit result object is returned.
     const _skipUi = !!(options && options.skipUiUpdates);
     const _skipCache = !!(options && options.skipCache);
+    // S1 step 3: run-entry snapshot. Explicit options win (batch/experiment callers pass
+    // their own settings so a whole batch runs on ONE configuration); otherwise the ctx
+    // captured HERE governs every later read — a concurrent call's rebind can't swap the
+    // auditor count / output language / document mid-audit.
+    const _run = _makeRunCtx();
+    const _auditorCount = (options && options.auditorCount) || _run.auditorCount;
+    const _outputLanguage = (options && options.outputLanguage) || _run.outputLanguage;
+    const _runFile = _run.file;
+    const _runBase64 = _run.base64;
     if (!_skipUi) setPdfAuditLoading(true);
     // Estimate audit time based on data size (rough proxy for page count before we know it)
     const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
     const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
 
     // ── Content-hash cache check (Tier 5 safe slice) ──
-    const _cacheKey = !_skipCache ? await _auditCacheKey(base64Data, pdfAuditorCount, leveledTextLanguage) : null;
+    const _cacheKey = !_skipCache ? await _auditCacheKey(base64Data, _auditorCount, _outputLanguage) : null;
     if (_cacheKey) {
       const cached = await _readAuditCache(_cacheKey);
       if (cached) {
-        warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${pdfAuditorCount} audit calls`);
+        warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`);
         if (!_skipUi) {
           addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
           setPdfAuditResult(cached);
@@ -8711,7 +8720,7 @@ var createDocPipeline = function(deps) {
         return sparse;
       }
     }
-    const _optFileName = (options && options.fileName) || (pendingPdfFile && pendingPdfFile.name) || '';
+    const _optFileName = (options && options.fileName) || (_runFile && _runFile.name) || '';
     const _isZipContainer = typeof base64Data === 'string' && base64Data.slice(0, 5) === 'UEsDB';
     const _officeKind = /\.docx$/i.test(_optFileName) ? 'docx'
       : /\.pptx$/i.test(_optFileName) ? 'pptx'
@@ -8840,7 +8849,7 @@ var createDocPipeline = function(deps) {
       // to write all human-readable findings in that language. JSON keys and WCAG
       // codes stay English/numeric. documentLanguage stays a BCP-47 code about
       // the SOURCE PDF (different concept from output language).
-      const _auditOutLang = (typeof leveledTextLanguage === 'string' && leveledTextLanguage && leveledTextLanguage !== 'English') ? leveledTextLanguage : null;
+      const _auditOutLang = (typeof _outputLanguage === 'string' && _outputLanguage && _outputLanguage !== 'English') ? _outputLanguage : null;
       const _outLangDirective = _auditOutLang
         ? `\n\n═══ OUTPUT LANGUAGE ═══\nWrite ALL human-readable field values ("issue", "summary", "passes") in ${_auditOutLang}. Use the locale's standard accessibility / WCAG terminology. JSON keys, WCAG codes (e.g. "1.3.1"), and the "documentLanguage" BCP-47 code stay English/numeric — only translate VALUES that a human will read. The documentLanguage field describes the SOURCE PDF's primary language (not your output language).\n═══════════════════════\n`
         : '';
@@ -8919,7 +8928,7 @@ Return ONLY valid JSON:
       // scores diverge >20 or any auditor reports low confidence. Well-behaved docs save ~40%
       // of initial-audit vision tokens; divergent docs still get the full panel, and the
       // reported reliability stats always describe the auditors that actually ran (n is dynamic).
-      const _auditorCap = Math.min(pdfAuditorCount, allVariants.length);
+      const _auditorCap = Math.min(_auditorCount, allVariants.length);
       const numAuditors = Math.min(3, _auditorCap);
       const auditVariants = allVariants.slice(0, numAuditors);
       // ── Size-aware routing: chunk-first for large docs, whole-document otherwise ──
@@ -9268,8 +9277,9 @@ Return ONLY valid JSON:
       // into the minimal HTML so axe-baseline credits the existing structure
       // instead of penalizing it as missing.
       try {
-        // Use the passed-in base64 when skipping UI (batch mode) so we don't read stale pendingPdfBase64 state
-        const _base64ForBaseline = _skipUi ? base64Data : pendingPdfBase64;
+        // Use the passed-in base64 when skipping UI (batch mode); otherwise the run-entry
+        // snapshot (S1 — the bound var could be another call's document by now).
+        const _base64ForBaseline = _skipUi ? base64Data : _runBase64;
         const detBaseline = await extractPdfTextDeterministic(_base64ForBaseline);
         const rawText = detBaseline.fullText || '';
         // Tier 8 deep wire: use struct-tree-aware HTML when tags exist; falls
