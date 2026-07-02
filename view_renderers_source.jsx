@@ -190,7 +190,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, broadcastInteractiveOrganizer } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
   // Branded loading state for lazily-registered organizer games — shown only in the brief
@@ -1685,6 +1685,15 @@ const renderOutlineContent = (deps) => {
                             playSound={playSound}
                             onScoreUpdate={handleGameScoreUpdate}
                             onGameComplete={handleGameCompletion}
+                            isTeacherMode={isTeacherMode}
+                            armed={!!isInteractiveStrandChallenge}
+                            onChallengeArm={() => {
+                                if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(true);
+                                _broadcastInteractiveOrganizer('strandchallenge3d');
+                            }}
+                            onChallengeClose={() => {
+                                if (!isTeacherMode && setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
+                            }}
                         />
                     </ErrorBoundary>
                 </div>
@@ -1962,7 +1971,7 @@ function openConceptMap3D(opts) {
 // onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
 // becomes visible on any load/WebGL failure), and this component adds its own
 // static-outline fallback for the case where the modules themselves never load.
-const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const handleRef = React.useRef(null);
@@ -1980,6 +1989,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     const [placedCount, setPlacedCount] = React.useState(0);
     const placedRef = React.useRef({});
     const attemptsRef = React.useRef(0);
+    const startedByArmRef = React.useRef(false);   // true when a teacher broadcast started this run
+    // Gentle count-UP stopwatch (never a countdown — time pressure is a UDL
+    // anti-pattern); the elapsed time rides along in the completion payload.
+    const [elapsed, setElapsed] = React.useState(0);
+    const elapsedRef = React.useRef(0);
+    const [won, setWon] = React.useState(false);
+    const [lastScore, setLastScore] = React.useState(null);
+    const [hint, setHint] = React.useState(null);
+    const [hintLoading, setHintLoading] = React.useState(false);
+    const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     const challengeEligible = React.useMemo(() => {
         const branches = Array.isArray(data?.branches) ? data.branches : [];
         const items = branches.reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0);
@@ -2030,32 +2049,62 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ready, failed, dataKey, nonce, challenge]);
 
-    const startChallenge = () => {
+    const _resetRunState = () => {
+        placedRef.current = {}; setPlacedCount(0);
+        elapsedRef.current = 0; setElapsed(0); setWon(false);
+        setLastScore(null); setHint(null);
+    };
+    const startChallenge = (viaArm) => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         if (!E || !E.buildStrandChallenge || !graphRef.current) return;
         const ch = E.buildStrandChallenge(graphRef.current);
         if (!ch.targets.length) { if (addToast) addToast(t('concept_space.challenge_empty') || 'No concepts to sort yet.', 'info'); return; }
-        placedRef.current = {}; setPlacedCount(0); attemptsRef.current = 0;
+        _resetRunState(); attemptsRef.current = 0;
+        startedByArmRef.current = viaArm === true;
         setChallenge(ch);
         if (addToast) addToast(t('concept_space.challenge_start') || '🎯 Every concept fell off its strand! Click one, then pick its strand.', 'info');
+        // Teacher start arms every student in the live session (same contract as
+        // the 2D sort games' Play buttons).
+        if (isTeacherMode && viaArm !== true && typeof onChallengeArm === 'function') { try { onChallengeArm(); } catch (e) {} }
     };
-    const exitChallenge = () => { setChallenge(null); placedRef.current = {}; setPlacedCount(0); attemptsRef.current = 0; };
-    const retryChallenge = () => { placedRef.current = {}; setPlacedCount(0); setChallenge((c) => (c ? { ...c } : c)); };   // new identity ⇒ scene remounts fresh
+    const exitChallenge = () => {
+        setChallenge(null); _resetRunState(); attemptsRef.current = 0;
+        startedByArmRef.current = false;
+        if (typeof onChallengeClose === 'function') { try { onChallengeClose(); } catch (e) {} }
+    };
+    const retryChallenge = () => { _resetRunState(); setChallenge((c) => (c ? { ...c } : c)); };   // new identity ⇒ scene remounts fresh
+
+    // Stopwatch: ticks while a run is live, freezes on a win.
+    React.useEffect(() => {
+        if (!challenge || won) return undefined;
+        const iv = setInterval(() => { elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
+        return () => clearInterval(iv);
+    }, [challenge, won]);
+
+    // Live-session arming: a teacher broadcast starts the challenge for students;
+    // clearing the arm (teacher moved on) closes an arm-started run.
+    React.useEffect(() => {
+        if (armed && !isTeacherMode && !challenge && ready && !failed && hasContent) startChallenge(true);
+        else if (!armed && !isTeacherMode && challenge && startedByArmRef.current) { startedByArmRef.current = false; exitChallenge(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [armed, isTeacherMode, ready, failed, challenge]);
     const checkChallenge = () => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         if (!E || !challenge || !handleRef.current) return;
         attemptsRef.current += 1;
         const score = E.scoreStrandChallenge(challenge.answerKey, placedRef.current);
+        setLastScore(score);
         const summary = (t('concept_space.challenge_result') || 'Placed {correct} of {total} correctly.')
             .replace('{correct}', String(score.correct)).replace('{total}', String(score.total));
         if (handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, summary);
         const points = score.correct * 10;
         const labelOf = (id) => { const n = (challenge.graph.nodes || []).find((x) => x.id === id); return (n && n.label) || id; };
         if (score.complete) {
+            setWon(true);
             if (playSound) playSound('correct');
             if (addToast) addToast(t('concept_space.challenge_win') || '🎉 Every concept is on the right strand!', 'success');
             if (onScoreUpdate) onScoreUpdate(points, 'Strand Challenge Complete');
-            if (onGameComplete) onGameComplete('strandChallenge3d', { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, incorrectPlacements: [] });
+            if (onGameComplete) onGameComplete('strandChallenge3d', { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, timeSeconds: elapsedRef.current, incorrectPlacements: [] });
         } else {
             if (playSound) playSound('reveal');
             if (addToast) addToast(summary, 'info');
@@ -2063,7 +2112,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
             // mirroring the 2D sort games' contract.
             if (onGameComplete) onGameComplete('strandChallenge3dAttempt', {
                 score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: false,
-                attempts: attemptsRef.current, bestScore: points,
+                attempts: attemptsRef.current, bestScore: points, timeSeconds: elapsedRef.current,
                 incorrectPlacements: Object.keys(score.results).filter((id) => score.results[id] !== 'correct').map((id) => ({
                     itemId: id, itemText: labelOf(id),
                     placedCategoryLabel: placedRef.current[id] || 'unplaced',
@@ -2071,6 +2120,30 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                 })),
             });
         }
+    };
+
+    // One-shot AI hint about a misplaced concept — engine builds a prompt that
+    // NEVER reveals the correct strand; gated on window.callGemini like every
+    // other AI affordance.
+    const requestHint = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || typeof window.callGemini !== 'function') return;
+        const badId = Object.keys(lastScore.results).find((id) => lastScore.results[id] !== 'correct');
+        if (!badId) return;
+        const n = (challenge.graph.nodes || []).find((x) => x.id === badId);
+        const prompt = E.buildStrandHintPrompt({
+            itemLabel: (n && n.label) || badId,
+            placedStrand: placedRef.current[badId] || null,
+            strands: challenge.strands,
+            topic: data?.main || title || '',
+        });
+        setHintLoading(true);
+        Promise.resolve(window.callGemini(prompt)).then((res) => {
+            const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+            const clean = String(text).trim().slice(0, 400);
+            if (clean) setHint({ label: (n && n.label) || badId, text: clean });
+        }).catch(() => { if (addToast) addToast(t('concept_space.hint_failed') || 'Could not fetch a hint right now.', 'error'); })
+          .then(() => setHintLoading(false));
     };
 
     const handleArrange = () => {
@@ -2114,8 +2187,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                 <div className="flex items-center gap-2">
                     {challenge ? (
                         <>
-                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full" role="status">
-                                {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" role="status">
+                                ⏱ {fmtTime(elapsed)} · {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
                                     .replace('{placed}', String(placedCount)).replace('{total}', String(challenge.targets.length))}
                             </span>
                             <button
@@ -2125,6 +2198,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                             >
                                 ✔ {t('concept_space.challenge_check') || 'Check placements'}
                             </button>
+                            {lastScore && !lastScore.complete && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={requestHint}
+                                    disabled={hintLoading}
+                                    className="flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('concept_space.hint_tooltip') || 'Get a nudge about one misplaced concept — the answer is never given away'}
+                                >
+                                    💡 {hintLoading ? (t('common.loading') || 'Loading…') : (t('concept_space.hint_button') || 'Hint')}
+                                </button>
+                            )}
                             <button
                                 onClick={retryChallenge}
                                 className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
@@ -2142,7 +2225,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                         <>
                             {hasContent && challengeEligible && !failed && (
                                 <button
-                                    onClick={startChallenge}
+                                    onClick={() => startChallenge(false)}
                                     className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
                                     title={t('concept_space.challenge_tooltip') || 'Practice: every concept falls off its strand — put each one back where it belongs'}
                                 >
@@ -2181,6 +2264,20 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                     )}
                 </div>
             </div>
+            {hint && (
+                <div className="flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900" role="status" aria-live="polite">
+                    <span aria-hidden="true">💡</span>
+                    <div className="flex-1">
+                        <span className="font-bold">{(t('concept_space.hint_for') || 'Thinking about “{label}”:').replace('{label}', hint.label)}</span>{' '}
+                        {hint.text}
+                    </div>
+                    <button
+                        onClick={() => setHint(null)}
+                        aria-label={t('common.close') || 'Close'}
+                        className="text-amber-700 hover:text-amber-900 font-bold px-1"
+                    >✕</button>
+                </div>
+            )}
             <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
                 {!hasContent ? (
                     <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">

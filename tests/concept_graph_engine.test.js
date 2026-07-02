@@ -292,6 +292,17 @@ describe('ConceptGraphEngine — arrangements (persistable 3D placement + constr
     expect(ch.graph.layers.map((l) => l.key)).toEqual(['S1', 'S2', null]);         // trailing Ungrouped plane holds the items
   });
 
+  it('buildStrandHintPrompt nudges without ever revealing the correct strand', () => {
+    const p = E.buildStrandHintPrompt({ itemLabel: 'Mitochondria', placedStrand: 'Ethics', strands: ['Biology', 'Chemistry', 'Ethics'], topic: 'Cells' });
+    expect(p).toMatch(/Mitochondria/);
+    expect(p).toMatch(/Ethics/);                                  // what the student DID is stated
+    expect(p).toMatch(/WITHOUT naming or revealing the correct strand/);
+    expect(p).toMatch(/Topic: Cells/);
+    // unplaced variant
+    const p2 = E.buildStrandHintPrompt({ itemLabel: 'Ribosome', placedStrand: null, strands: ['A'] });
+    expect(p2).toMatch(/not yet placed/);
+  });
+
   it('scoreStrandChallenge classifies correct / incorrect / unplaced and detects completion', () => {
     const key = { i1: 'A', i2: 'B', i3: 'B' };
     const partial = E.scoreStrandChallenge(key, { i1: 'A', i2: 'A' });
