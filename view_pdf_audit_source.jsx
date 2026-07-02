@@ -151,6 +151,13 @@ function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
   const lang = (doc.documentElement.getAttribute('lang') || 'en').trim() || 'en';
+  // RTL capture (export-format review #2, 2026-07-01): the pipeline sets dir="rtl" on the
+  // accessible HTML for RTL languages, but the export spec never carried it — Arabic/
+  // Hebrew/Urdu DOCX/ODT/DAISY shipped left-to-right (visually inverted, semantically
+  // wrong for AT). Prefer the document's explicit dir; fall back to an RTL-language
+  // prefix check so a doc whose dir attribute was lost in transit still exports right.
+  const _dirAttr = ((doc.documentElement.getAttribute('dir') || (doc.body && doc.body.getAttribute('dir')) || '') + '').toLowerCase();
+  const rtl = _dirAttr === 'rtl' || (_dirAttr !== 'ltr' && /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(lang));
   const blocks = [];
   const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
   // Footnotes (2026-06-14, A6): each note's data-fn-uid → a Word footnote id, plus
@@ -339,7 +346,7 @@ function _htmlToDocxSpec(html) {
     }
   } catch (_) {}
   walk(doc.body);
-  return { title, lang, blocks, counts, footnotes: _fnDefs };
+  return { title, lang, rtl, blocks, counts, footnotes: _fnDefs };
 }
 // end _htmlToDocxSpec
 
@@ -540,7 +547,7 @@ function _htmlToDtbookXml(html, lang) {
   const bodyInner = out.join('\n') || ('<level1><h1>' + title + '</h1></level1>');
   return '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n' +
-    '<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '">\n' +
+    '<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : '') + '>\n' +
     '<head>' +
     '<meta name="dc:Title" content="' + title + '"/>' +
     '<meta name="dc:Language" content="' + _expXmlEsc(L) + '"/>' +
@@ -844,6 +851,11 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   // single-spaced, no hanging indent (the mode looked like a no-op in the
   // format teachers actually submit). All native to docx@8.5.0; no new dep.
   const academic = !!(mode && mode.academic);
+  // RTL (export-format review #2): w:bidi on every paragraph + w:rtl on every run when
+  // the spec says the document is right-to-left. Word needs BOTH — bidi flips the
+  // paragraph direction, rtl marks the runs as complex-script so punctuation and
+  // numbers order correctly.
+  const _rtl = !!spec.rtl;
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
@@ -851,9 +863,12 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     // definition in document.footnotes. Degrades to a superscript digit only if
     // the lib lacks FootnoteReferenceRun (very old CDN cache).
     if (r.footnoteId) { return (typeof d.FootnoteReferenceRun === 'function') ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true }); }
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
+  // Every Paragraph in this builder goes through _P so the bidi flag can't be missed
+  // at one of the eight construction sites.
+  const _P = (opts) => new d.Paragraph(_rtl ? { bidirectional: true, ...opts } : opts);
   const children = [];
   const _lang = (spec.lang || 'en');
   let _olCount = 0; // each <ol> gets its own numbering reference (allo-ol-N) so it restarts at 1
@@ -864,9 +879,9 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       // title-page block (any mode). Word's heading style stays, keeping the
       // doc navigable + tagged on Word's own PDF export.
       if (((academic && b.level === 1) || b.centered) && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
-      children.push(new d.Paragraph(hp));
+      children.push(_P(hp));
     }
-    else if (b.type === 'pagebreak') children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
+    else if (b.type === 'pagebreak') children.push(_P({ children: [new d.PageBreak()] }));
     else if (b.type === 'paragraph') {
       const pp = { children: runsTo(b.runs) };
       // Reference-list hanging indent (0.5"): first line flush, continuation
@@ -874,7 +889,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
       // Title-page lines (author/affiliation/course) center in any mode.
       if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
-      children.push(new d.Paragraph(pp));
+      children.push(_P(pp));
     }
     else if (b.type === 'list') {
       // Each ordered list gets its OWN numbering reference (allo-ol-0, allo-ol-1, …)
@@ -882,7 +897,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
       // every ordered list continue one counter (4, 5, 6 …) in Word.
       const _olRef = b.ordered ? ('allo-ol-' + (_olCount++)) : null;
       for (const it of b.items) {
-        children.push(new d.Paragraph({
+        children.push(_P({
           children: runsTo(it.runs),
           ...(b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }),
         }));
@@ -890,6 +905,8 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     } else if (b.type === 'table' && b.rows.length) {
       children.push(new d.Table({
         width: { size: 100, type: d.WidthType.PERCENTAGE },
+        // RTL (#2): flip the table's visual column order for right-to-left documents.
+        ...(_rtl ? { visuallyRightToLeft: true } : {}),
         rows: b.rows.map((row) => new d.TableRow({
           tableHeader: !!row.header,
           children: row.cells.map((c) => new d.TableCell({
@@ -897,7 +914,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
             // The spec's HTML source omits covered cells, matching the docx lib contract.
             ...(c.colSpan > 1 ? { columnSpan: c.colSpan } : {}),
             ...(c.rowSpan > 1 ? { rowSpan: c.rowSpan } : {}),
-            children: [new d.Paragraph({ children: runsTo(c.runs) })],
+            children: [_P({ children: runsTo(c.runs) })],
           })),
         })),
       }));
@@ -912,11 +929,11 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
           const w = Math.min(Math.max(parseInt(b.width, 10) || 480, 40), 600);
           const hRaw = parseInt(b.height, 10);
           const h = Math.max(hRaw || Math.round(w * 0.66), 30);
-          children.push(new d.Paragraph({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
+          children.push(_P({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || 'Image', description: b.alt || 'Image', name: (b.alt || 'image').slice(0, 60) } })] }));
           placed = true;
         } catch (_) { /* degrade to the alt-text paragraph below */ }
       }
-      if (!placed) children.push(new d.Paragraph({ children: [new d.TextRun({ text: '[Image: ' + (b.alt || 'no description available') + ']', italics: true })] }));
+      if (!placed) children.push(_P({ children: [new d.TextRun({ text: '[Image: ' + (b.alt || 'no description available') + ']', italics: true })] }));
       // Word-NATIVE editable math (2026-06-10, item 7): LaTeX → MathML
       // (temml) → OMML (mathml2omml) → ImportedXmlComponent. The equation
       // image stays as visual ground truth; the editable equation follows it.
@@ -925,8 +942,8 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
         try {
           const omml = await _latexToOmml(b.latex);
           if (omml && d.ImportedXmlComponent && typeof d.ImportedXmlComponent.fromXmlString === 'function') {
-            children.push(new d.Paragraph({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
-            children.push(new d.Paragraph({ children: [new d.TextRun({ text: 'Editable equation (AI-transcribed from the image above — verify before reuse).', italics: true, size: 16 })] }));
+            children.push(_P({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
+            children.push(_P({ children: [new d.TextRun({ text: 'Editable equation (AI-transcribed from the image above — verify before reuse).', italics: true, size: 16 })] }));
           }
         } catch (_) { /* fail-soft: image + spoken alt already carry the math */ }
       }
@@ -955,7 +972,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
   if (spec.footnotes && Object.keys(spec.footnotes).length && typeof d.FootnoteReferenceRun === 'function') {
     const _fn = {};
     for (const id of Object.keys(spec.footnotes)) {
-      try { _fn[id] = { children: [new d.Paragraph({ children: runsTo(spec.footnotes[id]) })] }; } catch (_) {}
+      try { _fn[id] = { children: [_P({ children: runsTo(spec.footnotes[id]) })] }; } catch (_) {}
     }
     if (Object.keys(_fn).length) _docOpts.footnotes = _fn;
   }
@@ -2283,7 +2300,12 @@ function PdfAuditView(props) {
       zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' });
       zip.file('META-INF/manifest.xml', _ODT_MANIFEST_XML);
       zip.file('content.xml', _htmlToOdtContentXml(html));
-      zip.file('styles.xml', _ODT_STYLES_XML);
+      // RTL (#2): ODF document direction lives in the default paragraph style —
+      // style:writing-mode="rl-tb" flips paragraphs, tables, and lists document-wide.
+      const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
+      zip.file('styles.xml', _odtRtl
+        ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>')
+        : _ODT_STYLES_XML);
       zip.file('meta.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + '</dc:title></office:meta></office:document-meta>');
       const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.oasis.opendocument.text' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.odt';

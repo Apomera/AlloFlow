@@ -206,3 +206,25 @@ describe('th-scope geometry v2 (export-format review #3)', () => {
     expect(out).toContain('scope="col">Keep2<');
   });
 });
+
+describe('RTL threading into office exports (export-format review #2)', () => {
+  const vpNow = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+  it('C23: the spec captures rtl (dir attr first, RTL-language fallback) and returns it', () => {
+    expect(vpNow).toMatch(/const rtl = _dirAttr === 'rtl'/);
+    expect(vpNow).toMatch(/ar\|he\|iw\|fa\|ur\|ps\|sd\|ug\|yi\|dv\|ckb/);
+    expect(vpNow).toMatch(/return \{ title, lang, rtl, blocks, counts, footnotes: _fnDefs \};/);
+  });
+  it('C24: DOCX emits bidi paragraphs + rtl runs + visuallyRightToLeft tables; Paragraphs route through _P', () => {
+    expect(vpNow).toMatch(/const _P = \(opts\) => new d\.Paragraph\(_rtl \? \{ bidirectional: true, \.\.\.opts \} : opts\);/);
+    expect(vpNow).toMatch(/\.\.\.\(_rtl \? \{ rightToLeft: true \} : \{\}\)/);
+    expect(vpNow).toMatch(/\.\.\.\(_rtl \? \{ visuallyRightToLeft: true \} : \{\}\)/);
+    const _start = vpNow.indexOf('async function _buildDocxBlobFromSpec');
+    const seg = vpNow.slice(_start, vpNow.indexOf('async function', _start + 10));
+    const bare = (seg.match(/new d\.Paragraph\(/g) || []).length;
+    expect(bare).toBeLessThanOrEqual(3); // _P's own definition + empty-doc placeholder + tolerance
+  });
+  it('C25: ODT flips writing-mode document-wide and DTBook carries dir="rtl"', () => {
+    expect(vpNow).toMatch(/style:writing-mode="rl-tb"/);
+    expect(vpNow).toMatch(/\(spec\.rtl \? ' dir="rtl"' : ''\)/);
+  });
+});

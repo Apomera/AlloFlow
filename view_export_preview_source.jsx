@@ -1057,6 +1057,19 @@ function ExportPreviewView(props) {
                             _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
+                          // #6 (export-format review): tables/images/math vanished under the final
+                          // tag-strip. Convert tables to GitHub pipe tables, images to md images
+                          // (alt preserved), and MathML to a fenced block BEFORE the strip runs.
+                          const _cellTxt = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+                          html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
+                            const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt));
+                            if (!rows.length) return '\n';
+                            const w = Math.max(...rows.map(r => r.length));
+                            const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
+                            return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+                          });
+                          html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
+                          html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => '\n\n```mathml\n' + m + '\n```\n\n');
                           let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
                             .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
                             .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
@@ -1136,6 +1149,16 @@ function ExportPreviewView(props) {
                                 _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                                 html = _mdClone.outerHTML;
                               } catch (_) { html = doc.documentElement.outerHTML; }
+                              // #6: preserve tables (pipe tables) + image alts before the tag-strip.
+                              const _cellTxt2 = (s) => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim();
+                              html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
+                                const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map(tr => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt2));
+                                if (!rows.length) return '\n';
+                                const w = Math.max(...rows.map(r => r.length));
+                                const line = (r) => '| ' + Array.from({ length: w }, (_, i) => r[i] || '').join(' | ') + ' |';
+                                return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
+                              });
+                              html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
                               const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
                               out.push(body);
                             } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
