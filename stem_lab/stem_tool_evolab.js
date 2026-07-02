@@ -448,6 +448,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         ];
         var activeTrackId = d.evoMenuTrack || 'guided';
         var activeTrack = learningTracks.filter(function(track) { return track.id === activeTrackId; })[0] || learningTracks[0];
+        var activeTrackVisited = activeTrack.modules.filter(function(id) { return badges[id]; }).length;
+        var activeTrackPct = Math.round((activeTrackVisited / Math.max(1, activeTrack.modules.length)) * 100);
+        var nextTrackModule = activeTrack.modules.filter(function(id) { return !badges[id]; })[0] || activeTrack.modules[0];
+        var evoLoopSteps = [
+          { label: 'Variation', desc: 'Traits differ inside a population.' },
+          { label: 'Pressure', desc: 'The environment changes who survives.' },
+          { label: 'Reproduction', desc: 'Survivors leave more offspring.' },
+          { label: 'Inheritance', desc: 'Helpful traits become more common.' },
+          { label: 'Population shift', desc: 'The group changes over generations.' }
+        ];
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -525,6 +535,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-emerald-200 mb-2' }, 'Evolution Mission Control'),
                 h('h2', { className: 'text-2xl md:text-3xl font-black leading-tight mb-2' }, activeTrack.title),
                 h('p', { className: 'text-sm text-emerald-50/90 leading-relaxed max-w-2xl' }, activeTrack.desc),
+                h('div', { className: 'mt-5 rounded-2xl border border-white/15 bg-white/10 p-3' },
+                  h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
+                    h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-emerald-100' }, 'Evolution loop'),
+                    h('div', { className: 'text-[11px] font-bold text-white/70' }, 'Cause -> population change')
+                  ),
+                  h('div', { className: 'grid grid-cols-1 sm:grid-cols-5 gap-2' },
+                    evoLoopSteps.map(function(step, idx) {
+                      return h('div', { key: step.label, className: 'rounded-xl border border-white/10 bg-slate-950/25 p-2' },
+                        h('div', { className: 'flex items-center gap-2' },
+                          h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-emerald-300 text-[11px] font-black text-emerald-950' }, idx + 1),
+                          h('span', { className: 'text-xs font-black text-white leading-tight' }, step.label)
+                        ),
+                        h('p', { className: 'mt-1 text-[11px] leading-snug text-emerald-50/75' }, step.desc)
+                      );
+                    })
+                  )
+                ),
                 h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5' },
                   [
                     { label: 'Explored', value: visitedCount + '/' + totalCount },
@@ -550,6 +577,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   },
                     h('div', { className: 'text-xs font-black uppercase tracking-wider ' + (active ? 'text-emerald-700' : 'text-emerald-100') }, track.label),
                     h('div', { className: 'mt-1 text-sm font-black leading-tight' }, track.title),
+                    h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (active ? 'bg-slate-200' : 'bg-white/10'), 'aria-hidden': true },
+                      h('div', {
+                        className: 'h-full rounded-full ' + (active ? 'bg-emerald-500' : 'bg-emerald-300/70'),
+                        style: { width: Math.round((track.modules.filter(function(moduleId) { return badges[moduleId]; }).length / Math.max(1, track.modules.length)) * 100) + '%' }
+                      })
+                    ),
                     h('div', { className: 'mt-2 flex gap-1', 'aria-hidden': true },
                       track.modules.slice(0, 4).map(function(moduleId) {
                         var mc = moduleById[moduleId];
@@ -567,9 +600,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('div', { className: 'text-sm text-white/80' }, 'Open these in order, or switch paths above.')
                 ),
                 h('button', {
-                  onClick: function() { goto(activeTrack.modules[0]); },
+                  onClick: function() { goto(nextTrackModule); },
                   className: 'rounded-xl bg-white px-3 py-2 text-xs font-black text-emerald-800 shadow hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-300'
-                }, 'Start path')
+                }, activeTrackVisited > 0 && activeTrackVisited < activeTrack.modules.length ? 'Continue path' : 'Start path')
+              ),
+              h('div', { className: 'mb-3 rounded-xl border border-white/10 bg-slate-950/20 p-3' },
+                h('div', { className: 'flex items-center justify-between gap-3 text-xs font-bold text-white/80' },
+                  h('span', null, 'Path progress'),
+                  h('span', null, activeTrackVisited + ' of ' + activeTrack.modules.length + ' explored')
+                ),
+                h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white/10', 'aria-hidden': true },
+                  h('div', { className: 'h-full rounded-full bg-emerald-300 transition-all', style: { width: activeTrackPct + '%' } })
+                )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-3' },
                 activeTrack.modules.map(renderPathModule).filter(Boolean)
