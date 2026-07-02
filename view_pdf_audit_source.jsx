@@ -1994,6 +1994,52 @@ function PdfAuditView(props) {
     if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: new Date().toISOString() };
     return _taggedModDateRef.current.date;
   };
+  // Typeset (regenerated-layout) tagged-PDF export. Shared by the non-PDF-input button
+  // (Word/PowerPoint have no PDF bytes to tag) AND the PDF-input "sanitized rebuild"
+  // affordance (deep-dive 2026-07-02): because it rebuilds the PDF from the remediated
+  // HTML rather than patching the original bytes, it inherently drops ALL original
+  // active content (/OpenAction, /JavaScript, /Launch, embedded files) and original
+  // metadata — so for a PDF input it doubles as the "clean, safe rebuild" option next
+  // to the fidelity-preserving Tagged PDF. `opts.sanitized` only adjusts the messaging.
+  const _runTypesetExport = async (opts) => {
+    const _sanitized = !!(opts && opts.sanitized);
+    try {
+      const ok = await _ensurePdfLib();
+      if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
+      addToast(_sanitized
+        ? ('🧼 ' + (t('toasts.typeset_sanitized') || 'Rebuilding a clean, tagged PDF from the remediated content — drops any embedded scripts, actions, or attachments from the original…'))
+        : (t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)'), 'info');
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: _sanitized ? 'Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)' : 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
+      const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
+      if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
+      _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
+      // These typeset bytes were NOT validated by veraPDF — drop any stale verdict so the
+      // live UI + signed audit trail never pair it with this (different) artifact.
+      setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
+      const _rt = (_result && _result.roundTrip) || null;
+      if (_rt && _rt.ok === false) {
+        addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
+        return;
+      }
+      safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + (_sanitized ? '-tagged-clean.pdf' : '-tagged-typeset.pdf'));
+      const _s = (_result && _result.summary) || {};
+      if (_s.typesetFont) {
+        addToast('🈳 ' + (t('toasts.typeset_unicode_font') || 'Non-Latin text detected — embedded ') + _s.typesetFont.family + (t('toasts.typeset_unicode_font2') || ' so the PDF keeps the real characters (script: ') + _s.typesetFont.script + ').', 'info');
+      }
+      if (_s.fieldsCreated > 0) {
+        addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
+      }
+      if (_s.unicodeTypesetWarning) {
+        // Aaron 2026-07-01: don't just warn — point at the tools that IDENTIFY the
+        // affected text (word-level Diff / Verification panel), since that's how a
+        // teacher decides whether the drop matters before distributing.
+        addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice + ' ' + (t('toasts.typeset_unicode_verify') || 'To see exactly which passages are affected, open the word-level Diff in the Verification panel before distributing.'), 'warning');
+      }
+      addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (_sanitized
+        ? (t('toasts.typeset_sanitized_done') || 'Clean tagged PDF ready — regenerated layout (not the original design), original active content removed, full structure tags.')
+        : (t('toasts.typeset_tagged_done') || 'Typeset tagged PDF ready — clean regenerated layout (not the original design), full structure tags.')) + (_s.uaDeclared ? ' PDF/UA declared.' : ''), 'success');
+    } catch (err) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + (err?.message || 'unknown'), 'error'); }
+  };
   const [_issueSourceOpen, _setIssueSourceOpen] = useState({}); // per-issue "peek source" inline expand (keyed 'ai'+i / 'axe'+i)
   // Direct expert-edit drafts (2026-06-22): an expert who knows the fix can edit a located block's HTML
   // and re-check it WITHOUT the AI (matters under Canvas throttle storms). Keyed like _issueSourceOpen →
@@ -9471,44 +9517,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button
                           id="allo-tagged-pdf-btn"
                           data-help-key="pdf_audit_view_typeset_tagged_btn"
-                          onClick={async () => {
-                            try {
-                              const ok = await _ensurePdfLib();
-                              if (!ok) { addToast(t('toasts.couldn_load_pdf_tagging_library'), 'error'); return; }
-                              addToast(t('toasts.typeset_tagging') || '📄 Generating a typeset tagged PDF from the accessible content… (clean layout, not the original design)', 'info');
-                              const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, ''), lang: 'en', subject: 'Typeset and tagged for accessibility by AlloFlow (generated layout)' });
-                              const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
-                              if (!taggedBytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes'), 'error'); return; }
-                              _lastTaggedBytesRef.current = taggedBytes; // enable on-demand veraPDF validation of the shipped bytes
-                              // These typeset bytes were NOT validated by veraPDF — drop any stale verdict so the
-                              // live UI + signed audit trail never pair it with this (different) artifact.
-                              setLastTaggedValidation(prev => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
-                              const _rt = (_result && _result.roundTrip) || null;
-                              if (_rt && _rt.ok === false) {
-                                addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The typeset tagged PDF failed its post-save structure check — use the Word or HTML download instead.'), 'error');
-                                return;
-                              }
-                              safeDownloadBlob(new Blob([taggedBytes], { type: 'application/pdf' }), (pendingPdfFile?.name || 'document').replace(/\.(docx|pptx|pdf)$/i, '') + '-tagged-typeset.pdf');
-                              const _s = (_result && _result.summary) || {};
-                              if (_s.typesetFont) {
-                                addToast('🈳 ' + (t('toasts.typeset_unicode_font') || 'Non-Latin text detected — embedded ') + _s.typesetFont.family + (t('toasts.typeset_unicode_font2') || ' so the PDF keeps the real characters (script: ') + _s.typesetFont.script + ').', 'info');
-                              }
-                              if (_s.fieldsCreated > 0) {
-                                addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
-                              }
-                              if (_s.unicodeTypesetWarning) {
-                                // Aaron 2026-07-01: don't just warn — point at the tools that IDENTIFY the
-                                // affected text (word-level Diff / Verification panel), since that's how a
-                                // teacher decides whether the drop matters before distributing.
-                                addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice + ' ' + (t('toasts.typeset_unicode_verify') || 'To see exactly which passages are affected, open the word-level Diff in the Verification panel before distributing.'), 'warning');
-                              }
-                              addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.typeset_tagged_done') || 'Typeset tagged PDF ready — clean regenerated layout (not the original design), full structure tags.') + (_s.uaDeclared ? ' PDF/UA declared.' : ''), 'success');
-                            } catch (err) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + (err?.message || 'unknown'), 'error'); }
-                          }}
+                          onClick={() => _runTypesetExport()}
                           className="px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5"
                           title={t('pdf_audit.tagged_pdf.typeset_title') || 'Word/PowerPoint inputs have no PDF bytes to tag — this generates a CLEAN typeset PDF from the remediated content (simple layout, NOT the original design) and runs the full tagger on it: real structure tree, verified after saving, declaration only when earned.'}
                         >
                           📄 {t('pdf_audit.tagged_pdf.typeset_label') || 'Tagged PDF (generated layout)'}
+                        </button>
+                        )}
+                        {/* Sanitized rebuild — PDF inputs only (deep-dive 2026-07-02). The Tagged PDF
+                            button above preserves the original bytes byte-for-byte (and with them any
+                            embedded scripts/actions/attachments the source carried); this offers the
+                            SAME typeset rebuild the non-PDF path uses as an explicit "clean" alternative
+                            that drops all original active content. Secondary styling so the fidelity-
+                            preserving Tagged PDF stays the default choice. */}
+                        {_inputIsPdf && (
+                        <button
+                          id="allo-tagged-pdf-clean-btn"
+                          data-help-key="pdf_audit_view_sanitized_rebuild_btn"
+                          onClick={() => _runTypesetExport({ sanitized: true })}
+                          className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
+                          title={t('pdf_audit.tagged_pdf.sanitized_title') || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops any embedded JavaScript, open/launch actions, file attachments, and original metadata the source carried — a safer file to redistribute, at the cost of the original visual design. Use this when the source PDF is from an untrusted or unknown origin."}
+                        >
+                          🧼 {t('pdf_audit.tagged_pdf.sanitized_label') || 'Rebuild clean (drops embedded scripts)'}
                         </button>
                         )}
                         <button onClick={async () => {

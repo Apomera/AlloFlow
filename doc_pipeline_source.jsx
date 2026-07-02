@@ -3956,10 +3956,10 @@ var createDocPipeline = function(deps) {
       ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. '
       : '';
     const captionHint = originalBlock.caption
-      ? 'The original figure caption (use this as a hint for which legend to find): "' + String(originalBlock.caption).slice(0, 200) + '". '
+      ? 'The original figure caption (use this as a hint for which legend to find): "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". '
       : '';
     const descHint = originalBlock.description
-      ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 200) + '". '
+      ? 'A prior pass described the visual as: "' + _neutralizePromptFence(String(originalBlock.description).slice(0, 200)) + '". '
       : '';
     const prompt =
       pageHint + captionHint + descHint + '\n\n' +
@@ -4035,8 +4035,8 @@ var createDocPipeline = function(deps) {
   const _reextractAsStructuredVisual = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!callGeminiVisionFn) return null;
     const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
-    const captionHint = originalBlock.caption ? 'Original figure caption (a hint): "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
-    const descHint = originalBlock.description ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 300) + '". ' : '';
+    const captionHint = originalBlock.caption ? 'Original figure caption (a hint): "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". ' : '';
+    const descHint = originalBlock.description ? 'A prior pass described the visual as: "' + _neutralizePromptFence(String(originalBlock.description).slice(0, 300)) + '". ' : '';
     const prompt =
       pageHint + captionHint + descHint + '\n\n' +
       'You are transcribing a STRUCTURED INFORMATION GRAPHIC (an infographic, comparison chart, or a set of categorized boxes) from a document figure. It pairs CATEGORIES (labels, often in colored boxes) with their EXAMPLES or descriptions.\n\n' +
@@ -4093,7 +4093,7 @@ var createDocPipeline = function(deps) {
   const _reextractAsRichTable = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!callGeminiVisionFn) return null;
     const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
-    const captionHint = originalBlock.caption ? 'A hint at the table caption: "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
+    const captionHint = originalBlock.caption ? 'A hint at the table caption: "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". ' : '';
     const prompt =
       pageHint + captionHint + '\n\n' +
       'You are transcribing a TABLE from a document image into a structured grid. It may be COMPLEX: borderless, with MERGED cells (spanning multiple columns or rows), and with header cells on the top row AND/OR the left column.\n\n' +
@@ -10269,19 +10269,31 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         }
       }
 
+      // Per-file wall-clock backstop (deep-dive C2, 2026-07-02): the individual
+      // Gemini calls are each _withTimeout-wrapped, but the file-level orchestration
+      // (audit + fix, incl. any pdf.js/OCR await that slips through unbounded) had NO
+      // ceiling — a single hung document could stall the WHOLE batch forever, and the
+      // "remaining files stay queued" resume never fires because the loop never advances.
+      // 8 min is generous enough for a large scanned textbook (OCR + multi-pass audit +
+      // fix) yet guarantees the batch always moves on. A timeout throws → the batch loop's
+      // per-file catch marks this file 'failed' and continues (same isolation as any error),
+      // and the file stays retryable. Single-file (non-batch) runs never call _processOne.
+      const _PER_FILE_MS = 8 * 60 * 1000;
       // Step 1: per-file audit (suppresses single-file UI updates)
       progress('Auditing...');
-      const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName });
+      const auditResult = await _withTimeout(
+        runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName }),
+        _PER_FILE_MS, 'batch audit: ' + item.fileName);
       if (!auditResult || auditResult.score === -1) {
         throw new Error(auditResult?.summary || 'Audit failed');
       }
       // Step 2: fix & verify with batch overrides (also suppresses UI state changes)
-      const result = await fixAndVerifyPdf({
+      const result = await _withTimeout(fixAndVerifyPdf({
         base64: item.base64,
         fileName: item.fileName,
         auditResult: auditResult,
         onProgress: (step, msg) => progress(msg),
-      });
+      }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
 
       // Write remediation cache (Tier 4)
       if (_remedKey && result) {
@@ -11297,10 +11309,15 @@ HTML section ${chunkNum}/${chunks.length}:
       }
     } catch (_) { /* fall through to the regex baseline */ }
     try { _ensureDOMPurify(); } catch (_) {} // warm it up for the next render/export
+    // Fallback baseline (used only in the narrow window before the DOMPurify CDN load
+    // resolves). Kept in PARITY with _RAWHTML_PURIFY_CFG.FORBID_TAGS: strip paired
+    // script/style, then EVERY forbidden tag (open or close) — incl. form controls and
+    // a defensive standalone open-tag pass so an UNCLOSED <script/<style can't leak a
+    // live element — then event handlers and dangerous URL schemes. (deep-dive B2, 2026-07-02)
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<\/?(?:iframe|object|embed|svg|math|link|meta|base)\b[^>]*>/gi, '')
+      .replace(/<\/?(?:script|style|iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea|select)\b[^>]*>?/gi, '')
       .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
       .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
   };
