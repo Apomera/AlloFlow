@@ -242,6 +242,42 @@ S10 claims corrected.
   Tesseract worker (P7), resume fingerprint refusal (H2, needs the
   UNCOMMITTED ANTI/view halves to be live end-to-end).
 
+## OUTCOMES — wave 2, same day (deferred-items pass, Aaron-approved)
+
+- @40cba3aa CHECKPOINT: the H2 ANTI/view halves committed (bundles the
+  concurrent session's in-flight math-hint/lesson-plan work at Aaron's
+  request; full ANTI validated via build.js --mode=dev + esbuild first).
+- @34018900 S6+S7: SEVERITY_WEIGHTS / PIPELINE_DEFAULTS.targetScore /
+  GEMINI_CHUNK_CHARS single-sourced into prompts, grounding sums, axe
+  formulas (_alloAxeWeightedScore) and the report table; the unicode
+  token fold canonicalized (_alloNormTokenForDiff + normTokenForDiff
+  static, view delegates, drift sentinel tests/norm_token_drift.test.js).
+- @6b0db267 + @98c848ef S3 (phase 1): the shipped loop's revert /
+  keep-best / plateau decisions extracted into the PURE _alloLoopPolicy
+  (loopPolicy static) with golden characterization tests pinning every
+  boundary — tests/loop_policy_golden.test.js (NOTE: gitignore's
+  fix_*.js pattern silently excluded the first filename — check-ignore
+  new test files). ANTI's runAutoFixLoop + autonomous loop can now adopt
+  the same contract deliberately.
+- @30f08a82 C4+C5: batch ZIP reuses cached tagged-PDF bytes when the
+  remediated HTML is unchanged; excluded/failed files are NAMED in a
+  dedicated warning toast.
+- RECALIBRATED wave 2: P10/P13 largely moot — Bionic/LineGuide restores
+  already null their snapshots, chunk previews are already 2.2KB-capped
+  (_chunkHtmlPreview); remaining exposure is the entry count of a
+  user-facing review history with its own Clear button. No change.
+- STILL OPEN after wave 2 (the next-session track, goldens now in
+  place): H6 tag-walk export (export the pipeline's emit walk — e.g.
+  factor _buildOutlineStructElems' TreeWalker into a pure roles-walk fn
+  + static — and have the view's _buildTagOutline consume it; extend the
+  tagtree drift sentinel to _deriveDocMeta), S2 phase extraction from
+  fixAndVerifyPdf (extract Step 0/1/2/loop into functions taking an
+  explicit runState; the loop-policy goldens + 426-test suite are the
+  safety net), S1 per-run ctx replacing _bindState, S5 view split,
+  S8 export-pack module (needs a new CDN file + build.js + ANTI
+  loadModule — deploy-surface change, coordinate with Aaron), P9 web
+  workers (pdf-lib save + base64 codecs first), S7 escaper unification.
+
 ## Suggested sequence
 
 1. **H1-H3** (Office image/alt injection + honest toast; v2 fingerprint; rescue
