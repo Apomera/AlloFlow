@@ -9816,7 +9816,12 @@ Return ONLY valid JSON:
   };
 
   const proceedWithPdfTransform = async () => {
-    if (!pendingPdfBase64) return;
+    // S1 step 2: snapshot the document at entry — a re-upload mid-extraction used to swap
+    // pendingPdfBase64/pendingPdfFile under this run's later reads (document mixing).
+    const _run = _makeRunCtx();
+    const _base64 = _run.base64;
+    const _file = _run.file;
+    if (!_base64) return;
     setPdfAuditResult(null);
     setIsExtracting(true);
     setGenerationStep(t('status_steps.extracting_text') || 'Extracting text...');
@@ -9833,20 +9838,20 @@ Return ONLY the extracted text.`;
 
       // ── Deterministic extraction first (zero AI, zero truncation) ──
       try {
-        const _fn = pendingPdfFile?.name || '';
+        const _fn = _file?.name || '';
         const _isDocx = /\.docx$/i.test(_fn);
         const _isPptx = /\.pptx$/i.test(_fn);
         if (_isDocx) {
           setGenerationStep('Extracting DOCX text deterministically...');
-          const det = await extractDocxTextDeterministic(pendingPdfBase64);
+          const det = await extractDocxTextDeterministic(_base64);
           if (det && det.sourceCharCount > 50) { extractedText = det.fullText; warnLog(`[ProceedTransform Det] DOCX → ${det.sourceCharCount} chars`); }
         } else if (_isPptx) {
           setGenerationStep('Extracting PPTX text deterministically...');
-          const det = await extractPptxTextDeterministic(pendingPdfBase64);
+          const det = await extractPptxTextDeterministic(_base64);
           if (det && det.sourceCharCount > 50) { extractedText = det.fullText; warnLog(`[ProceedTransform Det] PPTX → ${det.sourceCharCount} chars`); }
         } else {
           setGenerationStep('Extracting PDF text layer...');
-          const det = await extractPdfTextDeterministic(pendingPdfBase64);
+          const det = await extractPdfTextDeterministic(_base64);
           // NOTE (2026-06-29): deliberately NO _textLayerLooksGarbage force-OCR here, unlike the remediation
           // intake gate. This path feeds the editor textarea (the user sees + can edit the text, and can hit
           // "Re-scan with OCR"), not a silently-shipped PDF — so a rare garbled layer is visible and recoverable
@@ -9863,8 +9868,8 @@ Return ONLY the extracted text.`;
       // ── Vision OCR fallback (only if deterministic didn't yield text) ──
       if (!extractedText || extractedText.length < 50) {
       // Large PDF chunking (>5MB) or if audit found many pages
-      if (pendingPdfFile && pendingPdfFile.size > 5 * 1024 * 1024) {
-        const sizeMB = (pendingPdfFile.size / (1024 * 1024)).toFixed(1);
+      if (_file && _file.size > 5 * 1024 * 1024) {
+        const sizeMB = (_file.size / (1024 * 1024)).toFixed(1);
         addToast(`Processing ${sizeMB}MB PDF in sections...`, 'info');
         const sectionPrompts = [
           `You are an OCR expert. Extract all text from the FIRST HALF of this document. Preserve structure using markdown. Describe images in [brackets]. Preserve tables as markdown. Return ONLY the text.`,
@@ -9874,7 +9879,7 @@ Return ONLY the extracted text.`;
         for (let i = 0; i < sectionPrompts.length; i++) {
           setGenerationStep(`Extracting section ${i + 1} of ${sectionPrompts.length}...`);
           try {
-            const chunkText = await callGeminiVision(sectionPrompts[i], pendingPdfBase64, 'application/pdf');
+            const chunkText = await callGeminiVision(sectionPrompts[i], _base64, 'application/pdf');
             if (chunkText && chunkText.trim().length > 20) chunks.push(chunkText);
           } catch (chunkErr) {
             warnLog(`[PDF Chunk ${i + 1}] Failed:`, chunkErr?.message);
@@ -9883,7 +9888,7 @@ Return ONLY the extracted text.`;
         }
         extractedText = chunks.join('\n\n---\n\n');
       } else {
-        extractedText = await callGeminiVision(ocrPrompt, pendingPdfBase64, 'application/pdf');
+        extractedText = await callGeminiVision(ocrPrompt, _base64, 'application/pdf');
       }
       } // end Vision OCR fallback
 
@@ -9897,7 +9902,7 @@ Return ONLY the extracted text.`;
 Extracted text (representative sample): """${_neutralizePromptFence(sampleHtml(extractedText, 4000))}"""
 
 Return ONLY JSON: {"quality": N, "issues": "description or null", "missingContent": true/false}`,
-            pendingPdfBase64, 'application/pdf'
+            _base64, 'application/pdf'
           );
           try {
             let vCleaned = verifyResult.trim();
@@ -9917,7 +9922,7 @@ Return ONLY JSON: {"quality": N, "issues": "description or null", "missingConten
       }
 
       // ── Image Extraction ──
-      if (extractedText && pendingPdfBase64) {
+      if (extractedText && _base64) {
         setGenerationStep('Checking for extractable images...');
         try {
           const imageResult = await callGeminiVision(
@@ -9928,7 +9933,7 @@ Return ONLY JSON: {"quality": N, "issues": "description or null", "missingConten
 
 Return ONLY JSON: {"images": [{"description": "text", "location": "page N, top/middle/bottom", "educational": true/false}], "totalImages": N}
 If there are no significant images, return: {"images": [], "totalImages": 0}`,
-            pendingPdfBase64, 'application/pdf'
+            _base64, 'application/pdf'
           );
           try {
             let iCleaned = imageResult.trim();
