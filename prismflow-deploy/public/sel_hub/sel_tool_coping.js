@@ -26454,6 +26454,92 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
+      function copingLaunchMetric(label, value, hint, color) {
+        return h('div', {
+          style: {
+            minHeight: 74,
+            padding: 12,
+            borderRadius: 10,
+            background: _copBg('#0f172a'),
+            border: '1px solid ' + _copBd('#334155'),
+            borderLeft: '4px solid ' + color
+          }
+        },
+          h('div', { style: { color: _copFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+          h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+          h('div', { style: { color: _copFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
+        );
+      }
+
+      function copingLaunchCard(title, blurb, actionLabel, patch, color) {
+        return h('button', {
+          onClick: function() { upd(patch); if (soundEnabled) sfxClick(); },
+          'aria-label': actionLabel + ': ' + title,
+          style: {
+            minHeight: 124,
+            padding: 14,
+            borderRadius: 12,
+            border: '1px solid ' + _copBd('#334155'),
+            borderLeft: '4px solid ' + color,
+            background: _copBg('#0f172a'),
+            color: _copFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }
+        },
+          h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+          h('div', { style: { flex: 1, color: _copFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
+          h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+        );
+      }
+
+      function copingCommandPanel() {
+        if (activeTab !== 'library') return null;
+        var favCount = Object.keys(favorites || {}).length;
+        var planPieces = (calmPlan.steps || []).length + (calmPlan.trustedAdults || []).length + (calmPlan.warningsSigns || []).length;
+        var practiceCount = (practiceLog || []).length;
+        var best = getMostEffective(practiceLog);
+        return h('section', {
+          role: 'region',
+          'aria-label': 'Coping Toolkit quick start dashboard',
+          style: {
+            margin: '0 12px 14px',
+            padding: 14,
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(20,184,166,0.14) 0%, rgba(15,23,42,0.42) 100%)',
+            border: '1px solid rgba(20,184,166,0.36)'
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { margin: 0, color: _copFg('#5eead4'), fontSize: 16, fontWeight: 900 } }, 'Coping dashboard'),
+              h('p', { style: { margin: '4px 0 0', color: _copFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
+                'Pick a strategy by state, practice one skill, or build the plan you want ready before stress peaks.')
+            ),
+            favCount ? h('button', {
+              onClick: function() { upd({ activeTab: 'library', selectedType: '_fav' }); if (soundEnabled) sfxClick(); },
+              'aria-label': 'Show favorite coping strategies',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _copBd('#334155'), background: _copBg('#1e293b'), color: _copFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
+            }, 'Favorites') : null
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
+            copingLaunchMetric('Favorites', String(favCount), favCount ? 'Fast access ready.' : 'Save useful tools.', _copFg('#ef4444')),
+            copingLaunchMetric('Plan pieces', String(planPieces), planPieces ? 'Calm plan started.' : 'Build before stress.', _copFg('#22c55e')),
+            copingLaunchMetric('Practices', String(practiceCount), practiceCount ? 'You have reps logged.' : 'Try one practice.', _copFg('#14b8a6')),
+            copingLaunchMetric('Best rated', best ? best.avg + '/5' : 'None yet', best ? 'Most effective so far.' : 'Ratings will show here.', _copFg('#fbbf24'))
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+            copingLaunchCard('Match the moment', 'Filter strategies by feeling and body state instead of browsing everything.', 'Open matcher', { activeTab: 'matcher' }, _copFg('#0ea5e9')),
+            copingLaunchCard('Practice one skill', 'Use a guided practice so the skill is easier to remember later.', 'Open practice', { activeTab: 'practice' }, _copFg('#a855f7')),
+            copingLaunchCard('Build my calm plan', 'Collect steps, warning signs, and support people in one place.', 'Open plan', { activeTab: 'plan' }, _copFg('#22c55e')),
+            copingLaunchCard('Need extra support', 'See stabilization protocols and crisis resources when coping is not enough.', 'Open crisis', { activeTab: 'crisis' }, _copFg('#ef4444'))
+          )
+        );
+      }
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -28815,6 +28901,7 @@ window.SelHub = window.SelHub || {
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h, ctx) : null),
         tabBar,
         heroBand,
+        copingCommandPanel(),
         dailyCheckin,
         dailyRecBanner,
         badgePopup,

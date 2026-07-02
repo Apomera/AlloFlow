@@ -35563,6 +35563,95 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup Overlay ──
       // ══════════════════════════════════════════════════════════
+      function zoneLaunchMetric(label, value, hint, color) {
+        return h('div', {
+          style: {
+            minHeight: 74,
+            padding: 12,
+            borderRadius: 10,
+            background: _zoBg('#0f172a'),
+            border: '1px solid ' + _zoBd('#334155'),
+            borderLeft: '4px solid ' + color
+          }
+        },
+          h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+          h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+          h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
+        );
+      }
+
+      function zoneLaunchCard(title, blurb, actionLabel, tabId, color) {
+        return h('button', {
+          onClick: function() { upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
+          'aria-label': actionLabel + ': ' + title,
+          style: {
+            minHeight: 124,
+            padding: 14,
+            borderRadius: 12,
+            border: '1px solid ' + _zoBd('#334155'),
+            borderLeft: '4px solid ' + color,
+            background: _zoBg('#0f172a'),
+            color: _zoFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }
+        },
+          h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+          h('div', { style: { flex: 1, color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
+          h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+        );
+      }
+
+      function zoneCommandPanel() {
+        if (activeTab !== 'checkin') return null;
+        var zoneObj = ZONES.find(function(z) { return z.id === selectedZone; });
+        var toolboxCount = (myToolbox || []).length;
+        var logCount = (checkInLog || []).length;
+        var latestZone = zoneObj ? zoneObj.label : (logCount && checkInLog[logCount - 1] ? checkInLog[logCount - 1].zone : 'Not picked');
+        return h('section', {
+          role: 'region',
+          'aria-label': 'Emotion Zones quick start dashboard',
+          style: {
+            margin: '0 12px 14px',
+            padding: 14,
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(124,58,237,0.14) 0%, rgba(15,23,42,0.42) 100%)',
+            border: '1px solid ' + (hc ? '#ffff00' : 'rgba(124,58,237,0.36)')
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { margin: 0, color: _zoFg('#c4b5fd'), fontSize: 16, fontWeight: 900 } }, 'Zone check dashboard'),
+              h('p', { style: { margin: '4px 0 0', color: _zoFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
+                'Name the zone, then choose the support path that matches your body and setting.')
+            ),
+            h('button', {
+              onClick: function() { upd('activeTab', 'history'); if (soundEnabled) sfxClick(); },
+              'aria-label': 'Open zone history',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _zoBd('#334155'), background: _zoBg('#1e293b'), color: _zoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
+            }, 'View history')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
+            zoneLaunchMetric('Current', zoneObj ? zoneObj.label.replace(' Zone', '') : 'Choose', zoneObj ? zoneObj.feeling : 'Pick a zone below.', zoneObj ? _zoFg(zoneObj.color) : _zoFg('#a78bfa')),
+            zoneLaunchMetric('Intensity', intensityLevel + '/10', intensityLevel >= 8 ? 'Use a body reset.' : 'Notice the signal.', _zoFg('#fbbf24')),
+            zoneLaunchMetric('Toolbox', String(toolboxCount), toolboxCount ? 'Saved strategies ready.' : 'Save a strategy.', _zoFg('#ec4899')),
+            zoneLaunchMetric('Check-ins', String(logCount), logCount ? 'Patterns can emerge.' : 'Start with one.', _zoFg('#10b981'))
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+            zoneLaunchCard('Regulate now', 'Use breathing when your body needs a low-friction reset.', 'Open breathe', 'breathe', _zoFg('#06b6d4')),
+            zoneLaunchCard('Find body clues', 'Map where the zone shows up before words arrive.', 'Open body map', 'body', _zoFg('#a855f7')),
+            zoneLaunchCard('Match a strategy', 'Filter strategies by zone, intensity, visibility, and movement limits.', 'Open matcher', 'matcher', _zoFg('#0ea5e9')),
+            zoneLaunchCard('Plan ahead', 'Use pre-built situation plans before the hard moment happens.', 'Open plans', 'plans', _zoFg('#fbbf24'))
+          ),
+          latestZone !== 'Not picked' ? h('div', { style: { marginTop: 10, color: _zoFg('#94a3b8'), fontSize: 11, lineHeight: 1.45 } },
+            'Current route anchor: ' + latestZone + '.')
+            : null
+        );
+      }
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -38224,6 +38313,7 @@ if (activeTab === 'parent') {
         reCheckBanner,
         tabBar,
         heroBand,
+        zoneCommandPanel(),
         badgePopup,
         checkinContent,
         exploreContent,

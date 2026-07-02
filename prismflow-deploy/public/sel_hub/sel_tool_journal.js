@@ -804,6 +804,90 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         // ── Badge Popup Overlay ──
         // ══════════════════════════════════════════════════════
+        function journalLaunchMetric(label, value, hint, color) {
+          return h('div', {
+            style: {
+              minHeight: 74,
+              padding: 12,
+              borderRadius: 10,
+              background: _jouBg('#0f172a'),
+              border: '1px solid ' + _jouBd('#334155'),
+              borderLeft: '4px solid ' + color
+            }
+          },
+            h('div', { style: { color: _jouFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+            h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+            h('div', { style: { color: _jouFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
+          );
+        }
+
+        function journalLaunchCard(title, blurb, actionLabel, tabId, color) {
+          return h('button', {
+            onClick: function() { upd('activeTab', tabId); if (soundEnabled) sfxClick(); },
+            'aria-label': actionLabel + ': ' + title,
+            style: {
+              minHeight: 124,
+              padding: 14,
+              borderRadius: 12,
+              border: '1px solid ' + _jouBd('#334155'),
+              borderLeft: '4px solid ' + color,
+              background: _jouBg('#0f172a'),
+              color: _jouFg('#e2e8f0'),
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6
+            }
+          },
+            h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+            h('div', { style: { flex: 1, color: _jouFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
+            h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+          );
+        }
+
+        function journalCommandPanel() {
+          if (activeTab !== 'checkin') return null;
+          var last = checkIns.length ? checkIns[checkIns.length - 1] : null;
+          var lastMood = last ? MOODS.find(function(m) { return m.id === last.mood; }) : null;
+          var writingCount = (journalEntries || []).length + (letterEntries || []).length;
+          var todayKey = dateKey(Date.now());
+          var checkedToday = checkIns.some(function(ci) { return dateKey(ci.timestamp) === todayKey; });
+          return h('section', {
+            role: 'region',
+            'aria-label': 'Feelings Journal quick start dashboard',
+            style: {
+              margin: '0 12px 14px',
+              padding: 14,
+              borderRadius: 14,
+              background: 'linear-gradient(135deg, rgba(236,72,153,0.14) 0%, rgba(15,23,42,0.42) 100%)',
+              border: '1px solid rgba(236,72,153,0.36)'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { margin: 0, color: ACCENT, fontSize: 16, fontWeight: 900 } }, 'Journal desk'),
+                h('p', { style: { margin: '4px 0 0', color: _jouFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
+                  'Do a quick pulse, write more deeply, or look for patterns when you have enough entries.')
+              ),
+              h('div', { style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _jouBd('#334155'), background: _jouBg('#1e293b'), color: checkedToday ? _jouFg('#22c55e') : _jouFg('#94a3b8'), fontSize: 12, fontWeight: 800 } },
+                checkedToday ? 'Checked in today' : 'Open for today')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
+              journalLaunchMetric('Check-ins', String(checkIns.length), checkedToday ? 'Today is logged.' : 'Add a quick pulse.', _jouFg('#10b981')),
+              journalLaunchMetric('Streak', streak ? String(streak) : '0', streak ? 'Keep it visible.' : 'Start gently.', _jouFg('#f59e0b')),
+              journalLaunchMetric('Writing', String(writingCount), writingCount ? 'Reflections saved.' : 'Try a prompt.', _jouFg('#a855f7')),
+              journalLaunchMetric('Last mood', lastMood ? lastMood.label : 'None yet', lastMood ? 'Most recent check-in.' : 'No mood selected yet.', lastMood ? _jouFg(lastMood.color) : ACCENT)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+              journalLaunchCard('One-minute check-in', 'Name mood, energy, context, and one gratitude item.', 'Start check-in', 'checkin', _jouFg('#10b981')),
+              journalLaunchCard('Write with a prompt', 'Use the journal tab for a fuller reflection when you have more to say.', 'Open journal', 'journal', _jouFg('#a855f7')),
+              journalLaunchCard('See the month', 'Use the calendar to notice rhythm without judging it.', 'Open calendar', 'calendar', _jouFg('#0ea5e9')),
+              journalLaunchCard('Look for patterns', 'Turn saved entries into useful observations for yourself or a trusted adult.', 'Open insights', 'insights', _jouFg('#f59e0b'))
+            )
+          );
+        }
+
         var badgePopup = null;
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -1973,6 +2057,7 @@ window.SelHub = window.SelHub || {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('journal', h, ctx) : null),
           tabBar,
           heroBand,
+          journalCommandPanel(),
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)

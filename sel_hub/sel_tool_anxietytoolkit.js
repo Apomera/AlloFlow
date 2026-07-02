@@ -19468,6 +19468,95 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       // ═══════════════════════════════════════════════════════════
       // TRIAGE — clinical safety gate (NOT an assessment)
       // ═══════════════════════════════════════════════════════════
+      function anxietyMetric(label, value, hint, color) {
+        return h('div', {
+          style: {
+            minHeight: 76,
+            padding: 12,
+            borderRadius: 10,
+            background: _anxBg('#0f172a'),
+            borderTop: '1px solid #1e293b',
+            borderRight: '1px solid #1e293b',
+            borderBottom: '1px solid #1e293b',
+            borderLeft: '4px solid ' + color
+          }
+        },
+          h('div', { style: { fontSize: 11, color: _anxFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+          h('div', { style: { fontSize: 20, color: color, fontWeight: 900, lineHeight: 1.1 } }, value),
+          h('div', { style: { fontSize: 11, color: _anxFg('#cbd5e1'), marginTop: 5, lineHeight: 1.35 } }, hint)
+        );
+      }
+
+      function anxietyRouteCard(title, blurb, actionLabel, onClick, color) {
+        return h('button', {
+          onClick: onClick,
+          'aria-label': actionLabel + ': ' + title,
+          style: {
+            minHeight: 128,
+            padding: 14,
+            borderRadius: 12,
+            borderTop: '1px solid #1e293b',
+            borderRight: '1px solid #1e293b',
+            borderBottom: '1px solid #1e293b',
+            borderLeft: '4px solid ' + color,
+            background: _anxBg('#0f172a'),
+            color: _anxFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6
+          }
+        },
+          h('div', { style: { fontSize: 14, fontWeight: 900, color: color, lineHeight: 1.2 } }, title),
+          h('div', { style: { flex: 1, fontSize: 12, color: _anxFg('#cbd5e1'), lineHeight: 1.5 } }, blurb),
+          h('div', { style: { fontSize: 11, fontWeight: 900, color: color, textTransform: 'uppercase' } }, actionLabel)
+        );
+      }
+
+      function anxietyCommandPanel() {
+        var parkedCount = (d.parkedWorries || []).length;
+        var patternCount = (d.myTriggers || []).length + (d.myBodySigns || []).length + (d.mySigsThoughts || []).length + (d.myWhatHelps || []).length;
+        var intensity = (typeof d.triageIntensity === 'number') ? d.triageIntensity : 5;
+        var planStatus = d.copingPlan ? 'Ready' : (d.catastrophe || d.worstCase || d.mostLikely ? 'In progress' : 'Not started');
+        return h('section', {
+          role: 'region',
+          'aria-label': 'Anxiety Toolkit quick start dashboard',
+          style: {
+            marginBottom: 16,
+            padding: 14,
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(8,145,178,0.14) 0%, rgba(15,23,42,0.42) 100%)',
+            border: '1px solid rgba(6,182,212,0.35)'
+          }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { margin: 0, color: _anxFg('#a5f3fc'), fontSize: 16, fontWeight: 900 } }, 'Choose the next useful move'),
+              h('p', { style: { margin: '4px 0 0', color: _anxFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
+                'Start with the part that matches this moment: body alarm, worry loop, future worry, or personal patterns.')
+            ),
+            h('button', {
+              onClick: function() { goto('print'); },
+              'aria-label': 'Open printable anxiety toolkit summary',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _anxBg('#1e293b'), color: _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
+            }, 'Print summary')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
+            anxietyMetric('Intensity', intensity + '/10', intensity >= 8 ? 'Use body-first support.' : 'Use the skill that fits.', '#06b6d4'),
+            anxietyMetric('Parked', String(parkedCount), parkedCount ? 'Saved for worry time.' : 'No worries parked yet.', '#f59e0b'),
+            anxietyMetric('Plan', planStatus, 'Decatastrophizing progress.', '#a855f7'),
+            anxietyMetric('Patterns', String(patternCount), patternCount ? 'Personal map started.' : 'Build your map.', '#ec4899')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+            anxietyRouteCard('Calm the body first', 'Use grounding when the alarm is already loud and thinking is hard.', 'Open grounding', function() { goto('ground'); }, '#0ea5e9'),
+            anxietyRouteCard('Sort the worry', 'Separate solvable worries from loops so the next step is clearer.', 'Open worry tree', function() { goto('tree'); }, '#22c55e'),
+            anxietyRouteCard('Park it for later', 'Contain repeat worries in a scheduled worry window.', 'Open worry time', function() { goto('parking'); }, '#f59e0b'),
+            anxietyRouteCard('Map my patterns', 'Save triggers, body signs, thoughts, and what actually helps.', 'Open patterns', function() { goto('patterns'); }, '#ec4899')
+          )
+        );
+      }
+
       // This is a "you might need more than this tool" gate, shown
       // before users drop into interactive anxiety content. It is
       // skippable, and the choice is remembered (d.skippedTriage)
@@ -19655,6 +19744,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
               'Anxiety is your alarm system — a body response designed by millions of years of evolution to keep you alive. It is supposed to fire when something matters. The problem is not that the alarm fires; the problem is that for some people, the alarm fires more loudly than the situation warrants, or stays on after the situation has passed, or fires at things that are not actually threats.'
             )
           ),
+
+          anxietyCommandPanel(),
 
           // What anxiety actually is
           h('div', { style: { padding: 14, borderRadius: 10, background: _anxBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #06b6d4', marginBottom: 10 } },

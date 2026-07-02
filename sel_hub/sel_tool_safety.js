@@ -839,6 +839,104 @@ window.SelHub = window.SelHub || {
         })();
 
         // ── Badge Popup ──
+        function safetyLaunchMetric(label, value, hint, color) {
+          return h('div', {
+            style: {
+              minHeight: 74,
+              padding: 12,
+              borderRadius: 10,
+              background: _safBg('#0f172a'),
+              border: '1px solid ' + _safBd('#334155'),
+              borderLeft: '4px solid ' + color
+            }
+          },
+            h('div', { style: { color: _safFg('#94a3b8'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+            h('div', { style: { color: color, fontSize: 19, fontWeight: 900, lineHeight: 1.1 } }, value),
+            h('div', { style: { color: _safFg('#cbd5e1'), fontSize: 11, lineHeight: 1.35, marginTop: 5 } }, hint)
+          );
+        }
+
+        function goSafetyTab(tabId) {
+          var patch = { activeTab: tabId };
+          if (!tabsVisited[tabId]) {
+            var newVisited = Object.assign({}, tabsVisited);
+            newVisited[tabId] = true;
+            patch.tabsVisited = newVisited;
+            if (Object.keys(newVisited).length >= 10) setTimeout(function() { tryAwardBadge('safety_educator'); }, 0);
+          }
+          upd(patch);
+          if (soundEnabled) sfxClick();
+        }
+
+        function safetyLaunchCard(title, blurb, actionLabel, tabId, color) {
+          return h('button', {
+            onClick: function() { goSafetyTab(tabId); },
+            'aria-label': actionLabel + ': ' + title,
+            style: {
+              minHeight: 124,
+              padding: 14,
+              borderRadius: 12,
+              border: '1px solid ' + _safBd('#334155'),
+              borderLeft: '4px solid ' + color,
+              background: _safBg('#0f172a'),
+              color: _safFg('#e2e8f0'),
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6
+            }
+          },
+            h('div', { style: { color: color, fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, title),
+            h('div', { style: { flex: 1, color: _safFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, blurb),
+            h('div', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, actionLabel)
+          );
+        }
+
+        function safetyCommandPanel() {
+          if (activeTab !== 'learn') return null;
+          var topicTotal = ((LEARN_TOPICS[band] || LEARN_TOPICS.elementary) || []).length;
+          var learnedCount = Object.keys(viewedTopics || {}).length + Object.keys(viewedBoundaryTypes || {}).length;
+          var scenarioCount = Object.keys(scenCompleted || {}).length + Object.keys(assertCompleted || {}).length + Object.keys(flagAnswered || {}).length;
+          var planValue = safetyPlanSaved ? 'Saved' : (safetyPlanStep1 || safetyPlanStep2 || safetyPlanStep3 || safetyPlanPlace || safetyPlanCode || safetyPlanNums ? 'Draft' : 'Empty');
+          return h('section', {
+            role: 'region',
+            'aria-label': 'Safety and Boundaries quick start dashboard',
+            style: {
+              margin: '0 12px 14px',
+              padding: 14,
+              borderRadius: 14,
+              background: 'linear-gradient(135deg, rgba(239,68,68,0.14) 0%, rgba(15,23,42,0.42) 100%)',
+              border: '1px solid rgba(239,68,68,0.36)'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { margin: 0, color: ACCENT, fontSize: 16, fontWeight: 900 } }, 'Safety map'),
+                h('p', { style: { margin: '4px 0 0', color: _safFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
+                  'Keep the core pieces visible: what you know, who can help, what your plan is, and where emergency support lives.')
+              ),
+              h('button', {
+                onClick: function() { goSafetyTab('emergency'); },
+                'aria-label': 'Open emergency preparedness',
+                style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _safBd('#334155'), background: _safBg('#1e293b'), color: _safFg('#fca5a5'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
+              }, 'Emergency')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 10, marginBottom: 12 } },
+              safetyLaunchMetric('Trusted adults', String(trustedAdults.length), trustedAdults.length ? 'Support map started.' : 'Add at least one.', _safFg('#4ade80')),
+              safetyLaunchMetric('Plan', planValue, safetyPlanSaved ? 'Ready to print or review.' : 'Build it before stress.', ACCENT),
+              safetyLaunchMetric('Learning', learnedCount + '/' + (topicTotal + BOUNDARY_TYPES.length), 'Topics and boundaries viewed.', _safFg('#818cf8')),
+              safetyLaunchMetric('Practice', String(scenarioCount), scenarioCount ? 'Scenarios attempted.' : 'Try a practice card.', _safFg('#fbbf24'))
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+              safetyLaunchCard('Protect digital space', 'Review privacy, screenshots, online requests, and where to report unsafe contact.', 'Open digital', 'digital', _safFg('#93c5fd')),
+              safetyLaunchCard('Build my circle', 'Name trusted adults and crisis supports so help is concrete.', 'Open circle', 'circle', _safFg('#4ade80')),
+              safetyLaunchCard('Make a safety plan', 'Create steps, places, code words, and numbers before you need them.', 'Open plan', 'plan', ACCENT),
+              safetyLaunchCard('Practice boundaries', 'Use scenarios and assertive scripts for hard moments.', 'Open scenarios', 'scenarios', _safFg('#fbbf24'))
+            )
+          );
+        }
+
         var badgePopup = null;
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -2256,6 +2354,7 @@ window.SelHub = window.SelHub || {
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('safety', h, ctx) : null),
           tabBar,
           heroBand,
+          safetyCommandPanel(),
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
