@@ -4928,7 +4928,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=0afab722');
     loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=0afab722');
     loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=0afab722');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3d6f35b5');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=4078a58d');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=0afab722');
     loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=0afab722');
     loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=0afab722');
@@ -4962,7 +4962,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=0afab722');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=0afab722');
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=0afab722');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=5329798d');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=fdf0e54c');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=0afab722');
     loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=0afab722');
     loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=0afab722');
@@ -7196,6 +7196,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Anonymous class results the teacher shared over the quiz channel
   // (students render these in a lightweight overlay; nothing stored).
   const [quizSharedResults, setQuizSharedResults] = useState(null);
+  // Live answer-progress ('14/22 answered') broadcast by the teacher's quiz
+  // host during boss/presentation questions; shown as a student-side pill.
+  const [quizProgress, setQuizProgress] = useState(null);
+  const quizProgressSentRef = useRef('');
   const conceptMasteryLocalRef = useRef(null);
   useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
   // Teacher: headless quiz host while a live quiz is armed.
@@ -7246,6 +7250,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const qIdx = sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex;
       setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx)) ? null : prev);
   }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex]);
+  // Teacher → students: broadcast answer progress for the current question
+  // (pacing pressure without revealing who/what). Rides the quiz channel as
+  // a reserved poll id; dedupe on question+count so unrelated re-renders
+  // don't rebroadcast.
+  useEffect(() => {
+      const host = quizHostRef.current;
+      if (!isTeacherMode || !host || !sessionData || !sessionData.quizState || !sessionData.quizState.isActive) return;
+      const qs = (quizMergedSessionData && quizMergedSessionData.quizState) || {};
+      if (qs.phase !== 'answering') return;
+      const answered = Object.keys(qs.responses || {}).length;
+      const total = Object.keys((sessionData.roster) || {}).length;
+      const key = String(qs.currentQuestionIndex) + ':' + answered + '/' + total;
+      if (quizProgressSentRef.current === key) return;
+      quizProgressSentRef.current = key;
+      try { host.broadcastPoll({ id: '__progress__', answered: answered, total: total, qIdx: qs.currentQuestionIndex }); } catch(e) {}
+  }, [isTeacherMode, quizMergedSessionData, sessionData]);
   // Keep the quiz host's roster gate current as students join.
   useEffect(() => {
       if (quizHostRef.current && typeof quizHostRef.current.setAllowedUids === 'function') {
@@ -7284,9 +7304,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               } catch(e) {}
           },
           onPollResults: (summary) => setQuizSharedResults(summary || null),
+          onPoll: (p) => {
+              if (p && p.id === '__progress__') setQuizProgress({ answered: p.answered || 0, total: p.total || 0, qIdx: p.qIdx, at: Date.now() });
+          },
           onDisconnected: scheduleRejoin,
           onFailed: scheduleRejoin,
-          onHostClosed: () => {},
+          onHostClosed: () => { setQuizProgress(null); },
       });
       guest.join().catch(() => scheduleRejoin());
       quizGuestRef.current = guest;
@@ -21555,6 +21578,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
          - Update "recommendedResources" array to add/remove tools (ensure valid tool IDs).
          - Update "globalSettings" (gradeLevel, tone) if requested.
          - Update "toolDirectives" to add specific instructions for tools if requested.
+         - Preserve "lessonDNA" exactly unless the teacher explicitly asks to revise the golden thread, essential question, or key vocabulary.
+         - When the teacher asks for a focus or emphasis, prefer updating "toolDirectives" and resource choices. Only revise "lessonDNA" if the request clearly requires it and remains compatible with the source, standards, and grade level.
+         - Never remove "lessonDNA" from the blueprint.
       Valid Tools (tool_id — when to use):
 ${_toolList}
       Return ONLY the updated valid JSON.
@@ -28159,6 +28185,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setShowPictionaryGuest(false),
         })
       }
+      {/* Live answer-progress pill (students): pacing pressure without names. */}
+      {!isTeacherMode && activeSessionCode && sessionData && sessionData.quizState && sessionData.quizState.isActive && quizProgress && quizProgress.total > 0 && (
+        <div role="status" aria-live="polite" style={{position:'fixed',bottom:'1rem',left:'1rem',zIndex:9999,background:'white',border:'1px solid #e2e8f0',borderRadius:24,padding:'0.4rem 0.8rem',boxShadow:'0 8px 20px rgba(15,23,42,0.18)',display:'flex',alignItems:'center',gap:8,fontSize:'0.78rem',fontWeight:700,color:'#0f172a'}}>
+          <span aria-hidden="true">✅</span>
+          <span>{quizProgress.answered}/{quizProgress.total} {t('quiz.progress_answered') || 'answered'}</span>
+          <span style={{width:64,height:6,borderRadius:999,background:'#e2e8f0',overflow:'hidden'}}>
+            <span style={{display:'block',height:'100%',width: Math.min(100, Math.round((quizProgress.answered / quizProgress.total) * 100)) + '%',background: quizProgress.answered >= quizProgress.total ? '#16a34a' : '#2563eb',transition:'width 300ms ease'}} />
+          </span>
+        </div>
+      )}
       {/* Anonymous quiz results the teacher shared over the P2P quiz channel. */}
       {!isTeacherMode && quizSharedResults && (
         <div role="dialog" aria-modal="true" aria-label={t('quiz.shared_results_title') || 'Class results'} style={{position:'fixed',inset:0,background:'rgba(15,23,42,0.55)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>

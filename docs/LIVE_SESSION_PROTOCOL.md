@@ -343,7 +343,16 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
    into one module with the §5 envelope. Two implementations is duplication; three is a law.
 8. **Bridge → WebRTC migration** — removes the last Tier-2 free-text exception (tracked at the
    allowlist comment).
-9. **Per-student resource send** — [SHIPPED 2026-07-01] `roster.{uid}.resourceId` + `resourceAt`
+9. **Confidence-aware routing** — [DESIGN, needs Aaron's measurement review before build] Students
+   already report confidence ('knew'/'guessed'/'no-idea') with quiz answers. Proposal: a routing
+   predicate `when.confidence` composable with correctness — pedagogically, *correct + guessed* is
+   a support signal (fragile knowledge) that today routes as mastery, and *incorrect + knew* is a
+   misconception signal (stronger intervention cue than a mere wrong answer). Design constraints
+   from the existing scientific-integrity floor: single-item confidence is noisy, so
+   confidence-based routing should require the same `acrossQuestions >= 2` aggregation the Likert
+   rules enforce, and the rule editor must label these as screening heuristics, not measurements.
+   Do not build until the thresholds/wording get a school-psychologist pass.
+9-bis. **Per-student resource send** — [SHIPPED 2026-07-01] `roster.{uid}.resourceId` + `resourceAt`
    (Tier-1, id-only), precedence individual > group > class, consume-once in student-paced mode,
    push/clear from the Live Session Center's Students rows. See §4.1(3).
 10. **Delivery acknowledgment** — [SHIPPED 2026-07-01] id-only `roster.{uid}.viewingResourceId` +

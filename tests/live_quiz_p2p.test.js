@@ -111,6 +111,22 @@ describe('pictionary moderation + presence polish (2026-07-02)', () => {
     expect(pic).toContain('if (mutedGuessersRef.current[uid]) return;');
     expect(pic).toContain('>offline</span>');
   });
+
+  it('guest countdowns anchor to the HOST clock (device skew immune)', () => {
+    expect(pic.split('hostNow: Date.now()').length - 1).toBe(2); // fresh round + reconnect replay
+    expect(pic).toContain('const clockOffsetMs = (round && typeof round.hostNow === ');
+    expect(pic).toContain('const elapsed = (now - clockOffsetMs) - startedAt;');
+    expect(pic).toContain('clockOffsetMs={activeRound.clockOffsetMs || 0}');
+  });
+});
+
+describe('student answer-progress pill (2026-07-02)', () => {
+  it('teacher broadcasts deduped progress; students render the pill', () => {
+    expect(anti).toContain("host.broadcastPoll({ id: '__progress__'");
+    expect(anti).toContain('quizProgressSentRef.current === key) return;');
+    expect(anti).toContain("if (p && p.id === '__progress__') setQuizProgress");
+    expect(anti).toContain("t('quiz.progress_answered') || 'answered'");
+  });
 });
 
 describe('project-file roundtrip (teacher dashboard reads submitted files)', () => {

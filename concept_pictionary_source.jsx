@@ -211,6 +211,9 @@ class PictionaryHost {
             drawerUids: Array.from(this.activeRound.drawerUids),
             startedAt: this.activeRound.startedAt,
             durationMs: this.activeRound.durationMs,
+            // Host clock at send time: guests anchor their countdown to the
+            // host's clock (device clocks skew by minutes in real classrooms).
+            hostNow: Date.now(),
           };
           try { dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
         } else {
@@ -335,6 +338,7 @@ class PictionaryHost {
         drawerUids: Array.from(drawerSet),
         startedAt,
         durationMs,
+        hostNow: Date.now(),
       };
       try { peer.dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
     });
@@ -727,6 +731,10 @@ const PictionaryCanvas = React.memo((props) => {
 const RoundCountdown = React.memo((props) => {
   const startedAt = props.startedAt;
   const durationMs = props.durationMs;
+  // clockOffsetMs = (local clock − host clock), measured at roundStart
+  // receipt; anchors the countdown to the HOST's clock so a guest device
+  // whose clock is minutes off still shows the same remaining time.
+  const clockOffsetMs = props.clockOffsetMs || 0;
   const [now, setNow] = React.useState(Date.now());
   React.useEffect(() => {
     if (!startedAt || !durationMs) return;
@@ -734,7 +742,7 @@ const RoundCountdown = React.memo((props) => {
     return () => clearInterval(id);
   }, [startedAt, durationMs]);
   if (!startedAt || !durationMs) return null;
-  const elapsed = now - startedAt;
+  const elapsed = (now - clockOffsetMs) - startedAt;
   const remaining = Math.max(0, durationMs - elapsed);
   const secs = Math.ceil(remaining / 1000);
   const pct = Math.max(0, Math.min(100, (remaining / durationMs) * 100));
@@ -1429,7 +1437,8 @@ const PictionaryGuestOverlay = React.memo((props) => {
         }
       },
       onRoundStart: (round) => {
-        setActiveRound(round);
+        const clockOffsetMs = (round && typeof round.hostNow === 'number') ? (Date.now() - round.hostNow) : 0;
+        setActiveRound(round ? { ...round, clockOffsetMs } : round);
         setStrokes([]);
         setMyStrokeIds([]);
         setResolved(null);
@@ -1540,7 +1549,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
           </div>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {activeRound && activeRound.durationMs && activeRound.startedAt ? (
-              <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} />
+              <RoundCountdown startedAt={activeRound.startedAt} durationMs={activeRound.durationMs} clockOffsetMs={activeRound.clockOffsetMs || 0} />
             ) : null}
             <button
               onClick={toggleGuestFullscreen}
