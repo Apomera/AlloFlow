@@ -99,6 +99,64 @@ describe('MemoryPalace — route navigation + SR descriptions', () => {
   });
 });
 
+describe('MemoryPalace — recall game (pure logic)', () => {
+  it('buildRecallBank shuffles deterministically by seed and covers every locus once', () => {
+    const p = MP.buildPalace(sampleData());
+    const a = MP.buildRecallBank(p, 42);
+    const b = MP.buildRecallBank(p, 42);
+    expect(a).toEqual(b);                                              // same seed ⇒ same order
+    expect(a.map((x) => x.id).sort()).toEqual(['b0_i0', 'b0_i1', 'b1_i0', 'b1_i1']);
+    const c = MP.buildRecallBank(p, 7);
+    expect(c.map((x) => x.id).sort()).toEqual(a.map((x) => x.id).sort());
+  });
+
+  it('matchAnswer forgives case/accents/punctuation and small typos, rejects different answers', () => {
+    expect(MP.matchAnswer('Evaporation', '  evaporation ')).toBe(true);
+    expect(MP.matchAnswer('Evaporación', 'evaporacion')).toBe(true);   // accents
+    expect(MP.matchAnswer('Condensation', 'condensasion')).toBe(true); // 1 typo on a long word
+    expect(MP.matchAnswer('Evaporation', 'condensation')).toBe(false);
+    expect(MP.matchAnswer('Sun', 'sunn')).toBe(false);                 // short words get no tolerance
+    expect(MP.matchAnswer('Sun', '')).toBe(false);
+  });
+
+  it('scoreRecall: first-try full marks, eventual half, reveals nothing; perfect detection', () => {
+    const s = MP.scoreRecall({
+      a: { attempts: 1, correct: true, revealed: false },
+      b: { attempts: 3, correct: true, revealed: false },
+      c: { attempts: 4, correct: false, revealed: true },
+    });
+    expect(s).toMatchObject({ total: 3, firstTry: 1, eventual: 1, revealed: 1, points: 15, perfect: false });
+    const win = MP.scoreRecall({ a: { attempts: 1, correct: true, revealed: false } });
+    expect(win.perfect).toBe(true);
+    expect(MP.scoreRecall({}).perfect).toBe(false);
+  });
+
+  it('describeLocusForRecall asks the question but NEVER leaks the answer or mnemonic', () => {
+    const p = MP.buildPalace(sampleData());
+    const d = MP.describeLocusForRecall(p, 'b0_i0', null);
+    expect(d).toMatch(/Locus 1 of 4/);
+    expect(d).toMatch(/Sky Room room/);
+    expect(d).toMatch(/What belongs at this locus\?/);
+    expect(d).not.toMatch(/Evaporation/);
+    expect(d).not.toMatch(/kettle/);
+    // entry stop is not a question
+    expect(MP.describeLocusForRecall(p, '__entry', null)).toMatch(/Palace entrance/);
+  });
+
+  it('recall-mode fallback route list hides every answer too', () => {
+    const div = document.createElement('div'); document.body.appendChild(div);
+    const handle = MP.render(div, sampleData(), { t: (k) => k, recall: true });
+    expect(handle.fellBack).toBe(true);                                // jsdom has no WebGL
+    const text = div.textContent;
+    expect(text).toMatch(/What belongs at this locus\?/);
+    expect(text).not.toMatch(/Evaporation/);
+    expect(text).not.toMatch(/kettle/);
+    expect(() => handle.revealLocus('b0_i0')).not.toThrow();           // recall API is noop-safe on fallback
+    expect(() => handle.setLocusStatus('b0_i0', 'correct')).not.toThrow();
+    handle.destroy(); div.remove();
+  });
+});
+
 describe('MemoryPalace — graceful degradation (no WebGL in jsdom)', () => {
   it('isWebGLAvailable() is false under jsdom', () => {
     expect(MP.isWebGLAvailable()).toBe(false);

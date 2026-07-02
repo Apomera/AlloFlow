@@ -138,8 +138,94 @@
     return parts.join('. ');
   }
 
+  // ── Recall game (P2) — pure, testable logic ─────────────────────────
+  // The walk becomes the game board: frames keep their images (the CUE) but
+  // hide their labels; the student recalls what lives at each locus. Bank
+  // mode (recognition, the UDL default) or typed Expert mode (free recall).
+
+  function _lcg(seed) {
+    var s = (seed >>> 0) || 1;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+  // Deterministic (seeded) shuffle so runs vary for students but tests can pin it.
+  function buildRecallBank(palace, seed) {
+    var items = ((palace && palace.loci) || [])
+      .filter(function (l) { return l.id !== '__entry'; })
+      .map(function (l) { return { id: l.id, label: l.label }; });
+    var rnd = _lcg(isNum(seed) ? seed : 1);
+    for (var i = items.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var tmp = items[i]; items[i] = items[j]; items[j] = tmp;
+    }
+    return items;
+  }
+
+  function _normAnswer(s) {
+    s = String(s == null ? '' : s).toLowerCase().trim();
+    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+    return s.replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function _lev(a, b) {
+    var m = a.length, n = b.length;
+    var prev = new Array(n + 1), cur = new Array(n + 1);
+    for (var j = 0; j <= n; j++) prev[j] = j;
+    for (var i = 1; i <= m; i++) {
+      cur[0] = i;
+      for (var k = 1; k <= n; k++) {
+        cur[k] = Math.min(prev[k] + 1, cur[k - 1] + 1, prev[k - 1] + (a[i - 1] === b[k - 1] ? 0 : 1));
+      }
+      var swap = prev; prev = cur; cur = swap;
+    }
+    return prev[n];
+  }
+  // Forgiving typed-answer matcher: case/accents/punctuation-insensitive, and a
+  // small edit-distance tolerance so a recall exercise never becomes a spelling
+  // test (per the UDL rationale in docs/memory_palace_3d_design.md §7.2).
+  function matchAnswer(expected, given) {
+    var e = _normAnswer(expected), g = _normAnswer(given);
+    if (!e || !g) return false;
+    if (e === g) return true;
+    var tol = e.length >= 10 ? 2 : (e.length >= 6 ? 1 : 0);
+    if (!tol || Math.abs(e.length - g.length) > tol) return false;
+    return _lev(e, g) <= tol;
+  }
+
+  // results: {locusId: {attempts, correct, revealed}} → totals + points.
+  // First-try recalls score full marks; eventual recalls half; reveals nothing.
+  function scoreRecall(results) {
+    var total = 0, firstTry = 0, eventual = 0, revealed = 0;
+    Object.keys(results || {}).forEach(function (id) {
+      var r = results[id]; if (!r) return;
+      total++;
+      if (r.revealed) { revealed++; return; }
+      if (r.correct && r.attempts <= 1) firstTry++;
+      else if (r.correct) eventual++;
+    });
+    return {
+      total: total, firstTry: firstTry, eventual: eventual, revealed: revealed,
+      points: firstTry * 10 + eventual * 5,
+      perfect: total > 0 && firstTry === total
+    };
+  }
+
+  // Recall-safe announcement: room + position + the QUESTION — never the answer
+  // or the mnemonic (both would leak through the live region / route list).
+  function describeLocusForRecall(palace, id, t) {
+    var l = locusById(palace, id);
+    if (!l) return '';
+    if (l.id === '__entry') return describeLocusForSR(palace, id, t);
+    var route = palace.route || [];
+    var pos = route.indexOf(id);
+    var room = (palace.rooms || [])[l.roomIdx];
+    var parts = [];
+    if (pos >= 0) parts.push(_tr(t, 'memory_palace.sr_locus', 'Locus') + ' ' + pos + ' ' + _tr(t, 'memory_palace.sr_of', 'of') + ' ' + (route.length - 1));
+    if (room) parts.push(room.label + ' ' + _tr(t, 'memory_palace.sr_room', 'room'));
+    parts.push(_tr(t, 'memory_palace.sr_recall_q', 'What belongs at this locus?'));
+    return parts.join('. ');
+  }
+
   // ── Accessible route DOM (source of truth; visible on any failure) ──
-  function buildRouteDom(palace, t, visible) {
+  function buildRouteDom(palace, t, visible, recall) {
     var wrap = document.createElement('div');
     wrap.style.cssText = visible ? 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;' : SR_ONLY;
     var heading = document.createElement('div');
@@ -151,7 +237,7 @@
     ol.style.cssText = visible ? 'font-size:13px;line-height:1.7;padding-left:22px;margin:0;' : 'margin:0;';
     (palace.route || []).forEach(function (id) {
       var li = document.createElement('li');
-      li.textContent = describeLocusForSR(palace, id, t);
+      li.textContent = recall ? describeLocusForRecall(palace, id, t) : describeLocusForSR(palace, id, t);
       ol.appendChild(li);
     });
     wrap.appendChild(ol);
@@ -305,8 +391,10 @@
       title.position.set(0, 215, 0); group.add(title);
     })();
 
-    // Loci frames.
-    var frameMeshes = [];
+    // Loci frames. In recall mode the label is a '?' — the image (or the numbered
+    // placard) is the CUE, the label is the ANSWER and stays hidden until earned.
+    var recall = !!opts.recall;
+    var frameMeshes = [], frameRefs = {};
     var texLoader = new THREE.TextureLoader();
     palace.loci.forEach(function (l, li) {
       if (l.id === '__entry') return;
@@ -316,8 +404,8 @@
       g2.position.set(l.framePos.x, l.framePos.y, l.framePos.z);
       g2.rotation.y = l.faceDir > 0 ? 0 : Math.PI;   // face into the room
       // Frame border + canvas.
-      var border = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W + 18, FRAME_H + 18, 6),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.4, metalness: 0.3 }));
+      var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.4, metalness: 0.3 });
+      var border = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W + 18, FRAME_H + 18, 6), borderMat);
       g2.add(border);
       var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       var img = images[l.id];
@@ -330,13 +418,35 @@
       canvasMesh.position.z = 4;
       canvasMesh.userData.locusId = l.id;
       g2.add(canvasMesh);
-      // Item label under the frame.
-      var lab = makeLabelSprite(THREE, l.label, color, 24);
+      // Item label under the frame ('?' while its answer is unearned in recall).
+      var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
       group.add(g2);
       frameMeshes.push(canvasMesh);
+      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l };
     });
+
+    // ── Recall API on the handle: earn a label back / flash placement status ──
+    state.revealLocus = function (id) {
+      var ref = frameRefs[id];
+      if (!ref) return;
+      try {
+        ref.group.remove(ref.label);
+        ref.label = makeLabelSprite(THREE, ref.locus.label, ref.baseColor, 24);
+        ref.label.position.set(0, -(FRAME_H / 2 + 34), 10);
+        ref.group.add(ref.label);
+      } catch (e) {}
+    };
+    state.setLocusStatus = function (id, status) {
+      var ref = frameRefs[id];
+      if (!ref) return;
+      try {
+        if (status === 'correct') ref.borderMat.color.set('#22c55e');
+        else if (status === 'incorrect') ref.borderMat.color.set('#ef4444');
+        else ref.borderMat.color.set(ref.baseColor).multiplyScalar(0.8);
+      } catch (e) {}
+    };
 
     // ── Camera rails ──
     var curIdx = Math.max(0, (palace.route || []).indexOf(opts.startAt || '__entry'));
@@ -366,7 +476,7 @@
     holder.appendChild(live);
 
     function announce(idx) {
-      try { live.textContent = describeLocusForSR(palace, palace.route[idx], t2); } catch (e) {}
+      try { live.textContent = recall ? describeLocusForRecall(palace, palace.route[idx], t2) : describeLocusForSR(palace, palace.route[idx], t2); } catch (e) {}
       if (typeof opts.onLocusChange === 'function') {
         try { opts.onLocusChange(locusById(palace, palace.route[idx]), idx, palace.route.length); } catch (e) {}
       }
@@ -514,10 +624,10 @@
     var palace = (data && data.version === VERSION && data.route) ? data : buildPalace(data, opts);
     while (container.firstChild) container.removeChild(container.firstChild);
 
-    var routeEl = buildRouteDom(palace, t, false);   // sr-only while 3D is live
+    var routeEl = buildRouteDom(palace, t, false, !!opts.recall);   // sr-only while 3D is live
     container.appendChild(routeEl);
 
-    var state = { raf: 0, renderer: null, disposed: false, onResize: null, cleanup: [], goTo: null };
+    var state = { raf: 0, renderer: null, disposed: false, onResize: null, cleanup: [], goTo: null, revealLocus: null, setLocusStatus: null };
     function destroy() {
       state.disposed = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
@@ -531,6 +641,8 @@
       }
     }
     function goTo(idx) { try { if (state.goTo) state.goTo(idx); } catch (e) {} }
+    function revealLocus(id) { try { if (state.revealLocus) state.revealLocus(id); } catch (e) {} }
+    function setLocusStatus(id, status) { try { if (state.setLocusStatus) state.setLocusStatus(id, status); } catch (e) {} }
     function showFallback(msg) {
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
@@ -542,7 +654,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -559,7 +671,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -569,6 +681,10 @@
     buildPalace: buildPalace,
     navigateRoute: navigateRoute,
     describeLocusForSR: describeLocusForSR,
+    describeLocusForRecall: describeLocusForRecall,
+    buildRecallBank: buildRecallBank,
+    matchAnswer: matchAnswer,
+    scoreRecall: scoreRecall,
     isWebGLAvailable: isWebGLAvailable,
     loadThree: loadThree,
     render: render

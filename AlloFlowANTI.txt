@@ -8575,6 +8575,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort] = useState(false);
   const [isInteractiveStoryMapSort, setIsInteractiveStoryMapSort] = useState(false);
   const [isInteractiveStrandChallenge, setIsInteractiveStrandChallenge] = useState(false);
+  const [isInteractivePalaceRecall, setIsInteractivePalaceRecall] = useState(false);
 
   // ── Cross-device sync for teacher-armed organizer interactive mode ──
   // Writes go to sessionDoc.interactiveOrganizer (Tier-1). Students subscribe
@@ -8595,6 +8596,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     seethinkwonder: setIsInteractiveSeeThinkWonderSort,
     storymap: setIsInteractiveStoryMapSort,
     strandchallenge3d: setIsInteractiveStrandChallenge,
+    palacerecall: setIsInteractivePalaceRecall,
   };
   const broadcastInteractiveOrganizer = useCallback(async (type) => {
     if (!isTeacherMode || !activeSessionCode) return;
@@ -23057,6 +23059,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort,
         isInteractiveStoryMapSort, setIsInteractiveStoryMapSort,
         isInteractiveStrandChallenge, setIsInteractiveStrandChallenge,
+        isInteractivePalaceRecall, setIsInteractivePalaceRecall,
         broadcastInteractiveOrganizer,
         handleGenerateFrayerImage,
         handleRemoveFrayerImage,

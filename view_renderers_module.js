@@ -185,7 +185,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   return elements;
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, broadcastInteractiveOrganizer } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
   });
   const _GameLoadingFallback = () => React.createElement(
@@ -1084,7 +1084,19 @@ const renderOutlineContent = (deps) => {
         t,
         addToast: deps.addToast,
         onPersist: deps.handleConceptSpacePersist,
-        callImagen: deps.callImagen
+        callImagen: deps.callImagen,
+        playSound,
+        onScoreUpdate: handleGameScoreUpdate,
+        onGameComplete: handleGameCompletion,
+        isTeacherMode,
+        armed: !!isInteractivePalaceRecall,
+        onRecallArm: () => {
+          if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(true);
+          _broadcastInteractiveOrganizer("palacerecall");
+        },
+        onRecallClose: () => {
+          if (!isTeacherMode && setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
+        }
       }
     )));
   }
@@ -1720,19 +1732,37 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     "\u2715"
   )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
 };
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) => {
+const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const handleRef = React.useRef(null);
+  const palaceRef = React.useRef(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const [furnishing, setFurnishing] = React.useState(null);
   const [nonce, setNonce] = React.useState(0);
   const [current, setCurrent] = React.useState(null);
+  const currentRef = React.useRef(null);
   const persist = typeof onPersist === "function" ? onPersist : null;
   const canImagen = typeof callImagen === "function";
   const images = data?.memoryPalace?.images || {};
   const imageCount = Object.keys(images).length;
+  const [recall, setRecall] = React.useState(null);
+  const recallResultsRef = React.useRef({});
+  const attemptsTotalRef = React.useRef(0);
+  const startedByArmRef = React.useRef(false);
+  const [recallBank, setRecallBank] = React.useState([]);
+  const [answered, setAnswered] = React.useState(0);
+  const [recallHint, setRecallHint] = React.useState(null);
+  const [canReveal, setCanReveal] = React.useState(false);
+  const [typedAnswer, setTypedAnswer] = React.useState("");
+  const [wrongFlash, setWrongFlash] = React.useState(false);
+  const [finished, setFinished] = React.useState(null);
+  const [elapsed, setElapsed] = React.useState(0);
+  const elapsedRef = React.useRef(0);
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const totalItems = React.useMemo(() => (Array.isArray(data?.branches) ? data.branches : []).reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0), [data]);
+  const recallEligible = totalItems >= 4;
   const dataKey = JSON.stringify({
     m: data?.main,
     b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
@@ -1757,11 +1787,20 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) =
       setFailed(true);
       return void 0;
     }
+    palaceRef.current = MP.buildPalace(data || {});
     handleRef.current = MP.render(hostRef.current, data, {
       t,
       images: data?.memoryPalace?.images || {},
+      recall: !!recall,
+      startAt: recall ? recall.startAt : void 0,
       onLocusChange: (locus, idx, total) => {
-        if (locus) setCurrent({ label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === "__entry" });
+        if (!locus) return;
+        currentRef.current = locus;
+        setCurrent({ id: locus.id, label: locus.label, mnemonic: locus.mnemonic, idx, total: total - 1, entry: locus.id === "__entry" });
+        const r = recallResultsRef.current[locus.id];
+        setRecallHint(r && r.attempts >= 2 && locus.mnemonic && !r.correct && !r.revealed ? locus.mnemonic : null);
+        setCanReveal(!!(r && r.attempts >= 3 && !r.correct && !r.revealed));
+        setTypedAnswer("");
       }
     });
     return () => {
@@ -1771,7 +1810,210 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) =
       }
       handleRef.current = null;
     };
-  }, [ready, failed, dataKey, nonce]);
+  }, [ready, failed, dataKey, nonce, recall]);
+  React.useEffect(() => {
+    if (!recall || finished) return void 0;
+    const iv = setInterval(() => {
+      elapsedRef.current += 1;
+      setElapsed(elapsedRef.current);
+    }, 1e3);
+    return () => clearInterval(iv);
+  }, [recall, finished]);
+  const _resetRecallRun = () => {
+    recallResultsRef.current = {};
+    attemptsTotalRef.current = 0;
+    elapsedRef.current = 0;
+    setElapsed(0);
+    setAnswered(0);
+    setFinished(null);
+    setRecallHint(null);
+    setCanReveal(false);
+    setTypedAnswer("");
+    setWrongFlash(false);
+  };
+  const startRecall = (mode, viaArm) => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || recall) return;
+    const palace = MP.buildPalace(data || {});
+    const targets = palace.route.filter((id) => id !== "__entry");
+    if (targets.length < 2) {
+      if (addToast) addToast(t("memory_palace.recall_empty") || "Not enough loci to play yet.", "info");
+      return;
+    }
+    _resetRecallRun();
+    const seed = Date.now() % 2147483647 || 7;
+    setRecallBank(MP.buildRecallBank(palace, seed));
+    startedByArmRef.current = viaArm === true;
+    setRecall({ mode: mode === "type" ? "type" : "bank", seed, startAt: targets[0] });
+    if (addToast) addToast(t("memory_palace.recall_start") || "\u{1F9E0} The labels are covered. Walk the palace and recall what lives at each locus!", "info");
+    if (isTeacherMode && viaArm !== true && typeof onRecallArm === "function") {
+      try {
+        onRecallArm();
+      } catch (e) {
+      }
+    }
+  };
+  const exitRecall = () => {
+    setRecall(null);
+    _resetRecallRun();
+    setRecallBank([]);
+    startedByArmRef.current = false;
+    if (typeof onRecallClose === "function") {
+      try {
+        onRecallClose();
+      } catch (e) {
+      }
+    }
+  };
+  const retryRecall = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !recall || !palaceRef.current) return;
+    const mode = recall.mode;
+    const palace = palaceRef.current;
+    const targets = palace.route.filter((id) => id !== "__entry");
+    _resetRecallRun();
+    const seed = Date.now() % 2147483647 || 11;
+    setRecallBank(MP.buildRecallBank(palace, seed));
+    setRecall({ mode, seed, startAt: targets[0] });
+  };
+  React.useEffect(() => {
+    if (armed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall("bank", true);
+    else if (!armed && !isTeacherMode && recall && startedByArmRef.current) {
+      startedByArmRef.current = false;
+      exitRecall();
+    }
+  }, [armed, isTeacherMode, ready, failed, recall]);
+  const advanceRecall = () => {
+    if (!palaceRef.current || !handleRef.current) return;
+    const route = palaceRef.current.route;
+    const res = recallResultsRef.current;
+    const curId = currentRef.current ? currentRef.current.id : route[0];
+    const curIdx = Math.max(0, route.indexOf(curId));
+    let nextIdx = -1;
+    for (let s = 1; s <= route.length; s++) {
+      const i = (curIdx + s) % route.length;
+      const id = route[i];
+      if (id === "__entry") continue;
+      const r = res[id];
+      if (!r || !r.correct && !r.revealed) {
+        nextIdx = i;
+        break;
+      }
+    }
+    if (nextIdx < 0) {
+      finishRecall();
+      return;
+    }
+    handleRef.current.goTo(nextIdx);
+  };
+  const finishRecall = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !palaceRef.current || finished) return;
+    const targets = palaceRef.current.route.filter((id) => id !== "__entry");
+    const res = recallResultsRef.current;
+    targets.forEach((id) => {
+      if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true };
+    });
+    const score = MP.scoreRecall(res);
+    setFinished(score);
+    const labelOf = (id) => {
+      const l = (palaceRef.current.loci || []).find((x) => x.id === id);
+      return l && l.label || id;
+    };
+    const misses = targets.filter((id) => !(res[id].correct && res[id].attempts <= 1)).map((id) => ({
+      itemId: id,
+      itemText: labelOf(id),
+      attempts: res[id].attempts,
+      revealed: !!res[id].revealed,
+      placedCategoryLabel: res[id].revealed ? "revealed" : "eventual",
+      correctCategoryLabel: labelOf(id)
+    }));
+    if (score.perfect) {
+      if (playSound) playSound("correct");
+      if (addToast) addToast(t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try.", "success");
+      if (onScoreUpdate) onScoreUpdate(score.points, "Memory Palace Recall");
+    } else {
+      if (playSound) playSound("reveal");
+      if (addToast) addToast((t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(score.firstTry + score.eventual)).replace("{total}", String(score.total)).replace("{first}", String(score.firstTry)), "info");
+    }
+    if (onGameComplete) onGameComplete(score.perfect ? "palaceRecall" : "palaceRecallAttempt", {
+      score: score.points,
+      correctPlacements: score.firstTry + score.eventual,
+      totalItems: score.total,
+      isPerfect: score.perfect,
+      attempts: attemptsTotalRef.current,
+      bestScore: score.points,
+      timeSeconds: elapsedRef.current,
+      incorrectPlacements: misses
+    });
+  };
+  const submitRecallAnswer = (given, chipId) => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    const cur = currentRef.current;
+    if (!MP || !recall || !cur || cur.id === "__entry" || finished) return;
+    const res = recallResultsRef.current;
+    const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
+    if (r.correct || r.revealed) return;
+    r.attempts += 1;
+    attemptsTotalRef.current += 1;
+    const ok = chipId ? chipId === cur.id || MP.matchAnswer(cur.label, given) : MP.matchAnswer(cur.label, given);
+    if (ok) {
+      r.correct = true;
+      if (playSound) playSound("correct");
+      if (handleRef.current) {
+        handleRef.current.revealLocus(cur.id);
+        handleRef.current.setLocusStatus(cur.id, "correct");
+      }
+      setRecallBank((bank) => {
+        const i = bank.findIndex((c) => c.id === cur.id);
+        const j = i >= 0 ? i : bank.findIndex((c) => MP.matchAnswer(cur.label, c.label));
+        if (j < 0) return bank;
+        const nb = bank.slice();
+        nb.splice(j, 1);
+        return nb;
+      });
+      setRecallHint(null);
+      setCanReveal(false);
+      setTypedAnswer("");
+      setAnswered((n) => n + 1);
+      setTimeout(() => advanceRecall(), 700);
+    } else {
+      if (playSound) playSound("reveal");
+      if (handleRef.current) handleRef.current.setLocusStatus(cur.id, "incorrect");
+      setWrongFlash(true);
+      setTimeout(() => {
+        setWrongFlash(false);
+        const rr = recallResultsRef.current[cur.id];
+        if (handleRef.current && rr && !rr.correct && !rr.revealed) handleRef.current.setLocusStatus(cur.id, null);
+      }, 700);
+      if (r.attempts >= 2 && cur.mnemonic) setRecallHint(cur.mnemonic);
+      if (r.attempts >= 3) setCanReveal(true);
+    }
+  };
+  const revealCurrent = () => {
+    const cur = currentRef.current;
+    if (!cur || !recall || finished || cur.id === "__entry") return;
+    const res = recallResultsRef.current;
+    const r = res[cur.id] || (res[cur.id] = { attempts: 0, correct: false, revealed: false });
+    if (r.correct || r.revealed) return;
+    r.revealed = true;
+    if (handleRef.current) {
+      handleRef.current.revealLocus(cur.id);
+      handleRef.current.setLocusStatus(cur.id, "incorrect");
+    }
+    setRecallBank((bank) => {
+      const i = bank.findIndex((c) => c.id === cur.id);
+      if (i < 0) return bank;
+      const nb = bank.slice();
+      nb.splice(i, 1);
+      return nb;
+    });
+    setRecallHint(null);
+    setCanReveal(false);
+    setTypedAnswer("");
+    setAnswered((n) => n + 1);
+    setTimeout(() => advanceRecall(), 700);
+  };
   const handleFurnish = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !canImagen || !persist || furnishing) return;
@@ -1810,7 +2052,40 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) =
     };
     step(0);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, recall ? t("memory_palace.recall_hint") || "\u{1F9E0} The labels are covered \u2014 the image is your cue. Recall what lives at each locus; after two misses the mnemonic appears." : t("memory_palace.hint") || "A memory palace works through repetition: walk the route, picture each mnemonic vividly, then walk it again from memory."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums", role: "status" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_progress") || "{done}/{total} recalled").replace("{done}", String(answered)).replace("{total}", String((palaceRef.current?.route?.length || 1) - 1))), finished && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: retryRecall,
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+    },
+    "\u21BA ",
+    t("memory_palace.recall_retry") || "Walk it again"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: exitRecall,
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+    },
+    t("memory_palace.recall_exit") || "Exit recall"
+  )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && !failed && recallEligible && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => startRecall("bank", false),
+      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+      title: t("memory_palace.recall_tooltip") || "Practice: the labels are covered \u2014 walk the palace and recall what lives at each locus"
+    },
+    "\u{1F9E0} ",
+    t("memory_palace.recall_play") || "Recall walk"
+  ), hasContent && !failed && recallEligible && isTeacherMode && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => startRecall("type", false),
+      className: "flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors",
+      title: t("memory_palace.recall_expert_tooltip") || "Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)"
+    },
+    "\u2328 ",
+    t("memory_palace.recall_expert") || "Expert recall"
+  ), hasContent && !failed && canImagen && persist && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleFurnish,
@@ -1832,7 +2107,43 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen }) =
     },
     "\u21BA ",
     t("memory_palace.clear_images") || "Clear images"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
+  )))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), !recall && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: chip.id,
+      onClick: () => submitRecallAnswer(chip.label, chip.id),
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-amber-900 border border-amber-300 hover:bg-amber-100 hover:scale-105 transition-all"
+    },
+    chip.label
+  ))) : /* @__PURE__ */ React.createElement("form", { className: "flex gap-2", onSubmit: (e) => {
+    e.preventDefault();
+    if (typedAnswer.trim()) submitRecallAnswer(typedAnswer, null);
+  } }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      value: typedAnswer,
+      onChange: (e) => setTypedAnswer(e.target.value),
+      placeholder: t("memory_palace.recall_type_placeholder") || "Type what belongs here\u2026",
+      "aria-label": t("memory_palace.recall_q") || "What belongs at this locus?",
+      className: "flex-1 text-sm p-2 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-400 outline-none bg-white"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "submit",
+      disabled: !typedAnswer.trim(),
+      className: "px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+    },
+    t("memory_palace.recall_submit") || "Check"
+  )), recallHint && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-sm text-amber-900", role: "status", "aria-live": "polite" }, "\u{1F4A1} ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", recallHint), canReveal && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: revealCurrent,
+      className: "mt-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
+    },
+    t("memory_palace.recall_reveal") || "Reveal answer (no points)"
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("memory_palace.caption") || "Method of loci: a practice strategy with strong evidence for remembering ordered material \u2014 the effect comes from walking the route repeatedly and picturing each image vividly, not from the tool itself."));
 };
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
