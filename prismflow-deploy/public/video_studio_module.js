@@ -236,9 +236,116 @@
       createdAt: m.createdAt || null
     };
   }
+
+  // CRC-32 (IEEE, reflected) — backs the .allopack ZIP writer/reader below.
+  var VS_CRC_TABLE = (function () {
+    var t = [];
+    for (var n = 0; n < 256; n++) {
+      var c = n;
+      for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      t[n] = c;
+    }
+    return t;
+  })();
+  function vsCrc32(bytes) {
+    var c = -1;
+    for (var i = 0; i < bytes.length; i++) c = (c >>> 8) ^ VS_CRC_TABLE[(c ^ bytes[i]) & 0xFF];
+    return (c ^ -1) >>> 0;
+  }
+
+  // Minimal ZIP writer for .allopack bundles. STORE only (method 0 — video is
+  // already compressed; zipping it again wastes time for ~0 gain) and fixed
+  // 1980-01-01 timestamps, so identical inputs produce byte-identical bundles.
+  // entries: [{name, data: Uint8Array}] — non-ASCII filename chars become '_'.
+  function vsBuildZip(entries) {
+    var list = Array.isArray(entries) ? entries : [];
+    var enc = function (s) { var b = []; s = String(s); for (var i = 0; i < s.length; i++) { var code = s.charCodeAt(i); b.push(code >= 32 && code < 127 ? code : 95); } return new Uint8Array(b); };
+    var u16 = function (v) { return [v & 255, (v >>> 8) & 255]; };
+    var u32 = function (v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; };
+    var chunks = [], central = [], offset = 0;
+    for (var i = 0; i < list.length; i++) {
+      var name = enc(list[i].name || ('file' + i));
+      var data = list[i].data instanceof Uint8Array ? list[i].data : new Uint8Array(list[i].data || 0);
+      var crc = vsCrc32(data);
+      var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0x21), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0)));
+      chunks.push(head, name, data);
+      central.push({ name: name, crc: crc, size: data.length, offset: offset });
+      offset += head.length + name.length + data.length;
+    }
+    var cdStart = offset, cdChunks = [], cdLen = 0;
+    for (var j = 0; j < central.length; j++) {
+      var e = central[j];
+      var ch = new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0x21), u32(e.crc), u32(e.size), u32(e.size), u16(e.name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(e.offset)));
+      cdChunks.push(ch, e.name);
+      cdLen += ch.length + e.name.length;
+    }
+    var eocd = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(central.length), u16(central.length), u32(cdLen), u32(cdStart), u16(0)));
+    var out = new Uint8Array(offset + cdLen + eocd.length), o = 0;
+    chunks.concat(cdChunks, [eocd]).forEach(function (c) { out.set(c, o); o += c.length; });
+    return out;
+  }
+
+  // Inverse of vsBuildZip. Reads any STORE-method zip; entries with other
+  // compression methods or failed CRC checks are skipped (never half-read).
+  function vsReadZip(bytes) {
+    var u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    var rd16 = function (p) { return u8[p] | (u8[p + 1] << 8); };
+    var rd32 = function (p) { return (u8[p] | (u8[p + 1] << 8) | (u8[p + 2] << 16)) + (u8[p + 3] * 16777216); };
+    var eocd = -1;
+    for (var i = u8.length - 22; i >= 0 && i >= u8.length - 22 - 65557; i--) {
+      if (rd32(i) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) return [];
+    var count = rd16(eocd + 10);
+    var out = [], p = rd32(eocd + 16);
+    for (var n = 0; n < count; n++) {
+      if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
+      var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
+      var name = '';
+      for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
+      if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
+        var dataStart = lho + 30 + rd16(lho + 26) + rd16(lho + 28);
+        var data = u8.slice(dataStart, dataStart + size);
+        if (data.length === size && vsCrc32(data) === rd32(p + 16)) out.push({ name: name, data: data });
+      }
+      p += 46 + nameLen + extraLen + commentLen;
+    }
+    return out;
+  }
+
+  // Zoom/spotlight keyframes → camera state at a moment. Each keyframe is
+  // {t, x, y, scale, dur}: at time t the camera eases (0.6s smoothstep ramp)
+  // into `scale`× centered on (x, y) (both 0..1 of the frame), holds `dur`
+  // seconds (default 3), then eases back out. Between keyframes the camera is
+  // identity {scale:1, x:0.5, y:0.5}. Manual placement by design: browsers
+  // cannot observe clicks in OTHER tabs/apps during screen capture, so a
+  // Screen-Studio-style automatic zoom is not implementable in-browser —
+  // pretending otherwise would just be a keyframe the teacher didn't place.
+  function vsZoomState(keyframes, tSec) {
+    var kfs = (Array.isArray(keyframes) ? keyframes : []).filter(function (k) { return k && isFinite(k.t) && Number(k.scale) > 1; }).sort(function (a, b) { return a.t - b.t; });
+    var t = Number(tSec) || 0;
+    var RAMP = 0.6;
+    var best = null;
+    for (var i = 0; i < kfs.length; i++) {
+      var k = kfs[i];
+      var dur = (k.dur != null && isFinite(k.dur)) ? Math.max(0.2, Number(k.dur)) : 3;
+      if (t >= k.t - RAMP && t <= k.t + dur + RAMP) best = { k: k, dur: dur };
+    }
+    if (!best) return { scale: 1, x: 0.5, y: 0.5 };
+    var smooth = function (u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
+    var fIn = smooth((t - (best.k.t - RAMP)) / RAMP);
+    var fOut = smooth(((best.k.t + best.dur + RAMP) - t) / RAMP);
+    var f = Math.min(fIn, fOut);
+    var cl = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
+    return {
+      scale: 1 + (Math.min(4, Number(best.k.scale)) - 1) * f,
+      x: 0.5 + (cl(best.k.x, 0.5) - 0.5) * f,
+      y: 0.5 + (cl(best.k.y, 0.5) - 0.5) * f
+    };
+  }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -400,6 +507,26 @@
       } catch (_) { done(); }
     }, []);
 
+    // One-file share: .allopack = STORE-zip of meta.json + video + captions.
+    // Reopens in the Studio (drag-drop) with captions intact; pack JSON still
+    // only ever carries the metadata reference, never these bytes.
+    var downloadBundle = useCallback(function (v) {
+      var base = (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video';
+      v.blob.arrayBuffer().then(function (buf) {
+        var ref = vsMakePackReference({
+          title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
+          fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, thumb: v.thumb, createdAt: v.createdAt
+        });
+        var entries = [
+          { name: 'meta.json', data: new TextEncoder().encode(JSON.stringify(ref, null, 2)) },
+          { name: base + extFor(v.blob.type), data: new Uint8Array(buf) }
+        ];
+        if (v.vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(v.vtt) });
+        downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '.allopack');
+        addToast(T('video_studio.bundle_done', 'Bundle saved — one file with the video, captions, and metadata. Drop it back into the Studio any time to re-edit.'), 'success');
+      });
+    }, []);
+
     var statusLine = studioState === 'open' ? T('video_studio.status_open', 'Studio window is open — record there, then press “Send to AlloFlow”.')
       : studioState === 'opening' ? T('video_studio.status_opening', 'Opening the Studio window…')
       : studioState === 'blocked' ? T('video_studio.status_blocked', 'Pop-up blocked. Allow pop-ups for this site and press the button again.')
@@ -459,6 +586,11 @@
                         onClick: function () { downloadBlob(new Blob([v.vtt], { type: 'text/vtt' }), (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.vtt'); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold hover:bg-slate-500'
                       }, T('video_studio.download_vtt', '⬇ Captions (.vtt)')),
+                      h('button', {
+                        onClick: function () { downloadBundle(v); },
+                        className: 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700',
+                        title: T('video_studio.bundle_title', 'One shareable file (.allopack zip) holding the video, its captions, and the metadata reference. Drop it into the Studio to re-edit.')
+                      }, T('video_studio.download_bundle', '📦 Bundle (.allopack)')),
                       h('button', {
                         onClick: function () { copyPackRef(v); },
                         className: 'px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-xs font-semibold hover:bg-indigo-50',

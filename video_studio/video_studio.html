@@ -125,7 +125,7 @@
       <div class="status" id="capNote"></div>
       <div class="row" style="margin-top:10px">
         <button class="quiet" id="importBtn">📁 Import a video to edit/caption…</button>
-        <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv" hidden>
+        <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv,.allopack" hidden>
         <span class="status" id="importStatus" style="margin-top:0">Or drop a video file anywhere on this page. Imported videos get the same trim, caption, and export tools as recordings.</span>
       </div>
     </div>
@@ -169,6 +169,14 @@
           </div>
           <div class="status" id="trimStatus"></div>
         </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Zoom &amp; spotlight</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="addZoomBtn">🔍 Add zoom at playhead</button>
+            <span class="status" id="zoomHint" style="margin-top:0">Then click the spot in the video above to aim the zoom. Renders with a smooth ease on export.</span>
+          </div>
+          <div id="zoomList"></div>
+        </div>
       </div>
       <div>
         <div class="card">
@@ -179,6 +187,16 @@
             <input type="file" id="importCapInput" accept=".vtt,.srt,text/vtt" hidden>
             <span class="status" id="cueCount"></span>
           </div>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="autoCapBtn">🤖 Auto-caption (local AI)</button>
+            <select id="whisperModel" aria-label="Captioning model" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+              <option value="Xenova/whisper-tiny.en">English — fast (~40 MB)</option>
+              <option value="Xenova/whisper-base.en">English — more accurate (~80 MB)</option>
+              <option value="Xenova/whisper-tiny">Multilingual (~40 MB)</option>
+            </select>
+          </div>
+          <progress id="autoCapProgress" max="100" value="0" hidden></progress>
+          <div class="status" id="autoCapStatus">Runs Whisper entirely on this computer — nothing is uploaded. The engine downloads once, then stays cached. Works on imported videos too (live captions only cover recordings).</div>
           <div style="max-height:46vh;overflow-y:auto">
             <table class="cues" id="cueTable">
               <thead><tr><th>Start (s)</th><th>End (s)</th><th>Text</th><th></th></tr></thead>
@@ -417,6 +435,113 @@ function vsMakePackReference(meta) {
     hasCaptions: !!m.hasCaptions,
     thumb: thumb,
     createdAt: m.createdAt || null
+  };
+}
+
+// CRC-32 (IEEE, reflected) — backs the .allopack ZIP writer/reader below.
+var VS_CRC_TABLE = (function () {
+  var t = [];
+  for (var n = 0; n < 256; n++) {
+    var c = n;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c;
+  }
+  return t;
+})();
+function vsCrc32(bytes) {
+  var c = -1;
+  for (var i = 0; i < bytes.length; i++) c = (c >>> 8) ^ VS_CRC_TABLE[(c ^ bytes[i]) & 0xFF];
+  return (c ^ -1) >>> 0;
+}
+
+// Minimal ZIP writer for .allopack bundles. STORE only (method 0 — video is
+// already compressed; zipping it again wastes time for ~0 gain) and fixed
+// 1980-01-01 timestamps, so identical inputs produce byte-identical bundles.
+// entries: [{name, data: Uint8Array}] — non-ASCII filename chars become '_'.
+function vsBuildZip(entries) {
+  var list = Array.isArray(entries) ? entries : [];
+  var enc = function (s) { var b = []; s = String(s); for (var i = 0; i < s.length; i++) { var code = s.charCodeAt(i); b.push(code >= 32 && code < 127 ? code : 95); } return new Uint8Array(b); };
+  var u16 = function (v) { return [v & 255, (v >>> 8) & 255]; };
+  var u32 = function (v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; };
+  var chunks = [], central = [], offset = 0;
+  for (var i = 0; i < list.length; i++) {
+    var name = enc(list[i].name || ('file' + i));
+    var data = list[i].data instanceof Uint8Array ? list[i].data : new Uint8Array(list[i].data || 0);
+    var crc = vsCrc32(data);
+    var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0x21), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0)));
+    chunks.push(head, name, data);
+    central.push({ name: name, crc: crc, size: data.length, offset: offset });
+    offset += head.length + name.length + data.length;
+  }
+  var cdStart = offset, cdChunks = [], cdLen = 0;
+  for (var j = 0; j < central.length; j++) {
+    var e = central[j];
+    var ch = new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0x21), u32(e.crc), u32(e.size), u32(e.size), u16(e.name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(e.offset)));
+    cdChunks.push(ch, e.name);
+    cdLen += ch.length + e.name.length;
+  }
+  var eocd = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(central.length), u16(central.length), u32(cdLen), u32(cdStart), u16(0)));
+  var out = new Uint8Array(offset + cdLen + eocd.length), o = 0;
+  chunks.concat(cdChunks, [eocd]).forEach(function (c) { out.set(c, o); o += c.length; });
+  return out;
+}
+
+// Inverse of vsBuildZip. Reads any STORE-method zip; entries with other
+// compression methods or failed CRC checks are skipped (never half-read).
+function vsReadZip(bytes) {
+  var u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  var rd16 = function (p) { return u8[p] | (u8[p + 1] << 8); };
+  var rd32 = function (p) { return (u8[p] | (u8[p + 1] << 8) | (u8[p + 2] << 16)) + (u8[p + 3] * 16777216); };
+  var eocd = -1;
+  for (var i = u8.length - 22; i >= 0 && i >= u8.length - 22 - 65557; i--) {
+    if (rd32(i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) return [];
+  var count = rd16(eocd + 10);
+  var out = [], p = rd32(eocd + 16);
+  for (var n = 0; n < count; n++) {
+    if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
+    var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
+    var name = '';
+    for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
+    if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
+      var dataStart = lho + 30 + rd16(lho + 26) + rd16(lho + 28);
+      var data = u8.slice(dataStart, dataStart + size);
+      if (data.length === size && vsCrc32(data) === rd32(p + 16)) out.push({ name: name, data: data });
+    }
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return out;
+}
+
+// Zoom/spotlight keyframes → camera state at a moment. Each keyframe is
+// {t, x, y, scale, dur}: at time t the camera eases (0.6s smoothstep ramp)
+// into `scale`× centered on (x, y) (both 0..1 of the frame), holds `dur`
+// seconds (default 3), then eases back out. Between keyframes the camera is
+// identity {scale:1, x:0.5, y:0.5}. Manual placement by design: browsers
+// cannot observe clicks in OTHER tabs/apps during screen capture, so a
+// Screen-Studio-style automatic zoom is not implementable in-browser —
+// pretending otherwise would just be a keyframe the teacher didn't place.
+function vsZoomState(keyframes, tSec) {
+  var kfs = (Array.isArray(keyframes) ? keyframes : []).filter(function (k) { return k && isFinite(k.t) && Number(k.scale) > 1; }).sort(function (a, b) { return a.t - b.t; });
+  var t = Number(tSec) || 0;
+  var RAMP = 0.6;
+  var best = null;
+  for (var i = 0; i < kfs.length; i++) {
+    var k = kfs[i];
+    var dur = (k.dur != null && isFinite(k.dur)) ? Math.max(0.2, Number(k.dur)) : 3;
+    if (t >= k.t - RAMP && t <= k.t + dur + RAMP) best = { k: k, dur: dur };
+  }
+  if (!best) return { scale: 1, x: 0.5, y: 0.5 };
+  var smooth = function (u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); };
+  var fIn = smooth((t - (best.k.t - RAMP)) / RAMP);
+  var fOut = smooth(((best.k.t + best.dur + RAMP) - t) / RAMP);
+  var f = Math.min(fIn, fOut);
+  var cl = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
+  return {
+    scale: 1 + (Math.min(4, Number(best.k.scale)) - 1) * f,
+    x: 0.5 + (cl(best.k.x, 0.5) - 0.5) * f,
+    y: 0.5 + (cl(best.k.y, 0.5) - 0.5) * f
   };
 }
 // [VS_SHARED_END]
@@ -714,7 +839,7 @@ function vsMakePackReference(meta) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
-        duration: dur, captions: cuesLive.slice(), createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), zooms: [], createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -753,31 +878,55 @@ function vsMakePackReference(meta) {
     });
   }
 
-  function importVideoFile(file) {
-    if (!file) return;
-    var looksVideo = /^video\//.test(file.type || '') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(file.name || '');
-    if (!looksVideo) { setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
-    setStatus($('importStatus'), 'Reading ' + file.name + '…');
-    var url = URL.createObjectURL(file);
+  function addImportedTake(blob, displayName, type, captions) {
+    setStatus($('importStatus'), 'Reading ' + displayName + '…');
+    var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
       if (probe.error && !probe.duration) {
         URL.revokeObjectURL(url);
-        setStatus($('importStatus'), 'This browser can’t decode “' + file.name + '” — MP4 (H.264) and WebM work best. Try re-exporting it from its source app.', 'bad');
+        setStatus($('importStatus'), 'This browser can’t decode “' + displayName + '” — MP4 (H.264) and WebM work best. Try re-exporting it from its source app.', 'bad');
         return;
       }
       var take = {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        name: '📁 ' + (file.name || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
-        blob: file, url: url, type: file.type || 'video/webm',
-        duration: probe.duration, captions: [], imported: true, createdAt: new Date().toISOString()
+        name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
+        blob: blob, url: url, type: type || blob.type || 'video/webm',
+        duration: probe.duration, captions: captions || [], zooms: [], imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
       selectTake(take.id);
       renderTakes();
-      setStatus($('importStatus'), 'Imported (' + fmtBytes(file.size) + '). Opening the editor…', 'ok');
+      setStatus($('importStatus'), 'Imported (' + fmtBytes(blob.size) + (take.captions.length ? ', ' + take.captions.length + ' captions' : '') + '). Opening the editor…', 'ok');
       announce('Video imported');
       showTab('tabEdit');
+    });
+  }
+
+  function importVideoFile(file) {
+    if (!file) return;
+    if (/\.allopack$/i.test(file.name || '')) { importBundleFile(file); return; }
+    var looksVideo = /^video\//.test(file.type || '') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(file.name || '');
+    if (!looksVideo) { setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
+    addImportedTake(file, file.name, file.type);
+  }
+
+  // .allopack = STORE-only zip: meta.json + the video + optional captions.vtt.
+  // Built by the AlloFlow gallery's "Download bundle" — one shareable file
+  // that reopens here with its captions intact.
+  function importBundleFile(file) {
+    file.arrayBuffer().then(function (buf) {
+      var entries = vsReadZip(new Uint8Array(buf));
+      var meta = null, video = null, videoName = '', vttText = null;
+      entries.forEach(function (e) {
+        if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
+        else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
+        else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
+      });
+      if (!video) { setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
+      var type = /\.mp4$|\.m4v$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : /\.mkv$/i.test(videoName) ? 'video/x-matroska' : 'video/webm';
+      var captions = vttText ? vsParseVtt(vttText) : [];
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -788,7 +937,161 @@ function vsMakePackReference(meta) {
     var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
     if (!f) return;
     if (/\.(vtt|srt)$/i.test(f.name || '')) importCaptionFile(f);
-    else importVideoFile(f);
+    else importVideoFile(f); // routes .allopack bundles too
+  });
+
+  // ── Local Whisper auto-captioning (transformers.js) ──
+  // The popup is OUR page in a top-level window, so unlike the Canvas iframe
+  // it may load external scripts. transformers.js comes from jsDelivr (pinned)
+  // and the model weights from the Hugging Face hub, cached by the browser —
+  // downloaded once, then offline-capable. Inference is 100% on-device: the
+  // audio never leaves this computer (unlike live Web Speech captions).
+  var TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1';
+  var _asrPipelines = {};
+
+  async function extractPcm16k(blob) {
+    var buf = await blob.arrayBuffer();
+    var AC = window.AudioContext || window.webkitAudioContext;
+    var ac = new AC();
+    var decoded;
+    try { decoded = await ac.decodeAudioData(buf); } finally { try { ac.close(); } catch (_) {} }
+    var off = new OfflineAudioContext(1, Math.max(1, Math.ceil(decoded.duration * 16000)), 16000);
+    var src = off.createBufferSource();
+    src.buffer = decoded; src.connect(off.destination); src.start(0);
+    var rendered = await off.startRendering();
+    return rendered.getChannelData(0);
+  }
+
+  async function loadAsr(modelId, onProgress) {
+    if (_asrPipelines[modelId]) return _asrPipelines[modelId];
+    var lib = await import(TRANSFORMERS_URL);
+    var attempts = navigator.gpu ? [{ device: 'webgpu' }, { device: 'wasm', dtype: 'q8' }] : [{ device: 'wasm', dtype: 'q8' }];
+    var lastErr = null;
+    for (var i = 0; i < attempts.length; i++) {
+      try {
+        var opts = Object.assign({ progress_callback: onProgress }, attempts[i]);
+        var p = await lib.pipeline('automatic-speech-recognition', modelId, opts);
+        _asrPipelines[modelId] = p;
+        return p;
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('could not initialize the captioning engine');
+  }
+
+  async function autoCaption() {
+    var t = currentTake();
+    if (!t) { setStatus($('autoCapStatus'), 'Record or import a video first.', 'warn'); return; }
+    var btn = $('autoCapBtn'), prog = $('autoCapProgress');
+    btn.disabled = true;
+    try {
+      setStatus($('autoCapStatus'), 'Loading the captioning engine… (first time only: downloads and caches the model)');
+      prog.hidden = false; prog.value = 0;
+      var asr = await loadAsr($('whisperModel').value, function (p) {
+        if (p && typeof p.progress === 'number') { prog.value = Math.round(p.progress); }
+        if (p && p.status === 'progress' && p.file) { setStatus($('autoCapStatus'), 'Downloading model: ' + p.file + ' (' + Math.round(p.progress || 0) + '%)'); }
+      });
+      setStatus($('autoCapStatus'), 'Extracting audio…');
+      var pcm = await extractPcm16k(t.blob);
+      setStatus($('autoCapStatus'), 'Transcribing on this device… roughly real-time with GPU, slower without. Keep this window open.');
+      prog.removeAttribute('value');
+      var res = await asr(pcm, { chunk_length_s: 30, stride_length_s: 5, return_timestamps: true });
+      var cues = (res && res.chunks ? res.chunks : []).map(function (c) {
+        var ts = c.timestamp || [];
+        return { start: Number(ts[0]) || 0, end: (ts[1] != null && isFinite(ts[1])) ? Number(ts[1]) : t.duration, text: String(c.text || '').trim() };
+      }).filter(function (c) { return c.text; });
+      if (!cues.length && res && res.text && String(res.text).trim()) {
+        cues = [{ start: 0, end: t.duration, text: String(res.text).trim() }];
+      }
+      if (!cues.length) { setStatus($('autoCapStatus'), 'No speech detected in this video.', 'warn'); }
+      else {
+        if (t.captions.length && !confirm('Replace the ' + t.captions.length + ' existing caption(s) with ' + cues.length + ' auto-generated ones?\n(Cancel keeps both.)')) {
+          t.captions = t.captions.concat(cues).sort(function (a, b) { return a.start - b.start; });
+        } else {
+          t.captions = cues;
+        }
+        saveDraft(t);
+        renderCues();
+        setStatus($('autoCapStatus'), cues.length + ' captions generated — skim them for names and subject-specific terms, then export.', 'ok');
+        announce(cues.length + ' captions generated');
+      }
+    } catch (e) {
+      var msg = (e && e.message) || String(e);
+      if (/fetch|network|Failed to/i.test(msg)) msg = 'Could not download the engine — check the internet connection and try again (after the first download it works offline). [' + msg.slice(0, 120) + ']';
+      setStatus($('autoCapStatus'), 'Auto-captioning failed: ' + msg, 'bad');
+    }
+    prog.hidden = true; prog.value = 0;
+    btn.disabled = false;
+  }
+  $('autoCapBtn').addEventListener('click', autoCaption);
+
+  // ── Zoom & spotlight keyframes ──
+  var aimingZoomId = null;
+  function renderZooms() {
+    var t = currentTake();
+    var host = $('zoomList');
+    host.innerHTML = '';
+    var zooms = t ? (t.zooms = t.zooms || []) : [];
+    zooms.sort(function (a, b) { return a.t - b.t; });
+    zooms.forEach(function (z, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px' + (z.id === aimingZoomId ? ';border-color:var(--warn)' : '');
+      var mkNum = function (label, field, step, min, max) {
+        var l = document.createElement('label'); l.textContent = label + ' ';
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.step = step; inp.min = min; inp.max = max; inp.style.width = '70px';
+        inp.value = (Math.round((z[field] != null ? z[field] : 0) * 10) / 10).toFixed(1);
+        inp.setAttribute('aria-label', label + ' for zoom ' + (idx + 1));
+        inp.addEventListener('change', function () { z[field] = Number(inp.value) || 0; saveDraft(t); });
+        l.appendChild(inp); return l;
+      };
+      row.appendChild(mkNum('At (s)', 't', '0.1', '0', String(Math.ceil(t.duration))));
+      row.appendChild(mkNum('Hold (s)', 'dur', '0.5', '0.5', '60'));
+      var zl = document.createElement('label'); zl.textContent = 'Zoom ';
+      var sel = document.createElement('select');
+      sel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+      [1.5, 2, 2.5, 3].forEach(function (v) { var o = document.createElement('option'); o.value = String(v); o.textContent = v + '×'; if (Math.abs(z.scale - v) < 0.01) o.selected = true; sel.appendChild(o); });
+      sel.setAttribute('aria-label', 'Zoom level for zoom ' + (idx + 1));
+      sel.addEventListener('change', function () { z.scale = Number(sel.value); saveDraft(t); });
+      zl.appendChild(sel); row.appendChild(zl);
+      var aim = document.createElement('button'); aim.className = 'quiet';
+      aim.textContent = z.id === aimingZoomId ? '🎯 Click the video…' : '🎯 Aim';
+      aim.setAttribute('aria-label', 'Aim zoom ' + (idx + 1) + ' by clicking the video preview');
+      aim.addEventListener('click', function () { aimingZoomId = (aimingZoomId === z.id ? null : z.id); renderZooms(); });
+      row.appendChild(aim);
+      var pos = document.createElement('span'); pos.className = 'status'; pos.style.marginTop = '0';
+      pos.textContent = '@ ' + Math.round((z.x || 0.5) * 100) + '%, ' + Math.round((z.y || 0.5) * 100) + '%';
+      row.appendChild(pos);
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Delete zoom ' + (idx + 1));
+      del.addEventListener('click', function () { t.zooms.splice(t.zooms.indexOf(z), 1); if (aimingZoomId === z.id) aimingZoomId = null; saveDraft(t); renderZooms(); });
+      row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+  $('addZoomBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    t.zooms = t.zooms || [];
+    var z = { id: 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: $('editVideo').currentTime || 0, x: 0.5, y: 0.5, scale: 2, dur: 3 };
+    t.zooms.push(z);
+    aimingZoomId = z.id;
+    saveDraft(t);
+    renderZooms();
+    announce('Zoom added — click the video preview to aim it');
+  });
+  $('editVideo').addEventListener('click', function (ev) {
+    if (!aimingZoomId) return;
+    var t = currentTake(); if (!t || !t.zooms) return;
+    var z = t.zooms.find(function (k) { return k.id === aimingZoomId; });
+    if (!z) { aimingZoomId = null; return; }
+    var r = $('editVideo').getBoundingClientRect();
+    z.x = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+    z.y = Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height));
+    aimingZoomId = null;
+    saveDraft(t);
+    renderZooms();
+    announce('Zoom aimed');
+    ev.preventDefault();
   });
 
   // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
@@ -851,7 +1154,9 @@ function vsMakePackReference(meta) {
     $('trimStart').value = '0';
     $('trimEnd').value = '0';
     setStatus($('trimStatus'), 'Full length ' + fmtClock(t.duration) + '.');
+    aimingZoomId = null;
     renderCues();
+    renderZooms();
   }
 
   // Trim preview: clamp playback into the kept window.
@@ -933,7 +1238,8 @@ function vsMakePackReference(meta) {
     var seg = vsComputeSegments(t.duration, trimS, trimE);
     var cues = t.captions.filter(function (c) { return c.text && c.end > seg.segments[0].start && c.start < seg.segments[0].end; })
       .map(function (c) { return { start: Math.max(0, c.start - seg.segments[0].start), end: Math.max(0.2, c.end - seg.segments[0].start), text: c.text }; });
-    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05;
+    var zooms = (t.zooms || []).filter(function (z) { return z && Number(z.scale) > 1; });
+    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0;
     $('exportBtn').disabled = true;
     try {
       var outBlob, outDur;
@@ -951,7 +1257,7 @@ function vsMakePackReference(meta) {
         setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null);
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms);
         outBlob = res.blob; outDur = res.duration;
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
@@ -971,7 +1277,7 @@ function vsMakePackReference(meta) {
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
-  function reencode(take, seg, cues, burnCaptions, titleCard) {
+  function reencode(take, seg, cues, burnCaptions, titleCard, zooms) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
@@ -1031,7 +1337,18 @@ function vsMakePackReference(meta) {
               v.play().catch(function () { reject(new Error('playback blocked')); });
             }
           } else {
-            ctx.drawImage(v, 0, 0, w, hgt);
+            // Zoom keyframes use take-absolute time (v.currentTime), so a
+            // trimmed start doesn't shift where the teacher aimed them.
+            var zs = vsZoomState(zooms || [], v.currentTime);
+            if (zs.scale > 1.001) {
+              var srcW = v.videoWidth || w, srcH = v.videoHeight || hgt;
+              var sw2 = srcW / zs.scale, sh2 = srcH / zs.scale;
+              var sx2 = Math.max(0, Math.min(srcW - sw2, zs.x * srcW - sw2 / 2));
+              var sy2 = Math.max(0, Math.min(srcH - sh2, zs.y * srcH - sh2 / 2));
+              ctx.drawImage(v, sx2, sy2, sw2, sh2, 0, 0, w, hgt);
+            } else {
+              ctx.drawImage(v, 0, 0, w, hgt);
+            }
             drawCaption(v.currentTime - seg.start);
             if (v.currentTime >= seg.end || v.ended) {
               cancelAnimationFrame(raf);
@@ -1123,7 +1440,7 @@ function vsMakePackReference(meta) {
   }
   function saveDraft(take) {
     withDb(function (db) {
-      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, createdAt: take.createdAt }); } catch (_) {}
+      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], createdAt: take.createdAt }); } catch (_) {}
     });
   }
   function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
@@ -1138,7 +1455,7 @@ function vsMakePackReference(meta) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], createdAt: r.createdAt });
+              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], createdAt: r.createdAt });
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }

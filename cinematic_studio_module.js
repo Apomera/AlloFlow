@@ -1039,6 +1039,15 @@
         : T('cs_banner', 'NotebookLM has no editor and no undo: you set a prompt, then regenerate the whole video (Ultra-only, about 20 per day). The Build and Diagnose tabs help you get that prompt right so you do not waste regenerations.');
     var banner = h('div', { className: 'mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200' }, bannerText);
 
+    // ── Video Studio cross-link (2026-07-02) ── the sibling tool that records
+    // and edits REAL video (screen/webcam, trim, captions) with no NotebookLM
+    // dependency. Optional prop so legacy hosts render unchanged.
+    var vsCrossLink = props.onOpenVideoStudio ? h('div', { className: 'mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs text-sky-200 flex items-center justify-between gap-3 flex-wrap' }, [
+      h('span', { key: 't' }, T('cs_video_studio_hint', 'Want to record your own screen demo instead? The Video Studio records, trims, captions, and exports real video — no NotebookLM needed.')),
+      h('button', { key: 'b', onClick: function () { try { props.onOpenVideoStudio(); } catch (_) {} },
+        className: 'shrink-0 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-1.5' }, T('cs_video_studio_open', '🎥 Open Video Studio'))
+    ]) : null;
+
     // ── tabs ──
     var tabs = h('div', { role: 'tablist', 'aria-label': 'Cinematic Studio sections', className: 'flex flex-wrap gap-2 mb-4' }, [
       h('button', { key: 'b', role: 'tab', 'aria-selected': tab === 'build', className: btn(tab === 'build'), onClick: function () { setTab('build'); } }, T('cs_tab_build', '1. Build a prompt')),
@@ -1323,7 +1332,7 @@
     }, h('div', {
       ref: dialogRef,
       className: 'bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl p-4 sm:p-6 my-4'
-    }, [header, banner, tabs, body]));
+    }, [header, banner, vsCrossLink, tabs, body]));
   }
 
   // ─── Module registration ───────────────────────────────────────────────────

@@ -29478,7 +29478,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 callGemini: callGemini,
                 addToast,
                 t,
-                sourceTopic: sourceTopic || ''
+                sourceTopic: sourceTopic || '',
+                onOpenVideoStudio: () => { setShowCinematicStudio(false); setIsVideoStudioOpen(true); }
             })}
         </CDNModuleGate>
 

@@ -199,6 +199,85 @@ describe('vsPatchWebmDuration', () => {
   });
 });
 
+// ─── vsCrc32 / vsBuildZip / vsReadZip (.allopack format) ─────────────────────
+describe('CRC-32 + ZIP (allopack bundle format)', () => {
+  it('vsCrc32 matches the standard test vector', () => {
+    const bytes = new TextEncoder().encode('123456789');
+    expect(VS.vsCrc32(bytes)).toBe(0xcbf43926);
+  });
+  it('build → read round-trips text and binary entries', () => {
+    const meta = new TextEncoder().encode('{"type":"videoRef"}');
+    const fakeVideo = new Uint8Array(2048).map((_, i) => (i * 31) & 0xff);
+    const zip = VS.vsBuildZip([
+      { name: 'meta.json', data: meta },
+      { name: 'demo.webm', data: fakeVideo },
+    ]);
+    expect(zip[0]).toBe(0x50); // 'PK'
+    expect(zip[1]).toBe(0x4b);
+    const back = VS.vsReadZip(zip);
+    expect(back.map((e) => e.name)).toEqual(['meta.json', 'demo.webm']);
+    expect(Array.from(back[0].data)).toEqual(Array.from(meta));
+    expect(Array.from(back[1].data)).toEqual(Array.from(fakeVideo));
+  });
+  it('bundles are deterministic (same input → same bytes)', () => {
+    const entry = [{ name: 'a.txt', data: new TextEncoder().encode('hello') }];
+    expect(Array.from(VS.vsBuildZip(entry))).toEqual(Array.from(VS.vsBuildZip(entry)));
+  });
+  it('reader skips entries whose bytes were corrupted (CRC mismatch)', () => {
+    const zip = VS.vsBuildZip([{ name: 'a.txt', data: new TextEncoder().encode('hello') }]);
+    const corrupted = new Uint8Array(zip);
+    corrupted[31] ^= 0xff; // flip a byte inside the file data (local header is 30 bytes + 5-char name)
+    corrupted[35] ^= 0xff;
+    expect(VS.vsReadZip(corrupted)).toHaveLength(0);
+    expect(VS.vsReadZip(zip)).toHaveLength(1); // untouched copy still reads
+  });
+  it('empty bundle and garbage input degrade to empty lists', () => {
+    expect(VS.vsReadZip(VS.vsBuildZip([]))).toEqual([]);
+    expect(VS.vsReadZip(new Uint8Array([1, 2, 3]))).toEqual([]);
+  });
+  it('non-ASCII filename characters are sanitized, not corrupted', () => {
+    const zip = VS.vsBuildZip([{ name: 'démo vidéo.webm', data: new Uint8Array([1]) }]);
+    const back = VS.vsReadZip(zip);
+    expect(back).toHaveLength(1);
+    expect(back[0].name).toBe('d_mo vid_o.webm');
+  });
+});
+
+// ─── vsZoomState (zoom/spotlight keyframes) ──────────────────────────────────
+describe('vsZoomState', () => {
+  const kf = { t: 10, x: 0.25, y: 0.75, scale: 2, dur: 3 };
+  it('identity when no keyframes or outside every window', () => {
+    expect(VS.vsZoomState([], 5)).toEqual({ scale: 1, x: 0.5, y: 0.5 });
+    expect(VS.vsZoomState([kf], 5)).toEqual({ scale: 1, x: 0.5, y: 0.5 });
+    expect(VS.vsZoomState([kf], 20)).toEqual({ scale: 1, x: 0.5, y: 0.5 });
+  });
+  it('fully zoomed during the hold', () => {
+    const mid = VS.vsZoomState([kf], 11.5);
+    expect(mid.scale).toBeCloseTo(2);
+    expect(mid.x).toBeCloseTo(0.25);
+    expect(mid.y).toBeCloseTo(0.75);
+  });
+  it('eases smoothly on the entry ramp (half zoom at ramp midpoint)', () => {
+    const half = VS.vsZoomState([kf], 10 - 0.3); // midpoint of the 0.6s ramp
+    expect(half.scale).toBeCloseTo(1.5, 5);
+    expect(half.x).toBeCloseTo(0.375, 5); // halfway from 0.5 toward 0.25
+  });
+  it('eases back out after the hold', () => {
+    const out = VS.vsZoomState([kf], 13 + 0.3);
+    expect(out.scale).toBeGreaterThan(1);
+    expect(out.scale).toBeLessThan(2);
+    expect(VS.vsZoomState([kf], 13 + 0.61).scale).toBeCloseTo(1, 3);
+  });
+  it('ignores non-zooming and malformed keyframes, clamps extremes', () => {
+    expect(VS.vsZoomState([{ t: 10, scale: 1 }], 10)).toEqual({ scale: 1, x: 0.5, y: 0.5 });
+    expect(VS.vsZoomState([{ t: NaN, scale: 3 }], 10)).toEqual({ scale: 1, x: 0.5, y: 0.5 });
+    const wild = VS.vsZoomState([{ t: 10, x: 9, y: -3, scale: 99, dur: 3 }], 11);
+    expect(wild.scale).toBeLessThanOrEqual(4);
+    expect(wild.x).toBeLessThanOrEqual(1);
+    expect(wild.y).toBeGreaterThanOrEqual(0);
+  });
+});
+
 // ─── vsMakePackReference ─────────────────────────────────────────────────────
 describe('vsMakePackReference (pack-size guard)', () => {
   it('produces metadata only — never video bytes', () => {
