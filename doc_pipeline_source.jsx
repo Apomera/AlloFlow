@@ -11371,13 +11371,24 @@ HTML section ${chunkNum}/${chunks.length}:
             doc.registerFontkit(window.fontkit);
             const _regUrl = _ALLO_CJK_URL[_script] || _ALLO_NOTO_URL(_ALLO_SCRIPT_FONT[_script]);
             const _boldUrl = _ALLO_CJK_BOLD_URL[_script] || _ALLO_NOTO_BOLD_URL(_ALLO_SCRIPT_FONT[_script]);
-            const _fetchFont = async (u) => {
+            const _fetchFontOnce = async (u) => {
               // Bounded: a hung CDN must not stall the whole typeset export forever (the outer
               // catch already falls back to dropping non-Latin text + a warning). Both the fetch
               // AND the body read are timeout-wrapped.
               const r = await _withTimeout(fetch(u), 15000, 'Noto font fetch');
               if (!r.ok) throw new Error('HTTP ' + r.status);
               return new Uint8Array(await _withTimeout(r.arrayBuffer(), 15000, 'Noto font bytes'));
+            };
+            // Mirror fallback (2026-07-01): one flaky CDN response was the whole difference between a
+            // correct PDF and silently-dropped non-Latin text — retry the same file on the jsDelivr
+            // Fastly mirror before giving up (all Noto URLs above are cdn.jsdelivr.net).
+            const _fetchFont = async (u) => {
+              try { return await _fetchFontOnce(u); }
+              catch (e0) {
+                if (String(u).indexOf('cdn.jsdelivr.net') === -1) throw e0;
+                try { warnLog('[TypesetTagged] primary font CDN failed (' + ((e0 && e0.message) || 'unknown') + ') — retrying via fastly mirror'); } catch (_) {}
+                return await _fetchFontOnce(String(u).replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net'));
+              }
             };
             const _regBytes = await _fetchFont(_regUrl);
             font = await doc.embedFont(_regBytes, { subset: true });
@@ -27157,6 +27168,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = { ...(config || exportConfig), isWorksheet };
+      // Assessment mode (2026-07-01): a graded export must be student-safe end to end — suppress the
+      // visible teacher answer key even when that toggle is on (one file must never carry both the
+      // assessment promise and a key appendix) and blank the machine-readable answers (post-process
+      // at the bottom of this function).
+      if (cfg.assessmentMode === true) cfg.includeTeacherKey = false;
       // Escape raw text (e.g. the lesson topic) before interpolating into the document body, so a
       // stray < & > displays as text rather than garbling/injecting markup (WCAG 4.1.1).
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -30259,8 +30275,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       </body>
       </html>
       `;
+      // Assessment-mode post-process: BLANK the data-correct answer markers (readable in view-source —
+      // fine for practice self-check, not for a graded assessment) and hide the self-check controls.
+      // The attribute itself STAYS (empty) because the submission collectors select MCQs via
+      // .question[data-correct] — student answers still save and submit; they just can't be
+      // self-graded client-side, and the file no longer contains the key in any form.
+      let _packHtml = rawHtml;
+      if (cfg.assessmentMode === true) {
+        _packHtml = _packHtml
+          .replace(/ data-correct="\d+"/g, ' data-correct=""')
+          .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}</style></head>');
+      }
       // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
-      const sanitized = sanitizeStyleForWCAG(rawHtml);
+      const sanitized = sanitizeStyleForWCAG(_packHtml);
       return sanitized.html;
   };
 

@@ -503,6 +503,14 @@ function ExportPreviewView(props) {
                       <input type="checkbox" checked={exportConfig.includeStudentResponses} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeStudentResponses: e.target.checked }))} className="rounded" />
                       📝 Student Responses
                     </label>
+                    {/* Assessment mode (Aaron 2026-07-01): interactive quizzes self-grade via a hidden
+                        data-correct marker per question — anyone can read it in view-source. Fine for
+                        practice; not for a graded test. This strips the markers + self-check button and
+                        suppresses the teacher key, while answers still save/submit normally. */}
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title="For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers — they just can't look up or self-grade against the key.">
+                      <input type="checkbox" checked={exportConfig.assessmentMode === true} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, assessmentMode: e.target.checked }))} className="rounded" />
+                      🔒 Assessment mode (no embedded answers)
+                    </label>
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.singleFileHtml} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, singleFileHtml: e.target.checked }))} className="rounded" />
                       📄 Single file (.html, no zip)
@@ -1113,14 +1121,18 @@ function ExportPreviewView(props) {
                                   // an explicit teacher opt-in (default OFF). Same rule here: include only
                                   // when exportConfig.includeAnswerKey is explicitly true; otherwise say
                                   // where the key lives so teachers aren't surprised.
-                                  if (exportConfig && exportConfig.includeAnswerKey === true) {
+                                  // 2026-07-01 (Aaron decision): the visible "📎 Teacher Answer Key"
+                                  // checkbox in Export Options now controls this too (default OFF), so
+                                  // the toggle is discoverable without a config file. Assessment mode
+                                  // wins if both are set.
+                                  if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
                                     out.push('### Answer Key', '');
                                     d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
                                       out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
                                       if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
                                     out.push('');
                                   } else {
-                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Use the Teacher Copy export for the key.*', '');
+                                    out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
                                   }
                                 }
                                 else if (ty === 'outline' && d && Array.isArray(d.branches)) {

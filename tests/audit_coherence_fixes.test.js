@@ -228,3 +228,37 @@ describe('RTL threading into office exports (export-format review #2)', () => {
     expect(vpNow).toMatch(/\(spec\.rtl \? ' dir="rtl"' : ''\)/);
   });
 });
+
+describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2026-07-01)', () => {
+  const dpNow = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+  const vpNow2 = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
+  const epNow = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+  it('C26: assessment mode blanks data-correct (attribute kept for submission collectors) + hides quiz controls + forces teacher key off', () => {
+    expect(dpNow).toMatch(/if \(cfg\.assessmentMode === true\) cfg\.includeTeacherKey = false;/);
+    expect(dpNow).toContain('.replace(/ data-correct="\\d+"/g, \' data-correct=""\')');
+    expect(dpNow).toMatch(/\.quiz-controls\{display:none !important\}/);
+    // the submission collectors MUST keep selecting via [data-correct] or assessment answers stop saving
+    expect((dpNow.match(/\.question\[data-correct\]/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+  it('C27: assessment-mode checkbox exists in export options and rides exportConfig', () => {
+    expect(epNow).toMatch(/exportConfig\.assessmentMode === true/);
+    expect(epNow).toMatch(/assessmentMode: e\.target\.checked/);
+  });
+  it('C28: NotebookLM answer key follows the visible Teacher Answer Key toggle; assessment mode wins', () => {
+    expect(epNow).toMatch(/exportConfig\.assessmentMode !== true && \(exportConfig\.includeAnswerKey === true \|\| exportConfig\.includeTeacherKey === true\)/);
+  });
+  it('C29: tagged-PDF export auto-runs deterministic restoration (capped, adopt-only-if-not-worse, revertable)', () => {
+    expect(vpNow2).toMatch(/let _result = await createTaggedPdf\(bytes, pdfFixResult/);
+    expect(vpNow2).toMatch(/_res0 > 0 && _res0 <= 200/);
+    expect(vpNow2).toMatch(/_res2 != null && _res2 <= _res0/);
+    expect(vpNow2).toMatch(/_preCmdHtml: _pre \} : prev\);/);
+    expect(vpNow2).toMatch(/if \(_autoRestoreLine\) _rpt\.push\(_autoRestoreLine\);/);
+  });
+  it('C30: typeset unicode warning points at the word-level Diff / Verification panel', () => {
+    expect(vpNow2).toMatch(/toasts\.typeset_unicode_verify/);
+  });
+  it('C31: typeset font fetch retries via the fastly jsDelivr mirror before dropping non-Latin text', () => {
+    expect(dpNow).toMatch(/replace\('cdn\.jsdelivr\.net', 'fastly\.jsdelivr\.net'\)/);
+    expect(dpNow).toMatch(/const _fetchFont = async \(u\) => \{\s*\n\s*try \{ return await _fetchFontOnce\(u\); \}/);
+  });
+});

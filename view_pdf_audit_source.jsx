@@ -9269,7 +9269,49 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const title = (_ov.title && _ov.title.trim()) || _dm.title;
                               const lang = (_ov.lang && _ov.lang.trim()) || _dm.lang || 'en';
                               const _author = (_ov.author && _ov.author.trim()) || undefined;
-                              const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
+                              let _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(pdfFixResult) });
+                              // ── Auto-recovery on export (2026-07-01, Aaron: recovery should run without user
+                              // intervention when it safely can) ── The manual "↻ Re-run with restoration" stages
+                              // 1–2 are fully DETERMINISTIC (fuzzy word splice + sentence anchor/appendix — no AI,
+                              // no network), so when the post-save round-trip finds residual missing source words
+                              // we run them right here and re-tag ONCE, and the user's SAME click downloads the
+                              // better file. Never silent (pinned-report line shows before→after), never worse
+                              // (adopted only if the re-tag passes its own checks and residual didn't grow),
+                              // undoable (_preCmdHtml → the existing ↩ Revert). Capped at 200 residuals: beyond
+                              // that it's usually OCR noise on a scan — that stays a human call via the manual
+                              // Tier-B button and the word-level Diff.
+                              let _autoRestoreLine = null;
+                              try {
+                                const _td0 = _result && _result.roundTrip && _result.roundTrip.textDiff;
+                                const _res0 = _td0 && typeof _td0.residualMissingCount === 'number' ? _td0.residualMissingCount : 0;
+                                const _srcTxt = pdfFixResult.sourceText || '';
+                                if (_res0 > 0 && _res0 <= 200 && Array.isArray(_td0.missingTokens) && _td0.missingTokens.length && _srcTxt && _docPipeline && typeof _docPipeline.applyWordRestoration === 'function') {
+                                  let _h = pdfFixResult.accessibleHtml, _placed = [], _left = _td0.missingTokens.map(w => ({ word: w }));
+                                  try { const r1 = _docPipeline.applyWordRestoration(_h, _left, _srcTxt); if (r1 && r1.html) { _h = r1.html; _placed = r1.restored || []; _left = r1.unplaceable || []; } } catch (_e1) { warnLog('[AutoRestore] word splice failed: ' + (_e1 && _e1.message)); }
+                                  if (_left.length > 0 && typeof _docPipeline.restoreSentencesDeterministic === 'function') {
+                                    try { const r2 = _docPipeline.restoreSentencesDeterministic(_h, _left, _srcTxt); if (r2 && r2.html) { _h = r2.html; _placed = _placed.concat(r2.restoredViaSentence || []); _left = r2.stillMissing || []; } } catch (_e2) { warnLog('[AutoRestore] sentence anchor failed: ' + (_e2 && _e2.message)); }
+                                  }
+                                  if (_placed.length > 0 || _left.length < _td0.missingTokens.length) {
+                                    const _txt = _h.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+                                    const _fr2 = { ...pdfFixResult, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt };
+                                    const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: 'Remediated for accessibility by AlloFlow', modDate: _stableModDate(_fr2) });
+                                    const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
+                                    const _res2 = _td2 && typeof _td2.residualMissingCount === 'number' ? _td2.residualMissingCount : null;
+                                    if (_r2 && _r2.bytes && !(_r2.roundTrip && _r2.roundTrip.ok === false) && _res2 != null && _res2 <= _res0) {
+                                      const _pre = pdfFixResult.accessibleHtml;
+                                      setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre } : prev);
+                                      _result = _r2;
+                                      _autoRestoreLine = { tone: 'success', text: 'Auto-recovery: ' + _placed.length + ' missing source word(s) restored inline' + (_left.length > 0 ? ' (' + _left.length + ' preserved in the Content Recovery appendix)' : '') + ' before tagging — residual missing ' + _res0 + ' → ' + _res2 + '. ↩ Revert undoes it.' };
+                                    } else {
+                                      _autoRestoreLine = { tone: 'info', text: 'Auto-recovery attempted on ' + _res0 + ' residual missing word(s) but did not improve the result — the original output was kept. Use ↻ Re-run with restoration to review manually.' };
+                                    }
+                                  } else {
+                                    _autoRestoreLine = { tone: 'info', text: _res0 + ' residual missing word(s) could not be auto-placed — open the word-level Diff to review them (often cosmetic: quotes, form fills, hyphenation).' };
+                                  }
+                                } else if (_res0 > 200) {
+                                  _autoRestoreLine = { tone: 'warn', text: _res0 + ' residual missing words — too many to auto-restore safely (often OCR noise on scans). Open the word-level Diff, then ↻ Re-run with restoration if they are real content.' };
+                                }
+                              } catch (_eAuto) { warnLog('[AutoRestore] skipped: ' + (_eAuto && _eAuto.message)); }
                               // createTaggedPdf returns { bytes, summary, pdfUa1Checks }.
                               // Tolerate older shapes for users on stale CDN-cached modules.
                               const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
@@ -9340,6 +9382,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               // (lastTaggedReport) the teacher can read at their own
                               // pace; a single short toast points at it.
                               const _rpt = [];
+                              if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
                               if (ocrTextLayer && typeof ocrTextLayer.coveragePct === 'number' && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
                                 _rpt.push({ tone: 'error', text: 'Searchable text layer covers ' + ocrTextLayer.coveragePct + '% of the scanned text — ' + (ocrTextLayer.droppedChars || 0) + ' character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud.' });
                               }
@@ -9454,7 +9497,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 addToast('📝 ' + _s.fieldsCreated + ' ' + (t('toasts.typeset_fields') || 'fillable form fields embedded and tagged — students can type into the PDF.'), 'success');
                               }
                               if (_s.unicodeTypesetWarning) {
-                                addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice, 'warning');
+                                // Aaron 2026-07-01: don't just warn — point at the tools that IDENTIFY the
+                                // affected text (word-level Diff / Verification panel), since that's how a
+                                // teacher decides whether the drop matters before distributing.
+                                addToast('⚠ ' + (t('toasts.typeset_unicode_warning') || 'Some text could not be typeset honestly: ') + _s.unicodeTypesetWarning.advice + ' ' + (t('toasts.typeset_unicode_verify') || 'To see exactly which passages are affected, open the word-level Diff in the Verification panel before distributing.'), 'warning');
                               }
                               addToast((_s.uaDeclared ? '✅ ' : '📄 ') + (t('toasts.typeset_tagged_done') || 'Typeset tagged PDF ready — clean regenerated layout (not the original design), full structure tags.') + (_s.uaDeclared ? ' PDF/UA declared.' : ''), 'success');
                             } catch (err) { addToast((t('toasts.typeset_failed') || 'Typeset tagging failed: ') + (err?.message || 'unknown'), 'error'); }
