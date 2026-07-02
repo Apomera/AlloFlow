@@ -13688,6 +13688,298 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
   const getChunkState = () => _chunkState;
 
   // ── PDF Fix & Verify: Audit → Extract → Transform → Verify → axe-core → Auto-fix ──
+  // ── S2 phase extraction (deep dive 2026-07-02, wave 3): the self-correcting fix loop ──
+  // Extracted VERBATIM from fixAndVerifyPdf's Step 4 (body byte-identical, original
+  // indentation kept; the decisions inside delegate to the golden-tested _alloLoopPolicy).
+  // Explicit contract:
+  //   in : { accessibleHtml, verification, axeResults,
+  //          updateProgress, applyDetectedLang }   — the run state after Step 3 + the two
+  //          run-scoped callbacks that close over fixAndVerifyPdf's onProgress/lang state
+  //   out: { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations }
+  // All other helpers (aiFixChunked, audits, deterministic nets) and host bindings
+  // (addToast, pdfAutoFixPasses, pdfTargetScore) resolve from the factory closure exactly
+  // as before. First phase carved out of the ~4,100-line fixAndVerifyPdf (S2); precondition
+  // work for the per-run ctx (S1).
+  const _runMainFixLoop = async (loopCtx) => {
+    let accessibleHtml = loopCtx.accessibleHtml;
+    let verification = loopCtx.verification;
+    let axeResults = loopCtx.axeResults;
+    // Run-scoped callbacks that live INSIDE fixAndVerifyPdf — threaded through the ctx,
+    // never free variables (the rename-dangler crash class).
+    const updateProgress = loopCtx.updateProgress || function () {};
+    const _applyDetectedLang = loopCtx.applyDetectedLang || function (h) { return h; };
+      let autoFixPasses = 0;
+      const maxFixPasses = pdfAutoFixPasses;
+      let bestHtml = accessibleHtml;
+      let bestAiScore = verification ? verification.score : 0;
+      let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
+
+      const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
+      const _totalIssues = bestAxeViolations + _aiIssueCount;
+      const _targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+      // A PARTIAL audit (throttle failed some sections) scored only PART of the document, so a high score does
+      // NOT verifiably meet the target — the un-audited sections could still have issues. Don't let a partial
+      // "target met" stop the loop before it starts; keep going to try for complete coverage. This mirrors the
+      // per-pass break below, which already refuses to stop on a partial re-audit (`!_rePartial`). The loop is
+      // still bounded by maxFixPasses + the plateau / consecutive-fix-error stops. (2026-06-24, maintainer ask.)
+      const _auditPartial = !!(verification && verification._partialAudit);
+      if (maxFixPasses > 0 && (_totalIssues > 0 || _auditPartial) && (bestAxeViolations > 0 || bestAiScore < _targetScore || _auditPartial)) {
+        // Emit live remediation session start so UI shows progress panel
+        warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
+        // Emit specific issues list for UI to display during fix passes
+        var _issuesList = [];
+        if (verification && verification.issues) {
+          _issuesList = verification.issues.map(function(iss) { return typeof iss === 'string' ? iss : (iss.issue || iss.description || String(iss)); }).slice(0, 12);
+        }
+        if (axeResults) {
+          (axeResults.critical || []).forEach(function(v) { _issuesList.push('🔴 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.serious || []).forEach(function(v) { _issuesList.push('🟠 ' + v.description + ' (' + v.id + ')'); });
+          (axeResults.moderate || []).forEach(function(v) { _issuesList.push('🟡 ' + v.description); });
+        }
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore } })); }, 0); } catch(e) {}
+        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
+        // Persistence counters: a SINGLE bad/flat pass should not end the whole loop —
+        // AI fixes are stochastic, so we keep going (still below target) and only give up
+        // after CONSECUTIVE regressions/stalls. The loop stays bounded by maxFixPasses and
+        // by the target / zero-issue breaks below, so this can never run away.
+        let consecutiveRegressions = 0;
+        let stallCount = 0;
+        let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
+        let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
+        for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
+          // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
+          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
+          const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
+          const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
+          const _passTotal = _passAxeCount + _passAiCount;
+          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passTotal} issue${_passTotal !== 1 ? 's' : ''} remaining — ${_passAxeCount} axe-core, ${_passAiCount} AI-flagged)${_passTotal === 0 ? ' \u2714 verifying...' : ''}...`);
+
+          // Save snapshot before fix attempt
+          const snapshotHtml = accessibleHtml;
+
+          // AI attempts targeted fixes for remaining violations from BOTH engines
+          const axeInstructions = []
+            .concat((axeResults ? axeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
+            .concat((axeResults ? axeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
+            .concat((axeResults ? axeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
+          const aiInstructions = verification && verification.issues
+            ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
+            : [];
+          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n')
+            + (_lastPassFeedback ? '\n\n' + _lastPassFeedback : '');
+          _lastPassFeedback = '';
+
+          try {
+            // Chunked fix across the entire document (no truncation)
+            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
+            if (fixedHtml && fixedHtml !== accessibleHtml) {
+              accessibleHtml = fixedHtml;
+            }
+            _consecFixErrors = 0;
+          } catch(fixErr) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
+            // B18 (2026-06-18): a SINGLE (likely transient) chunk-fix error must NOT kill ALL remaining
+            // passes — skip this pass and let the next one retry. Only bail after 2 CONSECUTIVE failures
+            // (a persistent / quota error where re-running won't help). The next pass runs its own
+            // deterministic cleanup, and the loop's stall detector still bounds a no-progress run.
+            if (++_consecFixErrors >= 2) { warnLog('[Auto-fix] 2 consecutive AI fix failures — stopping the fix loop.'); break; }
+            continue;
+          }
+
+          // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
+          const _postListFix = fixListViolations(accessibleHtml);
+          if (_postListFix.fixCount > 0) { accessibleHtml = _postListFix.html; warnLog(`  Deterministic: fixed ${_postListFix.fixCount} list issues`); }
+          const _postContrastFix = fixContrastViolations(accessibleHtml);
+          if (_postContrastFix.fixCount > 0) { accessibleHtml = _postContrastFix.html; warnLog(`  Deterministic: fixed ${_postContrastFix.fixCount} contrast issues`); }
+          // Deterministic WCAG gap closures
+          accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
+          // Fix invalid ARIA roles
+          const __validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+          const __roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
+          let __roleFixCount = 0;
+          accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (m, role) => {
+            const lower = role.toLowerCase().trim();
+            if (__validRoles.includes(lower)) return `role="${lower}"`;
+            if (__roleCorrections[lower]) { __roleFixCount++; return `role="${__roleCorrections[lower]}"`; }
+            __roleFixCount++; return '';
+          });
+          if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
+          // Lang attribute: preserve a valid attribute UNLESS the audit detected a different non-English
+          // language (override the pipeline's default 'en' on an ELL doc); fill missing/invalid from the
+          // audit-detected language, then a word-form fallback, then 'en'. (shared helper, 2026-06-20)
+          accessibleHtml = _applyDetectedLang(accessibleHtml);
+
+          // $3 (deep dive 2026-07-02): a pass where the AI fix returned the original (all chunks
+          // rejected) AND every deterministic cleanup was a no-op used to pay a full chunked
+          // re-audit + an axe iframe run on byte-identical HTML — results guaranteed identical
+          // to the current verification/axeResults. Skip the re-audit, count it as a stall
+          // (bounded exactly like a no-improvement pass), and tell the next pass what happened.
+          if (accessibleHtml === snapshotHtml) {
+            autoFixPasses++;
+            stallCount++;
+            _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: no changes produced — skipping re-audit of identical HTML (stall ${stallCount}/2)`);
+            if (stallCount >= 2) {
+              warnLog(`[Auto-fix] Plateau: no changes for ${stallCount} consecutive passes, stopping`);
+              break;
+            }
+            continue;
+          }
+
+          // Re-audit with 1 AI engine + axe-core ($1, deep dive 2026-07-02): this used to fire
+          // TWO auditOutputAccessibility calls — but they were byte-identical prompts at
+          // temperature=0, so the "second opinion" was a near-duplicate: reSD/reSEM computed from
+          // the pair were ~0 and the documented 1.5×SEM plateau threshold always degenerated to
+          // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
+          // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
+          updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
+          const [reVerify1, reAxe] = await Promise.all([
+            auditOutputAccessibility(accessibleHtml),
+            runAxeAudit(accessibleHtml)
+          ]);
+
+          const reScores = [reVerify1].map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) (vision-parseaudit-nan)
+          const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
+          const reSD = 0; // single audit — dispersion unknown; minDetectable's constant floor (2) governs
+          const reSEM = 0;
+          const reVerify = reVerify1 || null;
+          if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
+          const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
+          autoFixPasses++;
+
+          // Partial-audit guard (HIGH #1, 2026-06-19): under a Canvas-throttle storm the chunked
+          // auditOutputAccessibility swallows failed chunks and scores ONLY the sections that
+          // returned — fewer sections → fewer violations found → an artificially HIGH score (a live
+          // run logged "2/3 sections returned (1 FAILED)" twice). A partial re-audit's AI score must
+          // therefore NOT be trusted to satisfy a stop or promote keep-best. Treat >20% audit-chunk
+          // loss on EITHER engine as non-authoritative for this pass's AI-driven gating. (axe runs on
+          // the FULL doc, so newAxeViolations stays trustworthy and still drives axe-only progress.)
+          const _auditCoverage = function(v) { return (v && v.chunksRequested) ? (v.chunksAudited || 0) / v.chunksRequested : 1; };
+          const _reCoverage = _auditCoverage(reVerify1);
+          const _rePartial = _reCoverage < 0.8;
+          if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
+
+          // Regression guard — decisions via the canonical, golden-tested policy (S3 2026-07-02;
+          // tests/loop_policy_golden.test.js pins the boundaries). Semantics unchanged: an
+          // axe regression beyond ±2 always reverts; an AI drop >5 reverts only when no axe
+          // violation was fixed to justify it (the 2026-06-19 AND-only guard fix).
+          const _policyArgs = { newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations };
+          if (_alloLoopPolicy.shouldRevert(_policyArgs)) {
+            const _why = _alloLoopPolicy.revertReason(_policyArgs);
+            // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
+            // from the last-good state (best*/axeResults/verification are untouched here, so
+            // the next pass re-attempts the same remaining violations). Give up only after
+            // 2 CONSECUTIVE regressions.
+            accessibleHtml = snapshotHtml;
+            // $7b: a bare retry re-sends the identical prompt against the identical (reverted)
+            // HTML — pure re-roll. Tell the model what just failed so the retry distribution
+            // actually changes.
+            _lastPassFeedback = 'NOTE: the previous fix attempt was REVERTED because it ' + _why + '. Take a different, more conservative approach: change only what each violation requires and leave all other content untouched.';
+            consecutiveRegressions++;
+            if (consecutiveRegressions >= 2) {
+              warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — ${consecutiveRegressions} consecutive reverts, stopping`);
+              if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, stopping`, 'info');
+              break;
+            }
+            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTED, retrying`);
+            if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, retrying`, 'info');
+            continue;
+          }
+          consecutiveRegressions = 0;
+
+          // Plateau detection (below) compares THIS pass against the PREVIOUS best — capture
+          // it BEFORE we overwrite best* here. Otherwise the comparison is new-vs-itself
+          // (always "no improvement") and the loop breaks after a single pass regardless of
+          // the configured pass count (default 8, slider up to 15). new-vs-prev mirrors the
+          // correct pattern in runAutonomousRemediation.
+          const prevBestAiScore = bestAiScore;
+          const prevBestAxeViolations = bestAxeViolations;
+          if (reVerify) verification = reVerify;
+          if (reAxe) axeResults = reAxe;
+          // Keep-best (2026-06-19): only promote this pass to the shipped "best" if it is genuinely
+          // at least as good — a higher AI score, or fewer axe violations without an AI regression.
+          // A within-tolerance DROP stays as the working state (exploration through the noisy AI
+          // rubric) but must NOT overwrite a better bestHtml, or we'd ship the degraded version.
+          // bestHtml is what the pipeline ships (restored after the loop).
+          // Under a partial audit the AI score is inflated, so promote ONLY on a real axe gain
+          // (full-doc, reliable); otherwise use the normal AI-or-axe rule.
+          const _passIsBest = _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: _rePartial }); // S3: golden-tested policy
+          if (_passIsBest) {
+            bestHtml = accessibleHtml;
+            bestAiScore = newAiScore;
+            bestAxeViolations = newAxeViolations;
+          }
+
+          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
+
+          // Emit per-pass completion for live UI. snapshotHtml captured the BEFORE
+          // state of this pass; passing it as originalHtml gives the diff view
+          // something to compare against. integrityPassed now reflects a REAL
+          // word-overlap check of this pass (before→after) instead of a hardcoded
+          // true; aiVerified is false because this loop runs a re-AUDIT, not an AI
+          // content-preservation verifier — claiming "AI verified content preserved"
+          // here was an overclaim (honesty fix).
+          var _stepIntegrityPassed = false;
+          try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+
+          // If BOTH engines report 0 actionable issues, stop regardless of score.
+          // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
+          // in that case we have NO AI signal, so a null audit must NOT be read as
+          // "AI saw zero issues". Require a real AI result before claiming dual-clean;
+          // surface that AI verification was unavailable so an axe-only clean isn't
+          // silently attributed to dual verification. The loop falls through (bounded by
+          // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
+          if (!reVerify) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
+            if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
+          } else if (newAxeViolations === 0 && !_rePartial && (!reVerify.issues || reVerify.issues.length === 0)) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
+            break;
+          }
+
+          // If BOTH engines are satisfied, stop
+          const targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
+          if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
+            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
+            break;
+          }
+
+          // Plateau detection — compare against the PREVIOUS best (captured before the best*
+          // update above), not the just-updated value. Policy: axe gain always counts; AI gain
+          // must clear the minimum-detectable floor (S3 golden-tested; reSEM is 0 since $1, so
+          // the floor of 2 governs).
+          if (!_alloLoopPolicy.improved({ newAi: newAiScore, prevBestAi: prevBestAiScore, newAxe: newAxeViolations, prevBestAxe: prevBestAxeViolations, minDetectable: Math.round(reSEM * 1.5) }) && fixPass > 0) {
+            // One flat pass isn't a plateau — AI is stochastic, so the next pass often makes
+            // progress. Require 2 CONSECUTIVE non-improving passes before giving up (we're
+            // still below target here). Any improvement resets the counter.
+            stallCount++;
+            if (stallCount >= 2) {
+              warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement for ${stallCount} consecutive passes, stopping`);
+              break;
+            }
+            warnLog(`[Auto-fix] No improvement on pass ${fixPass + 1} (stall ${stallCount}/2) — continuing`);
+          } else {
+            stallCount = 0;
+          }
+        }
+        // Emit session complete for live UI
+        try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
+      }
+
+      // Keep-best (2026-06-19): the loop's working `accessibleHtml` can have drifted to a within-
+      // tolerance-lower (or just-reverted) state, but bestHtml holds the highest-scoring verified
+      // version the loop produced. Ship THAT — the post-loop cleanup + content recovery + the final
+      // authoritative audit (~line 15063) then all operate on the best, so we never deliver a worse
+      // document than the loop achieved (this is the fix for "audited 89 but shipped 85"). No-op when
+      // the loop didn't run or no pass beat the baseline (bestHtml === accessibleHtml).
+      if (bestHtml && bestHtml !== accessibleHtml) {
+        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
+        accessibleHtml = bestHtml;
+      }
+    return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations };
+  };
+
   const fixAndVerifyPdf = async (batchOverrides = null) => {
     // ── Unified pipeline: supports both single-file UI and batch mode ──
     const _isBatch = !!batchOverrides;
@@ -16720,275 +17012,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // ── Step 4: Self-correcting AI fix loop with regression guard ──
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
       _pipeStepStart(4);
-      let autoFixPasses = 0;
-      const maxFixPasses = pdfAutoFixPasses;
-      let bestHtml = accessibleHtml;
-      let bestAiScore = verification ? verification.score : 0;
-      let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
-
-      const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
-      const _totalIssues = bestAxeViolations + _aiIssueCount;
-      const _targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
-      // A PARTIAL audit (throttle failed some sections) scored only PART of the document, so a high score does
-      // NOT verifiably meet the target — the un-audited sections could still have issues. Don't let a partial
-      // "target met" stop the loop before it starts; keep going to try for complete coverage. This mirrors the
-      // per-pass break below, which already refuses to stop on a partial re-audit (`!_rePartial`). The loop is
-      // still bounded by maxFixPasses + the plateau / consecutive-fix-error stops. (2026-06-24, maintainer ask.)
-      const _auditPartial = !!(verification && verification._partialAudit);
-      if (maxFixPasses > 0 && (_totalIssues > 0 || _auditPartial) && (bestAxeViolations > 0 || bestAiScore < _targetScore || _auditPartial)) {
-        // Emit live remediation session start so UI shows progress panel
-        warnLog(`[Auto-fix] Starting fix loop: ${_totalIssues} issues (${bestAxeViolations} axe, ${_aiIssueCount} AI), score ${bestAiScore}, target ${_targetScore}`);
-        // Emit specific issues list for UI to display during fix passes
-        var _issuesList = [];
-        if (verification && verification.issues) {
-          _issuesList = verification.issues.map(function(iss) { return typeof iss === 'string' ? iss : (iss.issue || iss.description || String(iss)); }).slice(0, 12);
-        }
-        if (axeResults) {
-          (axeResults.critical || []).forEach(function(v) { _issuesList.push('🔴 ' + v.description + ' (' + v.id + ')'); });
-          (axeResults.serious || []).forEach(function(v) { _issuesList.push('🟠 ' + v.description + ' (' + v.id + ')'); });
-          (axeResults.moderate || []).forEach(function(v) { _issuesList.push('🟡 ' + v.description); });
-        }
-        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:fix-issues-detected', { detail: { issues: _issuesList, score: bestAiScore, axeViolations: bestAxeViolations, target: _targetScore } })); }, 0); } catch(e) {}
-        try { setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: maxFixPasses, chunkSizes: [], timestamp: Date.now() } })); }, 0); } catch(e) {}
-        // Persistence counters: a SINGLE bad/flat pass should not end the whole loop —
-        // AI fixes are stochastic, so we keep going (still below target) and only give up
-        // after CONSECUTIVE regressions/stalls. The loop stays bounded by maxFixPasses and
-        // by the target / zero-issue breaks below, so this can never run away.
-        let consecutiveRegressions = 0;
-        let stallCount = 0;
-        let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
-        let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
-        for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
-          // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
-          try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
-          const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
-          const _passAiCount = verification && verification.issues ? verification.issues.length : 0;
-          const _passTotal = _passAxeCount + _passAiCount;
-          updateProgress(4, `Improving accessibility — pass ${fixPass + 1} of ${maxFixPasses} (${_passTotal} issue${_passTotal !== 1 ? 's' : ''} remaining — ${_passAxeCount} axe-core, ${_passAiCount} AI-flagged)${_passTotal === 0 ? ' \u2714 verifying...' : ''}...`);
-
-          // Save snapshot before fix attempt
-          const snapshotHtml = accessibleHtml;
-
-          // AI attempts targeted fixes for remaining violations from BOTH engines
-          const axeInstructions = []
-            .concat((axeResults ? axeResults.critical || [] : []).map(v => `CRITICAL (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.serious || [] : []).map(v => `SERIOUS (axe-core): ${v.description} (${v.id}, ${v.nodes} elements)`))
-            .concat((axeResults ? axeResults.moderate || [] : []).map(v => `MODERATE (axe-core): ${v.description} (${v.id})`));
-          const aiInstructions = verification && verification.issues
-            ? verification.issues.map(i => `AI-FLAGGED: ${i.issue || i}`)
-            : [];
-          const violationInstructions = axeInstructions.concat(aiInstructions).join('\n')
-            + (_lastPassFeedback ? '\n\n' + _lastPassFeedback : '');
-          _lastPassFeedback = '';
-
-          try {
-            // Chunked fix across the entire document (no truncation)
-            const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`);
-            if (fixedHtml && fixedHtml !== accessibleHtml) {
-              accessibleHtml = fixedHtml;
-            }
-            _consecFixErrors = 0;
-          } catch(fixErr) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} AI fix failed:`, fixErr);
-            // B18 (2026-06-18): a SINGLE (likely transient) chunk-fix error must NOT kill ALL remaining
-            // passes — skip this pass and let the next one retry. Only bail after 2 CONSECUTIVE failures
-            // (a persistent / quota error where re-running won't help). The next pass runs its own
-            // deterministic cleanup, and the loop's stall detector still bounds a no-progress run.
-            if (++_consecFixErrors >= 2) { warnLog('[Auto-fix] 2 consecutive AI fix failures — stopping the fix loop.'); break; }
-            continue;
-          }
-
-          // Deterministic cleanup after each AI fix pass — catches AI-introduced errors
-          const _postListFix = fixListViolations(accessibleHtml);
-          if (_postListFix.fixCount > 0) { accessibleHtml = _postListFix.html; warnLog(`  Deterministic: fixed ${_postListFix.fixCount} list issues`); }
-          const _postContrastFix = fixContrastViolations(accessibleHtml);
-          if (_postContrastFix.fixCount > 0) { accessibleHtml = _postContrastFix.html; warnLog(`  Deterministic: fixed ${_postContrastFix.fixCount} contrast issues`); }
-          // Deterministic WCAG gap closures
-          accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
-          // Fix invalid ARIA roles
-          const __validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
-          const __roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
-          let __roleFixCount = 0;
-          accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (m, role) => {
-            const lower = role.toLowerCase().trim();
-            if (__validRoles.includes(lower)) return `role="${lower}"`;
-            if (__roleCorrections[lower]) { __roleFixCount++; return `role="${__roleCorrections[lower]}"`; }
-            __roleFixCount++; return '';
-          });
-          if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
-          // Lang attribute: preserve a valid attribute UNLESS the audit detected a different non-English
-          // language (override the pipeline's default 'en' on an ELL doc); fill missing/invalid from the
-          // audit-detected language, then a word-form fallback, then 'en'. (shared helper, 2026-06-20)
-          accessibleHtml = _applyDetectedLang(accessibleHtml);
-
-          // $3 (deep dive 2026-07-02): a pass where the AI fix returned the original (all chunks
-          // rejected) AND every deterministic cleanup was a no-op used to pay a full chunked
-          // re-audit + an axe iframe run on byte-identical HTML — results guaranteed identical
-          // to the current verification/axeResults. Skip the re-audit, count it as a stall
-          // (bounded exactly like a no-improvement pass), and tell the next pass what happened.
-          if (accessibleHtml === snapshotHtml) {
-            autoFixPasses++;
-            stallCount++;
-            _lastPassFeedback = 'NOTE: the previous fix attempt returned the document UNCHANGED. Make the specific, targeted edits the violations above require this time.';
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: no changes produced — skipping re-audit of identical HTML (stall ${stallCount}/2)`);
-            if (stallCount >= 2) {
-              warnLog(`[Auto-fix] Plateau: no changes for ${stallCount} consecutive passes, stopping`);
-              break;
-            }
-            continue;
-          }
-
-          // Re-audit with 1 AI engine + axe-core ($1, deep dive 2026-07-02): this used to fire
-          // TWO auditOutputAccessibility calls — but they were byte-identical prompts at
-          // temperature=0, so the "second opinion" was a near-duplicate: reSD/reSEM computed from
-          // the pair were ~0 and the documented 1.5×SEM plateau threshold always degenerated to
-          // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
-          // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
-          updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          const [reVerify1, reAxe] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml),
-            runAxeAudit(accessibleHtml)
-          ]);
-
-          const reScores = [reVerify1].map(v => v ? v.score : null).filter(s => Number.isFinite(s)); // reject null/NaN/undefined (degraded audits) (vision-parseaudit-nan)
-          const newAiScore = reScores.length > 0 ? Math.round(reScores.reduce((a, b) => a + b, 0) / reScores.length) : bestAiScore;
-          const reSD = 0; // single audit — dispersion unknown; minDetectable's constant floor (2) governs
-          const reSEM = 0;
-          const reVerify = reVerify1 || null;
-          if (reVerify) { reVerify.score = newAiScore; reVerify._sem = reSEM; reVerify._sd = reSD; reVerify._scores = reScores; }
-          const newAxeViolations = reAxe ? reAxe.totalViolations : bestAxeViolations;
-          autoFixPasses++;
-
-          // Partial-audit guard (HIGH #1, 2026-06-19): under a Canvas-throttle storm the chunked
-          // auditOutputAccessibility swallows failed chunks and scores ONLY the sections that
-          // returned — fewer sections → fewer violations found → an artificially HIGH score (a live
-          // run logged "2/3 sections returned (1 FAILED)" twice). A partial re-audit's AI score must
-          // therefore NOT be trusted to satisfy a stop or promote keep-best. Treat >20% audit-chunk
-          // loss on EITHER engine as non-authoritative for this pass's AI-driven gating. (axe runs on
-          // the FULL doc, so newAxeViolations stays trustworthy and still drives axe-only progress.)
-          const _auditCoverage = function(v) { return (v && v.chunksRequested) ? (v.chunksAudited || 0) / v.chunksRequested : 1; };
-          const _reCoverage = _auditCoverage(reVerify1);
-          const _rePartial = _reCoverage < 0.8;
-          if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
-
-          // Regression guard — decisions via the canonical, golden-tested policy (S3 2026-07-02;
-          // tests/loop_policy_golden.test.js pins the boundaries). Semantics unchanged: an
-          // axe regression beyond ±2 always reverts; an AI drop >5 reverts only when no axe
-          // violation was fixed to justify it (the 2026-06-19 AND-only guard fix).
-          const _policyArgs = { newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations };
-          if (_alloLoopPolicy.shouldRevert(_policyArgs)) {
-            const _why = _alloLoopPolicy.revertReason(_policyArgs);
-            // Revert this pass, but DON'T end the loop on a single stochastic dud — retry
-            // from the last-good state (best*/axeResults/verification are untouched here, so
-            // the next pass re-attempts the same remaining violations). Give up only after
-            // 2 CONSECUTIVE regressions.
-            accessibleHtml = snapshotHtml;
-            // $7b: a bare retry re-sends the identical prompt against the identical (reverted)
-            // HTML — pure re-roll. Tell the model what just failed so the retry distribution
-            // actually changes.
-            _lastPassFeedback = 'NOTE: the previous fix attempt was REVERTED because it ' + _why + '. Take a different, more conservative approach: change only what each violation requires and leave all other content untouched.';
-            consecutiveRegressions++;
-            if (consecutiveRegressions >= 2) {
-              warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — ${consecutiveRegressions} consecutive reverts, stopping`);
-              if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, stopping`, 'info');
-              break;
-            }
-            warnLog(`[Auto-fix] Pass ${fixPass + 1} REGRESSED (${_why}; AI: ${bestAiScore}→${newAiScore}, axe: ${bestAxeViolations}→${newAxeViolations}) — REVERTED, retrying`);
-            if (addToast) addToast(`⚠️ Fix pass ${fixPass + 1} made things worse — reverted, retrying`, 'info');
-            continue;
-          }
-          consecutiveRegressions = 0;
-
-          // Plateau detection (below) compares THIS pass against the PREVIOUS best — capture
-          // it BEFORE we overwrite best* here. Otherwise the comparison is new-vs-itself
-          // (always "no improvement") and the loop breaks after a single pass regardless of
-          // the configured pass count (default 8, slider up to 15). new-vs-prev mirrors the
-          // correct pattern in runAutonomousRemediation.
-          const prevBestAiScore = bestAiScore;
-          const prevBestAxeViolations = bestAxeViolations;
-          if (reVerify) verification = reVerify;
-          if (reAxe) axeResults = reAxe;
-          // Keep-best (2026-06-19): only promote this pass to the shipped "best" if it is genuinely
-          // at least as good — a higher AI score, or fewer axe violations without an AI regression.
-          // A within-tolerance DROP stays as the working state (exploration through the noisy AI
-          // rubric) but must NOT overwrite a better bestHtml, or we'd ship the degraded version.
-          // bestHtml is what the pipeline ships (restored after the loop).
-          // Under a partial audit the AI score is inflated, so promote ONLY on a real axe gain
-          // (full-doc, reliable); otherwise use the normal AI-or-axe rule.
-          const _passIsBest = _alloLoopPolicy.isBest({ newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations, partial: _rePartial }); // S3: golden-tested policy
-          if (_passIsBest) {
-            bestHtml = accessibleHtml;
-            bestAiScore = newAiScore;
-            bestAxeViolations = newAxeViolations;
-          }
-
-          warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
-
-          // Emit per-pass completion for live UI. snapshotHtml captured the BEFORE
-          // state of this pass; passing it as originalHtml gives the diff view
-          // something to compare against. integrityPassed now reflects a REAL
-          // word-overlap check of this pass (before→after) instead of a hardcoded
-          // true; aiVerified is false because this loop runs a re-AUDIT, not an AI
-          // content-preservation verifier — claiming "AI verified content preserved"
-          // here was an overclaim (honesty fix).
-          var _stepIntegrityPassed = false;
-          try { _stepIntegrityPassed = !!(verifyChunkIntegrity(snapshotHtml, accessibleHtml) || {}).passed; } catch (_e) { _stepIntegrityPassed = false; }
-          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: _chunkHtmlPreview(snapshotHtml), fixedHtml: _chunkHtmlPreview(accessibleHtml), score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: _stepIntegrityPassed, aiVerified: false, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
-
-          // If BOTH engines report 0 actionable issues, stop regardless of score.
-          // reVerify is null only when BOTH AI audits failed this pass (reScores empty) —
-          // in that case we have NO AI signal, so a null audit must NOT be read as
-          // "AI saw zero issues". Require a real AI result before claiming dual-clean;
-          // surface that AI verification was unavailable so an axe-only clean isn't
-          // silently attributed to dual verification. The loop falls through (bounded by
-          // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
-          if (!reVerify) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
-            if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
-          } else if (newAxeViolations === 0 && !_rePartial && (!reVerify.issues || reVerify.issues.length === 0)) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
-            break;
-          }
-
-          // If BOTH engines are satisfied, stop
-          const targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
-          if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
-            warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
-            break;
-          }
-
-          // Plateau detection — compare against the PREVIOUS best (captured before the best*
-          // update above), not the just-updated value. Policy: axe gain always counts; AI gain
-          // must clear the minimum-detectable floor (S3 golden-tested; reSEM is 0 since $1, so
-          // the floor of 2 governs).
-          if (!_alloLoopPolicy.improved({ newAi: newAiScore, prevBestAi: prevBestAiScore, newAxe: newAxeViolations, prevBestAxe: prevBestAxeViolations, minDetectable: Math.round(reSEM * 1.5) }) && fixPass > 0) {
-            // One flat pass isn't a plateau — AI is stochastic, so the next pass often makes
-            // progress. Require 2 CONSECUTIVE non-improving passes before giving up (we're
-            // still below target here). Any improvement resets the counter.
-            stallCount++;
-            if (stallCount >= 2) {
-              warnLog(`[Auto-fix] Plateau: AI ${newAiScore}, axe ${newAxeViolations} — no improvement for ${stallCount} consecutive passes, stopping`);
-              break;
-            }
-            warnLog(`[Auto-fix] No improvement on pass ${fixPass + 1} (stall ${stallCount}/2) — continuing`);
-          } else {
-            stallCount = 0;
-          }
-        }
-        // Emit session complete for live UI
-        try { var _scDetail = { totalChunks: autoFixPasses, timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: _scDetail })); }, 0); } catch(e) {}
-      }
-
-      // Keep-best (2026-06-19): the loop's working `accessibleHtml` can have drifted to a within-
-      // tolerance-lower (or just-reverted) state, but bestHtml holds the highest-scoring verified
-      // version the loop produced. Ship THAT — the post-loop cleanup + content recovery + the final
-      // authoritative audit (~line 15063) then all operate on the best, so we never deliver a worse
-      // document than the loop achieved (this is the fix for "audited 89 but shipped 85"). No-op when
-      // the loop didn't run or no pass beat the baseline (bestHtml === accessibleHtml).
-      if (bestHtml && bestHtml !== accessibleHtml) {
-        warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
-        accessibleHtml = bestHtml;
-      }
+      // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang });
+      accessibleHtml = _loopOut.accessibleHtml;
+      verification = _loopOut.verification;
+      axeResults = _loopOut.axeResults;
+      let autoFixPasses = _loopOut.autoFixPasses;      // consumed by triage/footer/report below
+      let bestAiScore = _loopOut.bestAiScore;          // consumed by the divergence check + H5 headline note
 
       // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
       // Instead of blind regex, we identify what changed from the original and classify
