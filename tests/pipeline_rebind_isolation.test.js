@@ -40,9 +40,45 @@ describe('S1 step 0: dead bindings stay dead', () => {
   });
 });
 
-// Steps 1-8 append their pins here as each migration lands:
-// - per migrated function: sliceFn('const <name> = async') must contain zero bare
-//   references to the legacy bound value names it used to read.
-// - read-fresh EXEMPTIONS (deliberate, do not "fix"): window.__docPipelineState.pdfOcrLanguage
-//   (mid-run OCR-language correction applies to later chunks by design) and the
-//   _s().exportAuditResult duplicate-audit gate in updatePdfPreview.
+// Bare-identifier check with comments stripped (our own migration comments name the
+// legacy vars; only CODE references count).
+function bareRefs(slice, name) {
+  const noComments = slice.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n');
+  // Excludes property access (.name), string content, and object-KEY position (name:) —
+  // `{ pdfAuditorCount: _run.auditorCount }` is a snapshot being BUILT, not a read.
+  return (noComments.match(new RegExp("(?<![.\\w'\"])" + name + "\\b(?!\\s*:)", 'g')) || []).length;
+}
+
+describe('S1 steps 1-8: migrated async runs read their snapshot, never the shared bound vars', () => {
+  // function declaration → legacy bound VALUE names it used to read mid-run
+  const PINS = [
+    ['const generateCustomExportStyle = async', ['exportStylePrompt']],
+    ['const proceedWithPdfTransform = async', ['pendingPdfBase64', 'pendingPdfFile']],
+    ['const runPdfAccessibilityAudit = async', ['pdfAuditorCount', 'leveledTextLanguage', 'pendingPdfFile', 'pendingPdfBase64']],
+    ['const autoFixAxeViolations = async', ['pendingPdfFile', 'pendingPdfBase64']],
+    ['const fixAndVerifyPdf = async', ['pendingPdfBase64', 'pendingPdfFile', 'pdfAuditResult', 'pdfPolishPasses', 'pdfTargetScore', 'pdfAutoFixPasses']],
+    ['const _runMainFixLoop = async', ['pdfTargetScore', 'pdfAutoFixPasses']],
+    ['const runPdfBatchRemediation = async', ['pdfAuditorCount', 'leveledTextLanguage', 'pdfTargetScore', 'pdfAutoFixPasses', 'pdfPolishPasses', 'pdfBatchQueue', 'pdfBatchSummary']],
+    ['const downloadBatchResults = async', ['pdfBatchQueue', 'pdfBatchSummary', 'pdfAuditorCount', 'pdfAutoFixPasses', 'pdfPolishPasses']],
+  ];
+  for (const [decl, names] of PINS) {
+    it(`${decl.replace('const ', '').replace(' = async', '')} has zero legacy bound-value reads`, () => {
+      const body = sliceFn(decl);
+      for (const name of names) {
+        expect(bareRefs(body, name), `${name} read inside ${decl}`).toBe(0);
+      }
+    });
+  }
+  it('the restoration flow passes its HTML explicitly (no module-var patch, no bare re-render)', () => {
+    const body = sliceFn('const applyWordRestorationInPlace = ');
+    expect(body.includes('sourceHtml: _restoredHtml')).toBe(true);
+    expect(/pdfFixResult\s*=\s*\{/.test(body.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n'))).toBe(false);
+  });
+  it('read-fresh exemptions stay: pdfOcrLanguage + the exportAuditResult gate (deliberate)', () => {
+    // These are DESIGN decisions, not drift — pdfOcrLanguage applies mid-run corrections to
+    // later OCR chunks; the _s().exportAuditResult read gates duplicate auto-audits against
+    // CURRENT state. If either disappears, someone "fixed" them — check the S1 plan first.
+    expect(src.includes('.pdfOcrLanguage')).toBe(true);
+    expect(src.includes('_s().exportAuditResult')).toBe(true);
+  });
+});
