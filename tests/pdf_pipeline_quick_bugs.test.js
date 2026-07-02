@@ -640,3 +640,23 @@ describe('pdf-lib slice gating is DETERMINISTIC (live bug 2026-07-02: "document 
     expect(dp).toContain('retrying as a page-slice');
   });
 });
+
+describe('refusal-shaped JSON cannot erase a document (corpus-caught 2026-07-02)', () => {
+  // The Playwright corpus (tests/e2e/remediation_corpus_golden.spec.ts) CAUGHT this live:
+  // a structure-extraction reply of {} parses as valid JSON, sailed through repairSingle,
+  // rendered an empty body, and fixAndVerifyPdf shipped an all-boilerplate shell scoring
+  // 98 with ZERO document text. Two-layer fix, pinned here at the source level so the
+  // fast suite fails even when the browser corpus is not run.
+  it('repairSingle accepts only renderable block ARRAYS (refusal shapes -> repair failure -> HTML fallback path)', () => {
+    expect(dp).toContain('const _renderableBlock = (b)');
+    expect(dp).toContain('const _asBlockArray = (v)');
+    // both parse attempts go through the coercion, not raw JSON.parse returns
+    expect((dp.match(/_asBlockArray\(JSON\.parse\(/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+  it('empty-body honesty guard splices deterministic extraction back in, with disclosure', () => {
+    expect(dp).toContain('Empty-body honesty guard');
+    expect(dp).toContain('Formatting notice');
+    // guard measures VISIBLE text (figures/captions excluded) against the extraction
+    expect(dp).toMatch(/_visibleProbe\.length < 30 && _extProbe\.length >= 30/);
+  });
+});
