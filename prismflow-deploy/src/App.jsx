@@ -7239,6 +7239,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const qIdx = sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex;
       setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx)) ? null : prev);
   }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex]);
+  // Merged teacher views: channel-received answers/mastery layered over the
+  // Firestore fallback so every consumer (dashboards, aggregators, routing
+  // rules) sees one coherent map regardless of which path each student used.
+  const quizMergedAllResponses = React.useMemo(() => {
+      const fsAll = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
+      const liveUids = Object.keys(liveQuizAnswers);
+      if (liveUids.length === 0) return fsAll;
+      const merged = { ...fsAll };
+      liveUids.forEach(uid => { merged[uid] = { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
+      return merged;
+  }, [sessionData, liveQuizAnswers]);
+  const quizMergedSessionData = React.useMemo(() => {
+      if (!sessionData) return sessionData;
+      const qs = sessionData.quizState || {};
+      // Boss answers received P2P overlay the Firestore fallback for the
+      // CURRENT question only (teacher advance resets both sides).
+      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex))
+          ? { ...(qs.responses || {}), ...liveBossResponses.byUid }
+          : (qs.responses || {});
+      return { ...sessionData, quizState: { ...qs, allResponses: quizMergedAllResponses, responses: bossByUid } };
+  }, [sessionData, quizMergedAllResponses, liveBossResponses]);
   // Teacher → students: broadcast answer progress for the current question
   // (pacing pressure without revealing who/what). Rides the quiz channel as
   // a reserved poll id; dedupe on question+count so unrelated re-renders
@@ -7316,27 +7337,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (window.__alloQuizChannelSend) { try { delete window.__alloQuizChannelSend; } catch(e) { window.__alloQuizChannelSend = undefined; } }
       };
   }, [isTeacherMode, activeSessionCode, user && user.uid, sessionData && sessionData.quizState && sessionData.quizState.isActive, quizJoinNonce]);
-  // Merged teacher views: channel-received answers/mastery layered over the
-  // Firestore fallback so every consumer (dashboards, aggregators, routing
-  // rules) sees one coherent map regardless of which path each student used.
-  const quizMergedAllResponses = React.useMemo(() => {
-      const fsAll = (sessionData && sessionData.quizState && sessionData.quizState.allResponses) || {};
-      const liveUids = Object.keys(liveQuizAnswers);
-      if (liveUids.length === 0) return fsAll;
-      const merged = { ...fsAll };
-      liveUids.forEach(uid => { merged[uid] = { ...(fsAll[uid] || {}), ...liveQuizAnswers[uid] }; });
-      return merged;
-  }, [sessionData, liveQuizAnswers]);
-  const quizMergedSessionData = React.useMemo(() => {
-      if (!sessionData) return sessionData;
-      const qs = sessionData.quizState || {};
-      // Boss answers received P2P overlay the Firestore fallback for the
-      // CURRENT question only (teacher advance resets both sides).
-      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex))
-          ? { ...(qs.responses || {}), ...liveBossResponses.byUid }
-          : (qs.responses || {});
-      return { ...sessionData, quizState: { ...qs, allResponses: quizMergedAllResponses, responses: bossByUid } };
-  }, [sessionData, quizMergedAllResponses, liveBossResponses]);
+  // (quizMergedAllResponses / quizMergedSessionData are declared ABOVE the
+  // progress-broadcast effect — dep arrays evaluate during render; a later
+  // declaration is a TDZ ReferenceError.)
   const teacherConceptMasteryByUid = React.useMemo(() => (
       { ...importedConceptMastery, ...liveMasteryByUid }
   ), [importedConceptMastery, liveMasteryByUid]);
