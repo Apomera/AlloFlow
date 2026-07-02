@@ -1,0 +1,473 @@
+// video_studio_module.js
+// Video Studio for AlloFlow — teacher screen/webcam recording with trim editing,
+// live captions (Web Speech), WebVTT export, and pack-safe metadata references.
+//
+// Architecture (2026-07-02, Aaron-requested): the actual recorder/editor runs in
+// video_studio/video_studio.html, a COMPANION WINDOW opened with window.open —
+// the same escape-hatch pattern as the veraPDF validator and PDF Compare — because
+// Gemini Canvas's sandboxed iframe may deny the `display-capture` Permissions-Policy,
+// while a popup is a real top-level browsing context where getDisplayMedia works
+// and storage persists. Finished videos come back over postMessage (Blob structured
+// clone); nothing ever touches a server.
+//
+// PACK RULE (hard constraint from Aaron): video BYTES never enter Resource-History
+// pack JSON — packs carry only a compact metadata reference (title, duration, size,
+// SHA-256, tiny thumbnail). The .webm itself is downloaded as a sidecar file.
+//
+// Public API: window.AlloModules.VideoStudio  (React component for CDNModuleGate)
+//   Pure helpers attached for tests: vsFormatTimestamp, vsBuildVtt, vsParseVtt,
+//   vsComputeSegments, vsPatchWebmDuration, vsMakePackReference.
+// Version: 1.0.0 (Jul 2026)
+(function () {
+  if (typeof document !== 'undefined') {
+    // WCAG 4.1.3: status live region for dynamic announcements
+    if (!document.getElementById('allo-live-video-studio')) {
+      var vsLive = document.createElement('div');
+      vsLive.id = 'allo-live-video-studio';
+      vsLive.setAttribute('aria-live', 'polite');
+      vsLive.setAttribute('aria-atomic', 'true');
+      vsLive.setAttribute('role', 'status');
+      vsLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(vsLive);
+    }
+    // WCAG 2.1 AA: reduced motion + visible focus
+    if (!document.getElementById('vs-a11y-css')) {
+      var vsA11y = document.createElement('style');
+      vsA11y.id = 'vs-a11y-css';
+      vsA11y.textContent = [
+        '@media (prefers-reduced-motion: reduce) { .vs-root *, .vs-root *::before, .vs-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+        '.vs-root button:focus-visible, .vs-root input:focus-visible, .vs-root [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 6px; }',
+        '.vs-root :focus:not(:focus-visible) { outline: none !important; }'
+      ].join('\n');
+      document.head.appendChild(vsA11y);
+    }
+  }
+
+  if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.VideoStudio) {
+    console.log('[CDN] VideoStudio already loaded, skipping duplicate');
+    return;
+  }
+
+  // ─── Shared pure logic ─────────────────────────────────────────────────────
+  // [VS_SHARED_BEGIN] This block is duplicated verbatim inside
+  // video_studio/video_studio.html (the popup cannot import this module).
+  // tests/video_studio.test.js pins the two copies byte-identical — if you edit
+  // here, paste the same block there.
+
+  // Seconds → 'HH:MM:SS.mmm' (WebVTT timestamp).
+  function vsFormatTimestamp(seconds) {
+    var s = Math.max(0, Number(seconds) || 0);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = Math.floor(s % 60);
+    var ms = Math.round((s - Math.floor(s)) * 1000);
+    if (ms === 1000) { ms = 0; sec += 1; if (sec === 60) { sec = 0; m += 1; if (m === 60) { m = 0; h += 1; } } }
+    var pad = function (n, w) { n = String(n); while (n.length < w) n = '0' + n; return n; };
+    return pad(h, 2) + ':' + pad(m, 2) + ':' + pad(sec, 2) + '.' + pad(ms, 3);
+  }
+
+  // Cues [{start,end,text}] (seconds) → WebVTT file text. Drops empty/invalid
+  // cues, clamps end>start, strips newlines inside a cue (one line per cue).
+  function vsBuildVtt(cues) {
+    var out = ['WEBVTT', ''];
+    var list = Array.isArray(cues) ? cues : [];
+    var n = 0;
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i] || {};
+      var text = String(c.text || '').replace(/[\r\n]+/g, ' ').trim();
+      var start = Number(c.start), end = Number(c.end);
+      if (!text || !isFinite(start) || !isFinite(end)) continue;
+      if (end <= start) end = start + 0.5;
+      n += 1;
+      out.push(String(n));
+      out.push(vsFormatTimestamp(start) + ' --> ' + vsFormatTimestamp(end));
+      out.push(text);
+      out.push('');
+    }
+    return out.join('\n');
+  }
+
+  // WebVTT text → cues [{start,end,text}]. Tolerant: ignores NOTE/STYLE blocks,
+  // numeric cue identifiers, and cue settings after the end timestamp.
+  function vsParseVtt(text) {
+    var cues = [];
+    if (typeof text !== 'string') return cues;
+    var toSec = function (ts) {
+      var m = /^(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{3})$/.exec(ts.trim());
+      if (!m) return null;
+      return (Number(m[1] || 0) * 3600) + (Number(m[2]) * 60) + Number(m[3]) + (Number(m[4]) / 1000);
+    };
+    var blocks = text.replace(/\r/g, '').split(/\n\n+/);
+    for (var i = 0; i < blocks.length; i++) {
+      var lines = blocks[i].split('\n').filter(function (l) { return l.trim() !== ''; });
+      for (var j = 0; j < lines.length; j++) {
+        var tm = /^(\S+)\s+-->\s+(\S+)/.exec(lines[j]);
+        if (!tm) continue;
+        var start = toSec(tm[1]), end = toSec(tm[2]);
+        var body = lines.slice(j + 1).join(' ').trim();
+        if (start != null && end != null && body) cues.push({ start: start, end: end, text: body });
+        break;
+      }
+    }
+    return cues;
+  }
+
+  // Trim math: full duration + trimStart/trimEnd (seconds cut off each end) →
+  // { segments: [{start,end}], duration } describing what is KEPT. Guards
+  // against inverted/overlong trims (returns at least a 0.1s segment).
+  function vsComputeSegments(fullDuration, trimStart, trimEnd) {
+    var dur = Math.max(0, Number(fullDuration) || 0);
+    var ts = Math.max(0, Math.min(Number(trimStart) || 0, dur));
+    var te = Math.max(0, Math.min(Number(trimEnd) || 0, dur));
+    var start = ts, end = dur - te;
+    if (end - start < 0.1) {
+      if (start >= dur) { start = Math.max(0, dur - 0.1); }
+      end = Math.min(dur, start + 0.1);
+    }
+    return { segments: [{ start: start, end: end }], duration: Math.max(0, end - start) };
+  }
+
+  // Chromium's MediaRecorder writes WebM with NO Duration in Segment>Info, so
+  // the seekbar is broken until fully buffered. This patches the header the
+  // fix-webm-duration way: locate Segment>Info, and if Duration (0x4489) is
+  // absent, splice in a float64 Duration element. Returns a NEW Uint8Array, or
+  // the ORIGINAL buffer when Duration already exists, parsing fails, or the
+  // Segment has a known size (MediaRecorder always streams unknown-size; a
+  // known size would need resizing too — bail honestly rather than corrupt).
+  function vsPatchWebmDuration(bytes, durationMs) {
+    try {
+      var u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      var durMs = Number(durationMs);
+      if (!(durMs > 0) || u8.length < 8) return u8;
+      var pos = 0;
+      var readVintLen = function (b) { for (var i = 0; i < 8; i++) { if (b & (0x80 >> i)) return i + 1; } return -1; };
+      var readId = function () {
+        var len = readVintLen(u8[pos]); if (len < 1 || pos + len > u8.length) return null;
+        var v = 0; for (var i = 0; i < len; i++) v = v * 256 + u8[pos + i];
+        pos += len; return v;
+      };
+      var readSize = function () {
+        var len = readVintLen(u8[pos]); if (len < 1 || pos + len > u8.length) return null;
+        var first = u8[pos] & (0xFF >> len);
+        var v = first, allOnes = first === (0xFF >> len);
+        for (var i = 1; i < len; i++) { v = v * 256 + u8[pos + i]; if (u8[pos + i] !== 0xFF) allOnes = false; }
+        pos += len;
+        return { value: v, unknown: allOnes, length: len };
+      };
+      // EBML header
+      var id = readId(); if (id !== 0x1A45DFA3) return u8;
+      var sz = readSize(); if (!sz || sz.unknown) return u8;
+      pos += sz.value;
+      // Segment
+      id = readId(); if (id !== 0x18538067) return u8;
+      sz = readSize(); if (!sz) return u8;
+      if (!sz.unknown) return u8; // known-size Segment: patching would desync it
+      // Walk Segment children for Info (0x1549A966)
+      var limit = u8.length;
+      while (pos < limit) {
+        var childStart = pos;
+        var cid = readId(); if (cid == null) return u8;
+        var csz = readSize(); if (!csz || csz.unknown) return u8;
+        var bodyStart = pos;
+        if (cid === 0x1549A966) {
+          // Scan Info children for Duration (0x4489) + TimestampScale (0x2AD7B1)
+          var scale = 1000000;
+          var scanEnd = bodyStart + csz.value;
+          while (pos < scanEnd) {
+            var iid = readId(); if (iid == null) return u8;
+            var isz = readSize(); if (!isz || isz.unknown) return u8;
+            if (iid === 0x4489) return u8; // Duration already present
+            if (iid === 0x2AD7B1) {
+              var sv = 0; for (var k = 0; k < isz.value; k++) sv = sv * 256 + u8[pos + k];
+              if (sv > 0) scale = sv;
+            }
+            pos += isz.value;
+          }
+          // Build Duration element: ID 0x44 0x89, size 0x88 (8), float64 BE value
+          var durValue = durMs * 1000000 / scale; // Matroska Duration is in TimestampScale units
+          var durEl = new Uint8Array(11);
+          durEl[0] = 0x44; durEl[1] = 0x89; durEl[2] = 0x88;
+          var dv = new DataView(durEl.buffer);
+          dv.setFloat64(3, durValue, false);
+          // New Info size (old + 11); re-encode with minimal vint length. Because
+          // the Segment size is unknown, byte-count changes downstream are safe.
+          var newBody = csz.value + 11;
+          var vintLen = 1; while (vintLen <= 8 && newBody >= Math.pow(2, 7 * vintLen) - 1) vintLen++;
+          if (vintLen > 8) return u8;
+          var sizeBytes = new Uint8Array(vintLen);
+          var rem = newBody;
+          for (var b = vintLen - 1; b >= 0; b--) { sizeBytes[b] = rem & 0xFF; rem = Math.floor(rem / 256); }
+          sizeBytes[0] |= (0x80 >> (vintLen - 1));
+          var idLen = 4; // 0x1549A966 is a 4-byte ID
+          var out = new Uint8Array(u8.length - csz.length + vintLen + 11);
+          var o = 0;
+          out.set(u8.subarray(0, childStart + idLen), o); o += childStart + idLen;
+          out.set(sizeBytes, o); o += vintLen;
+          out.set(u8.subarray(bodyStart, bodyStart + csz.value), o); o += csz.value;
+          out.set(durEl, o); o += 11;
+          out.set(u8.subarray(bodyStart + csz.value), o);
+          return out;
+        }
+        pos = bodyStart + csz.value;
+        if (pos <= childStart) return u8; // no forward progress — malformed
+      }
+      return u8;
+    } catch (_) {
+      return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    }
+  }
+
+  // Compact, pack-safe reference for Resource-History embedding. NEVER includes
+  // video bytes — only metadata + an optional small thumbnail data-URI. The
+  // guard drops oversized thumbnails so a pack entry stays in the tens of KB.
+  function vsMakePackReference(meta) {
+    var m = meta || {};
+    var thumb = (typeof m.thumb === 'string' && m.thumb.indexOf('data:image/') === 0 && m.thumb.length <= 40000) ? m.thumb : null;
+    return {
+      type: 'videoRef',
+      version: 1,
+      title: String(m.title || 'Teacher video').slice(0, 200),
+      durationSec: Math.max(0, Math.round(Number(m.duration) || 0)),
+      sizeBytes: Math.max(0, Math.round(Number(m.size) || 0)),
+      sha256: (typeof m.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(m.sha256)) ? m.sha256.toLowerCase() : null,
+      fileName: String(m.fileName || '').slice(0, 200) || null,
+      hasCaptions: !!m.hasCaptions,
+      thumb: thumb,
+      createdAt: m.createdAt || null
+    };
+  }
+  // [VS_SHARED_END]
+
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference };
+  if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
+  if (typeof window === 'undefined') return;
+  if (typeof React === 'undefined' || !React.createElement) {
+    // Test/SSR surface without React: expose the pure helpers on a stub so
+    // window.AlloModules.VideoStudio.* is still reachable (tests pin these).
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.VideoStudio = Object.assign(function VideoStudioUnavailable() { return null; }, VS_HELPERS);
+    return;
+  }
+
+  var h = React.createElement;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useCallback = React.useCallback;
+
+  var STUDIO_URL = 'https://alloflow-cdn.pages.dev/video_studio/video_studio.html?v=1';
+
+  function makeT(t) {
+    return function (key, fallback) {
+      if (typeof t === 'function') {
+        try { var v = t(key); if (v && v !== key) return v; } catch (_) {}
+      }
+      return fallback;
+    };
+  }
+
+  function announce(msg) {
+    var el = document.getElementById('allo-live-video-studio');
+    if (el) el.textContent = msg;
+  }
+
+  function fmtBytes(n) {
+    n = Number(n) || 0;
+    if (n >= 1048576) return (n / 1048576).toFixed(1) + ' MB';
+    if (n >= 1024) return (n / 1024).toFixed(0) + ' KB';
+    return n + ' B';
+  }
+  function fmtDur(s) {
+    s = Math.max(0, Math.round(Number(s) || 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  function downloadBlob(blob, name) {
+    try {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (_) {} }, 4000);
+      return true;
+    } catch (_) { return false; }
+  }
+  async function sha256Hex(blob) {
+    try {
+      var buf = await blob.arrayBuffer();
+      var digest = await crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(digest)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    } catch (_) { return null; }
+  }
+
+  // ─── Component ─────────────────────────────────────────────────────────────
+  function VideoStudio(props) {
+    var onClose = props.onClose || function () {};
+    var addToast = props.addToast || function () {};
+    var T = makeT(props.t);
+
+    var _st = useState('closed'); var studioState = _st[0], setStudioState = _st[1]; // closed | opening | open | blocked
+    var _vd = useState([]); var videos = _vd[0], setVideos = _vd[1];
+    var studioWinRef = useRef(null);
+    var rootRef = useRef(null);
+
+    // postMessage receiver — accepts messages ONLY from the window we opened.
+    useEffect(function () {
+      function onMsg(ev) {
+        if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
+        if (!studioWinRef.current || ev.source !== studioWinRef.current) return;
+        if (ev.data.type === 'allostudio-ready') {
+          setStudioState('open');
+          announce(T('video_studio.ready', 'Video Studio window is ready.'));
+        } else if (ev.data.type === 'allostudio-closed') {
+          setStudioState('closed');
+        } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {
+          var p = ev.data.payload;
+          var vid = {
+            id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            blob: p.blob,
+            url: URL.createObjectURL(p.blob),
+            vtt: (typeof p.vtt === 'string' && p.vtt) ? p.vtt : null,
+            title: String(p.title || 'Teacher video'),
+            duration: Number(p.duration) || 0,
+            size: p.blob.size,
+            thumb: (typeof p.thumb === 'string') ? p.thumb : null,
+            sha256: null,
+            createdAt: new Date().toISOString()
+          };
+          sha256Hex(p.blob).then(function (hex) {
+            if (hex) setVideos(function (cur) { return cur.map(function (v) { return v.id === vid.id ? Object.assign({}, v, { sha256: hex }) : v; }); });
+          });
+          setVideos(function (cur) { return [vid].concat(cur); });
+          addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
+          announce(T('video_studio.received_sr', 'Video received from the Studio.'));
+        }
+      }
+      window.addEventListener('message', onMsg);
+      return function () { window.removeEventListener('message', onMsg); };
+    }, []);
+
+    // Revoke object URLs on unmount only (videos live for the session).
+    useEffect(function () {
+      return function () {
+        setVideos(function (cur) { cur.forEach(function (v) { try { URL.revokeObjectURL(v.url); } catch (_) {} }); return cur; });
+      };
+    }, []);
+
+    // Escape closes (studio window itself stays open — teacher may still be editing).
+    useEffect(function () {
+      function onKey(e) { if (e.key === 'Escape') onClose(); }
+      window.addEventListener('keydown', onKey);
+      return function () { window.removeEventListener('keydown', onKey); };
+    }, [onClose]);
+
+    useEffect(function () { try { if (rootRef.current) rootRef.current.focus(); } catch (_) {} }, []);
+
+    var openStudio = useCallback(function () {
+      var existing = studioWinRef.current;
+      if (existing && !existing.closed) {
+        try { existing.focus(); } catch (_) {}
+        return;
+      }
+      setStudioState('opening');
+      var w = null;
+      try { w = window.open(STUDIO_URL, 'alloflow-video-studio', 'width=1320,height=860'); } catch (_) { w = null; }
+      if (!w) {
+        setStudioState('blocked');
+        addToast(T('video_studio.popup_blocked', 'The Studio window was blocked. Allow pop-ups for this page, then try again.'), 'error');
+        return;
+      }
+      studioWinRef.current = w;
+      // Watchdog: if no ready handshake, surface guidance instead of hanging.
+      setTimeout(function () {
+        setStudioState(function (cur) { return cur === 'opening' ? 'open' : cur; });
+      }, 15000);
+    }, []);
+
+    var copyPackRef = useCallback(function (v) {
+      var ref = vsMakePackReference({
+        title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
+        fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.webm',
+        hasCaptions: !!v.vtt, thumb: v.thumb, createdAt: v.createdAt
+      });
+      var text = JSON.stringify(ref, null, 2);
+      var done = function () { addToast(T('video_studio.ref_copied', 'Pack reference copied — paste it wherever the resource lives. The video bytes stay in the downloaded file.'), 'success'); };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, done); }
+        else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
+      } catch (_) { done(); }
+    }, []);
+
+    var statusLine = studioState === 'open' ? T('video_studio.status_open', 'Studio window is open — record there, then press “Send to AlloFlow”.')
+      : studioState === 'opening' ? T('video_studio.status_opening', 'Opening the Studio window…')
+      : studioState === 'blocked' ? T('video_studio.status_blocked', 'Pop-up blocked. Allow pop-ups for this site and press the button again.')
+      : T('video_studio.status_closed', 'The Studio opens in its own window so screen recording works even inside Gemini Canvas.');
+
+    return h('div', {
+      className: 'vs-root fixed inset-0 z-[200] flex items-center justify-center p-4',
+      style: { background: 'rgba(15,23,42,0.72)' },
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': T('video_studio.title', 'Video Studio')
+    },
+      h('div', { className: 'bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden', ref: rootRef, tabIndex: -1 },
+        // Header
+        h('div', { className: 'flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-rose-50' },
+          h('div', { className: 'flex items-center gap-3' },
+            h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎥'),
+            h('div', null,
+              h('h2', { className: 'font-bold text-slate-800 text-lg' }, T('video_studio.title', 'Video Studio')),
+              h('p', { className: 'text-xs text-slate-500' }, T('video_studio.subtitle', 'Record your screen, trim, caption — everything stays on your device.'))
+            )
+          ),
+          h('button', {
+            onClick: onClose, className: 'text-slate-400 hover:text-slate-700 text-2xl leading-none px-2 py-1',
+            'aria-label': T('video_studio.close', 'Close Video Studio panel')
+          }, '×')
+        ),
+        // Body
+        h('div', { className: 'p-5 overflow-y-auto flex-1' },
+          h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4' },
+            h('p', { className: 'text-sm text-slate-700 mb-3' }, statusLine),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('button', {
+                onClick: openStudio,
+                className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 text-sm',
+                'data-help-key': 'video_studio_open_button'
+              }, studioState === 'open' ? T('video_studio.focus_btn', 'Focus the Studio window') : T('video_studio.open_btn', '🎬 Open the Studio window')),
+              studioState === 'blocked' && h('span', { className: 'text-xs text-rose-600 font-semibold' }, T('video_studio.blocked_hint', 'Look for the blocked-pop-up icon in the address bar.'))
+            ),
+            h('p', { className: 'text-xs text-slate-500 mt-3' }, T('video_studio.privacy_note', 'Nothing uploads anywhere: recording, editing, and captioning all run in your browser. Finished videos appear below and can be saved as .webm files. Before recording, close anything with student data — prefer sharing a single tab.'))
+          ),
+          // Gallery
+          h('h3', { className: 'font-semibold text-slate-700 text-sm mb-2' }, T('video_studio.gallery', 'Videos from this session')),
+          videos.length === 0
+            ? h('p', { className: 'text-sm text-slate-400 italic' }, T('video_studio.gallery_empty', 'No videos yet. Record one in the Studio window and press “Send to AlloFlow”.'))
+            : h('ul', { className: 'space-y-3', role: 'list' }, videos.map(function (v) {
+                return h('li', { key: v.id, className: 'border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row gap-3' },
+                  h('video', { src: v.url, controls: true, preload: 'metadata', className: 'w-full sm:w-64 rounded-lg bg-black', 'aria-label': v.title }),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('p', { className: 'font-semibold text-slate-800 text-sm truncate' }, v.title),
+                    h('p', { className: 'text-xs text-slate-500 mb-2' },
+                      fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '')),
+                    h('div', { className: 'flex flex-wrap gap-2' },
+                      h('button', {
+                        onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.webm'); },
+                        className: 'px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-semibold hover:bg-slate-700'
+                      }, T('video_studio.download_video', '⬇ Video (.webm)')),
+                      v.vtt && h('button', {
+                        onClick: function () { downloadBlob(new Blob([v.vtt], { type: 'text/vtt' }), (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.vtt'); },
+                        className: 'px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold hover:bg-slate-500'
+                      }, T('video_studio.download_vtt', '⬇ Captions (.vtt)')),
+                      h('button', {
+                        onClick: function () { copyPackRef(v); },
+                        className: 'px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-xs font-semibold hover:bg-indigo-50',
+                        title: T('video_studio.ref_title', 'Copies a small JSON reference (title, duration, checksum, thumbnail) — never the video bytes — for embedding in a resource pack.')
+                      }, T('video_studio.copy_ref', '📎 Copy pack reference'))
+                    )
+                  )
+                );
+              }))
+        )
+      )
+    );
+  }
+
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.VideoStudio = Object.assign(VideoStudio, VS_HELPERS);
+  console.log('[CDN] VideoStudio module loaded (v1.0.0)');
+})();

@@ -32,6 +32,10 @@ function EducatorHubModal(props) {
     }),
     showEducatorHub,
     t,
+    // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
+    // Optional default so legacy hosts that haven't wired the setter still render.
+    setIsVideoStudioOpen = (() => {
+    }),
     // Phase A.3 polish (May 12 2026): renamed from setPdfBatchFiles (which was
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
@@ -53,7 +57,9 @@ function EducatorHubModal(props) {
     // Optional default so legacy hosts that don't pass it still render the hub.
     startLessonFlow = (() => {
     }),
-    // Family Bridge launcher (2026-06-28): opens the live-translation panel from the hub.
+    // Family Bridge launcher (2026-06-28): opens the live-translation panel so the
+    // bridge feature is reachable from the hub, not only the History sidebar tab.
+    // Optional default so a host that hasn't wired the setter still renders the hub.
     setBridgeSendOpen = (() => {
     })
   } = props;
@@ -251,7 +257,10 @@ function EducatorHubModal(props) {
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F4DD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-violet-800" }, t("educator_hub.report_writer_title") || "Report Writer"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-600 mt-1" }, t("educator_hub.report_writer_desc") || "AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_cinematic_studio_card", onClick: () => {
     setShowEducatorHub(false);
     setShowCinematicStudio(true);
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3AC}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("educator_hub.cinematic_studio_title") || "Cinematic Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-600 mt-1" }, t("educator_hub.cinematic_studio_desc") || "Craft strong NotebookLM video prompts, then diagnose and re-prompt weak results"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_symbol_studio_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3AC}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("educator_hub.cinematic_studio_title") || "Cinematic Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-600 mt-1" }, t("educator_hub.cinematic_studio_desc") || "Craft strong NotebookLM video prompts, then diagnose and re-prompt weak results"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_video_studio_card", onClick: () => {
+    setShowEducatorHub(false);
+    setIsVideoStudioOpen(true);
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3A5}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sky-800" }, t("educator_hub.video_studio_title") || "Video Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-600 mt-1" }, t("educator_hub.video_studio_desc") || "Record your screen, trim, caption, and export video demos \u2014 all on your device"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_symbol_studio_card", onClick: () => {
     setShowEducatorHub(false);
     setIsSymbolStudioOpen(true);
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-purple-600 mt-1" }, t("educator_hub.symbol_studio_desc") || "AI-generated PCS-style icons for visual supports, AAC boards, and schedules \u2014 powered by image-to-image editing"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {

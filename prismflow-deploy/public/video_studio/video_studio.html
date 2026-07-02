@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Video Studio</title>
+<!--
+  AlloFlow Video Studio — companion-window recorder + editor.
+
+  Opened by video_studio_module.js with window.open (the veraPDF-validator /
+  PDF-Compare escape-hatch pattern): this page is a TOP-LEVEL browsing context,
+  so getDisplayMedia works even when the AlloFlow app itself is inside Gemini
+  Canvas's sandboxed iframe, and IndexedDB here persists normally.
+
+  Everything is local: capture (MediaRecorder), captions (Web Speech), trim/
+  re-encode (canvas + AudioContext), storage (IndexedDB drafts). Finished videos
+  go back to the opener via postMessage as Blobs; nothing touches a server.
+
+  The VS-shared script block (see the markers below) is a verbatim copy of the
+  same block in video_studio_module.js; tests/video_studio.test.js pins the two
+  identical. Edit BOTH or the gate fails.
+-->
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #6366f1; --accent2: #818cf8;
+    --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --rec: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+  header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 12px; }
+  main { padding: 14px 16px 24px; max-width: 1280px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tabs button { background: var(--panel); color: var(--dim); border: 1px solid var(--line); border-radius: 10px 10px 0 0; padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--panel2); color: var(--text); border-bottom-color: var(--panel2); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .card h2 { font-size: 13px; margin: 0 0 10px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.06em; }
+  button.action { background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  button.action:hover { background: #4f46e5; }
+  button.action:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button.quiet:hover { border-color: var(--accent); }
+  button.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button[aria-pressed="true"] { border-color: var(--accent); background: rgba(99,102,241,0.18); color: #fff; }
+  label { font-size: 13px; color: var(--dim); }
+  input[type="text"], input[type="number"] { background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
+  input[type="range"] { accent-color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .ferpa { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.45); border-radius: 10px; padding: 9px 12px; font-size: 12.5px; color: #fde68a; margin-bottom: 12px; }
+  .stage { position: relative; background: #000; border-radius: 12px; overflow: hidden; min-height: 240px; display: flex; align-items: center; justify-content: center; }
+  .stage video, .stage canvas { max-width: 100%; max-height: 56vh; display: block; }
+  .stage .placeholder { color: #475569; font-size: 14px; padding: 60px 20px; text-align: center; }
+  .recbar { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .recdot { width: 12px; height: 12px; border-radius: 50%; background: var(--rec); animation: pulse 1.2s infinite; display: inline-block; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .meter { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; }
+  .livecap { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; pointer-events: none; }
+  .livecap span { background: rgba(0,0,0,0.75); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 15px; }
+  table.cues { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.cues th { text-align: left; color: var(--dim); font-weight: 600; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+  table.cues td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.cues input[type="number"] { width: 76px; }
+  table.cues input[type="text"] { width: 100%; }
+  .takes { display: flex; flex-direction: column; gap: 8px; }
+  .take { display: flex; align-items: center; gap: 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  .take[aria-current="true"] { border-color: var(--accent); }
+  .take .nm { flex: 1; font-weight: 600; }
+  .take .meta { color: var(--dim); font-size: 12px; }
+  .status { min-height: 20px; font-size: 13px; color: var(--dim); margin-top: 8px; }
+  .status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.warn { color: var(--warn); }
+  progress { width: 100%; height: 10px; accent-color: var(--accent); }
+  .banner { background: rgba(99,102,241,0.12); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:22px" aria-hidden="true">🎥</span>
+  <div>
+    <h1>AlloFlow Video Studio</h1>
+    <div class="sub">Record · Trim · Caption · Export — everything stays on this device</div>
+  </div>
+  <div id="linkState" style="margin-left:auto;font-size:12px;color:var(--dim)"></div>
+</header>
+<div id="live" class="sr-only" aria-live="polite" role="status"></div>
+
+<main>
+  <div id="recoverBanner" class="banner" hidden>
+    <span id="recoverText"></span>
+    <button class="quiet" id="recoverBtn">Recover drafts</button>
+    <button class="danger" id="discardBtn">Discard</button>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Studio sections">
+    <button id="tabRecord" role="tab" aria-selected="true" aria-controls="panelRecord">1 · Record</button>
+    <button id="tabEdit" role="tab" aria-selected="false" aria-controls="panelEdit">2 · Edit &amp; Captions</button>
+    <button id="tabExport" role="tab" aria-selected="false" aria-controls="panelExport">3 · Export</button>
+  </div>
+
+  <!-- ─── RECORD ─── -->
+  <section id="panelRecord" role="tabpanel" aria-labelledby="tabRecord">
+    <div class="ferpa">⚠️ <strong>Before you record:</strong> screen capture shows everything visible. Close gradebooks, rosters, email, and other student data — safest is sharing <em>one tab</em> in the picker. Your recording never leaves this computer.</div>
+    <div class="card">
+      <h2>Sources</h2>
+      <div class="row" role="group" aria-label="What to record">
+        <button class="quiet" id="srcScreen" aria-pressed="true">🖥️ Screen / tab</button>
+        <button class="quiet" id="srcPip" aria-pressed="false">🖥️+📷 Screen with camera bubble</button>
+        <button class="quiet" id="srcCam" aria-pressed="false">📷 Camera only</button>
+        <span style="width:16px"></span>
+        <button class="quiet" id="micBtn" aria-pressed="true">🎙️ Microphone on</button>
+        <button class="quiet" id="capBtn" aria-pressed="true">💬 Live captions on</button>
+        <select id="pipCorner" aria-label="Camera bubble corner" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <option value="br">Bubble: bottom-right</option>
+          <option value="bl">Bubble: bottom-left</option>
+          <option value="tr">Bubble: top-right</option>
+          <option value="tl">Bubble: top-left</option>
+        </select>
+      </div>
+      <div class="status" id="capNote"></div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
+      <video id="previewVideo" autoplay muted playsinline hidden></video>
+      <canvas id="pipCanvas" hidden></canvas>
+      <div class="livecap" id="liveCap" hidden><span id="liveCapText"></span></div>
+    </div>
+    <div class="recbar">
+      <button class="action" id="startBtn">⏺ Start recording</button>
+      <button class="quiet" id="pauseBtn" hidden>⏸ Pause</button>
+      <button class="danger" id="stopBtn" hidden>⏹ Stop</button>
+      <span id="recIndicator" hidden><span class="recdot"></span></span>
+      <span class="meter" id="timeMeter" hidden>0:00</span>
+      <span class="meter" id="sizeMeter" hidden style="color:var(--dim)"></span>
+    </div>
+    <div class="status" id="recStatus"></div>
+  </section>
+
+  <!-- ─── EDIT ─── -->
+  <section id="panelEdit" role="tabpanel" aria-labelledby="tabEdit" hidden>
+    <div class="grid2">
+      <div>
+        <div class="card">
+          <h2>Takes</h2>
+          <div class="takes" id="takesList"></div>
+          <p class="status" id="takesEmpty">No takes yet — record one first.</p>
+        </div>
+        <div class="stage">
+          <video id="editVideo" controls playsinline style="width:100%"></video>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Trim</h2>
+          <div class="row">
+            <label for="trimStart">Cut from start (s)</label>
+            <input type="number" id="trimStart" min="0" step="0.1" value="0">
+            <label for="trimEnd">Cut from end (s)</label>
+            <input type="number" id="trimEnd" min="0" step="0.1" value="0">
+            <button class="quiet" id="previewTrimBtn">▶ Preview trimmed</button>
+          </div>
+          <div class="status" id="trimStatus"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2>Captions</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="addCueBtn">＋ Add caption at playhead</button>
+            <span class="status" id="cueCount"></span>
+          </div>
+          <div style="max-height:46vh;overflow-y:auto">
+            <table class="cues" id="cueTable">
+              <thead><tr><th>Start (s)</th><th>End (s)</th><th>Text</th><th></th></tr></thead>
+              <tbody id="cueBody"></tbody>
+            </table>
+          </div>
+          <p class="status">Captions come from live speech recognition while you record (fix any errors here) — they export as a .vtt subtitle file or can be burned into the video.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EXPORT ─── -->
+  <section id="panelExport" role="tabpanel" aria-labelledby="tabExport" hidden>
+    <div class="card">
+      <h2>Export the selected take</h2>
+      <div class="row" style="margin-bottom:10px">
+        <label for="titleInput">Title</label>
+        <input type="text" id="titleInput" size="34" placeholder="e.g. Fractions demo — equivalent fractions" maxlength="120">
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label><input type="checkbox" id="titleCardChk"> 2.5s title card at the start</label>
+        <label>Captions:
+          <select id="capMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+            <option value="vtt">separate .vtt file (recommended)</option>
+            <option value="burn">burn into the video</option>
+            <option value="none">none</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button class="action" id="exportBtn">🎬 Prepare export</button>
+        <span class="status" id="exportStatus"></span>
+      </div>
+      <progress id="exportProgress" max="100" value="0" hidden style="margin-top:10px"></progress>
+    </div>
+    <div class="card" id="resultCard" hidden>
+      <h2>Finished video</h2>
+      <video id="resultVideo" controls playsinline style="width:100%;max-height:40vh;background:#000;border-radius:10px"></video>
+      <div class="row" style="margin-top:10px">
+        <button class="action" id="downloadBtn">⬇ Download .webm</button>
+        <button class="quiet" id="downloadVttBtn" hidden>⬇ Download captions (.vtt)</button>
+        <button class="action" id="sendBtn" style="background:#059669">📤 Send to AlloFlow</button>
+        <span class="status" id="resultStatus"></span>
+      </div>
+      <p class="status">The pack reference (title, length, checksum, thumbnail) travels in AlloFlow; the video itself is this file — keep it next to your resource pack or upload it wherever you host videos.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+/* ─── Shared pure logic ─────────────────────────────────────────────────────*/
+// [VS_SHARED_BEGIN] This block is duplicated verbatim inside
+// video_studio/video_studio.html (the popup cannot import this module).
+// tests/video_studio.test.js pins the two copies byte-identical — if you edit
+// here, paste the same block there.
+
+// Seconds → 'HH:MM:SS.mmm' (WebVTT timestamp).
+function vsFormatTimestamp(seconds) {
+  var s = Math.max(0, Number(seconds) || 0);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = Math.floor(s % 60);
+  var ms = Math.round((s - Math.floor(s)) * 1000);
+  if (ms === 1000) { ms = 0; sec += 1; if (sec === 60) { sec = 0; m += 1; if (m === 60) { m = 0; h += 1; } } }
+  var pad = function (n, w) { n = String(n); while (n.length < w) n = '0' + n; return n; };
+  return pad(h, 2) + ':' + pad(m, 2) + ':' + pad(sec, 2) + '.' + pad(ms, 3);
+}
+
+// Cues [{start,end,text}] (seconds) → WebVTT file text. Drops empty/invalid
+// cues, clamps end>start, strips newlines inside a cue (one line per cue).
+function vsBuildVtt(cues) {
+  var out = ['WEBVTT', ''];
+  var list = Array.isArray(cues) ? cues : [];
+  var n = 0;
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i] || {};
+    var text = String(c.text || '').replace(/[\r\n]+/g, ' ').trim();
+    var start = Number(c.start), end = Number(c.end);
+    if (!text || !isFinite(start) || !isFinite(end)) continue;
+    if (end <= start) end = start + 0.5;
+    n += 1;
+    out.push(String(n));
+    out.push(vsFormatTimestamp(start) + ' --> ' + vsFormatTimestamp(end));
+    out.push(text);
+    out.push('');
+  }
+  return out.join('\n');
+}
+
+// WebVTT text → cues [{start,end,text}]. Tolerant: ignores NOTE/STYLE blocks,
+// numeric cue identifiers, and cue settings after the end timestamp.
+function vsParseVtt(text) {
+  var cues = [];
+  if (typeof text !== 'string') return cues;
+  var toSec = function (ts) {
+    var m = /^(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{3})$/.exec(ts.trim());
+    if (!m) return null;
+    return (Number(m[1] || 0) * 3600) + (Number(m[2]) * 60) + Number(m[3]) + (Number(m[4]) / 1000);
+  };
+  var blocks = text.replace(/\r/g, '').split(/\n\n+/);
+  for (var i = 0; i < blocks.length; i++) {
+    var lines = blocks[i].split('\n').filter(function (l) { return l.trim() !== ''; });
+    for (var j = 0; j < lines.length; j++) {
+      var tm = /^(\S+)\s+-->\s+(\S+)/.exec(lines[j]);
+      if (!tm) continue;
+      var start = toSec(tm[1]), end = toSec(tm[2]);
+      var body = lines.slice(j + 1).join(' ').trim();
+      if (start != null && end != null && body) cues.push({ start: start, end: end, text: body });
+      break;
+    }
+  }
+  return cues;
+}
+
+// Trim math: full duration + trimStart/trimEnd (seconds cut off each end) →
+// { segments: [{start,end}], duration } describing what is KEPT. Guards
+// against inverted/overlong trims (returns at least a 0.1s segment).
+function vsComputeSegments(fullDuration, trimStart, trimEnd) {
+  var dur = Math.max(0, Number(fullDuration) || 0);
+  var ts = Math.max(0, Math.min(Number(trimStart) || 0, dur));
+  var te = Math.max(0, Math.min(Number(trimEnd) || 0, dur));
+  var start = ts, end = dur - te;
+  if (end - start < 0.1) {
+    if (start >= dur) { start = Math.max(0, dur - 0.1); }
+    end = Math.min(dur, start + 0.1);
+  }
+  return { segments: [{ start: start, end: end }], duration: Math.max(0, end - start) };
+}
+
+// Chromium's MediaRecorder writes WebM with NO Duration in Segment>Info, so
+// the seekbar is broken until fully buffered. This patches the header the
+// fix-webm-duration way: locate Segment>Info, and if Duration (0x4489) is
+// absent, splice in a float64 Duration element. Returns a NEW Uint8Array, or
+// the ORIGINAL buffer when Duration already exists, parsing fails, or the
+// Segment has a known size (MediaRecorder always streams unknown-size; a
+// known size would need resizing too — bail honestly rather than corrupt).
+function vsPatchWebmDuration(bytes, durationMs) {
+  try {
+    var u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    var durMs = Number(durationMs);
+    if (!(durMs > 0) || u8.length < 8) return u8;
+    var pos = 0;
+    var readVintLen = function (b) { for (var i = 0; i < 8; i++) { if (b & (0x80 >> i)) return i + 1; } return -1; };
+    var readId = function () {
+      var len = readVintLen(u8[pos]); if (len < 1 || pos + len > u8.length) return null;
+      var v = 0; for (var i = 0; i < len; i++) v = v * 256 + u8[pos + i];
+      pos += len; return v;
+    };
+    var readSize = function () {
+      var len = readVintLen(u8[pos]); if (len < 1 || pos + len > u8.length) return null;
+      var first = u8[pos] & (0xFF >> len);
+      var v = first, allOnes = first === (0xFF >> len);
+      for (var i = 1; i < len; i++) { v = v * 256 + u8[pos + i]; if (u8[pos + i] !== 0xFF) allOnes = false; }
+      pos += len;
+      return { value: v, unknown: allOnes, length: len };
+    };
+    // EBML header
+    var id = readId(); if (id !== 0x1A45DFA3) return u8;
+    var sz = readSize(); if (!sz || sz.unknown) return u8;
+    pos += sz.value;
+    // Segment
+    id = readId(); if (id !== 0x18538067) return u8;
+    sz = readSize(); if (!sz) return u8;
+    if (!sz.unknown) return u8; // known-size Segment: patching would desync it
+    // Walk Segment children for Info (0x1549A966)
+    var limit = u8.length;
+    while (pos < limit) {
+      var childStart = pos;
+      var cid = readId(); if (cid == null) return u8;
+      var csz = readSize(); if (!csz || csz.unknown) return u8;
+      var bodyStart = pos;
+      if (cid === 0x1549A966) {
+        // Scan Info children for Duration (0x4489) + TimestampScale (0x2AD7B1)
+        var scale = 1000000;
+        var scanEnd = bodyStart + csz.value;
+        while (pos < scanEnd) {
+          var iid = readId(); if (iid == null) return u8;
+          var isz = readSize(); if (!isz || isz.unknown) return u8;
+          if (iid === 0x4489) return u8; // Duration already present
+          if (iid === 0x2AD7B1) {
+            var sv = 0; for (var k = 0; k < isz.value; k++) sv = sv * 256 + u8[pos + k];
+            if (sv > 0) scale = sv;
+          }
+          pos += isz.value;
+        }
+        // Build Duration element: ID 0x44 0x89, size 0x88 (8), float64 BE value
+        var durValue = durMs * 1000000 / scale; // Matroska Duration is in TimestampScale units
+        var durEl = new Uint8Array(11);
+        durEl[0] = 0x44; durEl[1] = 0x89; durEl[2] = 0x88;
+        var dv = new DataView(durEl.buffer);
+        dv.setFloat64(3, durValue, false);
+        // New Info size (old + 11); re-encode with minimal vint length. Because
+        // the Segment size is unknown, byte-count changes downstream are safe.
+        var newBody = csz.value + 11;
+        var vintLen = 1; while (vintLen <= 8 && newBody >= Math.pow(2, 7 * vintLen) - 1) vintLen++;
+        if (vintLen > 8) return u8;
+        var sizeBytes = new Uint8Array(vintLen);
+        var rem = newBody;
+        for (var b = vintLen - 1; b >= 0; b--) { sizeBytes[b] = rem & 0xFF; rem = Math.floor(rem / 256); }
+        sizeBytes[0] |= (0x80 >> (vintLen - 1));
+        var idLen = 4; // 0x1549A966 is a 4-byte ID
+        var out = new Uint8Array(u8.length - csz.length + vintLen + 11);
+        var o = 0;
+        out.set(u8.subarray(0, childStart + idLen), o); o += childStart + idLen;
+        out.set(sizeBytes, o); o += vintLen;
+        out.set(u8.subarray(bodyStart, bodyStart + csz.value), o); o += csz.value;
+        out.set(durEl, o); o += 11;
+        out.set(u8.subarray(bodyStart + csz.value), o);
+        return out;
+      }
+      pos = bodyStart + csz.value;
+      if (pos <= childStart) return u8; // no forward progress — malformed
+    }
+    return u8;
+  } catch (_) {
+    return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  }
+}
+
+// Compact, pack-safe reference for Resource-History embedding. NEVER includes
+// video bytes — only metadata + an optional small thumbnail data-URI. The
+// guard drops oversized thumbnails so a pack entry stays in the tens of KB.
+function vsMakePackReference(meta) {
+  var m = meta || {};
+  var thumb = (typeof m.thumb === 'string' && m.thumb.indexOf('data:image/') === 0 && m.thumb.length <= 40000) ? m.thumb : null;
+  return {
+    type: 'videoRef',
+    version: 1,
+    title: String(m.title || 'Teacher video').slice(0, 200),
+    durationSec: Math.max(0, Math.round(Number(m.duration) || 0)),
+    sizeBytes: Math.max(0, Math.round(Number(m.size) || 0)),
+    sha256: (typeof m.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(m.sha256)) ? m.sha256.toLowerCase() : null,
+    fileName: String(m.fileName || '').slice(0, 200) || null,
+    hasCaptions: !!m.hasCaptions,
+    thumb: thumb,
+    createdAt: m.createdAt || null
+  };
+}
+// [VS_SHARED_END]
+
+/* ─── Studio app ────────────────────────────────────────────────────────────*/
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var live = $('live');
+  function announce(msg) { live.textContent = msg; }
+  function setStatus(el, msg, cls) { el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
+  function fmtClock(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function fmtBytes(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
+
+  // ── Opener handshake (veraPDF pattern, reversed roles) ──
+  var opener = window.opener || null;
+  function postToOpener(msg) { try { if (opener) opener.postMessage(msg, '*'); } catch (_) {} }
+  window.addEventListener('message', function (ev) {
+    if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-ping') {
+      postToOpener({ type: 'allostudio-ready' });
+    }
+  });
+  postToOpener({ type: 'allostudio-ready' });
+  window.addEventListener('beforeunload', function () { postToOpener({ type: 'allostudio-closed' }); });
+  $('linkState').textContent = opener ? 'Connected to AlloFlow' : 'Standalone mode (no AlloFlow window)';
+
+  // ── Tabs ──
+  var tabs = [['tabRecord', 'panelRecord'], ['tabEdit', 'panelEdit'], ['tabExport', 'panelExport']];
+  function showTab(which) {
+    tabs.forEach(function (t) {
+      var on = t[0] === which;
+      $(t[0]).setAttribute('aria-selected', String(on));
+      $(t[1]).hidden = !on;
+    });
+  }
+  tabs.forEach(function (t) { $(t[0]).addEventListener('click', function () { showTab(t[0]); }); });
+
+  // ── Record settings ──
+  var srcMode = 'screen'; // screen | pip | cam
+  var micOn = true, capOn = true;
+  function syncSrcButtons() {
+    $('srcScreen').setAttribute('aria-pressed', String(srcMode === 'screen'));
+    $('srcPip').setAttribute('aria-pressed', String(srcMode === 'pip'));
+    $('srcCam').setAttribute('aria-pressed', String(srcMode === 'cam'));
+  }
+  $('srcScreen').addEventListener('click', function () { srcMode = 'screen'; syncSrcButtons(); });
+  $('srcPip').addEventListener('click', function () { srcMode = 'pip'; syncSrcButtons(); });
+  $('srcCam').addEventListener('click', function () { srcMode = 'cam'; syncSrcButtons(); });
+  $('micBtn').addEventListener('click', function () {
+    micOn = !micOn;
+    $('micBtn').setAttribute('aria-pressed', String(micOn));
+    $('micBtn').textContent = micOn ? '🎙️ Microphone on' : '🎙️ Microphone off';
+  });
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  if (!SR) { capOn = false; $('capBtn').disabled = true; $('capBtn').textContent = '💬 Captions unavailable'; setStatus($('capNote'), 'Live captions need Chrome/Edge speech recognition. You can still add captions by hand in the Edit tab.'); }
+  $('capBtn').addEventListener('click', function () {
+    capOn = !capOn;
+    $('capBtn').setAttribute('aria-pressed', String(capOn));
+    $('capBtn').textContent = capOn ? '💬 Live captions on' : '💬 Live captions off';
+    setStatus($('capNote'), capOn ? 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).' : '');
+  });
+  if (SR) setStatus($('capNote'), 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).');
+
+  // ── Recording engine ──
+  var takes = [];            // {id, name, blob, url, duration, captions, createdAt}
+  var selectedTakeId = null;
+  var rec = null, recChunks = [], recBytes = 0;
+  var recStreams = [];       // raw streams to stop on teardown
+  var audioCtx = null;
+  var pipRaf = 0;
+  var elapsed = 0, tickTimer = 0, lastTickAt = 0, paused = false;
+  var recog = null, recogCueStart = null, cuesLive = [];
+
+  function pickMime() {
+    var c = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    for (var i = 0; i < c.length; i++) { if (window.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i]; }
+    return '';
+  }
+
+  function startTick() {
+    lastTickAt = performance.now();
+    tickTimer = setInterval(function () {
+      if (!paused) {
+        var now = performance.now();
+        elapsed += (now - lastTickAt) / 1000;
+        lastTickAt = now;
+      } else { lastTickAt = performance.now(); }
+      $('timeMeter').textContent = fmtClock(elapsed);
+      $('sizeMeter').textContent = fmtBytes(recBytes) + ' · ~' + (elapsed > 2 ? fmtBytes(recBytes / elapsed * 60) + '/min' : '…');
+    }, 250);
+  }
+
+  function startCaptions() {
+    if (!capOn || !SR) return;
+    try {
+      recog = new SR();
+      recog.continuous = true;
+      recog.interimResults = true;
+      recog.onresult = function (ev) {
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          var r = ev.results[i];
+          var txt = (r[0] && r[0].transcript || '').trim();
+          if (!txt) continue;
+          if (recogCueStart == null) recogCueStart = Math.max(0, elapsed - 1.5);
+          $('liveCap').hidden = false;
+          $('liveCapText').textContent = txt.slice(-120);
+          if (r.isFinal) {
+            cuesLive.push({ start: recogCueStart, end: elapsed, text: txt });
+            recogCueStart = null;
+          }
+        }
+      };
+      recog.onend = function () { if (rec && rec.state !== 'inactive' && !paused) { try { recog.start(); } catch (_) {} } };
+      recog.onerror = function () {};
+      recog.start();
+    } catch (_) { recog = null; }
+  }
+  function stopCaptions() { try { if (recog) { recog.onend = null; recog.stop(); } } catch (_) {} recog = null; $('liveCap').hidden = true; }
+
+  async function buildStream() {
+    var parts = [];   // audio source streams for mixing
+    var videoTrackStream = null;
+    var camStream = null;
+
+    if (srcMode === 'screen' || srcMode === 'pip') {
+      var disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true });
+      recStreams.push(disp);
+      videoTrackStream = disp;
+      if (disp.getAudioTracks().length) parts.push(new MediaStream(disp.getAudioTracks()));
+      disp.getVideoTracks()[0].addEventListener('ended', function () { if (rec && rec.state !== 'inactive') stopRecording(); });
+    }
+    if (srcMode === 'pip' || srcMode === 'cam') {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
+      recStreams.push(camStream);
+      if (srcMode === 'cam') videoTrackStream = camStream;
+    }
+    if (micOn) {
+      // A denied/missing mic degrades to a silent recording — it must not
+      // cancel the whole capture the teacher just granted.
+      try {
+        var mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        recStreams.push(mic);
+        parts.push(mic);
+      } catch (micErr) {
+        setStatus($('recStatus'), 'Microphone unavailable (' + (micErr && micErr.name || 'error') + ') — recording without narration.', 'warn');
+      }
+    }
+
+    // Video: raw track, or canvas composite for PiP
+    var videoTrack;
+    if (srcMode === 'pip') {
+      var screenVideo = document.createElement('video');
+      screenVideo.srcObject = new MediaStream(videoTrackStream.getVideoTracks());
+      screenVideo.muted = true; await screenVideo.play();
+      var camVideo = document.createElement('video');
+      camVideo.srcObject = camStream; camVideo.muted = true; await camVideo.play();
+      var cv = $('pipCanvas');
+      var w = Math.min(1920, screenVideo.videoWidth || 1280);
+      var hgt = Math.round(w * (screenVideo.videoHeight || 720) / (screenVideo.videoWidth || 1280));
+      cv.width = w; cv.height = hgt; cv.hidden = false;
+      var ctx = cv.getContext('2d');
+      var corner = $('pipCorner').value;
+      var draw = function () {
+        ctx.drawImage(screenVideo, 0, 0, w, hgt);
+        var r = Math.round(Math.min(w, hgt) * 0.14);
+        var pad = 20;
+        var cx = (corner === 'br' || corner === 'tr') ? w - r - pad : r + pad;
+        var cy = (corner === 'br' || corner === 'bl') ? hgt - r - pad : r + pad;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.closePath(); ctx.clip();
+        var vw = camVideo.videoWidth || 1280, vh = camVideo.videoHeight || 720;
+        var scale = (r * 2) / Math.min(vw, vh);
+        ctx.drawImage(camVideo, cx - vw * scale / 2, cy - vh * scale / 2, vw * scale, vh * scale);
+        ctx.restore();
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+        pipRaf = requestAnimationFrame(draw);
+      };
+      draw();
+      videoTrack = cv.captureStream(30).getVideoTracks()[0];
+      $('previewVideo').hidden = true;
+    } else {
+      videoTrack = videoTrackStream.getVideoTracks()[0];
+      var pv = $('previewVideo');
+      pv.srcObject = new MediaStream([videoTrack]);
+      pv.hidden = false;
+      $('pipCanvas').hidden = true;
+    }
+    $('stagePlaceholder').style.display = 'none';
+
+    // Audio: mix all parts through one AudioContext destination
+    var tracks = [videoTrack];
+    if (parts.length) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var dest = audioCtx.createMediaStreamDestination();
+      parts.forEach(function (p) { try { audioCtx.createMediaStreamSource(p).connect(dest); } catch (_) {} });
+      tracks.push(dest.stream.getAudioTracks()[0]);
+    }
+    return new MediaStream(tracks);
+  }
+
+  async function startRecording() {
+    if (rec && rec.state !== 'inactive') return;
+    $('startBtn').disabled = true;
+    setStatus($('recStatus'), 'Choose what to share in the picker…');
+    var stream;
+    try {
+      stream = await buildStream();
+    } catch (e) {
+      $('startBtn').disabled = false;
+      teardownStreams();
+      if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) {
+        setStatus($('recStatus'), 'Capture was cancelled or blocked (' + e.name + '). If no picker appeared, this window may not allow screen capture — tell AlloFlow support what browser you use.', 'warn');
+      } else {
+        setStatus($('recStatus'), 'Could not start capture — ' + (e && e.name || 'error') + ': ' + (e && e.message || ''), 'bad');
+      }
+      return;
+    }
+    // 3-2-1 countdown so teachers can breathe before the take starts.
+    for (var c = 3; c >= 1; c--) {
+      setStatus($('recStatus'), 'Recording starts in ' + c + '…');
+      announce('Recording starts in ' + c);
+      await new Promise(function (res) { setTimeout(res, 800); });
+    }
+    var mime = pickMime();
+    recChunks = []; recBytes = 0; elapsed = 0; paused = false; cuesLive = []; recogCueStart = null;
+    try {
+      rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined);
+    } catch (e) {
+      teardownStreams();
+      $('startBtn').disabled = false;
+      setStatus($('recStatus'), 'MediaRecorder failed: ' + (e && e.message || e), 'bad');
+      return;
+    }
+    rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) { recChunks.push(ev.data); recBytes += ev.data.size; } };
+    rec.onstop = finalizeTake;
+    rec.start(1000);
+    startTick();
+    startCaptions();
+    $('pauseBtn').hidden = false; $('stopBtn').hidden = false;
+    $('recIndicator').hidden = false; $('timeMeter').hidden = false; $('sizeMeter').hidden = false;
+    $('startBtn').textContent = '⏺ Recording…';
+    setStatus($('recStatus'), 'Recording. The tab/screen you picked is being captured.', 'ok');
+    announce('Recording started');
+  }
+
+  function pauseResume() {
+    if (!rec || rec.state === 'inactive') return;
+    if (!paused) {
+      rec.pause(); paused = true; stopCaptions();
+      $('pauseBtn').textContent = '▶ Resume';
+      setStatus($('recStatus'), 'Paused — the timer and captions are stopped.', 'warn');
+      announce('Recording paused');
+    } else {
+      rec.resume(); paused = false; startCaptions();
+      $('pauseBtn').textContent = '⏸ Pause';
+      setStatus($('recStatus'), 'Recording again.', 'ok');
+      announce('Recording resumed');
+    }
+  }
+
+  function stopRecording() {
+    if (!rec || rec.state === 'inactive') return;
+    stopCaptions();
+    clearInterval(tickTimer);
+    try { rec.stop(); } catch (_) {}
+  }
+
+  function teardownStreams() {
+    cancelAnimationFrame(pipRaf); pipRaf = 0;
+    recStreams.forEach(function (s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} });
+    recStreams = [];
+    try { if (audioCtx) audioCtx.close(); } catch (_) {}
+    audioCtx = null;
+    $('previewVideo').hidden = true; $('previewVideo').srcObject = null;
+    $('pipCanvas').hidden = true;
+    $('stagePlaceholder').style.display = '';
+  }
+
+  function finalizeTake() {
+    var dur = elapsed;
+    var raw = new Blob(recChunks, { type: 'video/webm' });
+    recChunks = [];
+    teardownStreams();
+    $('pauseBtn').hidden = true; $('stopBtn').hidden = true;
+    $('recIndicator').hidden = true;
+    $('startBtn').disabled = false; $('startBtn').textContent = '⏺ Start recording';
+    $('pauseBtn').textContent = '⏸ Pause';
+    if (!raw.size || dur < 0.4) {
+      setStatus($('recStatus'), 'That take was empty — nothing was captured.', 'warn');
+      return;
+    }
+    raw.arrayBuffer().then(function (buf) {
+      var patched = vsPatchWebmDuration(new Uint8Array(buf), dur * 1000);
+      var blob = new Blob([patched], { type: 'video/webm' });
+      var take = {
+        id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
+        blob: blob, url: URL.createObjectURL(blob),
+        duration: dur, captions: cuesLive.slice(), createdAt: new Date().toISOString()
+      };
+      takes.push(take);
+      saveDraft(take);
+      selectTake(take.id);
+      renderTakes();
+      setStatus($('recStatus'), 'Take saved (' + fmtBytes(blob.size) + '). Jumping to Edit…', 'ok');
+      announce('Take saved');
+      showTab('tabEdit');
+    });
+  }
+
+  $('startBtn').addEventListener('click', startRecording);
+  $('pauseBtn').addEventListener('click', pauseResume);
+  $('stopBtn').addEventListener('click', stopRecording);
+
+  // ── Takes / editor ──
+  function currentTake() { return takes.find(function (t) { return t.id === selectedTakeId; }) || null; }
+
+  function renderTakes() {
+    var list = $('takesList');
+    list.innerHTML = '';
+    $('takesEmpty').style.display = takes.length ? 'none' : '';
+    takes.forEach(function (t) {
+      var row = document.createElement('div');
+      row.className = 'take';
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      row.setAttribute('aria-current', String(t.id === selectedTakeId));
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t.name;
+      var meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = fmtBytes(t.blob.size) + ' · ' + t.captions.length + ' cues';
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete ' + t.name);
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        takes = takes.filter(function (x) { return x.id !== t.id; });
+        deleteDraft(t.id);
+        try { URL.revokeObjectURL(t.url); } catch (_) {}
+        if (selectedTakeId === t.id) { selectedTakeId = null; if (takes.length) selectTake(takes[takes.length - 1].id); else $('editVideo').src = ''; }
+        renderTakes();
+      });
+      row.addEventListener('click', function () { selectTake(t.id); renderTakes(); });
+      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectTake(t.id); renderTakes(); } });
+      row.appendChild(nm); row.appendChild(meta); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  function selectTake(id) {
+    selectedTakeId = id;
+    var t = currentTake();
+    if (!t) return;
+    $('editVideo').src = t.url;
+    $('trimStart').value = '0';
+    $('trimEnd').value = '0';
+    setStatus($('trimStatus'), 'Full length ' + fmtClock(t.duration) + '.');
+    renderCues();
+  }
+
+  // Trim preview: clamp playback into the kept window.
+  var previewingTrim = false;
+  $('previewTrimBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    var seg = vsComputeSegments(t.duration, Number($('trimStart').value), Number($('trimEnd').value)).segments[0];
+    var v = $('editVideo');
+    previewingTrim = true;
+    v.currentTime = seg.start;
+    v.play();
+    var onTime = function () {
+      if (!previewingTrim) return;
+      if (v.currentTime >= seg.end) { v.pause(); previewingTrim = false; v.removeEventListener('timeupdate', onTime); }
+    };
+    v.addEventListener('timeupdate', onTime);
+  });
+  ['trimStart', 'trimEnd'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      var t = currentTake(); if (!t) return;
+      var r = vsComputeSegments(t.duration, Number($('trimStart').value), Number($('trimEnd').value));
+      setStatus($('trimStatus'), 'Kept: ' + vsFormatTimestamp(r.segments[0].start).slice(3) + ' → ' + vsFormatTimestamp(r.segments[0].end).slice(3) + ' (' + fmtClock(r.duration) + ')');
+    });
+  });
+
+  // ── Caption editor ──
+  function renderCues() {
+    var t = currentTake();
+    var body = $('cueBody');
+    body.innerHTML = '';
+    var cues = t ? t.captions : [];
+    $('cueCount').textContent = cues.length + ' caption' + (cues.length === 1 ? '' : 's');
+    cues.forEach(function (c, idx) {
+      var tr = document.createElement('tr');
+      var mk = function (val, field, step) {
+        var td = document.createElement('td');
+        var inp = document.createElement('input');
+        inp.type = field === 'text' ? 'text' : 'number';
+        if (field !== 'text') { inp.step = step; inp.min = '0'; inp.value = (Math.round(val * 10) / 10).toFixed(1); }
+        else inp.value = val;
+        inp.setAttribute('aria-label', field + ' for caption ' + (idx + 1));
+        inp.addEventListener('change', function () {
+          if (field === 'text') c.text = inp.value;
+          else c[field] = Number(inp.value) || 0;
+          saveDraft(t);
+        });
+        td.appendChild(inp); return td;
+      };
+      tr.appendChild(mk(c.start, 'start', '0.1'));
+      tr.appendChild(mk(c.end, 'end', '0.1'));
+      tr.appendChild(mk(c.text, 'text'));
+      var tdDel = document.createElement('td');
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕'; del.setAttribute('aria-label', 'Delete caption ' + (idx + 1));
+      del.addEventListener('click', function () { t.captions.splice(idx, 1); saveDraft(t); renderCues(); });
+      tdDel.appendChild(del); tr.appendChild(tdDel);
+      body.appendChild(tr);
+    });
+  }
+  $('addCueBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    var at = $('editVideo').currentTime || 0;
+    t.captions.push({ start: at, end: at + 2, text: 'New caption' });
+    t.captions.sort(function (a, b) { return a.start - b.start; });
+    saveDraft(t); renderCues();
+  });
+
+  // ── Export ──
+  var lastExport = null; // {blob, vtt, title, duration, url}
+  $('exportBtn').addEventListener('click', doExport);
+
+  async function doExport() {
+    var t = currentTake();
+    if (!t) { setStatus($('exportStatus'), 'Record (or select) a take first.', 'warn'); return; }
+    var title = $('titleInput').value.trim() || 'Teacher video';
+    var capMode = $('capMode').value;
+    var wantTitleCard = $('titleCardChk').checked;
+    var trimS = Number($('trimStart').value) || 0;
+    var trimE = Number($('trimEnd').value) || 0;
+    var seg = vsComputeSegments(t.duration, trimS, trimE);
+    var cues = t.captions.filter(function (c) { return c.text && c.end > seg.segments[0].start && c.start < seg.segments[0].end; })
+      .map(function (c) { return { start: Math.max(0, c.start - seg.segments[0].start), end: Math.max(0.2, c.end - seg.segments[0].start), text: c.text }; });
+    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05;
+    $('exportBtn').disabled = true;
+    try {
+      var outBlob, outDur;
+      if (!needReencode) {
+        outBlob = t.blob; outDur = t.duration;
+        setStatus($('exportStatus'), 'No re-encode needed — using the original take.', 'ok');
+      } else {
+        setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null);
+        outBlob = res.blob; outDur = res.duration;
+        setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
+      }
+      var vtt = (capMode !== 'none' && cues.length) ? vsBuildVtt(cues) : null;
+      lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob) };
+      $('resultCard').hidden = false;
+      $('resultVideo').src = lastExport.url;
+      $('downloadVttBtn').hidden = !(vtt && capMode === 'vtt');
+      setStatus($('resultStatus'), fmtClock(outDur) + ' · ' + fmtBytes(outBlob.size));
+      announce('Export ready');
+    } catch (e) {
+      setStatus($('exportStatus'), 'Export failed — ' + (e && e.message || e), 'bad');
+    }
+    $('exportBtn').disabled = false;
+  }
+
+  // Real-time re-encode: play the take through the kept segment, draw to a
+  // canvas (title card first, caption overlay if burning), mix audio via
+  // AudioContext, and record the composite. Duration ≈ edited length.
+  function reencode(take, seg, cues, burnCaptions, titleCard) {
+    return new Promise(function (resolve, reject) {
+      var v = document.createElement('video');
+      v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
+      v.addEventListener('error', function () { reject(new Error('could not decode the take')); });
+      v.addEventListener('loadedmetadata', function () {
+        var w = Math.min(1920, v.videoWidth || 1280), hgt = Math.round(w * (v.videoHeight || 720) / (v.videoWidth || 1280));
+        var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
+        var ctx = cv.getContext('2d');
+        var ac = new (window.AudioContext || window.webkitAudioContext)();
+        var dest = ac.createMediaStreamDestination();
+        try { ac.createMediaElementSource(v).connect(dest); } catch (_) {}
+        var stream = cv.captureStream(30);
+        if (dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
+        var mime = pickMime();
+        var mr;
+        try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { reject(e); return; }
+        var chunks = [];
+        mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        var cardDur = titleCard ? 2.5 : 0;
+        var totalDur = cardDur + (seg.end - seg.start);
+        mr.onstop = function () {
+          try { ac.close(); } catch (_) {}
+          var raw = new Blob(chunks, { type: 'video/webm' });
+          raw.arrayBuffer().then(function (buf) {
+            resolve({ blob: new Blob([vsPatchWebmDuration(new Uint8Array(buf), totalDur * 1000)], { type: 'video/webm' }), duration: totalDur });
+          });
+        };
+        var startedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
+        function drawCaption(tSec) {
+          if (!burnCaptions) return;
+          var line = null;
+          for (var i = 0; i < cues.length; i++) { if (tSec >= cues[i].start && tSec <= cues[i].end) { line = cues[i].text; break; } }
+          if (!line) return;
+          ctx.font = 'bold ' + Math.round(hgt * 0.045) + 'px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          var tw = ctx.measureText(line).width + 30;
+          var y = hgt - Math.round(hgt * 0.07);
+          ctx.fillStyle = 'rgba(0,0,0,0.72)';
+          ctx.fillRect((w - tw) / 2, y - Math.round(hgt * 0.05), tw, Math.round(hgt * 0.075));
+          ctx.fillStyle = '#fff';
+          ctx.fillText(line, w / 2, y);
+        }
+        function frame(now) {
+          if (!startedAt) startedAt = now;
+          var el = (now - startedAt) / 1000;
+          if (phase === 'card') {
+            ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, w, hgt);
+            ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'center';
+            ctx.font = 'bold ' + Math.round(hgt * 0.07) + 'px system-ui, sans-serif';
+            ctx.fillText(titleCard, w / 2, hgt / 2, w * 0.9);
+            ctx.font = Math.round(hgt * 0.035) + 'px system-ui, sans-serif';
+            ctx.fillStyle = '#818cf8';
+            ctx.fillText('Made with AlloFlow Video Studio', w / 2, hgt / 2 + Math.round(hgt * 0.09));
+            if (el >= cardDur) {
+              phase = 'video';
+              v.currentTime = seg.start;
+              v.play().catch(function () { reject(new Error('playback blocked')); });
+            }
+          } else {
+            ctx.drawImage(v, 0, 0, w, hgt);
+            drawCaption(v.currentTime - seg.start);
+            if (v.currentTime >= seg.end || v.ended) {
+              cancelAnimationFrame(raf);
+              try { v.pause(); } catch (_) {}
+              setTimeout(function () { try { mr.stop(); } catch (_) {} }, 150);
+              return;
+            }
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        mr.start(1000);
+        if (!titleCard) {
+          v.currentTime = seg.start;
+          v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { reject(new Error('playback blocked')); });
+        } else {
+          raf = requestAnimationFrame(frame);
+        }
+        var prog = setInterval(function () {
+          var el2 = startedAt ? (performance.now() - startedAt) / 1000 : 0;
+          $('exportProgress').hidden = false;
+          $('exportProgress').value = Math.min(100, Math.round(el2 / totalDur * 100));
+          if (mr.state === 'inactive') { clearInterval(prog); $('exportProgress').hidden = true; }
+        }, 300);
+      });
+    });
+  }
+
+  function safeName(title) { return (title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video'; }
+  $('downloadBtn').addEventListener('click', function () {
+    if (!lastExport) return;
+    var a = document.createElement('a');
+    a.href = lastExport.url; a.download = safeName(lastExport.title) + '.webm';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $('downloadVttBtn').addEventListener('click', function () {
+    if (!lastExport || !lastExport.vtt) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([lastExport.vtt], { type: 'text/vtt' }));
+    a.download = safeName(lastExport.title) + '.vtt';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 3000);
+  });
+  $('sendBtn').addEventListener('click', function () {
+    if (!lastExport) return;
+    if (!opener || opener.closed) { setStatus($('resultStatus'), 'AlloFlow window not found — download the file instead.', 'warn'); return; }
+    makeThumb(lastExport.url).then(function (thumb) {
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb } });
+      setStatus($('resultStatus'), 'Sent to AlloFlow ✓ (find it in the Video Studio panel)', 'ok');
+      announce('Video sent to AlloFlow');
+    });
+  });
+  function makeThumb(url) {
+    return new Promise(function (resolve) {
+      try {
+        var v = document.createElement('video');
+        v.src = url; v.muted = true;
+        v.addEventListener('loadeddata', function () {
+          try { v.currentTime = Math.min(0.5, (v.duration || 1) / 2); } catch (_) { resolve(null); }
+        });
+        v.addEventListener('seeked', function () {
+          try {
+            var cv = document.createElement('canvas');
+            cv.width = 320; cv.height = Math.round(320 * (v.videoHeight || 9) / (v.videoWidth || 16));
+            cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
+            resolve(cv.toDataURL('image/jpeg', 0.7));
+          } catch (_) { resolve(null); }
+        });
+        v.addEventListener('error', function () { resolve(null); });
+        setTimeout(function () { resolve(null); }, 4000);
+      } catch (_) { resolve(null); }
+    });
+  }
+
+  // ── IndexedDB drafts (this popup's origin persists, unlike Canvas) ──
+  var DB_NAME = 'allo_video_studio', STORE = 'takes';
+  function withDb(fn) {
+    try {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore(STORE, { keyPath: 'id' }); };
+      req.onsuccess = function () { fn(req.result); };
+      req.onerror = function () {};
+    } catch (_) {}
+  }
+  function saveDraft(take) {
+    withDb(function (db) {
+      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, duration: take.duration, captions: take.captions, createdAt: take.createdAt }); } catch (_) {}
+    });
+  }
+  function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
+  function loadDrafts() {
+    withDb(function (db) {
+      try {
+        var q = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+        q.onsuccess = function () {
+          var rows = (q.result || []).filter(function (r) { return r && r.blob; });
+          if (!rows.length) return;
+          $('recoverText').textContent = rows.length + ' draft take' + (rows.length === 1 ? '' : 's') + ' found from a previous session.';
+          $('recoverBanner').hidden = false;
+          $('recoverBtn').onclick = function () {
+            rows.forEach(function (r) {
+              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), duration: r.duration || 0, captions: r.captions || [], createdAt: r.createdAt });
+            });
+            renderTakes();
+            if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }
+            $('recoverBanner').hidden = true;
+          };
+          $('discardBtn').onclick = function () {
+            rows.forEach(function (r) { deleteDraft(r.id); });
+            $('recoverBanner').hidden = true;
+          };
+        };
+      } catch (_) {}
+    });
+  }
+  loadDrafts();
+  renderTakes();
+})();
+</script>
+</body>
+</html>

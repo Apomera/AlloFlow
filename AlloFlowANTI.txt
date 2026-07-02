@@ -4360,6 +4360,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showCinematicStudio, setShowCinematicStudio] = useState(false);
   const [isSymbolStudioOpen, _setIsSymbolStudioOpenRaw] = useState(false);
   const setIsSymbolStudioOpen = React.useCallback((v) => { if (v && window.__alloLazySymbolStudio) { try { window.__alloLazySymbolStudio(); } catch(_) {} } _setIsSymbolStudioOpenRaw(v); }, []);
+  // Video Studio (2026-07-02): teacher screen-recorder/editor in a companion window (veraPDF popup pattern).
+  const [isVideoStudioOpen, _setIsVideoStudioOpenRaw] = useState(false);
+  const setIsVideoStudioOpen = React.useCallback((v) => { if (v && window.__alloLazyVideoStudio) { try { window.__alloLazyVideoStudio(); } catch(_) {} } _setIsVideoStudioOpenRaw(v); }, []);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
   // Lazy-load AlloHaven host module + arcade-mode plugins on first open.
   // The host module is the largest single file in the bundle (~1.1 MB), so
@@ -4776,6 +4779,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=0ebd500d'); }; })();
+    window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=0ebd500d'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
@@ -20659,6 +20663,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       educatorHubOpen: showEducatorHub,
       learningHubOpen: showLearningHub,
       symbolStudioOpen: isSymbolStudioOpen,
+      videoStudioOpen: isVideoStudioOpen,
       stemLabOpen: showStemLab,
       stemLabTool,
       behaviorLensOpen: showBehaviorLens,
@@ -20761,6 +20766,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           behaviorLens: () => setShowBehaviorLens(false),
           reportWriter: () => setShowReportWriter(false),
           symbolStudio: () => setIsSymbolStudioOpen(false),
+          videoStudio: () => setIsVideoStudioOpen(false),
           accessibilityLab: () => setIsAccessibilityLabOpen(false),
           communityCatalog: () => setIsCommunityCatalogOpen(false),
           dynamicAssessment: () => setIsDynamicAssessmentOpen(false),
@@ -20793,6 +20799,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openBehaviorLens: () => setShowBehaviorLens(true),
       openReportWriter: () => setShowReportWriter(true),
       openSymbolStudio: () => setIsSymbolStudioOpen(true),
+      openVideoStudio: () => setIsVideoStudioOpen(true),
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
@@ -29442,7 +29449,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -29469,6 +29476,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 addToast,
                 t,
                 sourceTopic: sourceTopic || ''
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="VideoStudio" isOpen={isVideoStudioOpen} onClose={() => setIsVideoStudioOpen(false)} icon="🎥" displayName="Video Studio" t={t}>
+            {(VideoStudio) => React.createElement(VideoStudio, {
+                onClose: () => setIsVideoStudioOpen(false),
+                addToast,
+                t
             })}
         </CDNModuleGate>
 

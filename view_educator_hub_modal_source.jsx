@@ -14,6 +14,9 @@ function EducatorHubModal(props) {
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
     setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
+    // Optional default so legacy hosts that haven't wired the setter still render.
+    setIsVideoStudioOpen = (() => {}),
     // Phase A.3 polish (May 12 2026): renamed from setPdfBatchFiles (which was
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
@@ -186,6 +189,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.cinematic_studio_title') || 'Cinematic Studio'}</h3>
                   <p className="text-xs text-rose-600 mt-1">{t('educator_hub.cinematic_studio_desc') || 'Craft strong NotebookLM video prompts, then diagnose and re-prompt weak results'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🎥</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
+                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record your screen, trim, caption, and export video demos — all on your device'}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">

@@ -104,6 +104,10 @@ function buildAlloCommands(ctx) {
       c.openSymbolStudio();
       return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
     } },
+    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open the Video Studio"), aliases: ["video studio", "screen record", "screen recording", "record my screen", "record a video", "video demo", "screencast"], hint: t("cmd.open_video_studio_hint", "Record, trim & caption video demos"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_video_studio_done", "Video Studio opened.");
+    } },
     { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
