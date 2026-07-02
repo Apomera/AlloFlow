@@ -50,6 +50,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     document.body.appendChild(lr);
   })();
 
+  (function() {
+    if (document.getElementById('allo-stem-bikelab-refine-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-bikelab-refine-css';
+    st.textContent = [
+      '.bikelab-sandbox-grid{display:grid;grid-template-columns:minmax(250px,300px) minmax(0,1fr);gap:12px}',
+      '.bikelab-ride-focus-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);gap:12px}',
+      '.bikelab-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.bikelab-canvas-shell{position:relative;border-radius:18px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.98),#07111f);border:1px solid rgba(34,211,238,.34);box-shadow:0 18px 40px rgba(15,23,42,.32),inset 0 1px 0 rgba(255,255,255,.08)}',
+      '.bikelab-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
+      '.bikelab-control-card{border-radius:14px!important;border-color:rgba(100,116,139,.45)!important;box-shadow:0 10px 24px rgba(15,23,42,.10)!important}',
+      '@media(max-width:920px){.bikelab-sandbox-grid,.bikelab-ride-focus-grid{grid-template-columns:1fr!important}.bikelab-metric-grid{grid-template-columns:1fr!important}.bikelab-canvas-shell{padding:6px!important}.bikelab-canvas-toolbar{justify-content:flex-start!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ─────────────────────────────────────────────────────────
   // SECTION 1: BIKES — spec sheet drives the physics sim
@@ -1352,12 +1368,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var ke = 0.5 * systemMass * v * v;
         var pe = systemMass * G * elev;
 
+        function renderRideFocus() {
+          var currentProfile = terrain.profile(posRef.current);
+          var aheadProfile = terrain.profile(posRef.current + 1);
+          var slopePct = Math.round((aheadProfile.y - currentProfile.y) * 100);
+          var cadenceRpm = Math.round((v / Math.max(0.5, bike.wheelR)) * Math.max(0.3, gear * 0.7) * 60 / (2 * Math.PI));
+          var status = running ? (coasting ? 'Coasting' : 'Pedaling') : 'Ready to ride';
+          var cue = !running
+            ? 'Start the ride and watch the force arrows respond to each change.'
+            : coasting
+            ? 'Coast-down mode: drag, rolling resistance, and gravity are in charge.'
+            : slopePct > 4
+            ? 'Climb ahead: lower the gear or add power to keep cadence up.'
+            : wind > 2
+            ? 'Headwind: drag rises fast as relative air speed increases.'
+            : 'Tune power, gear, wind, or terrain and compare the ride.';
+          var progressWidth = Math.min(100, Math.max(4, (posRef.current / 400) * 100));
+          var surfaceLabel = currentProfile.kind.charAt(0).toUpperCase() + currentProfile.kind.slice(1);
+          var metricItems = [
+            ['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],
+            ['Cadence', Math.max(0, cadenceRpm) + ' rpm', 'gear ' + (gear * 100).toFixed(0) + '%'],
+            ['Energy', (ke / 1000).toFixed(2) + ' kJ KE', (pe / 1000).toFixed(2) + ' kJ PE']
+          ];
+          return h('div', { className: 'p-3 pb-0', 'data-bikelab-ride-focus': 'true' },
+            h('div', { className: 'bikelab-ride-focus-grid bg-white border border-cyan-200 rounded-2xl p-3 shadow-sm' },
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', null,
+                    h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-700' }, 'Ride lab'),
+                    h('div', { className: 'text-2xl font-black text-slate-900 leading-tight' }, status)
+                  ),
+                  h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                    h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700' }, bike.name),
+                    h('span', { className: 'px-2 py-1 rounded-full bg-sky-100 text-sky-800' }, terrain.name),
+                    h('span', { className: 'px-2 py-1 rounded-full bg-amber-100 text-amber-800' }, surfaceLabel + ' surface')
+                  )
+                ),
+                h('p', { className: 'text-sm text-slate-700 leading-relaxed max-w-3xl' }, cue),
+                h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', 'aria-hidden': true },
+                  h('div', { className: 'h-full bg-gradient-to-r from-cyan-500 to-emerald-500', style: { width: progressWidth + '%' } })
+                )
+              ),
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'bikelab-metric-grid' },
+                  metricItems.map(function(item) {
+                    return h('div', { key: item[0], className: 'rounded-xl border border-slate-200 bg-slate-50 p-3' },
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-slate-500' }, item[0]),
+                      h('div', { className: 'text-lg font-black text-slate-900 mt-1' }, item[1]),
+                      h('div', { className: 'text-[10px] font-mono text-slate-500' }, item[2])
+                    );
+                  })
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', {
+                    onClick: function() { setRunning(!running); },
+                    className: 'flex-1 min-w-[120px] py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
+                  }, running ? 'Pause ride' : 'Start ride'),
+                  h('button', {
+                    onClick: function() { setRunning(false); reset(); },
+                    className: 'py-2.5 px-4 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
+                  }, t('stem.bikelab.reset', 'Reset'))
+                )
+              )
+            )
+          );
+        }
+
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🧪', title: t('stem.bikelab.physics_sandbox_2', 'Physics Sandbox') }),
-          h('div', { className: 'grid grid-cols-12 gap-3 p-3 flex-1 overflow-auto' },
+          renderRideFocus(),
+          h('div', { className: 'bikelab-sandbox-grid p-3 flex-1 overflow-auto', 'data-bikelab-sandbox-grid': 'true' },
             // Controls column
-            h('div', { className: 'col-span-3 space-y-3' },
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
+            h('div', { className: 'space-y-3', 'data-bikelab-controls': 'true' },
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.bikelab.bike', 'Bike')),
                 BIKES.map(function(b) {
                   return h('button', {
@@ -1373,7 +1456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('div', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.bikelab.terrain', 'Terrain')),
                 TERRAINS.map(function(tr) {
                   return h('button', {
@@ -1386,7 +1469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   );
                 })
               ),
-              h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-400' },
+              h('div', { className: 'bikelab-control-card bg-white rounded-xl p-4 shadow border border-slate-400' },
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between' },
                   h('span', null, t('stem.bikelab.rider_power', 'Rider Power')), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
@@ -1418,9 +1501,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               )
             ),
             // Canvas column
-            h('div', { className: 'col-span-9 space-y-3' },
-              h('div', { id: 'bikelab-sandbox-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },
-                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'aria-label': t('stem.bikelab.physics_sandbox_simulation_bicycle_on_', 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.') }),
+            h('div', { className: 'space-y-3', 'data-bikelab-ride-column': 'true' },
+              h('div', { className: 'bikelab-canvas-toolbar', 'data-bikelab-canvas-toolbar': 'true' },
+                h('div', { className: 'text-xs font-black uppercase tracking-wider text-slate-700' }, 'Live ride surface'),
+                h('div', { className: 'flex gap-2 flex-wrap text-[11px] font-bold' },
+                  h('span', { className: 'px-2 py-1 rounded-full bg-slate-200 text-slate-700' }, bike.name),
+                  h('span', { className: 'px-2 py-1 rounded-full bg-cyan-100 text-cyan-800' }, terrain.name),
+                  h('span', { className: 'px-2 py-1 rounded-full ' + (running ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700') }, running ? (coasting ? 'Coasting' : 'Pedaling') : 'Ready')
+                )
+              ),
+              h('div', { id: 'bikelab-sandbox-fs', className: 'bikelab-canvas-shell bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', 'data-bikelab-sim-surface': 'true', style: { position: 'relative' } },
+                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'data-bikelab-canvas': 'true', style: { borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.08)' }, 'aria-label': t('stem.bikelab.physics_sandbox_simulation_bicycle_on_', 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.') }),
                 // Fullscreen toggle (top-right)
                 h('button', {
                   'aria-label': t('stem.bikelab.toggle_fullscreen_for_the_physics_sand', 'Toggle fullscreen for the physics sandbox'),
@@ -1442,7 +1533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   }
                 }, '⛶')
               ),
-              h('div', { className: 'flex gap-2' },
+              h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', {
                   onClick: function() { setRunning(!running); },
                   className: 'flex-1 py-2.5 px-4 rounded-xl font-bold transition-colors shadow ' + (running ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white')
@@ -1468,7 +1559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (coasting ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600')
                 }, coasting ? '\uD83D\uDED1 Coasting' : '\uD83D\uDECC\uFE0F Coast Down')
               ),
-              h('div', { className: 'grid grid-cols-5 gap-2' },
+              h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-2' },
                 [['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],
                  ['Distance', (posRef.current).toFixed(0) + ' m', ((posRef.current) * 3.281).toFixed(0) + ' ft'],
                  ['Elevation', elev.toFixed(1) + ' m', (elev * 3.281).toFixed(1) + ' ft'],
