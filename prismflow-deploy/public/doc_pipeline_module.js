@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -7469,7 +7469,10 @@ var createDocPipeline = function(deps) {
   // rescue image-only pages embedded in an otherwise text-layer PDF (mixed scanned+digital),
   // which the whole-document isScanned average silently drops. Fail-safe: returns a partial /
   // empty map on any failure so the caller can always keep its original text-layer result.
-  const _ocrSpecificPages = async (base64, pageNums, lang) => {
+  // confOut (optional, deep dive 2026-07-02 H3): caller-supplied object populated with the mean
+  // Tesseract confidence per page — this used to be discarded, so rescued pages bypassed the
+  // low-confidence disclosure nets the full-OCR path feeds.
+  const _ocrSpecificPages = async (base64, pageNums, lang, confOut) => {
     const out = {};
     let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
     try {
@@ -7492,7 +7495,10 @@ var createDocPipeline = function(deps) {
           await _withTimeout(page.render({ canvasContext: cctx, viewport }).promise, 45000, 'page.render (mixed-page OCR p' + p + ')');
           const result = await _ocrRecognize(canvas, useLang, 'mixed-p' + p);
           const txt = ((result && result.data && result.data.text) || '').trim();
-          if (txt) out[p] = txt;
+          if (txt) {
+            out[p] = txt;
+            if (confOut && result && result.data && typeof result.data.confidence === 'number') confOut[p] = Math.round(result.data.confidence);
+          }
         } catch (_pageErr) { try { warnLog('[Mixed-page OCR] page ' + p + ' failed: ' + (_pageErr && _pageErr.message)); } catch (_) {} }
         finally { if (canvas) { try { canvas.width = 0; canvas.height = 0; } catch (_) {} } }
       }
@@ -7858,7 +7864,9 @@ var createDocPipeline = function(deps) {
       const msg = e?.message || '';
       warnLog('[DOCX Det] augmentation pass failed:', msg);
       if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_appears_password_protected_using'), 'info');
-      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_may_corrupted_attempting_vision'), 'info');
+      // Honest wording (deep dive 2026-07-02 H11): the old key promised "attempting Vision" —
+      // but the Vision fallback is gated to application/pdf and never runs for Office files.
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_partly_unreadable') || 'Parts of this Word file could not be read (it may be corrupted) — headers, footnotes, or comments may be missing from the result.', 'info');
     }
     // Embedded images (word/media/* via document.xml.rels) — bytes + alt.
     let mediaImages = [];
@@ -8017,7 +8025,9 @@ var createDocPipeline = function(deps) {
       const msg = e?.message || '';
       warnLog('[PPTX Det] extraction failed:', msg);
       if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.pptx_appears_password_protected_using'), 'info');
-      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.pptx_may_corrupted_attempting_vision'), 'info');
+      // Honest wording (deep dive 2026-07-02 H11): same as the DOCX site — there is no Vision
+      // fallback for Office files; a corrupt PPTX simply can't be processed client-side.
+      else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.pptx_unreadable') || 'This PowerPoint file could not be read (it may be corrupted). Try exporting it to PDF and uploading that instead.', 'info');
       return { fullText: '', slides: [], slideCount: 0, sourceCharCount: 0, method: 'failed', error: msg };
     }
   };
@@ -14496,7 +14506,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _isBatch = !!batchOverrides;
     const _base64 = batchOverrides?.base64 || pendingPdfBase64;
     const _fileName = batchOverrides?.fileName || pendingPdfFile?.name || 'document.pdf';
-    const _mimeType = _fileName.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : _fileName.endsWith('.pptx') ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
+    // Case-INSENSITIVE extension match (deep dive 2026-07-02 H11): this used to be
+    // endsWith('.docx') while the Step-0 isDocx/isPptx branches and the audit router
+    // use /\.docx$/i — an uppercase ".DOCX" was extracted as Office but then fell
+    // through the `_mimeType === 'application/pdf'` OCR gate: Tesseract fed a zip to
+    // pdf.js and Vision got DOCX bytes labeled application/pdf.
+    const _mimeType = /\.docx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : /\.pptx$/i.test(_fileName) ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'application/pdf';
     const _auditResult = batchOverrides?.auditResult || pdfAuditResult;
     const _onProgress = batchOverrides?.onProgress || null;
     // Multi-session: when the UI passes pageRange [start, end], we limit extraction to those
@@ -14784,6 +14799,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // ── Step 0: DETERMINISTIC EXTRACTION (no AI calls, no truncation risk) ──
       // For text-layer PDFs, DOCX, and PPTX we can extract the source text exactly from the file itself.
       // Only fall through to Gemini Vision OCR for scanned PDFs / images.
+      // H1 (deep dive 2026-07-02): Office embedded media (bytes + authored alt text) used to be
+      // collected by the deterministic extractors but consumed ONLY by the audit preview — the
+      // remediated output silently dropped every image and its author-written description while
+      // the audit toast said "preserved". Captured here and spliced into accessibleHtml after the
+      // AI transform (via the same deferred data-URL token mechanism the PDF image path uses).
+      let _officeMediaImages = [];
       try {
         const isDocx = _fileName && /\.docx$/i.test(_fileName);
         const isPptx = _fileName && /\.pptx$/i.test(_fileName);
@@ -14792,6 +14813,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         if (isDocx) {
           updateProgress(1, 'Extracting DOCX text deterministically...');
           const det = await extractDocxTextDeterministic(_base64);
+          _officeMediaImages = (det && det.mediaImages) || [];
           if (det && det.sourceCharCount > 50) {
             extractedText = det.fullText;
             window.__lastGroundTruthCharCount = det.sourceCharCount;
@@ -14810,6 +14832,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         } else if (isPptx) {
           updateProgress(1, 'Extracting PPTX text deterministically...');
           const det = await extractPptxTextDeterministic(_base64);
+          _officeMediaImages = (det && det.mediaImages) || [];
           if (det && det.sourceCharCount > 50) {
             extractedText = det.fullText;
             window.__lastGroundTruthCharCount = det.sourceCharCount;
@@ -14870,16 +14893,43 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   if (_gapPages.length > 0 && _gapPages.length < det.pages.length) {
                     updateProgress(1, `${_gapPages.length} image-only page(s) found in a text PDF — OCRing just those...`);
                     const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
-                    const _rescued = await _ocrSpecificPages(_base64, _gapPages, _toTesseractLang(_ovr));
+                    const _rescueConf = {};
+                    const _rescued = await _ocrSpecificPages(_base64, _gapPages, _toTesseractLang(_ovr), _rescueConf);
                     const _rescuedNums = Object.keys(_rescued);
                     if (_rescuedNums.length > 0) {
-                      det.pages.forEach(pg => { if (_rescued[pg.pageNum]) pg.text = _rescued[pg.pageNum]; });
+                      // H3 (deep dive 2026-07-02): rescued pages used to be spliced in unmarked with
+                      // groundTruthMethod left at 'pdfjs' — so the OCR-accuracy scan, the low-confidence
+                      // banner, and the scanned-path disclosure ALL skipped them: garbled OCR shipped as
+                      // silent "ground truth". Now: junk-gate adoption (same rule as ForceOCR — empty old
+                      // text has junkRatio 1, so gap pages still always adopt over nothing), per-page
+                      // source + confidence marking, an honest '+ocr-rescue' method suffix (matches the
+                      // /ocr/i isScanned test in createTaggedPdf, same as '+reocr'), and low-confidence
+                      // entries into the SAME net the full-OCR path feeds.
+                      let _adoptedRescue = 0;
+                      det.pages.forEach(pg => {
+                        if (!pg || !_rescued[pg.pageNum]) return;
+                        if (_ocrJunkRatio(_rescued[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
+                          pg.text = _rescued[pg.pageNum];
+                          pg.source = 'ocr-rescue';
+                          if (typeof _rescueConf[pg.pageNum] === 'number') pg.ocrConfidence = _rescueConf[pg.pageNum];
+                          _adoptedRescue++;
+                        } else warnLog('[Det] Mixed-page rescue: page ' + pg.pageNum + ' kept (OCR came back junkier than the sparse text layer)');
+                      });
                       const _merged = det.pages.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
                       extractedText = _merged;
                       window.__lastGroundTruthCharCount = _merged.length;
                       window.__lastGroundTruthPageMap = det.pages;
-                      updateProgress(1, `Recovered text from ${_rescuedNums.length} image-only page(s) via OCR`);
-                      warnLog(`[Det] Mixed-page rescue: OCR'd ${_rescuedNums.length}/${_gapPages.length} image-only page(s) → ${_merged.length} total chars`);
+                      if (_adoptedRescue > 0) {
+                        window.__lastGroundTruthMethod = 'pdfjs+ocr-rescue';
+                        const _lowRescue = det.pages.filter(pg => pg && pg.source === 'ocr-rescue' && typeof pg.ocrConfidence === 'number' && pg.ocrConfidence < 60)
+                          .map(pg => ({ pageNum: pg.pageNum, confidence: pg.ocrConfidence }));
+                        if (_lowRescue.length) {
+                          window.__lastOcrLowConfidencePages = (window.__lastOcrLowConfidencePages || []).concat(_lowRescue);
+                          if (typeof addToast === 'function') addToast(`⚠ ${_lowRescue.length} rescued page${_lowRescue.length === 1 ? '' : 's'} OCR'd at low confidence — verify the text is correct (review the Diff / fidelity panel).`, 'warning');
+                        }
+                      }
+                      updateProgress(1, `Recovered text from ${_adoptedRescue} image-only page(s) via OCR`);
+                      warnLog(`[Det] Mixed-page rescue: OCR'd ${_rescuedNums.length}/${_gapPages.length} image-only page(s), adopted ${_adoptedRescue} → ${_merged.length} total chars`);
                     }
                   }
                 }
@@ -14898,6 +14948,17 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             }
           } else if (det) {
             if (det.isEncrypted) window.__lastExtractEncrypted = true; // password-cause: remember for the <20-char abort message below
+            // 0-page guard (deep dive 2026-07-02 H11): a PDF that parses fine but reports zero pages
+            // (attachment-only container, degenerate producer output) used to fall through to the
+            // Vision OCR path, whose page count is then ESTIMATED from base64 size — prompting Vision
+            // for "pages 1..N" that don't exist (hallucination risk, wasted quota) before the <20-char
+            // net finally aborted. Abort here with the real cause. det.error (password/corrupt) paths
+            // keep falling through — Vision is a legitimate rescue for those.
+            if (det.pageCount === 0 && !det.error) {
+              const _zeroPageErr = new Error('This PDF contains no pages — it may be an attachments-only container or corrupted. Nothing to remediate.');
+              _zeroPageErr._alloAbortRun = true; // deliberate abort — rethrown past the fail-safe catch below
+              throw _zeroPageErr;
+            }
             // (2026-06-20) Adopt the REAL page count from pdf.js for the scanned branch too — the text
             // branch already does (above). Otherwise OCR chunking falls back to the rough base64-size
             // estimate (effectivePageCount @ ~12522), which can UNDERcount and silently drop trailing
@@ -14919,6 +14980,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           }
         }
       } catch (detErr) {
+        if (detErr && detErr._alloAbortRun) throw detErr; // 0-page guard above: a deliberate abort, not an extraction failure
         warnLog('[Det] Deterministic extraction failed, falling through to Vision OCR:', detErr?.message);
       }
 
@@ -14934,7 +14996,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _pm = window.__lastGroundTruthPageMap;
           updateProgress(1, `Re-OCRing ${_forceOcrPages.length} page(s) as requested...`);
           const _ovr = (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || null;
-          const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr));
+          const _reConf = {};
+          const _re = await _ocrSpecificPages(_base64, _forceOcrPages, _toTesseractLang(_ovr), _reConf);
           const _reNums = Object.keys(_re);
           if (_reNums.length) {
             let _adopted = 0;
@@ -14944,7 +15007,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // re-scan that came back JUNKIER than the existing text silently replaced good content. Only
               // adopt the re-OCR when it is no junkier than what's already there. Empty/near-empty old text
               // → _ocrJunkRatio = 1 → always adopted (preserves the gap-page rescue case).
-              if (_ocrJunkRatio(_re[pg.pageNum]) <= _ocrJunkRatio(pg.text)) { pg.text = _re[pg.pageNum]; _adopted++; }
+              if (_ocrJunkRatio(_re[pg.pageNum]) <= _ocrJunkRatio(pg.text)) {
+                pg.text = _re[pg.pageNum];
+                // H3 (2026-07-02): mark provenance + confidence so re-OCR'd pages feed the same
+                // accuracy/disclosure nets as full-OCR pages (they were previously unmarked).
+                pg.source = 'reocr';
+                if (typeof _reConf[pg.pageNum] === 'number') pg.ocrConfidence = _reConf[pg.pageNum];
+                _adopted++;
+              }
               else warnLog('[Re-OCR] page ' + pg.pageNum + ' kept (re-scan came back junkier than the existing text)');
             });
             const _merged = _pm.slice().sort((a, b) => a.pageNum - b.pageNum).map(pg => pg.text).filter(Boolean).join('\n\n');
@@ -15320,7 +15390,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // reading the output. Small counts (0-2) stay quiet — occasional
       // decorative failures are expected and already surfaced in imgReport.
       let _imageFailureCount = 0;
-      try {
+      // Deep dive 2026-07-02 ($/H11): Vision image extraction supports only PDF — the audit
+      // path documents the same limitation. For Office inputs this call used to fire anyway
+      // with an Office MIME type, always fail (swallowed), and count toward the aggregate
+      // "image extraction problems" warning. Office embedded media now rides the deterministic
+      // extractor + the H1 post-transform splice instead.
+      if (_mimeType !== 'application/pdf') {
+        _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
+      } else try {
         const imgResult = await callGeminiVision(
           `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
           _base64, _mimeType
@@ -16806,6 +16883,45 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
         _pipeLog('Images', 'Deferred ' + Object.keys(_deferredImageMap).length + ' image(s) as placeholder tokens — real data URLs restored at end of pipeline');
       }
 
+      // ── Office (DOCX/PPTX) embedded media splice (deep dive 2026-07-02 H1) ──
+      // The deterministic Office extractors collect embedded images WITH their authored alt
+      // text, but until now only the audit preview rendered them — remediation worked from
+      // plain text, so every image and author-written description vanished from the output.
+      // Positional anchors don't survive the AI transform (the ALLO_SECTION sentinels are
+      // stripped), so we do what the audit path does for unanchored media: a clearly labeled
+      // section, ordered by slide where known. Data URLs go through _deferredImageMap tokens
+      // so no AI pass ever sees (or can corrupt) raw base64.
+      if (_officeMediaImages && _officeMediaImages.length > 0) {
+        const _oEscTxt = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        const _oEscAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        const _sorted = _officeMediaImages.slice().sort((a, b) => (a.slideNum ?? 1e9) - (b.slideNum ?? 1e9));
+        const _figParts = [];
+        let _embedded = 0;
+        for (let _oi = 0; _oi < _sorted.length; _oi++) {
+          const im = _sorted[_oi];
+          const _slideNote = im.slideNum != null ? 'From slide ' + im.slideNum : 'From the source document';
+          if (im.skipped || !im.src) {
+            _figParts.push('<p><em>[Image from the source could not be embedded — ' + _oEscTxt(im.reason || 'unknown') + (im.alt ? '. Its description: ' + _oEscTxt(im.alt) : '') + ']</em></p>');
+            continue;
+          }
+          // Numeric token REQUIRED: the end-of-pipeline restore (and its dropped-token
+          // recovery section) parse the index via /FINAL_(\d+)__/ — a non-numeric key
+          // would silently never be restored. Safe from collision with the PDF path's
+          // imgIdx tokens because a run is either PDF or Office, never both.
+          const _tok = '__ALLOFLOW_DATAURL_FINAL_' + (_oi + 1) + '__';
+          _deferredImageMap[_tok] = im.src;
+          _embedded++;
+          // figcaption text is aria-hidden where it duplicates the alt verbatim (same
+          // double-announce rationale as the audit path, 2026-06-16).
+          _figParts.push('<figure><img src="' + _tok + '" alt="' + _oEscAttr(im.alt || '') + '"><figcaption>' + (im.alt ? '<span aria-hidden="true">' + _oEscTxt(im.alt) + '</span> — ' : '') + '<em>' + _oEscTxt(_slideNote) + '</em></figcaption></figure>');
+        }
+        bodyContent += '\n<section aria-label="Images from the source document">\n<h2>Images from the source document</h2>\n'
+          + '<p><em>These images appeared in the original file. The text extractor cannot preserve their exact positions, so they are gathered here'
+          + (_sorted.some(im => im.alt) ? ' with their original descriptions' : '') + '.</em></p>\n'
+          + _figParts.join('\n') + '\n</section>';
+        _pipeLog('Images', 'Spliced ' + _embedded + ' Office embedded image(s) (+' + (_sorted.length - _embedded) + ' description-only) into the remediated document');
+      }
+
       // Wrap in full HTML document
       let accessibleHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -18174,6 +18290,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (ocrAccuracy && ocrAccuracy.band === 'poor' && typeof ocrAccuracy.score === 'number') {
             var _oaSusp = (Array.isArray(ocrAccuracy.suspectSamples) && ocrAccuracy.suspectSamples.length) ? (' e.g. "' + ocrAccuracy.suspectSamples.slice(0, 5).join('", "') + '"') : '';
             _structuralFidelityNotes.push({ kind: 'lowOcrAccuracy', msg: 'Estimated OCR quality is POOR (~' + ocrAccuracy.score + '%) — the embedded searchable text may be garbled' + _oaSusp + '. Coverage measures how much text was kept, not whether it is correct; verify against the original before distributing.' });
+          }
+        } else if (!_heavyScanned && extractedText) {
+          // H3 (deep dive 2026-07-02): a mostly-born-digital doc with a few OCR'd pages (mixed-page
+          // rescue or per-page re-OCR) used to skip this estimate entirely — garbled rescue pages
+          // shipped with no accuracy disclosure. Estimate over ONLY the OCR-sourced pages' text
+          // (whole-doc text would dilute a few bad pages below detection).
+          const _ocrSourced = (Array.isArray(window.__lastGroundTruthPageMap) ? window.__lastGroundTruthPageMap : []).filter(pg => pg && pg.source && (pg.text || '').trim().length > 0);
+          const _ocrSourcedText = _ocrSourced.map(pg => pg.text).join('\n\n');
+          if (_ocrSourced.length && _ocrSourcedText.length > 60) {
+            ocrAccuracy = _alloOcrAccuracy(_ocrSourcedText);
+            if (ocrAccuracy) {
+              ocrAccuracy.scope = 'ocr-sourced-pages';
+              ocrAccuracy.pageNums = _ocrSourced.map(pg => pg.pageNum);
+              warnLog('[OCR Accuracy] estimate (rescued/re-OCR\'d pages ' + ocrAccuracy.pageNums.join(', ') + ' only): ' + (ocrAccuracy.score == null ? 'n/a' : (ocrAccuracy.score + '% (' + ocrAccuracy.band + ')')));
+            }
+            if (ocrAccuracy && ocrAccuracy.band === 'poor' && typeof ocrAccuracy.score === 'number') {
+              var _oaSusp2 = (Array.isArray(ocrAccuracy.suspectSamples) && ocrAccuracy.suspectSamples.length) ? (' e.g. "' + ocrAccuracy.suspectSamples.slice(0, 5).join('", "') + '"') : '';
+              _structuralFidelityNotes.push({ kind: 'lowOcrAccuracy', msg: 'Estimated OCR quality on the ' + _ocrSourced.length + ' OCR-recovered page(s) (' + ocrAccuracy.pageNums.join(', ') + ') is POOR (~' + ocrAccuracy.score + '%) — their text may be garbled' + _oaSusp2 + '. The rest of the document is born-digital and unaffected; verify those pages against the original before distributing.' });
+            }
           }
         }
       } catch (_oaErr) { ocrAccuracy = null; }
@@ -30469,11 +30604,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
