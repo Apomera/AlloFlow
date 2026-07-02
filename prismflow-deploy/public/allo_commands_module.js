@@ -108,6 +108,10 @@ function buildAlloCommands(ctx) {
       c.openVideoStudio();
       return t("cmd.open_video_studio_done", "Video Studio opened.");
     } },
+    { id: "open_allo_studio", opensPanel: "alloStudio", icon: "\u{1F3A8}", roles: "teacher", label: t("cmd.open_allo_studio", "Open AlloStudio (flyers & worksheets)"), aliases: ["allostudio", "allo studio", "studio", "flyer", "make a flyer", "poster", "make a poster", "worksheet designer", "design a worksheet", "canva", "design tool"], hint: t("cmd.open_allo_studio_hint", "Design accessible flyers, worksheets & posters"), run: (c) => {
+      c.openAlloStudio();
+      return t("cmd.open_allo_studio_done", "AlloStudio opened.");
+    } },
     { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
