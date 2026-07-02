@@ -121,6 +121,105 @@
     return Object.assign({}, graph, { nodes: nodes });
   }
 
+  // ── Arrangement: persistable spatial meaning + constrained editing ──
+  // An "arrangement" is the spatial meaning a user or the AI has layered onto a
+  // graph: { axes, axisValues: {nodeId:{x,y,z}}, categories: {nodeId: strand} }.
+  // Hosts store it (e.g. generatedContent.data.conceptSpace) and re-apply it with
+  // applyArrangement() before rendering, so 3D placement survives save/reload.
+  function extractArrangement(graph) {
+    graph = normalizeGraph(graph);
+    var axisValues = {}, categories = {};
+    (graph.nodes || []).forEach(function (n) {
+      if (n.axisValues && typeof n.axisValues === 'object' && Object.keys(n.axisValues).length) axisValues[n.id] = Object.assign({}, n.axisValues);
+      if (typeof n.category === 'string' && n.category) categories[n.id] = n.category;
+    });
+    return { axes: graph.axes || null, axisValues: axisValues, categories: categories };
+  }
+
+  function applyArrangement(graph, arrangement) {
+    graph = normalizeGraph(graph);
+    if (!arrangement || typeof arrangement !== 'object') return graph;
+    var av = arrangement.axisValues || {}, cats = arrangement.categories || {};
+    var nodes = graph.nodes.map(function (n) {
+      var patch = null;
+      if (typeof cats[n.id] === 'string' && cats[n.id] && cats[n.id] !== n.category) { patch = patch || {}; patch.category = cats[n.id]; }
+      if (av[n.id] && typeof av[n.id] === 'object') { patch = patch || {}; patch.axisValues = Object.assign({}, n.axisValues || {}, av[n.id]); }
+      return patch ? Object.assign({}, n, patch) : n;
+    });
+    var g = Object.assign({}, graph, { nodes: nodes, axes: arrangement.axes || graph.axes });
+    g.layers = deriveLanes(g);
+    return g;
+  }
+
+  // Deterministic default axisValues for graphs with no geometry at all (e.g.
+  // adaptGenerated output, where every node sits at 0,0,0): x = reading order,
+  // y = tree depth (main → branch → item), z = category (strand). Nodes that
+  // already carry axisValues or real coordinates are left untouched, so this is
+  // safe to call on any graph before a 3D render.
+  function ensureDefaultAxisValues(graph) {
+    graph = normalizeGraph(graph);
+    var outline = deriveOutline(graph);
+    var span = Math.max(1, outline.order.length - 1);
+    var pos = {}; outline.order.forEach(function (id, i) { pos[id] = i; });
+    var Y_BY_TYPE = { main: 0.12, branch: 0.45, item: 0.78 };
+    var changed = false;
+    var nodes = graph.nodes.map(function (n) {
+      var hasAv = n.axisValues && (isNum(n.axisValues.x) || isNum(n.axisValues.y));
+      var hasCoords = (isNum(n.x) && n.x !== 0) || (isNum(n.y) && n.y !== 0);
+      if (hasAv || hasCoords) return n;
+      changed = true;
+      var av = Object.assign({}, n.axisValues || {});
+      av.x = (pos[n.id] != null ? pos[n.id] : 0) / span;
+      av.y = Y_BY_TYPE[n.type] != null ? Y_BY_TYPE[n.type] : 0.5;
+      if (av.z == null && typeof n.category === 'string' && n.category) av.z = n.category;
+      return Object.assign({}, n, { axisValues: av });
+    });
+    return changed ? Object.assign({}, graph, { nodes: nodes }) : graph;
+  }
+
+  // Reassign a node to a different strand (= depth plane). category + axisValues.z
+  // move in lock-step so geometry, lanes, and the SR description keep one source
+  // of truth.
+  function setNodeStrand(graph, id, category) {
+    graph = normalizeGraph(graph);
+    var cat = (typeof category === 'string' && category) ? category : null;
+    var found = false;
+    var nodes = graph.nodes.map(function (n) {
+      if (n.id !== id) return n;
+      found = true;
+      var av = Object.assign({}, n.axisValues || {});
+      if (cat) av.z = cat; else delete av.z;
+      return Object.assign({}, n, { category: cat, axisValues: av });
+    });
+    if (!found) return graph;
+    var g = Object.assign({}, graph, { nodes: nodes });
+    g.layers = deriveLanes(g);
+    return g;
+  }
+
+  // Nudge a node along a normalized ordinal axis ('x' or 'y') by delta, clamped to
+  // 0..1. If the node has no axisValue yet, one is derived from its current
+  // coordinate relative to project()'s scale, so the first nudge moves it FROM
+  // WHERE IT IS, not from a reset position.
+  function nudgeNodeAxis(graph, id, axis, delta, opts) {
+    graph = normalizeGraph(graph);
+    if (axis !== 'x' && axis !== 'y') return graph;
+    opts = opts || {};
+    var scale = axis === 'x' ? num(opts.width, 2000) : num(opts.height, 1200);
+    var node = null;
+    for (var i = 0; i < graph.nodes.length; i++) { if (graph.nodes[i].id === id) { node = graph.nodes[i]; break; } }
+    if (!node) return graph;
+    var cur = (node.axisValues && isNum(node.axisValues[axis])) ? node.axisValues[axis] : clamp01(num(node[axis], 0) / scale);
+    var next = clamp01(cur + (isNum(delta) ? delta : 0));
+    var nodes = graph.nodes.map(function (n) {
+      if (n.id !== id) return n;
+      var av = Object.assign({}, n.axisValues || {});
+      av[axis] = next;
+      return Object.assign({}, n, { axisValues: av });
+    });
+    return Object.assign({}, graph, { nodes: nodes });
+  }
+
   // ── Throughline (unit builder) ↔ acg ────────────────────────────────
   function fromThroughlineUnit(unit) {
     var g = emptyGraph();
@@ -209,7 +308,9 @@
       var items = (b && Array.isArray(b.items)) ? b.items : [];
       items.forEach(function (it, ii) {
         var iid = bid + '_i' + ii;
-        g.nodes.push({ id: iid, label: String(it), type: 'item', x: 0, y: 0, z: 0, category: title });
+        // Items can be plain strings or {text: …} objects (seeded/template organizers).
+        var label = (it && typeof it === 'object') ? String(it.text || '') : String(it);
+        g.nodes.push({ id: iid, label: label, type: 'item', x: 0, y: 0, z: 0, category: title });
         g.edges.push({ id: 'e_' + bid + '_' + iid, fromId: bid, toId: iid, type: 'elaborates' });
       });
     });
@@ -333,6 +434,11 @@
     deriveOutline: deriveOutline,
     deriveLanes: deriveLanes,
     project: project,
+    extractArrangement: extractArrangement,
+    applyArrangement: applyArrangement,
+    ensureDefaultAxisValues: ensureDefaultAxisValues,
+    setNodeStrand: setNodeStrand,
+    nudgeNodeAxis: nudgeNodeAxis,
     fromThroughlineUnit: fromThroughlineUnit,
     toThroughlineUnit: toThroughlineUnit,
     fromConceptMap: fromConceptMap,

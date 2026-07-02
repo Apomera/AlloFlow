@@ -2441,6 +2441,7 @@ function OutlinePanel(props) {
                             <option value="Claim-Evidence-Reasoning">{t('outline.cer') || 'Claim, Evidence, Reasoning (CER)'}</option>
                             <option value="Story Map">{t('outline.story_map') || 'Story Map (Plot Diagram)'}</option>
                             <option value="See-Think-Wonder">{t('outline.see_think_wonder') || 'See, Think, Wonder'}</option>
+                            <option value="3D Concept Space">{t('outline.concept_space_3d') || '3D Concept Space (strands in depth)'}</option>
                         </select>
                     </div>
                     <div>

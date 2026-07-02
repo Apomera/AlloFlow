@@ -122,6 +122,12 @@ describe('ConceptGraphEngine — adaptGenerated (Gemini Stage-1 graph → acg)',
     expect(seq).toEqual([{ id: 'e_ct0_1', fromId: 'b0', toId: 'b1', type: 'sequence' }]);
     expect(g.edges.filter((e) => e.type === 'elaborates').length).toBe(5);
   });
+
+  it('handles {text} object items (seeded/template organizers) without stringifying the object', () => {
+    const g = E.adaptGenerated({ main: 'T', branches: [{ title: 'S', items: [{ text: 'From a template' }, 'Plain'] }] });
+    const labels = g.nodes.filter((n) => n.type === 'item').map((n) => n.label);
+    expect(labels).toEqual(['From a template', 'Plain']);
+  });
 });
 
 describe('ConceptGraphEngine — normalizeGraph routing + idempotence', () => {
@@ -201,5 +207,82 @@ describe('ConceptGraphEngine — project (semantic axes → coordinates)', () =>
   it('leaves nodes without axisValues untouched (manual-drag/legacy coords preserved)', () => {
     const g = { version: 'acg/v1', nodes: [{ id: 'd', x: 42, y: 99, z: 0 }], edges: [], layers: [] };
     expect(E.project(g).nodes[0]).toMatchObject({ x: 42, y: 99 });
+  });
+});
+
+describe('ConceptGraphEngine — arrangements (persistable 3D placement + constrained editing)', () => {
+  it('extractArrangement ↔ applyArrangement round-trips axisValues + categories + axes', () => {
+    const g = {
+      version: 'acg/v1',
+      axes: { z: { kind: 'categorical', categories: ['Bio'] } },
+      nodes: [
+        { id: 'a', x: 0, y: 0, z: 0, category: 'Bio', axisValues: { x: 0.2, y: 0.4, z: 'Bio' } },
+        { id: 'b', x: 5, y: 5, z: 0, category: null },
+      ],
+      edges: [], layers: [],
+    };
+    const arr = E.extractArrangement(g);
+    expect(arr.axisValues.a).toEqual({ x: 0.2, y: 0.4, z: 'Bio' });
+    expect(arr.categories).toEqual({ a: 'Bio' });
+    expect(arr.axes).toEqual(g.axes);
+    // apply onto a fresh copy that has no placement — the persisted meaning returns
+    const bare = { version: 'acg/v1', nodes: [{ id: 'a', x: 0, y: 0, z: 0, category: null }, { id: 'b', x: 5, y: 5, z: 0, category: null }], edges: [], layers: [] };
+    const applied = E.applyArrangement(bare, arr);
+    expect(applied.nodes[0].axisValues).toEqual({ x: 0.2, y: 0.4, z: 'Bio' });
+    expect(applied.nodes[0].category).toBe('Bio');
+    expect(applied.nodes[1].axisValues).toBeUndefined();
+    expect(applied.axes).toEqual(g.axes);
+    expect(applied.layers.map((l) => l.key)).toEqual(['Bio', null]);
+  });
+
+  it('applyArrangement ignores unknown ids and a null arrangement', () => {
+    const g = E.adaptGenerated({ main: 'X', branches: [{ title: 'S', items: ['i'] }] });
+    expect(E.applyArrangement(g, null)).toBe(g);
+    const applied = E.applyArrangement(g, { axisValues: { ghost: { x: 1 } }, categories: { ghost: 'Z' } });
+    expect(applied.nodes.some((n) => n.id === 'ghost')).toBe(false);
+    expect(applied.nodes.map((n) => n.axisValues)).toEqual(g.nodes.map((n) => n.axisValues));
+  });
+
+  it('ensureDefaultAxisValues: geometry-less generated graphs get reading-order × tier × strand defaults', () => {
+    const g = E.adaptGenerated({ main: 'T', branches: [{ title: 'S1', items: ['a1'] }, { title: 'S2', items: [] }] });
+    const withDefaults = E.ensureDefaultAxisValues(g);
+    const byId = {}; withDefaults.nodes.forEach((n) => { byId[n.id] = n; });
+    expect(byId.root.axisValues.x).toBe(0);            // first in reading order
+    expect(byId.b0.axisValues.x).toBeCloseTo(1 / 3);   // second of four
+    expect(byId.root.axisValues.y).toBe(0.12);         // main tier
+    expect(byId.b0.axisValues.y).toBe(0.45);           // branch tier
+    expect(byId.b0_i0.axisValues.y).toBe(0.78);        // item tier
+    expect(byId.b0.axisValues.z).toBe('S1');           // strand from category
+    // projected result is no longer a degenerate single column
+    const proj = E.project(withDefaults, { width: 1000, height: 800, planeGap: 300 });
+    expect(new Set(proj.nodes.map((n) => n.x)).size).toBeGreaterThan(1);
+  });
+
+  it('ensureDefaultAxisValues leaves real coordinates and existing axisValues alone', () => {
+    const manual = { version: 'acg/v1', nodes: [{ id: 'm', x: 42, y: 99, z: 0 }], edges: [], layers: [] };
+    expect(E.ensureDefaultAxisValues(manual)).toBe(manual);   // unchanged ⇒ same object
+    const scored = { version: 'acg/v1', nodes: [{ id: 's', x: 0, y: 0, z: 0, axisValues: { x: 0.7, y: 0.3 } }], edges: [], layers: [] };
+    expect(E.ensureDefaultAxisValues(scored).nodes[0].axisValues).toEqual({ x: 0.7, y: 0.3 });
+  });
+
+  it('setNodeStrand moves category + axisValues.z together and refreshes lanes', () => {
+    const g = E.ensureDefaultAxisValues(E.adaptGenerated({ main: 'T', branches: [{ title: 'S1', items: [] }, { title: 'S2', items: [] }] }));
+    const moved = E.setNodeStrand(g, 'b0', 'S2');
+    const n = moved.nodes.find((x) => x.id === 'b0');
+    expect(n.category).toBe('S2');
+    expect(n.axisValues.z).toBe('S2');
+    expect(moved.layers.map((l) => l.key)).toEqual(['S2', null]);   // S1 has no members left; root is uncategorized
+    expect(E.setNodeStrand(g, 'ghost', 'S2')).toBe(g);              // unknown id ⇒ unchanged
+  });
+
+  it('nudgeNodeAxis clamps to 0..1 and derives a start from current coords when axisValues are absent', () => {
+    const g = { version: 'acg/v1', nodes: [{ id: 'd', x: 1000, y: 600, z: 0 }], edges: [], layers: [] };
+    const once = E.nudgeNodeAxis(g, 'd', 'x', 0.06, { width: 2000, height: 1200 });
+    expect(once.nodes[0].axisValues.x).toBeCloseTo(0.56);           // 1000/2000 + 0.06 — moves FROM where it is
+    const capped = E.nudgeNodeAxis(once, 'd', 'x', 9, {});
+    expect(capped.nodes[0].axisValues.x).toBe(1);
+    const floored = E.nudgeNodeAxis(once, 'd', 'y', -9, {});
+    expect(floored.nodes[0].axisValues.y).toBe(0);
+    expect(E.nudgeNodeAxis(g, 'd', 'q', 1)).toBe(g);                // invalid axis ⇒ unchanged
   });
 });

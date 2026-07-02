@@ -170,6 +170,28 @@ describe('ConceptGraph3D — pure a11y / navigation seams', () => {
   });
 });
 
+describe('ConceptGraph3D.sceneToAxisValues (drag write-back = inverse of buildScene placement)', () => {
+  it('round-trips: axisValues → buildScene scene coords → sceneToAxisValues', () => {
+    const opts = { width: 1000, height: 800, planeGap: 300 };
+    const s = CG3D.buildScene(axisGraph(), opts);
+    const a = s.nodes.find((n) => n.id === 'a');
+    const avA = CG3D.sceneToAxisValues(s, a.sx, a.sy, opts);
+    expect(avA.x).toBeCloseTo(0);
+    expect(avA.y).toBeCloseTo(0);
+    const b = s.nodes.find((n) => n.id === 'b');
+    const avB = CG3D.sceneToAxisValues(s, b.sx, b.sy, opts);
+    expect(avB.x).toBeCloseTo(1);
+    expect(avB.y).toBeCloseTo(1);
+  });
+
+  it('clamps out-of-bounds drops to the 0..1 axis space', () => {
+    const opts = { width: 1000, height: 800 };
+    const s = CG3D.buildScene(axisGraph(), opts);
+    expect(CG3D.sceneToAxisValues(s, 99999, -99999, opts)).toEqual({ x: 1, y: 1 });
+    expect(CG3D.sceneToAxisValues(s, -99999, 99999, opts)).toEqual({ x: 0, y: 0 });
+  });
+});
+
 describe('ConceptGraph3D — graceful degradation (no WebGL in jsdom)', () => {
   it('isWebGLAvailable() is false under jsdom', () => {
     expect(CG3D.isWebGLAvailable()).toBe(false);

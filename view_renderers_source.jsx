@@ -1669,6 +1669,25 @@ const renderOutlineContent = (deps) => {
             );
         }
 
+        if (type === '3D Concept Space' && !isEditingOutline) {
+            // Edit-text mode falls through to the generic branch grid below, which
+            // already provides full inline editing for {main, branches}.
+            return (
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <ErrorBoundary fallbackMessage="3D Concept Space encountered an error.">
+                        <ConceptSpace3DView
+                            data={generatedContent?.data}
+                            title={main}
+                            t={t}
+                            addToast={deps.addToast}
+                            onPersist={deps.handleConceptSpacePersist}
+                        />
+                    </ErrorBoundary>
+                </div>
+            );
+        }
+
         if (type === 'Structured Outline') {
             const toRoman = (num) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -1836,7 +1855,12 @@ function openConceptMap3D(opts) {
   var t = opts.t || function (k) { return k; };
   var addToast = opts.addToast || function () {};
   var nodes = Array.isArray(opts.nodes) ? opts.nodes : [];
-  if (!nodes.length) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
+  // Static-view path (no interactive canvas needed): opts.generated is the raw
+  // {main, branches, structureType} payload; the engine's adaptGenerated() turns it
+  // into a graph directly, so 3D works from ANY organizer without entering
+  // interactive mode first.
+  var generated = (opts.generated && Array.isArray(opts.generated.branches) && opts.generated.branches.length) ? opts.generated : null;
+  if (!nodes.length && !generated) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
   var overlay = document.createElement('div');
   overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', t('concept_map.view_3d') || 'View concept map in 3D');
@@ -1871,8 +1895,41 @@ function openConceptMap3D(opts) {
     var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
     if (!ok || !E || !CG3D) { status.textContent = '⚠️ ' + (t('concept_map.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline still works.'); return; }
-    var graph = E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null);
+    var graph = nodes.length
+      ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
+      : E.adaptGenerated(generated);
+    // Deterministic default placement (reading order × tree depth × strand) for
+    // graphs with no geometry, then any saved arrangement wins on top of it.
+    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    if (opts.arrangement && E.applyArrangement) graph = E.applyArrangement(graph, opts.arrangement);
+    var canPersist = typeof opts.onArrangementChange === 'function';
+    var renderOpts = { t: t };
+    if (canPersist) {
+      renderOpts.editable = true;
+      renderOpts.onArrangementChange = function (arr) {
+        try { if (E.applyArrangement) graph = E.applyArrangement(graph, arr); } catch (e) {}   // keep closure graph fresh for a later AI arrange
+        try { opts.onArrangementChange(arr); } catch (e) {}
+      };
+      hint.textContent = t('concept_map.view_3d_controls_edit') || 'Drag a node to place it · drag space to orbit · scroll to zoom · depth = strand';
+    }
     if (status.parentNode) status.parentNode.removeChild(status);
+    if (canPersist) {
+      // Parity with the embedded view: clear the saved arrangement and glide back
+      // to the deterministic default layout.
+      var resetArrBtn = document.createElement('button');
+      resetArrBtn.textContent = '↺ ' + (t('concept_space.reset') || 'Reset arrangement');
+      resetArrBtn.style.cssText = 'font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;';
+      header.insertBefore(resetArrBtn, closeBtn);
+      resetArrBtn.onclick = function () {
+        try { opts.onArrangementChange(null); } catch (e) {}
+        graph = nodes.length
+          ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null)
+          : E.adaptGenerated(generated);
+        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+        handle = CG3D.render(body, graph, renderOpts);
+      };
+    }
     if (typeof window.callGemini === 'function') {
       aiBtn = document.createElement('button');
       aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
@@ -1883,16 +1940,167 @@ function openConceptMap3D(opts) {
         E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || '' }).then(function (merged) {
           if (!overlay.parentNode) return;
           graph = merged;
+          if (canPersist && E.extractArrangement) { try { opts.onArrangementChange(E.extractArrangement(graph)); } catch (e) {} }
           try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
-          handle = CG3D.render(body, graph, { t: t });
+          handle = CG3D.render(body, graph, renderOpts);
         }).catch(function () { addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
           .then(function () { if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = prev; } });
       };
     }
-    handle = CG3D.render(body, graph, { t: t });
+    handle = CG3D.render(body, graph, renderOpts);
   });
   return destroy;
 }
+
+// ── Embedded 3D host for the '3D Concept Space' organizer type ──────
+// For this structureType the 3D scene IS the primary surface (not an overlay): the
+// engine builds a graph straight from {main, branches}, the saved arrangement
+// (data.conceptSpace) re-applies on top, and constrained edits persist back through
+// onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
+// becomes visible on any load/WebGL failure), and this component adds its own
+// static-outline fallback for the case where the modules themselves never load.
+const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
+    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+    const hostRef = React.useRef(null);
+    const handleRef = React.useRef(null);
+    const graphRef = React.useRef(null);
+    const [ready, setReady] = React.useState(false);
+    const [failed, setFailed] = React.useState(false);
+    const [arranging, setArranging] = React.useState(false);
+    const [nonce, setNonce] = React.useState(0);   // bump to rebuild the scene from persisted data
+    const persist = typeof onPersist === 'function' ? onPersist : null;
+    // Scene identity = the CONTENT (not the arrangement): edits update
+    // data.conceptSpace continuously and must NOT remount the GL scene.
+    const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items })) });
+
+    React.useEffect(() => {
+        let alive = true;
+        _voCg3dEnsure().then((ok) => { if (alive) { if (ok) setReady(true); else setFailed(true); } });
+        return () => { alive = false; };
+    }, []);
+
+    React.useEffect(() => {
+        if (!ready || failed || !hostRef.current || !hasContent) return undefined;
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!E || !CG3D) { setFailed(true); return undefined; }
+        let graph = E.adaptGenerated(data || {});
+        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        if (data?.conceptSpace && E.applyArrangement) graph = E.applyArrangement(graph, data.conceptSpace);
+        graphRef.current = graph;
+        handleRef.current = CG3D.render(hostRef.current, graph, {
+            t,
+            autoRotate: false,
+            editable: !!persist,
+            onArrangementChange: persist ? ((arr) => persist(arr, 'conceptSpace')) : undefined,
+        });
+        return () => {
+            try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+            handleRef.current = null;
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ready, failed, dataKey, nonce]);
+
+    const handleArrange = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!E || !graphRef.current || typeof window.callGemini !== 'function') return;
+        setArranging(true);
+        E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || '' })
+            .then((merged) => {
+                graphRef.current = merged;
+                if (persist && E.extractArrangement) {
+                    persist(E.extractArrangement(merged), 'conceptSpace');
+                    setNonce((n) => n + 1);
+                } else if (hostRef.current && CG3D) {
+                    try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
+                    handleRef.current = CG3D.render(hostRef.current, merged, { t, autoRotate: false });
+                }
+            })
+            .catch(() => { if (addToast) addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
+            .then(() => setArranging(false));
+    };
+
+    const handleFullscreen = () => {
+        openConceptMap3D({
+            generated: data,
+            arrangement: data?.conceptSpace,
+            onArrangementChange: persist ? ((arr) => { persist(arr, 'conceptSpace'); setNonce((n) => n + 1); }) : undefined,
+            title: data?.main || title || '',
+            t, addToast,
+        });
+    };
+
+    return (
+        <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <div className="text-xs text-slate-500">
+                    {t('concept_space.hint') || 'Position carries meaning: left → right = sequence · higher = more abstract · depth = strand.'}
+                </div>
+                <div className="flex items-center gap-2">
+                    {hasContent && typeof window.callGemini === 'function' && !failed && (
+                        <button
+                            onClick={handleArrange}
+                            disabled={arranging}
+                            className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={t('concept_space.arrange_tooltip') || 'Ask the AI to score every concept on the sequence, abstraction, and strand axes, then re-project the space'}
+                        >
+                            ✨ {arranging ? (t('concept_map.view_3d_arranging') || 'Arranging…') : (t('concept_map.view_3d_arrange') || 'Arrange by meaning')}
+                        </button>
+                    )}
+                    {hasContent && persist && data?.conceptSpace && !failed && (
+                        <button
+                            onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
+                            className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            title={t('concept_space.reset_tooltip') || 'Discard the saved arrangement and return to the default layout'}
+                        >
+                            ↺ {t('concept_space.reset') || 'Reset arrangement'}
+                        </button>
+                    )}
+                    {hasContent && !failed && (
+                        <button
+                            onClick={handleFullscreen}
+                            className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors"
+                            title={t('concept_space.fullscreen_tooltip') || 'Open this concept space full screen'}
+                        >
+                            ⛶ {t('concept_space.fullscreen') || 'Fullscreen'}
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
+                {!hasContent ? (
+                    <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
+                        <div className="text-3xl" aria-hidden="true">🧊</div>
+                        <p className="text-sm font-bold text-slate-200">{t('concept_space.empty_title') || 'Nothing to map yet'}</p>
+                        <p className="text-xs text-slate-400 max-w-sm">{t('concept_space.empty_body') || 'Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.'}</p>
+                    </div>
+                ) : failed ? (
+                    <div className="p-6 text-slate-200 text-sm overflow-auto h-full" role="status">
+                        <p className="mb-3 text-amber-300">{t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.'}</p>
+                        <ol className="list-decimal pl-6 space-y-2">
+                            {(Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => (
+                                <li key={bi}>
+                                    <span className="font-bold">{b.title}</span>
+                                    {Array.isArray(b.items) && b.items.length > 0 && (
+                                        <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                                            {b.items.map((it, ii) => <li key={ii}>{typeof it === 'object' ? it.text : it}</li>)}
+                                        </ul>
+                                    )}
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                ) : (
+                    <div ref={hostRef} className="absolute inset-0" />
+                )}
+            </div>
+            <p className="text-xs text-slate-500 italic text-center mt-3">
+                {t('concept_space.caption') || 'Drag to orbit · scroll to zoom · click a concept for details. Drag a concept to place it on its strand plane — position is saved with the resource.'}
+            </p>
+        </div>
+    );
+};
 
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
@@ -2037,7 +2245,14 @@ const renderInteractiveMap = (deps) => {
                                 {isMapLocked ? t('concept_map.toolbar.locked_label') : t('concept_map.toolbar.unlocked_label')}
                             </button>
                             <button
-                                onClick={() => openConceptMap3D({ nodes: conceptMapNodes, edges: conceptMapEdges, structureType: generatedContent?.data?.structureType, title: generatedContent?.data?.main || generatedContent?.title || '', t, addToast })}
+                                onClick={() => openConceptMap3D({
+                                    nodes: conceptMapNodes, edges: conceptMapEdges,
+                                    structureType: generatedContent?.data?.structureType,
+                                    title: generatedContent?.data?.main || generatedContent?.title || '',
+                                    arrangement: generatedContent?.data?.conceptSpaceLive,
+                                    onArrangementChange: typeof deps.handleConceptSpacePersist === 'function' ? ((arr) => deps.handleConceptSpacePersist(arr, 'conceptSpaceLive')) : undefined,
+                                    t, addToast
+                                })}
                                 className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm"
                                 title={t('concept_map.toolbar.view_3d_tooltip') || 'See this concept map as an orbitable 3D view (depth = strand)'}
                                 aria-label={t('concept_map.toolbar.view_3d_tooltip') || 'View in 3D'}
@@ -2421,4 +2636,5 @@ window.AlloModules.ViewRenderers = {
   renderFormattedText,
   renderOutlineContent,
   renderInteractiveMap,
+  openConceptMap3D,   // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
 };

@@ -105,6 +105,7 @@
   var handleVennDrop = props.handleVennDrop;
   var renderInteractiveMap = props.renderInteractiveMap;
   var renderOutlineContent = props.renderOutlineContent;
+  var handleConceptSpacePersist = props.handleConceptSpacePersist;
   // Pure helpers
   var addToast = props.addToast;
   var copyToClipboard = props.copyToClipboard;
@@ -148,7 +149,28 @@
     size: 14
   }) : /*#__PURE__*/React.createElement(Share2, {
     size: 14
-  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.view_static') : t('outline.view_interactive')), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
+  }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? t('outline.view_static') : t('outline.view_interactive')), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      var vr = window.AlloModules && window.AlloModules.ViewRenderers;
+      if (vr && typeof vr.openConceptMap3D === 'function') {
+        vr.openConceptMap3D({
+          generated: generatedContent?.data,
+          arrangement: generatedContent?.data?.conceptSpace,
+          onArrangementChange: typeof handleConceptSpacePersist === 'function' ? function (arr) {
+            handleConceptSpacePersist(arr, 'conceptSpace');
+          } : undefined,
+          title: generatedContent?.data?.main || generatedContent?.title || '',
+          t: t,
+          addToast: addToast
+        });
+      } else if (addToast) {
+        addToast(t('concept_map.view_3d_failed') || 'The 3D view could not load here. The outline still works.', 'error');
+      }
+    },
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50",
+    title: t('concept_map.toolbar.view_3d_tooltip') || 'See this organizer as an orbitable 3D view (depth = strand)',
+    "aria-label": t('concept_map.toolbar.view_3d_tooltip') || 'View in 3D'
+  }, "🧊 ", t('concept_map.toolbar.view_3d') || 'View in 3D'), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_outline'),
     onClick: handleToggleIsEditingOutline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`

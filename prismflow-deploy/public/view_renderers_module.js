@@ -1075,6 +1075,18 @@ const renderOutlineContent = (deps) => {
       return /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white rounded-lg border border-slate-200 p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("h5", { className: "text-xs font-black uppercase tracking-wider mb-2", style: { color: stage.color } }, stage.branch.title), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, items.length > 0 ? items.map((text, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-xs text-slate-700 leading-snug" }, "\u2022 ", text)) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-600 italic" }, "\u2014")));
     }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.story_map_caption") || "Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension."));
   }
+  if (type === "3D Concept Space" && !isEditingOutline) {
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-6" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "3D Concept Space encountered an error." }, /* @__PURE__ */ React.createElement(
+      ConceptSpace3DView,
+      {
+        data: generatedContent?.data,
+        title: main,
+        t,
+        addToast: deps.addToast,
+        onPersist: deps.handleConceptSpacePersist
+      }
+    )));
+  }
   if (type === "Structured Outline") {
     const toRoman = (num) => {
       const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -1149,106 +1161,330 @@ const renderOutlineContent = (deps) => {
   }
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl mx-auto" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement(BranchItem, { key: i, branch: b, bIdx: i }))));
 };
-// ── "View in 3D" for the Visual Organizer concept map ──────────────
-// Self-contained: builds an acg graph from the current map and opens an imperative
-// overlay via the shared ConceptGraph3D renderer (lazy-loaded from this module's own
-// CDN path), so no host state / AlloFlowANTI.txt wiring is needed. Falls back to the
-// reading-order outline if WebGL or the modules are unavailable.
-var _VO_CG3D_CDN_FALLBACK = 'https://alloflow-cdn.pages.dev/';
+var _VO_CG3D_CDN_FALLBACK = "https://alloflow-cdn.pages.dev/";
 function _voCg3dSelfBase() {
   try {
-    var scripts = document.getElementsByTagName('script');
+    var scripts = document.getElementsByTagName("script");
     for (var i = 0; i < scripts.length; i++) {
-      var src = scripts[i].src || '';
-      var idx = src.indexOf('view_renderers_module.js');
-      if (idx >= 0) return { base: src.slice(0, idx), query: src.slice(idx + 'view_renderers_module.js'.length) };
+      var src = scripts[i].src || "";
+      var idx = src.indexOf("view_renderers_module.js");
+      if (idx >= 0) return { base: src.slice(0, idx), query: src.slice(idx + "view_renderers_module.js".length) };
     }
-  } catch (e) {}
-  return { base: _VO_CG3D_CDN_FALLBACK, query: '' };
+  } catch (e) {
+  }
+  return { base: _VO_CG3D_CDN_FALLBACK, query: "" };
 }
 function _voCg3dLoadScript(url) {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     try {
       var ex = document.querySelector('script[data-cg-src="' + url + '"]');
-      if (ex) { if (ex.getAttribute('data-cg-loaded') === '1') return resolve(); ex.addEventListener('load', function () { resolve(); }); ex.addEventListener('error', function () { reject(new Error('load failed')); }); return; }
-      var s = document.createElement('script'); s.src = url; s.async = true; s.setAttribute('data-cg-src', url);
-      s.onload = function () { s.setAttribute('data-cg-loaded', '1'); resolve(); };
-      s.onerror = function () { reject(new Error('load failed: ' + url)); };
+      if (ex) {
+        if (ex.getAttribute("data-cg-loaded") === "1") return resolve();
+        ex.addEventListener("load", function() {
+          resolve();
+        });
+        ex.addEventListener("error", function() {
+          reject(new Error("load failed"));
+        });
+        return;
+      }
+      var s = document.createElement("script");
+      s.src = url;
+      s.async = true;
+      s.setAttribute("data-cg-src", url);
+      s.onload = function() {
+        s.setAttribute("data-cg-loaded", "1");
+        resolve();
+      };
+      s.onerror = function() {
+        reject(new Error("load failed: " + url));
+      };
       document.head.appendChild(s);
-    } catch (e) { reject(e); }
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
-  return _voCg3dLoadScript(loc.base + 'concept_graph_engine_module.js' + loc.query)
-    .then(function () { return _voCg3dLoadScript(loc.base + 'concept_graph_3d_module.js' + loc.query); })
-    .then(function () { return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine); })
-    .catch(function () { return false; });
+  return _voCg3dLoadScript(loc.base + "concept_graph_engine_module.js" + loc.query).then(function() {
+    return _voCg3dLoadScript(loc.base + "concept_graph_3d_module.js" + loc.query);
+  }).then(function() {
+    return !!(window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine);
+  }).catch(function() {
+    return false;
+  });
 }
 function openConceptMap3D(opts) {
   opts = opts || {};
-  var t = opts.t || function (k) { return k; };
-  var addToast = opts.addToast || function () {};
+  var t = opts.t || function(k) {
+    return k;
+  };
+  var addToast = opts.addToast || function() {
+  };
   var nodes = Array.isArray(opts.nodes) ? opts.nodes : [];
-  if (!nodes.length) { addToast(t('concept_map.view_3d_empty') || 'Add some concepts first.', 'info'); return function () {}; }
-  var overlay = document.createElement('div');
-  overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true');
-  overlay.setAttribute('aria-label', t('concept_map.view_3d') || 'View concept map in 3D');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
-  var header = document.createElement('div');
-  header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
-  var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
-  var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '\u{1F9CA} ' + (t('concept_map.view_3d') || '3D concept map');
-  var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;'; hint.textContent = t('concept_map.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand';
-  titleWrap.appendChild(title); titleWrap.appendChild(hint);
-  var closeBtn = document.createElement('button');
-  closeBtn.setAttribute('aria-label', t('common.close') || 'Close'); closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
-  header.appendChild(titleWrap); header.appendChild(closeBtn);
-  var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
-  var status = document.createElement('div'); status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
-  status.textContent = '\u{1F9ED} ' + (t('concept_map.view_3d_loading') || 'Loading the 3D view…');
+  var generated = opts.generated && Array.isArray(opts.generated.branches) && opts.generated.branches.length ? opts.generated : null;
+  if (!nodes.length && !generated) {
+    addToast(t("concept_map.view_3d_empty") || "Add some concepts first.", "info");
+    return function() {
+    };
+  }
+  var overlay = document.createElement("div");
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", t("concept_map.view_3d") || "View concept map in 3D");
+  overlay.style.cssText = "position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;";
+  var header = document.createElement("div");
+  header.style.cssText = "display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;";
+  var titleWrap = document.createElement("div");
+  titleWrap.style.cssText = "flex:1;min-width:0;";
+  var title = document.createElement("div");
+  title.style.cssText = "font-weight:800;font-size:14px;";
+  title.textContent = "\u{1F9CA} " + (t("concept_map.view_3d") || "3D concept map");
+  var hint = document.createElement("div");
+  hint.style.cssText = "font-size:11px;color:#94a3b8;";
+  hint.textContent = t("concept_map.view_3d_controls") || "Drag to orbit \xB7 scroll to zoom \xB7 depth = strand";
+  titleWrap.appendChild(title);
+  titleWrap.appendChild(hint);
+  var closeBtn = document.createElement("button");
+  closeBtn.setAttribute("aria-label", t("common.close") || "Close");
+  closeBtn.textContent = "\u2715";
+  closeBtn.style.cssText = "border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;";
+  header.appendChild(titleWrap);
+  header.appendChild(closeBtn);
+  var body = document.createElement("div");
+  body.style.cssText = "flex:1;position:relative;min-height:0;";
+  var status = document.createElement("div");
+  status.style.cssText = "position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;";
+  status.textContent = "\u{1F9ED} " + (t("concept_map.view_3d_loading") || "Loading the 3D view\u2026");
   body.appendChild(status);
-  overlay.appendChild(header); overlay.appendChild(body);
+  overlay.appendChild(header);
+  overlay.appendChild(body);
   document.body.appendChild(overlay);
   var handle = null, aiBtn = null;
   function destroy() {
-    try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
-    try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
-    try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    try {
+      if (handle && handle.destroy) handle.destroy();
+    } catch (e) {
+    }
+    try {
+      document.removeEventListener("keydown", onKey, true);
+    } catch (e) {
+    }
+    try {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    } catch (e) {
+    }
   }
-  function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
-  document.addEventListener('keydown', onKey, true);
+  function onKey(e) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      destroy();
+    }
+  }
+  document.addEventListener("keydown", onKey, true);
   closeBtn.onclick = destroy;
-  _voCg3dEnsure().then(function (ok) {
+  _voCg3dEnsure().then(function(ok) {
     if (!overlay.parentNode) return;
     var E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     var CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
-    if (!ok || !E || !CG3D) { status.textContent = '⚠️ ' + (t('concept_map.view_3d_failed') || 'The 3D view could not load here. Open the latest Canvas link and try again — the outline still works.'); return; }
-    var graph = E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null);
+    if (!ok || !E || !CG3D) {
+      status.textContent = "\u26A0\uFE0F " + (t("concept_map.view_3d_failed") || "The 3D view could not load here. Open the latest Canvas link and try again \u2014 the outline still works.");
+      return;
+    }
+    var graph = nodes.length ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null) : E.adaptGenerated(generated);
+    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    if (opts.arrangement && E.applyArrangement) graph = E.applyArrangement(graph, opts.arrangement);
+    var canPersist = typeof opts.onArrangementChange === "function";
+    var renderOpts = { t };
+    if (canPersist) {
+      renderOpts.editable = true;
+      renderOpts.onArrangementChange = function(arr) {
+        try {
+          if (E.applyArrangement) graph = E.applyArrangement(graph, arr);
+        } catch (e) {
+        }
+        try {
+          opts.onArrangementChange(arr);
+        } catch (e) {
+        }
+      };
+      hint.textContent = t("concept_map.view_3d_controls_edit") || "Drag a node to place it \xB7 drag space to orbit \xB7 scroll to zoom \xB7 depth = strand";
+    }
     if (status.parentNode) status.parentNode.removeChild(status);
-    if (typeof window.callGemini === 'function') {
-      aiBtn = document.createElement('button');
-      aiBtn.textContent = '✨ ' + (t('concept_map.view_3d_arrange') || 'Arrange by meaning');
-      aiBtn.style.cssText = 'font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;';
-      header.insertBefore(aiBtn, closeBtn);
-      aiBtn.onclick = function () {
-        aiBtn.disabled = true; var prev = aiBtn.textContent; aiBtn.textContent = '… ' + (t('concept_map.view_3d_arranging') || 'Arranging');
-        E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || '' }).then(function (merged) {
-          if (!overlay.parentNode) return;
-          graph = merged;
-          try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
-          handle = CG3D.render(body, graph, { t: t });
-        }).catch(function () { addToast(t('concept_map.view_3d_arrange_failed') || 'AI arrange failed', 'error'); })
-          .then(function () { if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = prev; } });
+    if (canPersist) {
+      var resetArrBtn = document.createElement("button");
+      resetArrBtn.textContent = "\u21BA " + (t("concept_space.reset") || "Reset arrangement");
+      resetArrBtn.style.cssText = "font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid #334155;white-space:nowrap;background:transparent;color:#cbd5e1;cursor:pointer;";
+      header.insertBefore(resetArrBtn, closeBtn);
+      resetArrBtn.onclick = function() {
+        try {
+          opts.onArrangementChange(null);
+        } catch (e) {
+        }
+        graph = nodes.length ? E.fromConceptMap(nodes, Array.isArray(opts.edges) ? opts.edges : [], opts.structureType || null) : E.adaptGenerated(generated);
+        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+        try {
+          if (handle && handle.destroy) handle.destroy();
+        } catch (e) {
+        }
+        handle = CG3D.render(body, graph, renderOpts);
       };
     }
-    handle = CG3D.render(body, graph, { t: t });
+    if (typeof window.callGemini === "function") {
+      aiBtn = document.createElement("button");
+      aiBtn.textContent = "\u2728 " + (t("concept_map.view_3d_arrange") || "Arrange by meaning");
+      aiBtn.style.cssText = "font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;";
+      header.insertBefore(aiBtn, closeBtn);
+      aiBtn.onclick = function() {
+        aiBtn.disabled = true;
+        var prev = aiBtn.textContent;
+        aiBtn.textContent = "\u2026 " + (t("concept_map.view_3d_arranging") || "Arranging");
+        E.layoutWithGemini(graph, window.callGemini, { topic: opts.title || "" }).then(function(merged) {
+          if (!overlay.parentNode) return;
+          graph = merged;
+          if (canPersist && E.extractArrangement) {
+            try {
+              opts.onArrangementChange(E.extractArrangement(graph));
+            } catch (e) {
+            }
+          }
+          try {
+            if (handle && handle.destroy) handle.destroy();
+          } catch (e) {
+          }
+          handle = CG3D.render(body, graph, renderOpts);
+        }).catch(function() {
+          addToast(t("concept_map.view_3d_arrange_failed") || "AI arrange failed", "error");
+        }).then(function() {
+          if (aiBtn) {
+            aiBtn.disabled = false;
+            aiBtn.textContent = prev;
+          }
+        });
+      };
+    }
+    handle = CG3D.render(body, graph, renderOpts);
   });
   return destroy;
 }
-
+const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
+  const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+  const hostRef = React.useRef(null);
+  const handleRef = React.useRef(null);
+  const graphRef = React.useRef(null);
+  const [ready, setReady] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const [arranging, setArranging] = React.useState(false);
+  const [nonce, setNonce] = React.useState(0);
+  const persist = typeof onPersist === "function" ? onPersist : null;
+  const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items })) });
+  React.useEffect(() => {
+    let alive = true;
+    _voCg3dEnsure().then((ok) => {
+      if (alive) {
+        if (ok) setReady(true);
+        else setFailed(true);
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!ready || failed || !hostRef.current || !hasContent) return void 0;
+    const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!E || !CG3D) {
+      setFailed(true);
+      return void 0;
+    }
+    let graph = E.adaptGenerated(data || {});
+    if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+    if (data?.conceptSpace && E.applyArrangement) graph = E.applyArrangement(graph, data.conceptSpace);
+    graphRef.current = graph;
+    handleRef.current = CG3D.render(hostRef.current, graph, {
+      t,
+      autoRotate: false,
+      editable: !!persist,
+      onArrangementChange: persist ? ((arr) => persist(arr, "conceptSpace")) : void 0
+    });
+    return () => {
+      try {
+        if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy();
+      } catch (e) {
+      }
+      handleRef.current = null;
+    };
+  }, [ready, failed, dataKey, nonce]);
+  const handleArrange = () => {
+    const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!E || !graphRef.current || typeof window.callGemini !== "function") return;
+    setArranging(true);
+    E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || "" }).then((merged) => {
+      graphRef.current = merged;
+      if (persist && E.extractArrangement) {
+        persist(E.extractArrangement(merged), "conceptSpace");
+        setNonce((n) => n + 1);
+      } else if (hostRef.current && CG3D) {
+        try {
+          if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy();
+        } catch (e) {
+        }
+        handleRef.current = CG3D.render(hostRef.current, merged, { t, autoRotate: false });
+      }
+    }).catch(() => {
+      if (addToast) addToast(t("concept_map.view_3d_arrange_failed") || "AI arrange failed", "error");
+    }).then(() => setArranging(false));
+  };
+  const handleFullscreen = () => {
+    openConceptMap3D({
+      generated: data,
+      arrangement: data?.conceptSpace,
+      onArrangementChange: persist ? ((arr) => {
+        persist(arr, "conceptSpace");
+        setNonce((n) => n + 1);
+      }) : void 0,
+      title: data?.main || title || "",
+      t,
+      addToast
+    });
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, hasContent && typeof window.callGemini === "function" && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleArrange,
+      disabled: arranging,
+      className: "flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("concept_space.arrange_tooltip") || "Ask the AI to score every concept on the sequence, abstraction, and strand axes, then re-project the space"
+    },
+    "\u2728 ",
+    arranging ? t("concept_map.view_3d_arranging") || "Arranging\u2026" : t("concept_map.view_3d_arrange") || "Arrange by meaning"
+  ), hasContent && persist && data?.conceptSpace && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        persist(null, "conceptSpace");
+        setNonce((n) => n + 1);
+      },
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
+      title: t("concept_space.reset_tooltip") || "Discard the saved arrangement and return to the default layout"
+    },
+    "\u21BA ",
+    t("concept_space.reset") || "Reset arrangement"
+  ), hasContent && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleFullscreen,
+      className: "flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors",
+      title: t("concept_space.fullscreen_tooltip") || "Open this concept space full screen"
+    },
+    "\u26F6 ",
+    t("concept_space.fullscreen") || "Fullscreen"
+  ))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("concept_space.caption") || "Drag to orbit \xB7 scroll to zoom \xB7 click a concept for details. Drag a concept to place it on its strand plane \u2014 position is saved with the resource."));
+};
 const renderInteractiveMap = (deps) => {
   const { ConfettiExplosion, STYLE_TEXT_SHADOW_WHITE, VENN_ZONES, activeChallengeMode, challengeFeedback, challengeModeType, generatedContent, isChallengeActive, isCheckingChallenge, isProcessing, isTeacherMode, letterSpacing, nodeInputText, isMapLocked, connectingSourceId, conceptMapNodes, conceptMapEdges, draggedNodeId, setChallengeModeType, setConnectingSourceId, setIsInteractiveMap, setIsInteractiveVenn, setNodeInputText, mapContainerRef, addToast, getElbowPath, handleAddManualNode, handleAutoLayout, handleCheckChallengeRouter, handleClearEdges, handleCreateChallenge, handleDeleteEdge, handleDeleteNode, handleExitChallenge, handleNodeClick, handleNodeMouseDown, handleResetLayout, handleRetryChallenge, handleSetIsConceptMapReadyToFalse, handleToggleIsMapLocked, renderFlowShape, setConceptMapNodes, t } = deps;
   try {
@@ -1404,7 +1640,16 @@ const renderInteractiveMap = (deps) => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => openConceptMap3D({ nodes: conceptMapNodes, edges: conceptMapEdges, structureType: generatedContent?.data?.structureType, title: generatedContent?.data?.main || generatedContent?.title || "", t, addToast }),
+      onClick: () => openConceptMap3D({
+        nodes: conceptMapNodes,
+        edges: conceptMapEdges,
+        structureType: generatedContent?.data?.structureType,
+        title: generatedContent?.data?.main || generatedContent?.title || "",
+        arrangement: generatedContent?.data?.conceptSpaceLive,
+        onArrangementChange: typeof deps.handleConceptSpacePersist === "function" ? ((arr) => deps.handleConceptSpacePersist(arr, "conceptSpaceLive")) : void 0,
+        t,
+        addToast
+      }),
       className: "flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm",
       title: t("concept_map.toolbar.view_3d_tooltip") || "See this concept map as an orbitable 3D view (depth = strand)",
       "aria-label": t("concept_map.toolbar.view_3d_tooltip") || "View in 3D"
@@ -1617,8 +1862,10 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
   renderFormattedText,
   renderOutlineContent,
-  renderInteractiveMap
+  renderInteractiveMap,
+  openConceptMap3D
+  // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
 };
 window.AlloModules.ViewRenderersModule = true;
-console.log('[ViewRenderers] 3 renderers registered (renderFormattedText, renderOutlineContent, renderInteractiveMap)');
+console.log('[ViewRenderers] Registered (renderFormattedText, renderOutlineContent, renderInteractiveMap, openConceptMap3D)');
 })();

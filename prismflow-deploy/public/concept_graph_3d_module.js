@@ -19,6 +19,15 @@
  *   4. GL context + requestAnimationFrame are torn down on destroy (no zombie loop —
  *      the repo has hit rAF-leak crash classes before).
  *
+ * EDITING (opts.editable + opts.onArrangementChange): constrained, semantics-first —
+ * dragging a node moves it on its strand's depth plane (writes normalized axisValues,
+ * never raw pixels), strand reassignment goes through panel chips / [ ] keys, and
+ * earlier-later / up-down nudges go through , . - = keys or panel buttons. Every edit
+ * updates the acg graph via ConceptGraphEngine helpers and re-derives geometry, so the
+ * SR description, reading-order outline, and scene never disagree. Hosts persist the
+ * emitted arrangement ({axes, axisValues, categories}) and re-apply it with
+ * engine.applyArrangement() before the next render.
+ *
  * TESTABLE SEAM: buildScene() is a PURE function (normalize → project → scene model)
  * and is fully unit-tested. The imperative GL mount is wrapped in try/catch and
  * degrades to the outline, so a wrong GL call can never crash the host — but the real
@@ -199,6 +208,19 @@
     return { ids: ids, order: ids.slice() };
   }
 
+  // Inverse of buildScene's placement math: scene-space (sx, sy) on a node's depth
+  // plane → normalized ordinal axisValues {x, y} (same 0..1 space the engine's
+  // project() consumes). PURE — unit-tested; powers drag-to-arrange write-back.
+  function sceneToAxisValues(scene, sx, sy, opts) {
+    opts = opts || {};
+    var width = num(opts.width, 2000), height = num(opts.height, 1200);
+    var c = (scene && scene.bounds && scene.bounds.center) || { x: 0, y: 0 };
+    var x = (isNum(sx) ? sx : 0) + c.x;         // undo centering
+    var y = c.y - (isNum(sy) ? sy : 0);         // undo centering + Y flip
+    function cl(v) { return Math.max(0, Math.min(1, v)); }
+    return { x: cl(x / width), y: cl(y / height) };
+  }
+
   // ── Accessible outline DOM (the source of truth across every mode) ──
   function buildOutlineDom(scene, t, visible) {
     var wrap = document.createElement('div');
@@ -368,15 +390,22 @@
         g.fillStyle = grd; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
       } catch (e) { return null; }
     })();
+    var planeObjs = [];   // retained so edits can re-seat planes after re-projection
     (scene.lanePlanes || []).forEach(function (lp) {
       var mesh = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH),
         new THREE.MeshBasicMaterial({ color: new THREE.Color(lp.color), map: planeTex || undefined, transparent: true, opacity: planeTex ? 0.11 : 0.07, side: THREE.DoubleSide, depthWrite: false }));
       mesh.position.set(0, 0, lp.z);   // depth plane at constant z
       group.add(mesh);
-      if (lp.label) { var tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
+      var tag = null;
+      if (lp.label) { tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
+      planeObjs.push({ key: lp.key == null ? '__none' : lp.key, mesh: mesh, tag: tag });
     });
 
     var nodeMeshes = [], nodeById3d = {};
+    // Staggered entrance (motion-safe): spheres pop in one after another so the
+    // space "assembles" instead of appearing fully formed.
+    var introOK = true; try { introOK = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+    var introSeq = 0;
     scene.nodes.forEach(function (n) {
       var rad = 9 * (n.size || 1);
       var col = new THREE.Color(n.color);
@@ -388,6 +417,7 @@
       var label = makeLabelSprite(THREE, n.label, n.color);
       label.position.set(n.sx, n.sy + rad + 14, n.sz); group.add(label);
       var ref = { node: n, sphere: sphere, glow: glow, label: label, baseGlow: rad * 6, baseEmissive: 0.7 };
+      if (introOK) { sphere.scale.setScalar(0.001); glow.material.opacity = 0; ref.intro = 4 + introSeq * 2; introSeq++; }
       nodeMeshes.push(ref); nodeById3d[n.id] = ref;
     });
 
@@ -404,47 +434,90 @@
       } catch (e) { return null; }
     })();
 
-    var nodeColorById = {}; scene.nodes.forEach(function (n) { nodeColorById[n.id] = n.color; });
-    var flowMats = [], edgeObjs = [];
-    scene.links.forEach(function (lk) {
-      var a = new THREE.Vector3(lk.from.x, lk.from.y, lk.from.z);
-      var b = new THREE.Vector3(lk.to.x, lk.to.y, lk.to.z);
-      var mid = a.clone().add(b).multiplyScalar(0.5);
-      mid.y += a.distanceTo(b) * 0.14;                       // gentle arc instead of a flat line
-      var pts = new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(26);
-      var geo = new THREE.BufferGeometry().setFromPoints(pts);
-      var isSeq = lk.type === 'sequence';
-      var isPrereq = !!lk.dashed;
-      var mat;
-      if (isPrereq) {                                        // keep prerequisites a clear, single amber
-        mat = new THREE.LineDashedMaterial({ color: new THREE.Color(lk.color), dashSize: 6, gapSize: 5, transparent: true, opacity: 0.9 });
-      } else {                                               // gradient blending the two endpoint strand colours
-        var c0 = new THREE.Color(nodeColorById[lk.fromId] || lk.color), c1 = new THREE.Color(nodeColorById[lk.toId] || lk.color);
-        var cattr = new Float32Array(pts.length * 3);
-        for (var pi = 0; pi < pts.length; pi++) { var f = pi / (pts.length - 1); var cc = c0.clone().lerp(c1, f); cattr[pi * 3] = cc.r; cattr[pi * 3 + 1] = cc.g; cattr[pi * 3 + 2] = cc.b; }
-        geo.setAttribute('color', new THREE.BufferAttribute(cattr, 3));
-        mat = isSeq
-          ? new THREE.LineDashedMaterial({ vertexColors: true, dashSize: 10, gapSize: 8, transparent: true, opacity: 0.78 })
-          : new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55 });
+    // Edges live in their own group and are rebuilt wholesale after any edit —
+    // geometry is cheap at this scale (< a few hundred bezier lines) and a full
+    // rebuild is far less bug-prone than incremental endpoint surgery.
+    var edgeGroup = new THREE.Group(); group.add(edgeGroup);
+    var flowMats = [], edgeObjs = [], edgeRefs = [];
+    function buildEdges() {
+      flowMats.length = 0; edgeObjs.length = 0; edgeRefs.length = 0;
+      for (var ci = edgeGroup.children.length - 1; ci >= 0; ci--) {
+        var ch = edgeGroup.children[ci];
+        try { if (ch.geometry) ch.geometry.dispose(); if (ch.material && ch.material.dispose) ch.material.dispose(); } catch (e) {}
+        edgeGroup.remove(ch);
       }
-      var line = new THREE.Line(geo, mat);
-      line.computeLineDistances();
-      group.add(line);
-      if (isSeq) flowMats.push(mat);                         // animate teaching-order flow in tick
-      edgeObjs.push({ mat: mat, fromId: lk.fromId, toId: lk.toId, baseOpacity: mat.opacity });
-      // directional arrowhead — edges carry direction (fromId->toId); show it statically
-      if (lk.directed && lk.head && lk.dir) {
-        try {
-          var cone = new THREE.Mesh(new THREE.ConeGeometry(4, 9.6, 12),
-            new THREE.MeshBasicMaterial({ color: new THREE.Color(lk.color), transparent: true, opacity: 0.9 }));
-          cone.position.set(lk.head.x, lk.head.y, lk.head.z);
-          var d = new THREE.Vector3(lk.dir.x, lk.dir.y, lk.dir.z);
-          cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Math.abs(d.y) > 0.9999 ? new THREE.Vector3(0, d.y >= 0 ? 1 : -1, 0) : d);
-          group.add(cone);
-          edgeObjs.push({ mat: cone.material, fromId: lk.fromId, toId: lk.toId, baseOpacity: 0.9 });
-        } catch (e) {}
+      var nodeColorById = {}; scene.nodes.forEach(function (n) { nodeColorById[n.id] = n.color; });
+      scene.links.forEach(function (lk) {
+        var a = new THREE.Vector3(lk.from.x, lk.from.y, lk.from.z);
+        var b = new THREE.Vector3(lk.to.x, lk.to.y, lk.to.z);
+        var mid = a.clone().add(b).multiplyScalar(0.5);
+        mid.y += a.distanceTo(b) * 0.14;                       // gentle arc instead of a flat line
+        var pts = new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(26);
+        var geo = new THREE.BufferGeometry().setFromPoints(pts);
+        var isSeq = lk.type === 'sequence';
+        var isPrereq = !!lk.dashed;
+        var mat;
+        if (isPrereq) {                                        // keep prerequisites a clear, single amber
+          mat = new THREE.LineDashedMaterial({ color: new THREE.Color(lk.color), dashSize: 6, gapSize: 5, transparent: true, opacity: 0.9 });
+        } else {                                               // gradient blending the two endpoint strand colours
+          var c0 = new THREE.Color(nodeColorById[lk.fromId] || lk.color), c1 = new THREE.Color(nodeColorById[lk.toId] || lk.color);
+          var cattr = new Float32Array(pts.length * 3);
+          for (var pi = 0; pi < pts.length; pi++) { var f = pi / (pts.length - 1); var cc = c0.clone().lerp(c1, f); cattr[pi * 3] = cc.r; cattr[pi * 3 + 1] = cc.g; cattr[pi * 3 + 2] = cc.b; }
+          geo.setAttribute('color', new THREE.BufferAttribute(cattr, 3));
+          mat = isSeq
+            ? new THREE.LineDashedMaterial({ vertexColors: true, dashSize: 10, gapSize: 8, transparent: true, opacity: 0.78 })
+            : new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55 });
+        }
+        var line = new THREE.Line(geo, mat);
+        line.computeLineDistances();
+        edgeGroup.add(line);
+        if (isSeq) flowMats.push(mat);                         // animate teaching-order flow in tick
+        edgeObjs.push({ mat: mat, fromId: lk.fromId, toId: lk.toId, baseOpacity: mat.opacity });
+        var eref = { line: line, cone: null, fromId: lk.fromId, toId: lk.toId };
+        // directional arrowhead — edges carry direction (fromId->toId); show it statically
+        if (lk.directed && lk.head && lk.dir) {
+          try {
+            var cone = new THREE.Mesh(new THREE.ConeGeometry(4, 9.6, 12),
+              new THREE.MeshBasicMaterial({ color: new THREE.Color(lk.color), transparent: true, opacity: 0.9 }));
+            cone.position.set(lk.head.x, lk.head.y, lk.head.z);
+            var d = new THREE.Vector3(lk.dir.x, lk.dir.y, lk.dir.z);
+            cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Math.abs(d.y) > 0.9999 ? new THREE.Vector3(0, d.y >= 0 ? 1 : -1, 0) : d);
+            edgeGroup.add(cone);
+            edgeObjs.push({ mat: cone.material, fromId: lk.fromId, toId: lk.toId, baseOpacity: 0.9 });
+            eref.cone = cone;
+          } catch (e) {}
+        }
+        edgeRefs.push(eref);
+      });
+    }
+    buildEdges();
+
+    // Re-seat every edge's curve (and arrowhead) on the CURRENT sphere positions.
+    // Powers live edge-following during node drags and the post-edit glide: the
+    // geometry is updated in place (fixed 27-point curves), so no allocation churn.
+    function updateAllEdgePositions() {
+      for (var ri = 0; ri < edgeRefs.length; ri++) {
+        var er = edgeRefs[ri];
+        var A = nodeById3d[er.fromId], B = nodeById3d[er.toId];
+        if (!A || !B) continue;
+        var a = A.sphere.position, b = B.sphere.position;
+        var mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+        mid.y += a.distanceTo(b) * 0.14;
+        var pts = new THREE.QuadraticBezierCurve3(a.clone(), mid, b.clone()).getPoints(26);
+        var attr = er.line.geometry.getAttribute('position');
+        if (!attr || attr.count !== pts.length) continue;
+        for (var qi = 0; qi < pts.length; qi++) attr.setXYZ(qi, pts[qi].x, pts[qi].y, pts[qi].z);
+        attr.needsUpdate = true;
+        try { er.line.computeLineDistances(); } catch (e) {}
+        if (er.cone) {
+          var dvec = new THREE.Vector3().subVectors(b, a);
+          var dlen = dvec.length() || 1; dvec.multiplyScalar(1 / dlen);
+          var back = 9 * ((B.node && B.node.size) || 1) + 6;
+          er.cone.position.set(b.x - dvec.x * back, b.y - dvec.y * back, b.z - dvec.z * back);
+          er.cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), Math.abs(dvec.y) > 0.9999 ? new THREE.Vector3(0, dvec.y >= 0 ? 1 : -1, 0) : dvec);
+        }
       }
-    });
+    }
 
     // Self-contained orbit with damping (no 2nd CDN dep). `current` eases toward
     // `target`; starting at a larger radius gives a cinematic ease-in for free.
@@ -512,7 +585,7 @@
       var c = document.createElement('div'); c.style.cssText = 'color:#94a3b8;'; c.textContent = nb + ' ' + (t('cg3d.tip_links') || 'connection(s)'); tip.appendChild(c);
       var r = el.getBoundingClientRect();
       tip.style.left = (ev.clientX - r.left + 14) + 'px'; tip.style.top = (ev.clientY - r.top + 14) + 'px'; tip.style.display = 'block';
-      el.style.cursor = 'pointer';
+      el.style.cursor = opts.editable ? 'grab' : 'pointer';   // editable nodes read as grabbable
     }
     function hideTip() { tip.style.display = 'none'; el.style.cursor = 'grab'; }
 
@@ -561,6 +634,42 @@
         pb.onclick = function () { highlightChain([selectedId].concat(chain.ids), selectedId); };
         panel.appendChild(pb);
       }
+      if (opts.editable) {
+        // Mouse path for constrained editing (the canvas keys are the SR/keyboard
+        // path): strand chips + earlier/later + up/down. The panel is aria-hidden
+        // like the rest of the visual chrome — announcements go via the live region.
+        var editLanes = (scene.lanes || []).filter(function (l) { return l.key != null; });
+        if (editLanes.length > 1) {
+          var eh = document.createElement('div'); eh.style.cssText = 'font-weight:700;color:#94a3b8;margin:9px 0 3px;'; eh.textContent = _tr(t, 'cg3d.edit_strand', 'Strand (depth plane)'); panel.appendChild(eh);
+          var chipRow = document.createElement('div'); chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
+          editLanes.forEach(function (l) {
+            var laneColor = PALETTE[l.index % PALETTE.length];
+            var isCur = l.key === n.category;
+            var chip = document.createElement('button');
+            chip.textContent = l.label;
+            chip.disabled = isCur;
+            chip.style.cssText = 'font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid ' + laneColor + ';'
+              + (isCur ? 'background:' + laneColor + ';color:#0b1020;cursor:default;' : 'background:transparent;color:' + laneColor + ';cursor:pointer;');
+            chip.onclick = function () { editStrand(selectedId, l.key); };
+            chipRow.appendChild(chip);
+          });
+          panel.appendChild(chipRow);
+        }
+        var mvRow = document.createElement('div'); mvRow.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;';
+        [['◀ ' + _tr(t, 'cg3d.edit_earlier', 'Earlier'), 'x', -0.06, _tr(t, 'cg3d.moved_earlier', 'Moved earlier')],
+         [_tr(t, 'cg3d.edit_later', 'Later') + ' ▶', 'x', 0.06, _tr(t, 'cg3d.moved_later', 'Moved later')],
+         ['▲ ' + _tr(t, 'cg3d.edit_up', 'Up'), 'y', -0.06, _tr(t, 'cg3d.moved_up', 'Moved up')],
+         ['▼ ' + _tr(t, 'cg3d.edit_down', 'Down'), 'y', 0.06, _tr(t, 'cg3d.moved_down', 'Moved down')]].forEach(function (cfg) {
+          var mb = document.createElement('button'); mb.textContent = cfg[0];
+          mb.style.cssText = 'padding:5px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;';
+          mb.onclick = function () { editNudge(selectedId, cfg[1], cfg[2], cfg[3]); };
+          mvRow.appendChild(mb);
+        });
+        panel.appendChild(mvRow);
+        var editHint = document.createElement('div'); editHint.style.cssText = 'margin-top:6px;color:#64748b;font-size:10px;line-height:1.4;';
+        editHint.textContent = _tr(t, 'cg3d.edit_hint', 'Drag the node to place it on its plane. Keys: [ ] strand · , . earlier/later · - = down/up.');
+        panel.appendChild(editHint);
+      }
       if (typeof opts.onOpenNode === 'function') {
         var jb = document.createElement('button'); jb.textContent = '↗ ' + (t('cg3d.open') || 'Open');
         jb.style.cssText = 'margin-top:9px;width:100%;padding:6px;border:1px solid #6366f1;background:#312e81;color:#e0e7ff;border-radius:7px;cursor:pointer;font-weight:700;';
@@ -570,12 +679,158 @@
       panel.style.display = 'block';
     }
 
+    // ── Constrained editing (opts.editable): semantics first, geometry derived ──
+    // Every edit updates the acg graph's axisValues/category via the ENGINE, then
+    // re-derives the whole scene (buildScene is pure + cheap) and diff-applies it
+    // onto the live meshes. Positions are never free pixels: x/y are normalized
+    // ordinal axis values, z is always the strand plane — so the SR description,
+    // the reading-order outline, and the geometry stay in lock-step.
+    function emitArrangement() {
+      if (typeof opts.onArrangementChange !== 'function') return;
+      var E = engine();
+      if (!E || !state.graph || !E.extractArrangement) return;
+      try { opts.onArrangementChange(E.extractArrangement(state.graph)); } catch (e) {}
+    }
+    function announceEdit(id, msg) {
+      try { if (live) live.textContent = msg + '. ' + describeNodeForSR(scene, id, t); } catch (e) {}
+    }
+    var tweenActive = false;
+    function applySceneUpdate(newScene) {
+      scene = newScene;
+      planeObjs.forEach(function (po) {
+        var lp = null;
+        (newScene.lanePlanes || []).forEach(function (p) { if ((p.key == null ? '__none' : p.key) === po.key) lp = p; });
+        if (lp) {
+          po.targetZ = lp.z;
+          if (reduce) { po.mesh.position.z = lp.z; if (po.tag) po.tag.position.z = lp.z; }
+        }
+      });
+      newScene.nodes.forEach(function (n) {
+        var m = nodeById3d[n.id]; if (!m) return;
+        var restyle = m.node.color !== n.color || m.node.label !== n.label;
+        m.node = n;
+        var rad = 9 * (n.size || 1);
+        // Motion-safe glide: set the TARGET; tick() lerps sphere/glow/label/edges
+        // there so strand moves and nudges read as movement, not teleportation.
+        m.target = m.target || new THREE.Vector3();
+        m.target.set(n.sx, n.sy, n.sz);
+        if (reduce) {
+          m.sphere.position.copy(m.target);
+          m.glow.position.copy(m.target);
+          m.label.position.set(n.sx, n.sy + rad + 14, n.sz);
+        }
+        if (restyle) {
+          try {
+            m.sphere.material.color.set(n.color);
+            m.sphere.material.emissive.set(n.color).multiplyScalar(0.5);
+            m.glow.material.color.set(n.color);
+            group.remove(m.label);
+            m.label = makeLabelSprite(THREE, n.label, n.color);
+            var lp2 = m.sphere.position;
+            m.label.position.set(lp2.x, lp2.y + rad + 14, lp2.z);
+            group.add(m.label);
+          } catch (e) {}
+        }
+      });
+      buildEdges();                 // new colours/dash + refs (built at final coords)
+      updateAllEdgePositions();     // …then re-seated on CURRENT positions so they glide with the tween
+      tweenActive = !reduce;
+      if (selectedId && nodeById3d[selectedId]) {
+        var fn = nodeById3d[selectedId].node;
+        tTarget.set(fn.sx, fn.sy, fn.sz);
+        selectNode(selectedId);                       // refresh panel + focus ring in place
+      } else {
+        applyHighlight(hoveredId || selectedId);
+      }
+    }
+    function editNudge(id, axis, delta, msg) {
+      var E = engine();
+      if (!E || !state.graph || !E.nudgeNodeAxis || !nodeById3d[id]) return;
+      state.graph = E.nudgeNodeAxis(state.graph, id, axis, delta, opts);
+      applySceneUpdate(buildScene(state.graph, opts));
+      emitArrangement();
+      announceEdit(id, msg || _tr(t, 'cg3d.moved', 'Moved'));
+    }
+    function editStrand(id, dirOrKey) {
+      var E = engine();
+      if (!E || !state.graph || !E.setNodeStrand || !nodeById3d[id]) return;
+      var lanes = (scene.lanes || []).filter(function (l) { return l.key != null; });
+      if (!lanes.length) return;
+      var m = nodeById3d[id];
+      var key = null;
+      if (typeof dirOrKey === 'string') {
+        key = dirOrKey;
+      } else {
+        var cur = -1;
+        lanes.forEach(function (l, i) { if (l.key === m.node.category) cur = i; });
+        var nx = cur < 0 ? (dirOrKey > 0 ? 0 : -1) : cur + dirOrKey;
+        if (nx < 0 || nx >= lanes.length) { announceEdit(id, _tr(t, 'cg3d.strand_limit', 'No further strand in that direction')); return; }
+        key = lanes[nx].key;
+      }
+      if (!key || key === m.node.category) return;
+      state.graph = E.setNodeStrand(state.graph, id, key);
+      applySceneUpdate(buildScene(state.graph, opts));
+      emitArrangement();
+      announceEdit(id, _tr(t, 'cg3d.moved_strand', 'Moved to strand') + ' ' + key);
+    }
+    function commitNodePosition(id) {
+      var E = engine();
+      var m = nodeById3d[id];
+      if (!E || !m || !state.graph) return;
+      var av = sceneToAxisValues(scene, m.node.sx, m.node.sy, opts);
+      state.graph = Object.assign({}, state.graph, {
+        nodes: state.graph.nodes.map(function (n) {
+          return n.id === id ? Object.assign({}, n, { axisValues: Object.assign({}, n.axisValues || {}, av) }) : n;
+        })
+      });
+      applySceneUpdate(buildScene(state.graph, opts));
+      emitArrangement();
+      announceEdit(id, _tr(t, 'cg3d.moved', 'Moved'));
+    }
+
     // ── Orbit + hover + click-to-focus ──
     var dragging = false, moved = false, lx = 0, ly = 0;
     var el = renderer.domElement;
     el.style.cursor = 'grab';
-    function onDown(e) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; }
+    // Editable node-drag: grabbing a node moves IT (constrained to its strand's
+    // depth plane — z never changes by drag); grabbing empty space still orbits.
+    var nodeDragId = null, nodeDragMoved = false, dragPlane = null, dragHit = null;
+    function onDown(e) {
+      if (opts.editable) {
+        try {
+          var nid = pickNode(e);
+          if (nid && nodeById3d[nid]) {
+            nodeDragId = nid; nodeDragMoved = false;
+            dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -nodeById3d[nid].node.sz);
+            hideTip();
+            el.style.cursor = 'grabbing';
+            return;
+          }
+        } catch (er) {}
+      }
+      dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing';
+    }
     function onMove(e) {
+      if (nodeDragId) {
+        try {
+          var r2 = el.getBoundingClientRect();
+          ndc.x = ((e.clientX - r2.left) / Math.max(1, r2.width)) * 2 - 1;
+          ndc.y = -((e.clientY - r2.top) / Math.max(1, r2.height)) * 2 + 1;
+          raycaster.setFromCamera(ndc, camera);
+          dragHit = dragHit || new THREE.Vector3();
+          if (raycaster.ray.intersectPlane(dragPlane, dragHit)) {
+            nodeDragMoved = true;
+            var dm = nodeById3d[nodeDragId], drad = 9 * (dm.node.size || 1);
+            dm.node.sx = dragHit.x; dm.node.sy = dragHit.y;
+            dm.sphere.position.set(dragHit.x, dragHit.y, dm.node.sz);
+            dm.glow.position.set(dragHit.x, dragHit.y, dm.node.sz);
+            dm.label.position.set(dragHit.x, dragHit.y + drad + 14, dm.node.sz);
+            updateAllEdgePositions();   // edges follow the node live, not just on drop
+            if (focusRing && focusRing.visible && selectedId === nodeDragId) focusRing.position.set(dragHit.x, dragHit.y, dm.node.sz);
+          }
+        } catch (er) {}
+        return;
+      }
       if (dragging) {
         var dx = e.clientX - lx, dy = e.clientY - ly;
         if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
@@ -585,6 +840,15 @@
       }
     }
     function onUp(e) {
+      if (nodeDragId) {
+        var did = nodeDragId; nodeDragId = null; el.style.cursor = 'grab';
+        if (nodeDragMoved) {
+          commitNodePosition(did);                // write the drop back as axisValues
+        } else {                                  // a plain click on the node → select + focus
+          try { var cn = nodeById3d[did].node; tTarget.set(cn.sx, cn.sy, cn.sz); tRadius = Math.max(60, scene.bounds.radius * 1.2); selectNode(did); } catch (er) {}
+        }
+        return;
+      }
       if (dragging && !moved) {                   // a click (not a drag) → select + focus
         try {
           var id = pickNode(e);
@@ -619,7 +883,8 @@
         ['x', 'y', 'z'].forEach(function (ax) { if (scene.axes[ax] && scene.axes[ax].label) { var d = document.createElement('div'); d.style.cssText = 'color:#94a3b8;'; d.textContent = ax + ' = ' + scene.axes[ax].label; legend.appendChild(d); } });
       }
       var ek = document.createElement('div'); ek.style.cssText = 'margin-top:6px;color:#94a3b8;';
-      ek.textContent = t('cg3d.legend_help') || 'Flowing line = teaching order · dashed amber = prerequisite. Hover to focus · click a node to center.';
+      ek.textContent = (t('cg3d.legend_help') || 'Flowing line = teaching order · dashed amber = prerequisite. Hover to focus · click a node to center.')
+        + (opts.editable ? ' ' + (_tr(t, 'cg3d.legend_edit', 'Drag a node to move it — its place is saved.')) : '');
       legend.appendChild(ek);
     })();
     holder.appendChild(legend);
@@ -662,7 +927,8 @@
     el.setAttribute('aria-label', _tr(t, 'cg3d.canvas_label', '3D concept map. Use arrow keys to move through lessons in teaching order.'));
     var instrId = 'cg3d-instr-' + (window.__cg3dSeq = (window.__cg3dSeq || 0) + 1);
     var instr = document.createElement('p'); instr.id = instrId; instr.style.cssText = SR_ONLY;
-    instr.textContent = _tr(t, 'cg3d.canvas_instructions', 'Arrow keys move through lessons in teaching order. N jumps to a connection. Enter opens the focused lesson. Escape deselects.');
+    instr.textContent = _tr(t, 'cg3d.canvas_instructions', 'Arrow keys move through lessons in teaching order. N jumps to a connection. Enter opens the focused lesson. Escape deselects.')
+      + (opts.editable ? ' ' + _tr(t, 'cg3d.canvas_instructions_edit', 'Editing is on: press [ or ] to change the focused node’s strand, comma or period to move it earlier or later, minus or equals to move it down or up.') : '');
     var live = document.createElement('div'); live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); live.style.cssText = SR_ONLY;
     holder.appendChild(instr); holder.appendChild(live);
     el.setAttribute('aria-describedby', instrId);
@@ -677,6 +943,14 @@
     }
     function onKeyDown(e) {
       var k = e.key, act = null;
+      // Constrained-edit keys act on the keyboard-focused node (or the mouse
+      // selection, so a click-then-keyboard flow also works).
+      var editId = kbFocusId || selectedId;
+      if (opts.editable && editId) {
+        if (k === '[' || k === ']') { e.preventDefault(); editStrand(editId, k === ']' ? 1 : -1); return; }
+        if (k === ',' || k === '.') { e.preventDefault(); editNudge(editId, 'x', k === '.' ? 0.06 : -0.06, k === '.' ? _tr(t, 'cg3d.moved_later', 'Moved later') : _tr(t, 'cg3d.moved_earlier', 'Moved earlier')); return; }
+        if (k === '-' || k === '=') { e.preventDefault(); editNudge(editId, 'y', k === '=' ? -0.06 : 0.06, k === '=' ? _tr(t, 'cg3d.moved_up', 'Moved up') : _tr(t, 'cg3d.moved_down', 'Moved down')); return; }
+      }
       if (k === 'ArrowRight' || k === 'ArrowDown') act = 'next';
       else if (k === 'ArrowLeft' || k === 'ArrowUp') act = 'prev';
       else if (k === 'Home') act = 'first';
@@ -713,6 +987,41 @@
       radius += (tRadius - radius) * 0.08;
       target.lerp(tTarget, 0.1);                 // ease the focus point (click-to-focus)
       applyCamera();
+      // constrained-edit glide: nodes ease toward their new semantic positions,
+      // planes re-seat, and edges follow every frame (skipped under reduced motion —
+      // applySceneUpdate snaps instantly there).
+      if (tweenActive) {
+        var stillMoving = false;
+        for (var wi = 0; wi < nodeMeshes.length; wi++) {
+          var wm = nodeMeshes[wi];
+          if (!wm.target || wm.node.id === nodeDragId) continue;   // never fight an active drag
+          var wp = wm.sphere.position;
+          wp.lerp(wm.target, 0.16);
+          if (wp.distanceToSquared(wm.target) > 0.5) stillMoving = true; else wp.copy(wm.target);
+          wm.glow.position.copy(wp);
+          var wrad = 9 * (wm.node.size || 1);
+          wm.label.position.set(wp.x, wp.y + wrad + 14, wp.z);
+        }
+        for (var pj = 0; pj < planeObjs.length; pj++) {
+          var pn = planeObjs[pj];
+          if (pn.targetZ == null) continue;
+          pn.mesh.position.z += (pn.targetZ - pn.mesh.position.z) * 0.16;
+          if (pn.tag) pn.tag.position.z = pn.mesh.position.z;
+        }
+        updateAllEdgePositions();
+        if (focusRing && focusRing.visible && selectedId && nodeById3d[selectedId]) focusRing.position.copy(nodeById3d[selectedId].sphere.position);
+        if (!stillMoving) tweenActive = false;
+      }
+      // staggered entrance: spheres pop in one by one (skipped under reduced motion)
+      for (var vi = 0; vi < nodeMeshes.length; vi++) {
+        var vm = nodeMeshes[vi];
+        if (vm.intro == null) continue;
+        if (vm.intro > 0) { vm.intro--; continue; }
+        var vs = vm.sphere.scale.x + (1 - vm.sphere.scale.x) * 0.2;
+        vm.sphere.scale.setScalar(vs);
+        vm.glow.material.opacity = Math.min(0.9, vm.glow.material.opacity + 0.07);
+        if (vs > 0.99) { vm.sphere.scale.setScalar(1); vm.glow.material.opacity = 0.9; vm.intro = null; }
+      }
       // declutter: fade labels by camera distance when nothing is hover/selected
       if (!highlightActive) {
         var fadeDen = scene.bounds.radius * 3.2 + 1;
@@ -759,13 +1068,19 @@
     opts = opts || {};
     var t = opts.t || function (k) { return k; };
     if (!container) return { destroy: function () {}, update: function () {}, fellBack: true };
-    var scene = buildScene(graph, opts);
+    // Editing keeps the planes still by default (an orbiting scene is a hostile
+    // drag target); an explicit opts.autoRotate still wins.
+    if (opts.editable && opts.autoRotate === undefined) opts.autoRotate = false;
+    var state = { raf: 0, renderer: null, disposed: false, onResize: null, cleanup: [], graph: null };
+    // Keep the live acg graph on state so constrained edits (drag / strand / nudge)
+    // can update semantics and re-derive geometry from ONE source of truth.
+    var E0 = engine();
+    state.graph = E0 ? E0.normalizeGraph(graph) : graph;
+    var scene = buildScene(state.graph, opts);
     while (container.firstChild) container.removeChild(container.firstChild);
 
     var outlineEl = buildOutlineDom(scene, t, false);   // sr-only while 3D is live
     container.appendChild(outlineEl);
-
-    var state = { raf: 0, renderer: null, disposed: false, onResize: null, cleanup: [] };
     function destroy() {
       state.disposed = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
@@ -847,6 +1162,7 @@
     version: VERSION,
     PALETTE: PALETTE,
     buildScene: buildScene,
+    sceneToAxisValues: sceneToAxisValues,
     navigateFocus: navigateFocus,
     describeNodeForSR: describeNodeForSR,
     derivePrereqChain: derivePrereqChain,
