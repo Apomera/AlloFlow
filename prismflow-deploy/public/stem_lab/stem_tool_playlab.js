@@ -68,6 +68,43 @@ window.StemLab = window.StemLab || {
   })();
 
   // ── ARIA live region ──
+  // PlayLab field-first polish: stronger live surface, responsive layout, stable controls.
+  (function() {
+    if (document.getElementById('allo-playlab-field-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-playlab-field-polish-css';
+    st.textContent = [
+      '.playlab-gameplan-card{margin-bottom:14px;padding:14px;border:1px solid rgba(56,189,248,.35);border-radius:16px;background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(12,74,110,.42));box-shadow:0 18px 42px rgba(2,6,23,.28)}',
+      '.playlab-gameplan-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}',
+      '.playlab-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}',
+      '.playlab-gameplan-title{margin:2px 0 0;font-size:18px;font-weight:900;color:#f8fafc;line-height:1.2}',
+      '.playlab-gameplan-copy{margin:5px 0 0;color:#cbd5e1;font-size:12px;line-height:1.45;max-width:720px}',
+      '.playlab-status-pill{border:1px solid rgba(16,185,129,.55);background:rgba(16,185,129,.16);color:#bbf7d0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;white-space:nowrap}',
+      '.playlab-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}',
+      '.playlab-metric{border:1px solid rgba(148,163,184,.24);background:rgba(15,23,42,.64);border-radius:12px;padding:9px;min-height:64px}',
+      '.playlab-metric span{display:block;color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}',
+      '.playlab-metric b{display:block;color:#f8fafc;font-size:13px;line-height:1.25;margin-top:3px}',
+      '.playlab-field-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,320px);gap:16px;align-items:start}',
+      '.playlab-field-column,.playlab-info-column{min-width:0}',
+      '.playlab-field-shell{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.34);border-radius:18px;background:linear-gradient(180deg,#020617,#0f172a);padding:12px;box-shadow:0 18px 42px rgba(2,6,23,.34)}',
+      '.playlab-field-shell:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(56,189,248,.12),transparent 38%),linear-gradient(300deg,rgba(251,191,36,.10),transparent 34%);pointer-events:none}',
+      '.playlab-field-topbar{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px}',
+      '.playlab-field-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
+      '.playlab-chip-row{display:flex;gap:6px;flex-wrap:wrap}',
+      '.playlab-chip{border:1px solid rgba(148,163,184,.32);background:rgba(15,23,42,.72);color:#cbd5e1;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}',
+      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;border-radius:14px;border:1px solid rgba(148,163,184,.35);background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}',
+      '.playlab-run-rack{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
+      '.playlab-run-button{padding:11px 18px;min-height:40px;border-radius:999px;cursor:pointer;border:1px solid #10b981;background:linear-gradient(135deg,#34d399,#059669);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
+      '.playlab-run-button:disabled{cursor:wait;background:#1e293b;color:#94a3b8;box-shadow:none}',
+      '.playlab-last-result{font-size:12px;color:#cbd5e1;font-style:italic}',
+      '.playlab-toggle-rack{margin-top:9px;display:flex;gap:8px;font-size:12px;color:#cbd5e1;flex-wrap:wrap;align-items:center;padding:9px 10px;border:1px solid rgba(148,163,184,.20);border-radius:12px;background:rgba(15,23,42,.36)}',
+      '.playlab-toggle-rack label{cursor:pointer;display:inline-flex;align-items:center;gap:6px}',
+      '@media (max-width:920px){.playlab-field-layout{grid-template-columns:1fr}.playlab-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.playlab-info-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.playlab-info-column>section,.playlab-info-column>div{margin-bottom:0!important}}',
+      '@media (max-width:560px){.playlab-gameplan-card,.playlab-field-shell{border-radius:14px;padding:11px}.playlab-metric-grid,.playlab-info-column{grid-template-columns:1fr}.playlab-gameplan-title{font-size:16px}.playlab-run-button{width:100%}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   (function() {
     if (document.getElementById('allo-live-playlab')) return;
     var liveRegion = document.createElement('div');
@@ -4386,18 +4423,105 @@ window.StemLab = window.StemLab || {
           );
         })(),
 
+        (function() {
+          var matchup = isSoccer
+            ? getSoccerMatchup(concept, soccerShape)
+            : (play && coverage ? getMatchup(play, coverage) : null);
+          var callLabel = isSoccer ? concept.label : play.label;
+          var shapeLabel = isSoccer ? soccerShape.label : coverage.label;
+          var formationLabel = isSoccer ? formationDef.label : ((d.down || 1) + ' down, ' + (d.yardsToGoal || 75) + ' yd to goal');
+          var readLabel = 'No read yet';
+          var readDetail = isSoccer ? 'Run a sequence to create a shot.' : 'Run routes to find separation.';
+          var finalPlayer = null;
+          if (isSoccer) {
+            var finalPair = concept && concept.passes && concept.passes.length ? concept.passes[concept.passes.length - 1] : null;
+            finalPlayer = finalPair ? formation.find(function(p) { return p.id === finalPair[1]; }) : null;
+            if (!finalPlayer) {
+              finalPlayer = formation.reduce(function(best, p) {
+                return (!best || p.x > best.x) ? p : best;
+              }, null);
+            }
+            if (finalPlayer) {
+              var liveXG = computeXG(finalPlayer.x, finalPlayer.y);
+              readLabel = finalPlayer.id + ' xG ' + liveXG.toFixed(2);
+              readDetail = liveXG > 0.30 ? 'High-quality chance if the pattern arrives there.'
+                : liveXG > 0.10 ? 'Decent chance; look for one cleaner pass or cutback.'
+                  : 'Low-percentage chance; use spacing or the heatmap to improve it.';
+            }
+          } else if (analysis.length) {
+            var top = analysis[0];
+            var sep = top.opennessYd === Infinity ? 'open field' : top.opennessYd.toFixed(1) + ' yd';
+            readLabel = top.id + ' - ' + sep;
+            readDetail = top.nearestZone ? 'Nearest defender: ' + top.nearestZone + '.' : 'No nearby defender.';
+          }
+          var lastResult = 'No run yet';
+          if (d.runActive) lastResult = 'Play in motion';
+          else if (d.runOutcome && d.runOutcome.sport === 'soccer') {
+            lastResult = 'Last xG ' + (d.runOutcome.xG || 0).toFixed(2);
+          } else if (d.runOutcome) {
+            lastResult = d.runOutcome.location === 'caught' ? 'Complete to ' + d.runOutcome.receiverId
+              : d.runOutcome.location === 'brokenup' ? 'Broken up'
+                : 'Incomplete';
+          }
+          var matchupLabel = matchup ? matchup.label : 'Matchup ready';
+          return h('section', {
+            className: 'playlab-gameplan-card',
+            'data-playlab-gameplan': 'true',
+            'aria-labelledby': 'pl-gameplan-heading'
+          },
+            h('div', { className: 'playlab-gameplan-top' },
+              h('div', null,
+                h('div', { className: 'playlab-kicker' }, isSoccer ? 'Live tactical read' : 'Live play read'),
+                h('h3', { id: 'pl-gameplan-heading', className: 'playlab-gameplan-title' },
+                  callLabel + ' vs ' + shapeLabel),
+                h('p', { className: 'playlab-gameplan-copy' },
+                  isSoccer
+                    ? 'Run the sequence, watch the passing lanes, then drag attackers to improve the final shot location.'
+                    : 'Run the concept, watch the route spacing, then drag receivers to test how geometry changes the read.')
+              ),
+              h('div', { className: 'playlab-status-pill', role: 'status', 'aria-live': 'polite' }, d.runActive ? 'Live now' : (d.runOutcome ? 'Review last run' : 'Ready to run'))
+            ),
+            h('div', { className: 'playlab-metric-grid' },
+              h('div', { className: 'playlab-metric' }, h('span', null, isSoccer ? 'Formation' : 'Situation'), h('b', null, formationLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, 'Matchup'), h('b', null, matchupLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, isSoccer ? 'Best chance' : 'Best read'), h('b', null, readLabel)),
+              h('div', { className: 'playlab-metric' }, h('span', null, 'Last result'), h('b', null, lastResult))
+            ),
+            h('p', { className: 'playlab-gameplan-copy', style: { marginTop: 10 } }, readDetail)
+          );
+        })(),
+
         // Two-column layout
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
+        h('div', { className: 'playlab-field-layout', 'data-playlab-field-layout': 'true' },
 
           // LEFT: field canvas + analysis panel
-          h('div', null,
-            h('canvas', {
+          h('div', { className: 'playlab-field-column' },
+            h('section', {
+              className: 'playlab-field-shell',
+              'data-playlab-field-shell': 'true',
+              'aria-labelledby': 'pl-live-field-heading'
+            },
+              h('div', { className: 'playlab-field-topbar' },
+                h('div', null,
+                  h('div', { className: 'playlab-kicker' }, isSoccer ? 'Live pitch' : 'Live field'),
+                  h('h3', { id: 'pl-live-field-heading', className: 'playlab-field-title' },
+                    isSoccer ? formationDef.label + ' - ' + concept.label : play.label + ' - ' + coverage.label)
+                ),
+                h('div', { className: 'playlab-chip-row', 'aria-label': 'Visible overlays' },
+                  h('span', { className: 'playlab-chip' }, d.showRoutes === false ? 'Routes off' : 'Routes on'),
+                  h('span', { className: 'playlab-chip' }, d.showOpen === false ? 'Open read off' : 'Open read on'),
+                  isSoccer ? h('span', { className: 'playlab-chip' }, d.showXG ? 'xG on' : 'xG off') : h('span', { className: 'playlab-chip' }, d.showZones ? 'Zones on' : 'Zones off')
+                )
+              ),
+              h('canvas', {
               ref: canvasRef,
               // width/height are set by _plSetupHiDPI on first effect run.
               // Keep small placeholder values so the element has dimensions
               // before the effect fires (prevents 1-frame layout jump).
               width: 720, height: 360,
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
+              'data-playlab-canvas': 'true',
+              className: 'playlab-field-canvas',
               'aria-label': isSoccer
                 ? ('Soccer pitch, ' + formationDef.label + ' against ' + soccerShape.label + ' defensive shape.')
                 : ('Football field, ' + play.label + ' against ' + coverage.label
@@ -4416,56 +4540,50 @@ window.StemLab = window.StemLab || {
               onTouchStart: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchMove: function(e) { if (e.touches && e.touches[0]) { e.preventDefault(); handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }); } },
               onTouchEnd: function(e) { e.preventDefault(); handleMouseUp(); },
-              onTouchCancel: function() { handleMouseUp(); },
-              style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', cursor: 'pointer', touchAction: 'none' }
-            }),
+              onTouchCancel: function() { handleMouseUp(); }
+              })
+            ),
             // ── Run Play button — the headline action ──
             // A green pill below the canvas that animates the play.
             // Disabled while a run is in flight; re-enables after the
             // outcome banner clears. Reduced-motion users get an instant
             // outcome (no animation) — handled in the rAF effect.
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            h('div', { className: 'playlab-run-rack' },
               h('button', {
                 onClick: startRun,
                 disabled: !!d.runActive,
                 'aria-busy': !!d.runActive,
                 'data-pl-focusable': 'true',
                 'aria-label': d.runActive ? 'Play is running' : 'Run the active play with animation',
-                style: {
-                  padding: '10px 18px', minHeight: 38, borderRadius: 8,
-                  cursor: d.runActive ? 'wait' : 'pointer',
-                  border: '1px solid #10b981',
-                  background: d.runActive ? '#1e293b' : 'linear-gradient(135deg, #10b981, #059669)',
-                  color: d.runActive ? '#94a3b8' : '#0f172a',
-                  fontSize: 14, fontWeight: 800
-                }
+                className: 'playlab-run-button'
               }, d.runActive ? '⏱ Running…' : '▶ Run Play'),
               d.runOutcome ? h('span', {
-                style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' }
+                className: 'playlab-last-result'
               },
-                d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
-                  : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
-                  : 'Last result: ❌ Incomplete'
+                d.runOutcome.sport === 'soccer' ? 'Last result: xG ' + (d.runOutcome.xG || 0).toFixed(2)
+                  : d.runOutcome.location === 'caught' ? 'Last result: ✅ Complete to ' + d.runOutcome.receiverId
+                    : d.runOutcome.location === 'brokenup' ? 'Last result: ✋ Broken up'
+                      : 'Last result: ❌ Incomplete'
               ) : null
             ),
 
             // Toggle row + reset positions
-            h('div', { style: { marginTop: 8, display: 'flex', gap: 12, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', flexWrap: 'wrap', alignItems: 'center' } },
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+            h('div', { className: 'playlab-toggle-rack' },
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showZones, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showZones', e.target.checked); } }),
                 __alloT('stem.playlab.coverage_zones', 'Coverage zones')),
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showRoutes, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showRoutes', e.target.checked); } }),
                 __alloT('stem.playlab.route_lines', 'Route lines')),
-              h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+              h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showOpen, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showOpen', e.target.checked); } }),
                 isSoccer ? 'Open-player halo' : 'Open-receiver halo'),
               // Soccer-only: xG heatmap toggle. Lives next to the open-halo
               // toggle so all visualization options sit together.
-              isSoccer ? h('label', { style: { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 } },
+              isSoccer ? h('label', null,
                 h('input', { type: 'checkbox', checked: !!d.showXG, 'data-pl-focusable': 'true',
                   onChange: function(e) { upd('showXG', e.target.checked); } }),
                 __alloT('stem.playlab.xg_heatmap', 'xG heatmap')) : null,
@@ -4579,7 +4697,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // RIGHT: teach + coverage info + stats
-          h('div', null,
+          h('div', { className: 'playlab-info-column' },
             h('section', {
               'aria-labelledby': 'pl-play-heading',
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 10 }
