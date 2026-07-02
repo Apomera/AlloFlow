@@ -50,6 +50,32 @@ service cloud.firestore {
             .diff(request.resource.data.get('bridgeReactions', {}))
             .affectedKeys().hasOnly([request.auth.uid]);
         }
+        function democracyOnlySelfVote() {
+          // Adventure democracy mode: students cast democracy.votes.{their uid}
+          // (an option string from the scene's fixed choice list).
+          return resource.data.get('democracy', {})
+              .diff(request.resource.data.get('democracy', {}))
+              .affectedKeys().hasOnly(['votes'])
+            && resource.data.get('democracy', {}).get('votes', {})
+              .diff(request.resource.data.get('democracy', {}).get('votes', {}))
+              .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function escapeRoomTeamPlay() {
+          // Collaborative escape room: team progress is SHARED game state by
+          // design (non-PII enums/ids, session-scoped) — any roster member
+          // may update their team's progress; team-slot claims are per-uid.
+          return resource.data.get('escapeRoomState', {})
+              .diff(request.resource.data.get('escapeRoomState', {}))
+              .affectedKeys().hasOnly(['teamProgress', 'teams'])
+            && (
+              !('teams' in resource.data.get('escapeRoomState', {})
+                  .diff(request.resource.data.get('escapeRoomState', {}))
+                  .affectedKeys())
+              || resource.data.get('escapeRoomState', {}).get('teams', {})
+                  .diff(request.resource.data.get('escapeRoomState', {}).get('teams', {}))
+                  .affectedKeys().hasOnly([request.auth.uid])
+            );
+        }
 
         // Students need GET by code; LIST would allow code enumeration.
         allow get: if authed();
@@ -58,10 +84,12 @@ service cloud.firestore {
         allow delete: if isHost();
         allow update: if isHost() || (
           authed()
-          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions'])
+          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])
           && (!('roster' in changedTop()) || rosterOnlySelf())
           && (!('quizState' in changedTop()) || quizOnlySelf())
           && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
+          && (!('democracy' in changedTop()) || democracyOnlySelfVote())
+          && (!('escapeRoomState' in changedTop()) || escapeRoomTeamPlay())
         );
       }
 

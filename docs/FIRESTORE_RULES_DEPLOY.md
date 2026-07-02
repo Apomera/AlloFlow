@@ -60,7 +60,14 @@ Teacher device (the one that starts the session) + one student device (incognito
 | 6 | Teacher: run a live quiz question; student answers | Answer lands in the teacher dashboard |
 | 7 | Teacher: Pictionary round with the student as drawer | Strokes flow both ways |
 | 8 | Teacher: end the session (both the session modal way and the quiz-dashboard way, on two separate runs) | Student exits cleanly both times |
-| 9 | Student (dev tools, optional adversarial check): try `updateDoc` on another student's roster entry or on `mode` | **Fails** with permission-denied |
+| 9 | Student: in Adventure democracy mode, cast a vote | Vote registers (tally moves on other devices) |
+| 10 | Student (dev tools, optional adversarial check): try `updateDoc` on another student's roster entry or on `mode` | **Fails** with permission-denied |
+
+*(2026-07-02 audit note: democracy voting and collaborative escape-room team play were added to the
+student-writable rules after a niche-feature sweep — an earlier rules draft would have blocked
+them. The escape-room team sync also had a broken Firestore path in code, fixed the same day, and
+its team-assignment UI doesn't exist yet — see the protocol spec's findings — so escape-room
+collaboration can't be fully smoke-tested until teams can actually be assigned.)*
 
 If anything in 1–8 fails: paste `docs/firestore.rules.PREVIOUS` back, Publish, and note exactly
 which step failed — that's a one-line fix in the rules, not a reason to abandon them.

@@ -187,6 +187,27 @@ Who sees what, in precedence order (student `onSnapshot` consumer):
 
 ---
 
+### 4.2 Niche live features — audit results (2026-07-02)
+
+- **Adventure democracy mode:** real and working. Students write `democracy.votes.{uid}` (option
+  string from the scene's fixed choice list); the teacher's next turn tallies and resets votes.
+  Covered by rules (`democracyOnlySelfVote`). Improvement candidates: votes are visible tallies
+  only after teacher advance (no live tally UI for students); no vote-changed indicator.
+- **Collaborative escape room:** two defects found. (1) The student team-progress sync wrote to a
+  malformed Firestore path (missing `public/data`) and failed silently into a catch — teams never
+  saw each other's solves. **Fixed 2026-07-02.** (2) Nothing anywhere writes
+  `escapeRoomState.teams.{uid}` — there is no team-assignment UI, so the collaborative path was
+  unreachable even without the path bug. [ROADMAP #11: a team picker (student self-select or
+  teacher-assign in the escape controls) makes the feature real; rules already permit per-uid
+  team claims.]
+- **Class-vs-boss / review game:** despite `bossStats` being seeded in the session doc, no code
+  writes boss HP or team state to the session — the whole game runs in teacher-local React state.
+  It is a **projector experience** (class watches the teacher screen), not a device-synced
+  activity. Fine as designed; do not "fix" the unused `bossStats` seed without deciding whether
+  the feature should become device-synced (it would need the quiz P2P channel, not Firestore).
+- **Adventure sync:** teacher pushes `activeAdventureScene/State` + `currentResourceId:
+  'adventure-sync'`; students mirror it (verified §4.1). Teacher-written only; rules-safe.
+
 ## 5. WebRTC message envelope
 
 Current wire format (both games): `{ type: string, payload: object }`, JSON over an ordered
