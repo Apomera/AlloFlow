@@ -5855,7 +5855,59 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, content));
+      function renderMissionDeck() {
+        var seenCount = Object.keys(seen || {}).length;
+        var quizCount = d.quizCorrect || 0;
+        var activeTab = (TABS.filter(function (tb) { return tb.id === tab; })[0] || TABS[0]).label;
+        var routeCards = [
+          { id: 'field', title: 'Start with the field guide', body: 'Search, filter, and open species cards before moving into deeper evidence work.', tab: 'explore', accent: '#22c55e' },
+          { id: 'time', title: 'Build the time story', body: 'Use the timeline and deep-time scale to connect periods, climate, and extinction.', tab: 'timeline', accent: '#38bdf8' },
+          { id: 'evidence', title: 'Think like a paleontologist', body: 'Compare traits, excavate a fossil, classify a specimen, then check uncertainty notes.', tab: 'dig', accent: '#f59e0b' },
+          { id: 'practice', title: 'Lock in understanding', body: 'Use quiz, records, glossary, and classroom printables when students are ready to review.', tab: 'quiz', accent: '#a78bfa' }
+        ];
+        return el('section', {
+          'data-dinolab-command': 'true',
+          'aria-label': 'Dino Lab mission control',
+          style: { margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(34,197,94,0.34)', background: 'linear-gradient(135deg, rgba(6,78,59,0.52), rgba(15,23,42,0.72))', boxShadow: '0 18px 38px rgba(0,0,0,0.24)' }
+        },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
+            el('div', { style: { borderRadius: 14, padding: 14, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.20)' } },
+              el('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Dino field station'),
+              el('h2', { style: { fontSize: 22, lineHeight: 1.15, margin: '0 0 8px', color: T.text } }, 'Choose a fossil investigation path.'),
+              el('p', { style: { margin: 0, color: T.soft, fontSize: 13, lineHeight: 1.55 } }, 'Dino Lab has a large catalog. This panel turns it into a guided starting point while keeping every section available above.'),
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+                [
+                  ['Species opened', seenCount + '/' + DINOS.length, '#86efac'],
+                  ['Quiz correct', quizCount + '/5', '#facc15'],
+                  ['Active section', activeTab, '#67e8f9']
+                ].map(function (item) {
+                  return el('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(15,23,42,0.58)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    el('div', { style: { fontSize: 10, fontWeight: 800, color: T.soft, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    el('div', { style: { marginTop: 3, fontSize: 15, fontWeight: 900, color: item[2], wordBreak: 'break-word' } }, item[1])
+                  );
+                })
+              )
+            ),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10 } },
+              routeCards.map(function (card) {
+                var active = tab === card.tab;
+                return el('button', {
+                  key: card.id,
+                  onClick: function () { upd('tab', card.tab); announceToSR(card.title); },
+                  style: { textAlign: 'left', cursor: 'pointer', minHeight: 128, padding: 13, borderRadius: 13, border: '1px solid ' + (active ? card.accent : 'rgba(148,163,184,0.20)'), background: active ? 'rgba(255,255,255,0.10)' : 'rgba(15,23,42,0.50)', color: T.text, boxShadow: active ? '0 10px 22px rgba(0,0,0,0.22)' : 'none' }
+                },
+                  el('div', { style: { width: 34, height: 5, borderRadius: 99, background: card.accent, marginBottom: 10 } }),
+                  el('div', { style: { fontSize: 14, fontWeight: 900, marginBottom: 5 } }, card.title),
+                  el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.45 } }, card.body),
+                  el('div', { style: { marginTop: 10, fontSize: 11, fontWeight: 800, color: card.accent } }, active ? 'Open now' : 'Open path')
+                );
+              })
+            )
+          )
+        );
+      }
+
+      return el('div', { style: { minHeight: '100%', background: T.canvas, color: T.text } }, tabBar, el('div', { id: 'dinopanel', role: 'tabpanel', 'aria-labelledby': 'dinotab-' + tab, style: { padding: 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

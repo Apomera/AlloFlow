@@ -1340,12 +1340,12 @@ window.StemLab = window.StemLab || {
 
             
 
-return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
+return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (isDark ? " dark-mode" : "") },
             React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", style: { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" } }, d._srMsg || ""),
 
             // Header
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.molecule.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
@@ -1357,9 +1357,50 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
+            React.createElement("section", { "data-molecule-command": "true", "aria-label": "Molecule Lab command deck", className: "mb-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm" },
+              React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.7fr)]" },
+                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white/80 p-3" },
+                  React.createElement("div", { className: "text-[11px] font-black uppercase text-cyan-700", style: { letterSpacing: 0 } }, "Molecular workbench"),
+                  React.createElement("div", { className: "mt-1 text-xl font-black leading-tight text-slate-900" }, "Pick the chemistry lens first."),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
+                  React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
+                    [
+                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#059669'],
+                      ['Research points', totalRP, '#d97706'],
+                      ['Formula', d.formula || '-', '#2563eb']
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat[0], className: "rounded-lg border border-slate-200 bg-white p-2" },
+                        React.createElement("div", { className: "text-[10px] font-bold uppercase text-slate-500", style: { letterSpacing: 0 } }, stat[0]),
+                        React.createElement("div", { className: "mt-1 text-sm font-black", style: { color: stat[2], wordBreak: 'break-word' } }, stat[1])
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-5" },
+                  [
+                    { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e' },
+                    { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea' },
+                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#d97706' },
+                    { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb' },
+                    { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626' }
+                  ].map(function(route) {
+                    var active = mode === route.id;
+                    return React.createElement("button", { key: route.id,
+                      onClick: function() { upd('moleculeMode', route.id); },
+                      className: "min-h-[104px] rounded-xl border bg-white p-3 text-left transition-all hover:shadow-md active:scale-[0.98]",
+                      style: { borderColor: active ? route.tone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + route.tone + '33' : 'none' } },
+                      React.createElement("div", { className: "text-sm font-black", style: { color: route.tone } }, route.title),
+                      React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, route.body),
+                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: route.tone } }, active ? "Open now" : "Open")
+                    );
+                  })
+                )
+              )
+            ),
+
             // Mode tabs
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
+            React.createElement("div", { className: "flex flex-wrap gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
 
               [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table'], ['reactions', '⚗️ Reactions']].map(([m, label]) =>
 

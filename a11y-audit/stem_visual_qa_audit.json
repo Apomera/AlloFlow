@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-07-02T20:00:13.143Z",
+  "generatedAt": "2026-07-02T20:42:26.386Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 30
+    "monitoredMarkerCount": 35
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 30,
+    "markerPassCount": 35,
     "markerFailCount": 0,
-    "monitoredIssueCount": 31,
+    "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 22,
-    "monitoredNoticeCount": 9,
+    "monitoredWarningCount": 26,
+    "monitoredNoticeCount": 11,
     "syncDriftCount": 0,
     "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
@@ -341,6 +341,154 @@
       }
     },
     {
+      "id": "dinoLab",
+      "file": "stem_tool_dinolab.js",
+      "marker": "data-dinolab-command",
+      "label": "Dino Lab mission deck",
+      "ok": true,
+      "htmlBytes": 424134,
+      "issues": [
+        {
+          "toolId": "dinoLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 747,
+          "examples": [
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3)"
+            },
+            {
+              "selector": "div > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 406,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 424134
+      }
+    },
+    {
+      "id": "aquacultureLab",
+      "file": "stem_tool_aquaculture.js",
+      "marker": "data-aquaculture-command",
+      "label": "Aquaculture operations dashboard",
+      "ok": true,
+      "htmlBytes": 58061,
+      "issues": [],
+      "metrics": {
+        "buttons": 144,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 58061
+      }
+    },
+    {
+      "id": "musicSynth",
+      "file": "stem_tool_music.js",
+      "marker": "data-music-command",
+      "label": "Music Synth studio deck",
+      "ok": true,
+      "htmlBytes": 47673,
+      "issues": [
+        {
+          "toolId": "musicSynth",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
+        },
+        {
+          "toolId": "musicSynth",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
+        },
+        {
+          "toolId": "musicSynth",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 1,
+          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
+        },
+        {
+          "toolId": "musicSynth",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 1,
+          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 94,
+        "fields": 19,
+        "canvases": 2,
+        "headings": 3,
+        "htmlBytes": 47673
+      }
+    },
+    {
+      "id": "molecule",
+      "file": "stem_tool_molecule.js",
+      "marker": "data-molecule-command",
+      "label": "Molecule Lab command deck",
+      "ok": true,
+      "htmlBytes": 34584,
+      "issues": [],
+      "metrics": {
+        "buttons": 103,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 34584
+      }
+    },
+    {
+      "id": "printingPress",
+      "file": "stem_tool_printingpress.js",
+      "marker": "data-printingpress-command",
+      "label": "PrintingPress shop dashboard",
+      "ok": true,
+      "htmlBytes": 45047,
+      "issues": [
+        {
+          "toolId": "printingPress",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div > div:nth-of-type(2)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 25,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 5,
+        "htmlBytes": 45047
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -471,7 +619,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17206,
+      "htmlBytes": 17204,
       "issues": [
         {
           "toolId": "playlab",
@@ -500,7 +648,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17206
+        "htmlBytes": 17204
       }
     },
     {
@@ -598,14 +746,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13353,
+      "htmlBytes": 13364,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13353
+        "htmlBytes": 13364
       }
     },
     {
@@ -674,7 +822,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46588,
+      "htmlBytes": 46587,
       "issues": [
         {
           "toolId": "throwlab",
@@ -703,7 +851,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46588
+        "htmlBytes": 46587
       }
     },
     {
@@ -856,12 +1004,13 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 12,
-      "toolCount": 9,
+      "count": 14,
+      "toolCount": 10,
       "exampleTools": [
         "epidemicSim",
         "climateExplorer",
         "companionPlanting",
+        "musicSynth",
         "brainAtlas",
         "anatomy",
         "waterCycle",
@@ -873,11 +1022,12 @@
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 8,
-      "toolCount": 6,
+      "count": 10,
+      "toolCount": 7,
       "exampleTools": [
         "epidemicSim",
         "climateExplorer",
+        "musicSynth",
         "anatomy",
         "waterCycle",
         "plateTectonics",
@@ -897,12 +1047,14 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 9,
-      "toolCount": 9,
+      "count": 11,
+      "toolCount": 11,
       "exampleTools": [
         "opticsLab",
         "renewablesLab",
         "cellularLab",
+        "dinoLab",
+        "printingPress",
         "birdLab",
         "playlab",
         "bikeLab",

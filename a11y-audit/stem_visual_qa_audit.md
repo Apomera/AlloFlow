@@ -1,21 +1,21 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T20:00:13.143Z
+Generated: 2026-07-02T20:42:26.386Z
 
 ## Scope
 
 - Registered STEM tools: 113
 - STEM tool files: 110
-- Monitored student-facing visual markers: 30
+- Monitored student-facing visual markers: 35
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 30 |
+| Marker passes | 35 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 31 |
+| Monitored first-screen findings | 37 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
 | Any source/public/build drift | 0 |
@@ -39,6 +39,11 @@ Generated: 2026-07-02T20:00:13.143Z
 | pass | `dnaLab` | `data-dna-mission` | Rendered |
 | pass | `cell` | `data-cell-mission` | Rendered |
 | pass | `evoLab` | `data-evolab-command` | Rendered |
+| pass | `dinoLab` | `data-dinolab-command` | Rendered |
+| pass | `aquacultureLab` | `data-aquaculture-command` | Rendered |
+| pass | `musicSynth` | `data-music-command` | Rendered |
+| pass | `molecule` | `data-molecule-command` | Rendered |
+| pass | `printingPress` | `data-printingpress-command` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
@@ -60,10 +65,10 @@ Generated: 2026-07-02T20:00:13.143Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 12 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
-| warning | `canvas-name` | 8 | `epidemicSim`, `climateExplorer`, `anatomy`, `waterCycle`, `plateTectonics`, `skatelab` |
+| warning | `canvas-focus` | 14 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `musicSynth`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
+| warning | `canvas-name` | 10 | `epidemicSim`, `climateExplorer`, `musicSynth`, `anatomy`, `waterCycle`, `plateTectonics`, `skatelab` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
-| notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `renewablesLab`, `cellularLab`, `birdLab`, `playlab`, `bikeLab`, `throwlab`, `echolocation`, `skatelab` |
+| notice | `horizontal-overflow-risk` | 11 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `throwlab`, `echolocation`, `skatelab` |
 
 ## Sync Drift
 

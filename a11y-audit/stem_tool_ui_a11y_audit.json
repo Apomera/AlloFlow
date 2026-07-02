@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T20:00:15.746Z",
+  "generatedAt": "2026-07-02T20:42:09.983Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 178,
+    "issueCount": 176,
     "errorCount": 0,
-    "warningCount": 161,
+    "warningCount": 159,
     "noticeCount": 17,
-    "toolsWithIssues": 75,
+    "toolsWithIssues": 74,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 70,
+    "toolsWithWarnings": 68,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 75,
+        "warningCount": 74,
         "noticeCount": 6
       },
       "technology": {
@@ -61,7 +61,7 @@
       "explore": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 3,
+        "warningCount": 2,
         "noticeCount": 4
       },
       "creative": {
@@ -214,21 +214,21 @@
     {
       "code": "heading",
       "severity": "warning",
-      "count": 20,
-      "toolCount": 20,
+      "count": 18,
+      "toolCount": 18,
       "exampleTools": [
-        "aquacultureLab",
         "archStudio",
         "astronomy",
         "bridgeLab",
         "cellularLab",
         "cephalopodLab",
-        "dinoLab",
         "fisherLab",
         "flightSim",
         "funcGrapher",
         "geoSandbox",
-        "geometryWorld"
+        "geometryWorld",
+        "graphCalc",
+        "kitchenLab"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
@@ -564,32 +564,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.",
-      "renderedBytes": 53417,
+      "renderedBytes": 58061,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 140,
+        "buttons": 144,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "aquacultureLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "aquarium",
@@ -1911,31 +1904,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 419027,
+      "renderedBytes": 424134,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 402,
+        "buttons": 406,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "dinoLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
         {
           "toolId": "dinoLab",
           "severity": "notice",
@@ -1952,7 +1939,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16026,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2341,7 +2328,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22814,
+      "renderedBytes": 22798,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2804,7 +2791,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1578,
+      "renderedBytes": 1575,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3278,14 +3265,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
-      "renderedBytes": 30871,
+      "renderedBytes": 34584,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 98,
+        "buttons": 103,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
@@ -3303,7 +3290,7 @@
           "code": "svg-name",
           "message": "SVG is neither aria-hidden nor named.",
           "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto:nth-of-type(1) > div:nth-of-type(5) > svg.w-full.bg-gradient-to-b"
+          "selector": "div > div.max-w-5xl.mx-auto:nth-of-type(1) > div:nth-of-type(5) > svg.w-full.bg-gradient-to-b"
         },
         {
           "toolId": "molecule",
@@ -3362,7 +3349,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13353,
+      "renderedBytes": 13378,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3440,14 +3427,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Play a piano, build beats, and learn the science of sound with real-time waveform visualization.",
-      "renderedBytes": 44522,
+      "renderedBytes": 47673,
       "standardShell": true,
       "issueCount": 4,
       "errorCount": 0,
       "warningCount": 4,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 90,
+        "buttons": 94,
         "roleButtons": 24,
         "fields": 19,
         "canvases": 2,
@@ -3465,7 +3452,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 0,
-          "selector": "div > div.max-w-5xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
+          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
         },
         {
           "toolId": "musicSynth",
@@ -3473,7 +3460,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div > div.max-w-5xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
+          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
         },
         {
           "toolId": "musicSynth",
@@ -3481,7 +3468,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 1,
-          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
         },
         {
           "toolId": "musicSynth",
@@ -3489,7 +3476,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 1,
-          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
         }
       ]
     },
@@ -3827,7 +3814,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17336,
+      "renderedBytes": 17340,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3869,14 +3856,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The Gutenberg-style screw press as a working simulation, plus the materials science, mechanical engineering, economics, history, and typography it touches. Compose your own type, ink the forme, pull the bar, see the impression. Built for interdisciplinary middle-school work. Sources: Gutenberg Museum (Mainz), British Library, Library of Congress, Smithsonian, Aldine Press scholarship, Eisenstein, Johns, Bringhurst.",
-      "renderedBytes": 119021,
+      "renderedBytes": 45047,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 99,
+        "buttons": 25,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -4633,7 +4620,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46578,
+      "renderedBytes": 46590,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

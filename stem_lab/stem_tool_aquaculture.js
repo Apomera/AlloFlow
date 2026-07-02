@@ -7846,7 +7846,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function homeTab() {
       var st = loadState();
       var completedCount = Object.keys(st.completedMissions || {}).length;
+      var opsRoutes = [
+        { id: 'launch', label: 'Run the skiff mission', detail: 'Cast off, reach the lease, deploy droppers, and probe water quality.', tab: 'sim', tone: '#5eead4' },
+        { id: 'chart', label: 'Read the river first', detail: 'Preview the channel, buoy marks, lease box, and red-right-returning rule.', tab: 'chart', tone: '#60a5fa' },
+        { id: 'biology', label: 'Plan the crop', detail: 'Compare mussels, oysters, kelp, scallops, and hatchery workflows.', tab: 'species', tone: '#86efac' },
+        { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
+      ];
       return h('div', null,
+        h('section', { 'data-aquaculture-command': 'true', 'aria-label': 'Aquaculture operations dashboard',
+          style: { background: 'linear-gradient(135deg, rgba(4,47,46,0.95), rgba(15,23,42,0.92))', border: '1px solid rgba(94,234,212,0.30)', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 18px 38px rgba(0,0,0,0.24)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, alignItems: 'stretch' } },
+            h('div', { style: { padding: 14, borderRadius: 14, background: 'rgba(15,23,42,0.54)', border: '1px solid rgba(148,163,184,0.18)' } },
+              h('div', { style: { fontSize: 11, fontWeight: 900, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 6 } }, 'Farm operations'),
+              h('h2', { style: { margin: '0 0 8px', color: '#ecfeff', fontSize: 22, lineHeight: 1.15 } }, 'Choose the next job on the lease.'),
+              h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, lineHeight: 1.55 } }, 'AquacultureLab has deep reference material, but students start best from the work loop: navigate, monitor, grow, and defend the site plan.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 14 } },
+                [
+                  ['Missions', completedCount + '/' + MISSIONS.length, '#86efac'],
+                  ['Droppers', droppersDeployed + '/5', '#fbbf24'],
+                  ['Probes', (probes || []).length, '#5eead4']
+                ].map(function(item) {
+                  return h('div', { key: item[0], style: { padding: 9, borderRadius: 10, background: 'rgba(2,6,23,0.48)', border: '1px solid rgba(148,163,184,0.16)' } },
+                    h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 } }, item[0]),
+                    h('div', { style: { marginTop: 3, color: item[2], fontSize: 16, fontWeight: 900 } }, item[1])
+                  );
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
+              opsRoutes.map(function(route) {
+                return h('button', { key: route.id, className: 'aq-btn',
+                  onClick: function() { setTab(route.tab); aqAnnounce(route.label); },
+                  style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
+                  h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
+                  h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45, marginBottom: 10 } }, route.detail),
+                  h('div', { style: { fontSize: 11, fontWeight: 900, color: route.tone } }, 'Open workspace')
+                );
+              })
+            )
+          )
+        ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🦪 AquacultureLab — Mussel Farm Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },

@@ -1149,6 +1149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
         var totalModules = 10;
+        var moduleDrawerOpen = d.showAllPressModules === true;
         // Tile counter for staggered entrance: each successive tile gets a
         // ~50ms incremental delay so they cascade in instead of all at once.
         // Reset per render so the cascade plays again if the user navigates
@@ -1416,9 +1417,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               h('text', { x: 65, y: 156, textAnchor: 'middle', fill: T.dim, fontSize: 7, fontStyle: 'italic', fontFamily: 'Georgia, serif' }, __alloT('stem.printingpress.1450_screw_press', '~1450 screw press'))
             )
           ),
+          h('section', { 'data-printingpress-command': 'true', 'aria-label': 'PrintingPress shop dashboard',
+            style: { background: 'linear-gradient(135deg, rgba(254,243,199,0.10), rgba(58,38,18,0.32))', border: '1px solid ' + T.accent, borderRadius: 12, padding: 14, marginBottom: 18 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, alignItems: 'stretch' } },
+              h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 10, color: T.accentHi, textTransform: 'uppercase', letterSpacing: 0, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 4 } }, 'Print shop dashboard'),
+                h('div', { style: { fontSize: 18, color: T.text, fontWeight: 800, fontFamily: 'Georgia, serif', lineHeight: 1.15, marginBottom: 6 } }, 'Start with the craft, then open the archive.'),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, 'The full tool is huge. These routes keep the first screen focused while the complete module library stays available below.')
+              ),
+              [
+                { id: 'pressMechanism', title: 'Pull the press', body: 'Learn the screw, platen, bed, pressure, and proof cycle.', tone: T.accentHi },
+                { id: 'setType', title: 'Set your type', body: 'Compose, proofread, and understand movable-type constraints.', tone: T.warn },
+                { id: 'broadside', title: 'Make an artifact', body: 'Create a printed broadside as a shareable class product.', tone: T.ok },
+                { id: 'printGlossary', title: 'Review vocabulary', body: 'Use the glossary and quiz when students need consolidation.', tone: T.dim }
+              ].map(function(route) {
+                return h('button', { key: route.id,
+                  onClick: function() { upd('view', route.id); markVisited(route.id); announce('Opening ' + route.title); },
+                  style: Object.assign(btn({}), { textAlign: 'left', alignItems: 'stretch', minHeight: 112, padding: 12, background: T.cardAlt, borderColor: route.tone, borderTop: '4px solid ' + route.tone, cursor: 'pointer' }) },
+                  h('div', { style: { fontSize: 14, color: route.tone, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 5 } }, route.title),
+                  h('div', { style: { color: T.muted, fontSize: 11.5, lineHeight: 1.45, marginBottom: 8 } }, route.body),
+                  h('div', { style: { color: route.tone, fontSize: 11, fontWeight: 800 } }, 'Open workspace')
+                );
+              })
+            )
+          ),
           MENU_SECTIONS.map(function(sec) {
             var sectionTiles = MENU_TILES.filter(function(t) { return t.section === sec.id; });
             if (sectionTiles.length === 0) return null;
+            var collapseSection = sec.id === 'modules' && sectionTiles.length > 12;
+            var visibleTiles = collapseSection && !moduleDrawerOpen ? sectionTiles.slice(0, 12) : sectionTiles;
             return h('section', { key: sec.id, 'aria-label': sec.label,
               style: {
                 marginBottom: 18,
@@ -1446,8 +1473,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               ),
               h('div', { role: 'list',
                 style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
-                sectionTiles.map(function(tile) { return renderTile(tile, !!sec.emphasized); })
-              )
+                visibleTiles.map(function(tile) { return renderTile(tile, !!sec.emphasized); })
+              ),
+              collapseSection && h('button', {
+                className: 'printingpress-no-print',
+                onClick: function() { upd('showAllPressModules', !moduleDrawerOpen); announce(moduleDrawerOpen ? 'Showing fewer modules' : 'Showing full module catalog'); },
+                style: Object.assign(btn({}), { marginTop: 10, width: '100%', justifyContent: 'center', background: moduleDrawerOpen ? T.card : T.cardAlt, borderColor: T.accent, color: T.accentHi, fontWeight: 800, fontSize: 12, padding: '9px 12px' })
+              }, moduleDrawerOpen ? 'Show fewer modules' : 'Show all ' + sectionTiles.length + ' modules')
             );
           }),
           Object.keys(badges).length > 0 && h('div', { style: { marginTop: 18, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },

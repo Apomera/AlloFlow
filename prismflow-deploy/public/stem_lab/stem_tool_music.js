@@ -1854,9 +1854,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             window.addEventListener('keydown', handlePadKey);
             return function () { window.removeEventListener('keydown', handlePadKey); };
           }, [synthTab, d.activeKit]);
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200" },
             // ── Header ──
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
               React.createElement("button", { onClick: function () { setStemLabTool(null); stopSequencer(); stopMetronome(); stopArpeggiator(); }, className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", 'aria-label': __alloT('stem.music.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
               React.createElement("h3", { className: "text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500" }, __alloT('stem.music.music_synthesizer', "\uD83C\uDFB9 Music Synthesizer")),
               React.createElement("span", { className: "px-2 py-0.5 bg-purple-100 text-purple-700 text-[11px] font-bold rounded-full" },
@@ -1864,13 +1864,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               ),
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
-              React.createElement("div", { className: "flex gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
+              React.createElement("div", { className: "flex flex-wrap gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
                 [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }, { id: 'timbreHunt', icon: '\u2696\uFE0F', label: __alloT('stem.music.timbre', 'Timbre') }].map(function (tab) {
                   return React.createElement("button", { key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
                     className: "px-2.5 py-1 rounded-md text-[11px] font-bold transition-all " + (synthTab === tab.id ? 'bg-white text-purple-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                   }, tab.icon + " " + tab.label);
                 })
+              )
+            ),
+
+            React.createElement("section", { "data-music-command": "true", "aria-label": "Music Synth studio command deck", className: "mb-3 rounded-2xl border border-purple-200 bg-gradient-to-br from-slate-950 via-purple-950 to-fuchsia-950 p-3 shadow-lg" },
+              React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.6fr)]" },
+                React.createElement("div", { className: "rounded-xl border border-white/10 bg-white/10 p-3 text-white" },
+                  React.createElement("div", { className: "text-[11px] font-black uppercase text-fuchsia-200", style: { letterSpacing: 0 } }, "Studio signal path"),
+                  React.createElement("div", { className: "mt-1 text-xl font-black leading-tight" }, "Pick a sound task, then play."),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-purple-100" }, "The synth now starts from a studio workflow: shape a tone, learn a scale, build harmony, make a beat, or inspect the sound science."),
+                  React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
+                    [
+                      ['Engine', synthEngine === 'standard' ? (d.waveType || 'sine') : synthEngine, 'text-cyan-200'],
+                      ['Root', selectedRoot + (d.octave || 4), 'text-amber-200'],
+                      ['Mode', synthTab, 'text-emerald-200']
+                    ].map(function(stat) {
+                      return React.createElement("div", { key: stat[0], className: "rounded-lg border border-white/10 bg-slate-950/50 p-2" },
+                        React.createElement("div", { className: "text-[10px] font-bold uppercase text-purple-200", style: { letterSpacing: 0 } }, stat[0]),
+                        React.createElement("div", { className: "mt-1 text-sm font-black " + stat[2] }, stat[1])
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-4" },
+                  [
+                    { id: 'play', title: 'Shape a tone', body: 'Presets, engines, keyboard, envelopes, and effects.', tone: 'border-purple-300 text-purple-100' },
+                    { id: 'scales', title: 'Learn a scale', body: 'Hear step patterns and lock the keyboard to a mode.', tone: 'border-cyan-300 text-cyan-100' },
+                    { id: 'harmonypad', title: 'Build harmony', body: 'Layer drones, pads, and chord movement.', tone: 'border-emerald-300 text-emerald-100' },
+                    { id: 'beatpad', title: 'Make a beat', body: 'Trigger drum sounds and route into production.', tone: 'border-rose-300 text-rose-100' }
+                  ].map(function(route) {
+                    var active = synthTab === route.id;
+                    return React.createElement("button", { key: route.id, onClick: function() { upd('synthTab', route.id); },
+                      className: "min-h-[112px] rounded-xl border bg-white/10 p-3 text-left transition-all hover:bg-white/15 active:scale-[0.98] " + route.tone + (active ? " ring-2 ring-white/70" : "") },
+                      React.createElement("div", { className: "text-sm font-black" }, route.title),
+                      React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-purple-100" }, route.body),
+                      React.createElement("div", { className: "mt-2 text-[11px] font-black" }, active ? "Open now" : "Open")
+                    );
+                  })
+                )
               )
             ),
 

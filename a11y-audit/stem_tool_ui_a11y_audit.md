@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T20:00:15.746Z
+Generated: 2026-07-02T20:42:09.983Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-02T20:00:15.746Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 178 |
+| Total findings | 176 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 161 |
+| Tool-level warnings | 159 |
 | Review notices | 17 |
-| Tools with any finding | 75 |
+| Tools with any finding | 74 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -27,7 +27,7 @@ Generated: 2026-07-02T20:00:15.746Z
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `heading` | 20 | 20 | aquacultureLab, archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, dinoLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld | Start each tool with a semantic heading so screen-reader users can orient quickly. |
+| warning | `heading` | 18 | 18 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 67 | 17 | algebraCAS, appLab, atcTower, cell, cellularLab, companionPlanting, dataStudio, dnaLab, echoTrainer, fireEcology, kitchenLab, llmLiteracy | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
@@ -51,7 +51,7 @@ Generated: 2026-07-02T20:00:15.746Z
 | `alloBotSage` AlloBot: Starbound Sage | Games | standard | 79 | 0 | 0 | 0 | 0 | 0 |  |
 | `anatomy` Human Anatomy Explorer | science | standard | 66 | 1 | 1 | 0 | 2 | 0 | canvas-focus x1, canvas-name x1 |
 | `appLab` AppLab | technology | standard | 26 | 7 | 0 | 0 | 1 | 0 | inline-contrast x1 |
-| `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 140 | 0 | 0 | 0 | 1 | 0 | heading x1 |
+| `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 144 | 0 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 24 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
 | `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 1 | 1 | heading x1, metadata x1 |
@@ -83,7 +83,7 @@ Generated: 2026-07-02T20:00:15.746Z
 | `dataPlot` Data Plotter | creative | standard | 31 | 10 | 0 | 0 | 0 | 0 |  |
 | `dataStudio` Data Studio | creative | standard | 24 | 5 | 0 | 0 | 3 | 0 | inline-contrast x3 |
 | `decomposer` Material Decomposer | science | standard | 30 | 0 | 0 | 0 | 0 | 0 |  |
-| `dinoLab` Dino Lab | explore | standard | 402 | 1 | 0 | 0 | 1 | 1 | heading x1, metadata x1 |
+| `dinoLab` Dino Lab | explore | standard | 406 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `dissection` Virtual Dissection Lab | science | standard | 21 | 7 | 1 | 0 | 2 | 0 | canvas-name x1, tiny-text x1 |
 | `dnaLab` DNA Lab | biology | standard | 103 | 0 | 1 | 0 | 4 | 0 | inline-contrast x3, tiny-text x1 |
 | `echoTrainer` Echo Navigator | applied | standard | 26 | 5 | 1 | 0 | 6 | 0 | inline-contrast x6 |
@@ -117,11 +117,11 @@ Generated: 2026-07-02T20:00:15.746Z
 | `lumen` Lumen | data | standard | 22 | 7 | 0 | 0 | 1 | 0 | heading x1 |
 | `microbiology` Microbiology Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `migration` Migration & Wind Lab | science | standard | 10 | 6 | 1 | 0 | 0 | 0 |  |
-| `molecule` Molecule Lab | science | standard | 98 | 1 | 0 | 0 | 2 | 0 | svg-name x1, tiny-text x1 |
+| `molecule` Molecule Lab | science | standard | 103 | 1 | 0 | 0 | 2 | 0 | svg-name x1, tiny-text x1 |
 | `moneyMath` Money Math | math | standard | 23 | 2 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `moonMission` Moon Mission | science | standard | 8 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `multtable` Multiplication Table | math | standard | 22 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
-| `musicSynth` Music Synthesizer | creative | standard | 90 | 19 | 2 | 0 | 4 | 0 | canvas-focus x2, canvas-name x2 |
+| `musicSynth` Music Synthesizer | creative | standard | 94 | 19 | 2 | 0 | 4 | 0 | canvas-focus x2, canvas-name x2 |
 | `numberline` Number Line | math | standard | 15 | 5 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `nutritionLab` NutritionLab — Nutrition Science | general | standard | 19 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `opticsLab` Optics Lab | science | standard | 34 | 0 | 0 | 0 | 0 | 0 |  |
@@ -130,7 +130,7 @@ Generated: 2026-07-02T20:00:15.746Z
 | `physics` Physics Simulator | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `plateTectonics` Plate Tectonics | science | standard | 22 | 5 | 6 | 0 | 7 | 1 | canvas-focus x4, canvas-name x3, horizontal-overflow-risk x1 |
 | `playlab` PlayLab | science | standard | 31 | 5 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
-| `printingPress` PrintingPress | history-engineering | standard | 99 | 0 | 0 | 0 | 1 | 0 | svg-name x1 |
+| `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 1 | 0 | svg-name x1 |
 | `probability` Probability Lab | math | standard | 31 | 5 | 0 | 0 | 5 | 0 | inline-contrast x4, tiny-text x1 |
 | `protractor` Angle Explorer | math | standard | 69 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `punnett` Punnett Square Lab | science | standard | 24 | 4 | 0 | 0 | 1 | 0 | tiny-text x1 |
