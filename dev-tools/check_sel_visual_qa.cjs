@@ -272,6 +272,7 @@ async function mountAlloHaven(page, scenario) {
   await page.setViewportSize(scenario.viewport);
   await basePage(page, 'AlloHaven Portfolio Visual QA');
   await addReact(page);
+  const artifacts = scenario.emptyPortfolio ? [] : SAMPLE_ARTIFACTS;
   await page.evaluate(function (args) {
     window.AlloModules = window.AlloModules || {};
     window.__alloflowStudentArtifacts = args.artifacts;
@@ -298,7 +299,7 @@ async function mountAlloHaven(page, scenario) {
         }
       }));
     } catch (e) {}
-  }, { artifacts: SAMPLE_ARTIFACTS, theme: scenario.theme });
+  }, { artifacts: artifacts, theme: scenario.theme });
   await applyTheme(page, scenario.theme);
   await page.addScriptTag({ path: path.join(PUBLIC, 'allohaven_module.js') });
   await page.evaluate(function () {
@@ -494,6 +495,7 @@ function summarize(results) {
     { name: 'sel-teacher-launch-mobile-high-contrast', kind: 'sel', theme: 'high-contrast', viewport: { width: 390, height: 844 }, surface: 'teacher-launch', selector: '[aria-label="Teacher launch routines"]', minText: 800 },
     { name: 'sel-station-builder-mobile-high-contrast', kind: 'sel', theme: 'high-contrast', viewport: { width: 390, height: 844 }, surface: 'station-builder', selector: '[role="region"][aria-label="Station Builder"]', minText: 400 },
     { name: 'sel-for-educators-tablet-dark', kind: 'sel', theme: 'dark', viewport: { width: 820, height: 900 }, surface: 'for-educators', selector: '#sel-for-educators-modal', minText: 700 },
+    { name: 'allohaven-portfolio-empty-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, emptyPortfolio: true, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 220 },
     { name: 'allohaven-portfolio-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 500 },
     { name: 'allohaven-portfolio-filter-sel-desktop-light', kind: 'allohaven', theme: 'light', viewport: { width: 1280, height: 900 }, filterSource: 'SEL Hub', selector: '[role="dialog"][aria-label="My portfolio"]', minText: 300 },
     { name: 'allohaven-portfolio-mobile-high-contrast', kind: 'allohaven', theme: 'high-contrast', viewport: { width: 390, height: 844 }, selector: '[role="dialog"][aria-label="My portfolio"]', minText: 500 }

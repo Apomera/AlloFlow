@@ -2460,6 +2460,10 @@
           artifact: packet
         };
         setStudentArtifacts(function(prev) {
+          var artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+          if (artifactStore && typeof artifactStore.save === 'function') {
+            return artifactStore.save(artifact, { source: 'sel_hub', replaceExisting: !!existingArtifact, limit: 80 });
+          }
           var existingMatched = false;
           var next = Array.isArray(prev) ? prev.slice() : [];
           if (existingArtifact) {
@@ -2476,7 +2480,7 @@
           next.sort(function(a, b) {
             return Date.parse(b.updatedAt || b.createdAt || 0) - Date.parse(a.updatedAt || a.createdAt || 0);
           });
-          next = next.slice(0, 60);
+          next = next.slice(0, 80);
           try {
             window.__alloflowStudentArtifacts = next;
             localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));

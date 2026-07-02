@@ -14,6 +14,7 @@ const path = require('path');
 
 const ROOT = process.cwd();
 const SEL_DIR = path.join(ROOT, 'sel_hub');
+const PUBLIC = path.join(ROOT, 'prismflow-deploy', 'public');
 const MODULES = path.join(ROOT, 'prismflow-deploy', 'node_modules');
 const REPORT_JSON = path.join(ROOT, 'a11y-audit', 'sel_hub_browser_qa.json');
 const REPORT_MD = path.join(ROOT, 'a11y-audit', 'sel_hub_browser_qa.md');
@@ -45,6 +46,71 @@ const SAMPLE_SNAPSHOTS = [
     label: 'Strengths checkpoint',
     ts: Date.now() - 42 * 60000,
     data: { summary: 'I chose perseverance and kindness as strengths I want adults to notice.' }
+  }
+  ,
+  {
+    id: 'browser-qa-storyforge',
+    type: 'storyforge-submission',
+    source: 'storyforge',
+    sourceLabel: 'StoryForge',
+    kindLabel: 'StoryForge Story',
+    title: 'The Bridge of Choices',
+    summary: '284 words across 3 paragraphs',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    itemCount: 2,
+    items: [
+      { id: 'p1', title: 'Paragraph 1', toolLabel: 'StoryForge', privacy: 'full', text: 'Mira found a bridge that appeared when someone named a brave choice.' },
+      { id: 'p2', title: 'Paragraph 2', toolLabel: 'StoryForge', privacy: 'full', text: 'She crossed slowly and helped a classmate who was worried.' }
+    ]
+  },
+  {
+    id: 'browser-qa-adventure',
+    type: 'adventure-storybook',
+    source: 'adventure',
+    sourceLabel: 'Adventure Mode',
+    kindLabel: 'Adventure Storybook',
+    title: 'Rainforest Rescue',
+    summary: 'Adventure storybook with 3 journey entries',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    itemCount: 2,
+    items: [
+      { id: 'epilogue', title: 'Epilogue', toolLabel: 'Adventure Mode', privacy: 'full', text: 'Careful observation and teamwork changed the outcome.' },
+      { id: 'scene', title: 'Scene 1', toolLabel: 'Adventure Mode', privacy: 'full', text: 'The canopy opened above a flooded trail.' }
+    ]
+  },
+  {
+    id: 'browser-qa-poem',
+    type: 'poettree-submission',
+    source: 'poettree',
+    sourceLabel: 'PoetTree',
+    kindLabel: 'Poem',
+    title: 'Steady Hands',
+    summary: '8 lines - 42 words',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    itemCount: 1,
+    poemTitle: 'Steady Hands',
+    poemText: 'I breathe and count the window light. I name one thing that stayed.'
+  },
+  {
+    id: 'browser-qa-stage',
+    type: 'story-stage-submission',
+    source: 'story-stage',
+    sourceLabel: 'Story Stage',
+    kindLabel: 'Performance',
+    title: 'Kindness Scene',
+    summary: '2 characters - 2 lines',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    itemCount: 2,
+    script: {
+      lines: [
+        { id: 'line-1', character: 'Narrator', text: 'The class paused and made space for a quieter voice.' },
+        { id: 'line-2', character: 'Student', text: 'I can try again if someone reads the first line with me.' }
+      ]
+    }
   }
 ];
 
@@ -80,6 +146,75 @@ const SAMPLE_ARTIFACTS = [
       items: [
         { id: 'browser-qa-zone', title: 'Zone check reflection', toolLabel: 'Emotion Zones', privacy: 'summary', privacyLabel: 'Share summary only', summary: 'Student noticed a yellow-zone signal and chose grounding.' },
         { id: 'browser-qa-strengths', title: 'Strengths checkpoint', toolLabel: 'Strengths Finder', privacy: 'followup', privacyLabel: 'Ask adult to follow up', summary: 'Student wants an adult to notice perseverance and kindness.', followUpRequested: true }
+      ]
+    }
+  },
+  {
+    id: 'browser-qa-storyforge',
+    type: 'storyforge-submission',
+    source: 'storyforge',
+    sourceLabel: 'StoryForge',
+    kindLabel: 'StoryForge Story',
+    title: 'The Bridge of Choices',
+    summary: '284 words across 3 paragraphs',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
+    itemCount: 2,
+    items: [
+      { id: 'browser-qa-sf-p1', title: 'Paragraph 1', toolLabel: 'StoryForge', privacy: 'full', text: 'Mira found a bridge that only appeared when someone named a brave choice out loud.' },
+      { id: 'browser-qa-sf-p2', title: 'Paragraph 2', toolLabel: 'StoryForge', privacy: 'full', text: 'She crossed slowly, pausing to help a classmate who was worried about being left behind.' }
+    ]
+  },
+  {
+    id: 'browser-qa-adventure',
+    type: 'adventure-storybook',
+    source: 'adventure',
+    sourceLabel: 'Adventure Mode',
+    kindLabel: 'Adventure Storybook',
+    title: 'Rainforest Rescue',
+    summary: 'Adventure storybook with 3 journey entries',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    itemCount: 3,
+    items: [
+      { id: 'browser-qa-adventure-epilogue', title: 'Epilogue', toolLabel: 'Adventure Mode', privacy: 'full', text: 'You learned that careful observation and teamwork changed the outcome.' },
+      { id: 'browser-qa-adventure-scene', title: 'Scene 1', toolLabel: 'Adventure Mode', privacy: 'full', text: 'The canopy opened above a flooded trail, and your team had to choose a safe path.' },
+      { id: 'browser-qa-adventure-choice', title: 'Student choice', toolLabel: 'Adventure Mode', privacy: 'full', text: 'You asked the group to check the map before rushing forward.' }
+    ]
+  },
+  {
+    id: 'browser-qa-poettree',
+    type: 'poettree-poem',
+    source: 'poettree',
+    sourceLabel: 'PoetTree',
+    kindLabel: 'Poem',
+    title: 'Steady Hands',
+    summary: 'A student poem with 8 lines',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+    itemCount: 1,
+    poemTitle: 'Steady Hands',
+    poemText: 'I breathe and count the window light. I name one thing that stayed.'
+  },
+  {
+    id: 'browser-qa-story-stage',
+    type: 'story-stage-performance',
+    source: 'story-stage',
+    sourceLabel: 'Story Stage',
+    kindLabel: 'Performance',
+    title: 'Kindness Scene',
+    summary: 'Short performance script with 2 lines',
+    privacy: 'student-controlled',
+    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    itemCount: 2,
+    script: {
+      lines: [
+        { id: 'browser-qa-stage-line-1', character: 'Narrator', text: 'The class paused and made space for a quieter voice.' },
+        { id: 'browser-qa-stage-line-2', character: 'Student', text: 'I can try again if someone reads the first line with me.' }
       ]
     }
   }
@@ -216,6 +351,84 @@ async function mountSelHub(page, scenario) {
   await page.locator('[role="dialog"][aria-label="SEL Hub"]').waitFor({ state: 'visible', timeout: 45000 });
   await applyTheme(page, scenario.theme);
   await page.waitForTimeout(500);
+}
+
+async function mountAlloHaven(page, scenario, artifacts) {
+  await page.setViewportSize(scenario.viewport);
+  await page.setContent([
+    '<!doctype html>',
+    '<html><head><meta charset="utf-8"><title>AlloHaven Browser QA</title>',
+    '<style>',
+    'html,body,#root{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;}',
+    'body{background:#f8fafc;}',
+    '.theme-dark body,body.theme-dark{background:#0f172a;}',
+    '.theme-contrast body,body.theme-contrast{background:#000;}',
+    '.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}',
+    '</style></head><body>',
+    '<div id="root"></div>',
+    '</body></html>'
+  ].join(''));
+  await page.addScriptTag({ path: path.join(MODULES, 'react', 'umd', 'react.development.js') });
+  await page.addScriptTag({ path: path.join(MODULES, 'react-dom', 'umd', 'react-dom.development.js') });
+  await page.evaluate(function (args) {
+    window.AlloModules = window.AlloModules || {};
+    window.__alloflowStudentArtifacts = args.artifacts;
+    window.matchMedia = window.matchMedia || function () {
+      return { matches: false, addEventListener: function () {}, removeEventListener: function () {}, addListener: function () {}, removeListener: function () {} };
+    };
+    try {
+      localStorage.setItem('alloflow_student_artifacts', JSON.stringify(args.artifacts));
+      localStorage.setItem('alloflow_allohaven_v1', JSON.stringify({
+        onboardingSeen: true,
+        tokens: 8,
+        studentArtifacts: args.artifacts,
+        decorations: [],
+        journalEntries: [],
+        earnings: [],
+        stories: [],
+        goals: [],
+        visits: []
+      }));
+      localStorage.setItem('alloflow_stemlab_v2', JSON.stringify({
+        typingPractice: {
+          theme: args.theme === 'dark' ? 'dark' : 'default',
+          accommodations: { highContrast: args.theme === 'high-contrast' }
+        }
+      }));
+    } catch (e) {}
+  }, { artifacts: artifacts, theme: scenario.theme });
+  await applyTheme(page, scenario.theme);
+  await page.addScriptTag({ path: path.join(PUBLIC, 'allohaven_module.js') });
+  await page.evaluate(function () {
+    const h = window.React.createElement;
+    function App() {
+      return h(window.AlloModules.AlloHaven, {
+        isOpen: true,
+        onClose: function () {},
+        addToast: function () {},
+        callImagen: null,
+        callGemini: null,
+        callTTS: null,
+        selectedVoice: null,
+        disableAnimations: true
+      });
+    }
+    window.__allohavenQaRoot = window.ReactDOM.createRoot(document.getElementById('root'));
+    window.__allohavenQaRoot.render(h(App));
+  });
+  await page.locator('[role="dialog"][aria-label="AlloHaven"]').waitFor({ state: 'visible', timeout: 45000 });
+  await applyTheme(page, scenario.theme);
+  const welcome = page.locator('[role="dialog"][aria-label="Welcome to AlloHaven"]');
+  if (await welcome.count()) {
+    await welcome.getByRole('button', { name: /Got it/i }).first().click();
+    await welcome.waitFor({ state: 'detached', timeout: 10000 });
+  }
+  const tour = page.locator('[role="dialog"][aria-label^="AlloHaven tour"]');
+  if (await tour.count()) {
+    const done = tour.getByRole('button', { name: /Got it|Skip|Close|Done/i }).first();
+    if (await done.count()) await done.click();
+  }
+  await page.getByRole('button', { name: /Open my portfolio/i }).first().waitFor({ state: 'visible', timeout: 20000 });
 }
 
 async function activeInfo(page) {
@@ -474,6 +687,148 @@ async function runScenario(browser, scenario) {
   return result;
 }
 
+async function runAlloHavenScenario(browser, scenario) {
+  const page = await browser.newPage();
+  const artifacts = scenario.empty ? [] : SAMPLE_ARTIFACTS;
+  const result = {
+    name: scenario.name,
+    theme: scenario.theme,
+    viewport: scenario.viewport,
+    checks: [],
+    errors: []
+  };
+  page.on('console', function (msg) {
+    const text = msg.text();
+    if (msg.type() === 'error') result.errors.push('console: ' + text.slice(0, 300));
+  });
+  page.on('pageerror', function (err) {
+    result.errors.push('pageerror: ' + ((err && err.message) || String(err)).slice(0, 300));
+  });
+  try {
+    await mountAlloHaven(page, scenario, artifacts);
+    if (scenario.empty) {
+      await page.getByRole('button', { name: /Open my portfolio/i }).first().click();
+      await page.locator('[role="dialog"][aria-label="My portfolio"]').waitFor({ state: 'visible', timeout: 10000 });
+      const empty = await page.evaluate(function () {
+        const modal = document.querySelector('[role="dialog"][aria-label="My portfolio"]');
+        const text = (modal && modal.textContent || '').replace(/\s+/g, ' ').trim();
+        return {
+          opened: !!modal,
+          hasSupportedSources: /SEL Hub/.test(text) && /StoryForge/.test(text) && /Adventure Mode/.test(text) && /PoetTree/.test(text) && /Story Stage/.test(text),
+          hasProducts: /saved product/i.test(text)
+        };
+      });
+      result.checks.push({
+        id: 'allohaven-empty-portfolio-entry-visible',
+        pass: empty.opened && empty.hasSupportedSources,
+        details: empty
+      });
+      return result;
+    }
+
+    const helper = await page.evaluate(function () {
+      var seen = null;
+      window.addEventListener('alloflow-student-artifacts-changed', function (event) {
+        seen = event && event.detail ? event.detail : {};
+      }, { once: true });
+      var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      if (!store || typeof store.save !== 'function') return { storeExists: false };
+      var next = store.save({
+        id: 'helper-browser-qa',
+        type: 'storyforge-submission',
+        source: 'storyforge',
+        sourceLabel: 'StoryForge',
+        kindLabel: 'StoryForge Story',
+        title: 'Helper Saved Story',
+        summary: 'Saved through StudentArtifactStore',
+        privacy: 'student-controlled',
+        items: [{ id: 'helper-item', title: 'Paragraph 1', toolLabel: 'StoryForge', privacy: 'full', text: 'A helper-saved portfolio entry.' }]
+      }, { source: 'storyforge' });
+      return {
+        storeExists: true,
+        count: Array.isArray(next) ? next.length : 0,
+        eventSource: seen && seen.source,
+        savedId: next && next[0] && next[0].id
+      };
+    });
+    result.checks.push({
+      id: 'student-artifact-store-save-event',
+      pass: helper.storeExists && helper.count >= SAMPLE_ARTIFACTS.length && helper.eventSource === 'storyforge' && helper.savedId === 'helper-browser-qa',
+      details: helper
+    });
+
+    await page.getByRole('button', { name: /Open my portfolio/i }).first().click();
+    await page.locator('[role="dialog"][aria-label="My portfolio"]').waitFor({ state: 'visible', timeout: 10000 });
+    const controls = await page.evaluate(function () {
+      const modal = document.querySelector('[role="dialog"][aria-label="My portfolio"]');
+      return {
+        hasSearch: !!(modal && modal.querySelector('[aria-label="Search portfolio products"]')),
+        hasSort: !!(modal && modal.querySelector('[aria-label="Sort portfolio products"]')),
+        detailsCount: modal ? modal.querySelectorAll('details').length : 0,
+        printButtons: modal ? modal.querySelectorAll('[aria-label^="Print "]').length : 0,
+        downloadButtons: modal ? modal.querySelectorAll('[aria-label^="Download text for "]').length : 0
+      };
+    });
+    result.checks.push({
+      id: 'allohaven-portfolio-controls-labeled',
+      pass: controls.hasSearch && controls.hasSort && controls.detailsCount > 0 && controls.printButtons > 0 && controls.downloadButtons > 0,
+      details: controls
+    });
+
+    await page.getByRole('button', { name: /Show StoryForge portfolio products/i }).first().click();
+    await page.waitForTimeout(150);
+    const filter = await page.evaluate(function () {
+      const modal = document.querySelector('[role="dialog"][aria-label="My portfolio"]');
+      const cards = Array.from(modal ? modal.querySelectorAll('section[aria-label]') : []).map(function (section) {
+        return section.getAttribute('aria-label') || '';
+      });
+      return { cards: cards, allStoryForge: cards.length > 0 && cards.every(function (label) { return /StoryForge/.test(label); }) };
+    });
+    result.checks.push({
+      id: 'allohaven-portfolio-source-filter',
+      pass: filter.allStoryForge,
+      details: filter
+    });
+
+    await page.getByRole('button', { name: /Show All portfolio products/i }).first().click();
+    await page.getByRole('searchbox', { name: /Search portfolio products/i }).first().fill('Rainforest');
+    await page.waitForTimeout(150);
+    const search = await page.evaluate(function () {
+      const modal = document.querySelector('[role="dialog"][aria-label="My portfolio"]');
+      const text = (modal && modal.textContent || '').replace(/\s+/g, ' ').trim();
+      const cards = modal ? modal.querySelectorAll('section[aria-label]').length : 0;
+      return { cards: cards, hasRainforest: /Rainforest Rescue/.test(text), hasBridge: /Bridge of Choices/.test(text) };
+    });
+    result.checks.push({
+      id: 'allohaven-portfolio-search',
+      pass: search.cards === 1 && search.hasRainforest && !search.hasBridge,
+      details: search
+    });
+
+    await page.getByRole('searchbox', { name: /Search portfolio products/i }).first().fill('');
+    await page.locator('[role="dialog"][aria-label="My portfolio"] details').first().click();
+    await page.waitForTimeout(150);
+    const detail = await page.evaluate(function () {
+      const modal = document.querySelector('[role="dialog"][aria-label="My portfolio"]');
+      const open = modal ? modal.querySelector('details[open]') : null;
+      return {
+        open: !!open,
+        hasPreviewText: !!(open && /portfolio entry|reflection|choice|bridge|rainforest|window light/i.test(open.textContent || ''))
+      };
+    });
+    result.checks.push({
+      id: 'allohaven-portfolio-details-preview',
+      pass: detail.open && detail.hasPreviewText,
+      details: detail
+    });
+  } catch (e) {
+    result.errors.push((e && e.message) || String(e));
+  } finally {
+    await page.close().catch(function () {});
+  }
+  return result;
+}
+
 function summarize(results) {
   const flat = [];
   results.forEach(function (scenario) {
@@ -505,10 +860,12 @@ function summarize(results) {
     for (const scenario of scenarios) {
       results.push(await runScenario(browser, scenario));
     }
+    results.push(await runAlloHavenScenario(browser, { name: 'allohaven-empty-portfolio', theme: 'light', viewport: { width: 1280, height: 900 }, empty: true }));
+    results.push(await runAlloHavenScenario(browser, { name: 'allohaven-mixed-portfolio', theme: 'light', viewport: { width: 1280, height: 900 }, empty: false }));
     const summary = summarize(results);
     const report = {
       generatedAt: new Date().toISOString(),
-      harness: 'standalone SEL Hub browser fixture',
+      harness: 'standalone SEL Hub and AlloHaven browser fixture',
       summary: summary,
       scenarios: results
     };
@@ -520,7 +877,7 @@ function summarize(results) {
       '',
       'Generated: ' + report.generatedAt,
       '',
-      'Harness: standalone SEL Hub browser fixture',
+      'Harness: standalone SEL Hub and AlloHaven browser fixture',
       '',
       '## Summary',
       '',

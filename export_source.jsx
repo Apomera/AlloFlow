@@ -745,16 +745,21 @@ const createExport = (deps) => {
                         items: storyItems,
                     },
                 };
-                let existing = [];
-                if (Array.isArray(window.__alloflowStudentArtifacts)) {
-                    existing = window.__alloflowStudentArtifacts;
+                const artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+                if (artifactStore && typeof artifactStore.save === 'function') {
+                    artifactStore.save(artifact, { source: 'adventure', limit: 80 });
                 } else {
-                    try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (_) { existing = []; }
+                    let existing = [];
+                    if (Array.isArray(window.__alloflowStudentArtifacts)) {
+                        existing = window.__alloflowStudentArtifacts;
+                    } else {
+                        try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (_) { existing = []; }
+                    }
+                    const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+                    window.__alloflowStudentArtifacts = next;
+                    localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+                    window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'adventure' } }));
                 }
-                const next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
-                window.__alloflowStudentArtifacts = next;
-                localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-                window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'adventure' } }));
             } catch (_) {}
             let storyHtml = `
               <!DOCTYPE html>

@@ -1,4 +1,100 @@
 (function () {
+  (function ensureStudentArtifactStore() {
+    if (typeof window === 'undefined') return;
+    window.AlloModules = window.AlloModules || {};
+    if (window.AlloModules.StudentArtifactStore && typeof window.AlloModules.StudentArtifactStore.save === 'function') return;
+    var KEY = 'alloflow_student_artifacts';
+    var LIMIT = 80;
+    function packetOf(artifact) {
+      if (!artifact || typeof artifact !== 'object') return {};
+      if (artifact.artifact && typeof artifact.artifact === 'object') return artifact.artifact;
+      if (artifact.packet && typeof artifact.packet === 'object') return artifact.packet;
+      if (artifact.data && typeof artifact.data === 'object') return artifact.data;
+      return artifact;
+    }
+    function read() {
+      try {
+        if (Array.isArray(window.__alloflowStudentArtifacts)) return window.__alloflowStudentArtifacts;
+        var raw = localStorage.getItem(KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function sourceLabelFor(source) {
+      source = String(source || '').toLowerCase();
+      if (source.indexOf('sel') >= 0) return 'SEL Hub';
+      if (source.indexOf('storyforge') >= 0 || source.indexOf('story-forge') >= 0) return 'StoryForge';
+      if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
+      if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
+      if (source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0 || source.indexOf('litlab') >= 0) return 'Story Stage';
+      return 'Student work';
+    }
+    function kindLabelFor(type) {
+      type = String(type || '').toLowerCase();
+      if (type === 'sel-share-packet') return 'SEL Share Packet';
+      if (type.indexOf('storyforge') >= 0 || type.indexOf('story-forge') >= 0) return 'StoryForge Story';
+      if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
+      if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
+      if (type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0 || type.indexOf('litlab') >= 0) return 'Performance';
+      return 'Student Product';
+    }
+    function normalize(artifact) {
+      artifact = (artifact && typeof artifact === 'object') ? Object.assign({}, artifact) : {};
+      var packet = packetOf(artifact);
+      var now = new Date().toISOString();
+      var type = artifact.type || packet.type || artifact.kind || packet.kind || 'student-product';
+      var source = artifact.source || packet.source || type;
+      var items = Array.isArray(artifact.items) ? artifact.items : (Array.isArray(packet.items) ? packet.items : null);
+      if (!artifact.id) artifact.id = packet.id || (String(type).replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '-' + Date.now());
+      artifact.type = type;
+      artifact.source = source;
+      artifact.sourceLabel = artifact.sourceLabel || packet.sourceLabel || sourceLabelFor(source);
+      artifact.kindLabel = artifact.kindLabel || packet.kindLabel || kindLabelFor(type);
+      artifact.title = artifact.title || packet.title || artifact.kindLabel;
+      artifact.summary = artifact.summary || packet.summary || (items ? items.length + ' saved item' + (items.length === 1 ? '' : 's') : 'Saved product');
+      artifact.privacy = artifact.privacy || packet.privacy || 'student-controlled';
+      artifact.createdAt = artifact.createdAt || packet.createdAt || now;
+      artifact.updatedAt = artifact.updatedAt || packet.updatedAt || artifact.createdAt || now;
+      artifact.itemCount = Number(artifact.itemCount || packet.itemCount || (items ? items.length : 0));
+      return artifact;
+    }
+    function save(artifact, options) {
+      options = options || {};
+      var normalized = normalize(artifact);
+      var matchId = options.matchId || normalized.id || (packetOf(normalized).id);
+      var existing = read().slice();
+      var replaced = false;
+      var next = existing.map(function(candidate) {
+        var packet = packetOf(candidate);
+        if (options.replaceExisting !== false && matchId && (candidate.id === matchId || packet.id === matchId)) {
+          replaced = true;
+          return normalized;
+        }
+        return candidate;
+      });
+      if (!replaced) next.unshift(normalized);
+      next = next.filter(Boolean).sort(function(a, b) {
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      }).slice(0, options.limit || LIMIT);
+      try { window.__alloflowStudentArtifacts = next; } catch (e) {}
+      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e2) {}
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+          detail: { source: options.source || normalized.source || 'student-work', artifact: normalized, count: next.length }
+        }));
+      } catch (e3) {}
+      return next;
+    }
+    window.AlloModules.StudentArtifactStore = {
+      read: read,
+      save: save,
+      normalize: normalize
+    };
+  })();
+
   if (window.AlloModules && window.AlloModules.AlloHaven) {
     console.log("[CDN] AlloHaven already loaded, skipping duplicate");
     return;
@@ -258,6 +354,10 @@
 
   function readStudentArtifacts() {
     try {
+      var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      if (store && typeof store.read === 'function') {
+        return store.read();
+      }
       if (Array.isArray(window.__alloflowStudentArtifacts)) {
         return window.__alloflowStudentArtifacts;
       }
@@ -15884,12 +15984,12 @@
               style: secondaryBtnStyle(palette)
             }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
           })() : null,
-          (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0) ? h('button', {
+          h('button', {
             onClick: function() { setStateField('activeModal', 'student-portfolio'); },
-            'aria-label': 'Open my portfolio, ' + state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's'),
+            'aria-label': 'Open my portfolio, ' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's') : 'no saved products yet'),
             title: 'My saved products',
             style: secondaryBtnStyle(palette)
-          }, 'Portfolio - ' + state.studentArtifacts.length) : null,
+          }, 'Portfolio' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? ' - ' + state.studentArtifacts.length : '')),
           h('button', {
             onClick: function() { setStateField('activeModal', 'breathe'); },
             'aria-label': 'Open breathing pacer for self-care',
@@ -23491,13 +23591,64 @@
       win.document.close();
     }
 
+    function portfolioArtifactTextExport(artifact) {
+      artifact = artifact || {};
+      var packet = portfolioArtifactPacket(artifact);
+      var sourceLabel = portfolioSourceLabel(artifact, packet);
+      var kindLabel = portfolioKindLabel(artifact, packet);
+      var items = portfolioArtifactItems(artifact, packet);
+      var created = artifact.createdAt || packet.createdAt || new Date().toISOString();
+      var lines = [
+        artifact.title || packet.title || 'Student Portfolio Artifact',
+        sourceLabel + ' | ' + kindLabel + ' | ' + new Date(created).toLocaleString(),
+        'Privacy: ' + ((artifact.privacy || packet.privacy) === 'student-controlled' ? 'Student controlled' : portfolioPrivacyLabel(artifact.privacy || packet.privacy)),
+        ''
+      ];
+      items.forEach(function(item, idx) {
+        lines.push(String(idx + 1) + '. ' + (item.title || 'Portfolio entry'));
+        lines.push('Source: ' + (item.toolLabel || sourceLabel));
+        lines.push('Sharing: ' + (item.privacyLabel || portfolioPrivacyLabel(item.privacy)));
+        if (item.followUpRequested) lines.push('Follow-up requested.');
+        lines.push(item.text || item.summary || 'Saved product details are available in the source module.');
+        lines.push('');
+      });
+      return lines.join('\n');
+    }
+
+    function downloadPortfolioArtifact(artifact) {
+      try {
+        var text = portfolioArtifactTextExport(artifact);
+        var title = (artifact && artifact.title) || (portfolioArtifactPacket(artifact).title) || 'portfolio-item';
+        var safeTitle = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio-item';
+        var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = safeTitle + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+          try { document.body.removeChild(a); } catch (e) {}
+          try { URL.revokeObjectURL(url); } catch (e2) {}
+        }, 0);
+      } catch (e3) {
+        addToast('Download was not available in this browser.', 'info');
+      }
+    }
+
     function renderPortfolioShelfModal() {
       if (state.activeModal !== 'student-portfolio') return null;
-      var artifacts = (Array.isArray(state.studentArtifacts) ? state.studentArtifacts : readStudentArtifacts()).slice();
+      var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      var artifacts = (Array.isArray(state.studentArtifacts) ? state.studentArtifacts : readStudentArtifacts()).slice().map(function(artifact) {
+        return store && typeof store.normalize === 'function' ? store.normalize(artifact) : artifact;
+      });
       artifacts.sort(function(a, b) {
         return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
       });
       var activeFilter = state.portfolioFilter || 'all';
+      var portfolioSearch = String(state.portfolioSearch || '').trim();
+      var portfolioSearchLower = portfolioSearch.toLowerCase();
+      var portfolioSort = state.portfolioSort || 'latest';
       var sourceCounts = {};
       var sourceLabels = {};
       artifacts.forEach(function(artifact) {
@@ -23519,6 +23670,36 @@
         activeFilter = 'all';
         visibleArtifacts = artifacts;
       }
+      if (portfolioSearchLower) {
+        visibleArtifacts = visibleArtifacts.filter(function(artifact) {
+          var packet = portfolioArtifactPacket(artifact);
+          var items = portfolioArtifactItems(artifact, packet);
+          var haystack = [
+            artifact.title || packet.title,
+            artifact.summary || packet.summary,
+            portfolioSourceLabel(artifact, packet),
+            portfolioKindLabel(artifact, packet),
+            artifact.privacy || packet.privacy
+          ].concat(items.map(function(item) {
+            return [item.title, item.toolLabel, item.text, item.summary].join(' ');
+          })).join(' ').toLowerCase();
+          return haystack.indexOf(portfolioSearchLower) >= 0;
+        });
+      }
+      visibleArtifacts.sort(function(a, b) {
+        var packetA = portfolioArtifactPacket(a);
+        var packetB = portfolioArtifactPacket(b);
+        if (portfolioSort === 'oldest') {
+          return Date.parse((a && (a.updatedAt || a.createdAt)) || 0) - Date.parse((b && (b.updatedAt || b.createdAt)) || 0);
+        }
+        if (portfolioSort === 'source') {
+          return portfolioSourceLabel(a, packetA).localeCompare(portfolioSourceLabel(b, packetB)) || portfolioKindLabel(a, packetA).localeCompare(portfolioKindLabel(b, packetB));
+        }
+        if (portfolioSort === 'kind') {
+          return portfolioKindLabel(a, packetA).localeCompare(portfolioKindLabel(b, packetB)) || portfolioSourceLabel(a, packetA).localeCompare(portfolioSourceLabel(b, packetB));
+        }
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      });
       var formatDate = function(value) {
         if (!value) return 'Saved product';
         try { return new Date(value).toLocaleDateString(); } catch (e) { return 'Saved product'; }
@@ -23598,6 +23779,58 @@
               }, option.label + ' - ' + option.count);
             })
           ) : null,
+          artifacts.length ? h('div', {
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '14px', alignItems: 'end' }
+          },
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', color: palette.textDim, fontSize: '11px', fontWeight: 800 } },
+              'Search products',
+              h('input', {
+                type: 'search',
+                value: portfolioSearch,
+                onChange: function(e) { setStateField('portfolioSearch', e.target.value); },
+                placeholder: 'Search title, source, or preview text',
+                'aria-label': 'Search portfolio products',
+                style: {
+                  minHeight: '36px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + palette.border,
+                  background: palette.surface,
+                  color: palette.text,
+                  padding: '7px 10px',
+                  fontSize: '12px',
+                  boxSizing: 'border-box'
+                }
+              })
+            ),
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', color: palette.textDim, fontSize: '11px', fontWeight: 800 } },
+              'Sort',
+              h('select', {
+                value: portfolioSort,
+                onChange: function(e) { setStateField('portfolioSort', e.target.value); },
+                'aria-label': 'Sort portfolio products',
+                style: {
+                  minHeight: '36px',
+                  borderRadius: '8px',
+                  border: '1px solid ' + palette.border,
+                  background: palette.surface,
+                  color: palette.text,
+                  padding: '7px 10px',
+                  fontSize: '12px',
+                  boxSizing: 'border-box'
+                }
+              },
+                h('option', { value: 'latest' }, 'Newest first'),
+                h('option', { value: 'oldest' }, 'Oldest first'),
+                h('option', { value: 'source' }, 'Source'),
+                h('option', { value: 'kind' }, 'Product type')
+              )
+            )
+          ) : null,
+          artifacts.length ? h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            style: { margin: '-4px 0 12px', color: palette.textDim, fontSize: '11px' }
+          }, visibleArtifacts.length + ' of ' + artifacts.length + ' portfolio product' + (artifacts.length === 1 ? '' : 's') + ' shown') : null,
           visibleArtifacts.length ? h('div', {
             style: { display: 'flex', flexDirection: 'column', gap: '12px' }
           },
@@ -23613,6 +23846,9 @@
               var createdAt = artifact.createdAt || packet.createdAt;
               var updatedAt = artifact.updatedAt || packet.updatedAt;
               var dateLabel = updatedAt && updatedAt !== createdAt ? 'Updated ' + formatDate(updatedAt) : formatDate(createdAt);
+              var lifecycleLabel = artifact.lifecycleStatus || packet.lifecycleStatus || null;
+              var versionLabel = Number(artifact.version || packet.version || 0) > 1 ? 'v' + Number(artifact.version || packet.version) : null;
+              var itemCount = Number(artifact.itemCount || packet.itemCount || items.length || 0);
               return h('section', {
                 key: artifact.id || ('portfolio-artifact-' + idx),
                 'aria-label': (artifact.title || 'Portfolio item') + ' from ' + sourceLabel,
@@ -23650,46 +23886,92 @@
                         fontWeight: 800
                       }
                     }, privacyLabel)
+                    ,
+                    itemCount ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, itemCount + ' item' + (itemCount === 1 ? '' : 's')) : null,
+                    lifecycleLabel ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800,
+                        textTransform: 'capitalize'
+                      }
+                    }, lifecycleLabel) : null,
+                    versionLabel ? h('span', {
+                      style: {
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        border: '1px solid ' + palette.border,
+                        color: palette.textDim,
+                        fontSize: '10px',
+                        fontWeight: 800
+                      }
+                    }, versionLabel) : null
                   )
                 ),
                 h('p', { style: { margin: '0 0 10px', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
                   artifact.summary || packet.summary || (items.length ? items.length + ' saved items' : 'Saved product')),
-                items.length ? h('ul', {
-                  role: 'list',
-                  style: { listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: '8px' }
+                items.length ? h('details', {
+                  style: { border: '1px solid ' + palette.border, borderRadius: '8px', background: palette.bg, marginBottom: '12px', overflow: 'hidden' }
                 },
-                  items.map(function(item, itemIdx) {
-                    var label = item.privacyLabel || portfolioPrivacyLabel(item.privacy);
-                    var text = item.text || item.summary || 'Saved product details are available in the source module.';
-                    return h('li', {
-                      key: (item.id || 'item') + '-' + itemIdx,
-                      role: 'listitem',
-                      style: {
-                        border: '1px solid ' + palette.border,
-                        borderRadius: '8px',
-                        padding: '10px',
-                        background: palette.bg
-                      }
-                    },
-                      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline', marginBottom: '4px' } },
-                        h('strong', { style: { fontSize: '12px', color: palette.text, overflowWrap: 'anywhere' } }, item.title || 'Portfolio entry'),
-                        h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? (palette.warn || palette.textDim) : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
-                      ),
-                      item.followUpRequested ? h('div', { style: { color: '#92400e', fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, 'Follow-up requested.') : null,
-                      h('p', { style: { margin: 0, color: palette.textDim, fontSize: '11.5px', lineHeight: '1.45', overflowWrap: 'anywhere' } }, text)
-                    );
-                  })
+                  h('summary', {
+                    style: { cursor: 'pointer', padding: '9px 10px', color: palette.text, fontSize: '12px', fontWeight: 800 }
+                  }, 'Preview ' + items.length + ' item' + (items.length === 1 ? '' : 's')),
+                  h('ul', {
+                    role: 'list',
+                    style: { listStyle: 'none', padding: '0 10px 10px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }
+                  },
+                    items.map(function(item, itemIdx) {
+                      var label = item.privacyLabel || portfolioPrivacyLabel(item.privacy);
+                      var text = item.text || item.summary || 'Saved product details are available in the source module.';
+                      return h('li', {
+                        key: (item.id || 'item') + '-' + itemIdx,
+                        role: 'listitem',
+                        style: {
+                          border: '1px solid ' + palette.border,
+                          borderRadius: '8px',
+                          padding: '10px',
+                          background: palette.surface
+                        }
+                      },
+                        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline', marginBottom: '4px' } },
+                          h('strong', { style: { fontSize: '12px', color: palette.text, overflowWrap: 'anywhere' } }, item.title || 'Portfolio entry'),
+                          h('span', { style: { fontSize: '10px', color: item.privacy === 'private' ? (palette.warn || palette.textDim) : palette.textDim, fontWeight: 800, textAlign: 'right' } }, label)
+                        ),
+                        item.followUpRequested ? h('div', { style: { color: '#92400e', fontSize: '11px', fontWeight: 800, marginBottom: '4px' } }, 'Follow-up requested.') : null,
+                        h('p', { style: { margin: 0, color: palette.textDim, fontSize: '11.5px', lineHeight: '1.45', overflowWrap: 'anywhere' } }, text)
+                      );
+                    })
+                  )
                 ) : null,
-                items.length ? h('button', {
-                  onClick: function() { printPortfolioArtifact(artifact); },
-                  'aria-label': 'Print ' + (artifact.title || packet.title || 'portfolio item'),
-                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
-                }, 'Print') : null
+                items.length ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { printPortfolioArtifact(artifact); },
+                    'aria-label': 'Print ' + (artifact.title || packet.title || 'portfolio item'),
+                    style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                  }, 'Print'),
+                  h('button', {
+                    onClick: function() { downloadPortfolioArtifact(artifact); },
+                    'aria-label': 'Download text for ' + (artifact.title || packet.title || 'portfolio item'),
+                    style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                  }, 'Download text')
+                ) : null
               );
             })
           ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
             artifacts.length
-              ? 'No portfolio products match this source filter.'
+              ? 'No portfolio products match this source filter or search.'
               : 'No portfolio products are loaded yet. Create one in SEL Hub, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
             h('button', {

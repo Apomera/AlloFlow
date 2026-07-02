@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T16:50:18.044Z",
-  "harness": "standalone SEL Hub browser fixture",
+  "generatedAt": "2026-07-02T18:59:24.473Z",
+  "harness": "standalone SEL Hub and AlloHaven browser fixture",
   "summary": {
-    "total": 15,
+    "total": 21,
     "failed": 0,
-    "passed": 15
+    "passed": 21
   },
   "scenarios": [
     {
@@ -286,10 +286,10 @@
             {
               "key": "Tab",
               "active": {
-                "tag": "button",
+                "tag": "input",
                 "id": "",
-                "text": "Download text",
-                "aria": "Download this SEL Share Packet as text",
+                "text": "",
+                "aria": "Remove Saved SEL work from SEL Share Packet",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -298,10 +298,10 @@
             {
               "key": "Tab",
               "active": {
-                "tag": "button",
+                "tag": "select",
                 "id": "",
-                "text": "Print / Save PDF",
-                "aria": "Print or save this SEL Share Packet as a PDF",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Saved SEL work",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -310,10 +310,10 @@
             {
               "key": "Tab",
               "active": {
-                "tag": "button",
+                "tag": "input",
                 "id": "",
-                "text": "Save to AlloHaven",
-                "aria": "Save this SEL Share Packet to AlloHaven",
+                "text": "",
+                "aria": "Remove Saved SEL work from SEL Share Packet",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -322,10 +322,10 @@
             {
               "key": "Shift+Tab",
               "active": {
-                "tag": "button",
+                "tag": "select",
                 "id": "",
-                "text": "Print / Save PDF",
-                "aria": "Print or save this SEL Share Packet as a PDF",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Saved SEL work",
                 "inExplainer": false,
                 "inSharePacket": true,
                 "inEducators": false
@@ -470,6 +470,86 @@
             "dark": false,
             "contrast": true,
             "selText": "rgb(255, 255, 0)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "allohaven-empty-portfolio",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "allohaven-empty-portfolio-entry-visible",
+          "pass": true,
+          "details": {
+            "opened": true,
+            "hasSupportedSources": true,
+            "hasProducts": false
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "allohaven-mixed-portfolio",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "student-artifact-store-save-event",
+          "pass": true,
+          "details": {
+            "storeExists": true,
+            "count": 6,
+            "eventSource": "storyforge",
+            "savedId": "helper-browser-qa"
+          }
+        },
+        {
+          "id": "allohaven-portfolio-controls-labeled",
+          "pass": true,
+          "details": {
+            "hasSearch": true,
+            "hasSort": true,
+            "detailsCount": 6,
+            "printButtons": 6,
+            "downloadButtons": 6
+          }
+        },
+        {
+          "id": "allohaven-portfolio-source-filter",
+          "pass": true,
+          "details": {
+            "cards": [
+              "Helper Saved Story from StoryForge",
+              "The Bridge of Choices from StoryForge"
+            ],
+            "allStoryForge": true
+          }
+        },
+        {
+          "id": "allohaven-portfolio-search",
+          "pass": true,
+          "details": {
+            "cards": 1,
+            "hasRainforest": true,
+            "hasBridge": false
+          }
+        },
+        {
+          "id": "allohaven-portfolio-details-preview",
+          "pass": true,
+          "details": {
+            "open": true,
+            "hasPreviewText": true
           }
         }
       ],

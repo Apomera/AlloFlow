@@ -1,14 +1,14 @@
 # SEL Hub Browser QA
 
-Generated: 2026-07-02T16:50:18.044Z
+Generated: 2026-07-02T18:59:24.473Z
 
-Harness: standalone SEL Hub browser fixture
+Harness: standalone SEL Hub and AlloHaven browser fixture
 
 ## Summary
 
-- Passed: 15
+- Passed: 21
 - Failed: 0
-- Scenarios: 4
+- Scenarios: 6
 
 ## Checks
 
@@ -34,4 +34,14 @@ Harness: standalone SEL Hub browser fixture
 ### mobile-high-contrast-responsive
 - PASS responsive-overflow
 - PASS theme-class-detected
+
+### allohaven-empty-portfolio
+- PASS allohaven-empty-portfolio-entry-visible
+
+### allohaven-mixed-portfolio
+- PASS student-artifact-store-save-event
+- PASS allohaven-portfolio-controls-labeled
+- PASS allohaven-portfolio-source-filter
+- PASS allohaven-portfolio-search
+- PASS allohaven-portfolio-details-preview
 

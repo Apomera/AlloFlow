@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T16:57:12.937Z",
+  "generatedAt": "2026-07-02T19:00:13.957Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
-    "total": 45,
-    "passed": 45,
+    "total": 50,
+    "passed": 50,
     "failed": 0
   },
   "scenarios": [
@@ -351,29 +351,30 @@
       "screenshot": "a11y-audit\\sel_visual_qa\\sel-for-educators-tablet-dark.png"
     },
     {
-      "name": "allohaven-portfolio-desktop-light",
+      "name": "allohaven-portfolio-empty-desktop-light",
       "kind": "allohaven",
       "theme": "light",
       "viewport": {
         "width": 1280,
         "height": 900
       },
+      "emptyPortfolio": true,
       "selector": "[role=\"dialog\"][aria-label=\"My portfolio\"]",
-      "minText": 500,
+      "minText": 220,
       "checks": [
         {
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 106067
+            "bytes": 111910
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1700,
-            "controlCount": 13
+            "textLength": 268,
+            "controlCount": 2
           }
         },
         {
@@ -397,8 +398,64 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1700,
-        "controlCount": 13,
+        "textLength": 268,
+        "controlCount": 2,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\allohaven-portfolio-empty-desktop-light.png"
+    },
+    {
+      "name": "allohaven-portfolio-desktop-light",
+      "kind": "allohaven",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "selector": "[role=\"dialog\"][aria-label=\"My portfolio\"]",
+      "minText": 500,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 104266
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 1040,
+            "controlCount": 20
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 1040,
+        "controlCount": 20,
         "bodyScrollWidth": 1280,
         "viewportWidth": 1280,
         "overflowOffenders": [],
@@ -422,15 +479,15 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 102556
+            "bytes": 103595
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 454,
-            "controlCount": 9
+            "textLength": 434,
+            "controlCount": 12
           }
         },
         {
@@ -454,8 +511,8 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 454,
-        "controlCount": 9,
+        "textLength": 434,
+        "controlCount": 12,
         "bodyScrollWidth": 1280,
         "viewportWidth": 1280,
         "overflowOffenders": [],
@@ -478,15 +535,15 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 41349
+            "bytes": 39515
           }
         },
         {
           "id": "readable-surface",
           "pass": true,
           "details": {
-            "textLength": 1700,
-            "controlCount": 13
+            "textLength": 1040,
+            "controlCount": 20
           }
         },
         {
@@ -510,8 +567,8 @@
       ],
       "errors": [],
       "audit": {
-        "textLength": 1700,
-        "controlCount": 13,
+        "textLength": 1040,
+        "controlCount": 20,
         "bodyScrollWidth": 390,
         "viewportWidth": 390,
         "overflowOffenders": [],

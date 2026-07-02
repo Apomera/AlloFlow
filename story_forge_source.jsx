@@ -1298,6 +1298,11 @@ const StoryForge = React.memo(({
         items,
         artifact: submission,
       };
+      const artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+      if (artifactStore && typeof artifactStore.save === 'function') {
+        artifactStore.save(artifact, { source: 'storyforge', limit: 80 });
+        return;
+      }
       let existing = [];
       if (Array.isArray(window.__alloflowStudentArtifacts)) {
         existing = window.__alloflowStudentArtifacts;

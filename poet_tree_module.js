@@ -898,13 +898,18 @@
           items: [{ id: 'poem', title: submission.poemTitle || 'My Poem', text: submission.poemText, toolLabel: 'PoetTree', privacy: 'full' }],
           artifact: submission
         };
-        var existing = [];
-        if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
-        else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
-        var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
-        window.__alloflowStudentArtifacts = next;
-        localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'poettree' } }));
+        var artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+        if (artifactStore && typeof artifactStore.save === 'function') {
+          artifactStore.save(artifact, { source: 'poettree', limit: 80 });
+        } else {
+          var existing = [];
+          if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
+          else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
+          var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+          window.__alloflowStudentArtifacts = next;
+          localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'poettree' } }));
+        }
       } catch (e) {}
       announcePT('Poem saved to portfolio.');
       addToast && addToast('Poem saved to your portfolio!', 'success');

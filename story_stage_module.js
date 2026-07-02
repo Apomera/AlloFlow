@@ -586,13 +586,18 @@
           items: performanceItems,
           artifact: submission
         };
-        var existing = [];
-        if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
-        else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
-        var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
-        window.__alloflowStudentArtifacts = next;
-        localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
-        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'story-stage' } }));
+        var artifactStore = window.AlloModules && window.AlloModules.StudentArtifactStore;
+        if (artifactStore && typeof artifactStore.save === 'function') {
+          artifactStore.save(artifact, { source: 'story-stage', limit: 80 });
+        } else {
+          var existing = [];
+          if (Array.isArray(window.__alloflowStudentArtifacts)) existing = window.__alloflowStudentArtifacts;
+          else { try { existing = JSON.parse(localStorage.getItem('alloflow_student_artifacts') || '[]'); } catch (e) { existing = []; } }
+          var next = [artifact].concat(Array.isArray(existing) ? existing : []).slice(0, 80);
+          window.__alloflowStudentArtifacts = next;
+          localStorage.setItem('alloflow_student_artifacts', JSON.stringify(next));
+          window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', { detail: { source: 'story-stage' } }));
+        }
       } catch (e) {}
       addToast && addToast('Performance saved to portfolio!', 'success');
     }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
