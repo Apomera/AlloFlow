@@ -4962,7 +4962,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=0afab722');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=0afab722');
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=0afab722');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=d08f960a');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=5329798d');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=0afab722');
     loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=0afab722');
     loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=0afab722');
@@ -7189,6 +7189,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const quizRetryTimerRef = useRef(null);
   const [liveQuizAnswers, setLiveQuizAnswers] = useState({});     // { uid: { qIdx: responsePayload } }
   const [liveMasteryByUid, setLiveMasteryByUid] = useState({});   // { uid: { attempts } } — session-scoped, memory only
+  // Class-vs-boss answers received over the quiz channel for the CURRENT
+  // question: { qIdx: string, byUid: { uid: optionIndex } }. Merged into
+  // quizState.responses for teacher consumers; Firestore remains fallback.
+  const [liveBossResponses, setLiveBossResponses] = useState(null);
+  // Anonymous class results the teacher shared over the quiz channel
+  // (students render these in a lightweight overlay; nothing stored).
+  const [quizSharedResults, setQuizSharedResults] = useState(null);
   const conceptMasteryLocalRef = useRef(null);
   useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
   // Teacher: headless quiz host while a live quiz is armed.
@@ -7209,6 +7216,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (!payload) return;
               if (payload.pollId === '__mastery__') {
                   setLiveMasteryByUid(prev => ({ ...prev, [uid]: payload.response }));
+              } else if (typeof payload.pollId === 'string' && payload.pollId.indexOf('boss:') === 0) {
+                  // Class-vs-boss answer (P2P): pollId = 'boss:{qIdx}', response = optionIndex.
+                  const qIdx = payload.pollId.slice(5);
+                  setLiveBossResponses(prev => (prev && prev.qIdx === qIdx)
+                      ? { qIdx, byUid: { ...prev.byUid, [uid]: payload.response } }
+                      : { qIdx, byUid: { [uid]: payload.response } });
               } else {
                   setLiveQuizAnswers(prev => ({ ...prev, [uid]: { ...(prev[uid] || {}), [payload.pollId]: payload.response } }));
               }
@@ -7216,11 +7229,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       host.start().catch(e => warnLog('Quiz channel host start failed:', e && e.message));
       quizHostRef.current = host;
+      // Teacher hook for the results dashboard: broadcast an anonymous
+      // aggregate summary to every connected student (peer-to-peer).
+      window.__alloQuizShareResults = (summary) => {
+          try { host.broadcastPollResults('quiz-results', summary); return true; } catch(e) { return false; }
+      };
       return () => {
           try { host.stop(); } catch(e) {}
           quizHostRef.current = null;
+          if (window.__alloQuizShareResults) { try { delete window.__alloQuizShareResults; } catch(e) { window.__alloQuizShareResults = undefined; } }
       };
   }, [isTeacherMode, activeSessionCode, sessionData && sessionData.quizState && sessionData.quizState.isActive]);
+  // New boss question ⇒ drop channel answers from the previous one (the
+  // teacher's advance also resets quizState.responses in Firestore).
+  useEffect(() => {
+      const qIdx = sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex;
+      setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx)) ? null : prev);
+  }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex]);
   // Keep the quiz host's roster gate current as students join.
   useEffect(() => {
       if (quizHostRef.current && typeof quizHostRef.current.setAllowedUids === 'function') {
@@ -7258,17 +7283,25 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (m && m.attempts && Object.keys(m.attempts).length > 0) guest.sendResponse('__mastery__', m);
               } catch(e) {}
           },
+          onPollResults: (summary) => setQuizSharedResults(summary || null),
           onDisconnected: scheduleRejoin,
           onFailed: scheduleRejoin,
           onHostClosed: () => {},
       });
       guest.join().catch(() => scheduleRejoin());
       quizGuestRef.current = guest;
+      // Channel-first send hook for CDN modules (StudentQuizOverlay's boss
+      // answers): returns false when the channel is down so callers fall
+      // back to Firestore.
+      window.__alloQuizChannelSend = (pollId, response) => {
+          try { return !!guest.sendResponse(pollId, response); } catch(e) { return false; }
+      };
       return () => {
           disposed = true;
           if (quizRetryTimerRef.current) { clearTimeout(quizRetryTimerRef.current); quizRetryTimerRef.current = null; }
           try { guest.leave(); } catch(e) {}
           quizGuestRef.current = null;
+          if (window.__alloQuizChannelSend) { try { delete window.__alloQuizChannelSend; } catch(e) { window.__alloQuizChannelSend = undefined; } }
       };
   }, [isTeacherMode, activeSessionCode, user && user.uid, sessionData && sessionData.quizState && sessionData.quizState.isActive, quizJoinNonce]);
   // Merged teacher views: channel-received answers/mastery layered over the
@@ -7284,8 +7317,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [sessionData, liveQuizAnswers]);
   const quizMergedSessionData = React.useMemo(() => {
       if (!sessionData) return sessionData;
-      return { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses } };
-  }, [sessionData, quizMergedAllResponses]);
+      const qs = sessionData.quizState || {};
+      // Boss answers received P2P overlay the Firestore fallback for the
+      // CURRENT question only (teacher advance resets both sides).
+      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex))
+          ? { ...(qs.responses || {}), ...liveBossResponses.byUid }
+          : (qs.responses || {});
+      return { ...sessionData, quizState: { ...qs, allResponses: quizMergedAllResponses, responses: bossByUid } };
+  }, [sessionData, quizMergedAllResponses, liveBossResponses]);
   const teacherConceptMasteryByUid = React.useMemo(() => (
       { ...importedConceptMastery, ...liveMasteryByUid }
   ), [importedConceptMastery, liveMasteryByUid]);
@@ -28120,6 +28159,33 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setShowPictionaryGuest(false),
         })
       }
+      {/* Anonymous quiz results the teacher shared over the P2P quiz channel. */}
+      {!isTeacherMode && quizSharedResults && (
+        <div role="dialog" aria-modal="true" aria-label={t('quiz.shared_results_title') || 'Class results'} style={{position:'fixed',inset:0,background:'rgba(15,23,42,0.55)',zIndex:10000,display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+          <div style={{background:'white',maxWidth:560,width:'100%',maxHeight:'80vh',overflowY:'auto',borderRadius:12,padding:'1.25rem',boxShadow:'0 20px 50px rgba(0,0,0,0.3)'}}>
+            <div style={{fontSize:'0.75rem',color:'#1e3a8a',fontWeight:800,textTransform:'uppercase',marginBottom:4}}>{t('quiz.shared_results_kicker') || 'Anonymous class results'}</div>
+            <h2 style={{margin:'0 0 0.8rem 0',fontSize:'1.1rem',color:'#0f172a'}}>{quizSharedResults.title || (t('quiz.shared_results_title') || 'How the class did')}</h2>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {(Array.isArray(quizSharedResults.items) ? quizSharedResults.items : []).map((item, i) => {
+                const pct = Math.max(0, Math.min(100, Number(item.percent) || 0));
+                return (
+                  <div key={i} style={{border:'1px solid #e2e8f0',borderRadius:8,padding:'0.55rem'}}>
+                    <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:'0.82rem',color:'#0f172a',marginBottom:4}}>
+                      <span style={{fontWeight:700,overflowWrap:'anywhere'}}>{item.label || ('#' + (i + 1))}</span>
+                      <span style={{color:'#475569',whiteSpace:'nowrap'}}>{item.count != null ? item.count + ' · ' : ''}{pct}%</span>
+                    </div>
+                    <div style={{height:8,borderRadius:999,background:'#e2e8f0',overflow:'hidden'}}>
+                      <div style={{width:pct + '%',height:'100%',background: pct >= 70 ? '#16a34a' : pct >= 40 ? '#f59e0b' : '#dc2626'}} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p style={{fontSize:'0.72rem',color:'#64748b',margin:'0.7rem 0 0.8rem 0'}}>{t('quiz.shared_results_note') || 'Class totals only — no names, and nothing is stored.'}</p>
+            <button onClick={() => setQuizSharedResults(null)} style={{padding:'0.6rem 1.2rem',borderRadius:6,border:'none',background:'#1e3a8a',color:'white',cursor:'pointer',fontWeight:700,width:'100%'}}>{t('common.close') || 'Close'}</button>
+          </div>
+        </div>
+      )}
       {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
       {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
       {/* Session Center lists + clears them. No free text by design. */}

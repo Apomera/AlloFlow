@@ -855,6 +855,17 @@ const PictionaryHostView = React.memo((props) => {
   const [connectedGuests, setConnectedGuests] = React.useState({});
   const [strokes, setStrokes] = React.useState([]);
   const [guessFeed, setGuessFeed] = React.useState([]);
+  const [mutedGuessers, setMutedGuessers] = React.useState({});
+  const mutedGuessersRef = React.useRef({});
+  React.useEffect(() => {
+    mutedGuessersRef.current = mutedGuessers;
+  }, [mutedGuessers]);
+  const toggleMuteGuesser = (uid) => setMutedGuessers((prev) => {
+    const next = { ...prev };
+    if (next[uid]) delete next[uid];
+    else next[uid] = true;
+    return next;
+  });
   const [concept, setConcept] = React.useState("");
   const [conceptIdeas, setConceptIdeas] = React.useState([]);
   const [drawerUids, setDrawerUids] = React.useState([]);
@@ -920,14 +931,17 @@ const PictionaryHostView = React.memo((props) => {
         drawerActivityRef.current.set(uid, Date.now());
       },
       onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
-      onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
-        id: _pic_genId("guess"),
-        uid,
-        codename,
-        text: payload.text,
-        ts: payload.timestamp || Date.now(),
-        marked: null
-      }])),
+      onGuess: (uid, codename, payload) => {
+        if (mutedGuessersRef.current[uid]) return;
+        setGuessFeed((prev) => prev.concat([{
+          id: _pic_genId("guess"),
+          uid,
+          codename,
+          text: payload.text,
+          ts: payload.timestamp || Date.now(),
+          marked: null
+        }]));
+      },
       onRoundAutoResolved: (info) => {
         const resolvedConcept = info && info.concept || "";
         setRoundResolved({ concept: resolvedConcept, winnerUid: null, reason: "timeout" });
@@ -1075,7 +1089,16 @@ const PictionaryHostView = React.memo((props) => {
       },
       isFullscreen ? "\u2199" : "\u26F6"
     ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": "Close" }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, "\u25CF Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive ? /* @__PURE__ */ React.createElement("button", { onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, "\u25CF Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive ? /* @__PURE__ */ React.createElement("button", { onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes, drawingEnabled: false, fullscreenMode: isFullscreen }), roundResolved ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, "Concept:"), " ", roundResolved.concept || "(none)", " ", roundResolved.winnerUid && roster[roundResolved.winnerUid] ? /* @__PURE__ */ React.createElement("span", null, "\u2014 first correct: ", /* @__PURE__ */ React.createElement("strong", null, roster[roundResolved.winnerUid].name)) : roundResolved.reason === "timeout" ? /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 \u23F1 time's up") : /* @__PURE__ */ React.createElement("span", { className: "italic" }, "\u2014 ended without a winner"), /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { onClick: handleResetForNextRound, className: "px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700" }, "Set up next round \u2192"))) : null), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "Guesses (", guessFeed.length, ")"), guessFeed.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "No guesses yet.") : /* @__PURE__ */ React.createElement("ul", { className: "space-y-1 max-h-48 overflow-y-auto" }, guessFeed.slice().reverse().map((g) => /* @__PURE__ */ React.createElement("li", { key: g.id, className: `flex items-center gap-2 p-2 rounded ${g.marked === "correct" ? "bg-emerald-50 border border-emerald-200" : "hover:bg-slate-50"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700 text-xs flex-shrink-0" }, g.codename, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 text-sm text-slate-800" }, g.text), roundActive && g.marked == null ? /* @__PURE__ */ React.createElement("button", { onClick: () => handleMarkCorrect(g.id), className: "px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700" }, "\u2713 correct") : g.marked === "correct" ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-emerald-700" }, "\u2713") : null, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => toggleMuteGuesser(g.uid),
+        title: mutedGuessers[g.uid] ? "Unmute this guesser" : "Mute this guesser (their guesses stop appearing here)",
+        "aria-label": (mutedGuessers[g.uid] ? "Unmute " : "Mute ") + g.codename,
+        className: `px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? "bg-slate-700 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-100"}`
+      },
+      mutedGuessers[g.uid] ? "\u{1F507}" : "\u{1F50A}"
+    )))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, !roundActive ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700 mb-2" }, "1. Concept to draw"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: concept,
@@ -1130,7 +1153,7 @@ const PictionaryHostView = React.memo((props) => {
           "aria-hidden": "true",
           title: active ? `${name} is drawing` : name
         }
-      ), /* @__PURE__ */ React.createElement("span", null, name));
+      ), /* @__PURE__ */ React.createElement("span", null, name), !connectedGuests[uid] && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 rounded-full px-1.5", title: `${name} lost their connection \u2014 their strokes aren't arriving` }, "offline"));
     })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 italic mt-2 leading-snug" }, "Mark a guess correct on the left when someone gets it. Activity dots glow while a drawer is actively streaming strokes.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-700 mb-1" }, "Connected: ", Object.keys(connectedGuests).length), Object.keys(connectedGuests).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(connectedGuests).map(([uid, codename]) => /* @__PURE__ */ React.createElement("span", { key: uid, className: "px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]" }, codename))) : null), roundLog.length > 0 ? (() => {
       const total = roundLog.length;
       const correct = roundLog.filter((r) => r.resolution === "correct").length;
@@ -1299,10 +1322,23 @@ const PictionaryGuestOverlay = React.memo((props) => {
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
     if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
+  const GUESS_COOLDOWN_MS = 3e3;
+  const lastGuessAtRef = React.useRef(0);
+  const [guessNotice, setGuessNotice] = React.useState(null);
   const handleSubmitGuess = () => {
     const t = guessText.trim();
     if (!t || !guestRef.current) return;
-    if (guestRef.current.sendGuess(t)) setGuessText("");
+    const now = Date.now();
+    const waitMs = lastGuessAtRef.current + GUESS_COOLDOWN_MS - now;
+    if (waitMs > 0) {
+      setGuessNotice(`One guess at a time \u2014 try again in ${Math.ceil(waitMs / 1e3)}s.`);
+      return;
+    }
+    if (guestRef.current.sendGuess(t)) {
+      lastGuessAtRef.current = now;
+      setGuessText("");
+      setGuessNotice(null);
+    }
   };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[80] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": "Concept Pictionary" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
     "div",
@@ -1368,7 +1404,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         className: "px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
       },
       "Send"
-    )) : null)
+    )) : null, activeRound && !isDrawer && guessNotice ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1", role: "status" }, guessNotice) : null)
   ));
 });
 

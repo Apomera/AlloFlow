@@ -907,7 +907,22 @@ var _lazyIcon = function (name) {
     if (!aggResult || !aggResult.data) return null;
     var data = aggResult.data;
     var variant = aggResult.variant;
-    var header = <div className="flex items-center gap-2 mb-3 flex-wrap"><span className="text-2xl" aria-hidden="true">{modeIcon}</span><h3 className="font-black text-lg text-slate-800">{'Live Results — ' + modeLabel}</h3><span className="text-xs text-slate-600">{data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')}</span>{inFlightCount > 0 && <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse" role="status" aria-live="polite" aria-label={'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's')} title={inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'}><span aria-hidden="true">✨ </span>{'AI grading ' + inFlightCount + '…'}</span>}</div>;
+    // Share an anonymous per-question aggregate to every connected student
+    // over the P2P quiz channel (shell hook; nothing stored, no names).
+    var canShareResults = typeof window !== 'undefined' && typeof window.__alloQuizShareResults === 'function'
+      && (variant === 'liveHeatmap') && Array.isArray(data.bars) && data.bars.some(function (b) { return b.total > 0; });
+    var shareResultsToClass = function () {
+      var items = data.bars.filter(function (b) { return b.total > 0; }).map(function (b) {
+        return {
+          label: 'Q' + (b.questionIdx + 1) + ' — ' + String(b.questionText || '').slice(0, 70),
+          count: b.correct + '/' + b.total,
+          percent: b.total > 0 ? Math.round(b.correct / b.total * 100) : 0
+        };
+      });
+      var ok = window.__alloQuizShareResults({ title: t('quiz.shared_results_title') || 'How the class did', items: items });
+      if (window.AlloFlowUX) window.AlloFlowUX.toast(ok ? (t('quiz.results_shared') || 'Anonymous results shared with the class.') : (t('quiz.results_share_failed') || 'Could not share — no students connected.'), ok ? 'success' : 'error');
+    };
+    var header = <div className="flex items-center gap-2 mb-3 flex-wrap"><span className="text-2xl" aria-hidden="true">{modeIcon}</span><h3 className="font-black text-lg text-slate-800">{'Live Results — ' + modeLabel}</h3><span className="text-xs text-slate-600">{data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')}</span>{inFlightCount > 0 && <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse" role="status" aria-live="polite" aria-label={'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's')} title={inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI'}><span aria-hidden="true">✨ </span>{'AI grading ' + inFlightCount + '…'}</span>}{canShareResults && <button onClick={shareResultsToClass} className="ml-auto text-xs font-bold px-3 py-1 rounded-full border border-blue-300 bg-white text-blue-700 hover:bg-blue-50 transition-colors" title={t('quiz.share_results_tooltip') || 'Send anonymous per-question results to every connected student (peer-to-peer, nothing stored)'} aria-label={t('quiz.share_results_aria') || 'Share anonymous results with the class'}><span aria-hidden="true">📢 </span>{t('quiz.share_results_btn') || 'Share anonymous results'}</button>}</div>;
     var hasAnyResponses = false;
     if (variant === 'gradebook') {
       hasAnyResponses = data.studentRows.some(function (r) {

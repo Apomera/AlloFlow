@@ -2273,8 +2273,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                 <div className="w-full h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300 relative">
                                      {phase === 'boss-defeated' && (
                                          <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in zoom-in duration-500">
+                                             <ConfettiEffect isActive={true} />
                                              <div className="text-center p-8">
-                                                 <div className="text-7xl mb-4">🎉</div>
+                                                 <div className="text-7xl mb-4 animate-bounce">🎉</div>
                                                  <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">{t('quiz.boss.victory_msg')}</h2>
                                                  <p className="text-lg text-green-200">{bossStats?.name || "Boss"} has been defeated!</p>
                                              </div>
@@ -2303,15 +2304,15 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                              </div>
                                          )}
                                          {phase === 'revealed' && bossStats.lastDamage > 0 && (
-                                             <div className="absolute top-0 right-[-20px] text-red-600 font-black text-4xl animate-[bounce_0.5s_infinite] z-20 stroke-white drop-shadow-md">
-                                                 -{bossStats.lastDamage}
+                                             <div className={`absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] ${bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? 'text-yellow-500 text-6xl' : 'text-red-600 text-4xl'}`}>
+                                                 {bossStats.lastDamage >= (bossStats.maxHP || 1000) * 0.15 ? '💥 ' : ''}-{bossStats.lastDamage}
                                              </div>
                                          )}
                                      </div>
                                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
-                                     <div className="w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 border-slate-400 relative overflow-hidden shadow-inner mb-2">
+                                     <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse' : 'border-slate-400'}`}>
                                          <div
-                                            className="h-full bg-gradient-to-r from-red-600 to-orange-500 transition-all duration-1000 ease-out"
+                                            className={`h-full transition-all duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}
                                             style={{ width: `${(bossStats.currentHP / bossStats.maxHP) * 100}%` }}
                                          ></div>
                                          <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white drop-shadow-md">

@@ -830,6 +830,17 @@ const PictionaryHostView = React.memo((props) => {
   const [connectedGuests, setConnectedGuests] = React.useState({});  // uid -> codename
   const [strokes, setStrokes] = React.useState([]);
   const [guessFeed, setGuessFeed] = React.useState([]);              // [{uid, codename, text, ts, marked}]
+  // Per-student guess mute (host-side): muted guessers' incoming guesses are
+  // dropped before they reach the feed. Ref mirror so the WebRTC callback
+  // reads current state without re-creating the host.
+  const [mutedGuessers, setMutedGuessers] = React.useState({});      // uid -> true
+  const mutedGuessersRef = React.useRef({});
+  React.useEffect(() => { mutedGuessersRef.current = mutedGuessers; }, [mutedGuessers]);
+  const toggleMuteGuesser = (uid) => setMutedGuessers((prev) => {
+    const next = { ...prev };
+    if (next[uid]) delete next[uid]; else next[uid] = true;
+    return next;
+  });
   // Round config
   const [concept, setConcept] = React.useState('');
   const [conceptIdeas, setConceptIdeas] = React.useState([]);
@@ -906,9 +917,12 @@ const PictionaryHostView = React.memo((props) => {
         drawerActivityRef.current.set(uid, Date.now());
       },
       onStrokeUndo: (uid, strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
-      onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
-        id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
-      }])),
+      onGuess: (uid, codename, payload) => {
+        if (mutedGuessersRef.current[uid]) return;
+        setGuessFeed((prev) => prev.concat([{
+          id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
+        }]));
+      },
       onRoundAutoResolved: (info) => {
         // Timer expired; round resolved with no winner. The host already
         // broadcast roundResolved to peers; just sync local view state.
@@ -1123,6 +1137,12 @@ const PictionaryHostView = React.memo((props) => {
                       ) : g.marked === 'correct' ? (
                         <span className="text-[10px] font-bold text-emerald-700">✓</span>
                       ) : null}
+                      <button
+                        onClick={() => toggleMuteGuesser(g.uid)}
+                        title={mutedGuessers[g.uid] ? 'Unmute this guesser' : 'Mute this guesser (their guesses stop appearing here)'}
+                        aria-label={(mutedGuessers[g.uid] ? 'Unmute ' : 'Mute ') + g.codename}
+                        className={`px-1.5 py-0.5 text-[10px] rounded border ${mutedGuessers[g.uid] ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                      >{mutedGuessers[g.uid] ? '🔇' : '🔊'}</button>
                     </li>
                   ))}
                 </ul>
@@ -1222,6 +1242,9 @@ const PictionaryHostView = React.memo((props) => {
                           title={active ? `${name} is drawing` : name}
                         />
                         <span>{name}</span>
+                        {!connectedGuests[uid] && (
+                          <span className="text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 rounded-full px-1.5" title={`${name} lost their connection — their strokes aren't arriving`}>offline</span>
+                        )}
                       </span>
                     );
                   })}
@@ -1467,10 +1490,25 @@ const PictionaryGuestOverlay = React.memo((props) => {
     // before re-broadcasting, so undo only ever affects the sender's own work.
     if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
+  // Guess cooldown: one guess per 3s keeps a rapid-fire guesser from
+  // flooding the teacher's feed (the host can also mute per-student).
+  const GUESS_COOLDOWN_MS = 3000;
+  const lastGuessAtRef = React.useRef(0);
+  const [guessNotice, setGuessNotice] = React.useState(null);
   const handleSubmitGuess = () => {
     const t = guessText.trim();
     if (!t || !guestRef.current) return;
-    if (guestRef.current.sendGuess(t)) setGuessText('');
+    const now = Date.now();
+    const waitMs = lastGuessAtRef.current + GUESS_COOLDOWN_MS - now;
+    if (waitMs > 0) {
+      setGuessNotice(`One guess at a time — try again in ${Math.ceil(waitMs / 1000)}s.`);
+      return;
+    }
+    if (guestRef.current.sendGuess(t)) {
+      lastGuessAtRef.current = now;
+      setGuessText('');
+      setGuessNotice(null);
+    }
   };
 
   return (
@@ -1571,6 +1609,9 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
               >Send</button>
             </div>
+          ) : null}
+          {activeRound && !isDrawer && guessNotice ? (
+            <p className="text-[11px] text-amber-700 mt-1" role="status">{guessNotice}</p>
           ) : null}
         </div>
       </div>

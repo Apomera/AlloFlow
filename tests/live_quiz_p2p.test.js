@@ -72,6 +72,47 @@ describe('concept mastery: device-local, never cloud-synced', () => {
   });
 });
 
+describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-02)', () => {
+  it('StudentQuizOverlay sends boss answers via the shell channel hook, Firestore fallback', () => {
+    const uiModals = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
+    expect(uiModals).toContain("window.__alloQuizChannelSend");
+    expect(uiModals).toContain("p2pSend('boss:' + currentQuestionIndex, optionIndex)");
+    // Fallback write must remain AFTER the channel attempt.
+    const chIdx = uiModals.indexOf("p2pSend('boss:'");
+    const fsIdx = uiModals.indexOf('quizState.responses.${user.uid}');
+    expect(chIdx).toBeGreaterThan(-1);
+    expect(fsIdx).toBeGreaterThan(chIdx);
+    // Compiled module carries the same change (hand-mirrored; build.js compiles at deploy).
+    const uiModalsCompiled = readFileSync(resolve(process.cwd(), 'ui_modals_module.js'), 'utf8');
+    expect(uiModalsCompiled).toContain("p2pSend('boss:' + currentQuestionIndex, optionIndex)");
+  });
+
+  it('shell banks boss channel answers per question and merges into quizState.responses', () => {
+    expect(anti).toContain("payload.pollId.indexOf('boss:') === 0");
+    expect(anti).toContain('setLiveBossResponses');
+    expect(anti).toContain('liveBossResponses.qIdx === String(qs.currentQuestionIndex)');
+    expect(anti).toContain('window.__alloQuizChannelSend = (pollId, response)');
+  });
+
+  it('teacher can share anonymous per-question results; students render them', () => {
+    expect(anti).toContain('window.__alloQuizShareResults = (summary)');
+    expect(anti).toContain("host.broadcastPollResults('quiz-results', summary)");
+    expect(anti).toContain('setQuizSharedResults(summary || null)');
+    expect(viewQuiz).toContain('window.__alloQuizShareResults');
+    expect(viewQuiz).toContain('shareResultsToClass');
+  });
+});
+
+describe('pictionary moderation + presence polish (2026-07-02)', () => {
+  const pic = readFileSync(resolve(process.cwd(), 'concept_pictionary_source.jsx'), 'utf8');
+  it('guessers have a cooldown; hosts can mute a guesser; offline drawers are flagged', () => {
+    expect(pic).toContain('GUESS_COOLDOWN_MS = 3000');
+    expect(pic).toContain('toggleMuteGuesser');
+    expect(pic).toContain('if (mutedGuessersRef.current[uid]) return;');
+    expect(pic).toContain('>offline</span>');
+  });
+});
+
 describe('project-file roundtrip (teacher dashboard reads submitted files)', () => {
   it('student save embeds the mastery block with a re-keying uid', () => {
     expect(phaseK).toContain('conceptMastery: (conceptMasteryLocal && conceptMasteryLocal.attempts');

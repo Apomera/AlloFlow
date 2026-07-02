@@ -113,6 +113,10 @@ const StudentQuizOverlay = React.memo(({
     setHasAnswered(true);
     setSelectedOptionIndex(optionIndex);
     try {
+      // FERPA-first transport: boss answers ride the P2P quiz channel when
+      // it's up (shell hook); Firestore stays strictly as the fallback.
+      const p2pSend = (typeof window !== 'undefined') && window.__alloQuizChannelSend;
+      if (typeof p2pSend === 'function' && p2pSend('boss:' + currentQuestionIndex, optionIndex)) return;
       const effectiveAppId = targetAppId || appId;
       const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
       await updateDoc(sessionRef, {
