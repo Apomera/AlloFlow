@@ -2240,9 +2240,21 @@
         // real recorded clip (or a custom override). Fall back to speaking the key
         // word only if there is no clip. (handleAudio is referenced at call time and
         // kept out of the dep array to avoid a render-time temporal-dead-zone error.)
-        if (soundKey && typeof handleAudio === "function") { handleAudio(soundKey); return; }
+        // handleAudio resolves the grapheme through the bank + its fallback maps
+        // (ea->ee, oi->oy, ...), which cover the full English set, so this is the
+        // normal path. Only if the bank never loaded (offline/CDN failure) do we
+        // speak the key word instead of going silent — the previous unconditional
+        // return made that documented fallback unreachable.
+        const _pb = (typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined")
+          ? window.__ALLO_PHONEME_AUDIO_BANK : null;
+        const _bankLoaded = !!(_pb && _pb["a"]);
+        if (soundKey && _bankLoaded && typeof handleAudio === "function") {
+          handleAudio(soundKey);
+          return;
+        }
         const toSpeak = keyWord || soundKey;
-        if (toSpeak && typeof speakWord === "function") speakWord(toSpeak);
+        if (toSpeak && typeof speakWord === "function") { speakWord(toSpeak); return; }
+        if (soundKey && typeof handleAudio === "function") handleAudio(soundKey);
       }, [speakWord]);
       // Post-error remediation: when the student gets an answer wrong, briefly
       // flash the anchor and auto-play the key word so the letter ↔ sound
@@ -2776,8 +2788,13 @@
           }
           setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
           await new Promise((r) => setTimeout(r, 200));
+          // Guard the global (it can be undefined before audio_banks loads) and
+          // drop the old duplicated else-branch, which re-tested the same value
+          // already known to be falsy (dead code).
           const whichWordAudio =
-            window.__ALLO_INSTRUCTION_AUDIO["which_word_did_you_hear"];
+            (typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
+              window.__ALLO_INSTRUCTION_AUDIO["which_word_did_you_hear"]) ||
+            null;
           if (whichWordAudio) {
             const a = new Audio(whichWordAudio);
             await new Promise((res, rej) => {
@@ -2786,18 +2803,7 @@
               a.play().catch(rej);
             });
           } else {
-            const whichWordAudio =
-              window.__ALLO_INSTRUCTION_AUDIO["which_word_did_you_hear"];
-            if (whichWordAudio) {
-              const a = new Audio(whichWordAudio);
-              await new Promise((res, rej) => {
-                a.onended = res;
-                a.onerror = rej;
-                a.play().catch(rej);
-              });
-            } else {
-              await handleAudio("Which word did you hear?");
-            }
+            await handleAudio("Which word did you hear?");
           }
         } catch (err) {
           warnLog("Blending playback error:", err);
@@ -9445,18 +9451,25 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               );
               return;
             }
+            // Canonical map: each alternate spelling of a sound maps to ONE
+            // representative (which is itself NOT a key, so it resolves to
+            // itself). A prior version used bidirectional swaps (oi:"oy",
+            // oy:"oi"); those never matched when BOTH sides were in the table
+            // (each flipped to the other), so alternate spellings were silently
+            // rejected. Collapsing to a canonical form fixes it:
+            // norm("oy") === norm("oi") === "oi".
             const ANSWER_EQUIV = {
-              oi: "oy", oy: "oi",
-              aw: "au", au: "aw",
-              ew: "oo", oo: "ew",
-              oe: "oa", oa: "oe",
-              ai: "ay", ay: "ai",
-              ee: "ea", ea: "ee",
-              er: "ir", ir: "er", ur: "er",
-              igh: "ie", ie: "igh",
-              ou: "ow", ow: "ou",
-              ck: "k", k: "ck",
-              ph: "f", f: "ph",
+              oy: "oi",
+              au: "aw",
+              ew: "oo",
+              oe: "oa",
+              ai: "ay",
+              ea: "ee",
+              ir: "er", ur: "er",
+              igh: "ie",
+              ou: "ow",
+              ck: "k",
+              ph: "f",
               wr: "r",
               kn: "n",
             };
@@ -9851,7 +9864,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 updatePhonemeMastery(wordSoundsPhonemes.phonemes, isCorrect);
             }
             if (!isCorrect && answer && expectedAnswer) {
-              trackConfusion(expectedAnswer, answer);
+              // Only log genuine sound/word confusions. Several activities pass
+              // control sentinels ("correct"/"incorrect"/"wrong"/"right") or raw
+              // counts as the check args; without this guard confusionPatterns
+              // fills with meaningless pairs like "correct->incorrect".
+              const _cA = String(answer).toLowerCase().trim();
+              const _cE = String(expectedAnswer).toLowerCase().trim();
+              const _cSent = new Set(["correct", "incorrect", "wrong", "right"]);
+              if (
+                !_cSent.has(_cA) && !_cSent.has(_cE) &&
+                !/^\d+\+?$/.test(_cA) && !/^\d+\+?$/.test(_cE)
+              ) {
+                trackConfusion(expectedAnswer, answer);
+              }
             }
             updateDailyProgress(isCorrect);
             if (isCorrect && setWordSoundsSessionProgress) {
