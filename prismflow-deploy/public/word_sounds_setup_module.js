@@ -970,6 +970,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const [orthoSessionGoal, setOrthoSessionGoal] = React.useState(0);
   const includeOrthographic = orthoSessionGoal > 0;
   const [customText, setCustomText] = React.useState("");
+  const [sessionType, setSessionType] = React.useState(isProbeMode ? "assessment" : "practice");
+  const [probeActivitySel, setProbeActivitySel] = React.useState(
+    probeActivity && probeActivity !== "orf" ? probeActivity : "segmentation"
+  );
   const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
   const [lessonPlan, setLessonPlan] = React.useState({
     isolation: { enabled: false, count: 5 },
@@ -1321,9 +1325,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       }
       setGeneratedCount((prev) => prev + 1);
     }
+    const isAssessment = sessionType === "assessment";
+    const useLessonPlan = includeLessonPlan && !isAssessment;
     let sequence = [];
     const enabledActivities = [];
-    if (includeLessonPlan) {
+    if (useLessonPlan) {
       lessonPlanOrder.forEach((actId) => {
         const cfg = lessonPlan[actId];
         if (cfg && cfg.enabled) {
@@ -1332,7 +1338,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         }
       });
     }
-    const lessonPlanConfig = includeLessonPlan ? {
+    const lessonPlanConfig = useLessonPlan ? {
       masteryMode: "consecutive",
       masteryThreshold: 3,
       activities: enabledActivities,
@@ -1340,8 +1346,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       totalItems: sequence.length,
       estimatedMinutes: Math.ceil(sequence.length * 0.5)
     } : null;
-    const configSummary = lessonPlanConfig ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive \u2022 ` + enabledActivities.map((a) => `${a.id.replace("_", " ")} (${a.count})`).join(" \u2192 ") + ` \u2022 Est. ${lessonPlanConfig.estimatedMinutes} min` : "Quick Practice Mode";
-    onStartGame(processed, sequence, lessonPlanConfig, configSummary);
+    const probeOptions = isAssessment ? { isProbe: true, activity: probeActivitySel } : { isProbe: false };
+    const configSummary = isAssessment ? `\u{1F4CA} Assessment \xB7 ${String(probeActivitySel).replace(/_/g, " ")} probe (timed, no hints)` : lessonPlanConfig ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive \u2022 ` + enabledActivities.map((a) => `${a.id.replace("_", " ")} (${a.count})`).join(" \u2192 ") + ` \u2022 Est. ${lessonPlanConfig.estimatedMinutes} min` : "Quick Practice Mode";
+    onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions);
     setIsProcessing(false);
   };
   if (isMinimized) {
@@ -1419,7 +1426,45 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       },
       "Keep Gemini"
     )))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.settings", "Settings")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.count", "Word Count")), /* @__PURE__ */ React.createElement("span", { className: "bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold" }, wordCount)), /* @__PURE__ */ React.createElement(
+  })(), /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.session_type", "Session Type")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "ws_gen_mode_practice",
+      onClick: () => setSessionType("practice"),
+      "aria-pressed": sessionType === "practice",
+      className: `px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === "practice" ? "bg-violet-600 text-white shadow" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`
+    },
+    "\u{1F3AE} ",
+    t("word_sounds.mode_practice", "Practice")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "ws_gen_mode_assessment",
+      onClick: () => {
+        setSessionType("assessment");
+        setIncludeLessonPlan(false);
+      },
+      "aria-pressed": sessionType === "assessment",
+      className: `px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === "assessment" ? "bg-amber-600 text-white shadow" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`
+    },
+    "\u{1F4CA} ",
+    t("word_sounds.mode_assessment", "Assessment")
+  )), sessionType === "assessment" && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-semibold text-amber-800 leading-snug" }, t("word_sounds.assessment_note", "Timed, no hints \u2014 a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.")), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-amber-900" }, t("word_sounds.probe_skill", "Probe skill")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("word_sounds.probe_skill", "Probe skill"),
+      value: probeActivitySel,
+      onChange: (e) => setProbeActivitySel(e.target.value),
+      className: "w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "segmentation" }, t("word_sounds.act_segmentation", "Segmentation")),
+    /* @__PURE__ */ React.createElement("option", { value: "isolation" }, t("word_sounds.act_isolation", "Sound Isolation")),
+    /* @__PURE__ */ React.createElement("option", { value: "blending" }, t("word_sounds.act_blending", "Blending")),
+    /* @__PURE__ */ React.createElement("option", { value: "rhyming" }, t("word_sounds.act_rhyming", "Rhyming")),
+    /* @__PURE__ */ React.createElement("option", { value: "counting" }, t("word_sounds.act_counting", "Sound Counting"))
+  ))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, t("word_sounds.settings", "Settings")), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.count", "Word Count")), /* @__PURE__ */ React.createElement("span", { className: "bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold" }, wordCount)), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.word_count_slider"),
@@ -1601,7 +1646,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       className: "bg-violet-600 text-white px-3 py-1 rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50"
     },
     isAiGenerating ? "..." : "Go"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, "\u{1F4CB} Lesson Plan (Advanced)"), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? "bg-indigo-50 border-indigo-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center justify-between cursor-pointer mb-3", onClick: () => setIncludeLessonPlan((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" }, lessonPlanOrder.map((actId) => {
+  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pt-4 mt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest px-1" }, "\u{1F4CB} Lesson Plan (Advanced)"), /* @__PURE__ */ React.createElement("div", { className: `p-4 rounded-xl border-2 transition-all ${sessionType === "assessment" ? "opacity-50 pointer-events-none" : ""} ${includeLessonPlan ? "bg-indigo-50 border-indigo-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, "aria-disabled": sessionType === "assessment", className: "flex items-center justify-between cursor-pointer mb-3", onClick: () => {
+    if (sessionType === "assessment") return;
+    setIncludeLessonPlan((prev) => !prev);
+  } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? "bg-indigo-600 border-indigo-600" : "border-slate-300"}` }, includeLessonPlan && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.enable_lesson_plan")))), includeLessonPlan && /* @__PURE__ */ React.createElement("div", { className: "space-y-3 pl-2 mt-3 animate-in fade-in slide-in-from-top-1" }, lessonPlanOrder.map((actId) => {
     const activityDefs = {
       isolation: { id: "isolation", label: "Find Sounds", icon: ScanSearch },
       blending: { id: "blending", label: "Blending", icon: GripHorizontal },

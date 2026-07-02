@@ -821,6 +821,14 @@
         const [orthoSessionGoal, setOrthoSessionGoal] = React.useState(0);
     const includeOrthographic = orthoSessionGoal > 0;
         const [customText, setCustomText] = React.useState('');
+        // Practice vs Assessment (probe). Reflects the host's isProbeMode when the
+        // teacher arrived from an assessment launch; otherwise defaults to practice
+        // and the teacher can flip it here. A probe is a single timed skill, so it
+        // is mutually exclusive with the multi-activity lesson plan below.
+        const [sessionType, setSessionType] = React.useState(isProbeMode ? 'assessment' : 'practice');
+        const [probeActivitySel, setProbeActivitySel] = React.useState(
+            probeActivity && probeActivity !== 'orf' ? probeActivity : 'segmentation'
+        );
         const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
         const [lessonPlan, setLessonPlan] = React.useState({
             isolation: { enabled: false, count: 5 },
@@ -1176,9 +1184,12 @@
                      }
                      setGeneratedCount(prev => prev + 1);
              }
+             // A probe is a single timed skill — never a multi-activity lesson plan.
+             const isAssessment = sessionType === 'assessment';
+             const useLessonPlan = includeLessonPlan && !isAssessment;
              let sequence = [];
              const enabledActivities = [];
-             if (includeLessonPlan) {
+             if (useLessonPlan) {
                  lessonPlanOrder.forEach(actId => {
                      const cfg = lessonPlan[actId];
                      if (cfg && cfg.enabled) {
@@ -1187,7 +1198,7 @@
                      }
                  });
              }
-             const lessonPlanConfig = includeLessonPlan ? {
+             const lessonPlanConfig = useLessonPlan ? {
                  masteryMode: 'consecutive',
                  masteryThreshold: 3,
                  activities: enabledActivities,
@@ -1195,12 +1206,19 @@
                  totalItems: sequence.length,
                  estimatedMinutes: Math.ceil(sequence.length * 0.5)
              } : null;
-             const configSummary = lessonPlanConfig
-                 ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
-                   enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
-                   ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
-                 : 'Quick Practice Mode';
-             onStartGame(processed, sequence, lessonPlanConfig, configSummary);
+             const probeOptions = isAssessment
+                 ? { isProbe: true, activity: probeActivitySel }
+                 : { isProbe: false };
+             const configSummary = isAssessment
+                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)`
+                 : (lessonPlanConfig
+                     ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
+                       enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
+                       ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
+                     : 'Quick Practice Mode');
+             // 5th arg is backward-compatible: an older host that destructures only
+             // the first four simply ignores it (practice behaviour unchanged).
+             onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions);
              setIsProcessing(false);
         };
 
@@ -1354,6 +1372,40 @@
                     })()}
                     <div className="flex flex-1 overflow-hidden">
                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
+                            <div className="space-y-3">
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.session_type', 'Session Type')}</label>
+                                <div className="bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2">
+                                    <button type="button" data-help-key="ws_gen_mode_practice"
+                                        onClick={() => setSessionType('practice')}
+                                        aria-pressed={sessionType === 'practice'}
+                                        className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'practice' ? 'bg-violet-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                                        🎮 {t('word_sounds.mode_practice', 'Practice')}
+                                    </button>
+                                    <button type="button" data-help-key="ws_gen_mode_assessment"
+                                        onClick={() => { setSessionType('assessment'); setIncludeLessonPlan(false); }}
+                                        aria-pressed={sessionType === 'assessment'}
+                                        className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'assessment' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                                        📊 {t('word_sounds.mode_assessment', 'Assessment')}
+                                    </button>
+                                </div>
+                                {sessionType === 'assessment' && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+                                        <p className="text-[11px] font-semibold text-amber-800 leading-snug">
+                                            {t('word_sounds.assessment_note', 'Timed, no hints — a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.')}
+                                        </p>
+                                        <label className="block text-xs font-bold text-amber-900">{t('word_sounds.probe_skill', 'Probe skill')}</label>
+                                        <select aria-label={t('word_sounds.probe_skill', 'Probe skill')}
+                                            value={probeActivitySel} onChange={(e) => setProbeActivitySel(e.target.value)}
+                                            className="w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700">
+                                            <option value="segmentation">{t('word_sounds.act_segmentation', 'Segmentation')}</option>
+                                            <option value="isolation">{t('word_sounds.act_isolation', 'Sound Isolation')}</option>
+                                            <option value="blending">{t('word_sounds.act_blending', 'Blending')}</option>
+                                            <option value="rhyming">{t('word_sounds.act_rhyming', 'Rhyming')}</option>
+                                            <option value="counting">{t('word_sounds.act_counting', 'Sound Counting')}</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.settings', 'Settings')}</label>
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
@@ -1618,8 +1670,8 @@
                                 </div>
                             </div>
                             <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label><div className={`p-4 rounded-xl border-2 transition-all ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer mb-3" onClick={() => setIncludeLessonPlan(prev => !prev)}>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label><div className={`p-4 rounded-xl border-2 transition-all ${sessionType === 'assessment' ? 'opacity-50 pointer-events-none' : ''} ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
+                                    <div role="button" tabIndex={0} aria-disabled={sessionType === 'assessment'} className="flex items-center justify-between cursor-pointer mb-3" onClick={() => { if (sessionType === 'assessment') return; setIncludeLessonPlan(prev => !prev); }}>
                                         <div className="flex items-center gap-2">
                                             <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
                                                 {includeLessonPlan && <Check size={14} className="text-white" />}

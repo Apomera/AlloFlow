@@ -27626,7 +27626,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               glossaryTerms={generatedContent?.type === 'glossary' ? (generatedContent?.data || []) : (latestGlossary || [])}
               t={t}
               gradeLevel={gradeLevel || 'K-2'}
-              onStartGame={(words, sequence, lessonPlanConfig, configSummary) => {
+              onStartGame={(words, sequence, lessonPlanConfig, configSummary, probeOptions) => {
+                   // 5th arg (optional): the setup screen's Practice/Assessment choice.
+                   // A probe is a single timed skill, so it ignores any lesson-plan
+                   // sequence and pins the activity the teacher selected.
+                   const _isProbe = !!(probeOptions && probeOptions.isProbe);
+                   const _probeAct = probeOptions && probeOptions.activity;
                    const resourceId = `ws-${Date.now()}`;
                    const wordSoundsResource = {
                        id: resourceId,
@@ -27637,12 +27642,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        lessonPlanSequence: sequence || [],
                        lessonPlanConfig: lessonPlanConfig || null,
                        configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
+                       isProbeMode: _isProbe,
+                       probeActivity: _isProbe ? (_probeAct || null) : null,
                    };
                    setGeneratedContent(wordSoundsResource);
                    setHistory(prev => [wordSoundsResource, ...prev]);
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
-                   const initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   setIsProbeMode(_isProbe);
+                   let initialActivity;
+                   if (_isProbe && _probeAct) {
+                       setProbeActivity(_probeAct);
+                       initialActivity = _probeAct;
+                   } else {
+                       initialActivity = (sequence && sequence.length > 0) ? sequence[0] : 'counting';
+                   }
                    setWordSoundsActivity(initialActivity);
                    setWordSoundsAutoReview(true);
                    setIsWordSoundsMode(false);
