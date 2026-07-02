@@ -1,5 +1,35 @@
 # Remediation pipeline deep dive — 2026-07-01 (Fable)
 
+## 2026-07-02 calibration (after Aaron's threat-model questions — read this first)
+
+- **Correction:** one reviewer agent wrote "Anthropic's servers" for AI
+  egress — WRONG. The only runtime AI path is browser → Google Gemini (the
+  Canvas surface's own model, covered by the district's existing Google
+  agreements). Anthropic is never in the data path. B4 is therefore
+  DEPRIORITIZED to "optional transparency wording for future non-Canvas
+  deployments" — no technical change needed.
+- **Threat model:** there is NO app server and no shared upload surface —
+  every processed PDF is one the teacher already chose and could already
+  distribute. "Attacker-supplied PDF" is not a realistic scenario for the
+  current product; Cluster A is a TRUST/DISCLOSURE feature and a future
+  procurement checkbox, NOT a present security emergency. Cluster B
+  prompt-injection: no adversary targets this today; it's a robustness
+  class already bounded by the fidelity gates. Only the two zero-regression
+  one-liners (B1 caption-hint neutralization, B2 fallback-regex extension)
+  stay on the near-term list.
+- **Redundancy check vs existing features** (Aaron asked; verified in code
+  2026-07-02): in-browser veraPDF via CheerpJ popup EXISTS (validator URL,
+  closed-loop repair, rule telemetry — remaining: boot-speed AOT + the
+  known pdfuaid-stamp authority-consolidation design issue); signed
+  SHA-256-bound audit trail EXISTS (remaining: district-level aggregation
+  only); DAISY 3/DTBook + ePub exports EXIST (remaining: NIMAS packaging,
+  niche); SR reading-order preview EXISTS (@e1feb4f5); measured-accuracy
+  infra EXISTS (H-5 chip live, needs calibration corpus). GENUINELY NEW:
+  Document Safety scan (zero active-content handling confirmed), typeset
+  sanitized-rebuild offered for PDF inputs (button currently non-PDF-only,
+  view_pdf_audit ~9251/9427), born-digital per-leaf linkage (PAC-gated),
+  district inventory wrapper, spoken-math verification.
+
 Three read-only review agents swept the areas no prior audit had covered
 (AI/prompt layer, hostile-input passthrough, batch/scale), plus regulatory
 research. Findings below are annotated: **VERIFIED** = I confirmed in code
