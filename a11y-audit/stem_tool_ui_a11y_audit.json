@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T18:50:33.687Z",
+  "generatedAt": "2026-07-02T19:51:08.032Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 179,
+    "issueCount": 178,
     "errorCount": 0,
-    "warningCount": 162,
+    "warningCount": 161,
     "noticeCount": 17,
-    "toolsWithIssues": 76,
+    "toolsWithIssues": 75,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 71,
+    "toolsWithWarnings": 70,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 76,
+        "warningCount": 75,
         "noticeCount": 6
       },
       "technology": {
@@ -256,21 +256,21 @@
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 19,
-      "toolCount": 16,
+      "count": 18,
+      "toolCount": 15,
       "exampleTools": [
         "anatomy",
         "areamodel",
         "chemBalance",
         "climateExplorer",
         "dissection",
-        "economicsLab",
         "epidemicSim",
         "graphCalc",
         "musicSynth",
         "plateTectonics",
         "rockCycle",
-        "rocks"
+        "rocks",
+        "skatelab"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
     },
@@ -2205,34 +2205,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
-      "renderedBytes": 13335,
+      "renderedBytes": 11367,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 26,
+        "buttons": 24,
         "roleButtons": 0,
         "fields": 6,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 20,
+        "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "economicsLab",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > canvas.w-full.rounded-xl"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "ecosystem",
@@ -2315,20 +2306,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).",
-      "renderedBytes": 26270,
+      "renderedBytes": 34640,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 20,
+        "buttons": 28,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 21,
+        "headings": 22,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2350,7 +2341,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22779,
+      "renderedBytes": 22767,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2813,7 +2804,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1586,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3371,7 +3362,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13350,
+      "renderedBytes": 13353,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3836,7 +3827,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17336,
+      "renderedBytes": 17335,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4642,7 +4633,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46576,
+      "renderedBytes": 46590,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T18:50:33.687Z
+Generated: 2026-07-02T19:51:08.032Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-02T18:50:33.687Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 179 |
+| Total findings | 178 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 162 |
+| Tool-level warnings | 161 |
 | Review notices | 17 |
-| Tools with any finding | 76 |
+| Tools with any finding | 75 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -29,7 +29,7 @@ Generated: 2026-07-02T18:50:33.687Z
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 20 | 20 | aquacultureLab, archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, dinoLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 67 | 17 | algebraCAS, appLab, atcTower, cell, cellularLab, companionPlanting, dataStudio, dnaLab, echoTrainer, fireEcology, kitchenLab, llmLiteracy | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
-| warning | `canvas-name` | 19 | 16 | anatomy, areamodel, chemBalance, climateExplorer, dissection, economicsLab, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
+| warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 12 | 12 | archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks, weldLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 5 | 5 | birdLab, plateTectonics, playlab, skatelab, throwlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
@@ -88,10 +88,10 @@ Generated: 2026-07-02T18:50:33.687Z
 | `dnaLab` DNA Lab | biology | standard | 103 | 0 | 1 | 0 | 4 | 0 | inline-contrast x3, tiny-text x1 |
 | `echoTrainer` Echo Navigator | applied | standard | 26 | 5 | 1 | 0 | 6 | 0 | inline-contrast x6 |
 | `echolocation` Echolocation Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `economicsLab` Economics Lab | science | standard | 26 | 6 | 1 | 0 | 1 | 0 | canvas-name x1 |
+| `economicsLab` Economics Lab | science | standard | 24 | 6 | 1 | 0 | 0 | 0 |  |
 | `ecosystem` Ecosystem Simulator | science | standard | 33 | 8 | 1 | 0 | 0 | 0 |  |
 | `epidemicSim` Epidemic Modeling Lab | Life Science | standard | 21 | 4 | 1 | 0 | 2 | 0 | canvas-focus x1, canvas-name x1 |
-| `evoLab` EvoLab — Evolution | general | standard | 20 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
+| `evoLab` EvoLab — Evolution | general | standard | 28 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 29 | 1 | 0 | 0 | 2 | 0 | inline-contrast x2 |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `fisherLab` FisherLab: Boating & Fishing Sim | science | standard | 18 | 0 | 0 | 0 | 1 | 0 | heading x1 |

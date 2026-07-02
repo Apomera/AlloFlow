@@ -138,7 +138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
       // Badge tracking — visiting each module marks it explored. Drives the
       // progress banner on MainMenu and the per-card ✓ checkmark.
-      var BADGE_IDS = ['predatorVision','mateChoice','climatePressure','selectionSandbox','beakLab','speciation','coevolution','phyloBuilder','hardyWeinberg','geneticDrift','commonAncestry','antibioticLab','discoveryTimeline','misconceptions','capstone'];
+      var BADGE_IDS = ['predatorVision','mateChoice','climatePressure','selectionSandbox','beakLab','speciation','coevolution','phyloBuilder','hardyWeinberg','geneticDrift','commonAncestry','antibioticLab','discoveryTimeline','misconceptions','selectionSleuth','homologySleuth','capstone'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -406,6 +406,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
+        var allCards = bigCards.concat(miniCards);
+        var moduleById = {};
+        allCards.forEach(function(c) { moduleById[c.id] = c; });
+        var coreVisited = bigCards.filter(function(c) { return badges[c.id]; }).length;
+        var practiceIds = ['selectionSleuth', 'homologySleuth', 'misconceptions', 'capstone'];
+        var practiceVisited = practiceIds.filter(function(id) { return badges[id]; }).length;
+        var learningTracks = [
+          {
+            id: 'guided',
+            label: 'Start here',
+            title: 'Variation to selection',
+            desc: 'Begin with a visible cause-and-effect sequence before opening the whole catalog.',
+            modules: ['predatorVision', 'selectionSandbox', 'beakLab'],
+            accent: 'from-emerald-500 to-teal-700'
+          },
+          {
+            id: 'population',
+            label: 'Genes and populations',
+            title: 'Alleles over time',
+            desc: 'Move from inheritance math to random drift and antibiotic resistance.',
+            modules: ['hardyWeinberg', 'geneticDrift', 'antibioticLab'],
+            accent: 'from-cyan-500 to-blue-700'
+          },
+          {
+            id: 'evidence',
+            label: 'Evidence and ancestry',
+            title: 'Tree of life evidence',
+            desc: 'Connect shared structures, phylogenies, speciation, and discovery history.',
+            modules: ['commonAncestry', 'phyloBuilder', 'speciation', 'discoveryTimeline'],
+            accent: 'from-violet-500 to-purple-700'
+          },
+          {
+            id: 'practice',
+            label: 'Practice and project',
+            title: 'Check understanding',
+            desc: 'Use mechanism practice, homology checks, misconceptions, and the capstone report.',
+            modules: ['selectionSleuth', 'homologySleuth', 'misconceptions', 'capstone'],
+            accent: 'from-amber-500 to-orange-700'
+          }
+        ];
+        var activeTrackId = d.evoMenuTrack || 'guided';
+        var activeTrack = learningTracks.filter(function(track) { return track.id === activeTrackId; })[0] || learningTracks[0];
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -441,12 +483,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           );
         };
 
+        var renderPathModule = function(id, idx) {
+          var c = moduleById[id];
+          if (!c) return null;
+          var visited = !!badges[c.id];
+          return h('button', {
+            key: c.id,
+            onClick: function() { goto(c.id); },
+            'aria-label': 'Open ' + c.title + (visited ? ' (explored)' : ''),
+            className: 'text-left rounded-xl border bg-white/95 p-4 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-4 ' + c.ring + ' ' + (visited ? 'border-emerald-500' : 'border-white/70 hover:border-slate-300')
+          },
+            h('div', { className: 'flex items-start gap-3' },
+              h('div', { className: 'w-9 h-9 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm flex-shrink-0' }, idx + 1),
+              h('div', { className: 'min-w-0 flex-1' },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { className: 'text-2xl', 'aria-hidden': true }, c.icon),
+                  h('span', { className: 'font-black text-slate-900 leading-tight' }, c.title)
+                ),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, c.subtitle),
+                h('div', { className: 'mt-3 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ' + (visited ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600') },
+                  visited ? 'Explored' : 'Open next'
+                )
+              )
+            )
+          );
+        };
+
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' }, '🧬'),
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'EvoLab'),
             h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' },
               t('stem.evolab.evolution_and_natural_selection_see_po', 'Evolution and natural selection — see populations change, build the tree of life, and untangle the most common misconceptions.'))
+          ),
+          h('section', {
+            'data-evolab-command': true,
+            className: 'mb-6 overflow-hidden rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-950 text-white shadow-xl'
+          },
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-5 p-5 md:p-6' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-emerald-200 mb-2' }, 'Evolution Mission Control'),
+                h('h2', { className: 'text-2xl md:text-3xl font-black leading-tight mb-2' }, activeTrack.title),
+                h('p', { className: 'text-sm text-emerald-50/90 leading-relaxed max-w-2xl' }, activeTrack.desc),
+                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-5' },
+                  [
+                    { label: 'Explored', value: visitedCount + '/' + totalCount },
+                    { label: 'Core labs', value: coreVisited + '/' + bigCards.length },
+                    { label: 'Practice', value: practiceVisited + '/' + practiceIds.length },
+                    { label: 'Path', value: activeTrack.label }
+                  ].map(function(stat) {
+                    return h('div', { key: stat.label, className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2' },
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-wider text-emerald-100/80' }, stat.label),
+                      h('div', { className: 'text-lg font-black text-white truncate' }, stat.value)
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                learningTracks.map(function(track) {
+                  var active = track.id === activeTrack.id;
+                  return h('button', {
+                    key: track.id,
+                    onClick: function() { upd('evoMenuTrack', track.id); announce('EvoLab path selected: ' + track.label); },
+                    'aria-pressed': active,
+                    className: 'text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-4 focus:ring-emerald-300 ' + (active ? 'border-white bg-white text-slate-900 shadow-lg' : 'border-white/15 bg-white/10 text-white hover:bg-white/15')
+                  },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wider ' + (active ? 'text-emerald-700' : 'text-emerald-100') }, track.label),
+                    h('div', { className: 'mt-1 text-sm font-black leading-tight' }, track.title),
+                    h('div', { className: 'mt-2 flex gap-1', 'aria-hidden': true },
+                      track.modules.slice(0, 4).map(function(moduleId) {
+                        var mc = moduleById[moduleId];
+                        return h('span', { key: moduleId, className: 'h-7 w-7 rounded-lg flex items-center justify-center text-base ' + (active ? 'bg-emerald-100' : 'bg-white/10') }, mc ? mc.icon : '*');
+                      })
+                    )
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'border-t border-white/10 bg-white/10 p-4 md:p-5' },
+              h('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-emerald-100' }, 'Recommended path'),
+                  h('div', { className: 'text-sm text-white/80' }, 'Open these in order, or switch paths above.')
+                ),
+                h('button', {
+                  onClick: function() { goto(activeTrack.modules[0]); },
+                  className: 'rounded-xl bg-white px-3 py-2 text-xs font-black text-emerald-800 shadow hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-300'
+                }, 'Start path')
+              ),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-3' },
+                activeTrack.modules.map(renderPathModule).filter(Boolean)
+              )
+            )
           ),
           // Progress banner
           h('div', {
@@ -460,7 +588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   allDone ? 'All modules explored — full evolution path complete!' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
                 ),
                 h('div', { className: 'text-xs text-slate-600' },
-                  allDone ? 'Revisit any module to deepen your understanding.' : 'Open each card below to learn its specialty.')
+                  allDone ? 'Revisit any module to deepen your understanding.' : 'Use a recommended path or browse the full module catalog.')
               )
             ),
             h('div', { className: 'flex-shrink-0 w-32 h-3 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
@@ -470,13 +598,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               })
             )
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.evolab.core_simulators', 'Core Simulators')),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
-            bigCards.map(function(c) { return renderCard(c, true); })
-          ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.evolab.quick_labs', 'Quick Labs')),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
-            miniCards.map(function(c) { return renderCard(c, false); })
+          h('details', { className: 'mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden' },
+            h('summary', { className: 'cursor-pointer select-none px-4 py-3 font-black text-slate-800 flex flex-wrap items-center justify-between gap-2' },
+              h('span', null, 'Browse every EvoLab module'),
+              h('span', { className: 'text-xs font-bold text-slate-500' }, allCards.length + ' modules')
+            ),
+            h('div', { className: 'border-t border-slate-200 p-4' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.evolab.core_simulators', 'Core Simulators')),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
+                bigCards.map(function(c) { return renderCard(c, true); })
+              ),
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.evolab.quick_labs', 'Quick Labs')),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
+                miniCards.map(function(c) { return renderCard(c, false); })
+              )
+            )
           ),
           // Teacher Resources section — distinguished by amber theming so students
           // know it's not for them and teachers can find it instantly. Currently
