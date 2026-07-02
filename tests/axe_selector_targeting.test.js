@@ -9,9 +9,12 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
-const start = src.indexOf('function _applyToAxeTarget(html, rawTarget, mutateFn) {');
+// P5 (2026-07-02): _applyToAxeTarget is now a thin wrapper over _applyToAxeTargetDoc (the
+// shared-doc core), so the eval slice must start at the Doc variant or the wrapper calls
+// an undefined helper inside this harness.
+const start = src.indexOf('function _applyToAxeTargetDoc(doc, rawTarget, mutateFn) {');
 const end = src.indexOf('\nvar createDocPipeline', start);
-if (start === -1 || end === -1) throw new Error('extraction markers for _applyToAxeTarget missing');
+if (start === -1 || end === -1) throw new Error('extraction markers for _applyToAxeTargetDoc/_applyToAxeTarget missing');
 const { _applyToAxeTarget } = new Function(src.slice(start, end) + '\n; return { _applyToAxeTarget };')();
 
 const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
@@ -67,7 +70,9 @@ describe('anti-drift: the axe-mapped tools + map use the selector path', () => {
 
   it('fix_color_contrast was refactored onto the shared helper', () => {
     const i = src.indexOf('fix_color_contrast: {');
-    expect(src.slice(i, i + 2500)).toContain('return _applyToAxeTarget(html, p.target, function(el)');
+    // P5: the mutator is shared between the string path and fnDoc — both must ride it.
+    expect(src.slice(i, i + 2500)).toContain('return _applyToAxeTarget(html, p.target, _mutColorContrast(_fix));');
+    expect(src.slice(i, i + 2500)).toContain('return _applyToAxeTargetDoc(doc, p.target, _mutColorContrast(_fix));');
   });
 
   it('every axe-map mapper that fixes a node threads target: n.target', () => {
@@ -94,9 +99,10 @@ describe('form-label rules (3.3.2) joined the direct-map (follow-up #2, 2026-06-
   it('fix_input_label gained a selector branch (so it fixes select/textarea too, fail-safe)', () => {
     const i = src.indexOf('fix_input_label: {');
     const body = src.slice(i, i + 600);
-    expect(body).toMatch(/if \(p\.target != null\) return _applyToAxeTarget\(html, p\.target,/);
-    // the branch declines (returns false) when the field is already named — never clobbers a real label
-    expect(body).toContain("if (el.getAttribute('aria-label')) return false");
+    expect(body).toMatch(/if \(p\.target != null\) return _applyToAxeTarget\(html, p\.target, _mutInputLabel\(p\)\);/);
+    // the shared mutator declines (returns false) when the field is already named — never
+    // clobbers a real label (P5: the decline lives in _mutInputLabel, used by BOTH paths)
+    expect(src).toContain("if (el.getAttribute('aria-label')) return false; // already named");
   });
 
   it("the selector branch adds an aria-label by selector, and declines when one already exists", () => {

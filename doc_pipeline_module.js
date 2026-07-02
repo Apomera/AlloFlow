@@ -2438,17 +2438,31 @@ function _routeViolationsToChunks(entries, chunks) {
 // returns the html UNCHANGED (fail-safe) rather than mutating the wrong node. mutateFn(el, doc) does
 // the edit and may return false to decline (e.g. already-correct → no change). Pure; needs DOMParser
 // (browser / jsdom). `rawTarget` may be a string or axe's nested-frame array form.
-function _applyToAxeTarget(html, rawTarget, mutateFn) {
-  if (rawTarget == null || typeof DOMParser === 'undefined') return html;
+// P5 (deep dive 2026-07-02): doc-native core, split out of _applyToAxeTarget so the direct-map
+// loop can apply MANY targeted fixes to ONE shared parsed document (parse once, serialize once)
+// instead of paying a full-document parse + serialize per directive. Returns true only when the
+// mutation was actually applied; selector miss / mutateFn decline / any throw → false with the
+// doc UNTOUCHED by this call (mutators are read-then-single-write by contract — see the P5
+// mutator block in the surgical registry — so a throw cannot leave a half-mutated element).
+function _applyToAxeTargetDoc(doc, rawTarget, mutateFn) {
+  if (rawTarget == null || !doc) return false;
   var selector = Array.isArray(rawTarget)
     ? (Array.isArray(rawTarget[rawTarget.length - 1]) ? rawTarget[rawTarget.length - 1].join(' ') : rawTarget.join(' '))
     : String(rawTarget);
   try {
-    var doc = new DOMParser().parseFromString(String(html), 'text/html');
     var el = doc.querySelector(selector);
-    if (!el) return html;
+    if (!el) return false;
     var changed = mutateFn(el, doc);
-    if (changed === false) return html;
+    return changed !== false;
+  } catch (e) {
+    return false;
+  }
+}
+function _applyToAxeTarget(html, rawTarget, mutateFn) {
+  if (rawTarget == null || typeof DOMParser === 'undefined') return html;
+  try {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    if (!_applyToAxeTargetDoc(doc, rawTarget, mutateFn)) return html;
     var dm = String(html).match(/^\s*<!DOCTYPE[^>]*>/i);
     return (dm ? dm[0] + '\n' : '') + doc.documentElement.outerHTML;
   } catch (e) {
@@ -5009,6 +5023,39 @@ var createDocPipeline = function(deps) {
   // HTML tag names are restricted; validate before trusting AI-supplied values.
   const SAFE_TAG_NAME = /^[a-z][a-z0-9]*$/i;
 
+  // ── P5 shared mutators (2026-07-02) ──
+  // One mutator per target-capable tool, shared between the string path (fn →
+  // _applyToAxeTarget) and the shared-doc path (fnDoc → _applyToAxeTargetDoc) so the two
+  // can never drift. CONTRACT: read-then-SINGLE-write — all reads/guards first, exactly one
+  // mutating statement last — so a throw can never leave the shared document half-mutated.
+  const _mutAltText = (p) => function (el) { el.setAttribute('alt', (p.alt != null ? p.alt : 'Image')); };
+  const _mutLinkText = (p) => function (el) {
+    var t = (el.textContent || '').trim().toLowerCase();
+    if (['click here', 'here', 'read more', 'more', 'link', 'learn more'].indexOf(t) === -1 && !p.force) return false;
+    el.textContent = p.newText;
+  };
+  const _mutInputLabel = (p) => function (el) {
+    if (el.getAttribute('aria-label')) return false; // already named
+    el.setAttribute('aria-label', p.label);
+  };
+  const _mutButtonName = (p) => function (el) {
+    if ((el.textContent || '').trim() || el.getAttribute('aria-label')) return false; // already named
+    el.setAttribute('aria-label', p.label);
+  };
+  const _mutIframeTitle = (p) => function (el) { el.setAttribute('title', p.title); };
+  const _mutRemoveEmptyHeading = () => function (el) {
+    if ((el.textContent || '').trim()) return false; // not actually empty — don't remove
+    el.remove();
+  };
+  const _mutColorContrast = (fix) => function (el) {
+    var existing = el.getAttribute('style') || '';
+    var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/(?:^|;)\s*background-color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
+    var _decls = [];
+    if (fix.moved === 'fg' || fix.moved === 'both') _decls.push('color:' + fix.fg);
+    if (fix.moved === 'bg' || fix.moved === 'both') _decls.push('background-color:' + fix.bg);
+    el.setAttribute('style', (cleaned ? cleaned + ';' : '') + _decls.join(';'));
+  };
+
   // ── Surgical tool registry ──
   // Deterministic micro-operations that apply targeted fixes from Gemini-generated JSON
   // directives. Single source of truth for: (1) the executor functions, (2) the prompt
@@ -5018,13 +5065,20 @@ var createDocPipeline = function(deps) {
   // (see SURGICAL_TOOL_PROMPT below) so adding or renaming a tool updates the AI diagnosis
   // prompt automatically — no chance of the prompt drifting out of sync with the implementation.
   //
+  // P5 (2026-07-02): target-capable tools also carry { fnDoc, fnDocWhen }. fnDoc(doc, p) →
+  // boolean applies the SAME mutator to an already-parsed shared document (the direct-map
+  // loop's parse-once state machine); fnDocWhen(p) says when fnDoc can serve the directive
+  // (a target selector is present). String callers are unaffected — fn is unchanged.
+  //
   // Referenced by remediateSurgicallyThenAI and the chunked fix paths
   // via the runSurgical() helper (handles both new {fn} entries and legacy direct-function entries).
   const SURGICAL_TOOL_REGISTRY = {
     fix_alt_text: {
       category: 'CONTENT', wcag: '1.1.1', params: '{index, alt}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { return _applyToAxeTargetDoc(doc, p.target, _mutAltText(p)); },
       fn: function(html, p) {
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) { el.setAttribute('alt', (p.alt != null ? p.alt : 'Image')); });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutAltText(p));
         if (!p.index && p.index !== 0) return html;
         let idx = 0;
         return html.replace(/<img([^>]*)>/gi, function(m, attrs) {
@@ -5047,13 +5101,11 @@ var createDocPipeline = function(deps) {
     },
     fix_link_text: {
       category: 'CONTENT', wcag: '2.4.4', params: '{index, newText, force?}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { if (!p.newText) return false; return _applyToAxeTargetDoc(doc, p.target, _mutLinkText(p)); },
       fn: function(html, p) {
         if (!p.newText) return html;
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
-          var t = (el.textContent || '').trim().toLowerCase();
-          if (['click here','here','read more','more','link','learn more'].indexOf(t) === -1 && !p.force) return false;
-          el.textContent = p.newText;
-        });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutLinkText(p));
         // XSS: p.newText is AI-proposed; escape markup before inserting (anchors can't nest, so the
         // regex index path itself is safe — only the unescaped param was the risk).
         var _lt = String(p.newText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -5273,12 +5325,11 @@ var createDocPipeline = function(deps) {
     },
     fix_input_label: {
       category: 'FORM', wcag: '3.3.2', params: '{index, label}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { if (!p.label) return false; return _applyToAxeTargetDoc(doc, p.target, _mutInputLabel(p)); },
       fn: function(html, p) {
         if (!p.label) return html;
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
-          if (el.getAttribute('aria-label')) return false; // already named
-          el.setAttribute('aria-label', p.label);
-        });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutInputLabel(p));
         let idx = 0;
         return html.replace(/<input([^>]*)>/gi, function(m, attrs) {
           if (idx++ !== (p.index || 0)) return m;
@@ -5289,12 +5340,11 @@ var createDocPipeline = function(deps) {
     },
     fix_button_name: {
       category: 'FORM', wcag: '4.1.2', params: '{index, label}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { if (!p.label) return false; return _applyToAxeTargetDoc(doc, p.target, _mutButtonName(p)); },
       fn: function(html, p) {
         if (!p.label) return html;
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
-          if ((el.textContent || '').trim() || el.getAttribute('aria-label')) return false; // already named
-          el.setAttribute('aria-label', p.label);
-        });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutButtonName(p));
         let idx = 0;
         return html.replace(/<button([^>]*)>([\s\S]*?)<\/button>/gi, function(m, attrs, content) {
           if (idx++ !== (p.index || 0)) return m;
@@ -5305,9 +5355,11 @@ var createDocPipeline = function(deps) {
     },
     fix_iframe_title: {
       category: 'FORM', wcag: '2.4.1', params: '{index, title}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { if (!p.title) return false; return _applyToAxeTargetDoc(doc, p.target, _mutIframeTitle(p)); },
       fn: function(html, p) {
         if (!p.title) return html;
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) { el.setAttribute('title', p.title); });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutIframeTitle(p));
         let idx = 0;
         return html.replace(/<iframe([^>]*)>/gi, function(m, attrs) {
           if (idx++ !== (p.index || 0)) return m;
@@ -5343,11 +5395,10 @@ var createDocPipeline = function(deps) {
     },
     fix_remove_empty_heading: {
       category: 'STRUCTURE', wcag: '1.3.1', params: '{index}',
+      fnDocWhen: function (p) { return p.target != null; },
+      fnDoc: function (doc, p) { return _applyToAxeTargetDoc(doc, p.target, _mutRemoveEmptyHeading()); },
       fn: function(html, p) {
-        if (p.target != null) return _applyToAxeTarget(html, p.target, function(el) {
-          if ((el.textContent || '').trim()) return false; // not actually empty — don't remove
-          el.remove();
-        });
+        if (p.target != null) return _applyToAxeTarget(html, p.target, _mutRemoveEmptyHeading());
         let idx = 0;
         return html.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, function(m) {
           if (p.index !== undefined && idx++ !== p.index) return m;
@@ -5431,6 +5482,12 @@ var createDocPipeline = function(deps) {
     // beats any class or <style>-block rule that caused the original violation.
     fix_color_contrast: {
       category: 'VISUAL', wcag: '1.4.3', params: '{target, fgColor, bgColor, expectedContrastRatio, preserve}',
+      fnDocWhen: function (p) { return !!(p && p.target != null && p.fgColor && p.bgColor); },
+      fnDoc: function (doc, p) {
+        var _fix = _alloContrastFixPair(p.fgColor, p.bgColor, p.expectedContrastRatio || 4.5, p.preserve);
+        if (!_fix || _fix.moved === 'none') return false;
+        return _applyToAxeTargetDoc(doc, p.target, _mutColorContrast(_fix));
+      },
       fn: function(html, p) {
         if (!p || !p.target || !p.fgColor || !p.bgColor) return html;
         // Deterministic which-colour-to-move fix. The AI supplies ONLY the strategy in `preserve`
@@ -5440,14 +5497,7 @@ var createDocPipeline = function(deps) {
         // values never come from the model (the fix_contrast "categoHistoryHistory" guard is why).
         var _fix = _alloContrastFixPair(p.fgColor, p.bgColor, p.expectedContrastRatio || 4.5, p.preserve);
         if (!_fix || _fix.moved === 'none') return html;
-        return _applyToAxeTarget(html, p.target, function(el) {
-          var existing = el.getAttribute('style') || '';
-          var cleaned = existing.replace(/(?:^|;)\s*color\s*:\s*[^;]+/gi, '').replace(/(?:^|;)\s*background-color\s*:\s*[^;]+/gi, '').replace(/^;+/, '').trim();
-          var _decls = [];
-          if (_fix.moved === 'fg' || _fix.moved === 'both') _decls.push('color:' + _fix.fg);
-          if (_fix.moved === 'bg' || _fix.moved === 'both') _decls.push('background-color:' + _fix.bg);
-          el.setAttribute('style', (cleaned ? cleaned + ';' : '') + _decls.join(';'));
-        });
+        return _applyToAxeTarget(html, p.target, _mutColorContrast(_fix));
       }
     },
     fix_image_decorative: {
@@ -13011,14 +13061,46 @@ HTML section ${chunkNum}/${chunks.length}:
       // (adversarial review C: the residual fail-wrong vector once selectors replaced ordinals).
       const _structuralLast = { fix_remove_empty_heading: 1, fix_add_landmark: 1, fix_skip_nav: 1 };
       const _ordered = _directives.filter((d) => !_structuralLast[d.tool]).concat(_directives.filter((d) => _structuralLast[d.tool]));
+      // P5 (deep dive 2026-07-02): shared-doc state machine. Legacy applied each directive as
+      // string→string, so every target-capable tool paid a full-document DOMParser parse +
+      // serialize (N directives = N parses of a possibly multi-MB document). Now: parse ONCE,
+      // apply consecutive doc-native tools (fnDoc) on the live document, and serialize only
+      // when a string-only tool needs the html (flush) or the loop ends — and only if a fix
+      // actually changed the doc (dirty), so a run of misses keeps the PRISTINE string
+      // (protects the fixedHtml !== accessibleHtml and $3 byte-equality checks downstream).
+      // Sequential order is fully preserved (structural-last reorder above is untouched; no
+      // batching). Fail direction: a throwing tool drops the in-flight doc and reverts to the
+      // last checkpoint (the html the doc was parsed from); mutators are read-then-single-write
+      // by contract, and _applyToAxeTargetDoc catches internally, so this outer revert is a
+      // last-resort net. directFixCount still counts non-throw applications (the re-audit
+      // trigger below is unchanged).
+      const _dm = { html: currentHtml, doc: null, dirty: false };
+      const _dmFlush = () => {
+        if (_dm.doc && _dm.dirty) _dm.html = _serializeDomEdit(_dm.html, _dm.doc); // shape witness = the html this doc was parsed from
+        _dm.doc = null;
+        _dm.dirty = false;
+      };
       for (const d of _ordered) {
+        const _entry = SURGICAL_TOOL_REGISTRY[d.tool];
+        const _p = d.params || {};
         try {
-          currentHtml = SURGICAL_TOOL_REGISTRY[d.tool].fn(currentHtml, d.params || {});
-          directFixCount++;
+          if (_entry.fnDoc && typeof DOMParser !== 'undefined' && (!_entry.fnDocWhen || _entry.fnDocWhen(_p))) {
+            if (!_dm.doc) _dm.doc = new DOMParser().parseFromString(String(_dm.html), 'text/html');
+            if (_entry.fnDoc(_dm.doc, _p)) _dm.dirty = true;
+            directFixCount++;
+          } else {
+            _dmFlush();
+            _dm.html = _entry.fn(_dm.html, _p);
+            directFixCount++;
+          }
         } catch (e) {
           warnLog('[AutoFix direct] tool ' + d.tool + ' threw:', e);
+          _dm.doc = null; // drop the in-flight doc → revert to the last checkpoint (_dm.html)
+          _dm.dirty = false;
         }
       }
+      _dmFlush();
+      currentHtml = _dm.html;
       if (directFixCount > 0) {
         _pipeLog('AutoFix', `Direct-mapped ${directFixCount} violation(s) to surgical tools, skipping AI diagnosis for those.`);
         try {
@@ -30581,6 +30663,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
     aiFixChunked: aiFixChunked,
+    surgicalToolRegistry: SURGICAL_TOOL_REGISTRY,
     // Pure content-fidelity nets — exposed so the re-fix lanes (Fix Remaining) can run the SAME WARN-only
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
     // prior run's fidelity state onto the panel/amber-asterisk. Pure functions, no state binding.
@@ -30695,6 +30778,9 @@ window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // st
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
 window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsToChunks; // static: $4 violation→chunk router (2026-07-02), unit-tested
+window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
+window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
+window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

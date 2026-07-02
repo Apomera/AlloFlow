@@ -102,7 +102,10 @@ describe('anti-drift: both contrast consumers route through the shared determini
     expect(pipeSrc).toMatch(/fix_color_contrast: \{[\s\S]*?params: '\{target, fgColor, bgColor, expectedContrastRatio, preserve\}'/);
     expect(pipeSrc).toMatch(/var _fix = _alloContrastFixPair\(p\.fgColor, p\.bgColor, p\.expectedContrastRatio \|\| 4\.5, p\.preserve\);/);
     // it applies background-color (not just color) when the fixer moved the bg
-    expect(pipeSrc).toMatch(/_decls\.push\('background-color:' \+ _fix\.bg\)/);
+    // (P5 2026-07-02: the style writer lives in the shared _mutColorContrast mutator,
+    // whose param is `fix` — used by BOTH the string path and the shared-doc fnDoc path)
+    expect(pipeSrc).toMatch(/_decls\.push\('background-color:' \+ fix\.bg\)/);
+    expect(pipeSrc).toContain('const _mutColorContrast = (fix) =>');
   });
   it('the axe-driven auto-loop uses the pair fixer and only patches a bg when the element OWNS one', () => {
     expect(pipeSrc).toMatch(/const _fix = _alloContrastFixPair\(fgHex, bgHex\);/);
