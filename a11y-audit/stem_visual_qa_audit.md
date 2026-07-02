@@ -1,19 +1,19 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T16:37:01.854Z
+Generated: 2026-07-02T17:07:59.007Z
 
 ## Scope
 
 - Registered STEM tools: 113
 - STEM tool files: 110
-- Monitored student-facing visual markers: 27
+- Monitored student-facing visual markers: 28
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 27 |
+| Marker passes | 28 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 30 |
 | High-confidence monitored errors | 0 |
@@ -36,6 +36,7 @@ Generated: 2026-07-02T16:37:01.854Z
 | pass | `bakingScience` | `data-baking-kitchen-bench` | Rendered |
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
 | pass | `companionPlanting` | `data-companion-workspace-stage` | Rendered |
+| pass | `dnaLab` | `data-dna-mission` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
@@ -66,7 +67,7 @@ Generated: 2026-07-02T16:37:01.854Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_watercycle.js` | yes | source `0C7A91306D64`, public `0C7A91306D64`, build `8B9DB4731B22` |
+| build-drift | `stem_tool_watercycle.js` | yes | source `E85421A360B0`, public `E85421A360B0`, build `8B9DB4731B22` |
 
 ## Gate Policy
 

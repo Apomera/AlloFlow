@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T16:37:24.458Z
+Generated: 2026-07-02T17:08:46.937Z
 
 ## Scope
 
@@ -13,9 +13,9 @@ Generated: 2026-07-02T16:37:24.458Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 175 |
+| Total findings | 177 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 158 |
+| Tool-level warnings | 160 |
 | Review notices | 17 |
 | Tools with any finding | 76 |
 | Tools with high-confidence errors | 0 |
@@ -28,8 +28,8 @@ Generated: 2026-07-02T16:37:24.458Z
 | warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 20 | 20 | aquacultureLab, archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, dinoLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld | Start each tool with a semantic heading so screen-reader users can orient quickly. |
-| warning | `canvas-name` | 19 | 16 | anatomy, areamodel, chemBalance, dissection, dnaLab, economicsLab, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
-| warning | `inline-contrast` | 63 | 15 | algebraCAS, appLab, atcTower, cellularLab, companionPlanting, dataStudio, echoTrainer, fireEcology, kitchenLab, llmLiteracy, probability, skatelab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `inline-contrast` | 66 | 16 | algebraCAS, appLab, atcTower, cellularLab, companionPlanting, dataStudio, dnaLab, echoTrainer, fireEcology, kitchenLab, llmLiteracy, probability | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, dissection, economicsLab, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 12 | 12 | archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks, weldLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 5 | 5 | birdLab, plateTectonics, playlab, skatelab, throwlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
@@ -85,7 +85,7 @@ Generated: 2026-07-02T16:37:24.458Z
 | `decomposer` Material Decomposer | science | standard | 30 | 0 | 0 | 0 | 0 | 0 |  |
 | `dinoLab` Dino Lab | explore | standard | 402 | 1 | 0 | 0 | 1 | 1 | heading x1, metadata x1 |
 | `dissection` Virtual Dissection Lab | science | standard | 21 | 7 | 1 | 0 | 2 | 0 | canvas-name x1, tiny-text x1 |
-| `dnaLab` DNA Lab | biology | standard | 91 | 0 | 1 | 0 | 2 | 0 | canvas-name x1, tiny-text x1 |
+| `dnaLab` DNA Lab | biology | standard | 103 | 0 | 1 | 0 | 4 | 0 | inline-contrast x3, tiny-text x1 |
 | `echoTrainer` Echo Navigator | applied | standard | 26 | 5 | 1 | 0 | 6 | 0 | inline-contrast x6 |
 | `echolocation` Echolocation Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `economicsLab` Economics Lab | science | standard | 26 | 6 | 1 | 0 | 1 | 0 | canvas-name x1 |

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T16:37:24.458Z",
+  "generatedAt": "2026-07-02T17:08:46.937Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,9 +8,9 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 175,
+    "issueCount": 177,
     "errorCount": 0,
-    "warningCount": 158,
+    "warningCount": 160,
     "noticeCount": 17,
     "toolsWithIssues": 76,
     "toolsWithErrors": 0,
@@ -103,7 +103,7 @@
       "biology": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 4,
         "noticeCount": 0
       },
       "Life Science": {
@@ -233,31 +233,10 @@
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
-      "code": "canvas-name",
-      "severity": "warning",
-      "count": 19,
-      "toolCount": 16,
-      "exampleTools": [
-        "anatomy",
-        "areamodel",
-        "chemBalance",
-        "dissection",
-        "dnaLab",
-        "economicsLab",
-        "epidemicSim",
-        "graphCalc",
-        "musicSynth",
-        "plateTectonics",
-        "rockCycle",
-        "rocks"
-      ],
-      "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
-    },
-    {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 63,
-      "toolCount": 15,
+      "count": 66,
+      "toolCount": 16,
       "exampleTools": [
         "algebraCAS",
         "appLab",
@@ -265,14 +244,35 @@
         "cellularLab",
         "companionPlanting",
         "dataStudio",
+        "dnaLab",
         "echoTrainer",
         "fireEcology",
         "kitchenLab",
         "llmLiteracy",
-        "probability",
-        "skatelab"
+        "probability"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
+    },
+    {
+      "code": "canvas-name",
+      "severity": "warning",
+      "count": 18,
+      "toolCount": 15,
+      "exampleTools": [
+        "anatomy",
+        "areamodel",
+        "chemBalance",
+        "dissection",
+        "economicsLab",
+        "epidemicSim",
+        "graphCalc",
+        "musicSynth",
+        "plateTectonics",
+        "rockCycle",
+        "rocks",
+        "skatelab"
+      ],
+      "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
     },
     {
       "code": "svg-name",
@@ -1981,14 +1981,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build, replicate, transcribe, translate, mutate, CRISPR-edit, forensics & more.",
-      "renderedBytes": 31123,
+      "renderedBytes": 36979,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 4,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 4,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 91,
+        "buttons": 103,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 1,
@@ -2003,10 +2003,38 @@
         {
           "toolId": "dnaLab",
           "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-4xl:nth-of-type(1) > div.space-y-4:nth-of-type(7) > div.bg-slate-900.rounded-xl:nth-of-type(1) > canvas"
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 9,
+          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(2) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 3.58,
+          "color": "#059669",
+          "background": "#ecfdf5",
+          "text": "Path"
+        },
+        {
+          "toolId": "dnaLab",
+          "severity": "warning",
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 14,
+          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(3) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 4.41,
+          "color": "#dc2626",
+          "background": "#fef2f2",
+          "text": "Path"
+        },
+        {
+          "toolId": "dnaLab",
+          "severity": "warning",
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 19,
+          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(4) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 3.07,
+          "color": "#d97706",
+          "background": "#fffbeb",
+          "text": "Path"
         },
         {
           "toolId": "dnaLab",
@@ -2302,7 +2330,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22808,
+      "renderedBytes": 22814,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2765,7 +2793,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1575,
+      "renderedBytes": 1598,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3323,7 +3351,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13339,
+      "renderedBytes": 13327,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3788,7 +3816,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17335,
+      "renderedBytes": 17337,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4594,7 +4622,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46580,
+      "renderedBytes": 46590,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

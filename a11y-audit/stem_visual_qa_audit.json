@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T16:37:01.854Z",
+  "generatedAt": "2026-07-02T17:07:59.007Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 27
+    "monitoredMarkerCount": 28
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 27,
+    "markerPassCount": 28,
     "markerFailCount": 0,
     "monitoredIssueCount": 30,
     "monitoredErrorCount": 0,
@@ -285,6 +285,22 @@
       }
     },
     {
+      "id": "dnaLab",
+      "file": "stem_tool_dna.js",
+      "marker": "data-dna-mission",
+      "label": "DNA mission control",
+      "ok": true,
+      "htmlBytes": 36979,
+      "issues": [],
+      "metrics": {
+        "buttons": 103,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 36979
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -415,7 +431,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17204,
+      "htmlBytes": 17209,
       "issues": [
         {
           "toolId": "playlab",
@@ -444,7 +460,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17204
+        "htmlBytes": 17209
       }
     },
     {
@@ -542,14 +558,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13350,
+      "htmlBytes": 13326,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13350
+        "htmlBytes": 13326
       }
     },
     {
@@ -618,7 +634,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46587,
+      "htmlBytes": 46590,
       "issues": [
         {
           "toolId": "throwlab",
@@ -647,7 +663,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46587
+        "htmlBytes": 46590
       }
     },
     {
@@ -802,8 +818,8 @@
           "build": true
         },
         "hashes": {
-          "source": "0C7A91306D64",
-          "public": "0C7A91306D64",
+          "source": "E85421A360B0",
+          "public": "E85421A360B0",
           "build": "8B9DB4731B22"
         },
         "sourcePublicMatch": true,
@@ -822,8 +838,8 @@
           "build": true
         },
         "hashes": {
-          "source": "0C7A91306D64",
-          "public": "0C7A91306D64",
+          "source": "E85421A360B0",
+          "public": "E85421A360B0",
           "build": "8B9DB4731B22"
         },
         "sourcePublicMatch": true,

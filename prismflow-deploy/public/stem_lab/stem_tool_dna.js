@@ -1700,8 +1700,58 @@ window.StemLab = window.StemLab || {
       var badges = d.badges || {};
       var earnedBadgeCount = 0;
       for (var bi = 0; bi < DNA_BADGES.length; bi++) { if (badges[DNA_BADGES[bi].id]) earnedBadgeCount++; }
+      var activeSubtool = SUBTOOLS.filter(function(tb) { return tb.id === tab; })[0] || SUBTOOLS[0];
+      var visitedTabs = d.visitedTabs || {};
+      var visitedCount = Object.keys(visitedTabs).length;
+      var gcCount = dnaSeq.split('').filter(function(b) { return b === 'G' || b === 'C'; }).length;
+      var gcPercent = Math.round((gcCount / Math.max(1, dnaSeq.length)) * 100);
+      var dnaWorkflowRoutes = [
+        {
+          id: 'structure',
+          label: 'Structure Path',
+          desc: 'Start with base pairing, then watch the helix copy itself.',
+          accent: '#7c3aed',
+          soft: '#f5f3ff',
+          tools: ['build', 'replicate', 'transcribe']
+        },
+        {
+          id: 'dogma',
+          label: 'Central Dogma',
+          desc: 'Follow DNA to RNA to protein, with codons and amino acids visible.',
+          accent: '#059669',
+          soft: '#ecfdf5',
+          tools: ['transcribe', 'translate', 'protein']
+        },
+        {
+          id: 'editing',
+          label: 'Mutation & Editing',
+          desc: 'Change the sequence, predict impact, then try CRISPR or forensics.',
+          accent: '#dc2626',
+          soft: '#fef2f2',
+          tools: ['mutate', 'crispr', 'forensics']
+        },
+        {
+          id: 'practice',
+          label: 'Practice Arena',
+          desc: 'Use challenges, battles, and reference notes when ready to review.',
+          accent: '#d97706',
+          soft: '#fffbeb',
+          tools: ['challenge', 'battle', 'learn']
+        }
+      ];
+      var activeRoute = dnaWorkflowRoutes.filter(function(route) {
+        return route.tools.indexOf(tab) >= 0;
+      })[0] || dnaWorkflowRoutes[0];
+      function switchDnaTab(nextTab) {
+        var v = Object.assign({}, visitedTabs);
+        v[nextTab] = true;
+        updMulti({ tab: nextTab, visitedTabs: v });
+        if (Object.keys(v).length >= SUBTOOLS.length) checkBadge('explorer');
+        var target = SUBTOOLS.filter(function(tb) { return tb.id === nextTab; })[0];
+        announceToSR('Switched to ' + (target ? target.label : nextTab));
+      }
 
-      var __dnaMainView = h("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
+      var __dnaMainView = h("div", { className: "space-y-4 max-w-6xl mx-auto animate-in fade-in duration-200", "data-dna-tool": true },
 
         // ═══ HEADER ═══
         h("div", { className: "flex items-center justify-between" },
@@ -1734,19 +1784,62 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ TAB BAR ═══
-        h("div", { className: "flex gap-1 bg-[#0a0e1a]/85 backdrop-blur-md p-1 rounded-xl flex-wrap border border-slate-700/50 shadow-lg", role: "tablist" },
+        h("div", { "data-dna-mission": true, className: "overflow-hidden rounded-xl border border-fuchsia-200 bg-white shadow-sm" },
+          h("div", { className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]", style: { background: 'linear-gradient(135deg,#fdf4ff 0%,#f8fafc 55%,#ecfeff 100%)' } },
+            h("div", { className: "space-y-3" },
+              h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+                h("div", null,
+                  h("div", { className: "text-[11px] font-black uppercase text-fuchsia-700" }, "DNA Mission Control"),
+                  h("h4", { className: "mt-1 text-xl font-black text-slate-900" }, activeRoute.label),
+                  h("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, activeRoute.desc)
+                ),
+                h("span", { className: "rounded-full border bg-white px-3 py-1.5 text-xs font-black shadow-sm", style: { borderColor: activeRoute.accent + '55', color: activeRoute.accent } }, activeSubtool.icon + " " + activeSubtool.label)
+              ),
+              h("div", { className: "grid gap-2 sm:grid-cols-2 xl:grid-cols-4" },
+                [
+                  { label: 'Sequence', value: dnaSeq.length + ' bp', sub: gcPercent + '% GC' },
+                  { label: 'mRNA preview', value: fullMRNA.length + ' nt', sub: fullMRNA.substring(0, 9) + (fullMRNA.length > 9 ? '...' : '') },
+                  { label: 'Protein readout', value: fullProtein.length + ' aa', sub: fullProtein.length ? fullProtein[0].aa + ' start' : 'No start codon' },
+                  { label: 'Progress', value: visitedCount + '/' + SUBTOOLS.length, sub: earnedBadgeCount + ' badges earned' }
+                ].map(function(stat) {
+                  return h("div", { key: stat.label, className: "min-w-0 rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                    h("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                    h("div", { className: "mt-1 truncate text-lg font-black text-slate-900" }, stat.value),
+                    h("div", { className: "truncate text-[11px] text-slate-500" }, stat.sub)
+                  );
+                })
+              )
+            ),
+            h("div", { className: "grid gap-2 sm:grid-cols-2", "data-dna-routes": true },
+              dnaWorkflowRoutes.map(function(route) {
+                var active = route.id === activeRoute.id;
+                return h("div", { key: route.id, className: "rounded-lg border p-3 shadow-sm transition-all", style: { borderColor: active ? route.accent : route.accent + '33', background: active ? route.soft : '#ffffff' } },
+                  h("div", { className: "mb-1 flex items-center justify-between gap-2" },
+                    h("span", { className: "text-sm font-black text-slate-900" }, route.label),
+                    h("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? route.accent : route.soft, color: active ? '#ffffff' : route.accent } }, active ? 'Active' : 'Path')
+                  ),
+                  h("p", { className: "mb-2 text-[11px] leading-snug text-slate-500" }, route.desc),
+                  h("div", { className: "flex flex-wrap gap-1.5" },
+                    route.tools.map(function(toolId) {
+                      var tb = SUBTOOLS.filter(function(st) { return st.id === toolId; })[0];
+                      if (!tb) return null;
+                      return h("button", { key: toolId, onClick: function() { switchDnaTab(toolId); }, className: "rounded-full border bg-white px-2 py-1 text-[11px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-sm", style: { borderColor: tab === toolId ? route.accent : route.accent + '33', color: tab === toolId ? route.accent : '#475569' } }, tb.icon + " " + tb.label);
+                    })
+                  )
+                );
+              })
+            )
+          )
+        ),
+
+        h("div", { className: "flex gap-1 bg-slate-950/90 backdrop-blur-md p-1 rounded-xl flex-wrap border border-slate-700/50 shadow-lg", role: "tablist", "aria-label": "All DNA tools" },
           SUBTOOLS.map(function(tb) {
             var isActive = tab === tb.id;
             return h("button", {
               key: tb.id,
               role: "tab",
               'aria-selected': isActive ? 'true' : 'false',
-              onClick: function() {
-                var v = Object.assign({}, d.visitedTabs || {}); v[tb.id] = true;
-                updMulti({ tab: tb.id, visitedTabs: v });
-                if (Object.keys(v).length >= SUBTOOLS.length) checkBadge('explorer');
-                announceToSR('Switched to ' + tb.label);
-              },
+              onClick: function() { switchDnaTab(tb.id); },
               className: "relative flex-1 min-w-[70px] px-2 py-2 text-[11px] font-bold rounded-lg transition-all focus:outline-none focus:ring-2 " +
                 (isActive
                   ? "bg-white/10 text-white border border-fuchsia-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] focus:ring-fuchsia-500 focus:ring-offset-1 focus:ring-offset-[#0a0e1a]"
@@ -1763,7 +1856,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Topic-accent hero band per tab ──
-        (function() {
+        false && (function() {
           var TAB_META = {
             build:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: t('stem.dna.build_the_double_helix_from_4_letters', 'Build - the double helix from 4 letters'),         hint: t('stem.dna.a_pairs_with_t_2_bonds_g_with_c_3_wats', 'A pairs with T (2 bonds), G with C (3). Watson + Crick + Franklin (1953) cracked the structure from X-ray crystallography. The shape itself encodes how DNA copies and reads.') },
             replicate:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD00', title: t('stem.dna.replicate_unzip_copy_rezip', 'Replicate - unzip, copy, rezip'),                      hint: t('stem.dna.helicase_splits_the_strands_dna_polyme', 'Helicase splits the strands; DNA polymerase synthesizes complements. Semi-conservative: each new helix has one old strand + one new. Meselson & Stahl proved it 1958.') },
@@ -1845,7 +1938,7 @@ window.StemLab = window.StemLab || {
         // ═══════════════════════════════════════════
         tab === 'build' && h("div", { className: "space-y-4" },
           h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application", 'aria-label': t('stem.dna.dna_helix_visualization', 'DNA helix visualization') },
-            h("canvas", { ref: _dnaCanvasRef, style: { width: '100%', height: 200 }, tabIndex: 0, 'aria-label': 'DNA helix: ' + dnaSeq })
+            h("canvas", { ref: _dnaCanvasRef, style: { width: '100%', height: 200 }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq })
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
