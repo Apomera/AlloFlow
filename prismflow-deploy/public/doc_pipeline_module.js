@@ -9666,8 +9666,14 @@ Return ONLY valid JSON:
   };
   const downloadBatchResults = async () => {
     if (!window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
+    // S1 step 7: snapshot the queue/summary/settings at entry — the CSV, telemetry, and HTML
+    // report are built AFTER the per-file tagging awaits, where a new batch started mid-ZIP
+    // used to be able to swap the queue under this run and corrupt the report/manifest.
+    const _run = _makeRunCtx();
+    const _zipQueue = _run.batchQueue || [];
+    const _zipSummary = _run.batchSummary;
     const zip = new window.JSZip();
-    const results = pdfBatchQueue.filter(f => f.status === 'done');
+    const results = _zipQueue.filter(f => f.status === 'done');
 
     results.forEach(f => {
       const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -9746,7 +9752,7 @@ Return ONLY valid JSON:
     const _escRpt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const _csvCell = (s) => { let v = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
     const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Score,Time (s),Expert Review,Tagged PDF,Status'];
-    pdfBatchQueue.forEach(f => {
+    _zipQueue.forEach(f => {
       const r = f.result;
       csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore || ''},${r?.afterScore || ''},${r && r.afterScore != null && r.beforeScore != null ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
     });
@@ -9756,9 +9762,9 @@ Return ONLY valid JSON:
     const telemetry = {
       version: '1.0',
       timestamp: new Date().toISOString(),
-      pipelineConfig: { auditorCount: pdfAuditorCount, autoFixPasses: pdfAutoFixPasses, polishPasses: pdfPolishPasses, verificationSamples: 1 }, // was hardcoded 3 while the loop ran 2; now 1 AI re-audit/pass + axe ($1/$7c, 2026-07-02)
-      summary: pdfBatchSummary,
-      files: pdfBatchQueue.map(f => ({
+      pipelineConfig: { auditorCount: _run.auditorCount, autoFixPasses: _run.autoFixPasses, polishPasses: _run.polishPasses, verificationSamples: 1 }, // S1: entry snapshot; was hardcoded 3 while the loop ran 2; now 1 AI re-audit/pass + axe ($1/$7c, 2026-07-02)
+      summary: _zipSummary,
+      files: _zipQueue.map(f => ({
         fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
         taggedPdf: _taggedNotes.get(f.id) || null,
         result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
@@ -9766,8 +9772,8 @@ Return ONLY valid JSON:
     };
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
-    const done = pdfBatchQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${pdfBatchQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${pdfBatchSummary?.avgBefore||'?'}\u2192${pdfBatchSummary?.avgAfter||'?'}</span><span class="stat">${pdfBatchSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${pdfBatchQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+')') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const done = _zipQueue.filter(q => q.status === 'done');
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+')') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
