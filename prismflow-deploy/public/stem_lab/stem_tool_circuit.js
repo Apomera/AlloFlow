@@ -68,6 +68,11 @@ window.StemLab = window.StemLab || {
       '@keyframes circuitBadgePop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }',
       '@keyframes neonPulse { 0%, 100% { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 8px rgba(234, 179, 8, 0.2); } 50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 16px rgba(234, 179, 8, 0.4); } }',
       '@keyframes shortRedFlash { 0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 8px rgba(239, 68, 68, 0.2); } 50% { border-color: rgba(239, 68, 68, 1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); } }',
+      // Drift-vs-field paradox: the signal RACES (fast sweep), electrons CRAWL (slow drift).
+      '@keyframes circSignalRace { 0% { transform: translateX(-14px); opacity: 0; } 8% { opacity: 1; } 78% { opacity: 1; } 100% { transform: translateX(360px); opacity: 0; } }',
+      '@keyframes circElectronDrift { 0% { transform: translateX(0); } 100% { transform: translateX(52px); } }',
+      '.circ-signal-pulse { animation: circSignalRace 0.9s linear infinite; }',
+      '.circ-electron-drift { animation: circElectronDrift 6s linear infinite; }',
       '.circuit-card { animation: circuitSlideIn 0.3s ease-out; }',
       '.circuit-badge { animation: circuitBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
       '.circuit-active { animation: circuitPulse 2s ease-in-out infinite; }',
@@ -1483,6 +1488,153 @@ window.StemLab = window.StemLab || {
                 h('span', null, mode === 'series' ? 'Series: same current through all' : 'Parallel: same voltage across all')
               )
             ),
+
+            // ══════════════════════════════════════
+            // Energy budget — where the battery's power goes (P = ΣI²R)
+            // ══════════════════════════════════════
+            current > 0.001 && !isShort && !noLoadPath && (function() {
+              // Power delivered by the battery is shared out among the loads. In series each
+              // dissipates I²R; in parallel each dissipates V²/R. They must sum to VI — energy
+              // is conserved, which is the whole point of the panel.
+              var loads = components.filter(function(c) { return c.type !== 'ammeter' && c.type !== 'voltmeter' && c.type !== 'capacitor'; });
+              var segs = loads.map(function(c) {
+                var r = getCompR(c);
+                var p = mode === 'series' ? (current * current * r) : (voltage * voltage / (r || 1));
+                var name = c.type === 'resistor' ? 'Resistor ' + c.value + 'Ω' : c.type === 'bulb' ? 'Bulb ' + c.value + 'Ω' : c.type === 'led' ? 'LED' : c.type;
+                var col = c.type === 'bulb' ? '#f59e0b' : c.type === 'led' ? (c.ledColor || '#ef4444') : c.type === 'switch' ? '#10b981' : '#eab308';
+                return { name: name, p: p, col: col, type: c.type };
+              }).filter(function(s) { return s.p > 1e-6; });
+              var totP = segs.reduce(function(a, s) { return a + s.p; }, 0) || power || 1e-6;
+              // Real-world equivalence for the delivered power
+              var eq = power < 0.05 ? 'about a digital watch (' + (power * 1000).toFixed(0) + ' mW)'
+                : power < 0.5 ? 'a hearing-aid battery load'
+                : power < 3 ? 'a small LED night-light'
+                : power < 10 ? 'a phone fast-charger'
+                : power < 40 ? 'a bright desk lamp'
+                : power < 100 ? 'a laptop under load'
+                : 'a household appliance';
+              return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 Energy budget — where the power goes'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' },
+                  'The battery pours out ', h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
+                  ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is never destroyed, only spent.'),
+                // Segmented power bar
+                h('div', { className: 'flex w-full h-7 rounded-lg overflow-hidden border border-slate-700', role: 'img', 'aria-label': 'Power split: ' + segs.map(function(s){ return s.name + ' ' + (s.p/totP*100).toFixed(0) + ' percent'; }).join(', ') },
+                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[10px] text-slate-500' }, 'no dissipating load')
+                  : segs.map(function(s, i) {
+                      var pct = s.p / totP * 100;
+                      return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
+                        pct > 12 && h('span', { className: 'text-[9px] font-black leading-none', style: { color: s.col } }, s.p.toFixed(2) + 'W'),
+                        pct > 20 && h('span', { className: 'text-[8px] text-slate-400 leading-none mt-0.5 truncate px-1', style: { maxWidth: '100%' } }, s.name)
+                      );
+                    })
+                ),
+                h('div', { className: 'flex justify-between mt-1.5 text-[10px]' },
+                  h('span', { className: 'text-slate-500' }, mode === 'series' ? 'Biggest resistor dissipates the most (P = I²R, same I)' : 'Smallest resistor dissipates the most (P = V²/R, same V)'),
+                  h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + totP.toFixed(2) + ' W')
+                )
+              );
+            })(),
+
+            // ══════════════════════════════════════
+            // Drift vs. field — the great circuit paradox (made visible)
+            // ══════════════════════════════════════
+            current > 0.001 && !isShort && !noLoadPath && (function() {
+              // Honest physics: v_drift = I / (n·A·e) for copper, assuming a 1 mm² wire.
+              // n = 8.5e28 free electrons/m³, e = 1.602e-19 C, A = 1e-6 m².
+              var vDrift = current / (8.5e28 * 1e-6 * 1.602e-19); // m/s
+              var vDriftMm = vDrift * 1000; // mm/s
+              // Time for ONE electron to drift 1 m:
+              var driftSecs = 1 / vDrift;
+              var driftTime = driftSecs > 3600 ? (driftSecs / 3600).toFixed(1) + ' hours'
+                : driftSecs > 60 ? (driftSecs / 60).toFixed(0) + ' minutes'
+                : driftSecs.toFixed(0) + ' seconds';
+              // Field/signal in copper ≈ 2/3 c → time to cross 1 m:
+              var signalSecs = 1 / (2e8);
+              var reduced = _prefersReducedMotion;
+              function lane(y, label, sub) {
+                return h('g', null,
+                  h('text', { x: 4, y: y - 12, fontSize: 9, fontWeight: 700, fill: '#cbd5e1' }, label),
+                  h('text', { x: 356, y: y - 12, fontSize: 8, fill: '#64748b', textAnchor: 'end' }, sub),
+                  h('rect', { x: 4, y: y - 8, width: 352, height: 16, rx: 8, fill: 'rgba(15,23,42,0.7)', stroke: 'rgba(100,116,139,0.4)' })
+                );
+              }
+              return h('div', { className: 'circuit-card mt-4 bg-gradient-to-br from-slate-900 to-blue-950/40 border border-cyan-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1' }, '🐌⚡ The paradox: electrons crawl, the signal races'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-2 leading-snug' }, 'The blue dots in the schematic move fast so you can see them — but real electrons barely creep. So why does the bulb light instantly? Because flipping the switch launches an electric field down the wire at nearly light speed, nudging every electron at once.'),
+                h('svg', { viewBox: '0 0 360 120', width: '100%', role: 'img', 'aria-label': 'Two wires. In the top wire the electric field pulse races across almost instantly. In the bottom wire individual electrons drift very slowly.' },
+                  lane(32, '⚡ Electric field / signal', '≈ 200,000 km/s'),
+                  // fast signal pulse
+                  h('g', { className: reduced ? '' : 'circ-signal-pulse' },
+                    h('rect', { x: 4, y: 24, width: 16, height: 16, rx: 8, fill: '#22d3ee', opacity: 0.9, filter: 'drop-shadow(0 0 5px #22d3ee)' })
+                  ),
+                  lane(84, '🔵 Actual electrons', '≈ ' + (vDriftMm < 0.1 ? vDriftMm.toFixed(3) : vDriftMm.toFixed(2)) + ' mm/s'),
+                  // slow drifting electrons
+                  [0, 1, 2, 3, 4, 5].map(function(k) {
+                    return h('g', { key: k, className: reduced ? '' : 'circ-electron-drift', style: reduced ? {} : { animationDelay: (-k * 1.0) + 's' } },
+                      h('circle', { cx: 12 + k * 52, cy: 84, r: 3.5, fill: '#60a5fa', opacity: 0.9 })
+                    );
+                  })
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 mt-1' },
+                  h('div', { className: 'bg-cyan-950/30 border border-cyan-500/20 rounded-lg p-2 text-center' },
+                    h('p', { className: 'text-[9px] uppercase tracking-wider text-cyan-500/80 font-bold' }, 'Signal crosses 1 m in'),
+                    h('p', { className: 'text-sm font-black font-mono text-cyan-300' }, '~5 nanoseconds')
+                  ),
+                  h('div', { className: 'bg-blue-950/30 border border-blue-500/20 rounded-lg p-2 text-center' },
+                    h('p', { className: 'text-[9px] uppercase tracking-wider text-blue-400/80 font-bold' }, 'One electron crosses 1 m in'),
+                    h('p', { className: 'text-sm font-black font-mono text-blue-300' }, '~' + driftTime)
+                  )
+                ),
+                h('p', { className: 'text-[9px] text-slate-500 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
+              );
+            })(),
+
+            // ══════════════════════════════════════
+            // How big is your current? — log-scale real-world ladder
+            // ══════════════════════════════════════
+            current > 0.0005 && !isShort && (function() {
+              // Log10 scale from 1 µA (1e-6 A) to 100 kA (1e5 A).
+              var lo = -6, hi = 5;
+              var frac = function(amps) { return Math.max(0, Math.min(1, (Math.log(Math.max(amps, 1e-7)) / Math.LN10 - lo) / (hi - lo))); };
+              var marks = [
+                { a: 0.00002, label: 'nerve impulse' },
+                { a: 0.02, label: 'LED' },
+                { a: 2, label: 'phone charger' },
+                { a: 15, label: 'wall outlet trips' },
+                { a: 200, label: 'car starter' },
+                { a: 30000, label: 'lightning bolt' }
+              ];
+              return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
+                h('p', { className: 'text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
+                h('p', { className: 'text-[11px] text-slate-400 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
+                h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws ' + current.toFixed(3) + ' amps, between ' + (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() + ' and larger loads.' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
+                      h('stop', { offset: '0%', stopColor: '#0891b2' }),
+                      h('stop', { offset: '50%', stopColor: '#eab308' }),
+                      h('stop', { offset: '100%', stopColor: '#ef4444' }))),
+                  h('rect', { x: 6, y: 30, width: 348, height: 8, rx: 4, fill: 'url(#circAmpGrad)', opacity: 0.65 }),
+                  marks.map(function(m, i) {
+                    var x = 6 + frac(m.a) * 348;
+                    return h('g', { key: i },
+                      h('line', { x1: x, y1: 27, x2: x, y2: 41, stroke: '#475569', strokeWidth: 1 }),
+                      h('text', { x: x, y: 54, fontSize: 7.5, fill: '#94a3b8', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.label),
+                      h('text', { x: x, y: 64, fontSize: 6.5, fill: '#64748b', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.a >= 1000 ? (m.a / 1000) + 'kA' : m.a >= 1 ? m.a + 'A' : (m.a * 1000) + 'mA')
+                    );
+                  }),
+                  // "you are here" pointer
+                  (function() {
+                    var x = 6 + frac(current) * 348;
+                    return h('g', null,
+                      h('polygon', { points: (x - 5) + ',18 ' + (x + 5) + ',18 ' + x + ',27', fill: '#f43f5e' }),
+                      h('circle', { cx: x, cy: 34, r: 5, fill: '#f43f5e', stroke: '#fff', strokeWidth: 1.2 }),
+                      h('text', { x: x, y: 13, fontSize: 8, fontWeight: 800, fill: '#fb7185', textAnchor: 'middle' }, 'your circuit')
+                    );
+                  })()
+                )
+              );
+            })(),
 
             // ══════════════════════════════════════
             // KVL Verification (g68 / g912)

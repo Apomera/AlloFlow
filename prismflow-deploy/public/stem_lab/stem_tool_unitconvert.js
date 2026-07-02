@@ -66,6 +66,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     desc: 'Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts',
     color: 'cyan',
     category: 'math',
+    questHooks: [
+      { id: 'explore_4_categories', label: 'Convert in 4 different unit categories', icon: '🌍', check: function(d) { return Object.keys(d.catsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.catsUsed || {}).length + '/4 categories'; } },
+      { id: 'quiz_10', label: 'Answer 10 quiz questions', icon: '🧠', check: function(d) { return (d.quizTotal || 0) >= 10; }, progress: function(d) { return (d.quizTotal || 0) + '/10 answered'; } },
+      { id: 'streak_5', label: 'Reach a 5-answer streak', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -837,6 +842,30 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         var ans = parseFloat(e.target.value);
                         var tol = d.quiz.tol || 0.01;
                         var correct = Math.abs(ans - d.quiz.a) <= Math.max(tol, Math.abs(d.quiz.a) * tol);
+                        // ── Misconception diagnosis: name the specific conversion error ──
+                        // Every quiz question is "how many X in 1 Y", so an inverted ratio
+                        // and decimal-place slips are detectable from the number alone.
+                        var fb = '';
+                        if (!correct) {
+                          var aVal = d.quiz.a;
+                          if (isNaN(ans)) {
+                            fb = 'Type a number first, then press Enter.';
+                          } else if (ans !== 0 && Math.abs(ans * aVal - 1) <= Math.max(0.02, tol * 2)) {
+                            fb = 'You converted in the WRONG DIRECTION — ' + ans.toFixed(3) + ' is how many go the other way. Flip the ratio: the question asks how many ' + d.quiz.unit + ' fit in ONE of the bigger unit, so the answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                          } else {
+                            var slip = null;
+                            [10, 100, 1000, 0.1, 0.01, 0.001].forEach(function(f) {
+                              if (slip === null && aVal !== 0 && Math.abs(ans / aVal - f) <= f * 0.02) slip = f;
+                            });
+                            if (slip !== null) {
+                              fb = 'You are off by exactly ×' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ' — a decimal-place slip. Check the prefix: kilo = 1000, centi = 1/100, milli = 1/1000. The answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                            } else if (d.quiz.unit === '°F' || d.quiz.unit === '°C') {
+                              fb = 'Temperature is the one conversion that is NOT a simple ratio: °F = °C × 9/5 + 32 (multiply FIRST, then add 32). The answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                            } else {
+                              fb = 'Set it up so the old unit cancels: value × (new unit / old unit). Done that way, the answer comes out to ' + aVal + ' ' + d.quiz.unit + '.';
+                            }
+                          }
+                        }
                         var elapsed = (Date.now() - d.quiz.startTime) / 1000;
                         var xp = correct ? (elapsed < 5 ? 3 : elapsed < 10 ? 2 : 1) : 0;
                         var newStreak = correct ? (d.streak || 0) + 1 : 0;
@@ -849,7 +878,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                           addToast(xp === 3 ? '\u26A1 Lightning fast! +3 XP' : xp === 2 ? '\uD83D\uDE80 Quick! +2 XP' : '\u2705 Correct! +1 XP', 'success');
                         } else {
                           stemBeep && stemBeep(220, 0.2);
-                          addToast('\u274C Answer: ' + d.quiz.a + ' ' + d.quiz.unit, 'error');
+                          if (typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+                          addToast('\u274C Not quite \u2014 see why below', 'error');
                         }
                         setLabToolData(function(prev) {
                           return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, {
@@ -857,7 +887,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                             streak: newStreak,
                             bestStreak: newBest,
                             quizTotal: newQTotal,
-                            quiz: Object.assign({}, prev.unitConvert.quiz, { answered: true, userAns: ans, correct: correct, xp: xp, elapsed: elapsed.toFixed(1) })
+                            quiz: Object.assign({}, prev.unitConvert.quiz, { answered: true, userAns: ans, correct: correct, xp: xp, elapsed: elapsed.toFixed(1), fb: fb })
                           }) });
                         });
                         // Badge checks
@@ -882,6 +912,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         ? '\u2705 Correct! ' + (d.quiz.xp === 3 ? '\u26A1 Lightning!' : d.quiz.xp === 2 ? '\uD83D\uDE80 Quick!' : '') + ' (' + d.quiz.elapsed + 's)'
                         : '\u274C Answer was: ' + d.quiz.a + ' ' + d.quiz.unit
                     ),
+                    !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-700 mb-2' }, d.quiz.fb),
                     d.quiz.correct && d.quiz.xp > 0 && h('p', { className: 'text-xs text-emerald-400 mb-2' }, '+' + d.quiz.xp + ' XP earned'),
                     h('div', { className: 'flex gap-2' },
                       h('button', { 'aria-label': t('stem.unitconvert.next_question', 'Next Question'),

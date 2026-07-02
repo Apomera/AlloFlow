@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -298,7 +298,9 @@ var _ocrJunkRatio = function (s) {
 // a doc for failing an English dictionary). Returns a band + a heuristic %; it is an ESTIMATE, surfaced
 // as such, never a measured accuracy. KNOWN LIMIT (disclosed): subtle swaps that yield REAL words
 // (modern->modem) or that leave function words intact are not detectable without ground truth — this
-// reliably flags BADLY-garbled OCR, not every single-character error. Pure + unit-tested.
+// reliably flags BADLY-garbled OCR, not every single-character error. MATH-AWARE (2026-07-01): on
+// equation-dense pages the expected math tokens are excluded from the garble blend (see mathContext
+// below) so clean STEM text is not falsely banded 'poor'. Pure + unit-tested.
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -313,6 +315,27 @@ var _alloOcrAccuracy = function (text) {
   var nonWs = (s.replace(/\s+/g, '')).length || 1;
   var replacementRatio = fffd / nonWs;
   var junkRatio = _ocrJunkRatio(s);
+  // ── Math-notation context (2026-07-01, STEM assessment vs real Regents exams) ──
+  // Clean equation-dense text LOOKS like OCR garble to the plausibility nets: bare variables
+  // ("x", "y", "P") count as 1-char fragments (a CLEAN born-digital Algebra II page measured
+  // fragmentRatio 0.51), coefficient/function mashes ("3x", "5sin") count as letter/digit
+  // mashes, and operators/superscripts count toward junk — that page scored 48/'poor' at HIGH
+  // confidence, which both cries wolf in the review banner and feeds the reconcile accuracy-flip
+  // toward the engine that may have LOST the math. Detect math context from the token stream
+  // (number tokens + single-letter variables + short coefficient mashes) and score with those
+  // EXPECTED tokens excluded, DISCLOSING the adjustment in `basis`/metrics. Genuinely garbled
+  // math pages remain catchable: replacement chars, vowel-less words, and the English dictionary
+  // net (corrupted prose drops out of the common set) are unaffected by the exclusions.
+  var _isVarTok = function (low) { return low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i'; };
+  var _isCoefTok = function (tok) { return /^\d{0,4}[a-z]{1,4}\d{0,4}$/i.test(tok) && /\d/.test(tok); };
+  var numTok = 0;
+  for (var rj = 0; rj < rawTokens.length; rj++) { if (/^[\p{N}][\p{N}.,]*$/u.test(rawTokens[rj])) numTok++; }
+  var _mathish = 0;
+  for (var rk = 0; rk < alphaTokens.length; rk++) {
+    var _lk = alphaTokens[rk].toLowerCase();
+    if (_isVarTok(_lk) || _isCoefTok(alphaTokens[rk])) _mathish++;
+  }
+  var mathContext = numTok >= 5 && ((numTok + _mathish) / (rawTokens.length || 1)) >= 0.22;
   var noVowel = 0, frag = 0, mash = 0, dictHits = 0, latinTokens = 0;
   var suspect = [];
   var _commonSet = Object.create(null);
@@ -320,8 +343,8 @@ var _alloOcrAccuracy = function (text) {
   for (var i = 0; i < alphaTokens.length; i++) {
     var tok = alphaTokens[i];
     var low = tok.toLowerCase();
-    if (/[a-z]/i.test(tok) && /[0-9]/.test(tok)) { mash++; if (suspect.length < 8) suspect.push(tok); }
-    if (low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i') frag++;
+    if (/[a-z]/i.test(tok) && /[0-9]/.test(tok)) { if (!(mathContext && _isCoefTok(tok))) { mash++; if (suspect.length < 8) suspect.push(tok); } }
+    if (low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i') { if (!(mathContext && _isVarTok(low))) frag++; }
     var isLatin = /^[a-z']+$/.test(low.replace(/[0-9]/g, ''));
     if (isLatin) {
       latinTokens++;
@@ -334,7 +357,13 @@ var _alloOcrAccuracy = function (text) {
   var noVowelRatio = noVowel / nAlpha;
   var fragmentRatio = frag / nAlpha;
   var mashRatio = mash / nAlpha;
-  var garble = Math.min(1, 1.4 * replacementRatio + 0.9 * junkRatio + 0.7 * noVowelRatio + 0.5 * fragmentRatio + 0.8 * mashRatio);
+  // In math context, measure symbol junk with common math operators/delimiters stripped — an
+  // equals sign in an equation is content, not OCR noise. Outside math context nothing changes.
+  var junkForBlend = junkRatio;
+  if (mathContext) {
+    try { junkForBlend = _ocrJunkRatio(s.replace(/[=+\-*/^()<>{}\[\]|,.:;%°·×÷±√π∑∫≤≥≠≈]/g, '')); } catch (_) { junkForBlend = junkRatio; }
+  }
+  var garble = Math.min(1, 1.4 * replacementRatio + 0.9 * junkForBlend + 0.7 * noVowelRatio + 0.5 * fragmentRatio + 0.8 * mashRatio);
   var plausibility = 1 - garble;
   var EN_TARGET = 0.33;                 // clean English running text hits ~0.33-0.55 of the common set
   var looksEnglish = dictHitRate >= 0.18;
@@ -354,7 +383,8 @@ var _alloOcrAccuracy = function (text) {
   }
   score = Math.max(0, Math.min(100, score));
   var band = score >= 90 ? 'good' : score >= 70 ? 'fair' : 'poor';
-  var _result = { score: score, band: band, confidence: confidence, basis: basis, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
+  if (mathContext) basis += ' — math notation detected: expected math tokens (variables, coefficients, operators) excluded from the garble estimate';
+  var _result = { score: score, band: band, confidence: confidence, basis: basis, mathContext: mathContext, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, junkRatioForBlend: Math.round(junkForBlend * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, mashRatio: Math.round(mashRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
   return _result;
 };
 // _textLayerLooksGarbage: HIGH-PRECISION "broken text layer" detector. Fires ONLY on replacement-char
@@ -3063,6 +3093,7 @@ var createDocPipeline = function(deps) {
     if (hints.estimatedLinkCount > 5) parts.push(`${hints.estimatedLinkCount} LINKS detected — ensure every <a> has descriptive link text, never "click here" or bare URLs`);
     if (hints.hasBulletPatterns) parts.push('BULLET LISTS detected — convert all bullet characters to semantic <ul><li> structures');
     if (hints.hasNumberedLists) parts.push('NUMBERED LISTS detected — convert to semantic <ol><li> structures');
+    if (hints.hasMarkdownHeadings) parts.push('MARKDOWN HEADINGS detected (#, ##, ###) — convert every one to the matching real heading element (<h1>/<h2>/<h3>...) preserving the hierarchy, with exactly one <h1>; never leave literal # characters in the output');
     if (!parts.length) return '';
     return '\n\nSOURCE PRESCAN HINTS:\n- ' + parts.join('\n- ');
   };
@@ -3928,10 +3959,10 @@ var createDocPipeline = function(deps) {
       ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. '
       : '';
     const captionHint = originalBlock.caption
-      ? 'The original figure caption (use this as a hint for which legend to find): "' + String(originalBlock.caption).slice(0, 200) + '". '
+      ? 'The original figure caption (use this as a hint for which legend to find): "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". '
       : '';
     const descHint = originalBlock.description
-      ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 200) + '". '
+      ? 'A prior pass described the visual as: "' + _neutralizePromptFence(String(originalBlock.description).slice(0, 200)) + '". '
       : '';
     const prompt =
       pageHint + captionHint + descHint + '\n\n' +
@@ -4007,8 +4038,8 @@ var createDocPipeline = function(deps) {
   const _reextractAsStructuredVisual = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!callGeminiVisionFn) return null;
     const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
-    const captionHint = originalBlock.caption ? 'Original figure caption (a hint): "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
-    const descHint = originalBlock.description ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 300) + '". ' : '';
+    const captionHint = originalBlock.caption ? 'Original figure caption (a hint): "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". ' : '';
+    const descHint = originalBlock.description ? 'A prior pass described the visual as: "' + _neutralizePromptFence(String(originalBlock.description).slice(0, 300)) + '". ' : '';
     const prompt =
       pageHint + captionHint + descHint + '\n\n' +
       'You are transcribing a STRUCTURED INFORMATION GRAPHIC (an infographic, comparison chart, or a set of categorized boxes) from a document figure. It pairs CATEGORIES (labels, often in colored boxes) with their EXAMPLES or descriptions.\n\n' +
@@ -4065,7 +4096,7 @@ var createDocPipeline = function(deps) {
   const _reextractAsRichTable = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
     if (!callGeminiVisionFn) return null;
     const pageHint = pageRange && pageRange.length === 2 ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. ' : '';
-    const captionHint = originalBlock.caption ? 'A hint at the table caption: "' + String(originalBlock.caption).slice(0, 200) + '". ' : '';
+    const captionHint = originalBlock.caption ? 'A hint at the table caption: "' + _neutralizePromptFence(String(originalBlock.caption).slice(0, 200)) + '". ' : '';
     const prompt =
       pageHint + captionHint + '\n\n' +
       'You are transcribing a TABLE from a document image into a structured grid. It may be COMPLEX: borderless, with MERGED cells (spanning multiple columns or rows), and with header cells on the top row AND/OR the left column.\n\n' +
@@ -10241,19 +10272,31 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
         }
       }
 
+      // Per-file wall-clock backstop (deep-dive C2, 2026-07-02): the individual
+      // Gemini calls are each _withTimeout-wrapped, but the file-level orchestration
+      // (audit + fix, incl. any pdf.js/OCR await that slips through unbounded) had NO
+      // ceiling — a single hung document could stall the WHOLE batch forever, and the
+      // "remaining files stay queued" resume never fires because the loop never advances.
+      // 8 min is generous enough for a large scanned textbook (OCR + multi-pass audit +
+      // fix) yet guarantees the batch always moves on. A timeout throws → the batch loop's
+      // per-file catch marks this file 'failed' and continues (same isolation as any error),
+      // and the file stays retryable. Single-file (non-batch) runs never call _processOne.
+      const _PER_FILE_MS = 8 * 60 * 1000;
       // Step 1: per-file audit (suppresses single-file UI updates)
       progress('Auditing...');
-      const auditResult = await runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName });
+      const auditResult = await _withTimeout(
+        runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName }),
+        _PER_FILE_MS, 'batch audit: ' + item.fileName);
       if (!auditResult || auditResult.score === -1) {
         throw new Error(auditResult?.summary || 'Audit failed');
       }
       // Step 2: fix & verify with batch overrides (also suppresses UI state changes)
-      const result = await fixAndVerifyPdf({
+      const result = await _withTimeout(fixAndVerifyPdf({
         base64: item.base64,
         fileName: item.fileName,
         auditResult: auditResult,
         onProgress: (step, msg) => progress(msg),
-      });
+      }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
 
       // Write remediation cache (Tier 4)
       if (_remedKey && result) {
@@ -10378,9 +10421,12 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     setPdfBatchStep('');
     // Tier 4: clear persisted batch state once everything that's going to
     // succeed has succeeded (failures are surfaced in the summary; user can
-    // re-upload to retry). If the loop broke via user abort, leave the state
-    // in place so Resume can pick it up on next page load.
-    if (!_batchAbortCtrl.signal.aborted) {
+    // re-upload to retry). If the loop broke via user abort OR the quota
+    // circuit-breaker, leave the state in place so Resume can pick it up —
+    // the quota stop PROMISES "remaining files stay queued; resume after the
+    // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
+    // very resume it advertised.
+    if (!_batchAbortCtrl.signal.aborted && !_quotaStopped) {
       _clearActiveBatch().catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
@@ -10404,7 +10450,13 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
     const _failList = failed.length > 0
       ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
       : '';
+    // A quota stop is a PAUSE, not a completion \u2014 saying "Batch complete" while
+    // most files are still queued misreports the run.
+    if (_quotaStopped) {
+      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. Remaining files stay queued \u2014 use Resume after the quota resets.`, 'warning');
+    } else {
     addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
+    }
     // Audio: triumphant chord when batch finishes
     try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
   };
@@ -11260,10 +11312,15 @@ HTML section ${chunkNum}/${chunks.length}:
       }
     } catch (_) { /* fall through to the regex baseline */ }
     try { _ensureDOMPurify(); } catch (_) {} // warm it up for the next render/export
+    // Fallback baseline (used only in the narrow window before the DOMPurify CDN load
+    // resolves). Kept in PARITY with _RAWHTML_PURIFY_CFG.FORBID_TAGS: strip paired
+    // script/style, then EVERY forbidden tag (open or close) — incl. form controls and
+    // a defensive standalone open-tag pass so an UNCLOSED <script/<style can't leak a
+    // live element — then event handlers and dangerous URL schemes. (deep-dive B2, 2026-07-02)
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<\/?(?:iframe|object|embed|svg|math|link|meta|base)\b[^>]*>/gi, '')
+      .replace(/<\/?(?:script|style|iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea|select)\b[^>]*>?/gi, '')
       .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
       .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
   };
@@ -11373,13 +11430,24 @@ HTML section ${chunkNum}/${chunks.length}:
             doc.registerFontkit(window.fontkit);
             const _regUrl = _ALLO_CJK_URL[_script] || _ALLO_NOTO_URL(_ALLO_SCRIPT_FONT[_script]);
             const _boldUrl = _ALLO_CJK_BOLD_URL[_script] || _ALLO_NOTO_BOLD_URL(_ALLO_SCRIPT_FONT[_script]);
-            const _fetchFont = async (u) => {
+            const _fetchFontOnce = async (u) => {
               // Bounded: a hung CDN must not stall the whole typeset export forever (the outer
               // catch already falls back to dropping non-Latin text + a warning). Both the fetch
               // AND the body read are timeout-wrapped.
               const r = await _withTimeout(fetch(u), 15000, 'Noto font fetch');
               if (!r.ok) throw new Error('HTTP ' + r.status);
               return new Uint8Array(await _withTimeout(r.arrayBuffer(), 15000, 'Noto font bytes'));
+            };
+            // Mirror fallback (2026-07-01): one flaky CDN response was the whole difference between a
+            // correct PDF and silently-dropped non-Latin text — retry the same file on the jsDelivr
+            // Fastly mirror before giving up (all Noto URLs above are cdn.jsdelivr.net).
+            const _fetchFont = async (u) => {
+              try { return await _fetchFontOnce(u); }
+              catch (e0) {
+                if (String(u).indexOf('cdn.jsdelivr.net') === -1) throw e0;
+                try { warnLog('[TypesetTagged] primary font CDN failed (' + ((e0 && e0.message) || 'unknown') + ') — retrying via fastly mirror'); } catch (_) {}
+                return await _fetchFontOnce(String(u).replace('cdn.jsdelivr.net', 'fastly.jsdelivr.net'));
+              }
             };
             const _regBytes = await _fetchFont(_regUrl);
             font = await doc.embedFont(_regBytes, { subset: true });
@@ -20348,18 +20416,21 @@ tr { page-break-inside: avoid; }
     // keeps Stage-3's existing /P MCID 0 wraps untouched. Worst case: PAC stops
     // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
     // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
-    // ── b0d24ae3 per-leaf experiment (DIAGNOSTIC — default OFF) ──
-    // fixResult._experimentPerLeafScanned is set ONLY by
-    // dev-tools/debug/tag_tree_live_harness.cjs. When on, the unify pass assigns each
-    // scanned leaf its OWN MCID (instead of the shared MCID 0) and records a per-page
-    // draw plan; the page loop then draws each leaf's text as its own BDC/EMC run and
-    // the Stage-3 wrap skips the flat /P for planned pages (ParentTree maps
-    // mcid → leaf). This re-creates the reverted b0d24ae3 attempt MINUS its two
-    // un-exonerated moves (early getPages(); build-time /K), inside the REAL
-    // orchestration, so the instrumented harness can observe the content loss —
-    // or prove this construction safe. Production behavior is byte-identical
-    // while the flag is absent.
-    const _perLeafExp = !!(fixResult && fixResult._experimentPerLeafScanned) && isScanned;
+    // ── Per-leaf MCIDs: DEFAULT ON for scanned documents (flipped 2026-07-01) ──
+    // The b0d24ae3 construction, validated end-to-end before this flip: 9 clean-room
+    // repro variants (June), the instrumented Node harness (object AND content-stream
+    // level — zero loss, every MCR backed by a real BDC, no multi-claimed MCIDs), the
+    // Playwright golden (26/26 incl. "MCRs stream-verified: 11/11"), veraPDF ua1 (zero
+    // structure/tagging failures), and Aaron's PAC 2026 run on the sample (Structure
+    // elements 7/7, Structure tree 19/19, Role mapping 19/19, Content 26/26 — zero
+    // logical-structure failures; only the offline-harness font/identifier artifacts).
+    // Each scanned leaf gets its OWN MCID + BDC/EMC run; the Stage-3 flat /P is skipped
+    // on planned pages; ParentTree maps mcid → leaf. This retires the shared-MCID-0
+    // multi-claim (ISO 32000 §14.7.4 violation, PAC/Acrobat-flaggable) that shipped as
+    // the safe interim. ESCAPE HATCH: fixResult._perLeafScannedOptOut === true restores
+    // the shared-MCID behavior instantly if a real-world regression ever appears.
+    // (The old _experimentPerLeafScanned flag is now a no-op — default is on.)
+    const _perLeafExp = isScanned && !(fixResult && fixResult._perLeafScannedOptOut === true);
     const _perLeafPlan = _perLeafExp ? new Map() : null; // pageIdx → [{ref, role, text, mcid}]
     if (isScanned && pages.length >= 1 && _unifiableLeafRefs.length > 0) {
       try {
@@ -20400,7 +20471,7 @@ tr { page-break-inside: avoid; }
             _unifyPatched++;
           } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
         }
-        const _sliceLabel = _perLeafExp ? 'PER-LEAF EXPERIMENT' : (_pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)');
+        const _sliceLabel = _perLeafExp ? 'Per-leaf MCIDs' : (_pageCount === 1 ? 'Slice 1 (single-page, shared-MCID opt-out)' : 'Slice 2 (multi-page, shared-MCID opt-out)');
         warnLog('[Tag-Tree Unify ' + _sliceLabel + '] Patched ' + _unifyPatched + '/' + _leafCount + ' leaves across ' + _pageCount + ' page(s)');
       } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
     }
@@ -20666,7 +20737,7 @@ tr { page-break-inside: avoid; }
             return _drew;
           };
           if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
-            // ── b0d24ae3 PER-LEAF EXPERIMENT draw path (harness-only) ──
+            // ── Per-leaf MCID draw path (default for scanned; see gate above) ──
             // Draw each planned leaf's text as its OWN marked-content run:
             //   /<role> <</MCID n>> BDC → invisible drawText → EMC
             // pushOperators + drawText interleave in content-stream order (proven
@@ -20822,7 +20893,7 @@ tr { page-break-inside: avoid; }
           const _mkCS = (s) => context.register(context.stream(new TextEncoder().encode(s)));
           let newArr;
           if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
-            // ── b0d24ae3 PER-LEAF EXPERIMENT wrap (harness-only) ──
+            // ── Per-leaf MCID wrap (default for scanned; see gate above) ──
             // The appended OCR streams already carry their own per-leaf BDC/EMC
             // runs (drawn above), so they must stay BARE — wrapping them in the
             // flat /P MCID-0 would nest marked content and double-claim it. The
@@ -20871,7 +20942,7 @@ tr { page-break-inside: avoid; }
           if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
 
-        // b0d24ae3 PER-LEAF EXPERIMENT: the page's ParentTree slot maps each MCID to its
+        // Per-leaf MCIDs (default for scanned): the page's ParentTree slot maps each MCID to its
         // OWN leaf StructElem (array index = MCID) — no flat /P element exists for this page.
         if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi) && !_pageArtifactOnly) {
           try {
@@ -27156,6 +27227,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = { ...(config || exportConfig), isWorksheet };
+      // Assessment mode (2026-07-01): a graded export must be student-safe end to end — suppress the
+      // visible teacher answer key even when that toggle is on (one file must never carry both the
+      // assessment promise and a key appendix) and blank the machine-readable answers (post-process
+      // at the bottom of this function).
+      if (cfg.assessmentMode === true) cfg.includeTeacherKey = false;
       // Escape raw text (e.g. the lesson topic) before interpolating into the document body, so a
       // stray < & > displays as text rather than garbling/injecting markup (WCAG 4.1.1).
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -27485,7 +27561,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>${pageTitle}</title>
+        <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
         ${_submissionPublicKeyJson}
         ${_submissionEncryptScript}
         <style>
@@ -30258,8 +30334,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       </body>
       </html>
       `;
+      // Assessment-mode post-process: BLANK the data-correct answer markers (readable in view-source —
+      // fine for practice self-check, not for a graded assessment) and hide the self-check controls.
+      // The attribute itself STAYS (empty) because the submission collectors select MCQs via
+      // .question[data-correct] — student answers still save and submit; they just can't be
+      // self-graded client-side, and the file no longer contains the key in any form.
+      let _packHtml = rawHtml;
+      if (cfg.assessmentMode === true) {
+        _packHtml = _packHtml
+          .replace(/ data-correct="\d+"/g, ' data-correct=""')
+          .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}</style></head>');
+      }
       // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
-      const sanitized = sanitizeStyleForWCAG(rawHtml);
+      const sanitized = sanitizeStyleForWCAG(_packHtml);
       return sanitized.html;
   };
 
@@ -30382,11 +30469,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

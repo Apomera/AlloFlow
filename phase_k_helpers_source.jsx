@@ -1491,7 +1491,7 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
     setGenerationStep(t('status_steps.analyzing_topology'));
     try {
         const userCustomBlock = customInput && customInput.trim().length > 0
-            ? `USER'S SPECIAL REQUEST: "${customInput}" (Prioritize this over general analysis)`
+            ? `TEACHER PACK GUIDANCE: "${customInput}". Use this to shape the resource plan and lessonDNA when it is compatible with the source material, target grade, standards, and already-generated resources. Do not replace or contradict those anchors; if there is a conflict, preserve the anchors and adapt the guidance.`
             : "";
         const standardsBlock = standards && standards.trim().length > 0
             ? `Mandatory Standards: ${standards}`
@@ -1587,6 +1587,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - What is the ONE main learning objective? Phrase it as a guiding "essential question" students will answer.
             - Pick 5 specific vocabulary terms that are critical to this objective.
             - Pick 3-5 core concepts (short phrases, not full sentences) that form the through-line of the lesson.
+            - If teacher pack guidance is present, let it influence the emphasis of the essential question and golden thread only when it remains aligned to the source, standards, and grade level.
             - You MUST return these in the "lessonDNA" field of the response JSON (see schema below). This is not optional — downstream resources depend on it for alignment.
             STEP 3: CONFIGURE THE RESOURCE PLAN
             Create a sequential list of resources to generate.
@@ -1595,7 +1596,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - **Assessment**: Quiz should test the Golden Thread.
             ${allowDuplicates ? '**HIGH VOLUME STRATEGY**: Since the target count is high, include complementary variations. Example: Generate a "Concept Sort" for vocabulary AND a "Timeline" for sequence.' : ''}
             **REDUNDANCY CHECK**:
-            - Do NOT include resources already generated (see list above) unless the User's Special Request explicitly asks for them or if generating a variation.
+            - Do NOT include resources already generated (see list above) unless the Teacher Pack Guidance explicitly asks for them or if generating a variation.
             Return a JSON object with this specific schema:
             {
                 "resourcePlan": [

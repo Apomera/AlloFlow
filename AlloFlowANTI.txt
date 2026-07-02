@@ -4532,7 +4532,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
       Volume2, VolumeX, Wrench, X, Zap,
       ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
-      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug,
+      Bold, Italic, Highlighter
     };
   }
   React.useEffect(() => {
@@ -4589,7 +4590,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       Sparkles, Star, StopCircle, Target, Trash2, TrendingUp, Trophy, Type, Upload, Users,
       Volume2, VolumeX, Wrench, X, Zap,
       ArrowLeft, ChevronRight, FolderOpen, Heart, List, Pause, Pencil,
-      School, Settings2, UserCircle2, XCircle, Unlock, Unplug
+      School, Settings2, UserCircle2, XCircle, Unlock, Unplug,
+      Bold, Italic, Highlighter
     };
   }, []);
   React.useEffect(() => {
@@ -6298,24 +6300,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // synchronously at useCallback call time. The closure still resolves
     // `addToast` at click time when it's safely initialized.
   }, [voiceRecording]);
-  // Ctrl/Cmd+Z keyboard shortcut. Scoped to the document so it works from
-  // anywhere on the page; ignored if a textarea/input is focused so the
-  // user can still use system undo inside text fields.
-  React.useEffect(() => {
-    const onKey = (e) => {
-      if (!(e.key === 'z' || e.key === 'Z')) return;
-      if (!(e.ctrlKey || e.metaKey)) return;
-      if (e.shiftKey) return; // redo is reserved
-      const tag = (e.target && e.target.tagName) || '';
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      if (e.target && e.target.isContentEditable) return;
-      if (annotationUndoStackRef.current.length === 0) return;
-      e.preventDefault();
-      handleAnnotationUndo();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [handleAnnotationUndo]);
+  // (2026-07-02) Ctrl/Cmd+Z no longer binds annotation undo directly — the
+  // global TEXT undo/redo system (search "_recordTextChange") owns Ctrl+Z /
+  // Ctrl+Y / Ctrl+Shift+Z now. Annotation undo keeps its toolbar button, and
+  // the text-undo handler falls back to handleAnnotationUndo when the text
+  // history is empty, so existing sticker muscle memory still works.
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -23428,6 +23417,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleSimplifiedTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    _recordTextChange('simplified', generatedContent.id, typeof generatedContent.data === 'string' ? generatedContent.data : '', value);
     const updatedContent = { ...generatedContent, data: value };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: value } : item));
@@ -23976,6 +23966,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleAnalysisTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'analysis') return;
+    _recordTextChange('analysis', generatedContent.id, (generatedContent.data && generatedContent.data.originalText) || '', value);
     const newStats = calculateReadability(value);
     const newData = {
         ...generatedContent?.data,
@@ -23986,6 +23977,126 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
+  // ── Global text undo/redo (2026-07-02) ─────────────────────────────
+  // One chronological stack across the three editable text surfaces:
+  //   'input'      → the source textarea (inputText): typing, paste, AI
+  //                  generation, refine — anything that changes inputText
+  //   'analysis'   → the analysis artifact's Original Source Text editor
+  //   'simplified' → the leveled-text editor
+  // Ctrl/Cmd+Z undoes, Ctrl+Y / Ctrl/Cmd+Shift+Z redoes. Typing bursts are
+  // coalesced (~0.9s idle or 4s max per step; a >100-char jump — paste or a
+  // generation — always starts its own step). Focus rules: the three tracked
+  // textareas carry data-allo-textundo and are owned by this system; every
+  // other input/textarea/contentEditable keeps the browser's native undo.
+  const textUndoRef = useRef({ undo: [], redo: [], prevInput: null, applyingInput: false, lastKey: null, burstUntil: 0, burstStart: 0 });
+  const _textUndoLiveRef = useRef({});
+  React.useEffect(() => { _textUndoLiveRef.current = { inputText, history, generatedContent }; });
+  const _recordTextChange = (domain, id, prev, next) => {
+    const h = textUndoRef.current;
+    if (prev === next) return;
+    const now = Date.now();
+    const key = domain + ':' + (id || '');
+    const bigJump = Math.abs(String(next == null ? '' : next).length - String(prev == null ? '' : prev).length) > 100;
+    const sameBurst = key === h.lastKey && now < h.burstUntil && (now - h.burstStart) < 4000 && !bigJump;
+    if (!sameBurst) {
+      h.undo.push({ domain, id, value: String(prev == null ? '' : prev) });
+      h.redo.length = 0;
+      h.burstStart = now;
+      // Caps: 60 steps / ~8MB retained so giant pasted docs can't bloat memory.
+      let total = 0;
+      for (let i = h.undo.length - 1; i >= 0; i--) total += h.undo[i].value.length;
+      while (h.undo.length > 60 || (total > 8000000 && h.undo.length > 1)) { total -= h.undo[0].value.length; h.undo.shift(); }
+    }
+    h.lastKey = key; h.burstUntil = now + 900;
+  };
+  React.useEffect(() => {
+    const h = textUndoRef.current;
+    if (h.prevInput === null) { h.prevInput = inputText; return; }
+    if (inputText === h.prevInput) return;
+    if (h.applyingInput) { h.applyingInput = false; h.prevInput = inputText; return; }
+    _recordTextChange('input', '', h.prevInput, inputText);
+    h.prevInput = inputText;
+  }, [inputText]);
+  const _readTextDomain = (entry) => {
+    const live = _textUndoLiveRef.current;
+    if (entry.domain === 'input') return { ok: true, value: live.inputText || '' };
+    const item = (live.history || []).find(it => it && it.id === entry.id && it.type === entry.domain);
+    if (!item) return { ok: false };
+    if (entry.domain === 'analysis') return { ok: true, value: (item.data && item.data.originalText) || '' };
+    return { ok: true, value: typeof item.data === 'string' ? item.data : '' };
+  };
+  const _applyTextDomain = (entry) => {
+    if (entry.domain === 'input') {
+      textUndoRef.current.applyingInput = true;
+      setInputText(entry.value);
+      return;
+    }
+    const patch = (item) => entry.domain === 'analysis'
+      ? { ...item, data: { ...item.data, originalText: entry.value, localStats: calculateReadability(entry.value) } }
+      : { ...item, data: entry.value };
+    setHistory(prev => prev.map(item => (item && item.id === entry.id && item.type === entry.domain) ? patch(item) : item));
+    setGeneratedContent(prev => (prev && prev.id === entry.id && prev.type === entry.domain) ? patch(prev) : prev);
+  };
+  const _textDomainLabel = (domain) => domain === 'input'
+    ? (t('toasts.undo_domain_source') || 'source text')
+    : domain === 'analysis' ? (t('toasts.undo_domain_analysis') || 'analysis source text')
+    : (t('toasts.undo_domain_simplified') || 'leveled text');
+  const _shiftTextStack = (from, to, verb) => {
+    const h = textUndoRef.current;
+    while (from.length) {
+      const entry = from.pop();
+      const cur = _readTextDomain(entry);
+      if (!cur.ok) continue;                       // artifact was deleted — skip to the next step
+      if (cur.value === entry.value) continue;     // no-op step — keep walking
+      to.push({ domain: entry.domain, id: entry.id, value: cur.value });
+      h.lastKey = null; h.burstUntil = 0;          // an undo/redo always ends the typing burst
+      _applyTextDomain(entry);
+      const label = _textDomainLabel(entry.domain);
+      const msg = verb === 'undo'
+        ? (t('toasts.text_undone', { domain: label }) || ('Undid the last ' + label + ' change.'))
+        : (t('toasts.text_redone', { domain: label }) || ('Redid the last ' + label + ' change.'));
+      addToast(msg, 'info');
+      try { if (window.alloAnnounce) window.alloAnnounce(msg, 'polite'); } catch (_) {}
+      return true;
+    }
+    return false;
+  };
+  const handleTextUndo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.undo, h.redo, 'undo')) return true;
+    // Nothing in the text history — fall back to annotation undo so the old
+    // Ctrl+Z behavior still reaches sticker users, then report empty.
+    if (annotationUndoStackRef.current.length > 0) { handleAnnotationUndo(); return true; }
+    addToast(t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
+    return false;
+  };
+  const handleTextRedo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.redo, h.undo, 'redo')) return true;
+    addToast(t('toasts.nothing_redo_yet') || 'Nothing to redo.', 'info');
+    return false;
+  };
+  const _textUndoHandlersRef = useRef({});
+  React.useEffect(() => { _textUndoHandlersRef.current = { undo: handleTextUndo, redo: handleTextRedo }; });
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = (e.key || '').toLowerCase();
+      const isUndo = k === 'z' && !e.shiftKey;
+      const isRedo = (k === 'z' && e.shiftKey) || k === 'y';
+      if (!isUndo && !isRedo) return;
+      if (e.isComposing) return;                   // never fight an IME composition
+      const el = e.target;
+      const tracked = el && el.closest && el.closest('[data-allo-textundo]');
+      const inField = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+      if (inField && !tracked) return;             // untracked fields keep native undo
+      e.preventDefault();
+      const fns = _textUndoHandlersRef.current;
+      if (isUndo && fns.undo) fns.undo(); else if (isRedo && fns.redo) fns.redo();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
   const handleAiRefineSource = async () => {
       if (!generatedContent || generatedContent.type !== 'analysis' || !sourceRefineInstruction.trim()) return;
       const currentText = generatedContent?.data.originalText || inputText;
@@ -26577,8 +26688,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             });
                         })()}
                         {/* Annotation undo (Phase 7b). Disabled when the
-                            undo stack is empty. Keyboard shortcut Ctrl/Cmd+Z
-                            works document-wide except inside text fields. */}
+                            undo stack is empty. This button is the primary
+                            trigger; Ctrl/Cmd+Z reaches it only as a fallback
+                            when the global TEXT undo history is empty. */}
                         {(() => {
                             const canUndo = annotationUndoCount > 0;
                             return (
@@ -26588,7 +26700,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     onClick={canUndo ? handleAnnotationUndo : undefined}
                                     disabled={!canUndo}
                                     className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 me-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
-                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
+                                    title={canUndo ? ((t('annotation.undo_tooltip', { count: annotationUndoCount }) || ('Undo last annotation (' + annotationUndoCount + ' available)'))) : (t('annotation.nothing_to_undo') || 'Nothing to undo')}
                                     aria-label={t('annotation.undo_aria') || 'Undo last annotation'}
                                 >
                                     {t('annotation.undo_button') || '↩ Undo'}

@@ -2,8 +2,8 @@
 //
 // Loads the COMPILED anchor_charts_module.js into the vitest+jsdom harness
 // and exercises the internal helpers exposed via the _testing namespace.
-// The React components themselves (AnchorChartView, AnchorChartSection,
-// AnchorChartCritiqueOverlay) require a full DOM render to test meaningfully
+// The React components themselves (AnchorChartView, AnchorChartSection)
+// require a full DOM render to test meaningfully
 // and are NOT covered here; the goal is to lock down the pure math + string
 // helpers that are most prone to regression as features get added.
 
@@ -11,6 +11,25 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
 let H;  // shorthand for the _testing namespace
+
+function contrastRatio(fg, bg) {
+  const parse = (hex) => {
+    const clean = String(hex).replace('#', '');
+    return [0, 2, 4].map((i) => parseInt(clean.slice(i, i + 2), 16));
+  };
+  const luminance = (hex) => {
+    const [r, g, b] = parse(hex).map((v) => {
+      const srgb = v / 255;
+      return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const l1 = luminance(fg);
+  const l2 = luminance(bg);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 
 beforeAll(() => {
   // The compiled IIFE bails if window.React is missing. Provide a stub.
@@ -184,5 +203,43 @@ describe('_slugify — safe filename derivation', () => {
     expect(H._slugify('')).toBe('anchor-chart');
     expect(H._slugify(null)).toBe('anchor-chart');
     expect(H._slugify('!!!---')).toBe('anchor-chart');
+  });
+});
+
+describe('chart type metadata helpers', () => {
+  it('maps new chart types to stable layouts', () => {
+    expect(H._layoutForChartType('vocabulary')).toBe('grid');
+    expect(H._layoutForChartType('misconception')).toBe('grid');
+    expect(H._layoutForChartType('routine')).toBe('process');
+    expect(H._layoutForChartType('worked-example')).toBe('process');
+    expect(H._layoutForChartType('criteria-success')).toBe('reference');
+  });
+
+  it('falls back safely for unknown chart types', () => {
+    expect(H._chartTypeMeta('does-not-exist').label).toBe('Reference');
+    expect(H._layoutForChartType('does-not-exist')).toBe('reference');
+  });
+
+  it('returns readable badge text only for types that use badges', () => {
+    expect(H._badgeForChartType('process', 2)).toBe('3');
+    expect(H._badgeForChartType('criteria-success', 0)).toBe('OK');
+    expect(H._badgeForChartType('misconception', 0)).toBe('FIX');
+    expect(H._badgeForChartType('vocabulary', 0)).toBe('');
+  });
+});
+
+describe('WCAG AA color safeguards', () => {
+  it('uses marker ink colors that pass AA for small control text on white', () => {
+    H.MARKER_PALETTE.forEach((entry) => {
+      expect(contrastRatio(entry.ink, '#ffffff')).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  it('uses badge backgrounds that pass AA with white badge text', () => {
+    Object.values(H.ANCHOR_CHART_TYPE_META)
+      .filter((meta) => meta.badgeColor)
+      .forEach((meta) => {
+        expect(contrastRatio('#ffffff', meta.badgeColor)).toBeGreaterThanOrEqual(4.5);
+      });
   });
 });

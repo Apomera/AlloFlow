@@ -3953,11 +3953,13 @@ Return ONLY JSON:
           }
           metaInfo = `${effectiveGrade} - ${templateType}`;
       } else if (type === 'anchor-chart') {
-          // Anchor Charts — EL Education classroom-staple visual reference.
+          // Anchor Charts — classroom visual reference.
           // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.
           setIsProcessing(true);
           if (switchView || !generatedContent) setActiveView('anchor-chart');
-          const chartType = (configOverride && configOverride.chartType) || (deps.anchorChartType) || 'reference';
+          const requestedChartType = (configOverride && configOverride.chartType) || (deps.anchorChartType) || 'auto';
+          const supportedChartTypes = ['reference', 'process', 'concept-map', 'comparison', 'strategy', 'vocabulary', 'routine', 'worked-example', 'criteria-success', 'misconception', 'question-guide'];
+          const chartType = requestedChartType === 'auto' || supportedChartTypes.includes(requestedChartType) ? requestedChartType : 'auto';
           const lessonRef = {
               sourceTextSnippet: (textToProcess || '').substring(0, 200),
               generatedAt: new Date().toISOString(),
@@ -3965,16 +3967,28 @@ Return ONLY JSON:
               language: effectiveLanguage,
           };
           const chartTypeGuide = {
+              auto: 'choose the strongest chart type for the source and topic. Prefer vocabulary for term-heavy content, process/routine for steps, comparison for contrasts, misconception for common mix-ups, criteria-success for rubrics, worked-example for procedures with a model, strategy for reusable academic moves, question-guide for discussion or analysis prompts, and concept-map for parts of a whole.',
               process: 'a multi-step process (e.g., the writing process, the scientific method). Sections should be sequential steps. Use 4-6 sections.',
               'concept-map': 'a concept and its components (e.g., parts of a cell, branches of government). Sections should be parallel sub-parts. Use 3-6 sections.',
               reference: 'a reference list of features, conventions, or norms (e.g., features of a good argument, classroom norms). Sections should be parallel categories. Use 3-6 sections.',
               comparison: 'a comparison across two or more categories (e.g., similes vs metaphors, mitosis vs meiosis). Sections should be the categories being compared. Use 2-4 sections.',
+              strategy: 'a reusable thinking or learning strategy students can apply across tasks. Sections should be practical moves such as Plan, Try, Check, Revise, or Explain. Use 4-6 sections.',
+              vocabulary: 'a vocabulary chart for key terms. Each section should be one important term with a student-friendly meaning, example, and visual clue in the bullets. Use 4-6 terms.',
+              routine: 'a classroom or academic routine students should follow consistently. Sections should be the ordered routine steps with brief reminders. Use 4-6 sections.',
+              'worked-example': 'a worked example or model. Sections should walk through the model from setup to reasoning to final check, showing why each move works. Use 4-6 sections.',
+              'criteria-success': 'success criteria for strong work. Sections should name what students should include or check before turning in work. Use 4-6 criteria.',
+              misconception: 'common misconceptions and fixes. Each section should name one likely mix-up and explain the correct idea with a quick fix or contrast. Use 3-6 sections.',
+              'question-guide': 'a question guide for discussion, close reading, inquiry, or analysis. Sections should be question categories with student-friendly prompts. Use 4-6 sections.',
           };
           const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
           const prompt = `
-              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type: ${chartType} — ${chartTypeHint}.
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
 
               An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
+
+              Supported chartType values: ${supportedChartTypes.join(', ')}. If the request is "auto", choose exactly one supported chartType and make the sections match that purpose. The chartType JSON value must be only the selected id, with no explanation.
+
+              Do NOT design a separate critique, sticky-note, peer-comment, or student-submission workflow. The app already has annotation tools and Interactive Mode. Focus this output on the poster content itself.
 
               For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
 
@@ -3982,6 +3996,7 @@ Return ONLY JSON:
 
               Return ONLY a JSON object with this exact shape:
               {
+                "chartType": "reference",
                 "title": "Short, memorable title (3-6 words, can be all-caps if punchy)",
                 "sections": [
                   {
@@ -3999,6 +4014,8 @@ Return ONLY JSON:
           } catch (parseErr) {
               warnLog('Anchor chart scaffold parse failed:', parseErr);
           }
+          const generatedChartType = String((scaffolded && scaffolded.chartType) || '').trim();
+          const resolvedChartType = supportedChartTypes.includes(chartType) ? chartType : (supportedChartTypes.includes(generatedChartType) ? generatedChartType : 'reference');
           const rawSections = Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
           const sections = rawSections.slice(0, 6).map((s, i) => ({
               id: `sec-${Date.now()}-${i}`,
@@ -4009,12 +4026,11 @@ Return ONLY JSON:
           }));
           content = {
               title: scaffolded.title || sourceTopic || 'Anchor Chart',
-              chartType,
+              chartType: resolvedChartType,
               sections,
-              annotations: [],
               lessonRef,
           };
-          metaInfo = `${effectiveGrade} - ${chartType}`;
+          metaInfo = `${effectiveGrade} - ${resolvedChartType}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {

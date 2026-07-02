@@ -1445,6 +1445,7 @@ function SourceInputPanel(props) {
                 })}
                 <div className="p-4 relative">
                   <textarea
+                    data-allo-textundo="input"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onPaste={async (e) => {
@@ -2517,11 +2518,11 @@ function NoteTakingPanel(props) {
   );
 }
 
-// ── AnchorChartPanel: EL-style class anchor chart generator ──
+// ── AnchorChartPanel: classroom anchor chart generator ──
 // Renders inside expandedTools.includes('anchor-chart'). Teacher picks a chart
-// type (Process / Concept Map / Reference / Comparison); AI scaffolds the
+// type; AI scaffolds the
 // initial structure; renderer (anchor_charts_module.js) handles edits + icons
-// + critique overlay.
+// + export.
 function AnchorChartPanel(props) {
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
@@ -2536,18 +2537,26 @@ function AnchorChartPanel(props) {
           <select
             aria-label={t('common.selection') || 'Selection'}
             data-help-key="anchor_chart_type"
-            value={anchorChartType || 'reference'}
+            value={anchorChartType || 'auto'}
             onChange={(e) => setAnchorChartType(e.target.value)}
             className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
           >
+            <option value="auto">{t('anchor_chart.auto') || 'Auto-pick best fit'}</option>
             <option value="reference">{t('anchor_chart.reference') || 'Reference (features / norms / conventions)'}</option>
             <option value="process">{t('anchor_chart.process') || 'Process (sequential steps)'}</option>
             <option value="concept-map">{t('anchor_chart.concept_map') || 'Concept Map (parts of a whole)'}</option>
             <option value="comparison">{t('anchor_chart.comparison') || 'Comparison (across categories)'}</option>
+            <option value="strategy">{t('anchor_chart.strategy') || 'Strategy (reusable learning moves)'}</option>
+            <option value="vocabulary">{t('anchor_chart.vocabulary') || 'Vocabulary (terms + examples)'}</option>
+            <option value="routine">{t('anchor_chart.routine') || 'Routine (repeatable class procedure)'}</option>
+            <option value="worked-example">{t('anchor_chart.worked_example') || 'Worked Example (model + reasoning)'}</option>
+            <option value="criteria-success">{t('anchor_chart.criteria_success') || 'Success Criteria (what strong work includes)'}</option>
+            <option value="misconception">{t('anchor_chart.misconception') || 'Misconceptions (mix-ups + fixes)'}</option>
+            <option value="question-guide">{t('anchor_chart.question_guide') || 'Question Guide (discussion / analysis prompts)'}</option>
           </select>
         </div>
         <p className="text-[11px] text-slate-500 italic leading-snug">
-          {t('anchor_chart.help') || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes."}
+          {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
       </div>
       <button

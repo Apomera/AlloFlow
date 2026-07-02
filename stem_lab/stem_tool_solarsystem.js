@@ -931,11 +931,33 @@ const d = labToolData.solarSystem || {};
 
               const starPos = new Float32Array(3000);
 
-              for (let i = 0; i < 3000; i++) { starPos[i] = (Math.random() - 0.5) * 400; }
+              const starCol = new Float32Array(3000);
+
+              for (let i = 0; i < 1000; i++) {
+                starPos[i * 3] = (Math.random() - 0.5) * 400;
+                starPos[i * 3 + 1] = (Math.random() - 0.5) * 400;
+                starPos[i * 3 + 2] = (Math.random() - 0.5) * 400;
+                // Spectral tints: mostly white, some blue-white giants, amber + red dwarfs
+                const specRoll = Math.random();
+                let sr = 1, sg = 1, sb = 1;
+                if (specRoll < 0.14) { sr = 0.72; sg = 0.84; sb = 1; }
+                else if (specRoll < 0.24) { sr = 1; sg = 0.88; sb = 0.60; }
+                else if (specRoll < 0.30) { sr = 1; sg = 0.68; sb = 0.62; }
+                starCol[i * 3] = sr; starCol[i * 3 + 1] = sg; starCol[i * 3 + 2] = sb;
+              }
 
               starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 
-              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false }))); // full-white + additive: stars now clear the bloom threshold and glitter
+              starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false }))); // full-brightness + additive: stars clear the bloom threshold and glitter
+
+              // Sparse foreground layer — bigger, brighter stars for parallax depth
+              const starGeoNear = new THREE.BufferGeometry();
+              const starPosNear = new Float32Array(360);
+              for (let i = 0; i < 360; i++) { starPosNear[i] = (Math.random() - 0.5) * 400; }
+              starGeoNear.setAttribute('position', new THREE.BufferAttribute(starPosNear, 3));
+              scene.add(new THREE.Points(starGeoNear, new THREE.PointsMaterial({ color: 0xffffff, size: 0.34, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })));
 
 
 
@@ -949,7 +971,29 @@ const d = labToolData.solarSystem || {};
 
               const sunGeo = new THREE.SphereGeometry(5.5, 32, 32);
 
-              const sunMat = new THREE.MeshBasicMaterial({ color: 0xffe680 }); // brightened over the 0.82 bloom threshold (was luma .838 vs .82 — barely bloomed)
+              // Granulated photosphere — convection cells + sparse sunspot pairs painted once.
+              // Palette stays in the #ffd94d–#fff7c8 range so average luma keeps clearing the
+              // 0.82 bloom threshold (sunspots are tiny; they read as detail, not dimming).
+              const sunCv = document.createElement('canvas'); sunCv.setAttribute('aria-hidden', 'true');
+              sunCv.width = 256; sunCv.height = 128;
+              const sunCtx = sunCv.getContext('2d');
+              sunCtx.fillStyle = '#ffe680'; sunCtx.fillRect(0, 0, 256, 128);
+              for (let gc = 0; gc < 420; gc++) {
+                const cellLum = 0.9 + Math.random() * 0.18;
+                sunCtx.fillStyle = 'rgba(255,' + Math.round(Math.min(255, 218 * cellLum)) + ',' + Math.round(118 * cellLum) + ',0.45)';
+                sunCtx.beginPath();
+                sunCtx.arc(Math.random() * 256, Math.random() * 128, 2 + Math.random() * 5, 0, Math.PI * 2);
+                sunCtx.fill();
+              }
+              for (let sp = 0; sp < 3; sp++) {
+                const spx = Math.random() * 256, spy = 40 + Math.random() * 48;
+                sunCtx.fillStyle = 'rgba(190,110,20,0.7)';
+                sunCtx.beginPath();
+                sunCtx.arc(spx, spy, 2.4, 0, Math.PI * 2);
+                sunCtx.arc(spx + 6, spy + 1.5, 1.7, 0, Math.PI * 2);
+                sunCtx.fill();
+              }
+              const sunMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sunCv) });
 
               const sun = new THREE.Mesh(sunGeo, sunMat);
 
@@ -1015,6 +1059,186 @@ const d = labToolData.solarSystem || {};
 
               }
 
+              // ── Per-world identity textures ──
+              // Each world gets a hand-tuned equirectangular canvas keyed on terrainType/index
+              // (bands for gas giants, craters for Mercury, continents for Earth, the Tombaugh
+              // Regio heart on Pluto...) so planets are recognizable at a glance instead of
+              // generic noise balls. Painted once at scene init; 256×128 each.
+              function makeWorldTex(p, idx) {
+                const W = 256, H = 128;
+                const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
+                c.width = W; c.height = H;
+                const g = c.getContext('2d');
+                const R0 = Math.round(p.rgb[0] * 255), G0 = Math.round(p.rgb[1] * 255), B0 = Math.round(p.rgb[2] * 255);
+                function tint(f, a) {
+                  return 'rgba(' + Math.min(255, Math.round(R0 * f)) + ',' + Math.min(255, Math.round(G0 * f)) + ',' + Math.min(255, Math.round(B0 * f)) + ',' + (a == null ? 1 : a) + ')';
+                }
+                // Horizontal latitude bands with sine-warped edges (gas/ice giants)
+                function drawBands(bands, warpAmp, warpFreq) {
+                  for (let x = 0; x < W; x++) {
+                    const off = Math.sin(x * warpFreq) * warpAmp + Math.sin(x * warpFreq * 2.7 + 1.3) * warpAmp * 0.5;
+                    for (let b = 0; b < bands.length; b++) {
+                      const y0 = (b / bands.length) * H + off * Math.sin(b * 1.7 + x * 0.02);
+                      const y1 = ((b + 1) / bands.length) * H + off * Math.sin((b + 1) * 1.7 + x * 0.02);
+                      g.fillStyle = bands[b];
+                      g.fillRect(x, y0, 1, Math.max(1, y1 - y0 + 1));
+                    }
+                  }
+                }
+                if (p.terrainType === 'cratered') {
+                  // Mercury: airless regolith speckle + craters with sunlit rims
+                  g.fillStyle = tint(0.9); g.fillRect(0, 0, W, H);
+                  for (let s = 0; s < 900; s++) {
+                    g.fillStyle = tint(0.75 + Math.random() * 0.45, 0.5);
+                    g.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+                  }
+                  for (let cr = 0; cr < 34; cr++) {
+                    const cx = Math.random() * W, cy = 8 + Math.random() * (H - 16), r = 2 + Math.random() * 7;
+                    g.fillStyle = tint(0.62, 0.9);
+                    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+                    g.strokeStyle = tint(1.3, 0.8); g.lineWidth = 1;
+                    g.beginPath(); g.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 1.75); g.stroke();
+                  }
+                } else if (p.terrainType === 'volcanic') {
+                  // Venus: sulfuric cloud deck — warm bands + chevron swirls (the UV "Y" pattern)
+                  drawBands(['#e8c884', '#f4dca4', '#d9ae66', '#f0d494', '#e2bc74', '#f6e0ac', '#dcb26c', '#eccc8c'], 5, 0.05);
+                  g.globalAlpha = 0.18; g.strokeStyle = '#fff2cc'; g.lineWidth = 3;
+                  for (let v = 0; v < 7; v++) {
+                    g.beginPath();
+                    for (let x = 0; x <= W; x += 4) {
+                      const y = H / 2 + Math.sin(x * 0.05 + v * 2.1) * (6 + v * 4) + (v - 3) * 9;
+                      if (x === 0) g.moveTo(x, y); else g.lineTo(x, y);
+                    }
+                    g.stroke();
+                  }
+                  g.globalAlpha = 1;
+                } else if (p.terrainType === 'earthlike') {
+                  // Earth: oceans, continent clusters, ragged ice caps, cloud streaks
+                  const og = g.createLinearGradient(0, 0, 0, H);
+                  og.addColorStop(0, '#27538f'); og.addColorStop(0.5, '#1d63b8'); og.addColorStop(1, '#27538f');
+                  g.fillStyle = og; g.fillRect(0, 0, W, H);
+                  for (let ct = 0; ct < 7; ct++) {
+                    const bx = Math.random() * W, by = H * 0.2 + Math.random() * H * 0.6;
+                    for (let bl = 0; bl < 22; bl++) {
+                      const px = bx + (Math.random() - 0.5) * 46, py = by + (Math.random() - 0.5) * 26;
+                      g.fillStyle = Math.random() < 0.28 ? '#b09a62' : (Math.random() < 0.5 ? '#3f8f46' : '#356e3c');
+                      g.beginPath(); g.arc((px + W) % W, py, 3 + Math.random() * 8, 0, Math.PI * 2); g.fill();
+                    }
+                  }
+                  g.fillStyle = '#eef6fb';
+                  for (let x = 0; x < W; x += 2) {
+                    g.fillRect(x, 0, 2, 9 + Math.sin(x * 0.11) * 3 + Math.random() * 3);
+                    const capS = 9 + Math.cos(x * 0.13) * 3 + Math.random() * 3;
+                    g.fillRect(x, H - capS, 2, capS);
+                  }
+                  g.globalAlpha = 0.5; g.fillStyle = '#ffffff';
+                  for (let cl = 0; cl < 26; cl++) {
+                    g.beginPath();
+                    g.ellipse(Math.random() * W, Math.random() * H, 7 + Math.random() * 17, 1.6 + Math.random() * 2.4, 0, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.globalAlpha = 1;
+                } else if (p.terrainType === 'desert') {
+                  // Mars: rust dunes, dark basalt maria, a canyon scar, small polar caps
+                  const mg = g.createLinearGradient(0, 0, 0, H);
+                  mg.addColorStop(0, '#b4573a'); mg.addColorStop(0.5, '#c96a42'); mg.addColorStop(1, '#a85234');
+                  g.fillStyle = mg; g.fillRect(0, 0, W, H);
+                  for (let mm = 0; mm < 9; mm++) {
+                    g.fillStyle = mm % 3 === 0 ? 'rgba(230,170,120,0.35)' : 'rgba(90,42,28,0.4)';
+                    g.beginPath();
+                    g.ellipse(Math.random() * W, H * 0.25 + Math.random() * H * 0.5, 12 + Math.random() * 26, 5 + Math.random() * 10, Math.random() * 0.8 - 0.4, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.strokeStyle = 'rgba(70,30,20,0.55)'; g.lineWidth = 2.5;
+                  g.beginPath(); g.moveTo(W * 0.3, H * 0.55);
+                  g.bezierCurveTo(W * 0.42, H * 0.5, W * 0.52, H * 0.58, W * 0.62, H * 0.53); g.stroke();
+                  g.fillStyle = '#f2ede4';
+                  for (let x = 0; x < W; x += 2) {
+                    g.fillRect(x, 0, 2, 5 + Math.random() * 3);
+                    g.fillRect(x, H - (4 + Math.random() * 3), 2, 8);
+                  }
+                } else if (p.terrainType === 'gasgiant' && idx === 4) {
+                  // Jupiter: high-contrast belts + Great Red Spot + white oval storms
+                  drawBands(['#e8d5b5', '#c9a06a', '#f2e4c8', '#b5713f', '#ead8b8', '#a8622f', '#f4e8d0', '#c08a52', '#e5d0ac', '#caa273'], 3.5, 0.06);
+                  g.globalAlpha = 0.22;
+                  for (let jt = 0; jt < 60; jt++) {
+                    g.fillStyle = Math.random() < 0.5 ? '#fff4dd' : '#8a4a20';
+                    g.fillRect(Math.random() * W, Math.random() * H, 10 + Math.random() * 30, 1);
+                  }
+                  g.globalAlpha = 1;
+                  g.fillStyle = 'rgba(244,232,208,0.85)';
+                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 15, 8, 0, 0, Math.PI * 2); g.fill();
+                  g.fillStyle = '#c0492e';
+                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 12, 6, 0, 0, Math.PI * 2); g.fill();
+                  g.fillStyle = '#9c3a24';
+                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 7, 3.6, 0, 0, Math.PI * 2); g.fill();
+                  g.fillStyle = 'rgba(255,248,230,0.8)';
+                  for (let ws = 0; ws < 5; ws++) {
+                    g.beginPath();
+                    g.ellipse(Math.random() * W, H * (0.6 + Math.random() * 0.25), 3 + Math.random() * 3, 1.6 + Math.random(), 0, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                } else if (p.terrainType === 'gasgiant') {
+                  // Saturn: soft muted gold bands under a smoothing haze + dark polar cap
+                  drawBands(['#e9d9a8', '#dcc088', '#f0e2b8', '#d2b478', '#e6d4a0', '#d8bc84', '#eee0b4', '#d5b87e'], 2, 0.04);
+                  const hz = g.createLinearGradient(0, 0, 0, H);
+                  hz.addColorStop(0, 'rgba(240,228,190,0.35)'); hz.addColorStop(0.5, 'rgba(240,228,190,0)'); hz.addColorStop(1, 'rgba(226,208,160,0.35)');
+                  g.fillStyle = hz; g.fillRect(0, 0, W, H);
+                  g.fillStyle = 'rgba(140,110,70,0.45)';
+                  g.fillRect(0, 0, W, 6);
+                } else if (p.terrainType === 'icegiant' && idx === 6) {
+                  // Uranus: near-featureless teal with a bright sunlit polar hood
+                  g.fillStyle = '#8fd8de'; g.fillRect(0, 0, W, H);
+                  const ug = g.createLinearGradient(0, 0, 0, H);
+                  ug.addColorStop(0, 'rgba(255,255,255,0.22)'); ug.addColorStop(0.45, 'rgba(120,210,220,0)'); ug.addColorStop(1, 'rgba(60,150,170,0.28)');
+                  g.fillStyle = ug; g.fillRect(0, 0, W, H);
+                  g.globalAlpha = 0.08; g.fillStyle = '#ffffff';
+                  for (let ub = 0; ub < 5; ub++) g.fillRect(0, H * (0.18 + ub * 0.16), W, 3);
+                  g.globalAlpha = 1;
+                  g.fillStyle = 'rgba(220,245,248,0.5)';
+                  g.beginPath(); g.ellipse(W * 0.5, 6, W * 0.3, 10, 0, 0, Math.PI * 2); g.fill();
+                } else if (p.terrainType === 'icegiant') {
+                  // Neptune: deep blue belts, methane cirrus streaks, Great Dark Spot
+                  drawBands(['#3d55c8', '#2a3fa8', '#4a63d8', '#2f47b4', '#4159cc', '#26389c'], 2.5, 0.05);
+                  g.globalAlpha = 0.55; g.fillStyle = '#dce8ff';
+                  for (let nc = 0; nc < 10; nc++) {
+                    g.fillRect(Math.random() * W, H * (0.2 + Math.random() * 0.5), 18 + Math.random() * 40, 1.5);
+                  }
+                  g.globalAlpha = 1;
+                  g.fillStyle = 'rgba(12,20,72,0.75)';
+                  g.beginPath(); g.ellipse(W * 0.42, H * 0.42, 13, 7, 0, 0, Math.PI * 2); g.fill();
+                  g.strokeStyle = 'rgba(150,180,255,0.4)'; g.lineWidth = 1.5;
+                  g.beginPath(); g.ellipse(W * 0.42, H * 0.42, 13, 7, 0, 0, Math.PI * 2); g.stroke();
+                } else if (p.terrainType === 'iceworld') {
+                  // Pluto: mottled tholin patches, dark Cthulhu Macula, bright Tombaugh Regio heart
+                  g.fillStyle = '#c9b493'; g.fillRect(0, 0, W, H);
+                  for (let pt = 0; pt < 40; pt++) {
+                    g.fillStyle = 'rgba(' + (120 + Math.floor(Math.random() * 60)) + ',' + (80 + Math.floor(Math.random() * 40)) + ',' + (50 + Math.floor(Math.random() * 30)) + ',0.3)';
+                    g.beginPath(); g.arc(Math.random() * W, Math.random() * H, 3 + Math.random() * 9, 0, Math.PI * 2); g.fill();
+                  }
+                  g.fillStyle = 'rgba(74,44,32,0.75)';
+                  g.beginPath(); g.ellipse(W * 0.30, H * 0.52, 34, 11, 0, 0, Math.PI * 2); g.fill();
+                  g.fillStyle = '#f2ead8';
+                  g.beginPath();
+                  g.arc(W * 0.60, H * 0.47, 8, 0, Math.PI * 2);
+                  g.arc(W * 0.66, H * 0.47, 8, 0, Math.PI * 2);
+                  g.fill();
+                  g.beginPath();
+                  g.moveTo(W * 0.545, H * 0.50); g.lineTo(W * 0.63, H * 0.68); g.lineTo(W * 0.715, H * 0.50);
+                  g.closePath(); g.fill();
+                } else {
+                  return makePlanetTex(p.rgb, 1.0 + idx * 0.3);
+                }
+                // Fine grain pass so flat fills don't band under lighting
+                g.globalAlpha = 0.05;
+                for (let gr = 0; gr < 500; gr++) {
+                  g.fillStyle = Math.random() < 0.5 ? '#000' : '#fff';
+                  g.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+                }
+                g.globalAlpha = 1;
+                const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
+              }
+
 
 
               // â"€â"€ Create planets â"€â"€
@@ -1045,13 +1269,19 @@ const d = labToolData.solarSystem || {};
 
                 const geo = new THREE.SphereGeometry(p.size, 24, 24);
 
-                const tex = makePlanetTex(p.rgb, 1.0 + idx * 0.3);
+                const tex = makeWorldTex(p, idx);
 
                 const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: p.terrainType === 'earthlike' ? 0.45 : 0.8, metalness: 0.1 }); // ocean sun-glint on Earth
 
                 const mesh = new THREE.Mesh(geo, mat);
 
                 mesh.userData = { name: p.name, idx: idx };
+
+                // Real axial tilt — Euler order ZXY means the per-frame rotation.y spin turns
+                // the planet around its own tilted axis (Uranus visibly rolls on its side,
+                // Venus is flipped near-upside-down for its retrograde spin).
+                mesh.rotation.order = 'ZXY';
+                mesh.rotation.z = p.tilt;
 
                 // Starting orbital angle â€" spread planets out
 
@@ -1143,7 +1373,9 @@ const d = labToolData.solarSystem || {};
 
                   const ringMesh = new THREE.Mesh(ringGeo, ringMat);
 
-                  ringMesh.rotation.x = -Math.PI / 2 + p.tilt;
+                  // Pure equatorial — the parent mesh now carries the axial tilt, so the ring
+                  // inherits it (tilting here too would double-apply it).
+                  ringMesh.rotation.x = -Math.PI / 2;
 
                   mesh.add(ringMesh);
 
@@ -1471,6 +1703,9 @@ const d = labToolData.solarSystem || {};
                   }
 
                 });
+
+                // Slow solar rotation — the granulation texture drifts (~25-day period feel)
+                sun.rotation.y += 0.0015 * speed * (isPaused ? 0 : 1);
 
 
 

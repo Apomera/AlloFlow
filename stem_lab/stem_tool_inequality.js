@@ -131,6 +131,12 @@ window.StemLab = window.StemLab || {
     icon: '\uD83C\uDFA8', label: 'Inequality Grapher',
     desc: 'Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.',
     color: 'fuchsia', category: 'math',
+    questHooks: [
+      { id: 'graph_first', label: 'Graph any inequality', icon: '\uD83C\uDFA8', check: function(d) { return !!d.expr; }, progress: function(d) { return d.expr ? 'Done' : 'Pick a preset or type one'; } },
+      { id: 'quiz_5_correct', label: 'Answer 5 challenges correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizCorrectTotal || 0) >= 5; }, progress: function(d) { return (d.quizCorrectTotal || 0) + '/5 correct'; } },
+      { id: 'both_modes', label: 'Graph in both 1D and 2D modes', icon: '\uD83D\uDCCA', check: function(d) { var m = d.modesUsed || {}; return !!(m['1d'] && m['2d']); }, progress: function(d) { var m = d.modesUsed || {}; return ((m['1d'] ? 1 : 0) + (m['2d'] ? 1 : 0)) + '/2 modes'; } },
+      { id: 'solver_3', label: 'Solve 3 inequalities step-by-step', icon: '\uD83E\uDDEA', check: function(d) { return (d.solverCount || 0) >= 3; }, progress: function(d) { return (d.solverCount || 0) + '/3 solved'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -147,6 +153,7 @@ window.StemLab = window.StemLab || {
 
       // ── State ──
       var d = labToolData.inequality || {};
+      var isDark = !!ctx.darkMode;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, {
@@ -335,6 +342,42 @@ window.StemLab = window.StemLab || {
         { label: 'y < x', expr: 'y < x' },
       ];
       var PRESETS = graphMode === '2d' ? PRESETS_2D : PRESETS_1D;
+
+      // ── Corrective feedback: diagnose WHICH part of the inequality was mis-read ──
+      // Quiz distractors differ from the answer in direction (< vs >), boundary
+      // (with/without =), or endpoint inclusion — so we can name the exact mix-up
+      // instead of just revealing the answer.
+      function diagnoseQuizError(chosenRaw, answerRaw) {
+        var norm = function(s) { return s.replace(/\s+/g, '').replace(/≤/g, '<=').replace(/≥/g, '>='); };
+        var pretty = function(s) { return s.replace(/>=/g, '≥').replace(/<=/g, '≤'); };
+        var c = norm(chosenRaw), a = norm(answerRaw);
+        // Compound form: lo op x op hi
+        var am = a.match(/^(-?[\d.]+)(<=?)([a-z])(<=?)(-?[\d.]+)$/);
+        var cm = c.match(/^(-?[\d.]+)(<=?)([a-z])(<=?)(-?[\d.]+)$/);
+        if (am && cm) {
+          var msgs = [];
+          if (cm[2] !== am[2]) msgs.push('the LEFT endpoint ' + am[1] + ' should be ' + (am[2] === '<=' ? 'INCLUDED (● closed dot, ≤)' : 'EXCLUDED (○ open dot, <)'));
+          if (cm[4] !== am[4]) msgs.push('the RIGHT endpoint ' + am[5] + ' should be ' + (am[4] === '<=' ? 'INCLUDED (● closed dot, ≤)' : 'EXCLUDED (○ open dot, <)'));
+          if (msgs.length) return 'Check each endpoint on its own: ' + msgs.join(', and ') + '. Words like "inclusive" and "at least/at most" close a dot; "strictly" and "between (not including)" leave it open.';
+        }
+        // Simple form: x op val
+        var as = a.match(/^([a-z])(<=|>=|<|>)(-?[\d.]+)$/);
+        var cs = c.match(/^([a-z])(<=|>=|<|>)(-?[\d.]+)$/);
+        if (as && cs && as[3] === cs[3]) {
+          var aDir = as[2][0], cDir = cs[2][0];
+          var aInc = as[2].length === 2, cInc = cs[2].length === 2;
+          if (aDir !== cDir && aInc === cInc) {
+            return 'Direction mix-up: "' + (aDir === '>' ? 'greater than' : 'less than') + '" shades to the ' + (aDir === '>' ? 'RIGHT' : 'LEFT') + ' of ' + as[3] + '. Re-read which side of the boundary the question wants.';
+          }
+          if (aDir === cDir && aInc !== cInc) {
+            return 'Boundary mix-up: everything hinges on whether ' + as[3] + ' itself counts. ' + (aInc
+              ? 'Phrases like "at least", "at most", "no more than", and "inclusive" INCLUDE the boundary — closed dot ● and ' + (aDir === '>' ? '≥' : '≤') + '.'
+              : 'Phrases like "more than", "less than", "under", and "strictly" EXCLUDE the boundary — open dot ○ and ' + aDir + '.');
+          }
+          return 'Both the direction AND the boundary are off: the solution shades ' + (aDir === '>' ? 'RIGHT' : 'LEFT') + ' of ' + as[3] + ' with ' + (aInc ? 'a closed dot ● (' + as[3] + ' counts)' : 'an open dot ○ (' + as[3] + ' does not count)') + '.';
+        }
+        return 'The answer is ' + pretty(answerRaw) + '. Compare it with your pick symbol by symbol: direction first (< vs >), then boundary (with or without the = bar).';
+      }
 
       // ── QUIZ ──
       var QUIZ_EASY = [
@@ -619,7 +662,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── SVG Number line (1D mode) ──
-        graphMode === '1d' && h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', role: 'img', 'aria-label': 'Number line inequality graph' },
+        graphMode === '1d' && h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), role: 'img', 'aria-label': 'Number line inequality graph' },
           ineq && !ineq.compound && (function() {
             var sxVal = toSX(ineq.val);
             if (ineq.op.includes('>')) {
@@ -646,8 +689,8 @@ window.StemLab = window.StemLab || {
               var isOrigin = n === 0;
               var showLbl = isOrigin || n % lblStep === 0;
               return h('g', { key: n },
-                h('line', { x1: toSX(n), y1: isOrigin ? 38 : 43, x2: toSX(n), y2: isOrigin ? 62 : 57, stroke: isOrigin ? '#1e293b' : '#94a3b8', strokeWidth: isOrigin ? 2 : 1, opacity: showLbl ? 1 : 0.45 }),
-                showLbl && h('text', { x: toSX(n), y: 85, textAnchor: 'middle', fill: isOrigin ? '#1e293b' : '#94a3b8', style: { fontSize: isOrigin ? '11px' : '9px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n));
+                h('line', { x1: toSX(n), y1: isOrigin ? 38 : 43, x2: toSX(n), y2: isOrigin ? 62 : 57, stroke: isOrigin ? (isDark ? '#e2e8f0' : '#1e293b') : '#94a3b8', strokeWidth: isOrigin ? 2 : 1, opacity: showLbl ? 1 : 0.45 }),
+                showLbl && h('text', { x: toSX(n), y: 85, textAnchor: 'middle', fill: isOrigin ? (isDark ? '#e2e8f0' : '#1e293b') : '#94a3b8', style: { fontSize: isOrigin ? '11px' : '9px', fontWeight: isOrigin ? 'bold' : 'normal' } }, n));
             });
           })(),
           ineq && !ineq.compound && (function() {
@@ -691,10 +734,10 @@ window.StemLab = window.StemLab || {
           var ineq2d = parse2D(d.expr);
           var gridLines = [];
           for (var gi = gRange.xMin; gi <= gRange.xMax; gi++) {
-            gridLines.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? '#475569' : '#e2e8f0', strokeWidth: gi === 0 ? 2 : 0.5 }));
+            gridLines.push(h('line', { key: 'gx' + gi, x1: toGX(gi), y1: pad2, x2: toGX(gi), y2: H2 - pad2, stroke: gi === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gi === 0 ? 2 : 0.5 }));
           }
           for (var gj = gRange.yMin; gj <= gRange.yMax; gj++) {
-            gridLines.push(h('line', { key: 'gy' + gj, x1: pad2, y1: toGY(gj), x2: W2 - pad2, y2: toGY(gj), stroke: gj === 0 ? '#475569' : '#e2e8f0', strokeWidth: gj === 0 ? 2 : 0.5 }));
+            gridLines.push(h('line', { key: 'gy' + gj, x1: pad2, y1: toGY(gj), x2: W2 - pad2, y2: toGY(gj), stroke: gj === 0 ? (isDark ? '#94a3b8' : '#475569') : (isDark ? '#1e293b' : '#e2e8f0'), strokeWidth: gj === 0 ? 2 : 0.5 }));
           }
           var axLabels = [];
           for (var al = gRange.xMin; al <= gRange.xMax; al += 2) {
@@ -723,10 +766,10 @@ window.StemLab = window.StemLab || {
             boundaryEls.push(h('circle', { key: 'testpt', cx: toGX(0), cy: toGY(0), r: 5, fill: originSat ? '#22c55e' : '#ef4444', stroke: '#fff', strokeWidth: 1.5 }));
             boundaryEls.push(h('text', { key: 'testlbl', x: toGX(0) + 8, y: toGY(0) - 6, fill: originSat ? '#16a34a' : '#dc2626', style: { fontSize: '9px', fontWeight: 'bold' } }, originSat ? '(0,0) ✓' : '(0,0) ✗'));
           }
-          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full bg-white rounded-xl border-2 border-fuchsia-200 shadow-sm', style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
+          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
             gridLines, axLabels, boundaryEls,
-            h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
-            h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),
+            h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
+            h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),
             !ineq2d && h('text', { x: W2 / 2, y: H2 / 2, textAnchor: 'middle', fill: '#94a3b8', style: { fontSize: '13px' } }, 'Enter y > mx + b to plot')
           );
         })(),
@@ -896,8 +939,10 @@ window.StemLab = window.StemLab || {
                     playSound(correct ? 'correct' : 'wrong');
                     if (correct && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
 
+                    var fb = correct ? '' : diagnoseQuizError(opt, d.quiz.a);
+
                     upd({
-                      quiz: Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak }),
+                      quiz: Object.assign({}, d.quiz, { answered: true, chosen: opt, correct: correct, score: newScore, streak: newStreak, fb: fb }),
                       expr: d.quiz.a,
                       quizCorrectTotal: newQTotal
                     });
@@ -912,7 +957,8 @@ window.StemLab = window.StemLab || {
                       });
                       setTimeout(function() { iqStartQuiz(); }, 1500);
                     } else {
-                      addToast('\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'), 'error');
+                      if (typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+                      addToast('\u274C Not quite \u2014 see why below', 'error');
                     }
                   },
                   className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-600 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all'
@@ -920,13 +966,15 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl text-sm font-bold ' + (d.quiz.correct ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
-            d.quiz.correct ? '\u2705 Correct!' : '\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
-            d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'),
-            !d.quiz.correct && h('button', { 'aria-label': 'Explain',
-              onClick: askAI,
-              className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
-            }, '\uD83E\uDDE0 Explain'))
+          d.quiz && d.quiz.answered && h('div', { className: 'p-3 rounded-xl ' + (d.quiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: 'status' },
+            h('p', { className: 'text-sm font-bold ' + (d.quiz.correct ? 'text-emerald-700' : 'text-red-700') },
+              d.quiz.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'),
+              d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + ' in a row!'),
+              !d.quiz.correct && h('button', { 'aria-label': 'Explain',
+                onClick: askAI,
+                className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
+              }, '\uD83E\uDDE0 Explain')),
+            !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-800 mt-1' }, d.quiz.fb))
         ),
 
         // ── Absolute Value Decomposition ──

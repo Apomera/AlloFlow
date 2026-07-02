@@ -1376,6 +1376,7 @@ function SourceInputPanel(props) {
   }), /* @__PURE__ */ React.createElement("div", { className: "p-4 relative" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {
+      "data-allo-textundo": "input",
       value: inputText,
       onChange: (e) => setInputText(e.target.value),
       onPaste: async (e) => {
@@ -2314,15 +2315,23 @@ function AnchorChartPanel(props) {
     {
       "aria-label": t("common.selection") || "Selection",
       "data-help-key": "anchor_chart_type",
-      value: anchorChartType || "reference",
+      value: anchorChartType || "auto",
       onChange: (e) => setAnchorChartType(e.target.value),
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
     },
+    /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("anchor_chart.auto") || "Auto-pick best fit"),
     /* @__PURE__ */ React.createElement("option", { value: "reference" }, t("anchor_chart.reference") || "Reference (features / norms / conventions)"),
     /* @__PURE__ */ React.createElement("option", { value: "process" }, t("anchor_chart.process") || "Process (sequential steps)"),
     /* @__PURE__ */ React.createElement("option", { value: "concept-map" }, t("anchor_chart.concept_map") || "Concept Map (parts of a whole)"),
-    /* @__PURE__ */ React.createElement("option", { value: "comparison" }, t("anchor_chart.comparison") || "Comparison (across categories)")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes.")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "comparison" }, t("anchor_chart.comparison") || "Comparison (across categories)"),
+    /* @__PURE__ */ React.createElement("option", { value: "strategy" }, t("anchor_chart.strategy") || "Strategy (reusable learning moves)"),
+    /* @__PURE__ */ React.createElement("option", { value: "vocabulary" }, t("anchor_chart.vocabulary") || "Vocabulary (terms + examples)"),
+    /* @__PURE__ */ React.createElement("option", { value: "routine" }, t("anchor_chart.routine") || "Routine (repeatable class procedure)"),
+    /* @__PURE__ */ React.createElement("option", { value: "worked-example" }, t("anchor_chart.worked_example") || "Worked Example (model + reasoning)"),
+    /* @__PURE__ */ React.createElement("option", { value: "criteria-success" }, t("anchor_chart.criteria_success") || "Success Criteria (what strong work includes)"),
+    /* @__PURE__ */ React.createElement("option", { value: "misconception" }, t("anchor_chart.misconception") || "Misconceptions (mix-ups + fixes)"),
+    /* @__PURE__ */ React.createElement("option", { value: "question-guide" }, t("anchor_chart.question_guide") || "Question Guide (discussion / analysis prompts)")
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.generate") || "Generate",

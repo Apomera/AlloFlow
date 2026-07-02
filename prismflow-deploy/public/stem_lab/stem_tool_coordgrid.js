@@ -72,6 +72,15 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCCD', label: 'Coordinate Grid',
     desc: 'Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges.',
     color: 'cyan', category: 'math',
+    // State lives under _coordGrid (not the tool id) \u2014 this tells the hub's
+    // quest checker where to look so the hooks below actually see progress.
+    questDataKey: '_coordGrid',
+    questHooks: [
+      { id: 'plot_3', label: 'Solve 3 plot-the-point challenges', icon: '\uD83D\uDCCD', check: function(d) { return (d.plotsSolved || 0) >= 3; }, progress: function(d) { return (d.plotsSolved || 0) + '/3 plotted'; } },
+      { id: 'slope_3', label: 'Solve 3 slope challenges', icon: '\uD83D\uDCD0', check: function(d) { return (d.slopesSolved || 0) >= 3; }, progress: function(d) { return (d.slopesSolved || 0) + '/3 slopes'; } },
+      { id: 'distance_3', label: 'Solve 3 distance challenges', icon: '\uD83D\uDCCF', check: function(d) { return (d.distanceSolved || 0) >= 3; }, progress: function(d) { return (d.distanceSolved || 0) + '/3 distances'; } },
+      { id: 'streak_5', label: 'Reach a streak of 5', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

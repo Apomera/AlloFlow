@@ -191,16 +191,16 @@ Date,Grade,Activity,Items Attempted,Items Correct,Accuracy %,Items/Min,Duration
     "inputs": [
       "Source text (up to 2500 chars for context)",
       "Topic label (sourceTopic)",
-      "Chart type (chartType / anchorChartType: reference / process / concept-map / comparison)",
+      "Chart type (chartType / anchorChartType: auto / reference / process / concept-map / comparison / strategy / vocabulary / routine / worked-example / criteria-success / misconception / question-guide)",
       "Reading grade level (effectiveGrade)"
     ],
     "outputs": [
       "content { title, chartType, sections[] }",
       "Each section: { id, label, bullets[], iconPrompt, iconUrl }",
       "Hand-drawn marker icon filled per section on mount (callImagen)",
-      "annotations[] (added later by Critique mode) + lessonRef"
+      "interactive settings (optional student fill-in mode) + lessonRef"
     ],
-    "how": "The handler builds a type-specific prompt (process = sequential steps, comparison = categories) asking for a { title, sections } object, capping at 6 sections. On render the chart lays out by chart type and draws a hand-drawn marker icon per section; teachers can edit inline, arm Interactive mode, and export PNG.",
+    "how": "The handler builds a type-specific prompt, or lets Auto choose the strongest structure, then asks for a { chartType, title, sections } object capped at 6 sections. On render the chart adds type-aware captions, badges, grid/step layouts, and a hand-drawn marker icon per section; teachers can edit inline, optionally arm Interactive Mode, and export PNG.",
     "example": "TITLE: HOW PLANTS MAKE FOOD\nChart type: process \u2192 5 numbered steps with \u2193 connectors, each with a marker icon.\n\n\u2460 CATCH THE LIGHT\n   \u2022 Chlorophyll is the green pigment\n   \u2022 Lives inside the leaves\n   \u2022 Grabs energy from sunlight\n   [icon: a green leaf with a small sun]\n   \u2193\n\u2461 BREATHE IN CO\u2082\n   \u2022 Air enters tiny holes = stomata\n   \u2022 Takes in carbon dioxide\n   [icon: tiny pores on a leaf surface]\n   \u2193\n\u2462 DRINK WATER\n   \u2022 Roots pull water from soil\n   \u2022 Water travels up the stem to the leaves\n   [icon: roots soaking up water drops]\n   \u2193\n\u2463 MAKE GLUCOSE\n   \u2022 Sun energy mixes CO\u2082 + water\n   \u2022 Builds glucose, a sugar\n   \u2022 Stores energy for later\n   [icon: a sugar cube glowing with energy]\n   \u2193\n\u2464 RELEASE OXYGEN\n   \u2022 Oxygen leaves as a by-product\n   \u2022 Goes back into the air\n   \u2022 The air we breathe!\n   [icon: an oxygen bubble floating up]\n\nOn screen: a paper-textured poster, Permanent Marker title, five marker-colored blocks (red/blue/green/orange/purple) with step badges. If Interactive mode is armed, students fill blank rows and the AI grader returns a 'What you did well' card, a 'One thing to try next' card, and a '+80 XP' pill."
   },
   "image": {

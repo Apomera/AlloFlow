@@ -70,6 +70,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCCF', label: 'Number Line',
     desc: 'Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.',
     color: 'blue', category: 'math',
+    questHooks: [
+      { id: 'solve_5', label: 'Answer 5 challenges correctly', icon: '\uD83D\uDCCF', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 correct'; } },
+      { id: 'try_4_types', label: 'Try 4 different challenge types', icon: '\uD83C\uDF08', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.challengeTypesUsed || {}).length + '/4 types'; } },
+      { id: 'streak_5', label: 'Reach a streak of 5', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

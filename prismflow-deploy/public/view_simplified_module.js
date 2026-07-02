@@ -67,6 +67,7 @@
   var Italic = _lazyIcon('Italic');
   var Highlighter = _lazyIcon('Highlighter');
   var List = _lazyIcon('List');
+  var ListOrdered = _lazyIcon('ListOrdered');
   var Trophy = _lazyIcon('Trophy');
   var ImageIcon = _lazyIcon('ImageIcon');
   var Sparkles = _lazyIcon('Sparkles');
@@ -1284,7 +1285,11 @@
     onClick: () => handleFormatText('h2'),
     className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
-  }, "H2"), /*#__PURE__*/React.createElement("div", {
+  }, "H2"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleFormatText('h3'),
+    className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors font-bold text-xs",
+    title: t('formatting.h3') || 'Heading 3'
+  }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-orange-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleFormatText('list'),
@@ -1292,8 +1297,15 @@
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleFormatText('numlist'),
+    className: "p-1.5 rounded hover:bg-orange-200 text-orange-800 transition-colors",
+    title: t('formatting.numlist') || 'Numbered List'
+  }, /*#__PURE__*/React.createElement(ListOrdered, {
+    size: 16
   }))), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('simplified.revision.placeholder_edit_text') || 'Edit simplified text',
+    "data-allo-textundo": "simplified",
     ref: textEditorRef,
     value: generatedContent?.data,
     onChange: e => handleSimplifiedTextChange(e.target.value),

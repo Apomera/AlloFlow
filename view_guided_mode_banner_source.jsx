@@ -165,16 +165,16 @@ const GUIDED_DETAIL = {
     "inputs": [
       "Source text (up to 2500 chars for context)",
       "Topic label (sourceTopic)",
-      "Chart type (chartType / anchorChartType: reference / process / concept-map / comparison)",
+      "Chart type (chartType / anchorChartType: auto / reference / process / concept-map / comparison / strategy / vocabulary / routine / worked-example / criteria-success / misconception / question-guide)",
       "Reading grade level (effectiveGrade)"
     ],
     "outputs": [
       "content { title, chartType, sections[] }",
       "Each section: { id, label, bullets[], iconPrompt, iconUrl }",
       "Hand-drawn marker icon filled per section on mount (callImagen)",
-      "annotations[] (added later by Critique mode) + lessonRef"
+      "interactive settings (optional student fill-in mode) + lessonRef"
     ],
-    "how": "The handler builds a type-specific prompt (process = sequential steps, comparison = categories) asking for a { title, sections } object, capping at 6 sections. On render the chart lays out by chart type and draws a hand-drawn marker icon per section; teachers can edit inline, arm Interactive mode, and export PNG.",
+    "how": "The handler builds a type-specific prompt, or lets Auto choose the strongest structure, then asks for a { chartType, title, sections } object capped at 6 sections. On render the chart adds type-aware captions, badges, grid/step layouts, and a hand-drawn marker icon per section; teachers can edit inline, optionally arm Interactive Mode, and export PNG.",
     "example": "TITLE: HOW PLANTS MAKE FOOD\nChart type: process → 5 numbered steps with ↓ connectors, each with a marker icon.\n\n① CATCH THE LIGHT\n   • Chlorophyll is the green pigment\n   • Lives inside the leaves\n   • Grabs energy from sunlight\n   [icon: a green leaf with a small sun]\n   ↓\n② BREATHE IN CO₂\n   • Air enters tiny holes = stomata\n   • Takes in carbon dioxide\n   [icon: tiny pores on a leaf surface]\n   ↓\n③ DRINK WATER\n   • Roots pull water from soil\n   • Water travels up the stem to the leaves\n   [icon: roots soaking up water drops]\n   ↓\n④ MAKE GLUCOSE\n   • Sun energy mixes CO₂ + water\n   • Builds glucose, a sugar\n   • Stores energy for later\n   [icon: a sugar cube glowing with energy]\n   ↓\n⑤ RELEASE OXYGEN\n   • Oxygen leaves as a by-product\n   • Goes back into the air\n   • The air we breathe!\n   [icon: an oxygen bubble floating up]\n\nOn screen: a paper-textured poster, Permanent Marker title, five marker-colored blocks (red/blue/green/orange/purple) with step badges. If Interactive mode is armed, students fill blank rows and the AI grader returns a 'What you did well' card, a 'One thing to try next' card, and a '+80 XP' pill."
   },
 

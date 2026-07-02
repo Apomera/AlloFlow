@@ -958,6 +958,24 @@
         return (toolConfig && toolConfig.questHooks) || [];
       }
 
+      // Resolve where a tool keeps its quest-visible state. Most tools store it
+      // at toolData[toolId] or toolData['_' + toolId]; tools whose state lives
+      // under a different key (or split across several keys) declare
+      // questDataKey (string) or questDataKeys (array, shallow-merged) in their
+      // registerTool config — e.g. coordgrid ('coordinate' → '_coordGrid') and
+      // multtable ('_multTimer' + '_multExt').
+      function _getToolQuestState(toolId, toolData) {
+        var td = toolData || {};
+        var cfg = (window.StemLab && window.StemLab._registry && window.StemLab._registry[toolId]) || {};
+        if (cfg.questDataKeys && cfg.questDataKeys.length) {
+          var merged = {};
+          cfg.questDataKeys.forEach(function(k) { Object.assign(merged, td[k] || {}); });
+          return merged;
+        }
+        if (cfg.questDataKey) return td[cfg.questDataKey] || {};
+        return td[toolId] || td['_' + toolId] || {};
+      }
+
       // Auto-generate quest label
       function _questAutoLabel(type, toolId, params) {
         var toolName = 'this tool';
@@ -1013,7 +1031,7 @@
               var hooks = _getToolQuestHooks(q.toolId);
               var hook = hooks.find(function(h) { return h.id === q.params.hookId; });
               if (hook && hook.check) {
-                var toolState2 = toolData[q.toolId] || toolData['_' + q.toolId] || {};
+                var toolState2 = _getToolQuestState(q.toolId, toolData);
                 complete = hook.check(toolState2);
               }
               break;
@@ -1070,7 +1088,7 @@
             var hooks2 = _getToolQuestHooks(quest.toolId);
             var hook2 = hooks2.find(function(h2) { return h2.id === quest.params.hookId; });
             if (hook2 && hook2.progress) {
-              var ts2 = toolData[quest.toolId] || toolData['_' + quest.toolId] || {};
+              var ts2 = _getToolQuestState(quest.toolId, toolData);
               var progText = hook2.progress(ts2);
               var isDone2 = hook2.check ? hook2.check(ts2) : false;
               return { done: isDone2, text: progText, pct: isDone2 ? 100 : 50 };

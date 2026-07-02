@@ -255,6 +255,15 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDD22', label: 'Multiplication Table',
     desc: 'Interactive 12\u00D712 grid with quiz modes, speed runs, streaks, badges & AI tutor.',
     color: 'pink', category: 'math',
+    // State is split across _multExt (practice totals, badges) and _multTimer
+    // (speed-run session) — the hub's quest checker merges these keys so the
+    // hooks below can see both.
+    questDataKeys: ['_multExt', '_multTimer'],
+    questHooks: [
+      { id: 'answer_10', label: 'Answer 10 facts correctly', icon: '🔢', check: function(d) { return (d.totalCorrect || 0) >= 10; }, progress: function(d) { return (d.totalCorrect || 0) + '/10 correct'; } },
+      { id: 'squares_5', label: 'Answer 5 square facts (n × n)', icon: '🟪', check: function(d) { return Object.keys(d.squaresAnswered || {}).length >= 5; }, progress: function(d) { return Object.keys(d.squaresAnswered || {}).length + '/5 squares'; } },
+      { id: 'speedrun_10', label: 'Score 10 in a speed run', icon: '⏱️', check: function(d) { return (d.score || 0) >= 10; }, progress: function(d) { return (d.score || 0) + '/10 in best run'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -284,7 +293,10 @@ window.StemLab = window.StemLab || {
       var setLabToolData = ctx.setLabToolData;
       var exploreScore = ctx.exploreScore || { correct: 0, total: 0 };
       var setExploreScore = ctx.setExploreScore;
-      var exploreDifficulty = ctx.exploreDifficulty || 'hard';
+      // Grade-aware fallback: K-2 starts on easy facts, 3-5 medium, older grades hard.
+      // A hub-provided exploreDifficulty (the user's explicit choice) always wins.
+      var _mtGl = (ctx.gradeLevel || '').toLowerCase();
+      var exploreDifficulty = ctx.exploreDifficulty || (/k|1st|2nd|pre/.test(_mtGl) ? 'easy' : /3rd|4th|5th/.test(_mtGl) ? 'medium' : 'hard');
       var setExploreDifficulty = ctx.setExploreDifficulty;
 
       var maxNum = 12;

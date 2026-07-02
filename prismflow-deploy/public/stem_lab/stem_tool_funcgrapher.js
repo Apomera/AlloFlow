@@ -66,6 +66,12 @@ window.StemLab = window.StemLab || {
     desc: 'Graph and explore mathematical functions interactively',
     color: 'indigo',
     category: 'math',
+    questHooks: [
+      { id: 'try_5_families', label: 'Explore 5 function families', icon: '📈', check: function(d) { return Object.keys(d.familiesTried || {}).length >= 5; }, progress: function(d) { return Object.keys(d.familiesTried || {}).length + '/5 families'; } },
+      { id: 'challenge_5', label: 'Answer 5 challenges correctly', icon: '🎯', check: function(d) { return (d.fgScore || 0) >= 5; }, progress: function(d) { return (d.fgScore || 0) + '/5 correct'; } },
+      { id: 'myth_3', label: 'Bust 3 function myths (True or False)', icon: '🧠', check: function(d) { return (d.fgMythsDone || 0) >= 3; }, progress: function(d) { return (d.fgMythsDone || 0) + '/3 myths'; } },
+      { id: 'use_overlays', label: 'Reveal the derivative and area overlays', icon: '📉', check: function(d) { var o = d.overlaysUsed || {}; return !!(o.deriv && o.area); }, progress: function(d) { var o = d.overlaysUsed || {}; return ((o.deriv ? 1 : 0) + (o.area ? 1 : 0)) + '/2 overlays'; } }
+    ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -130,6 +136,27 @@ window.StemLab = window.StemLab || {
           }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...prev.funcGrapher, [key]: val } }));
+
+          // ── Theme + grade band (shared pattern with waterCycle) ──
+          var isDark = !!ctx.darkMode;
+          var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
+          function getGradeBand() {
+            var ov = d.fgGradeOverride;
+            if (ov && GRADE_BANDS.indexOf(ov) >= 0) return ov;
+            var gl = (gradeLevel || '5th Grade').toLowerCase();
+            if (/k|1st|2nd|pre/.test(gl)) return 'K-2';
+            if (/3rd|4th|5th/.test(gl)) return '3-5';
+            if (/6th|7th|8th/.test(gl)) return '6-8';
+            if (/9th|10|11|12|high/.test(gl)) return '9-12';
+            return '3-5';
+          }
+          var gradeBand = getGradeBand();
+
+          // Type setter that also feeds the try_5_families quest hook
+          function setFnType(tid) {
+            upd('type', tid);
+            upd('familiesTried', Object.assign({}, d.familiesTried, { [tid]: true }));
+          }
 
           const W = 440, H = 320, pad = 45;
 
@@ -431,7 +458,7 @@ window.StemLab = window.StemLab || {
               var idx = parseInt(k, 10) - 1;
               if (TYPES[idx]) {
                 e.preventDefault();
-                upd('type', TYPES[idx].id);
+                setFnType(TYPES[idx].id);
                 if (typeof announceToSR === 'function') announceToSR(TYPES[idx].label + ' selected.');
               }
             } else if (k === 'd' || k === 'D') { e.preventDefault(); upd('showDeriv', !d.showDeriv); }
@@ -461,7 +488,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
 
-              TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { upd("type", tp.id); },
+              TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
 
@@ -471,7 +498,7 @@ window.StemLab = window.StemLab || {
 
             // SVG Graph
 
-            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-white rounded-xl border-2 border-indigo-200 shadow-sm", style: { maxHeight: "340px" } },
+            React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
 
               // Grid lines (rendered first, behind curves)
 
@@ -487,7 +514,7 @@ window.StemLab = window.StemLab || {
 
                   if (sx > pad && sx < W - pad) {
 
-                    gridLines.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: "#e2e8f0", strokeWidth: 0.5 }));
+                    gridLines.push(React.createElement("line", { key: 'gx' + gx, x1: sx, y1: pad, x2: sx, y2: H - pad, stroke: isDark ? "#1e293b" : "#e2e8f0", strokeWidth: 0.5 }));
 
                   }
 
@@ -501,7 +528,7 @@ window.StemLab = window.StemLab || {
 
                   if (sy > pad && sy < H - pad) {
 
-                    gridLines.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: "#e2e8f0", strokeWidth: 0.5 }));
+                    gridLines.push(React.createElement("line", { key: 'gy' + gy, x1: pad, y1: sy, x2: W - pad, y2: sy, stroke: isDark ? "#1e293b" : "#e2e8f0", strokeWidth: 0.5 }));
 
                   }
 
@@ -513,15 +540,15 @@ window.StemLab = window.StemLab || {
 
               // Axes
 
-              React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: "#64748b", strokeWidth: 1.5 }),
+              React.createElement("line", { x1: pad, y1: toSY(0), x2: W - pad, y2: toSY(0), stroke: isDark ? "#94a3b8" : "#64748b", strokeWidth: 1.5 }),
 
-              React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: "#64748b", strokeWidth: 1.5 }),
+              React.createElement("line", { x1: toSX(0), y1: pad, x2: toSX(0), y2: H - pad, stroke: isDark ? "#94a3b8" : "#64748b", strokeWidth: 1.5 }),
 
               // Axis labels
 
-              React.createElement("text", { x: W - pad + 5, y: toSY(0) + 4, fill: "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "x"),
+              React.createElement("text", { x: W - pad + 5, y: toSY(0) + 4, fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "x"),
 
-              React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "y"),
+              React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '10px', fontWeight: 'bold' } }, "y"),
 
               // Area under curve (positive x)
 
@@ -529,7 +556,7 @@ window.StemLab = window.StemLab || {
 
                 points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
 
-                fill: "rgba(79,70,229,0.08)", stroke: "none"
+                fill: isDark ? "rgba(129,140,248,0.16)" : "rgba(79,70,229,0.08)", stroke: "none"
 
               }),
 
@@ -540,7 +567,7 @@ window.StemLab = window.StemLab || {
               // Main curve
 
               d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: "#94a3b8", strokeWidth: 1, strokeDasharray: "5 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
-              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(79,70,229,0.45))' } }) : null; }),
+              segments.map(function (seg, si) { return seg.length > 1 ? React.createElement("polyline", { key: 'seg' + si, points: seg.join(" "), fill: "none", stroke: isDark ? "#818cf8" : "#4f46e5", strokeWidth: 2.5, style: { filter: 'drop-shadow(0 0 3px rgba(' + (isDark ? '129,140,248,0.6' : '79,70,229,0.45') + '))' } }) : null; }),
 
               // Comparison curve (orange)
               d.compare && comparePts.length > 1 && React.createElement("polyline", { points: comparePts.join(" "), fill: "none", stroke: "#f97316", strokeWidth: 2, strokeDasharray: "8 4" }),
@@ -613,7 +640,7 @@ window.StemLab = window.StemLab || {
 
                   if (sx > pad && sx < W - pad) {
 
-                    gridLabels.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gx));
+                    gridLabels.push(React.createElement("text", { key: 'tx' + gx, x: sx, y: H - pad + 14, textAnchor: "middle", fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gx));
 
                   }
 
@@ -627,7 +654,7 @@ window.StemLab = window.StemLab || {
 
                   if (sy > pad && sy < H - pad) {
 
-                    gridLabels.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gy));
+                    gridLabels.push(React.createElement("text", { key: 'ty' + gy, x: pad - 5, y: sy + 3, textAnchor: "end", fill: isDark ? "#94a3b8" : "#64748b", style: { fontSize: '8px', fontWeight: '600' } }, gy));
 
                   }
 
@@ -639,7 +666,7 @@ window.StemLab = window.StemLab || {
 
               // Equation label
 
-              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
+              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: isDark ? "#a5b4fc" : "#4f46e5", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr),
 
               // Comparison equation label
               d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: "#f97316", style: { fontSize: '10px', fontWeight: 'bold' } }, eqStr2)
@@ -670,9 +697,9 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2 flex-wrap" },
 
-              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => { if (!d.showDeriv) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { deriv: true })); upd('showDeriv', !d.showDeriv); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
 
-              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
               d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx \u2248 " + integral0ToMax.toFixed(2)),
 
@@ -854,7 +881,7 @@ window.StemLab = window.StemLab || {
 
                   return React.createElement("button", { key: p.label, onClick: function () {
 
-                      upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
+                      setFnType(p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
                       addToast('\uD83D\uDCC8 ' + p.tip, 'success');
 
@@ -898,21 +925,44 @@ window.StemLab = window.StemLab || {
 
 
 
-              // ── Name That Graph generator ──
+              // ── Family labels + visual signatures (drive both quiz options and the
+              // corrective feedback — the signature is HOW you tell that family apart) ──
+
+              var FG_LABELS = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)', sqrt: 'Square Root (y = a√(x + b) + c)', log: 'Logarithm (y = a·ln(x + b) + c)', rational: 'Rational (y = a/(x + b) + c)' };
+
+              var FG_TRAITS = {
+                linear: 'a perfectly straight line — the slope never changes',
+                quadratic: 'a single U-turn (the vertex) with both arms heading the SAME direction',
+                trig: 'a wave that repeats the same cycle forever',
+                cubic: 'an S-bend whose two ends head in OPPOSITE directions',
+                exponential: 'nearly flat on one side, then exploding upward on the other',
+                absolute: 'a sharp V corner — two straight pieces meeting at a point',
+                sqrt: 'half a sideways parabola that STARTS at an edge point and only goes one way',
+                log: 'a fast climb that flattens out, with a vertical wall (asymptote) on one side',
+                rational: 'two separate branches split by a vertical asymptote the curve never touches'
+              };
+
+              // Family pool grows with grade band
+              var FG_BAND_TYPES = {
+                'K-2':  ['linear', 'quadratic', 'absolute'],
+                '3-5':  ['linear', 'quadratic', 'absolute', 'trig'],
+                '6-8':  ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'],
+                '9-12': ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute', 'sqrt', 'log', 'rational']
+              };
+
+              // ── Name That Graph generator (grade-banded pool) ──
 
               function makeFgQuiz() {
 
-                var types = ['linear', 'quadratic', 'trig', 'cubic', 'exponential', 'absolute'];
-
-                var labels = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)' };
+                var types = FG_BAND_TYPES[gradeBand] || FG_BAND_TYPES['3-5'];
 
                 var tp = types[Math.floor(Math.random() * types.length)];
 
-                var opts = [labels[tp]];
+                var opts = [FG_LABELS[tp]];
 
-                while (opts.length < 4) { var r = labels[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
+                while (opts.length < Math.min(4, types.length)) { var r = FG_LABELS[types[Math.floor(Math.random() * types.length)]]; if (opts.indexOf(r) < 0) opts.push(r); }
 
-                return { mode: 'name', type: tp, answer: labels[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
+                return { mode: 'name', type: tp, answer: FG_LABELS[tp], opts: opts.sort(function () { return Math.random() - 0.5; }), answered: false };
 
               }
 
@@ -922,9 +972,10 @@ window.StemLab = window.StemLab || {
 
               function makeRootQuiz() {
 
-                // Pick linear or quadratic with guaranteed nice roots
+                // Pick linear or quadratic with guaranteed nice roots.
+                // Younger bands stay linear-only; quadratics unlock at 6-8.
 
-                var pick = Math.random();
+                var pick = (gradeBand === 'K-2' || gradeBand === '3-5') ? 0 : Math.random();
 
                 var qa, qb, qc, qtype, rootAnswer;
 
@@ -976,7 +1027,8 @@ window.StemLab = window.StemLab || {
 
               function makeYIntQuiz() {
 
-                var pick = Math.random();
+                // Banded: K-2/3-5 linear only, 6-8 adds quadratic, 9-12 adds cubic
+                var pick = (gradeBand === 'K-2' || gradeBand === '3-5') ? 0 : (gradeBand === '6-8' ? Math.random() * 0.8 : Math.random());
 
                 var qa, qb, qc, qtype, yIntAnswer;
 
@@ -1026,6 +1078,76 @@ window.StemLab = window.StemLab || {
 
 
 
+              // ── Misconception bank (True/False "myth busting") ──
+              // Each entry targets a documented student misconception; the `why` is the
+              // corrective explanation shown after EVERY answer, right or wrong.
+              var FG_MYTHS = {
+                '3-5': [
+                  { s: 'A steeper line has a bigger slope number.', t: true, why: 'Slope counts how much the line climbs for each step to the right — steeper climb, bigger number.' },
+                  { s: 'The line y = 2x goes DOWN as you move right.', t: false, why: 'The slope 2 is positive, so the line climbs. Only negative slopes go downhill.' },
+                  { s: 'A graph can cross the y-axis in two different places.', t: false, why: 'A function gives exactly one output at x = 0, so it has exactly ONE y-intercept.' },
+                  { s: 'Making "a" negative in y = a·x flips the line downhill.', t: true, why: 'A negative slope trades climbing for falling — the line reflects over the x-axis.' },
+                  { s: 'Adding 3 to a function (y = x + 3) slides the whole line up 3.', t: true, why: 'Every point gets 3 added to its height — same shape, shifted up.' }
+                ],
+                '6-8': [
+                  { s: 'A bigger "a" in y = ax² makes the parabola wider.', t: false, why: 'Bigger |a| makes it NARROWER — each step in x now costs more height. Wide parabolas come from |a| < 1.' },
+                  { s: 'y = x² + 3 has the same shape as y = x², just moved up.', t: true, why: 'Adding a constant lifts every point 3 units — the shape is untouched.' },
+                  { s: 'sin(2x) is twice as TALL as sin(x).', t: false, why: 'The 2 INSIDE squeezes the wave to twice the cycles (shorter period). Height comes from the number in FRONT — the amplitude.' },
+                  { s: 'Every parabola crosses the x-axis twice.', t: false, why: 'Lift the vertex above the x-axis and it never crosses — a parabola can have 0, 1, or 2 roots.' },
+                  { s: 'y = |x| has a sharp corner at the origin.', t: true, why: 'Left of 0 the slope is −1, right of 0 it is +1. That sudden switch is the V corner — no smooth turn.' },
+                  { s: 'If two graphs cross, they are equal at that x-value.', t: true, why: 'A crossing point is exactly where both functions give the same output — that is what solving f(x) = g(x) finds.' }
+                ],
+                '9-12': [
+                  { s: 'The graph of y = 1/x eventually touches the x-axis.', t: false, why: 'It gets infinitely close but never arrives — the x-axis is a horizontal ASYMPTOTE, a boundary the curve approaches forever.' },
+                  { s: 'Exponential growth eventually beats ANY polynomial.', t: true, why: 'For big enough x, eˣ outruns x², x³, even x¹⁰⁰. Growth proportional to current size always wins the long game.' },
+                  { s: 'ln(x) flattens out and approaches a maximum height.', t: false, why: 'It grows forever — just very slowly. It has no horizontal asymptote and eventually passes ANY height.' },
+                  { s: 'Wherever f′(x) = 0, the function has a max or a min.', t: false, why: 'y = x³ at x = 0: the slope is 0 but it is a flat S-bend (an inflection), not a peak or valley. Zero slope is necessary, not sufficient.' },
+                  { s: 'Shifting a graph up can change how many roots it has.', t: true, why: 'Raise y = x² − 1 by one unit and its two roots merge into one; raise it more and they vanish. Vertical shifts move the axis crossings.' },
+                  { s: '√x is just x² in reverse, so its graph is a full parabola.', t: false, why: 'It is HALF a sideways parabola — the square root only returns the non-negative answer, so the graph starts at the edge and goes one way.' }
+                ]
+              };
+              function mythBankForBand() { return FG_MYTHS[gradeBand === 'K-2' ? '3-5' : gradeBand] || FG_MYTHS['6-8']; }
+
+              function makeMythQuiz() {
+                var bank = mythBankForBand();
+                var lastIdx = typeof d.fgLastMythIdx === 'number' ? d.fgLastMythIdx : -1;
+                var mi = Math.floor(Math.random() * bank.length);
+                if (mi === lastIdx) mi = (mi + 1) % bank.length; // avoid immediate repeat
+                var m = bank[mi];
+                return { mode: 'myth', mythIdx: mi, s: m.s, answer: m.t, why: m.why, opts: [true, false], answered: false };
+              }
+
+              // Evaluate a quiz's stored function at x — powers the diagnostic feedback
+              function evalQ(q, x) {
+                if (q.type === 'linear') return q.a * x + q.b;
+                if (q.type === 'quadratic') return q.a * x * x + q.b * x + q.c;
+                if (q.type === 'cubic') return q.a * x * x * x + q.b * x + q.c;
+                return NaN;
+              }
+
+              // ── Corrective feedback: explain WHY, not just reveal the answer ──
+              // Wrong answers get a diagnosis of the mistake (e.g. "f(your pick) isn't 0");
+              // right answers get a one-line reinforcement of the underlying rule.
+              function buildFeedback(q, chosen, correct) {
+                if (q.mode === 'myth') {
+                  return (q.answer ? 'TRUE' : 'FALSE') + ' — ' + q.why;
+                }
+                if (q.mode === 'root') {
+                  if (correct) return 'f(' + chosen + ') = 0 — the curve crosses the x-axis exactly there.';
+                  var fAt = evalQ(q, chosen);
+                  return 'A root is where the curve CROSSES the x-axis — where f(x) = 0. At your pick x = ' + chosen + ', f(' + chosen + ') = ' + (isFinite(fAt) ? Math.round(fAt * 100) / 100 : '?') + ', not 0. Look where the curve meets the axis: x = ' + q.answer + '.';
+                }
+                if (q.mode === 'yint') {
+                  if (correct) return 'f(0) = ' + q.answer + ' — the y-intercept is always just the function evaluated at x = 0.';
+                  return 'The y-intercept is f(0): set x = 0 and every x-term vanishes. What remains is ' + q.answer + '. (You picked ' + chosen + ' — the curve may pass that height, but not at x = 0.)';
+                }
+                // name mode — chosen is a label string; map it back to its family
+                var chosenId = null;
+                for (var fk in FG_LABELS) { if (FG_LABELS[fk] === chosen) { chosenId = fk; break; } }
+                if (correct) return 'Signature spotted: ' + FG_TRAITS[q.type] + '.';
+                return 'You picked ' + chosen + ' — that family shows ' + (chosenId && FG_TRAITS[chosenId] ? FG_TRAITS[chosenId] : 'a different shape') + '. This graph instead shows ' + FG_TRAITS[q.type] + '.';
+              }
+
               // Start a challenge based on the current mode
 
               function startChallenge() {
@@ -1035,6 +1157,8 @@ window.StemLab = window.StemLab || {
                 if (challengeMode === 'root') { q = makeRootQuiz(); }
 
                 else if (challengeMode === 'yint') { q = makeYIntQuiz(); }
+
+                else if (challengeMode === 'myth') { q = makeMythQuiz(); upd('fgLastMythIdx', q.mythIdx); }
 
                 else { q = makeFgQuiz(); }
 
@@ -1060,7 +1184,9 @@ window.StemLab = window.StemLab || {
 
                 { id: 'root', label: __alloT('stem.funcgrapher.find_the_root', '📍 Find the Root'), color: 'red' },
 
-                { id: 'yint', label: __alloT('stem.funcgrapher.y_intercept_3', '🟢 Y-Intercept?'), color: 'emerald' }
+                { id: 'yint', label: __alloT('stem.funcgrapher.y_intercept_3', '🟢 Y-Intercept?'), color: 'emerald' },
+
+                { id: 'myth', label: __alloT('stem.funcgrapher.true_or_false', '🧠 True or False?'), color: 'amber' }
 
               ];
 
@@ -1072,7 +1198,9 @@ window.StemLab = window.StemLab || {
 
                 : challengeMode === 'yint' ? 'What is the y-intercept of this function?'
 
-                  : 'What type of function is graphed above?';
+                  : challengeMode === 'myth' ? ((fgQuiz && fgQuiz.mode === 'myth') ? '“' + fgQuiz.s + '”' : 'True or false?')
+
+                    : 'What type of function is graphed above?';
 
 
 
@@ -1088,7 +1216,7 @@ window.StemLab = window.StemLab || {
 
                     return React.createElement("button", { key: cm.id, onClick: function () { upd('fgChallengeMode', cm.id); upd('fgQuiz', null); },
 
-                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                      className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? (({ indigo: 'bg-indigo-600', violet: 'bg-violet-600', red: 'bg-red-600', emerald: 'bg-emerald-600', amber: 'bg-amber-600' }[cm.color]) || 'bg-indigo-600') + ' text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
 
                     }, cm.label);
 
@@ -1096,6 +1224,20 @@ window.StemLab = window.StemLab || {
 
                   fgScore > 0 && React.createElement("span", { className: "text-xs font-bold text-emerald-600 ml-auto" }, '⭐ ' + fgScore + ' | 🔥 ' + fgStreak)
 
+                ),
+
+                // Grade-band selector — challenges scale their content to the band
+                React.createElement("div", { className: "flex items-center gap-1.5 mb-2", role: "group", "aria-label": __alloT('stem.funcgrapher.challenge_level', "Challenge level") },
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider" }, __alloT('stem.funcgrapher.level', "Level:")),
+                  GRADE_BANDS.map(function (gb) {
+                    var active = gradeBand === gb;
+                    return React.createElement("button", {
+                      key: gb,
+                      onClick: function () { upd('fgGradeOverride', gb); upd('fgQuiz', null); },
+                      "aria-pressed": active,
+                      className: "px-2 py-0.5 rounded-full text-[10px] font-bold transition-all " + (active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50')
+                    }, gb);
+                  })
                 ),
 
                 // Start / New Challenge button
@@ -1120,17 +1262,27 @@ window.StemLab = window.StemLab || {
 
                     fgQuiz.opts.map(function (opt) {
 
-                      return React.createElement("button", { "aria-label": "Select answer: " + String(opt),
+                      var optLabel = fgQuiz.mode === 'myth' ? (opt ? '\u2705 True' : '\u274C False')
+                        : challengeMode === 'name' ? opt
+                          : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt);
+
+                      return React.createElement("button", { "aria-label": "Select answer: " + (fgQuiz.mode === 'myth' ? (opt ? 'True' : 'False') : String(opt)),
 
                         key: String(opt), onClick: function () {
 
                           var correct = opt === fgQuiz.answer;
 
-                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt }));
+                          var fb = buildFeedback(fgQuiz, opt, correct);
+
+                          upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt, fb: fb }));
 
                           upd('fgScore', fgScore + (correct ? 1 : 0));
 
                           upd('fgStreak', correct ? fgStreak + 1 : 0);
+
+                          if (fgQuiz.mode === 'myth') upd('fgMythsDone', (d.fgMythsDone || 0) + 1);
+
+                          if (typeof announceToSR === 'function') announceToSR((correct ? 'Correct. ' : 'Not quite. ') + fb);
 
                           if (correct) {
 
@@ -1144,25 +1296,18 @@ window.StemLab = window.StemLab || {
                               if (typeof awardStemXP === 'function') awardStemXP('funcGrapher', 10, 'Function Grapher streak bonus');
                             }
 
-                            // Auto-advance after 1.5s
-
-                            setTimeout(function () { startChallenge(); }, 1500);
+                            // Auto-advance \u2014 except in myth mode, where the "why" deserves a read
+                            if (fgQuiz.mode !== 'myth') setTimeout(function () { startChallenge(); }, 2200);
 
                           } else {
 
-                            var hint = challengeMode === 'root' ? 'The root is x = ' + fgQuiz.answer
-
-                              : challengeMode === 'yint' ? 'The y-intercept is ' + fgQuiz.answer
-
-                                : "It's a " + fgQuiz.type + ' function';
-
-                            addToast('\u274C ' + hint, 'error');
+                            addToast('\u274C Not quite \u2014 see why below', 'error');
 
                           }
 
                         }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
 
-                      }, challengeMode === 'name' ? opt : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt));
+                      }, optLabel);
 
                     })
 
@@ -1170,11 +1315,15 @@ window.StemLab = window.StemLab || {
 
                 ),
 
-                // Result card
+                // Result card \u2014 headline + corrective explanation (the pedagogy payload)
 
-                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl text-sm font-bold " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200') },
+                fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl " + (fgQuiz.chosen === fgQuiz.answer ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: "status" },
 
-                  fgQuiz.chosen === fgQuiz.answer ? '\u2705 Correct! +5 XP' : '\u274C Answer: ' + fgQuiz.answer
+                  React.createElement("p", { className: "text-sm font-bold mb-1 " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-700' : 'text-red-700') },
+                    fgQuiz.chosen === fgQuiz.answer ? '\u2705 Correct! +5 XP' : '\u274C Not quite'
+                  ),
+
+                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.chosen === fgQuiz.answer ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb)
 
                 )
 

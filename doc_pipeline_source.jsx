@@ -3091,6 +3091,7 @@ var createDocPipeline = function(deps) {
     if (hints.estimatedLinkCount > 5) parts.push(`${hints.estimatedLinkCount} LINKS detected — ensure every <a> has descriptive link text, never "click here" or bare URLs`);
     if (hints.hasBulletPatterns) parts.push('BULLET LISTS detected — convert all bullet characters to semantic <ul><li> structures');
     if (hints.hasNumberedLists) parts.push('NUMBERED LISTS detected — convert to semantic <ol><li> structures');
+    if (hints.hasMarkdownHeadings) parts.push('MARKDOWN HEADINGS detected (#, ##, ###) — convert every one to the matching real heading element (<h1>/<h2>/<h3>...) preserving the hierarchy, with exactly one <h1>; never leave literal # characters in the output');
     if (!parts.length) return '';
     return '\n\nSOURCE PRESCAN HINTS:\n- ' + parts.join('\n- ');
   };

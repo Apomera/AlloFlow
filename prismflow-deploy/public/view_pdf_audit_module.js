@@ -175,6 +175,8 @@ function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const title = ((doc.querySelector("title") || {}).textContent || (doc.querySelector("h1") || {}).textContent || "Accessible document").trim().slice(0, 200) || "Accessible document";
   const lang = (doc.documentElement.getAttribute("lang") || "en").trim() || "en";
+  const _dirAttr = ((doc.documentElement.getAttribute("dir") || doc.body && doc.body.getAttribute("dir") || "") + "").toLowerCase();
+  const rtl = _dirAttr === "rtl" || _dirAttr !== "ltr" && /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(lang);
   const blocks = [];
   const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
   const _fnIdByUid = {};
@@ -381,7 +383,7 @@ function _htmlToDocxSpec(html) {
   } catch (_) {
   }
   walk(doc.body);
-  return { title, lang, blocks, counts, footnotes: _fnDefs };
+  return { title, lang, rtl, blocks, counts, footnotes: _fnDefs };
 }
 function _expXmlEsc(s) {
   return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
@@ -457,9 +459,31 @@ function _htmlToOdtContentXml(html) {
         "</text:list>"
       ));
     } else if (b.type === "table") {
-      const cols = b.rows && b.rows[0] && b.rows[0].cells.length || 1;
-      const _odtRow = (r) => "<table:table-row>" + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>").join("") + "</table:table-row>";
-      const _rows = b.rows || [];
+      const _rows0 = b.rows || [];
+      const cols = Math.max(1, ..._rows0.map((r) => (r.cells || []).reduce((s, c) => s + Math.max(1, c.colSpan || 1), 0)));
+      const _pend = [];
+      const _odtRow = (r) => {
+        let out = "<table:table-row>";
+        const cells = r.cells || [];
+        let col = 0, ci = 0;
+        while (col < cols && (ci < cells.length || (_pend[col] || 0) > 0)) {
+          if ((_pend[col] || 0) > 0) {
+            out += "<table:covered-table-cell/>";
+            _pend[col]--;
+            col++;
+            continue;
+          }
+          const c = cells[ci++];
+          if (!c) break;
+          const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
+          out += '<table:table-cell office:value-type="string"' + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : "") + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : "") + '><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + "</text:p></table:table-cell>";
+          if (cs > 1) out += Array(cs - 1).fill("<table:covered-table-cell/>").join("");
+          if (rs > 1) for (let k = 0; k < cs; k++) _pend[col + k] = (_pend[col + k] || 0) + (rs - 1);
+          col += cs;
+        }
+        return out + "</table:table-row>";
+      };
+      const _rows = _rows0;
       let _hdr = 0;
       while (_hdr < _rows.length && _rows[_hdr].header) _hdr++;
       const _hdrXml = _hdr > 0 ? "<table:table-header-rows>" + _rows.slice(0, _hdr).map(_odtRow).join("") + "</table:table-header-rows>" : "";
@@ -556,7 +580,7 @@ function _htmlToDtbookXml(html, lang) {
     out.push("</level1>");
   }
   const bodyInner = out.join("\n") || "<level1><h1>" + title + "</h1></level1>";
-  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '">\n<head><meta name="dc:Title" content="' + title + '"/><meta name="dc:Language" content="' + _expXmlEsc(L) + '"/><meta name="dc:Publisher" content="AlloFlow"/><meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/><meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/></head>\n<book><bodymatter>' + bodyInner + "</bodymatter></book>\n</dtbook>";
+  return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : "") + '>\n<head><meta name="dc:Title" content="' + title + '"/><meta name="dc:Language" content="' + _expXmlEsc(L) + '"/><meta name="dc:Publisher" content="AlloFlow"/><meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/><meta name="dtb:uid" content="alloflow-daisy-' + Date.now() + '"/></head>\n<book><bodymatter>' + bodyInner + "</bodymatter></book>\n</dtbook>";
 }
 function _htmlToDaisyNcx(html, title) {
   const spec = _htmlToDocxSpec(html);
@@ -785,15 +809,17 @@ function validateEpubStructure(files) {
 }
 async function _buildDocxBlobFromSpec(spec, d, mode) {
   const academic = !!(mode && mode.academic);
+  const _rtl = !!spec.rtl;
   const HEADING = { 1: d.HeadingLevel.HEADING_1, 2: d.HeadingLevel.HEADING_2, 3: d.HeadingLevel.HEADING_3, 4: d.HeadingLevel.HEADING_4, 5: d.HeadingLevel.HEADING_5, 6: d.HeadingLevel.HEADING_6 };
   const runsTo = (runs) => runs.map((r) => {
     if (r.br) return new d.TextRun({ break: 1 });
     if (r.footnoteId) {
       return typeof d.FootnoteReferenceRun === "function" ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true });
     }
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? "Hyperlink" : void 0 });
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? "Hyperlink" : void 0, ..._rtl ? { rightToLeft: true } : {} });
     return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
+  const _P = (opts) => new d.Paragraph(_rtl ? { bidirectional: true, ...opts } : opts);
   const children = [];
   const _lang = spec.lang || "en";
   let _olCount = 0;
@@ -801,17 +827,17 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     if (b.type === "heading") {
       const hp = { heading: HEADING[b.level] || d.HeadingLevel.HEADING_6, children: runsTo(b.runs) };
       if ((academic && b.level === 1 || b.centered) && d.AlignmentType) hp.alignment = d.AlignmentType.CENTER;
-      children.push(new d.Paragraph(hp));
-    } else if (b.type === "pagebreak") children.push(new d.Paragraph({ children: [new d.PageBreak()] }));
+      children.push(_P(hp));
+    } else if (b.type === "pagebreak") children.push(_P({ children: [new d.PageBreak()] }));
     else if (b.type === "paragraph") {
       const pp = { children: runsTo(b.runs) };
       if (b.hanging) pp.indent = { left: 720, hanging: 720 };
       if (b.centered && d.AlignmentType) pp.alignment = d.AlignmentType.CENTER;
-      children.push(new d.Paragraph(pp));
+      children.push(_P(pp));
     } else if (b.type === "list") {
       const _olRef = b.ordered ? "allo-ol-" + _olCount++ : null;
       for (const it of b.items) {
-        children.push(new d.Paragraph({
+        children.push(_P({
           children: runsTo(it.runs),
           ...b.ordered ? { numbering: { reference: _olRef, level: Math.min(it.level || 0, 4) } } : { bullet: { level: Math.min(it.level || 0, 8) } }
         }));
@@ -819,6 +845,8 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     } else if (b.type === "table" && b.rows.length) {
       children.push(new d.Table({
         width: { size: 100, type: d.WidthType.PERCENTAGE },
+        // RTL (#2): flip the table's visual column order for right-to-left documents.
+        ..._rtl ? { visuallyRightToLeft: true } : {},
         rows: b.rows.map((row) => new d.TableRow({
           tableHeader: !!row.header,
           children: row.cells.map((c) => new d.TableCell({
@@ -826,7 +854,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
             // The spec's HTML source omits covered cells, matching the docx lib contract.
             ...c.colSpan > 1 ? { columnSpan: c.colSpan } : {},
             ...c.rowSpan > 1 ? { rowSpan: c.rowSpan } : {},
-            children: [new d.Paragraph({ children: runsTo(c.runs) })]
+            children: [_P({ children: runsTo(c.runs) })]
           }))
         }))
       }));
@@ -841,18 +869,18 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
           const w = Math.min(Math.max(parseInt(b.width, 10) || 480, 40), 600);
           const hRaw = parseInt(b.height, 10);
           const h = Math.max(hRaw || Math.round(w * 0.66), 30);
-          children.push(new d.Paragraph({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || "Image", description: b.alt || "Image", name: (b.alt || "image").slice(0, 60) } })] }));
+          children.push(_P({ children: [new d.ImageRun({ data: bytes, transformation: { width: w, height: h }, altText: { title: b.alt || "Image", description: b.alt || "Image", name: (b.alt || "image").slice(0, 60) } })] }));
           placed = true;
         } catch (_) {
         }
       }
-      if (!placed) children.push(new d.Paragraph({ children: [new d.TextRun({ text: "[Image: " + (b.alt || "no description available") + "]", italics: true })] }));
+      if (!placed) children.push(_P({ children: [new d.TextRun({ text: "[Image: " + (b.alt || "no description available") + "]", italics: true })] }));
       if (b.latex && typeof _latexToOmml === "function") {
         try {
           const omml = await _latexToOmml(b.latex);
           if (omml && d.ImportedXmlComponent && typeof d.ImportedXmlComponent.fromXmlString === "function") {
-            children.push(new d.Paragraph({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
-            children.push(new d.Paragraph({ children: [new d.TextRun({ text: "Editable equation (AI-transcribed from the image above \u2014 verify before reuse).", italics: true, size: 16 })] }));
+            children.push(_P({ children: [d.ImportedXmlComponent.fromXmlString(omml)] }));
+            children.push(_P({ children: [new d.TextRun({ text: "Editable equation (AI-transcribed from the image above \u2014 verify before reuse).", italics: true, size: 16 })] }));
           }
         } catch (_) {
         }
@@ -879,7 +907,7 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     const _fn = {};
     for (const id of Object.keys(spec.footnotes)) {
       try {
-        _fn[id] = { children: [new d.Paragraph({ children: runsTo(spec.footnotes[id]) })] };
+        _fn[id] = { children: [_P({ children: runsTo(spec.footnotes[id]) })] };
       } catch (_) {
       }
     }
@@ -997,7 +1025,7 @@ function _docxSpecToSlides(spec) {
         if (t) pushItem({ kind: "bullet", text: t, level: Math.min(it.level || 0, 4) }, 1);
       }
     } else if (b.type === "table") {
-      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => runsText(c.runs)) }));
+      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
       if (rows.length) pushItem({ kind: "table", rows }, rows.length + 1);
     } else if (b.type === "image") {
       pushItem({ kind: "image", src: b.src || null, alt: b.alt || "", width: b.width, height: b.height }, 8);
@@ -1089,7 +1117,11 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
       }
       flushText();
       if (it.kind === "table" && it.rows.length) {
-        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {} })));
+        const tableRows = it.rows.map((r) => r.cells.map((c) => {
+          const _txt = typeof c === "string" ? c : c && c.text || "";
+          const _cs = c && c.colSpan || 1, _rs = c && c.rowSpan || 1;
+          return { text: _txt, options: { ...r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}, ..._cs > 1 ? { colspan: _cs } : {}, ..._rs > 1 ? { rowspan: _rs } : {} } };
+        }));
         slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: "solid", color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
         y += 0.35 * it.rows.length + 0.25;
       } else if (it.kind === "image") {
@@ -1968,6 +2000,44 @@ function PdfAuditView(props) {
     if (_taggedModDateRef.current.result !== result) _taggedModDateRef.current = { result, date: (/* @__PURE__ */ new Date()).toISOString() };
     return _taggedModDateRef.current.date;
   };
+  const _runTypesetExport = async (opts) => {
+    const _sanitized = !!(opts && opts.sanitized);
+    try {
+      const ok = await _ensurePdfLib();
+      if (!ok) {
+        addToast(t("toasts.couldn_load_pdf_tagging_library"), "error");
+        return;
+      }
+      addToast(_sanitized ? "\u{1F9FC} " + (t("toasts.typeset_sanitized") || "Rebuilding a clean, tagged PDF from the remediated content \u2014 drops any embedded scripts, actions, or attachments from the original\u2026") : t("toasts.typeset_tagging") || "\u{1F4C4} Generating a typeset tagged PDF from the accessible content\u2026 (clean layout, not the original design)", "info");
+      const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, ""), lang: "en", subject: _sanitized ? "Rebuilt clean + tagged for accessibility by AlloFlow (regenerated layout; original active content removed)" : "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
+      const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
+      if (!taggedBytes) {
+        addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
+        return;
+      }
+      _lastTaggedBytesRef.current = taggedBytes;
+      setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
+      const _rt = _result && _result.roundTrip || null;
+      if (_rt && _rt.ok === false) {
+        addToast("\u26A0 " + (t("toasts.typeset_failed_check") || "The typeset tagged PDF failed its post-save structure check \u2014 use the Word or HTML download instead."), "error");
+        return;
+      }
+      safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + (_sanitized ? "-tagged-clean.pdf" : "-tagged-typeset.pdf"));
+      const _s = _result && _result.summary || {};
+      if (_s.typesetFont) {
+        addToast("\u{1F233} " + (t("toasts.typeset_unicode_font") || "Non-Latin text detected \u2014 embedded ") + _s.typesetFont.family + (t("toasts.typeset_unicode_font2") || " so the PDF keeps the real characters (script: ") + _s.typesetFont.script + ").", "info");
+      }
+      if (_s.fieldsCreated > 0) {
+        addToast("\u{1F4DD} " + _s.fieldsCreated + " " + (t("toasts.typeset_fields") || "fillable form fields embedded and tagged \u2014 students can type into the PDF."), "success");
+      }
+      if (_s.unicodeTypesetWarning) {
+        addToast("\u26A0 " + (t("toasts.typeset_unicode_warning") || "Some text could not be typeset honestly: ") + _s.unicodeTypesetWarning.advice + " " + (t("toasts.typeset_unicode_verify") || "To see exactly which passages are affected, open the word-level Diff in the Verification panel before distributing."), "warning");
+      }
+      addToast((_s.uaDeclared ? "\u2705 " : "\u{1F4C4} ") + (_sanitized ? t("toasts.typeset_sanitized_done") || "Clean tagged PDF ready \u2014 regenerated layout (not the original design), original active content removed, full structure tags." : t("toasts.typeset_tagged_done") || "Typeset tagged PDF ready \u2014 clean regenerated layout (not the original design), full structure tags.") + (_s.uaDeclared ? " PDF/UA declared." : ""), "success");
+    } catch (err) {
+      addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (err?.message || "unknown"), "error");
+    }
+  };
   const [_issueSourceOpen, _setIssueSourceOpen] = useState({});
   const [_issueEdit, _setIssueEdit] = useState({});
   const _paletteSnapshotRef = useRef(null);
@@ -2471,7 +2541,8 @@ function PdfAuditView(props) {
       zip.file("mimetype", "application/vnd.oasis.opendocument.text", { compression: "STORE" });
       zip.file("META-INF/manifest.xml", _ODT_MANIFEST_XML);
       zip.file("content.xml", _htmlToOdtContentXml(html));
-      zip.file("styles.xml", _ODT_STYLES_XML);
+      const _odtRtl = /<(?:html|body)[^>]*\bdir=["']rtl/i.test(html);
+      zip.file("styles.xml", _odtRtl ? _ODT_STYLES_XML.replace('<style:default-style style:family="paragraph">', '<style:default-style style:family="paragraph"><style:paragraph-properties style:writing-mode="rl-tb"/>') : _ODT_STYLES_XML);
       zip.file("meta.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" office:version="1.2"><office:meta><meta:generator>AlloFlow</meta:generator><dc:title>' + _expXmlEsc(title) + "</dc:title></office:meta></office:document-meta>");
       const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.oasis.opendocument.text" });
       const a = document.createElement("a");
@@ -7377,7 +7448,59 @@ Return ONLY JSON:
             const title = _ov.title && _ov.title.trim() || _dm.title;
             const lang = _ov.lang && _ov.lang.trim() || _dm.lang || "en";
             const _author = _ov.author && _ov.author.trim() || void 0;
-            const _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(pdfFixResult) });
+            let _result = await createTaggedPdf(bytes, pdfFixResult, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(pdfFixResult) });
+            let _autoRestoreLine = null;
+            try {
+              const _td0 = _result && _result.roundTrip && _result.roundTrip.textDiff;
+              const _res0 = _td0 && typeof _td0.residualMissingCount === "number" ? _td0.residualMissingCount : 0;
+              const _srcTxt = pdfFixResult.sourceText || "";
+              if (_res0 > 0 && _res0 <= 200 && Array.isArray(_td0.missingTokens) && _td0.missingTokens.length && _srcTxt && _docPipeline && typeof _docPipeline.applyWordRestoration === "function") {
+                let _h = pdfFixResult.accessibleHtml, _placed = [], _left = _td0.missingTokens.map((w) => ({ word: w }));
+                try {
+                  const r1 = _docPipeline.applyWordRestoration(_h, _left, _srcTxt);
+                  if (r1 && r1.html) {
+                    _h = r1.html;
+                    _placed = r1.restored || [];
+                    _left = r1.unplaceable || [];
+                  }
+                } catch (_e1) {
+                  warnLog("[AutoRestore] word splice failed: " + (_e1 && _e1.message));
+                }
+                if (_left.length > 0 && typeof _docPipeline.restoreSentencesDeterministic === "function") {
+                  try {
+                    const r2 = _docPipeline.restoreSentencesDeterministic(_h, _left, _srcTxt);
+                    if (r2 && r2.html) {
+                      _h = r2.html;
+                      _placed = _placed.concat(r2.restoredViaSentence || []);
+                      _left = r2.stillMissing || [];
+                    }
+                  } catch (_e2) {
+                    warnLog("[AutoRestore] sentence anchor failed: " + (_e2 && _e2.message));
+                  }
+                }
+                if (_placed.length > 0 || _left.length < _td0.missingTokens.length) {
+                  const _txt = _h.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
+                  const _fr2 = { ...pdfFixResult, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt };
+                  const _r2 = await createTaggedPdf(bytes, _fr2, { title, lang, author: _author, subject: "Remediated for accessibility by AlloFlow", modDate: _stableModDate(_fr2) });
+                  const _td2 = _r2 && _r2.roundTrip && _r2.roundTrip.textDiff;
+                  const _res2 = _td2 && typeof _td2.residualMissingCount === "number" ? _td2.residualMissingCount : null;
+                  if (_r2 && _r2.bytes && !(_r2.roundTrip && _r2.roundTrip.ok === false) && _res2 != null && _res2 <= _res0) {
+                    const _pre = pdfFixResult.accessibleHtml;
+                    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, htmlChars: _h.length, finalText: _txt, _preCmdHtml: _pre } : prev);
+                    _result = _r2;
+                    _autoRestoreLine = { tone: "success", text: "Auto-recovery: " + _placed.length + " missing source word(s) restored inline" + (_left.length > 0 ? " (" + _left.length + " preserved in the Content Recovery appendix)" : "") + " before tagging \u2014 residual missing " + _res0 + " \u2192 " + _res2 + ". \u21A9 Revert undoes it." };
+                  } else {
+                    _autoRestoreLine = { tone: "info", text: "Auto-recovery attempted on " + _res0 + " residual missing word(s) but did not improve the result \u2014 the original output was kept. Use \u21BB Re-run with restoration to review manually." };
+                  }
+                } else {
+                  _autoRestoreLine = { tone: "info", text: _res0 + " residual missing word(s) could not be auto-placed \u2014 open the word-level Diff to review them (often cosmetic: quotes, form fills, hyphenation)." };
+                }
+              } else if (_res0 > 200) {
+                _autoRestoreLine = { tone: "warn", text: _res0 + " residual missing words \u2014 too many to auto-restore safely (often OCR noise on scans). Open the word-level Diff, then \u21BB Re-run with restoration if they are real content." };
+              }
+            } catch (_eAuto) {
+              warnLog("[AutoRestore] skipped: " + (_eAuto && _eAuto.message));
+            }
             const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
             const summary = _result && _result.summary || null;
             const pdfUa1Checks = _result && _result.pdfUa1Checks || null;
@@ -7423,6 +7546,7 @@ Return ONLY JSON:
             const blob = new Blob([taggedBytes], { type: "application/pdf" });
             safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf");
             const _rpt = [];
+            if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
             if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
               _rpt.push({ tone: "error", text: "Searchable text layer covers " + ocrTextLayer.coveragePct + "% of the scanned text \u2014 " + (ocrTextLayer.droppedChars || 0) + " character(s) in a non-Latin script could not be embedded, so those passages will not be searchable or read aloud." });
             }
@@ -7506,48 +7630,23 @@ Return ONLY JSON:
       {
         id: "allo-tagged-pdf-btn",
         "data-help-key": "pdf_audit_view_typeset_tagged_btn",
-        onClick: async () => {
-          try {
-            const ok = await _ensurePdfLib();
-            if (!ok) {
-              addToast(t("toasts.couldn_load_pdf_tagging_library"), "error");
-              return;
-            }
-            addToast(t("toasts.typeset_tagging") || "\u{1F4C4} Generating a typeset tagged PDF from the accessible content\u2026 (clean layout, not the original design)", "info");
-            const _result = await createTypesetTaggedPdf(pdfFixResult, { title: (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, ""), lang: "en", subject: "Typeset and tagged for accessibility by AlloFlow (generated layout)" });
-            const taggedBytes = _result && _result.bytes ? _result.bytes : _result;
-            if (!taggedBytes) {
-              addToast(t("toasts.tagged_pdf_generation_returned_bytes"), "error");
-              return;
-            }
-            _lastTaggedBytesRef.current = taggedBytes;
-            setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
-            const _rt = _result && _result.roundTrip || null;
-            if (_rt && _rt.ok === false) {
-              addToast("\u26A0 " + (t("toasts.typeset_failed_check") || "The typeset tagged PDF failed its post-save structure check \u2014 use the Word or HTML download instead."), "error");
-              return;
-            }
-            safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + "-tagged-typeset.pdf");
-            const _s = _result && _result.summary || {};
-            if (_s.typesetFont) {
-              addToast("\u{1F233} " + (t("toasts.typeset_unicode_font") || "Non-Latin text detected \u2014 embedded ") + _s.typesetFont.family + (t("toasts.typeset_unicode_font2") || " so the PDF keeps the real characters (script: ") + _s.typesetFont.script + ").", "info");
-            }
-            if (_s.fieldsCreated > 0) {
-              addToast("\u{1F4DD} " + _s.fieldsCreated + " " + (t("toasts.typeset_fields") || "fillable form fields embedded and tagged \u2014 students can type into the PDF."), "success");
-            }
-            if (_s.unicodeTypesetWarning) {
-              addToast("\u26A0 " + (t("toasts.typeset_unicode_warning") || "Some text could not be typeset honestly: ") + _s.unicodeTypesetWarning.advice, "warning");
-            }
-            addToast((_s.uaDeclared ? "\u2705 " : "\u{1F4C4} ") + (t("toasts.typeset_tagged_done") || "Typeset tagged PDF ready \u2014 clean regenerated layout (not the original design), full structure tags.") + (_s.uaDeclared ? " PDF/UA declared." : ""), "success");
-          } catch (err) {
-            addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (err?.message || "unknown"), "error");
-          }
-        },
+        onClick: () => _runTypesetExport(),
         className: "px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5",
         title: t("pdf_audit.tagged_pdf.typeset_title") || "Word/PowerPoint inputs have no PDF bytes to tag \u2014 this generates a CLEAN typeset PDF from the remediated content (simple layout, NOT the original design) and runs the full tagger on it: real structure tree, verified after saving, declaration only when earned."
       },
       "\u{1F4C4} ",
       t("pdf_audit.tagged_pdf.typeset_label") || "Tagged PDF (generated layout)"
+    ), _inputIsPdf && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        id: "allo-tagged-pdf-clean-btn",
+        "data-help-key": "pdf_audit_view_sanitized_rebuild_btn",
+        onClick: () => _runTypesetExport({ sanitized: true }),
+        className: "px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5",
+        title: t("pdf_audit.tagged_pdf.sanitized_title") || "Rebuild a CLEAN tagged PDF from the remediated content instead of tagging the original file. Because it regenerates the PDF, it drops any embedded JavaScript, open/launch actions, file attachments, and original metadata the source carried \u2014 a safer file to redistribute, at the cost of the original visual design. Use this when the source PDF is from an untrusted or unknown origin."
+      },
+      "\u{1F9FC} ",
+      t("pdf_audit.tagged_pdf.sanitized_label") || "Rebuild clean (drops embedded scripts)"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {

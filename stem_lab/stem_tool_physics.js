@@ -80,7 +80,8 @@ window.StemLab = window.StemLab || {
     questHooks: [
       { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetScore || 0) >= 3; }, progress: function(d) { return (d.targetScore || 0) + '/3 targets'; } },
       { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
-      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } }
+      { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } },
+      { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -2784,7 +2785,7 @@ const d = labToolData.physics;
 
               d.quizActive && React.createElement("div", { className: "space-y-2" },
 
-                React.createElement("p", { className: "text-xs text-slate-600" }, "A projectile is launched at ", React.createElement("b", null, d.quizAngle + "\u00B0"), " with velocity ", React.createElement("b", null, d.quizVel + " m/s"), " and gravity ", React.createElement("b", null, d.quizGrav + " m/s\u00B2"), ". How far does it land?"),
+                React.createElement("p", { className: "text-xs text-slate-600" }, "A projectile is launched at ", React.createElement("b", null, d.quizAngle + "\u00B0"), " with velocity ", React.createElement("b", null, d.quizVel + " m/s"), " and gravity ", React.createElement("b", null, d.quizGrav + " m/s\u00B2" + ({ '9.8': ' (Earth)', '1.6': ' (Moon)', '3.7': ' (Mars)', '24.8': ' (Jupiter)' }[String(d.quizGrav)] || '')), ". How far does it land?"),
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -2806,6 +2807,19 @@ const d = labToolData.physics;
 
                         upd('quizFeedback', isCorrect ? 'correct' : 'wrong');
 
+                        // Diagnostic breakdown: walk the formula with THESE numbers and
+                        // say how far off the pick was — velocity-squared is the usual trap.
+                        if (!isCorrect) {
+                          var qRatio = opt / d.quizAnswer;
+                          var qSin = Math.sin(2 * d.quizAngle * Math.PI / 180);
+                          var qDiag = 'Walk it through: R = v²·sin(2θ)/g = ' + d.quizVel + '² × ' + qSin.toFixed(2) + ' / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m. Your pick was ' + (qRatio > 1 ? qRatio.toFixed(1) + '× too far' : 'only ' + (qRatio * 100).toFixed(0) + '% of the true range') + '. Remember the biggest lever: velocity enters SQUARED — small speed changes move the landing a lot.';
+                          var qWorld = { '1.6': 'Moon gravity is ~6× weaker than Earth’s, so everything flies ~6× farther.', '3.7': 'Mars gravity is ~2.6× weaker than Earth’s — ranges stretch accordingly.', '24.8': 'Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.' }[String(d.quizGrav)];
+                          if (qWorld) qDiag += ' ' + qWorld;
+                          upd('quizDiag', qDiag);
+                        } else {
+                          upd('quizDiag', null);
+                        }
+
                         if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Predicted the landing!'); }
 
                         else { upd('quizStreak', 0); }
@@ -2824,13 +2838,81 @@ const d = labToolData.physics;
 
                 d.quizFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.quizFeedback === 'correct' ? 'text-emerald-600' : 'text-red-600') },
 
-                  d.quizFeedback === 'correct' ? '\u2705 Correct! R = v\u00B2sin(2\u03B8)/g = ' + d.quizAnswer.toFixed(1) + 'm' : '\u274C Not quite. The answer is ' + d.quizAnswer.toFixed(1) + 'm'),
+                  d.quizFeedback === 'correct' ? '\u2705 Correct! R = v\u00B2sin(2\u03B8)/g = ' + d.quizAnswer.toFixed(1) + 'm' : '\u274C Not quite.'),
+
+                d.quizFeedback === 'wrong' && d.quizDiag && React.createElement("p", { className: "text-xs leading-relaxed text-red-700 bg-red-50 rounded-lg p-2 border border-red-200" }, d.quizDiag),
 
                 d.quizStreak > 1 && React.createElement("p", { className: "text-xs font-bold text-amber-600" }, "\uD83D\uDD25 Streak: " + d.quizStreak + "!")
 
               )
 
             ),
+
+            // \u2500\u2500 \uD83E\uDDE0 Physics Myths \u2014 grade-banded T/F misconceptions, each falsifiable IN the sim \u2500\u2500
+            // Every myth here is a documented projectile misconception (impetus theory,
+            // heavier-falls-faster, zero-velocity-at-apex...), and every verdict comes with
+            // a "Try it" pointing at the sim feature that lets the student SEE the truth.
+            (function () {
+              var glp = (gradeLevel || '5th Grade').toLowerCase();
+              var mythBand = /9th|10|11|12|high/.test(glp) ? '9-12' : /6th|7th|8th/.test(glp) ? '6-8' : '3-5';
+              var MYTHS_35 = [
+                { s: 'A heavier cannonball falls faster, so it lands sooner.', t: false, why: 'Gravity speeds up EVERY mass equally (with air resistance off) \u2014 a 10 kg ball and a 1 kg ball trace the exact same arc. Galileo\u2019s big idea.', tryIt: 'Launch with mass = 1 kg, then slide mass to 10 kg and launch again. Same arc, same landing spot.' },
+                { s: 'At the very top of the arc, the ball has stopped moving.', t: false, why: 'Only the UP-DOWN part of the motion pauses at the top. The ball keeps moving forward the whole time.', tryIt: 'Turn on Vectors and watch the horizontal arrow at the top of the arc \u2014 it never shrinks.' },
+                { s: 'Doubling the launch speed doubles the distance.', t: false, why: 'Distance grows with speed \u00D7 speed. Double the speed and it lands FOUR times farther.', tryIt: 'Launch at 15 m/s, then at 30 m/s with the same angle \u2014 compare the landing markers.' },
+                { s: 'Aiming at 45\u00B0 throws the farthest (no air).', t: true, why: 'Lower angles fly flat but fall too soon; higher angles waste speed going up. 45\u00B0 is the perfect trade.', tryIt: 'Run the complementary-angles demo \u2014 30\u00B0 and 60\u00B0 even land on the SAME spot.' }
+              ];
+              var MYTHS_68 = MYTHS_35.concat([
+                { s: 'After launch, a force keeps pushing the ball forward.', t: false, why: 'Once it leaves the cannon, the ONLY force is gravity, pulling straight down. Forward motion continues because nothing stops it \u2014 Newton\u2019s first law.', tryIt: 'Watch the vector overlay in flight: there is no forward force, yet Vx stays perfectly constant.' },
+                { s: 'A ball fired horizontally and a ball dropped from the same height hit the ground at the same time.', t: true, why: 'Horizontal and vertical motion are independent. Both balls fall with the same gravity from the same height, so they land together.', tryIt: 'Fire at a very low angle and compare the flight time with a steep, short lob from the same height.' }
+              ]);
+              var MYTHS_912 = MYTHS_68.concat([
+                { s: 'With air resistance ON, 45\u00B0 is still the best angle.', t: false, why: 'Drag punishes long, high flights \u2014 it bleeds v\u00B2 the whole way. The optimum drops to roughly 30\u201340\u00B0 depending on speed.', tryIt: 'Toggle air resistance on and sweep the angle slider \u2014 watch where the landing marker actually peaks.' }
+              ]);
+              var mythBank = mythBand === '9-12' ? MYTHS_912 : mythBand === '6-8' ? MYTHS_68 : MYTHS_35;
+              var myth = d.physMyth || null;
+              function startMyth() {
+                var mi = Math.floor(Math.random() * mythBank.length);
+                if (myth && mi === myth.idx) mi = (mi + 1) % mythBank.length;
+                var m = mythBank[mi];
+                upd('physMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
+              }
+              return React.createElement("div", { className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3" },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700 uppercase tracking-wider" }, "\uD83E\uDDE0 Physics Myths \u2014 true or false?"),
+                  React.createElement("button", { "aria-label": "Start a physics myth question",
+                    onClick: startMyth,
+                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all"
+                  }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
+                ),
+                myth && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs font-bold text-slate-700" }, "\u201C" + myth.s + "\u201D"),
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [true, false].map(function (val) {
+                      return React.createElement("button", { key: String(val),
+                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        onClick: function () {
+                          var right = val === myth.t;
+                          upd('physMyth', Object.assign({}, myth, { answered: true, chosen: val }));
+                          upd('physMythsDone', (d.physMythsDone || 0) + 1);
+                          if (right) {
+                            awardStemXP('physicsMyth', 5, 'Myth busted');
+                            if (typeof stemBeep === 'function') stemBeep(784, 0.12);
+                          } else if (typeof stemBeep === 'function') stemBeep(220, 0.15);
+                          if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
+                      }, val ? '\u2705 True' : '\u274C False');
+                    })
+                  ),
+                  myth.answered && React.createElement("div", { className: "p-2.5 rounded-lg " + (myth.chosen === myth.t ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? 'text-emerald-700' : 'text-red-700') },
+                      (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
+                    React.createElement("p", { className: "text-xs leading-relaxed text-slate-700 mb-1" }, myth.why),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold text-indigo-700" }, "\uD83D\uDD2C Try it in the sim: " + myth.tryIt)
+                  )
+                )
+              );
+            })(),
 
             React.createElement("button", { "aria-label": "Snapshot", onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot"),
 

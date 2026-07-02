@@ -2,32 +2,14 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 368
-Defined help keys (help_strings.js): 878
-Referenced help keys (data-help-key attrs): 862
-  - With definition: 856
-  - MISSING definition: 6
-Dead entries (defined but never referenced): 22
+Files scanned: 371
+Defined help keys (help_strings.js): 905
+Referenced help keys (data-help-key attrs): 882
+  - With definition: 882
+  - MISSING definition: 0
+Dead entries (defined but never referenced): 23
 
 --- MISSING help strings (referenced, no definition) ---
-  educator_hub_cinematic_studio_card  [2x in 2 file(s)]
-     - view_educator_hub_modal_module.js
-     - view_educator_hub_modal_source.jsx
-  educator_hub_lesson_builder_card  [2x in 2 file(s)]
-     - view_educator_hub_modal_module.js
-     - view_educator_hub_modal_source.jsx
-  educator_hub_professional_dev_card  [2x in 2 file(s)]
-     - view_educator_hub_modal_module.js
-     - view_educator_hub_modal_source.jsx
-  pdf_audit_view_ocr_language  [2x in 2 file(s)]
-     - view_pdf_audit_module.js
-     - view_pdf_audit_source.jsx
-  pdf_audit_writing_check_btn  [2x in 2 file(s)]
-     - view_pdf_audit_module.js
-     - view_pdf_audit_source.jsx
-  ws_gen_voice_pack  [2x in 2 file(s)]
-     - word_sounds_setup_module.js
-     - word_sounds_setup_source.jsx
 
 --- DEAD entries (defined but never used) ---
   alignment_generate_button
@@ -35,6 +17,7 @@ Dead entries (defined but never referenced): 22
   alignment_standard_select
   brainstorm_simulation_detailed
   brainstorm_step_count_detailed
+  bridge_mode_button
   concept_sort_input
   header_actions
   header_settings
@@ -54,6 +37,3 @@ Dead entries (defined but never referenced): 22
   wizard_close_btn
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
-     3  educator
-     2  pdf
-     1  ws

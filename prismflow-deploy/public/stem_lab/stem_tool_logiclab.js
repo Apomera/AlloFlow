@@ -501,6 +501,26 @@ window.StemLab = window.StemLab || {
 
           // ── Inference Rules ──
 
+          // ── Fallacy detection for failed rule applications ──
+          // The two classic invalid moves are recognizable from the selection:
+          // P→Q with Q (affirming the consequent) and P→Q with ¬P (denying the
+          // antecedent). Name the fallacy with a counter-example instead of a
+          // generic "doesn't apply" — the wrong move becomes the lesson.
+          var diagnoseFallacy = function(selTexts) {
+            for (var fi = 0; fi < selTexts.length; fi++) {
+              var fm = selTexts[fi].match(/^(.+)\s*→\s*(.+)$/);
+              if (!fm) continue;
+              var fp = fm[1].trim(), fq = fm[2].trim();
+              for (var fj = 0; fj < selTexts.length; fj++) {
+                if (fi === fj) continue;
+                var fOther = selTexts[fj].trim();
+                if (fOther === fq) return 'That move is AFFIRMING THE CONSEQUENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "' + fq + '" you cannot conclude "' + fp + '": something ELSE could have caused ' + fq + '. (If it rains, the ground is wet. The ground IS wet — but maybe a sprinkler did it.)';
+                if (fOther === '¬' + fp || fOther === '¬(' + fp + ')') return 'That move is DENYING THE ANTECEDENT — a classic fallacy. From "' + fp + ' → ' + fq + '" and "¬' + fp + '" you cannot conclude "¬' + fq + '": the rule only says what happens IF ' + fp + ' is true. It is silent when ' + fp + ' is false.';
+              }
+            }
+            return null;
+          };
+
           var RULES = [
 
             { id: 'mp', name: t('stem.logiclab.modus_ponens', 'Modus Ponens'), form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
@@ -678,14 +698,14 @@ window.StemLab = window.StemLab || {
           // ── Proof Challenges ──
 
           var PROOF_CHALLENGES = [
-            { level: 1, title: t('stem.logiclab.simple_deduction', 'Simple Deduction'), premises: ['P \u2192 Q', 'P'], conclusion: 'Q', hint: t('stem.logiclab.use_modus_ponens_p_q_and_p_gives_q', 'Use Modus Ponens: P\u2192Q and P gives Q') },
-            { level: 2, title: t('stem.logiclab.denial', 'Denial'), premises: ['P \u2192 Q', '\u00ACQ'], conclusion: '\u00ACP', hint: t('stem.logiclab.use_modus_tollens_p_q_and_q_gives_p', 'Use Modus Tollens: P\u2192Q and \u00ACQ gives \u00ACP') },
-            { level: 3, title: t('stem.logiclab.chain_reaction', 'Chain Reaction'), premises: ['P \u2192 Q', 'Q \u2192 R', 'P'], conclusion: 'R', hint: t('stem.logiclab.hs_chains_p_q_and_q_r_then_mp_with_p', 'HS chains P\u2192Q and Q\u2192R, then MP with P') },
-            { level: 4, title: t('stem.logiclab.elimination', 'Elimination'), premises: ['P \u2228 Q', '\u00ACP'], conclusion: 'Q', hint: t('stem.logiclab.disjunctive_syllogism_p_q_and_p_gives_', 'Disjunctive Syllogism: P\u2228Q and \u00ACP gives Q') },
-            { level: 5, title: t('stem.logiclab.combine_conclude', 'Combine & Conclude'), premises: ['(P \u2227 Q) \u2192 R', 'P', 'Q'], conclusion: 'R', hint: t('stem.logiclab.conjunction_gives_p_q_then_modus_ponen', 'Conjunction gives P\u2227Q, then Modus Ponens gives R') },
-            { level: 6, title: t('stem.logiclab.long_chain', 'Long Chain'), premises: ['P \u2192 Q', 'Q \u2192 R', 'R \u2192 S', 'P'], conclusion: 'S', hint: t('stem.logiclab.chain_p_q_and_q_r_with_hs_then_again_w', 'Chain P\u2192Q and Q\u2192R with HS, then again with R\u2192S, then MP') },
-            { level: 7, title: t('stem.logiclab.double_deny', 'Double Deny'), premises: ['P \u2192 Q', '\u00ACQ', 'P \u2228 R'], conclusion: 'R', hint: t('stem.logiclab.mt_on_p_q_gives_p_then_ds_on_p_r_gives', 'MT on P\u2192Q gives \u00ACP, then DS on P\u2228R gives R') },
-            { level: 8, title: t('stem.logiclab.master_proof', 'Master Proof'), premises: ['P \u2192 Q', 'Q \u2192 R', '\u00ACR'], conclusion: '\u00ACP', hint: t('stem.logiclab.hs_gives_p_r_then_mt_with_r_gives_p', 'HS gives P\u2192R, then MT with \u00ACR gives \u00ACP') }
+            { level: 1, title: t('stem.logiclab.simple_deduction', 'Simple Deduction'), premises: ['P \u2192 Q', 'P'], conclusion: 'Q', rulesNeeded: ['mp'], hint: t('stem.logiclab.use_modus_ponens_p_q_and_p_gives_q', 'Use Modus Ponens: P\u2192Q and P gives Q') },
+            { level: 2, title: t('stem.logiclab.denial', 'Denial'), premises: ['P \u2192 Q', '\u00ACQ'], conclusion: '\u00ACP', rulesNeeded: ['mt'], hint: t('stem.logiclab.use_modus_tollens_p_q_and_q_gives_p', 'Use Modus Tollens: P\u2192Q and \u00ACQ gives \u00ACP') },
+            { level: 3, title: t('stem.logiclab.chain_reaction', 'Chain Reaction'), premises: ['P \u2192 Q', 'Q \u2192 R', 'P'], conclusion: 'R', rulesNeeded: ['hs', 'mp'], hint: t('stem.logiclab.hs_chains_p_q_and_q_r_then_mp_with_p', 'HS chains P\u2192Q and Q\u2192R, then MP with P') },
+            { level: 4, title: t('stem.logiclab.elimination', 'Elimination'), premises: ['P \u2228 Q', '\u00ACP'], conclusion: 'Q', rulesNeeded: ['ds'], hint: t('stem.logiclab.disjunctive_syllogism_p_q_and_p_gives_', 'Disjunctive Syllogism: P\u2228Q and \u00ACP gives Q') },
+            { level: 5, title: t('stem.logiclab.combine_conclude', 'Combine & Conclude'), premises: ['(P \u2227 Q) \u2192 R', 'P', 'Q'], conclusion: 'R', rulesNeeded: ['conj', 'mp'], hint: t('stem.logiclab.conjunction_gives_p_q_then_modus_ponen', 'Conjunction gives P\u2227Q, then Modus Ponens gives R') },
+            { level: 6, title: t('stem.logiclab.long_chain', 'Long Chain'), premises: ['P \u2192 Q', 'Q \u2192 R', 'R \u2192 S', 'P'], conclusion: 'S', rulesNeeded: ['hs', 'mp'], hint: t('stem.logiclab.chain_p_q_and_q_r_with_hs_then_again_w', 'Chain P\u2192Q and Q\u2192R with HS, then again with R\u2192S, then MP') },
+            { level: 7, title: t('stem.logiclab.double_deny', 'Double Deny'), premises: ['P \u2192 Q', '\u00ACQ', 'P \u2228 R'], conclusion: 'R', rulesNeeded: ['mt', 'ds'], hint: t('stem.logiclab.mt_on_p_q_gives_p_then_ds_on_p_r_gives', 'MT on P\u2192Q gives \u00ACP, then DS on P\u2228R gives R') },
+            { level: 8, title: t('stem.logiclab.master_proof', 'Master Proof'), premises: ['P \u2192 Q', 'Q \u2192 R', '\u00ACR'], conclusion: '\u00ACP', rulesNeeded: ['hs', 'mt'], hint: t('stem.logiclab.hs_gives_p_r_then_mt_with_r_gives_p', 'HS gives P\u2192R, then MT with \u00ACR gives \u00ACP') }
           ];
 
 
@@ -741,6 +761,22 @@ window.StemLab = window.StemLab || {
 
 
           var activeCh = aiProof || PROOF_CHALLENGES[currentChallenge] || PROOF_CHALLENGES[0];
+
+          // ── Grade-banded rule palette ──
+          // Younger bands start with the two most intuitive rules; the middle band
+          // adds four more; 9-12 sees all eight. Rules the ACTIVE challenge needs
+          // are always unlocked (so no proof is ever blocked), AI-generated proofs
+          // show everything (their requirements are unknown), and a "show all"
+          // toggle lets any student opt out of the training wheels.
+          var _llGl = (gradeLevel || '').toLowerCase();
+          var _llBand = /k|1st|2nd|pre/.test(_llGl) ? 'K-2' : /3rd|4th|5th/.test(_llGl) ? '3-5' : /6th|7th|8th/.test(_llGl) ? '6-8' : '9-12';
+          var _llBandRules = _llBand === '9-12' ? null : (_llBand === '6-8' ? { mp: 1, mt: 1, hs: 1, ds: 1, conj: 1, simp: 1 } : { mp: 1, ds: 1 });
+          var _llNeeded = (!aiProof && activeCh && activeCh.rulesNeeded) || [];
+          var showAllRules = !!d.showAllRules;
+          var ruleVisible = function(rid) {
+            if (showAllRules || _llBandRules === null || aiProof) return true;
+            return !!_llBandRules[rid] || _llNeeded.indexOf(rid) >= 0;
+          };
 
 
 
@@ -1441,7 +1477,7 @@ window.StemLab = window.StemLab || {
 
                       React.createElement("button", { "aria-label": t('stem.logiclab.reset_proof_steps', "Reset proof steps"),
 
-                        onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
+                        onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [], fallacyNote: null }); },
 
                         className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-400 rounded-lg transition-all"
 
@@ -1473,7 +1509,7 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("h4", { className: "text-xs font-black text-violet-600 uppercase tracking-wider mb-1" }, t('stem.logiclab.inference_rules', "\uD83D\uDCDA Inference Rules")),
 
-                  RULES.map(function(rule) {
+                  RULES.filter(function(rule) { return ruleVisible(rule.id); }).map(function(rule) {
 
                     return React.createElement("button", { "aria-label": "Apply rule: " + rule.name,
 
@@ -1513,7 +1549,7 @@ window.StemLab = window.StemLab || {
 
                           var done = result === activeCh.conclusion;
 
-                          upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done });
+                          upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done, fallacyNote: null });
 
                           if (done) {
                             var _xp = 5 + (activeCh.level || 1) * 3;
@@ -1526,7 +1562,13 @@ window.StemLab = window.StemLab || {
 
                         } else {
 
-                          if (addToast) addToast('\u274C That rule doesn\'t apply to the selected statements.', 'warning');
+                          var fallacyMsg = diagnoseFallacy(selTexts);
+
+                          upd({ fallacyNote: fallacyMsg });
+
+                          if (fallacyMsg && typeof announceToSR === 'function') announceToSR(fallacyMsg);
+
+                          if (addToast) addToast(fallacyMsg ? '\uD83D\uDEAB Fallacy spotted \u2014 see the note below the rules.' : '\u274C That rule doesn\'t apply to the selected statements.', 'warning');
 
                         }
 
@@ -1544,7 +1586,35 @@ window.StemLab = window.StemLab || {
 
                     );
 
-                  })
+                  }),
+
+                  // Rule-palette toggle — visible only when the grade band hides rules
+                  (function() {
+                    var hiddenCount = RULES.filter(function(rule) { return !ruleVisible(rule.id); }).length;
+                    if (hiddenCount === 0 && !showAllRules) return null;
+                    if (showAllRules && _llBandRules !== null && !aiProof) {
+                      return React.createElement("button", {
+                        "aria-label": t('stem.logiclab.hide_advanced_rules', "Hide advanced rules"),
+                        onClick: function() { upd({ showAllRules: false }); },
+                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 border border-violet-300 hover:bg-violet-100 transition-all"
+                      }, "🎯 Focus mode: show fewer rules");
+                    }
+                    if (hiddenCount > 0) {
+                      return React.createElement("button", {
+                        "aria-label": t('stem.logiclab.show_all_rules', "Show all inference rules"),
+                        onClick: function() { upd({ showAllRules: true }); },
+                        className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-300 hover:bg-violet-50 transition-all"
+                      }, "🔓 Show " + hiddenCount + " advanced rule" + (hiddenCount > 1 ? "s" : ""));
+                    }
+                    return null;
+                  })(),
+
+                  // Fallacy note — appears when a failed rule application matches a
+                  // classic invalid move; cleared on the next valid step or reset.
+                  d.fallacyNote && React.createElement("div", { className: "p-2.5 rounded-xl bg-amber-50 border-2 border-amber-300 text-[11px] leading-relaxed text-amber-900", role: "status" },
+                    React.createElement("span", { className: "font-black" }, "🚫 "),
+                    d.fallacyNote
+                  )
 
                 )
 

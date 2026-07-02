@@ -36,6 +36,7 @@
   var Italic = _lazyIcon('Italic');
   var Highlighter = _lazyIcon('Highlighter');
   var List = _lazyIcon('List');
+  var ListOrdered = _lazyIcon('ListOrdered');
   var FileText = _lazyIcon('FileText');
 
   function AnalysisView(props) {
@@ -449,7 +450,11 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     onClick: () => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
-  }, "H2"), /*#__PURE__*/React.createElement("div", {
+  }, "H2"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
+    title: t('formatting.h3') || 'Heading 3'
+  }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
@@ -457,8 +462,15 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
+    className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
+    title: t('formatting.numlist') || 'Numbered List'
+  }, /*#__PURE__*/React.createElement(ListOrdered, {
+    size: 16
   }))), /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('common.edit_source_text') || 'Edit source text',
+    "data-allo-textundo": "analysis",
     ref: analysisEditorRef,
     value: generatedContent?.data.originalText,
     onChange: e => handleAnalysisTextChange(e.target.value),

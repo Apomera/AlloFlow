@@ -179,6 +179,16 @@ var createContentEngine = function(deps) {
       if (/^#{1,6}\s+/.test(trimmed) && trimmed.length > 150) return line.replace(/^#{1,6}\s+/, '');
       return line;
     });
+    // Outline safety: keep exactly ONE H1 (the title). Any later '# ' line is
+    // demoted to '## ' so screen-reader outlines and exports never see two H1s.
+    var _seenH1 = false;
+    repairedLines = repairedLines.map(function(line) {
+      if (/^#\s+/.test(line.trim())) {
+        if (!_seenH1) { _seenH1 = true; return line; }
+        return line.replace(/^(\s*)#\s+/, '$1## ');
+      }
+      return line;
+    });
     var finalLines = [];
     for (var i = 0; i < repairedLines.length; i++) {
       var line = repairedLines[i];
@@ -362,12 +372,66 @@ var createContentEngine = function(deps) {
     cleaned = cleaned.replace(/\n{4,}/g, '\n\n\n');
     return cleaned.trim();
   };
+  // ── Deterministic header guards (2026-07-02) ──
+  // The generation prompts ASK for '## ' section headers but nothing enforced
+  // them, so whether an H2 appeared depended on model compliance — the root
+  // cause of "header 2 sometimes missing" in generated source text. These
+  // repairs run on generation output only, never on user-typed text.
+  var ensureSectionHeader = function(text, title) {
+    if (!text || !title) return text;
+    var cleanTitle = String(title).replace(/^#+\s*/, '').trim();
+    if (cleanTitle.length > 120) cleanTitle = cleanTitle.slice(0, 117) + '…';
+    var lines = String(text).split('\n');
+    var firstIdx = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].trim().length > 0) { firstIdx = i; break; } }
+    if (firstIdx === -1) return text;
+    var first = lines[firstIdx].trim();
+    // "##Title" (missing space) → "## Title"; letters only so "#1 reason" prose survives.
+    var noSpace = first.match(/^(#{1,4})([A-Za-z].*)$/);
+    if (noSpace) first = noSpace[1] + ' ' + noSpace[2];
+    if (/^#{1,6}\s+/.test(first)) {
+      // A header came back — force it to level 2 (sections sit under the # title).
+      lines[firstIdx] = first.replace(/^#{1,6}\s+/, '## ');
+      return lines.join('\n');
+    }
+    // Whole-line bold pretending to be a header → real H2.
+    var bold = first.match(/^\*\*([^*]{2,100})\*\*:?\s*$/);
+    if (bold && !/[.!?:]\s*$/.test(bold[1])) {
+      lines[firstIdx] = '## ' + bold[1].trim();
+      return lines.join('\n');
+    }
+    // The model may open with a sentence and place the header a line or two
+    // in — don't double-add if an H2-H4 shows up in the first 3 content lines.
+    var seen = 0;
+    for (var j = firstIdx; j < lines.length && seen < 3; j++) {
+      var tr = lines[j].trim();
+      if (!tr) continue;
+      seen++;
+      if (/^#{2,4}\s+/.test(tr)) return lines.join('\n');
+    }
+    return '## ' + cleanTitle + '\n\n' + lines.join('\n');
+  };
+  var promoteBoldLineHeaders = function(text) {
+    if (!text) return text;
+    var lines = String(text).split('\n');
+    var firstContentIdx = -1;
+    for (var i = 0; i < lines.length; i++) { if (lines[i].trim().length > 0) { firstContentIdx = i; break; } }
+    return lines.map(function(line, idx) {
+      if (idx === firstContentIdx) return line; // first content line is title territory
+      var m = line.trim().match(/^\*\*([^*]{2,60})\*\*$/);
+      if (!m) return line;
+      var inner = m[1].trim();
+      if (/[.!?:]$/.test(inner)) return line;          // sentence / "**Maya:**" speaker label — real emphasis
+      if (inner.split(/\s+/).length > 10) return line; // headers are short
+      return '## ' + inner;
+    }).join('\n');
+  };
   var getStructureForLength = function(lengthInput) {
     var length = parseInt(lengthInput) || 0;
-    if (length <= 350) return "Structure: Write exactly 2 paragraphs. Do not use section headers.";
-    if (length <= 650) return "Structure: Write exactly 4 sections. Each section must have a header and exactly 2 paragraphs.";
-    if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must have a header and 2-3 paragraphs.";
-    return "Structure: Write exactly 8 sections. Each section must have a header and 3 paragraphs.";
+    if (length <= 350) return "Structure: Write exactly 2 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short 2-5 word title) and contain 1-2 paragraphs.";
+    if (length <= 650) return "Structure: Write exactly 4 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain exactly 2 paragraphs.";
+    if (length <= 1000) return "Structure: Write exactly 6 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 2-3 paragraphs.";
+    return "Structure: Write exactly 8 sections. Each section must start with a level-2 markdown header on its own line ('## ' followed by a short title) and contain 3 paragraphs.";
   };
   var _s = function() { return window.__contentEngineState || {}; };
   var _bindState;
@@ -683,7 +747,7 @@ var createContentEngine = function(deps) {
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
-                   This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   This is a single self-contained article — write an engaging opening AND a summary conclusion. Structure the body with short '## ' section headers exactly as the Structure instruction below specifies.
                    ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly so a student reading it sees the skill in action.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
@@ -693,7 +757,7 @@ var createContentEngine = function(deps) {
                    ` : ''}
                    4. Write in PROSE PARAGRAPHS. Do NOT use numbered lists or bullet points for the main content. Do NOT summarize.
                    5. Do NOT include a "Sources", "References", "Works Cited", or "Bibliography" section — the citation list is appended automatically from grounding metadata.
-                   6. Do NOT emit a "## ${effTopic}" heading or any other top-level heading — begin directly with the article prose.
+                   6. Do NOT emit a "# " title line or any heading that just repeats "${effTopic}" — the document title is added automatically. Section headers must be NEW short descriptive '## ' titles.
                    ${structureInstruction}
                    ${toneSpecificInstruction}
                    ${effVocabulary ? `Key Vocabulary to Include: ${effVocabulary}` : ''}
@@ -835,6 +899,11 @@ You MUST:
                    sectionText = String(result || "");
                }
                sectionText = sectionText.replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+               // Deterministic guard: the prompt asks for '## ${sectionTitle}' but the
+               // model sometimes skips it or emits bold/wrong level — enforce it so the
+               // H2 always survives. Single-section docs skip this (a '## topic' header
+               // under the '# topic' title would be a redundant duplicate).
+               if (sections.length > 1) sectionText = ensureSectionHeader(sectionText, sectionTitle);
                sectionTexts.push(sectionText);
                fullDocument += sectionText + "\n\n";
                setInputText(fullDocument);
@@ -1001,6 +1070,7 @@ You MUST:
                    addToast(t('toasts.citations_unavailable'), "info");
                }
            }
+           fullDocument = promoteBoldLineHeaders(fullDocument);
            fullDocument = cleanSourceMetaCommentary(fullDocument);
            fullDocument = repairSourceMarkdown(fullDocument);
            setInputText(fullDocument);

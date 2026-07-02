@@ -1940,7 +1940,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             // Method selector
             h('div', { className: 'flex flex-wrap gap-1 mb-3' },
               MODES.map(function(m){
-                return h('button',{ key:m.id,onClick:function(){upd('mode',m.id);if(m.id==='simpson'&&nRects%2!==0)upd('n',nRects+1);},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-red-50')},m.label);
+                return h('button',{ key:m.id,onClick:function(){upd('mode',m.id);upd('methodsUsed',Object.assign({},d.methodsUsed,{[m.id]:true}));if(m.id==='simpson'&&nRects%2!==0)upd('n',nRects+1);},className:'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '+(mode===m.id?'bg-red-600 text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-red-50')},m.label);
               })
             ),
 

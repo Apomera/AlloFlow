@@ -69,7 +69,8 @@ window.StemLab = window.StemLab || {
     category: 'science',
     questHooks: [
       { id: 'toggle_layers', label: 'Toggle 3 galaxy visualization layers', icon: '🌌', check: function(d) { return Object.keys(d.layersToggled || {}).length >= 3; }, progress: function(d) { return Object.keys(d.layersToggled || {}).length + '/3'; } },
-      { id: 'view_lifecycle', label: 'Explore stellar lifecycle', icon: '⭐', check: function(d) { return d.showLifecycle || false; }, progress: function(d) { return d.showLifecycle ? 'Viewing!' : 'Toggle lifecycle'; } }
+      { id: 'view_lifecycle', label: 'Explore stellar lifecycle', icon: '⭐', check: function(d) { return d.showLifecycle || false; }, progress: function(d) { return d.showLifecycle ? 'Viewing!' : 'Toggle lifecycle'; } },
+      { id: 'rotation_modes', label: 'Compare 2 galaxy rotation models', icon: '🌀', check: function(d) { return Object.keys(d.rotTried || {}).length >= 2; }, progress: function(d) { return Object.keys(d.rotTried || {}).length + '/2'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -141,6 +142,8 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyType = d.galaxyType || 'barredSpiral';
 
           var simMode = d.simMode || 'galaxy';
+
+          var rotMode = d.rotMode || 'flat';
 
 
 
@@ -670,7 +673,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starShaderMat = new THREE.ShaderMaterial({
 
-              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() } },
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 } },
 
               vertexShader: [
 
@@ -688,6 +691,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'uniform float uPR;',
 
+                'uniform float uRotMode;',
+
                 'void main() {',
 
                 '  vSC = color;',
@@ -700,7 +705,25 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vA = 0.6 + 0.4 * sin(uTime * twinkleSpeed + aPhase * 6.283);',
 
-                '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+                // Per-star orbital motion: each star circles the center at an angular speed
+                // set by the rotation-curve model (0 rigid disk, 1 Keplerian, 2 observed flat).
+                '  vec3 p = position;',
+
+                '  float rr = length(position.xz);',
+
+                '  if (rr > 0.001) {',
+
+                '    float a0 = atan(position.z, position.x);',
+
+                '    float omega = uRotMode < 0.5 ? 0.018 : (uRotMode < 1.5 ? 0.012 / pow(max(rr, 0.06), 1.5) : 0.03 / max(rr, 0.06));',
+
+                '    float aa = a0 + uTime * omega;',
+
+                '    p = vec3(cos(aa) * rr, position.y, sin(aa) * rr);',
+
+                '  }',
+
+                '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
 
                 '  gl_PointSize = min(sz * uPR * (80.0 / max(-mv.z, 1.0)), 14.0);',
 
@@ -1032,6 +1055,14 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+            canvasEl._setRotMode = function (mode) {
+
+              starShaderMat.uniforms.uRotMode.value = mode === 'rigid' ? 0 : mode === 'keplerian' ? 1 : 2;
+
+            };
+
+
+
             // Post-processing bloom
 
             var composer = null;
@@ -1158,7 +1189,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             canvasEl._galaxyUpdateCam = updateCamera;
 
-            function onGalDown(e) { isDragging = true; prevX = e.clientX; prevY = e.clientY; }
+            function onGalDown(e) { isDragging = true; warpTween = null; prevX = e.clientX; prevY = e.clientY; }
 
             function onGalMove(e) {
 
@@ -1214,13 +1245,25 @@ if (!window._galaxyHasLoadedOnce) {
 
             canvasEl.addEventListener('click', onGalClick);
 
+            // Cinematic warp: ease the camera to the target over ~1.6s instead of teleporting.
+
+            var warpTween = null;
+
             canvasEl._galaxyWarp = function (wp) {
 
-              spherical.theta = Math.atan2(wp.x, wp.z) || 0.1;
+              var toTheta = Math.atan2(wp.x, wp.z) || 0.1;
 
-              spherical.phi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
+              var toPhi = Math.acos(Math.max(-0.99, Math.min(0.99, wp.y / (Math.hypot(wp.x, wp.y, wp.z) || 1))));
 
-              spherical.r = wp.zoom || 1; updateCamera();
+              var toR = wp.zoom || 1;
+
+              var dTheta = toTheta - spherical.theta;
+
+              while (dTheta > Math.PI) dTheta -= Math.PI * 2;
+
+              while (dTheta < -Math.PI) dTheta += Math.PI * 2;
+
+              warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: toPhi - spherical.phi, dr: toR - spherical.r, start: Date.now(), dur: 1600 };
 
             };
 
@@ -1235,14 +1278,28 @@ if (!window._galaxyHasLoadedOnce) {
               animId = requestAnimationFrame(animate);
 
               var elapsed = (Date.now() - startT) * 0.001;
-              if (!isDragging) { spherical.theta -= 0.0003; updateCamera(); }
+              if (warpTween) {
+
+                var wk = Math.min(1, (Date.now() - warpTween.start) / warpTween.dur);
+
+                var we = wk < 0.5 ? 4 * wk * wk * wk : 1 - Math.pow(-2 * wk + 2, 3) / 2;
+
+                spherical.theta = warpTween.t0 + warpTween.dt * we;
+
+                spherical.phi = warpTween.p0 + warpTween.dp * we;
+
+                spherical.r = warpTween.r0 + warpTween.dr * we;
+
+                updateCamera();
+
+                if (wk >= 1) warpTween = null;
+
+              } else if (!isDragging) { spherical.theta -= 0.0003; updateCamera(); }
               starShaderMat.uniforms.uTime.value = elapsed;
 
-              if (armGroup.visible) armGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
-
-              if (dustGroup.visible) dustGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
-
-              if (gasGroup.visible) gasGroup.children.forEach(function (c) { c.rotation.y += 0.0003; });
+              // Stars orbit per-vertex in the shader (rotation-curve model); the dust/gas
+              // pattern deliberately stays fixed so stars visibly stream through the arms —
+              // the density-wave picture of spiral structure.
 
               nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.25 + 0.15 * Math.sin(elapsed * 0.5 + i * 1.8); });
 
@@ -1332,6 +1389,13 @@ if (!window._galaxyHasLoadedOnce) {
 
             upd("layers", newLayers);
 
+            // Quest hook 'toggle_layers' reads layersToggled — record every layer the learner has touched.
+            var seenLayers = Object.assign({}, d.layersToggled);
+
+            seenLayers[key] = true;
+
+            upd("layersToggled", seenLayers);
+
             var cv = document.querySelector('[data-galaxy-canvas]');
 
             if (cv && cv._layers && cv._layers[key]) cv._layers[key].visible = newLayers[key];
@@ -1413,6 +1477,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       else {
                         upd("quizMode", false); upd("simMode", m.key);
+                        if (m.key === 'star') upd("showLifecycle", true);
                         // Canvas Narration: sim mode switch
                         if (typeof canvasNarrate === 'function') {
                           var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
@@ -1620,7 +1685,8 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", { className: "font-black uppercase tracking-wider", style: { color: '#a5b4fc', fontSize: 10 } }, "Galaxy model"),
                   React.createElement("div", { className: "flex justify-between gap-4 mt-1" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Type"), React.createElement("span", { className: "font-bold" }, gType.label)),
                   React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Stars"), React.createElement("span", { className: "font-bold" }, starCount.toLocaleString())),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Age"), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr"))
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Age"), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr")),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Rotation"), React.createElement("span", { className: "font-bold" }, rotMode === 'rigid' ? 'Rigid (toy)' : rotMode === 'keplerian' ? 'Keplerian' : 'Flat ✓'))
                 ),
 
                 // Scale info overlay
@@ -1656,6 +1722,170 @@ if (!window._galaxyHasLoadedOnce) {
                   }, lt.icon + " " + lt.label);
 
                 })
+
+              ),
+
+
+
+              // ── Galaxy rotation & the dark matter mystery ──
+
+              React.createElement("div", { className: "mt-3 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-xl border border-indigo-400/30 p-4 shadow-lg" },
+
+                React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+
+                  React.createElement("h4", { className: "text-sm font-bold text-white" }, "🌀 How does a galaxy spin?"),
+
+                  React.createElement("span", { className: "ml-auto text-[10px] font-black uppercase tracking-wider text-fuchsia-300 bg-fuchsia-900/40 border border-fuchsia-700/50 px-2 py-0.5 rounded-full" }, "dark matter mystery")
+
+                ),
+
+                React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, "Pick a rotation model and watch the stars in the 3-D view above actually obey it. This one question — “how fast do outer stars orbit?” — led to one of the biggest discoveries in physics."),
+
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
+
+                  [
+
+                    { key: 'keplerian', label: '🪐 Keplerian', hint: 'what visible mass predicts' },
+
+                    { key: 'flat', label: '🌌 Flat (observed)', hint: 'what telescopes measure' },
+
+                    { key: 'rigid', label: '💿 Rigid disk', hint: 'toy model — spins like a DVD' }
+
+                  ].map(function (rm) {
+
+                    var on = rotMode === rm.key;
+
+                    return React.createElement("button", {
+
+                      key: rm.key, "aria-label": "Set rotation model: " + rm.label + " (" + rm.hint + ")", "aria-pressed": on,
+
+                      onClick: function () {
+
+                        upd("rotMode", rm.key);
+
+                        var tried = Object.assign({}, d.rotTried); tried[rm.key] = true;
+
+                        upd("rotTried", tried);
+
+                        if (Object.keys(tried).length === 2 && Object.keys(d.rotTried || {}).length < 2) awardStemXP('galaxy_rotation', 5, 'Compared galaxy rotation models');
+
+                        var cv = document.querySelector('[data-galaxy-canvas]');
+
+                        if (cv && cv._setRotMode) cv._setRotMode(rm.key);
+
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'rotMode', {
+
+                          first: 'Rotation model: ' + rm.label + ' — ' + rm.hint + '. Inner and outer stars now orbit at ' + (rm.key === 'rigid' ? 'the same angular speed, like a solid disk' : rm.key === 'keplerian' ? 'Keplerian speeds — inner stars lap the outer ones dramatically' : 'the observed flat-curve speeds — outer stars keep up, which only dark matter can explain') + '.',
+
+                          repeat: rm.label + ' rotation active.',
+
+                          terse: rm.label
+
+                        });
+
+                      },
+
+                      className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (on ? 'border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-200 shadow-sm' : 'border-slate-600 bg-slate-800/60 text-slate-300 hover:border-fuchsia-600')
+
+                    }, rm.label, React.createElement("span", { className: "block text-[9px] font-semibold opacity-70" }, rm.hint));
+
+                  })
+
+                ),
+
+                // Rotation curve chart: orbital speed vs distance from center
+
+                (function () {
+
+                  var CW = 360, CH = 148, padL = 36, padR = 10, padT = 12, padB = 26;
+
+                  var px = function (fx) { return padL + fx * (CW - padL - padR); };
+
+                  var py = function (fv) { return CH - padB - fv * (CH - padT - padB); };
+
+                  var kepPath = '', flatPath = '', gapPath = '';
+
+                  var kepPts = [], flatPts = [];
+
+                  for (var ci = 0; ci <= 40; ci++) {
+
+                    var fx = ci / 40;
+
+                    var vKep = Math.min(0.95, 0.30 / Math.sqrt(Math.max(fx, 0.055)));
+
+                    var vFlat = 0.72 * (fx < 0.16 ? fx / 0.16 : 1);
+
+                    kepPts.push([px(fx), py(vKep)]); flatPts.push([px(fx), py(vFlat)]);
+
+                    kepPath += (ci ? 'L' : 'M') + px(fx).toFixed(1) + ' ' + py(vKep).toFixed(1);
+
+                    flatPath += (ci ? 'L' : 'M') + px(fx).toFixed(1) + ' ' + py(vFlat).toFixed(1);
+
+                  }
+
+                  // shaded gap between prediction and observation (outer half only)
+
+                  gapPath = 'M' + flatPts[16][0].toFixed(1) + ' ' + flatPts[16][1].toFixed(1);
+
+                  for (var gi = 17; gi <= 40; gi++) gapPath += 'L' + flatPts[gi][0].toFixed(1) + ' ' + flatPts[gi][1].toFixed(1);
+
+                  for (var gj = 40; gj >= 16; gj--) gapPath += 'L' + kepPts[gj][0].toFixed(1) + ' ' + kepPts[gj][1].toFixed(1);
+
+                  gapPath += 'Z';
+
+                  return React.createElement("svg", { viewBox: "0 0 " + CW + " " + CH, className: "w-full", style: { maxHeight: '160px' }, role: "img", "aria-label": "Rotation curve chart: orbital speed versus distance from the galactic center. The Keplerian prediction from visible matter falls off with distance, but the observed curve stays flat. The shaded gap between them is the evidence for dark matter." },
+
+                    React.createElement("line", { x1: padL, y1: padT, x2: padL, y2: CH - padB, stroke: "#475569", strokeWidth: 1 }),
+
+                    React.createElement("line", { x1: padL, y1: CH - padB, x2: CW - padR, y2: CH - padB, stroke: "#475569", strokeWidth: 1 }),
+
+                    React.createElement("text", { x: padL - 4, y: padT + 8, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, "fast"),
+
+                    React.createElement("text", { x: padL - 4, y: CH - padB, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, "slow"),
+
+                    React.createElement("text", { x: (padL + CW - padR) / 2, y: CH - 8, fill: "#94a3b8", fontSize: 8, textAnchor: "middle" }, "distance from galactic center →"),
+
+                    React.createElement("text", { x: 8, y: (padT + CH - padB) / 2, fill: "#94a3b8", fontSize: 8, textAnchor: "middle", transform: "rotate(-90 8 " + ((padT + CH - padB) / 2) + ")" }, "orbital speed"),
+
+                    React.createElement("path", { d: gapPath, fill: "rgba(217,70,239,0.14)", stroke: "none" }),
+
+                    React.createElement("path", { d: kepPath, fill: "none", stroke: "#fbbf24", strokeWidth: 2, strokeDasharray: "5 3", opacity: rotMode === 'keplerian' ? 1 : 0.55 }),
+
+                    React.createElement("path", { d: flatPath, fill: "none", stroke: "#22d3ee", strokeWidth: 2.2, opacity: rotMode === 'flat' ? 1 : 0.55 }),
+
+                    rotMode === 'rigid' && React.createElement("line", { x1: px(0), y1: py(0), x2: px(1), y2: py(0.9), stroke: "#94a3b8", strokeWidth: 2, strokeDasharray: "2 3" }),
+
+                    React.createElement("text", { x: px(0.62), y: py(0.72) - 6, fill: "#22d3ee", fontSize: 9, fontWeight: 700 }, "observed (flat)"),
+
+                    React.createElement("text", { x: px(0.62), y: py(0.38) + 12, fill: "#fbbf24", fontSize: 9, fontWeight: 700 }, "visible matter alone"),
+
+                    React.createElement("text", { x: px(0.80), y: py(0.55), fill: "#e879f9", fontSize: 9, fontWeight: 800, textAnchor: "middle" }, "↑ dark matter ↑"),
+
+                    // our Sun sits ~55% of the way out, moving at the flat-curve speed
+
+                    React.createElement("circle", { cx: px(0.55), cy: py(0.72), r: 3.5, fill: "#fde047", stroke: "#0f172a", strokeWidth: 1 }),
+
+                    React.createElement("text", { x: px(0.55), y: py(0.72) - 7, fill: "#fde047", fontSize: 8, fontWeight: 700, textAnchor: "middle" }, "☉ us (230 km/s)")
+
+                  );
+
+                })(),
+
+                React.createElement("p", { className: "text-[11px] leading-relaxed mt-2 " + (rotMode === 'flat' ? 'text-cyan-200' : rotMode === 'keplerian' ? 'text-amber-200' : 'text-slate-300') },
+
+                  rotMode === 'keplerian' ?
+
+                    "If starlight were all there is, gravity weakens with distance and outer stars should crawl — watch the galaxy's center above lap the outskirts and the disk shear apart. Our solar system really works this way: Mercury laps Neptune 700 times per Neptune-year." :
+
+                  rotMode === 'rigid' ?
+
+                    "A toy model — the whole disk turns together like a painted DVD. No real galaxy does this; it would need mass to keep growing with radius squared. Compare it with the other two models!" :
+
+                    "In the 1970s Vera Rubin measured real galaxies and found this: outer stars move just as fast as inner ones. Visible matter can't supply that much gravity — an invisible halo of dark matter (~85% of all matter in the universe) must be holding the galaxy together. Nobody yet knows what it is."
+
+                ),
+
+                React.createElement("p", { className: "text-[10px] text-slate-500 mt-1.5 italic" }, "💡 Also notice: the glowing gas lanes hold still while stars stream through them — real spiral arms are density waves (cosmic traffic jams), not fixed pinwheels of stars.")
 
               ),
 
@@ -1795,7 +2025,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("button", { "aria-label": "Star Life",
 
-                    onClick: function () { upd("quizMode", false); upd("simMode", "star"); },
+                    onClick: function () { upd("quizMode", false); upd("simMode", "star"); upd("showLifecycle", true); },
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-200 transition-all hover:bg-indigo-50"
 
@@ -2806,6 +3036,174 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+              // ── H-R Diagram — live map of the star's journey ──
+
+              (function () {
+
+                var HW = 340, HH = 250, hp = { l: 42, r: 12, t: 14, b: 34 };
+
+                var xOf = function (T) { var f = (4.66 - Math.log10(T)) / (4.66 - 3.38); return hp.l + Math.max(0, Math.min(1, f)) * (HW - hp.l - hp.r); };
+
+                var yOf = function (L) { var f = (6.2 - Math.log10(L)) / (6.2 + 4.2); return hp.t + Math.max(0, Math.min(1, f)) * (HH - hp.t - hp.b); };
+
+                var mass = lifecycleMass;
+
+                var msT = mass < 0.45 ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+
+                var msL = Math.pow(mass, 3.5);
+
+                var STAGE_HR = {
+
+                  protostar: { T: 3800, L: Math.max(0.01, msL * 1.5), note: "sliding down the Hayashi track toward the main sequence" },
+
+                  main_sequence: { T: msT, L: msL, note: mass < 0.5 ? "a brown dwarf — below the true main sequence" : "on the main sequence, where it spends ~90% of its life" },
+
+                  red_giant: { T: 3600, L: Math.max(80, msL * 200), note: "climbing the giant branch — cooler but far more luminous" },
+
+                  red_supergiant: { T: 3500, L: 120000, note: "top right — enormous, cool, and doomed" },
+
+                  blue_supergiant: { T: 22000, L: 300000, note: "top left — hyper-luminous and shedding mass" },
+
+                  blue_dwarf: { T: 8000, L: 0.02, note: "a theoretical late phase — no red dwarf has died yet" },
+
+                  planetary_nebula: { T: 42000, L: 3000, note: "the exposed core dashes hot and left before fading" },
+
+                  white_dwarf: { T: 12000, L: 0.003, note: "bottom left — white-hot but only Earth-sized" }
+
+                };
+
+                var OFF_CHART = {
+
+                  nebula: "A nebula isn't a star yet — pick a later stage to see your star appear on the map.",
+
+                  supernova: "💥 A supernova briefly outshines this entire chart — off the top by a factor of 10,000!",
+
+                  neutron_star: "A neutron star no longer fuses anything — it has left the H-R diagram forever.",
+
+                  black_hole: "A black hole emits no light at all — nothing to plot. The diagram only maps shining stars.",
+
+                  black_dwarf: "A black dwarf is cold and dark — it has faded off the bottom of the map."
+
+                };
+
+                var stages = getStagesForMass(mass);
+
+                var trackPath = '';
+
+                stages.forEach(function (s) {
+
+                  var p = STAGE_HR[s.id];
+
+                  if (!p) return;
+
+                  trackPath += (trackPath ? 'L' : 'M') + xOf(p.T).toFixed(1) + ' ' + yOf(p.L).toFixed(1);
+
+                });
+
+                var cur = STAGE_HR[activeStage];
+
+                // Main-sequence band: along the MS, L ≈ (T/5778)^6; band spans ×/÷ 6 in L
+
+                var msBandTop = '', msBandBot = '';
+
+                [45000, 20000, 12000, 8000, 6000, 4500, 3400, 2500].forEach(function (T, bi) {
+
+                  var Lms = Math.pow(T / 5778, 6);
+
+                  msBandTop += (bi ? 'L' : 'M') + xOf(T).toFixed(1) + ' ' + yOf(Lms * 6).toFixed(1);
+
+                  msBandBot = 'L' + xOf(T).toFixed(1) + ' ' + yOf(Math.max(0.00008, Lms / 6)).toFixed(1) + msBandBot;
+
+                });
+
+                return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-indigo-400/30 p-5 shadow-lg" },
+
+                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "📈"), "H-R Diagram — the astronomer's map"),
+
+                  React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, "Every star is one dot: temperature across (hot on the LEFT — astronomers' quirk), luminosity up. Stars aren't scattered randomly. Drag the mass slider and click lifecycle stages — the dashed line traces YOUR star's whole journey."),
+
+                  React.createElement("svg", { viewBox: "0 0 " + HW + " " + HH, className: "w-full", role: "img", "aria-label": "Hertzsprung-Russell diagram: surface temperature decreasing left to right, luminosity increasing upward. Shows the main sequence band, giants, supergiants and white dwarf regions, the Sun, and the current star's evolutionary track with its active stage highlighted." },
+
+                    // temperature color strip along the bottom
+
+                    React.createElement("defs", null,
+
+                      React.createElement("linearGradient", { id: "hrTempGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
+
+                        React.createElement("stop", { offset: "0%", stopColor: "#9bb0ff" }),
+
+                        React.createElement("stop", { offset: "35%", stopColor: "#f8f7ff" }),
+
+                        React.createElement("stop", { offset: "60%", stopColor: "#fff4ea" }),
+
+                        React.createElement("stop", { offset: "80%", stopColor: "#ffd2a1" }),
+
+                        React.createElement("stop", { offset: "100%", stopColor: "#ff6b4a" }))),
+
+                    React.createElement("rect", { x: hp.l, y: HH - hp.b + 4, width: HW - hp.l - hp.r, height: 5, rx: 2, fill: "url(#hrTempGrad)", opacity: 0.8 }),
+
+                    // axes
+
+                    React.createElement("line", { x1: hp.l, y1: hp.t, x2: hp.l, y2: HH - hp.b, stroke: "#475569", strokeWidth: 1 }),
+
+                    React.createElement("line", { x1: hp.l, y1: HH - hp.b, x2: HW - hp.r, y2: HH - hp.b, stroke: "#475569", strokeWidth: 1 }),
+
+                    [40000, 10000, 5000, 3000].map(function (T) { return React.createElement("text", { key: T, x: xOf(T), y: HH - hp.b + 18, fill: "#94a3b8", fontSize: 8, textAnchor: "middle" }, (T >= 10000 ? (T / 1000) + ',000' : T.toLocaleString()) + " K"); }),
+
+                    [[1000000, "10⁶"], [10000, "10⁴"], [100, "10²"], [1, "1 ☉"], [0.01, "10⁻²"], [0.0001, "10⁻⁴"]].map(function (tk) { return React.createElement("text", { key: tk[1], x: hp.l - 5, y: yOf(tk[0]) + 3, fill: "#94a3b8", fontSize: 8, textAnchor: "end" }, tk[1]); }),
+
+                    // main sequence band + region labels
+
+                    React.createElement("path", { d: msBandTop + msBandBot + 'Z', fill: "rgba(99,102,241,0.16)", stroke: "rgba(129,140,248,0.35)", strokeWidth: 0.7 }),
+
+                    React.createElement("text", { x: xOf(9500), y: yOf(6) + 4, fill: "#a5b4fc", fontSize: 9, fontWeight: 700, transform: "rotate(24 " + xOf(9500) + " " + yOf(6) + ")" }, "MAIN SEQUENCE (90% of stars)"),
+
+                    React.createElement("text", { x: xOf(4200), y: yOf(600), fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "Giants"),
+
+                    React.createElement("text", { x: xOf(11000), y: yOf(250000), fill: "#fdba74", fontSize: 9, fontWeight: 700 }, "Supergiants"),
+
+                    React.createElement("text", { x: xOf(19000), y: yOf(0.008), fill: "#cbd5e1", fontSize: 9, fontWeight: 700 }, "White Dwarfs"),
+
+                    // the Sun for reference
+
+                    React.createElement("circle", { cx: xOf(5778), cy: yOf(1), r: 3, fill: "#fde047", stroke: "#0f172a", strokeWidth: 0.8 }),
+
+                    React.createElement("text", { x: xOf(5778) + 6, y: yOf(1) + 3, fill: "#fde047", fontSize: 8, fontWeight: 700 }, "Sun"),
+
+                    // evolutionary track for the chosen mass
+
+                    trackPath && React.createElement("path", { d: trackPath, fill: "none", stroke: "#f472b6", strokeWidth: 1.4, strokeDasharray: "4 3", opacity: 0.75 }),
+
+                    stages.map(function (s) {
+
+                      var p = STAGE_HR[s.id];
+
+                      if (!p) return null;
+
+                      return React.createElement("circle", { key: s.id, cx: xOf(p.T), cy: yOf(p.L), r: 2.2, fill: s.color === 'var(--allo-stem-text, #e2e8f0)' ? '#e2e8f0' : s.color, opacity: 0.85 });
+
+                    }),
+
+                    // current stage marker
+
+                    cur && React.createElement("circle", { cx: xOf(cur.T), cy: yOf(cur.L), r: 8, fill: "none", stroke: "#f472b6", strokeWidth: 1.2, opacity: 0.65 }),
+
+                    cur && React.createElement("circle", { cx: xOf(cur.T), cy: yOf(cur.L), r: 4.5, fill: "#f472b6", stroke: "#ffffff", strokeWidth: 1.2 })
+
+                  ),
+
+                  React.createElement("p", { className: "text-[11px] leading-relaxed mt-1 " + (cur ? "text-pink-300" : "text-amber-300") },
+
+                    cur ? "⭐ Your " + mass + " M☉ star is " + cur.note + "." : (OFF_CHART[activeStage] || "Select a lifecycle stage to plot your star.")
+
+                  )
+
+                );
+
+              })(),
+
+
+
               // ── OBAFGKM Star Classification Reference ──
 
               React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
@@ -2941,6 +3339,136 @@ if (!window._galaxyHasLoadedOnce) {
                 )
 
               ),
+
+
+
+              // ── You Are Star Stuff — cosmic origin of the elements ──
+
+              (function () {
+
+                var ORIGINS = {
+
+                  bb: { label: 'Big Bang', color: '#7dd3fc' },
+
+                  cr: { label: 'Cosmic-ray collisions', color: '#86efac' },
+
+                  lm: { label: 'Dying low-mass stars', color: '#d8b4fe' },
+
+                  ms: { label: 'Massive-star supernovae', color: '#60a5fa' },
+
+                  wd: { label: 'Exploding white dwarfs', color: '#fde047' },
+
+                  nsm: { label: 'Merging neutron stars', color: '#fb7185' }
+
+                };
+
+                // [symbol, period-table column, row, dominant origin] — periods 1–4
+
+                var ELEMS = [
+
+                  ['H', 1, 1, 'bb'], ['He', 18, 1, 'bb'],
+
+                  ['Li', 1, 2, 'cr'], ['Be', 2, 2, 'cr'], ['B', 13, 2, 'cr'], ['C', 14, 2, 'lm'], ['N', 15, 2, 'lm'], ['O', 16, 2, 'ms'], ['F', 17, 2, 'ms'], ['Ne', 18, 2, 'ms'],
+
+                  ['Na', 1, 3, 'ms'], ['Mg', 2, 3, 'ms'], ['Al', 13, 3, 'ms'], ['Si', 14, 3, 'ms'], ['P', 15, 3, 'ms'], ['S', 16, 3, 'ms'], ['Cl', 17, 3, 'ms'], ['Ar', 18, 3, 'ms'],
+
+                  ['K', 1, 4, 'ms'], ['Ca', 2, 4, 'ms'], ['Sc', 3, 4, 'ms'], ['Ti', 4, 4, 'ms'], ['V', 5, 4, 'wd'], ['Cr', 6, 4, 'wd'], ['Mn', 7, 4, 'wd'], ['Fe', 8, 4, 'wd'], ['Co', 9, 4, 'wd'], ['Ni', 10, 4, 'wd'], ['Cu', 11, 4, 'ms'], ['Zn', 12, 4, 'ms'], ['Ga', 13, 4, 'ms'], ['Ge', 14, 4, 'ms'], ['As', 15, 4, 'ms'], ['Se', 16, 4, 'ms'], ['Br', 17, 4, 'ms'], ['Kr', 18, 4, 'ms']
+
+                ];
+
+                var stageOrigins = activeStage === 'supernova' ? { ms: true } :
+
+                  (activeStage === 'planetary_nebula' || activeStage === 'red_giant') ? { lm: true } :
+
+                  activeStage === 'neutron_star' ? { nsm: true } :
+
+                  (activeStage === 'white_dwarf' || activeStage === 'black_dwarf') ? { wd: true } : {};
+
+                var stageMsg = activeStage === 'supernova' ? "💥 This explosion is forging oxygen, silicon, and calcium RIGHT NOW — glowing below." :
+
+                  activeStage === 'planetary_nebula' ? "The dying star's winds are scattering fresh carbon and nitrogen into space — glowing below." :
+
+                  activeStage === 'red_giant' ? "Deep inside, helium is fusing into carbon — the backbone atom of all known life." :
+
+                  activeStage === 'neutron_star' ? "If two neutron stars collide, they forge gold, platinum, and uranium in seconds." :
+
+                  activeStage === 'white_dwarf' ? "If a companion star dumps gas onto it, a white dwarf can detonate — the source of most of the iron in your blood." :
+
+                  activeStage === 'main_sequence' ? "Right now this star only fuses hydrogen into helium. Every heavier element comes from its DEATH." : null;
+
+                return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
+
+                  React.createElement("h4", { className: "text-sm font-bold text-white mb-1 flex items-center gap-2" }, React.createElement("span", null, "✨"), "You Are Star Stuff"),
+
+                  React.createElement("p", { className: "text-[11px] text-slate-400 leading-relaxed mb-2" }, "Almost every atom heavier than helium was forged inside a star. Colors show where each element in your body — and your phone — came from."),
+
+                  stageMsg && React.createElement("p", { className: "text-[11px] font-bold text-violet-300 bg-violet-900/40 border border-violet-700/50 rounded-lg px-2.5 py-1.5 mb-2" }, stageMsg),
+
+                  React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(0, 1fr))', gap: '2px' } },
+
+                    ELEMS.map(function (el) {
+
+                      var o = ORIGINS[el[3]];
+
+                      var hot = stageOrigins[el[3]];
+
+                      return React.createElement("div", {
+
+                        key: el[0], title: el[0] + ' — ' + o.label,
+
+                        className: "text-center rounded-sm font-bold" + (hot ? " animate-pulse" : ""),
+
+                        style: { gridColumnStart: el[1], gridRowStart: el[2], background: o.color + (hot ? '55' : '26'), border: '1px solid ' + o.color + (hot ? '' : '66'), color: o.color, fontSize: '8px', padding: '3px 0', boxShadow: hot ? '0 0 6px ' + o.color + '88' : 'none' }
+
+                      }, el[0]);
+
+                    })
+
+                  ),
+
+                  React.createElement("div", { className: "flex flex-wrap gap-x-3 gap-y-1 mt-2" },
+
+                    Object.keys(ORIGINS).map(function (k) {
+
+                      return React.createElement("span", { key: k, className: "flex items-center gap-1 text-[9px] font-semibold text-slate-300" },
+
+                        React.createElement("span", { style: { width: 7, height: 7, borderRadius: 2, background: ORIGINS[k].color, display: 'inline-block' } }),
+
+                        ORIGINS[k].label);
+
+                    })
+
+                  ),
+
+                  React.createElement("div", { className: "grid grid-cols-2 gap-1.5 mt-2" },
+
+                    [
+
+                      { e: '🦴', txt: 'Calcium in your bones', src: 'massive supernovae', c: '#60a5fa' },
+
+                      { e: '🩸', txt: 'Iron in your blood', src: 'exploding white dwarfs', c: '#fde047' },
+
+                      { e: '🫁', txt: 'Oxygen in every breath', src: 'massive supernovae', c: '#60a5fa' },
+
+                      { e: '💍', txt: 'Gold in jewelry', src: 'neutron-star mergers', c: '#fb7185' }
+
+                    ].map(function (f) {
+
+                      return React.createElement("div", { key: f.txt, className: "flex items-center gap-1.5 rounded-lg px-2 py-1", style: { background: f.c + '14', border: '1px solid ' + f.c + '40' } },
+
+                        React.createElement("span", { className: "text-sm" }, f.e),
+
+                        React.createElement("span", { className: "text-[9px] leading-tight text-slate-300" }, f.txt, React.createElement("span", { className: "block font-bold", style: { color: f.c } }, f.src)));
+
+                    })
+
+                  ),
+
+                  React.createElement("p", { className: "text-[9px] text-slate-500 italic mt-2 leading-relaxed" }, "Colors show each element's dominant source today — many have more than one. Gold's neutron-star origin was confirmed in 2017, when telescopes watched the glow of freshly forged heavy elements after gravitational-wave event GW170817.")
+
+                );
+
+              })(),
 
 
 

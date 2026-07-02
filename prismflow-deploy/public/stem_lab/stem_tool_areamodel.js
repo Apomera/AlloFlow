@@ -63,6 +63,12 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDFE7', label: 'Area Model',
     desc: 'Visual multiplication with area model grids, distributive property, partial products, sound effects, and badges.',
     color: 'amber', category: 'math',
+    questHooks: [
+      { id: 'solve_5', label: 'Solve 5 area challenges', icon: '🟧', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 solved'; } },
+      { id: 'all_modes', label: 'Try challenges in all 4 modes', icon: '🌈', check: function(d) { return Object.keys(d.challengeTypesUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.challengeTypesUsed || {}).length + '/4 modes'; } },
+      { id: 'streak_5', label: 'Reach a streak of 5', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } },
+      { id: 'word_3', label: 'Solve 3 word problems', icon: '📝', check: function(d) { return (d.wordSolved || 0) >= 3; }, progress: function(d) { return (d.wordSolved || 0) + '/3 word problems'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -73,6 +79,7 @@ window.StemLab = window.StemLab || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var t = ctx.t;
+      var isDark = !!ctx.darkMode;
 
       // ── State via labToolData ──
       var ld = ctx.toolData || {};
@@ -119,7 +126,11 @@ window.StemLab = window.StemLab || {
       var challenge = _a.challenge || null;
       var answer = _a.answer || '';
       var feedback = _a.feedback || null;
-      var difficulty = _a.difficulty || 'easy';
+      // Grade-aware default difficulty (explicit user choice always wins):
+      // K-2 easy, 3-5 medium, 6-8+ hard; unknown grade keeps the gentle default.
+      var _gl = (ctx.gradeLevel || '').toLowerCase();
+      var _gradeDefaultDiff = /6th|7th|8th|9th|10|11|12|high/.test(_gl) ? 'hard' : /3rd|4th|5th/.test(_gl) ? 'medium' : 'easy';
+      var difficulty = _a.difficulty || _gradeDefaultDiff;
       var score = _a.score || { correct: 0, total: 0 };
       var streak = _a.streak || 0;
       var bestStreak = _a.bestStreak || 0;
@@ -254,6 +265,27 @@ window.StemLab = window.StemLab || {
         }
       };
 
+      // ═══ MISCONCEPTION-AWARE FEEDBACK ═══
+      // A wrong answer usually reveals WHICH mix-up happened (added instead of
+      // multiplied, found the perimeter, took only one piece of the split,
+      // skipped the cross partial-products, off by one row...). Name that exact
+      // mistake instead of just revealing the product — the error becomes the lesson.
+      var diagnoseAreaError = function(ch, ans) {
+        var a = ch.a, b = ch.b;
+        if (isNaN(ans)) return 'Type your answer as a number first — count the squares in the model.';
+        if (ans === a + b) return 'You ADDED ' + a + ' + ' + b + ' = ' + (a + b) + '. But the model shows ' + a + ' rows with ' + b + ' squares in EACH row. Multiplication counts them all: ' + a + ' × ' + b + ' = ' + ch.answer + '.';
+        if (ans === 2 * (a + b)) return 'That is the PERIMETER — the fence around the rectangle. Area counts the squares INSIDE it: ' + a + ' rows × ' + b + ' columns = ' + ch.answer + '.';
+        if (ch.mode === 'distributive' && ch.split != null && (ans === a * ch.split || ans === a * (b - ch.split))) return 'That is only ONE piece of the split! The rectangle was cut into ' + a + '×' + ch.split + ' and ' + a + '×' + (b - ch.split) + '. Add both pieces: ' + (a * ch.split) + ' + ' + (a * (b - ch.split)) + ' = ' + ch.answer + '.';
+        if (ch.mode === 'multidigit') {
+          var tA = Math.floor(a / 10) * 10, oA = a % 10, tB = Math.floor(b / 10) * 10, oB = b % 10;
+          if (ans === tA * tB + oA * oB && oA && oB) return 'You multiplied tens×tens (' + (tA * tB) + ') and ones×ones (' + (oA * oB) + ') but skipped the two CROSS pieces: ' + tA + '×' + oB + ' = ' + (tA * oB) + ' and ' + oA + '×' + tB + ' = ' + (oA * tB) + '. All four boxes together make ' + ch.answer + '.';
+          if (ans === tA * tB) return 'That is just the biggest box (tens × tens). The area model has FOUR boxes — add the other three partial products to reach ' + ch.answer + '.';
+        }
+        if (ans === a * (b - 1) || ans === (a - 1) * b) return 'So close — that is exactly one row or column SHORT. Recount: ' + a + ' rows, each with ' + b + ' squares → ' + ch.answer + '.';
+        if (ans === a * (b + 1) || ans === (a + 1) * b) return 'So close — that is one EXTRA row or column. The model has exactly ' + a + ' rows of ' + b + ' → ' + ch.answer + '.';
+        return 'Think of it as repeated addition: one row has ' + b + ' squares, and there are ' + a + ' rows — that is ' + b + ' added ' + a + ' times = ' + ch.answer + '.';
+      };
+
       // ═══ CHECK CHALLENGE ═══
       var checkChallenge = function() {
         if (!challenge) return;
@@ -273,13 +305,13 @@ window.StemLab = window.StemLab || {
           announceToSR('Correct!');
         } else {
           sfxWrong();
-          announceToSR('Incorrect');
+          announceToSR('Incorrect. ' + diagnoseAreaError(challenge, ans));
         }
 
         upd({
           feedback: ok
             ? { correct: true, msg: '\u2705 Correct! ' + challenge.a + ' \u00d7 ' + challenge.b + ' = ' + challenge.answer }
-            : { correct: false, msg: '\u274C Try again. ' + challenge.a + ' \u00d7 ' + challenge.b + ' = ' + challenge.answer },
+            : { correct: false, msg: '\u274C ' + diagnoseAreaError(challenge, ans) },
           score: { correct: newCorrect, total: score.total + 1 },
           streak: newStreak, bestStreak: newBest,
           basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti, wordSolved: newWord
@@ -353,7 +385,7 @@ window.StemLab = window.StemLab || {
               key: i,
               onClick: function() { sfxClick(); upd({ highlight: { rows: ri + 1, cols: ci + 1 } }); },
               className: 'allo-am-cell aspect-square rounded-sm border cursor-pointer hover:scale-110 ' +
-                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm allo-am-cell-fill' : 'bg-amber-100 border-amber-200 hover:bg-amber-200')
+                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm allo-am-cell-fill' : (isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-600' : 'bg-amber-100 border-amber-200 hover:bg-amber-200'))
             }));
           })(r, c);
         }

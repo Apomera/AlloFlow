@@ -1298,7 +1298,9 @@
       case 'highlight': newText = before + '==' + selection + '==' + after; newCursorPos = end + 4; break;
       case 'h1':        newText = before + '\n# '  + selection + after; newCursorPos = end + 3; break;
       case 'h2':        newText = before + '\n## ' + selection + after; newCursorPos = end + 4; break;
+      case 'h3':        newText = before + '\n### ' + selection + after; newCursorPos = end + 5; break;
       case 'list':      newText = before + '\n- '  + selection + after; newCursorPos = end + 3; break;
+      case 'numlist':   newText = before + '\n1. ' + selection + after; newCursorPos = end + 4; break;
       default: return;
     }
     const cb = overrideCallback || handleSimplifiedTextChange;

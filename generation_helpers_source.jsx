@@ -484,19 +484,19 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         if (resultItem.data.originalText) {
                             batchSourceText = resultItem.data.originalText;
                         }
-                        if (resultItem.data.concepts && Array.isArray(resultItem.data.concepts)) {
+                        if (Array.isArray(resultItem.data.concepts) && lessonDNA.concepts.length === 0) {
                             lessonDNA.concepts = resultItem.data.concepts.slice(0, 5);
                         }
                     }
                     if (type === 'glossary') {
-                        if (Array.isArray(resultItem.data)) {
-                            lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term);
+                        if (Array.isArray(resultItem.data) && lessonDNA.keyTerms.length === 0) {
+                            lessonDNA.keyTerms = resultItem.data.slice(0, 8).map(t => t.term).filter(Boolean);
                         }
                     }
                     if (type === 'image') {
                         lessonDNA.visualContext = resultItem.data.prompt || resultItem.data.altText;
                     }
-                    if (type === 'lesson-plan') {
+                    if (type === 'lesson-plan' && resultItem.data.essentialQuestion && !lessonDNA.essentialQuestion) {
                         lessonDNA.essentialQuestion = resultItem.data.essentialQuestion;
                     }
                 }

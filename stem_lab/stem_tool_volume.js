@@ -204,6 +204,11 @@ window.StemLab = window.StemLab || {
     icon: '\uD83D\uDCE6', label: '3D Volume Explorer',
     desc: '3D cube building with volume, surface area, badges & AI tutor.',
     color: 'emerald', category: 'math',
+    questHooks: [
+      { id: 'solve_5', label: 'Solve 5 volume challenges', icon: '📦', check: function(d) { return ((d.score && d.score.correct) || 0) >= 5; }, progress: function(d) { return ((d.score && d.score.correct) || 0) + '/5 solved'; } },
+      { id: 'word_3', label: 'Solve 3 word problems', icon: '📖', check: function(d) { return (d.wpSolved || 0) >= 3; }, progress: function(d) { return (d.wpSolved || 0) + '/3 word problems'; } },
+      { id: 'build_10', label: 'Place 10 cubes in the freeform builder', icon: '🧱', check: function(d) { return (d.totalPlaced || 0) >= 10; }, progress: function(d) { return (d.totalPlaced || 0) + '/10 cubes'; } }
+    ],
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -832,19 +837,34 @@ window.StemLab = window.StemLab || {
         return { positions: pos, volume: new Set(pos).size };
       };
 
+      // ── Misconception diagnosis for V = l×w×h answers ──
+      // A wrong number usually reveals WHICH formula got mixed up: adding the
+      // dimensions, multiplying only two of them, or computing surface area.
+      // Naming that beats re-printing the formula.
+      var diagnoseVolumeError = function(l, w, hh, ans) {
+        var correct = l * w * hh;
+        if (isNaN(ans)) return 'Type your answer as a number first.';
+        if (ans === l + w + hh) return 'You ADDED the three dimensions (' + l + '+' + w + '+' + hh + '). Volume multiplies them — each layer holds ' + (l * w) + ' cubes, stacked ' + hh + ' high: ' + correct + '.';
+        if (ans === l * w || ans === l * hh || ans === w * hh) return 'That is the area of ONE FACE — only two dimensions multiplied. Volume needs all three: the ' + l + '×' + w + ' base layer, stacked ' + hh + ' high = ' + correct + '.';
+        if (ans === 2 * (l * w + l * hh + w * hh)) return 'That is the SURFACE AREA — the wrapping paper around the box. Volume counts the cubes INSIDE: ' + l + ' × ' + w + ' × ' + hh + ' = ' + correct + '.';
+        if (ans === correct / hh * (hh - 1) || ans === correct / hh * (hh + 1)) return 'So close — you are off by exactly one LAYER. Each layer has ' + (l * w) + ' cubes and there are ' + hh + ' layers: ' + correct + '.';
+        return 'Build it in layers: the bottom layer is ' + l + ' × ' + w + ' = ' + (l * w) + ' cubes, and there are ' + hh + ' layers — ' + (l * w) + ' × ' + hh + ' = ' + correct + '.';
+      };
+
       // ── Check challenge ──
       var checkChallenge = function() {
         if (isSlider && challenge) {
           var ans = parseInt(answer);
           var ok = ans === challenge.answer;
-          announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
+          var sliderFb = ok ? '' : diagnoseVolumeError(challenge.l, challenge.w, challenge.h, ans);
+          announceToSR(ok ? 'Correct!' : 'Incorrect. ' + sliderFb);
           playSound(ok ? 'correct' : 'wrong');
           var newStreak = ok ? streak + 1 : 0;
           if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
           upd({
             feedback: ok
               ? { correct: true, msg: '\u2705 Correct! '+challenge.l+'\u00d7'+challenge.w+'\u00d7'+challenge.h+' = '+challenge.answer + (newStreak >= 3 ? '  \uD83D\uDD25 ' + newStreak + ' streak!' : '') }
-              : { correct: false, msg: '\u274c Try V = L \u00d7 W \u00d7 H = '+challenge.l+' \u00d7 '+challenge.w+' \u00d7 '+challenge.h+' = '+challenge.answer },
+              : { correct: false, msg: '\u274c ' + sliderFb },
             score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
             streak: newStreak,
             attemptHist: (_v.attemptHist || []).concat([ok ? 1 : 0]).slice(-24)
@@ -1483,7 +1503,7 @@ window.StemLab = window.StemLab || {
                       upd({
                         wpFeedback: ok
                           ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
-                          : { correct: false, msg: '❌ V = l × w × h = ' + dims.l + ' × ' + dims.w + ' × ' + dims.h + ' = ' + correct + ' ' + ctx2.unit },
+                          : { correct: false, msg: '❌ ' + diagnoseVolumeError(dims.l, dims.w, dims.h, parseInt(wpAnswer)) + ' (in ' + ctx2.unit + ')' },
                         score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
                         streak: newStreak, wpSolved: newSolved
                       });
@@ -1511,7 +1531,7 @@ window.StemLab = window.StemLab || {
                     upd({
                       wpFeedback: ok
                         ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
-                        : { correct: false, msg: '❌ V = l × w × h = ' + dims.l + ' × ' + dims.w + ' × ' + dims.h + ' = ' + correct + ' ' + ctx2.unit },
+                        : { correct: false, msg: '❌ ' + diagnoseVolumeError(dims.l, dims.w, dims.h, parseInt(wpAnswer)) + ' (in ' + ctx2.unit + ')' },
                       score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
                       streak: newStreak, wpSolved: newSolved
                     });
