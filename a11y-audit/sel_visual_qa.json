@@ -1,0 +1,352 @@
+{
+  "generatedAt": "2026-07-02T01:56:10.775Z",
+  "harness": "public module visual fixture",
+  "screenshotDir": "a11y-audit\\sel_visual_qa",
+  "summary": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0
+  },
+  "scenarios": [
+    {
+      "name": "sel-catalog-desktop-light",
+      "kind": "sel",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "surface": "catalog",
+      "selector": "[role=\"dialog\"][aria-label=\"SEL Hub\"]",
+      "minText": 900,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 99081
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 10354,
+            "controlCount": 113
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 10354,
+        "controlCount": 113,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-catalog-desktop-light.png"
+    },
+    {
+      "name": "sel-share-packet-desktop-light",
+      "kind": "sel",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "surface": "share-packet",
+      "selector": "#sel-share-packet-modal",
+      "minText": 500,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 137379
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 1502,
+            "controlCount": 10
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 1502,
+        "controlCount": 10,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-share-packet-desktop-light.png"
+    },
+    {
+      "name": "sel-station-builder-mobile-high-contrast",
+      "kind": "sel",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "surface": "station-builder",
+      "selector": "[role=\"region\"][aria-label=\"Station Builder\"]",
+      "minText": 400,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 38827
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 1750,
+            "controlCount": 76
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 390,
+            "viewportWidth": 390
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 1750,
+        "controlCount": 76,
+        "bodyScrollWidth": 390,
+        "viewportWidth": 390,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-station-builder-mobile-high-contrast.png"
+    },
+    {
+      "name": "sel-for-educators-tablet-dark",
+      "kind": "sel",
+      "theme": "dark",
+      "viewport": {
+        "width": 820,
+        "height": 900
+      },
+      "surface": "for-educators",
+      "selector": "#sel-for-educators-modal",
+      "minText": 700,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 92835
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 11947,
+            "controlCount": 2
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 820,
+            "viewportWidth": 820
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 11947,
+        "controlCount": 2,
+        "bodyScrollWidth": 820,
+        "viewportWidth": 820,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\sel-for-educators-tablet-dark.png"
+    },
+    {
+      "name": "allohaven-portfolio-desktop-light",
+      "kind": "allohaven",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "selector": "[role=\"dialog\"][aria-label=\"My portfolio\"]",
+      "minText": 500,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 106853
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 1148,
+            "controlCount": 5
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 1148,
+        "controlCount": 5,
+        "bodyScrollWidth": 1280,
+        "viewportWidth": 1280,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\allohaven-portfolio-desktop-light.png"
+    },
+    {
+      "name": "allohaven-portfolio-mobile-high-contrast",
+      "kind": "allohaven",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": "[role=\"dialog\"][aria-label=\"My portfolio\"]",
+      "minText": 500,
+      "checks": [
+        {
+          "id": "nonblank-screenshot",
+          "pass": true,
+          "details": {
+            "bytes": 40755
+          }
+        },
+        {
+          "id": "readable-surface",
+          "pass": true,
+          "details": {
+            "textLength": 1148,
+            "controlCount": 5
+          }
+        },
+        {
+          "id": "no-horizontal-page-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 390,
+            "viewportWidth": 390
+          }
+        },
+        {
+          "id": "no-unexpected-container-overflow",
+          "pass": true,
+          "details": []
+        },
+        {
+          "id": "no-clipped-controls",
+          "pass": true,
+          "details": []
+        }
+      ],
+      "errors": [],
+      "audit": {
+        "textLength": 1148,
+        "controlCount": 5,
+        "bodyScrollWidth": 390,
+        "viewportWidth": 390,
+        "overflowOffenders": [],
+        "clippedControls": []
+      },
+      "screenshot": "a11y-audit\\sel_visual_qa\\allohaven-portfolio-mobile-high-contrast.png"
+    }
+  ]
+}

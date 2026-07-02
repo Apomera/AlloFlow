@@ -23565,12 +23565,12 @@
                   color: palette.text
                 }
               },
-                h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '8px' } },
-                  h('div', { style: { minWidth: 0 } },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' } },
+                  h('div', { style: { minWidth: 0, flex: '1 1 220px' } },
                     h('h4', { style: { margin: 0, fontSize: '14px', fontWeight: 800, color: palette.text, overflowWrap: 'anywhere' } }, artifact.title || packet.title || 'Portfolio Item'),
                     h('div', { style: { marginTop: '3px', fontSize: '11px', color: palette.textDim } }, sourceLabel + ' - ' + formatDate(artifact.createdAt || packet.createdAt))
                   ),
-                  h('div', { style: { flex: '0 0 auto', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                  h('div', { style: { flex: '0 1 auto', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
                     h('span', {
                       style: {
                         padding: '4px 8px',
