@@ -22700,8 +22700,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       idoc.addEventListener('click', (e) => { const t = e.target; if (pop && t && t.closest && !t.closest('.allo-table-refine-pop') && !t.closest('.allo-table-refine-btn')) closePop(); });
     } catch (_) {}
   };
-  const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y) => {
-    if (!pdfPreviewRef.current || !pdfFixResult?.accessibleHtml) return;
+  const updatePdfPreview = (overrideTheme, overrideFontSize, overrideA11y, previewOpts) => {
+    // S1 step 8: previewOpts.sourceHtml renders EXPLICIT content, bypassing both the React
+    // state read and the live-iframe snapshot below. The word-restoration flow uses this —
+    // it used to patch the shared module var and hope React flushed before this ran; a lost
+    // race let the (still pre-restoration) iframe snapshot win and silently REVERT the
+    // restoration in preview and export.
+    const _explicitSource = previewOpts && previewOpts.sourceHtml;
+    if (!pdfPreviewRef.current || (!_explicitSource && !pdfFixResult?.accessibleHtml)) return;
     const iframe = pdfPreviewRef.current;
     const useTheme = overrideTheme !== undefined ? overrideTheme : pdfPreviewTheme;
     const useFontSize = overrideFontSize !== undefined ? overrideFontSize : pdfPreviewFontSize;
@@ -22711,8 +22717,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // accessibleHtml in React state. This catches user image swaps and any
     // other iframe DOM edits made via designMode='on' that the React state
     // hasn't synced yet — without this, theme/font toggles wipe those edits.
-    let sourceHtml = pdfFixResult.accessibleHtml;
-    try {
+    let sourceHtml = _explicitSource || pdfFixResult.accessibleHtml;
+    if (!_explicitSource) try {
       const liveDoc = iframe.contentDocument || iframe.contentWindow?.document;
       if (liveDoc && liveDoc.body) {
         const liveText = liveDoc.body.textContent || '';
@@ -22753,14 +22759,21 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Mark the HOST iframe element hydrated (not the inner doc — so it's never exported) so
     // getPdfPreviewHtml + the live-edit snapshot above trust the iframe even for a short doc. (DB-B6)
     try { iframe.setAttribute('data-allo-hydrated', '1'); } catch (_) {}
+    // S1 step 8: capture the setters for the delayed auto-audit — those timers fire AFTER
+    // this wrapped call returned, so they must not read the shared bound vars (identity-
+    // stable in practice, but the anti-drift pin keeps the sync surface strictly clean).
+    const _setEAL = setExportAuditLoading;
+    const _setEAR = setExportAuditResult;
     // Enable editing
     setTimeout(() => {
       try { doc.designMode = 'on'; } catch(e) {}
       _attachPreviewImageResizer(doc);
       _attachPreviewTableRefiner(doc);
-                            // Auto-run lightweight a11y audit on preview load
-                            var _ear = (_s && typeof _s === 'function') ? (_s().exportAuditResult) : (typeof exportAuditResult !== 'undefined' ? exportAuditResult : null);
-                            if (!_ear) { setTimeout(async () => { try { setExportAuditLoading(true); const html = doc.documentElement.outerHTML; const [aiR, axeR] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html).catch(() => null)]); const combined = aiR || { score: 0, summary: '', issues: [], passes: [] }; if (axeR) { combined.axeViolations = axeR.totalViolations; combined.axePasses = axeR.totalPasses; } setExportAuditResult(combined); } catch(e) {} setExportAuditLoading(false); }, 500); }
+                            // Auto-run lightweight a11y audit on preview load. The _s() read is a
+                            // DELIBERATE read-fresh exemption (S1): it gates duplicate auto-audits
+                            // against the CURRENT state, not this run's snapshot.
+                            var _ear = _s().exportAuditResult;
+                            if (!_ear) { setTimeout(async () => { try { _setEAL(true); const html = doc.documentElement.outerHTML; const [aiR, axeR] = await Promise.all([auditOutputAccessibility(html), runAxeAudit(html).catch(() => null)]); const combined = aiR || { score: 0, summary: '', issues: [], passes: [] }; if (axeR) { combined.axeViolations = axeR.totalViolations; combined.axePasses = axeR.totalPasses; } _setEAR(combined); } catch(e) {} _setEAL(false); }, 500); }
       // A11y inspect overlays
       if (useA11y) {
         const inspectCSS = doc.createElement('style');
@@ -23975,13 +23988,15 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       })();
       const result = applyWordRestoration(currentHtml, missingList, sourceText);
       // Write the restored HTML back into pdfFixResult so subsequent getPdfPreviewHtml() calls
-      // and exports see it. Then re-render the iframe via updatePdfPreview to reflect visually.
+      // and exports see it. Then re-render the iframe with the restored HTML EXPLICITLY.
+      // S1 step 8: the old code ALSO patched the shared module var (pdfFixResult = {...}) and
+      // hoped React flushed within 30ms — any other wrapped call in that window re-ran
+      // _bindState and clobbered the patch, letting the pre-restoration iframe snapshot win
+      // and silently REVERT the restoration in preview and export. Explicit data flow instead.
       if (result.html && result.html !== currentHtml && typeof setPdfFixResult === 'function' && pdfFixResult) {
         setPdfFixResult({ ...pdfFixResult, accessibleHtml: result.html });
-        // Mutate the closure's snapshot too so updatePdfPreview (which reads pdfFixResult via
-        // _bindState) picks up the new HTML on this tick.
-        pdfFixResult = { ...pdfFixResult, accessibleHtml: result.html };
-        setTimeout(() => { try { updatePdfPreview(); } catch(_) {} }, 30);
+        const _restoredHtml = result.html;
+        setTimeout(() => { try { updatePdfPreview(undefined, undefined, undefined, { sourceHtml: _restoredHtml }); } catch(_) {} }, 30);
       }
       return result;
     } catch (e) {
