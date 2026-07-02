@@ -4866,7 +4866,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=211c2784');
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=211c2784');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=211c2784');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=211c2784');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=530a13b7');
     loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=211c2784');
     loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=211c2784');
     loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=211c2784');
@@ -4946,7 +4946,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=211c2784');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=211c2784');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=211c2784');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=211c2784');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=1ef9570b');
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=211c2784');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=211c2784');
     loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=211c2784');
@@ -25110,7 +25110,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-contrast .bg-white, .theme-contrast .bg-slate-50, .theme-contrast .bg-slate-100,
         .theme-contrast .bg-amber-50, .theme-contrast .bg-rose-50, .theme-contrast .bg-sky-50, .theme-contrast .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }
         .theme-contrast .bg-amber-50 *, .theme-contrast .bg-rose-50 *, .theme-contrast .bg-sky-50 *, .theme-contrast .bg-emerald-50 * { color: #ffff00 !important; }
-        .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li {
+        .theme-contrast h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme-contrast p, .theme-contrast span, .theme-contrast div, .theme-contrast li, .theme-contrast label {
             color: #ffff00 !important;
         }
         .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; }

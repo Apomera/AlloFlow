@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -806,6 +806,156 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Multi-column reading-order REPAIR (H-5's harder half, 2026-07-01) ──
+// readingOrderSequenceRatio (above) DETECTS a scrambled order; this REPAIRS it at the
+// extraction root. pdf.js returns text items in content-stream order, and the extractor's
+// plain (y desc, x asc) sort INTERLEAVES the columns of a multi-column page line-by-line —
+// so the ground truth, the AI rebuild, and ultimately the tagged output all inherit a
+// scrambled reading order. This reorders a page's items COLUMN-AWARE:
+//   1. Projection profile: build an x-coverage histogram of the items' horizontal spans and
+//      find the deepest interior GUTTER (a tall vertical band ~no item crosses).
+//   2. Table discriminator: if the y-baselines on the two sides of the gutter mostly ALIGN,
+//      the "columns" are table/grid cells whose row-major order is correct — DON'T split.
+//      True body-text columns wrap independently, so their line grids drift apart.
+//   3. Recurse per side (≤3 splits → up to 4 columns), then (y desc, x asc) within a column.
+// CONSERVATIVE BY CONSTRUCTION: any ambiguity (few items, no clean gutter, unbalanced sides,
+// aligned baselines) falls through to the exact legacy sort — the repair can only engage on
+// a high-confidence gutter, so single-column and table pages are byte-identical to before.
+// opts.rtl reads columns right→left (Arabic/Hebrew two-column worksheets).
+// Pure (items in → ordered items + diagnostics out) → unit-testable without pdf.js.
+function _alloOrderTextItems(items, opts) {
+  opts = opts || {};
+  var _x = function (it) { return it && it.transform ? it.transform[4] : 0; };
+  var _y = function (it) { return it && it.transform ? it.transform[5] : 0; };
+  var _w = function (it) {
+    if (it && typeof it.width === 'number' && isFinite(it.width) && it.width > 0) return it.width;
+    var scale = (it && it.transform && isFinite(it.transform[0]) && Math.abs(it.transform[0]) > 0.01) ? Math.abs(it.transform[0]) : 10;
+    return String((it && it.str) || '').length * scale * 0.5;
+  };
+  var _legacy = function (arr) {
+    return arr.slice().sort(function (a, b) {
+      var ay = _y(a), by = _y(b);
+      if (Math.abs(ay - by) > 2) return by - ay;
+      return _x(a) - _x(b);
+    });
+  };
+  var real = [];
+  for (var i = 0; i < (items || []).length; i++) { var it = items[i]; if (it && String(it.str || '').trim()) real.push(it); }
+  var keepEmpties = (items || []).length - real.length; // empties re-dropped by the caller's join; order among them is irrelevant
+  var MAX_DEPTH = 2;
+  var split = function (arr, depth) {
+    if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var i2 = 0; i2 < arr.length; i2++) {
+      var x0 = _x(arr[i2]), x1 = x0 + _w(arr[i2]), yy = _y(arr[i2]);
+      if (x0 < minX) minX = x0; if (x1 > maxX) maxX = x1;
+      if (yy < minY) minY = yy; if (yy > maxY) maxY = yy;
+    }
+    var span = maxX - minX;
+    if (!(span > 80) || !(maxY - minY > 40)) return { cols: [arr], gutters: [] }; // too narrow/short to be columnar
+    var BINS = 96, cov = new Array(BINS);
+    for (var b0 = 0; b0 < BINS; b0++) cov[b0] = 0;
+    for (var i3 = 0; i3 < arr.length; i3++) {
+      var s0 = Math.max(0, Math.floor((_x(arr[i3]) - minX) / span * BINS));
+      var s1 = Math.min(BINS - 1, Math.ceil((_x(arr[i3]) + _w(arr[i3]) - minX) / span * BINS) - 1);
+      for (var bb = s0; bb <= s1; bb++) cov[bb]++;
+    }
+    // Deepest interior gutter: a run of near-empty bins (≤2% of items) at least ~2.5% of the
+    // span wide, whose center lies in the middle 70% of the text extent.
+    var thresh = Math.max(1, Math.floor(arr.length * 0.02));
+    var best = null, runStart = -1;
+    for (var b1 = 0; b1 <= BINS; b1++) {
+      var empty = b1 < BINS && cov[b1] <= thresh;
+      if (empty && runStart < 0) runStart = b1;
+      if (!empty && runStart >= 0) {
+        var runLen = b1 - runStart, center = (runStart + b1) / 2 / BINS;
+        if (runLen >= Math.max(3, Math.floor(BINS * 0.025)) && center > 0.15 && center < 0.85) {
+          if (!best || runLen > best.len) best = { len: runLen, xCut: minX + ((runStart + b1) / 2 / BINS) * span };
+        }
+        runStart = -1;
+      }
+    }
+    if (!best) return { cols: [arr], gutters: [] };
+    var left = [], right = [];
+    for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < best.xCut ? left : right).push(arr[i4]); }
+    // Balance guard: a stray margin note isn't a column.
+    if (left.length < 5 || right.length < 5 || left.length / right.length > 8 || right.length / left.length > 8) return { cols: [arr], gutters: [] };
+    // Table discriminator: fraction of left baselines (3pt buckets) that also appear on the right.
+    var leftY = Object.create(null), matches = 0, lY = 0;
+    for (var i5 = 0; i5 < left.length; i5++) leftY[Math.round(_y(left[i5]) / 3)] = true;
+    for (var kY in leftY) lY++;
+    var rightSeen = Object.create(null);
+    for (var i6 = 0; i6 < right.length; i6++) {
+      var ky = Math.round(_y(right[i6]) / 3);
+      if (leftY[ky] && !rightSeen[ky]) { rightSeen[ky] = true; matches++; }
+    }
+    if (lY > 0 && matches / lY >= 0.55) return { cols: [arr], gutters: [] }; // aligned rows → table/grid, keep row-major
+    var L = split(left, depth + 1), R = split(right, depth + 1);
+    return { cols: L.cols.concat(R.cols), gutters: L.gutters.concat([best.xCut]).concat(R.gutters) };
+  };
+  var res = split(real, 0);
+  if (res.cols.length <= 1) {
+    var _single = { items: _legacy(items || []), columns: 1, gutters: [], applied: false };
+    return _single;
+  }
+  // RTL auto-detection (2026-07-01): when opts.rtl is not explicitly set, detect a
+  // right-to-left document from the items' OWN characters (Hebrew, Arabic, Syriac,
+  // Thaana, Arabic Supplement/Extended + presentation forms). An RTL two-column page
+  // reads its RIGHT column first — left-first order would be exactly as scrambled as
+  // the interleave this function exists to fix. Threshold: RTL letters must outnumber
+  // Latin letters (a mixed English worksheet with sprinkled Arabic terms stays LTR).
+  var _rtl = opts.rtl;
+  if (_rtl === undefined) {
+    var _allStr = '';
+    for (var iR = 0; iR < real.length; iR++) _allStr += String(real[iR].str || '');
+    var _rtlCount = (_allStr.match(/[֐-޿ࢠ-ࣿיִ-﷿ﹰ-﻿]/g) || []).length;
+    var _latCount = (_allStr.match(/[A-Za-z]/g) || []).length;
+    _rtl = _rtlCount > 20 && _rtlCount > _latCount;
+  }
+  // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
+  var colsOrdered = res.cols.slice().sort(function (A, B) {
+    var ax = Infinity, bx = Infinity;
+    for (var iA = 0; iA < A.length; iA++) ax = Math.min(ax, _x(A[iA]));
+    for (var iB = 0; iB < B.length; iB++) bx = Math.min(bx, _x(B[iB]));
+    return _rtl ? bx - ax : ax - bx;
+  });
+  var out = [];
+  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c]));
+  if (keepEmpties > 0) { for (var i7 = 0; i7 < (items || []).length; i7++) { var e = items[i7]; if (!(e && String(e.str || '').trim())) out.push(e); } }
+  var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true };
+  return _multi;
+}
+
+// Cheap, deterministic document fingerprint (review F1/F5, 2026-07-01). Used to stamp the
+// window.__lastGroundTruth* OCR globals with the document they describe, so the legacy
+// fallback readers can REFUSE another document's pages/method instead of silently
+// attaching Document A's invisible text layer to Document B (batch retries, compare-
+// preview re-generation, old-project restore while another doc is in flight).
+// Accepts a base64 STRING (write side: fixAndVerifyPdf holds _base64) or a Uint8Array
+// (read side: createTaggedPdf holds originalPdfBytes) and produces the SAME key for the
+// same underlying bytes: 'pdf:<total-byte-length>:<hash of first 4096 bytes>'.
+function _alloDocFingerprint(input) {
+  try {
+    if (!input) return null;
+    if (typeof input === 'string') {
+      var b64 = input.replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+      var pad = b64.endsWith('==') ? 2 : (b64.endsWith('=') ? 1 : 0);
+      var total = Math.floor(b64.length * 3 / 4) - pad;
+      // First 4096 bytes = first 5464 base64 chars (rounded down to a 4-char group).
+      var headLen = Math.min(b64.length, 5464);
+      headLen -= headLen % 4;
+      var bin = atob(b64.slice(0, headLen));
+      var h = 0;
+      for (var i = 0; i < Math.min(bin.length, 4096); i++) h = ((h << 5) - h + bin.charCodeAt(i)) | 0;
+      return 'pdf:' + total + ':' + h;
+    }
+    var bytes = input;
+    var hb = 0;
+    for (var j = 0; j < Math.min(bytes.length, 4096); j++) hb = ((hb << 5) - hb + bytes[j]) | 0;
+    return 'pdf:' + bytes.length + ':' + hb;
+  } catch (_) { return null; }
+}
+
 // S3 block-restyle (2026-06-23; hardened after adversarial review). A CURATED, content-preserving
 // structure-transform library. The AI's role (a later slice) is only to SELECT one of these — it never
 // authors freeform HTML, which is exactly what breaks tagged-PDF structure + reading order. Every transform
@@ -1432,12 +1582,23 @@ function _chunkHtmlPreview(s) {
 function _stampThScopeGeometryAware(html) {
   try {
     return String(html).replace(/<table\b[\s\S]*?<\/table>/gi, function (tableHtml) {
+      // Row-header-style pre-scan (export-format review #3, 2026-07-01): a table with NO
+      // header row — every <tr> LEADS with a <th> and the first row also carries <td>
+      // data — is a row-header table (gradebook style: "Alice | 90 | 82"). The old rule
+      // stamped the FIRST row's <th> as scope="col" (a row label announced as a column
+      // header). Matrix tables keep the old behavior: an all-<th> first row (column
+      // headers) or a corner <td> first cell both fail this strict predicate.
+      const _trs = tableHtml.match(/<tr\b[\s\S]*?<\/tr\s*>/gi) || [];
+      const _leadTh = function (r) { return /<tr\b[^>]*>\s*(?:<!--[\s\S]*?-->\s*)*<th\b/i.test(r); };
+      const _rowHeaderStyle = !/<thead\b/i.test(tableHtml) && _trs.length >= 2
+        && _trs.every(_leadTh)
+        && /<td\b/i.test(_trs[0]);
       let inThead = false, rowIdx = -1;
       return tableHtml.replace(/<thead\b[^>]*>|<\/thead\s*>|<tr\b[^>]*>|<th(?![^>]*scope)([^>]*)>/gi, function (m, attrs) {
         if (/^<thead/i.test(m)) { inThead = true; return m; }
         if (/^<\/thead/i.test(m)) { inThead = false; return m; }
         if (/^<tr/i.test(m)) { rowIdx++; return m; }
-        const sc = (inThead || rowIdx <= 0) ? 'col' : 'row'; // header row → col; later row → row
+        const sc = _rowHeaderStyle ? 'row' : ((inThead || rowIdx <= 0) ? 'col' : 'row'); // header row → col; later row → row
         return '<th scope="' + sc + '"' + (attrs || '') + '>';
       });
     });
@@ -5965,18 +6126,17 @@ var createDocPipeline = function(deps) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
-          // Sort items by y (descending since PDF origin is bottom-left), then x (ascending)
-          // This preserves reading order for single-column layouts and gives a reasonable fallback for multi-column
-          const items = (tc.items || []).slice().sort((a, b) => {
-            const ay = a.transform ? a.transform[5] : 0;
-            const by = b.transform ? b.transform[5] : 0;
-            if (Math.abs(ay - by) > 2) return by - ay; // higher y first
-            const ax = a.transform ? a.transform[4] : 0;
-            const bx = b.transform ? b.transform[4] : 0;
-            return ax - bx;
-          });
+          // Column-aware reading order (H-5 repair, 2026-07-01). _alloOrderTextItems detects a
+          // high-confidence column gutter and reads column-by-column; on ANY ambiguity (single
+          // column, table-aligned rows, unbalanced sides) it returns the exact legacy
+          // (y desc, x asc) sort — so non-columnar pages are byte-identical to before. The
+          // legacy sort alone INTERLEAVED multi-column pages line-by-line, scrambling the
+          // ground truth every downstream stage inherits.
+          const _ordered = _alloOrderTextItems(tc.items || [], {});
+          const items = _ordered.items;
+          if (_ordered.applied) { try { warnLog('[PDF Det] p' + p + ': multi-column layout detected (' + _ordered.columns + ' columns) — reading order repaired column-by-column'); } catch (_) {} }
           const pageText = items.map(i => i.str || '').join(' ').replace(/\s+/g, ' ').trim();
-          pages.push({ pageNum: p, text: pageText });
+          pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', error: _pmsg });
@@ -6795,7 +6955,16 @@ var createDocPipeline = function(deps) {
       for (const oi of outlineItems) {
         const ot = norm(oi && oi.text);
         if (ot.length < 4) continue;
-        if (ot.startsWith(itemText) || itemText.startsWith(ot) || ot.includes(itemText) || itemText.includes(ot)) {
+        // Prefix relationships (either direction) are usually a pdf.js text run that
+        // TRUNCATES the real heading — keep them. Bare mid-string containment with only
+        // the 4-char floor was a mislabel vector (pipeline-review F3, 2026-07-01): a
+        // short cell like "Item 1" inherited the role of ANY outline entry containing
+        // those characters (e.g. an H3 "Item 1: Full Description"), silently promoting
+        // a table cell to a heading. Containment now requires the contained string to
+        // be ≥12 chars — long enough to be the actual heading text, not a fragment.
+        if (ot.startsWith(itemText) || itemText.startsWith(ot)
+            || (itemText.length >= 12 && ot.includes(itemText))
+            || (ot.length >= 12 && itemText.includes(ot))) {
           return oi.role;
         }
       }
@@ -8706,7 +8875,13 @@ Return ONLY valid JSON:
         issueFrequency,
         passes: [...new Set(parsedAudits.flatMap(a => a.passes || []))],
         pageCount: parsedAudits.find(a => a.pageCount)?.pageCount,
-        hasSearchableText: parsedAudits.some(a => a.hasSearchableText !== undefined) ? parsedAudits.some(a => a.hasSearchableText) : undefined,
+        // hasSearchableText is a mechanical fact the AI passes merely OPINE on; the old
+        // any-true-wins merge let a single hallucinated "true" (out of N passes) disarm the
+        // entire no-text honesty layer (n/a guards + AI-governs headline) on an image-only
+        // scan. Majority vote of the passes that answered; ties go to FALSE — the
+        // conservative side: a wrong "false" shows n/a + an AI-governed score, a wrong
+        // "true" ships real-looking engine scores measured on an empty reconstruction.
+        hasSearchableText: (() => { const _v = parsedAudits.filter(a => a.hasSearchableText !== undefined); if (!_v.length) return undefined; const _t = _v.filter(a => a.hasSearchableText).length; return _t > _v.length - _t; })(),
         hasImages: parsedAudits.some(a => a.hasImages),
         hasTables: parsedAudits.some(a => a.hasTables),
         hasForms: parsedAudits.some(a => a.hasForms),
@@ -8793,7 +8968,16 @@ Return ONLY valid JSON:
           // (the "46" that meant neither 'terrible' nor 'fine'). min() also matches the auto-fix loop's
           // own stop gate (axe==0 AND ai>=target). Both layer scores are shown SEPARATELY in the UI.
           const aiOnlyScore = triangulated.score;
-          const governingInitial = _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
+          // No-text-layer exclusion (audit-coherence 2026-07-01): the UI has told users
+          // "automated checks N/A — the AI rubric governs" for image-only scans since
+          // 2026-06-30, but the math still ran min(AI, engines-on-empty-reconstruction) —
+          // if the empty shell ever tripped an axe/EA rule, a MEANINGLESS engine would
+          // silently govern the headline while the badge claimed the opposite. Enforce the
+          // claim: no text layer → the AI rubric IS the headline; the engine audits are
+          // still recorded below for disclosure (the UI renders them as n/a).
+          const _noTextLayer = triangulated.hasSearchableText === false;
+          const governingInitial = _noTextLayer ? aiOnlyScore : _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
+          if (_noTextLayer) triangulated._automatedNA = true;
           triangulated.score = governingInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
           triangulated._deterministicScore = deterministicBaseline;
@@ -10121,6 +10305,21 @@ Return ONLY ${totalChunks > 1 && !isFirst ? 'the HTML fragment (no <!DOCTYPE>, n
           warnLog('[Batch] Quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
           break;
         }
+      } finally {
+        // Per-file global hygiene (review F5, 2026-07-01): a file that THROWS
+        // mid-extraction leaves the window OCR globals still describing the PREVIOUS
+        // file; the next iteration (or a retry) would then report the prior file's OCR
+        // method/pages. Clear between files — each run re-stamps its own, and the
+        // fingerprint gate refuses mismatched leftovers anyway; this keeps the batch
+        // summary metadata honest too.
+        try {
+          window.__lastGroundTruthCharCount = 0;
+          window.__lastGroundTruthPageMap = null;
+          window.__lastGroundTruthMethod = null;
+          window.__lastOcrPageErrors = [];
+          window.__lastOcrLowConfidencePages = [];
+          window.__lastGroundTruthDocKey = null;
+        } catch (_) {}
       }
       // Persist after each file so a tab close mid-batch is recoverable.
       _persistBatchStatus();
@@ -14404,6 +14603,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       window.__lastGroundTruthMethod = null;
       window.__lastOcrPageErrors = []; // audit #17: per-page extraction failures, fresh each run
       window.__lastOcrLowConfidencePages = []; // B5 (2026-06-20): per-page low OCR confidence, fresh each run
+      // Cross-document guard (review F1/F5, 2026-07-01): stamp this run's OCR globals with
+      // the CURRENT document's fingerprint. createTaggedPdf's legacy window-fallbacks
+      // validate against this key and refuse another document's OCR state.
+      window.__lastGroundTruthDocKey = _alloDocFingerprint(_base64);
       // H-1 (audit 2026-06-23): these dual-OCR globals are SET only in the scanned path (~13879) but READ by
       // isScanned (~14346) + AutoRestore (~16602); a born-digital doc that skips OCR would otherwise inherit
       // the PRIOR scanned doc's text (cross-document bleed) and be mislabeled scanned. Reset them per run.
@@ -18381,7 +18584,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
   // Surfaces the structural-vs-semantic SPLIT (axe-core passes ≠ the document is
   // usable) + a content-integrity coverage line — so a high automated score never
   // reads as "fully accessible" when the AI rubric or text-coverage says otherwise.
-  const _honestReportBlocks = (structural, semantic, coverage, pdfua, secondEngine) => {
+  const _honestReportBlocks = (structural, semantic, coverage, pdfua, secondEngine, opts) => {
     // pdfua: optional PdfValidator summary { pass, fail, overall } — when
     // present, renders a 3rd score tile labelled "PDF/UA-1 (self-check)"
     // alongside the existing Structural (axe-core) and Semantic (AI rubric)
@@ -18408,6 +18611,26 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       ? (typeof pdfua.conformancePct === 'number' ? pdfua.conformancePct : Math.round((pdfua.pass / _pdfuaDenom) * 100))
       : null;
     const _pdfuaHasWarn = hasPdfUa && (pdfua.warn || 0) > 0;
+    // No-text-layer honesty (audit-coherence 2026-07-01): on an image-only scan the
+    // automated engines audited an EMPTY text reconstruction, so their ~100s are
+    // by-construction, not earned. The ON-SCREEN breakdown has shown "n/a" for this case
+    // since 2026-06-30 — but this DOWNLOADABLE report (the artifact a district actually
+    // files) still printed the real-looking numbers under a WCAG/ADA/508 header. Render
+    // n/a tiles + the explanation instead; the AI rubric tile stays (it saw the scan).
+    if (opts && opts.automatedNA && typeof semantic === 'number') {
+      const _naTile = (label) => `<div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:12px"><div style="font-size:1.05rem;font-weight:800;color:#94a3b8">n/a</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">${label}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">no text layer</div></div>`;
+      h += `<div style="display:flex;gap:12px;margin:12px 0;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px;text-align:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px"><div style="font-size:1.25rem;font-weight:800;color:#1e3a5f">${semantic}</div><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Semantic (AI rubric)</div></div>
+        ${_naTile('Structural (axe-core)')}
+        ${typeof secondEngine === 'number' ? _naTile('2nd engine (Equal Access)') : ''}
+      </div>
+      <p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Automated engine checks are not applicable to this document.</strong> It has no searchable text layer (image-only scan), so the automated WCAG engines could only audit an empty text reconstruction &mdash; their results would be by-construction, not earned. The AI rubric (which reviews the scanned pages themselves) governs the headline. Run OCR/remediation to produce a text layer before automated results can be meaningful.</p>`;
+      if (typeof coverage === 'number') {
+        h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>.</p>`;
+      }
+      return h;
+    }
     if (typeof structural === 'number' && typeof semantic === 'number') {
       const div = Math.abs(structural - semantic);
       const pdfuaTile = (hasPdfUa && pdfuaPct !== null)
@@ -18503,7 +18726,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Standards: WCAG 2.1 Level AA &bull; ADA Title II &bull; Section 508 &bull; EN 301 549<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.1 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -18540,7 +18763,10 @@ tr { page-break-inside: avoid; }
     const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score ?? d._aiOnlyScore);
     // 2nd-engine (IBM Equal Access): when it is the lower deterministic engine it GOVERNS the headline.
     const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score ?? (d._baselineSecondEngineAudit && d._baselineSecondEngineAudit.score));
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined));
+    // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
+    // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
+    const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt });
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
@@ -18633,7 +18859,7 @@ tr { page-break-inside: avoid; }
       if (d.after?.axeCoreAudit) {
         const axe = d.after.axeCoreAudit;
         html += `<h3 style="color:#4f46e5;font-size:16px;margin-top:2rem">🔬 axe-core Automated Verification</h3>`;
-        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">Independent automated testing by Deque axe-core engine (industry standard WCAG scanner)</p>`;
+        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">Independent automated testing by the Deque axe-core engine — an industry-standard scanner for the machine-testable subset of WCAG (automated tools cannot verify every criterion)</p>`;
         html += `
         <div class="meta-grid">
           <div class="meta-card"><div class="meta-val" style="color:${axe.totalViolations === 0 ? '#16a34a' : '#dc2626'}">${axe.totalViolations}</div><div class="meta-label">Violations</div></div>
@@ -20009,6 +20235,11 @@ tr { page-break-inside: avoid; }
         return tryFlat();
       }
     };
+    // b0d24ae3 hypothesis-#1 hook (harness-only): the reverted June attempt moved
+    // doc.getPages() ABOVE the outline build and that reordering was never
+    // exonerated. This recreates exactly that page-cache-population timing so the
+    // instrumented harness can test it in isolation. No-op in production.
+    if (fixResult && fixResult._experimentEarlyGetPages) { try { doc.getPages(); } catch (_) {} }
     const structElemRefs = _buildOutlineStructElems();
     // ── Stage 4 prep: flat outline-items list for per-block role matching.
     // We rewalk the DOM here rather than plumb state out of
@@ -20064,7 +20295,21 @@ tr { page-break-inside: avoid; }
     // honor an explicit fixResult.isScanned. The entire OCR-layer + tag path is gated on this flag, so a
     // dropped/un-propagated method string would otherwise SILENTLY ship an image-only, untagged PDF.
     // Born-digital is unaffected — its method ('pdfjs'/'extracted-text'/'docx-*') never matches.
-    const _gtm = String((fixResult && fixResult.groundTruthMethod) || (typeof window !== 'undefined' && window.__lastGroundTruthMethod) || '');
+    // Cross-document guard (review F1/F5, 2026-07-01): the window.__lastGroundTruth*
+    // globals are a LEGACY fallback for fixResults saved before groundTruthPages/Method
+    // were persisted. They describe whichever document was extracted MOST RECENTLY in
+    // this session — not necessarily THIS one (batch retries, compare-preview
+    // re-generation, old-project restore while another doc is in flight). The fallback
+    // is honored only when the globals' fingerprint matches these bytes; a mismatch
+    // degrades honestly (fixResult-persisted state only) instead of attaching another
+    // document's invisible text layer. NOTE: the typeset path re-saves bytes, so its
+    // fingerprint intentionally never matches — it relies on the persisted fixResult.
+    const _thisDocKey = _alloDocFingerprint(originalPdfBytes);
+    const _gtGlobalsMatch = !!(typeof window !== 'undefined' && window.__lastGroundTruthDocKey && _thisDocKey && window.__lastGroundTruthDocKey === _thisDocKey);
+    if (typeof window !== 'undefined' && window.__lastGroundTruthDocKey && _thisDocKey && !_gtGlobalsMatch) {
+      try { warnLog('[createTaggedPdf] window OCR fallback ignored — session globals belong to a different document (fingerprint mismatch); using only fixResult-persisted OCR state.'); } catch (_) {}
+    }
+    const _gtm = String((fixResult && fixResult.groundTruthMethod) || (_gtGlobalsMatch && window.__lastGroundTruthMethod) || '');
     const isScanned = /tesseract|vision|ocr/i.test(_gtm) || !!(fixResult && fixResult.isScanned);
 
     // ── Tag-tree unify Slices 1+2: /K→MCR linkage for scanned PDFs (any page count) ──
@@ -20103,6 +20348,19 @@ tr { page-break-inside: avoid; }
     // keeps Stage-3's existing /P MCID 0 wraps untouched. Worst case: PAC stops
     // flagging orphaned, SR unchanged. Catastrophe path (content loss) gated by
     // tests/e2e/pdf_tag_tree_golden.spec.ts BEFORE deploy.
+    // ── b0d24ae3 per-leaf experiment (DIAGNOSTIC — default OFF) ──
+    // fixResult._experimentPerLeafScanned is set ONLY by
+    // dev-tools/debug/tag_tree_live_harness.cjs. When on, the unify pass assigns each
+    // scanned leaf its OWN MCID (instead of the shared MCID 0) and records a per-page
+    // draw plan; the page loop then draws each leaf's text as its own BDC/EMC run and
+    // the Stage-3 wrap skips the flat /P for planned pages (ParentTree maps
+    // mcid → leaf). This re-creates the reverted b0d24ae3 attempt MINUS its two
+    // un-exonerated moves (early getPages(); build-time /K), inside the REAL
+    // orchestration, so the instrumented harness can observe the content loss —
+    // or prove this construction safe. Production behavior is byte-identical
+    // while the flag is absent.
+    const _perLeafExp = !!(fixResult && fixResult._experimentPerLeafScanned) && isScanned;
+    const _perLeafPlan = _perLeafExp ? new Map() : null; // pageIdx → [{ref, role, text, mcid}]
     if (isScanned && pages.length >= 1 && _unifiableLeafRefs.length > 0) {
       try {
         const _pageCount = pages.length;
@@ -20113,7 +20371,7 @@ tr { page-break-inside: avoid; }
           // Proportional page assignment; clamp to last page if rounding overshoots.
           const _pageIdx = Math.min(Math.floor(i / _leavesPerPage), _pageCount - 1);
           const _pageRef = pages[_pageIdx].ref;
-          const { ref } = _unifiableLeafRefs[i];
+          const { ref, role, text } = _unifiableLeafRefs[i];
           try {
             const leaf = context.lookup(ref);
             if (!leaf || typeof leaf.get !== 'function' || typeof leaf.set !== 'function') continue;
@@ -20121,16 +20379,28 @@ tr { page-break-inside: avoid; }
             // be setting /K on these today, but if a future change does we
             // preserve it).
             if (leaf.get(PDFName.of('K'))) continue;
+            let _mcid = 0;
+            if (_perLeafExp) {
+              // Grouping/decorative elements (the <main> Sect leaf, NonStruct chrome)
+              // make no content claim in per-leaf mode — drawing a Sect run would
+              // duplicate the entire document text inside one marked-content
+              // sequence (observed in the first harness decode).
+              if (role === 'Sect' || role === 'Document' || role === 'Art' || role === 'Part' || role === 'Div' || role === 'NonStruct') continue;
+              const _runs = _perLeafPlan.get(_pageIdx) || [];
+              _mcid = _runs.length;
+              _runs.push({ ref, role: role || 'P', text: text || '', mcid: _mcid });
+              _perLeafPlan.set(_pageIdx, _runs);
+            }
             const mcr = context.obj({
               Type: PDFName.of('MCR'),
               Pg: _pageRef,
-              MCID: PDFNumber.of(0),
+              MCID: PDFNumber.of(_mcid),
             });
             leaf.set(PDFName.of('K'), context.obj([mcr]));
             _unifyPatched++;
           } catch (_) { /* per-leaf failure is non-fatal — leave that leaf orphaned */ }
         }
-        const _sliceLabel = _pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)';
+        const _sliceLabel = _perLeafExp ? 'PER-LEAF EXPERIMENT' : (_pageCount === 1 ? 'Slice 1 (single-page)' : 'Slice 2 (multi-page, proportional)');
         warnLog('[Tag-Tree Unify ' + _sliceLabel + '] Patched ' + _unifyPatched + '/' + _leafCount + ' leaves across ' + _pageCount + ' page(s)');
       } catch (_) { /* whole-pass failure is non-fatal — orphaned state remains the safe fallback */ }
     }
@@ -20140,7 +20410,7 @@ tr { page-break-inside: avoid; }
     // top-left invisible run per page — still searchable + SR-readable.
     const ocrPages = isScanned
       ? ((fixResult && fixResult.groundTruthPages)
-          || (typeof window !== 'undefined' ? window.__lastGroundTruthPageMap : null)
+          || (_gtGlobalsMatch ? window.__lastGroundTruthPageMap : null)
           || [])
       : [];
     let _helvFont = null;
@@ -20305,6 +20575,16 @@ tr { page-break-inside: avoid; }
       let _origContentCount = 0;
       if (isScanned) {
         try {
+          // Force pdf-lib's page normalization BEFORE counting the original streams.
+          // The first drawText/pushOperators on a loaded page triggers page.node.normalize(),
+          // which rewrites /Contents from a bare ref (or [orig]) to [q, orig, Q, <draw stream>].
+          // Counting before that rewrite under-counted the original envelope by the q/Q guards,
+          // so the Stage-3 artifact split put ONLY pdf-lib's "q" stream inside /Artifact and
+          // tagged the scanned IMAGE as /P MCID-0 text content — the exact veraPDF §7.1 failure
+          // the split exists to prevent, shipped silently on every single-content-stream scan.
+          // normalize() is idempotent (guarded by node.normalized), so calling it here simply
+          // materializes the final pre-OCR shape early. (tag-tree harness find, 2026-07-01)
+          try { page.node.normalize(); } catch (_) {}
           const _rc0 = page.node.get(PDFName.of('Contents'));
           _origContentCount = (_rc0 && typeof _rc0.size === 'function') ? _rc0.size() : (_rc0 ? 1 : 0);
         } catch (_) { _origContentCount = 0; }
@@ -20385,7 +20665,41 @@ tr { page-break-inside: avoid; }
             if (!_drew) { try { warnLog('[createTaggedPdf] invisible OCR text layer drew nothing p' + (pi+1)); } catch(_) {} }
             return _drew;
           };
-          if (_perWord) {
+          if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
+            // ── b0d24ae3 PER-LEAF EXPERIMENT draw path (harness-only) ──
+            // Draw each planned leaf's text as its OWN marked-content run:
+            //   /<role> <</MCID n>> BDC → invisible drawText → EMC
+            // pushOperators + drawText interleave in content-stream order (proven
+            // by the _proto_mcid prototype and repro variants F/H). The Stage-3
+            // wrap below will keep the /Artifact wrap on the original image but
+            // skip the flat /P for this page (the runs carry their own tags).
+            const _PLx = (typeof window !== 'undefined' && window.PDFLib) ? window.PDFLib : null;
+            const _runs = _perLeafPlan.get(pi);
+            let _font = _uniFont || (await _getHelv());
+            const _fold = !_uniFont;
+            if (_PLx && _PLx.PDFOperator && _PLx.PDFOperatorNames && _font) {
+              const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\n'), (sz && sz.height ? sz.height : 792));
+              let _y = (sz && sz.height ? sz.height : 792) - 40;
+              const _step = Math.max(10, (_layout && _layout.lineHeight) || 12);
+              for (const _run of _runs) {
+                try {
+                  const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
+                    [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
+                  const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
+                  page.pushOperators(_bdc);
+                  const _txt = _fold ? _toWinAnsi(_run.text || '') : (_run.text || '');
+                  if (_txt.trim()) {
+                    try { page.drawText(_txt, { x: 36, y: _y, size: 4, font: _font, opacity: 0 }); _pageDrewAny = true; }
+                    catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_run.text || ''), { x: 36, y: _y, size: 4, font: _h, opacity: 0 }); _pageDrewAny = true; } } catch (_) {} }
+                  }
+                  page.pushOperators(_emc);
+                  _y -= _step; if (_y < 20) _y = (sz && sz.height ? sz.height : 792) - 40;
+                } catch (_runErr) { try { warnLog('[per-leaf exp] run draw failed (mcid ' + _run.mcid + '): ' + (_runErr && _runErr.message)); } catch (_) {} }
+              }
+            } else {
+              try { warnLog('[per-leaf exp] PDFOperator helpers or font unavailable — page ' + (pi + 1) + ' drew nothing'); } catch (_) {}
+            }
+          } else if (_perWord) {
             const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
             let _helvPW = null;
             // ── Horizontal scaling (text-matrix a-component ≈ the Tz operator) ──
@@ -20507,7 +20821,27 @@ tr { page-break-inside: avoid; }
           } else if (rawContents) { _contentRefs.push(rawContents); }
           const _mkCS = (s) => context.register(context.stream(new TextEncoder().encode(s)));
           let newArr;
-          if (isScanned && _origContentCount > 0 && _contentRefs.length > _origContentCount) {
+          if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi)) {
+            // ── b0d24ae3 PER-LEAF EXPERIMENT wrap (harness-only) ──
+            // The appended OCR streams already carry their own per-leaf BDC/EMC
+            // runs (drawn above), so they must stay BARE — wrapping them in the
+            // flat /P MCID-0 would nest marked content and double-claim it. The
+            // original scanned image still gets the /Artifact wrap. This is the
+            // "continue past Stage-3 flat-/P" the reverted attempt described
+            // (repro variant H — passes in isolation).
+            if (_origContentCount > 0 && _contentRefs.length > _origContentCount) {
+              newArr = [_mkCS('/Artifact BMC\n')];
+              for (let k = 0; k < _origContentCount; k++) newArr.push(_contentRefs[k]);
+              newArr.push(_mkCS(' EMC\n'));
+              for (let k = _origContentCount; k < _contentRefs.length; k++) newArr.push(_contentRefs[k]);
+            } else if (_origContentCount > 0) {
+              // Runs drew nothing — image-only page, same as the artifact-only branch.
+              newArr = [_mkCS('/Artifact BMC\n')].concat(_contentRefs).concat([_mkCS(' EMC\n')]);
+              _pageArtifactOnly = true;
+            } else {
+              newArr = _contentRefs.slice();
+            }
+          } else if (isScanned && _origContentCount > 0 && _contentRefs.length > _origContentCount) {
             // SCANNED: the first _origContentCount streams are the page IMAGE → mark /Artifact; the
             // appended streams are the OCR text layer → tag as real /P content (MCID 0). An image
             // lumped into a /P is veraPDF §7.1 "content neither Artifact nor tagged"; this separates them.
@@ -20537,6 +20871,15 @@ tr { page-break-inside: avoid; }
           if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
 
+        // b0d24ae3 PER-LEAF EXPERIMENT: the page's ParentTree slot maps each MCID to its
+        // OWN leaf StructElem (array index = MCID) — no flat /P element exists for this page.
+        if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi) && !_pageArtifactOnly) {
+          try {
+            const _runs = _perLeafPlan.get(pi);
+            parentTreeNums.push(PDFNumber.of(pi));
+            parentTreeNums.push(context.obj(_runs.map(r => r.ref)));
+          } catch (_ptErr) { try { warnLog('[per-leaf exp] ParentTree wiring failed p' + (pi + 1) + ': ' + (_ptErr && _ptErr.message)); } catch (_) {} }
+        } else
         // Per-page StructElem (type /P) with a single MCR K-child pointing at the page's MCID 0. SKIPPED
         // for an artifact-only page — there is no MCID-0 tagged content to point at (the image is
         // /Artifact), and a /P StructElem with no real content is itself a §7.1 problem. (tagging-pdfua-2)
@@ -21905,16 +22248,102 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const _allP = _rtPages.length;
         _rtChecks.push({ rule: 'Pages link to tag tree (StructParents)', status: (_allP > 0 && _spOk === _allP) ? 'pass' : 'fail', detail: _spOk + '/' + _allP + ' pages' });
       } catch (_) {}
+      // ── MCR→BDC honesty check (2026-07-01, tag-tree harness find) ──
+      // The checks above (and the orphan metric) count a leaf as "content-linked" when its
+      // /K carries an MCR — WITHOUT verifying that the referenced marked-content sequence
+      // actually exists in the page's content stream. A /K → MCR(page, MCID n) with no
+      // matching "<</MCID n>> BDC" is fake linkage: validators resolve it to nothing and a
+      // tag-walking AT reads silence. Decode the SAVED pages' streams (pdf-lib's own
+      // decodePDFRawStream handles Flate) and verify every MCR's MCID appears on its page.
+      // Pages whose streams can't be decoded are EXCLUDED (counted, disclosed) rather than
+      // guessed at — the check only judges what it could actually read.
+      try {
+        const _decode = (typeof window !== 'undefined' && window.PDFLib && window.PDFLib.decodePDFRawStream) ? window.PDFLib.decodePDFRawStream : null;
+        const _rtPages3 = _rt.getPages();
+        const _pageIdxByRef = {};
+        const _bdcByPage = [];
+        let _pagesUndecodable = 0;
+        for (let _pi3 = 0; _pi3 < _rtPages3.length; _pi3++) {
+          _pageIdxByRef[_rtPages3[_pi3].ref.toString()] = _pi3;
+          let _body = '', _decodeOk = true;
+          try {
+            const _cts = _rtPages3[_pi3].node.get(PDFName.of('Contents'));
+            const _crefs = [];
+            if (_cts && typeof _cts.size === 'function') { for (let _k3 = 0; _k3 < _cts.size(); _k3++) _crefs.push(_cts.get(_k3)); }
+            else if (_cts) { _crefs.push(_cts); }
+            for (const _cr of _crefs) {
+              const _cs = _rt.context.lookup(_cr);
+              if (!_cs) continue;
+              let _bts = null;
+              const _hasFilter = _cs.dict && _cs.dict.get && _cs.dict.get(PDFName.of('Filter'));
+              try {
+                if (_hasFilter && _decode) { const _d = _decode(_cs); _bts = _d && _d.decode ? _d.decode() : null; }
+                else if (!_hasFilter) { _bts = _cs.getContents ? _cs.getContents() : (_cs.contents || null); }
+              } catch (_) { _bts = null; }
+              if (_bts) { let _sb = ''; for (let _bi = 0; _bi < _bts.length; _bi++) _sb += String.fromCharCode(_bts[_bi]); _body += _sb + '\n'; }
+              else if (_hasFilter) { _decodeOk = false; }
+            }
+          } catch (_) { _decodeOk = false; }
+          if (!_decodeOk) _pagesUndecodable++;
+          const _set = {};
+          const _reB = /<<\s*\/MCID\s+(\d+)\s*>>\s*BDC/g; let _mB;
+          while ((_mB = _reB.exec(_body))) _set[Number(_mB[1])] = true;
+          _bdcByPage.push({ ok: _decodeOk, mcids: _set });
+        }
+        let _mcrTotal = 0, _mcrUnbacked = 0, _mcrSkipped = 0;
+        for (const _entry3 of _rt.context.enumerateIndirectObjects()) {
+          const _o3 = _entry3 && _entry3[1];
+          try {
+            if (!_o3 || typeof _o3.get !== 'function') continue;
+            const _ty3 = _o3.get(PDFName.of('Type'));
+            if (!_ty3 || String(_ty3) !== '/StructElem') continue;
+            const _kRaw = _o3.get(PDFName.of('K'));
+            const _kRes = _kRaw && _kRaw.toString && /R$/.test(_kRaw.toString()) ? _rt.context.lookup(_kRaw) : _kRaw;
+            const _kItems = (_kRes && typeof _kRes.size === 'function') ? Array.from({ length: _kRes.size() }, (_, _ii) => { const _v = _kRes.get(_ii); return (_v && _v.toString && /R$/.test(_v.toString())) ? _rt.context.lookup(_v) : _v; }) : [_kRes];
+            for (const _ki of _kItems) {
+              if (!_ki || typeof _ki.get !== 'function') continue;
+              const _kt = _ki.get(PDFName.of('Type'));
+              if (!_kt || String(_kt) !== '/MCR') continue;
+              _mcrTotal++;
+              const _pg3 = _ki.get(PDFName.of('Pg'));
+              const _mc3 = _ki.get(PDFName.of('MCID'));
+              const _pIdx = _pg3 ? _pageIdxByRef[_pg3.toString()] : undefined;
+              const _mcNum = _mc3 != null ? Number(String(_mc3)) : NaN;
+              const _pageInfo = (_pIdx !== undefined) ? _bdcByPage[_pIdx] : null;
+              if (!_pageInfo || !_pageInfo.ok) { _mcrSkipped++; continue; }
+              if (isNaN(_mcNum) || !_pageInfo.mcids[_mcNum]) _mcrUnbacked++;
+            }
+          } catch (_) {}
+        }
+        if (_mcrTotal > 0) {
+          const _mcrDetail = (_mcrTotal - _mcrUnbacked - _mcrSkipped) + '/' + _mcrTotal + ' content links verified against page streams'
+            + (_mcrUnbacked > 0 ? '; ' + _mcrUnbacked + ' point at marked content that does NOT exist' : '')
+            + (_mcrSkipped > 0 ? '; ' + _mcrSkipped + ' skipped (page stream not decodable)' : '');
+          _rtChecks.push({ rule: 'Content links (MCR) resolve to real marked content (BDC)', status: _mcrUnbacked > 0 ? 'fail' : 'pass', detail: _mcrDetail });
+          if (_mcrUnbacked > 0) _rtWarn.push(_mcrUnbacked + ' of ' + _mcrTotal + ' structure-element content links (MCR) reference marked content that does not exist in the page streams — the affected elements are effectively orphaned even though they carry a /K.');
+        }
+      } catch (_) { /* honesty check is best-effort — never blocks the round-trip report */ }
       // Content-loss guard: compare the StructElem count in the SAVED file to what we
       // built in memory. A large shortfall means a subtree was dropped at serialization.
-      // 2026-06-07: include Stage-4 per-block StructElems in the built count so
-      // the round-trip ratio can detect block-elem prune (the 93%-retention bug
-      // fingerprint). Previously block-elems built at L3471 were tracked only
-      // via Sect.K + parentArrayRef, invisible to this gate.
-      const _builtCount = ((typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0)
-        + ((typeof pageElemRefs !== 'undefined' && Array.isArray(pageElemRefs)) ? pageElemRefs.length : 0)
-        + ((typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0)
-        + ((typeof _stage4BlockCount === 'number') ? _stage4BlockCount : 0);
+      // 2026-07-01 (tag-tree harness find): the old sum — structElemRefs.length +
+      // pageElemRefs + fieldElemRefs + _stage4BlockCount — counted only TOP-LEVEL
+      // refs (structElemRefs holds the root kids: ~3 Sects), while _rtStructCount
+      // counts EVERY StructElem in the saved file (~20). The ratio was therefore
+      // saved/built >> 1 on every document, and the guard could NEVER detect the
+      // b0d24ae3 loss class it was tightened for (a nested leaf drop leaves the
+      // top-level count unchanged) — and the report showed a nonsense "3/20".
+      // Count built elements the SAME way the round-trip counts saved ones:
+      // enumerate this doc's context and tally /Type /StructElem. Apples-to-apples;
+      // pre-existing StructElems from a tagged source appear in both tallies.
+      let _builtCount = 0;
+      try {
+        for (const _pair of context.enumerateIndirectObjects()) {
+          try {
+            const _o = _pair[1];
+            if (_o && typeof _o.get === 'function' && String(_o.get(PDFName.of('Type')) || '') === '/StructElem') _builtCount++;
+          } catch (_) {}
+        }
+      } catch (_) { _builtCount = 0; }
       // Tightened 2026-06-07: previously warned at <90% retention (b0d24ae3
       // content-loss bug was 93% retained, didn't trip). Now warns on ANY
       // delta. A 1-of-15-leaves drop is exactly the kind of silent loss the
@@ -22054,7 +22483,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // Skipped entirely if no page map (cheap fallback — coverage % alone).
           const _missingByPage = {};
           try {
-            const _pageMap = (typeof window !== 'undefined' && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null;
+            const _pageMap = (_gtGlobalsMatch && Array.isArray(window.__lastGroundTruthPageMap)) ? window.__lastGroundTruthPageMap : null;
             if (_pageMap && _pageMap.length > 0 && _missing.length > 0) {
               const _pagesLc = _pageMap.map(p => (p && p.text) ? String(p.text).toLowerCase() : '');
               for (const tok of _missing) {
@@ -22169,9 +22598,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Add print instructions
     const printBanner = printWindow.document.createElement('div');
     printBanner.id = 'print-banner';
-    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, to download as a tagged PDF." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
+    // Honesty (export-format review, 2026-07-01): this banner claimed the browser print
+    // would produce "a tagged PDF". That is BROWSER-DEPENDENT (Chromium-family browsers
+    // carry document structure into printed PDFs; Firefox/Safari generally do not) and
+    // either way it is not AlloFlow's verified tagged output — the in-app tagged-PDF
+    // download is. Say what this path actually is: a print-style copy.
+    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, for a print-style copy. For the verified tagged PDF, use AlloFlow's Download Tagged PDF button." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
       <span style="font-weight:bold"><span aria-hidden="true">♿ </span>Accessible Document Ready</span>
-      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> to download as a tagged PDF</span>
+      <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> for a print-style copy · tag preservation depends on your browser — AlloFlow's <strong>Download Tagged PDF</strong> is the verified accessible version</span>
       <button onclick="document.getElementById('print-banner').remove();window.print()" aria-label="Save as PDF" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px"><span aria-hidden="true">📥 </span>Save as PDF</button>
       <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
@@ -26935,10 +27369,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionEncryptScript = _hasSubmission ? `<script>${_getInlineEncryptScript()}</script>` : '';
       // Visible CTA inserted right before the footer.
       const _submissionSaveButton = _hasSubmission ? `
-        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
-          <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
+          <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 Save my work</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
         </div>
       ` : '';
@@ -27055,12 +27489,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         ${_submissionPublicKeyJson}
         ${_submissionEncryptScript}
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+          /* Keep downloaded HTML useful offline: only explicit teacher-selected
+             web fonts are imported; default themes use system fallbacks. */
           ${exportFontImport}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
-          .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+          .section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
           table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
           /* Border bumped from 1px → 1.5px to clear WCAG 1.4.11 (3:1 non-text
@@ -27180,6 +27615,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              Page-break rule preserved for printability. */
           .reflection-block { margin-bottom: 20px; padding: 10px 14px 4px; border-left: 3px solid #c7d2fe; background: rgba(238,242,255,0.4); border-radius: 0 8px 8px 0; page-break-inside: avoid; }
           .reflection-block > p:first-child { color: #3730a3; }
+          .venn-print-wrapper .venn-visual,
+          .flowchart-print-wrapper > [role="img"],
+          .ce-print-wrapper,
+          .ps-print-wrapper,
+          .fishbone-print-wrapper,
+          .cmap-print-wrapper,
+          .mindmap-print-wrapper > [role="img"],
+          .outline-print-wrapper {
+            font-size: 16px;
+            line-height: 1.35;
+          }
+          .venn-print-wrapper li,
+          .flowchart-print-wrapper li,
+          .ce-print-wrapper li,
+          .ps-print-wrapper li,
+          .fishbone-print-wrapper li,
+          .cmap-print-wrapper li,
+          .mindmap-print-wrapper li,
+          .outline-print-wrapper li {
+            overflow-wrap: anywhere;
+            hyphens: auto;
+          }
+          @media (max-width: 820px) {
+            .flowchart-print-wrapper,
+            .ce-print-wrapper,
+            .ps-print-wrapper,
+            .fishbone-print-wrapper,
+            .cmap-print-wrapper,
+            .mindmap-print-wrapper,
+            .outline-print-wrapper {
+              overflow-x: auto;
+            }
+          }
           .worksheet-header { margin-bottom: 40px; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
           .header-row { display: flex; gap: 30px; }
           .header-item { display: flex; align-items: flex-end; gap: 10px; }
@@ -27220,7 +27688,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             dd { page-break-before: avoid; break-before: avoid; }
             .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
             .page-break:after { content: ""; }
-            .section { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
+            .section { page-break-inside: auto; break-inside: auto; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
+            .resource-header, .card, .quiz-box, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
@@ -27270,15 +27739,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              Sepia / High Contrast at any time, persisted in localStorage.
              The teacher-chosen exportTheme is the baseline (Light = no
              override). Print rule hides the toolbar on paper output. */
-          .alloflow-reading-tools { position: sticky; top: 0; z-index: 9999; background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
+          .alloflow-reading-tools-shell { position: sticky; top: 0; z-index: 9999; font-family: system-ui, -apple-system, sans-serif; }
+          .alloflow-tools-toggle { display: none; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; background: rgba(255,255,255,0.97); color: #1e293b; border: 0; border-bottom: 1px solid #cbd5e1; font: 700 13px system-ui,-apple-system,sans-serif; cursor: pointer; }
+          .alloflow-tools-toggle:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
+          .alloflow-tools-toggle-icon { transition: transform 0.16s ease; }
+          .alloflow-reading-tools-shell:not(.expanded) .alloflow-tools-toggle-icon { transform: rotate(-90deg); }
+          .alloflow-tools-panel { display: block; }
+          .alloflow-reading-tools { background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
           .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
           .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
+          .alloflow-rt-select { min-width: 150px; max-width: 220px; border: 0; background: transparent; color: #334155; padding: 6px 28px 6px 10px; font: 600 12px system-ui,-apple-system,sans-serif; cursor: pointer; }
+          .alloflow-rt-select:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
           .alloflow-rt-btn { padding: 6px 12px; font-size: 12px; font-weight: 600; background: transparent; color: #334155; border: 0; border-left: 1px solid #cbd5e1; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
           .alloflow-rt-btn:first-of-type { border-left: 0; }
           .alloflow-rt-btn:hover { background: #e2e8f0; }
           .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
           .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
-          @media print { .alloflow-reading-tools-shell, .alloflow-reading-tools { display: none !important; } }
+          #alloflow-reader-line { position: fixed; left: 0; right: 0; top: 50%; height: 2.8em; transform: translateY(-50%); background: rgba(250,204,21,0.18); border-top: 2px solid rgba(202,138,4,0.72); border-bottom: 2px solid rgba(202,138,4,0.72); pointer-events: none; z-index: 9997; display: none; }
+          .alloflow-reader-mask { position: fixed; left: 0; right: 0; height: 0; background: rgba(15,23,42,0.58); pointer-events: none; z-index: 9996; display: none; }
+          html[data-alloflow-reader-guide="line"] #alloflow-reader-line { display: block; }
+          html[data-alloflow-reader-guide="focus"] .alloflow-reader-mask { display: block; }
+          @media print { .alloflow-reading-tools-shell, .alloflow-reading-tools, #alloflow-reader-line, .alloflow-reader-mask { display: none !important; } }
           /* Hide the interactive "Save my answers" CTAs on paper (they are dead buttons in print). */
           @media print { #alloflow-save-cta, #alloflow-savejson-cta { display: none !important; } }
           /* Print neutralizes a Dark / Sepia / High-Contrast reading theme. Those modes otherwise
@@ -27311,6 +27792,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
           .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
           .alloflow-anno-swatch[aria-pressed="true"] { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
+          @media (max-width: 720px) {
+            body { padding: 1rem; }
+            .alloflow-tools-toggle { display: flex; }
+            .alloflow-tools-panel { display: none; max-height: 68vh; overflow: auto; background: rgba(255,255,255,0.98); border-bottom: 1px solid #cbd5e1; box-shadow: 0 8px 18px rgba(15,23,42,0.12); }
+            .alloflow-reading-tools-shell.expanded .alloflow-tools-panel { display: block; }
+            .alloflow-reading-tools { position: static; flex-direction: column; align-items: stretch; gap: 8px; border-bottom: 0; box-shadow: none; }
+            .alloflow-reading-tools-group { width: 100%; overflow-x: auto; }
+            .alloflow-reading-tools-label { min-width: 78px; }
+            .alloflow-rt-btn { white-space: nowrap; }
+            .alloflow-anno-colors { position: static; overflow-x: auto; flex-wrap: nowrap; }
+            .alloflow-anno-sb { top: auto; right: 0; left: 0; bottom: 0; width: auto; max-height: 72vh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 28px rgba(15,23,42,0.22); }
+            .export-header { padding: 22px 20px !important; }
+            .section { padding: 1rem; }
+          }
 
           /* ─── Inline note editor (Tier 1: replaces prompt()) ─── */
           .alloflow-note-editor { position: absolute; min-width: 200px; max-width: 280px; border-radius: 8px; box-shadow: 0 4px 14px rgba(15,23,42,0.18); z-index: 56; font-family: system-ui, -apple-system, sans-serif; pointer-events: auto; }
@@ -27349,6 +27844,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
           .alloflow-anno-item:hover .alloflow-anno-item-del, .alloflow-anno-item-del:focus { opacity: 1; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
+          .alloflow-note-popover { position: fixed; z-index: 100000; width: min(340px, calc(100vw - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
+          .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
+          .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+          .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
+          .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 3px 6px; cursor: pointer; font-weight: 800; }
+          .alloflow-note-popover-close:hover, .alloflow-note-popover-close:focus-visible { color: #dc2626; background: #ffffff; outline: 2px solid #6366f1; outline-offset: 1px; }
           @media print { .alloflow-anno-sb { display: none !important; } }
 
           /* ─── Sidebar dark/sepia/HC overrides ─── */
@@ -27364,11 +27865,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-anno-item.student:hover { background: rgba(251,191,36,0.20); }
           html[data-alloflow-theme="dark"] .alloflow-anno-item-text { color: #ffffff; }
           html[data-alloflow-theme="dark"] .alloflow-anno-item-meta { color: #cbd5e1; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover { background: #1e293b; color: #ffffff; border-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover-header { background: #0f172a; color: #ffffff; border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover-meta { color: #cbd5e1; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb { background: #fdf6e3; border-color: #d4c5a0; color: #5b4636; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-header { background: #f5ecd9; border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-title { color: #4a3a2a; }
+          html[data-alloflow-theme="sepia"] .alloflow-note-popover { background: #fdf6e3; color: #5b4636; border-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-note-popover-header { background: #f5ecd9; color: #4a3a2a; border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="hc"] .alloflow-anno-sb { background: #ffffff; border: 2px solid #000000; color: #000000; }
           html[data-alloflow-theme="hc"] .alloflow-anno-sb-pills .active { background: #000000; color: #ffff00; }
+          html[data-alloflow-theme="hc"] .alloflow-note-popover { border: 2px solid #000000; color: #000000; }
 
           /* ─── Dark theme ─── */
           html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
@@ -27548,13 +28055,96 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] .interactive-textarea { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-rt-btn[aria-pressed="true"] { background: #000000; color: #ffff00; }
+
+          /* Theme coverage for export-only chrome and inline-styled resource helpers. */
+          html[data-alloflow-theme="dark"] .alloflow-rt-select { background: #1e293b !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-select { background: #fdf6e3 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-rt-select { background: #ffffff !important; color: #000000 !important; border-left: 2px solid #000000 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="dark"] .alloflow-tools-panel,
+          html[data-alloflow-theme="dark"] .alloflow-anno-colors,
+          html[data-alloflow-theme="dark"] .alloflow-toc,
+          html[data-alloflow-theme="dark"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="dark"] #alloflow-save-cta,
+          html[data-alloflow-theme="dark"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="dark"] .a11y-badge,
+          html[data-alloflow-theme="dark"] footer[role="contentinfo"] { background: #1e293b !important; color: #ffffff !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-toc h2,
+          html[data-alloflow-theme="dark"] .alloflow-toc a,
+          html[data-alloflow-theme="dark"] .alloflow-toc li,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="dark"] #alloflow-save-cta p,
+          html[data-alloflow-theme="dark"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="dark"] .a11y-badge strong { color: #e2e8f0 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-toc li:hover { background: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-section-marker span:last-child { background: #1e293b !important; color: #ffffff !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads a { background: #38bdf8 !important; color: #082f49 !important; }
+          html[data-alloflow-theme="dark"] #alloflow-reader-line { background: rgba(250,204,21,0.24); border-color: #facc15; }
+          html[data-alloflow-theme="dark"] .alloflow-reader-mask { background: rgba(2,6,23,0.64); }
+          html[data-alloflow-theme="sepia"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="sepia"] .alloflow-tools-panel,
+          html[data-alloflow-theme="sepia"] .alloflow-anno-colors,
+          html[data-alloflow-theme="sepia"] .alloflow-toc,
+          html[data-alloflow-theme="sepia"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="sepia"] #alloflow-save-cta,
+          html[data-alloflow-theme="sepia"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="sepia"] .a11y-badge,
+          html[data-alloflow-theme="sepia"] footer[role="contentinfo"] { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-toc h2,
+          html[data-alloflow-theme="sepia"] .alloflow-toc a,
+          html[data-alloflow-theme="sepia"] .alloflow-toc li,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="sepia"] #alloflow-save-cta p,
+          html[data-alloflow-theme="sepia"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="sepia"] .a11y-badge strong { color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-toc li:hover { background: #ede0c4 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-section-marker span:last-child { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads a { background: #6e5636 !important; color: #fdf6e3 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-reader-mask { background: rgba(74,58,42,0.38); }
+          html[data-alloflow-theme="hc"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="hc"] .alloflow-tools-panel,
+          html[data-alloflow-theme="hc"] .alloflow-anno-colors,
+          html[data-alloflow-theme="hc"] .alloflow-toc,
+          html[data-alloflow-theme="hc"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="hc"] .a11y-badge,
+          html[data-alloflow-theme="hc"] footer[role="contentinfo"] { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; box-shadow: none !important; }
+          html[data-alloflow-theme="hc"] .alloflow-toc h2,
+          html[data-alloflow-theme="hc"] .alloflow-toc a,
+          html[data-alloflow-theme="hc"] .alloflow-toc li,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta p,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="hc"] .a11y-badge strong { color: #000000 !important; border-color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-toc li:hover { background: #ffff00 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-section-marker span:first-child { background: #000000 !important; color: #ffff00 !important; box-shadow: none !important; }
+          html[data-alloflow-theme="hc"] .alloflow-section-marker span:last-child { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads a,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta button,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta button { background: #000000 !important; color: #ffff00 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] #alloflow-reader-line { background: rgba(255,255,0,0.38); border-color: #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-reader-mask { background: rgba(0,0,0,0.72); }
         </style>
       </head>
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
         ${_brandHeaderHTML}
-        <aside class="alloflow-reading-tools-shell" aria-label="Reading and annotation tools">
+        <aside class="alloflow-reading-tools-shell expanded" aria-label="Reading and annotation tools">
         <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
+        <button type="button" class="alloflow-tools-toggle" aria-expanded="true" aria-controls="alloflow-tools-panel">
+          <span>Tools</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
+        </button>
+        <div id="alloflow-tools-panel" class="alloflow-tools-panel">
         <div class="alloflow-reading-tools">
           <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
             <span class="alloflow-reading-tools-label">Theme</span>
@@ -27563,12 +28153,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="Sepia (warm, low-glare)">\u{1F4DC} Sepia</button>
             <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="High Contrast (WCAG AAA)">◼ High Contrast</button>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Text size">
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Font family">
+            <span class="alloflow-reading-tools-label">Font</span>
+            <select class="alloflow-rt-select" data-rt-font aria-label="Font family">
+              <option value="original">Original</option>
+              <option value="system">Sans</option>
+              <option value="readable">Readable</option>
+              <option value="serif">Serif</option>
+              <option value="dyslexic">Dyslexia-friendly</option>
+              <option value="mono">Monospace</option>
+            </select>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Text display">
             <span class="alloflow-reading-tools-label">Text</span>
             <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="Smaller text" aria-label="Smaller text">A-</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Reset text size" aria-label="Reset text size">A</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="Larger text" aria-label="Larger text">A+</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="Cycle line spacing" aria-label="Line spacing">Spacing</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="Cycle letter spacing" aria-label="Letter spacing">Letter</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Reading guide">
+            <span class="alloflow-reading-tools-label">Guide</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="Turn reading guide off">Off</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="Line reader follows your pointer">Line</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="Focus mask follows your pointer">Focus</button>
           </div>
           <div class="alloflow-reading-tools-group" role="group" aria-label="Annotations">
             <span class="alloflow-reading-tools-label">Annotate</span>
@@ -27596,7 +28204,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="Blue highlight" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="Pink highlight" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
         </div>
+        </div>
         </aside>
+        <div id="alloflow-reader-line" aria-hidden="true"></div>
+        <div id="alloflow-reader-mask-top" class="alloflow-reader-mask" aria-hidden="true"></div>
+        <div id="alloflow-reader-mask-bottom" class="alloflow-reader-mask" aria-hidden="true"></div>
         <script type="application/json" id="alloflow-teacher-annotations">${_jsonForScript(_teacherAnnotations)}</script>
         <script type="application/json" id="alloflow-teacher-annotations-by-resource">${_jsonForScript(_teacherAnnotationsByResource)}</script>
         <script>
@@ -27638,16 +28250,68 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
         </script>
         <script>
-          // Reading Tools - text size + line spacing (offline; event delegation).
+          // Reading Tools - compact mobile tray.
+          (function () {
+            var shell = document.querySelector('.alloflow-reading-tools-shell');
+            var toggle = document.querySelector('.alloflow-tools-toggle');
+            if (shell && toggle) {
+              function setExpanded(v) {
+                shell.classList.toggle('expanded', !!v);
+                toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
+              }
+              try {
+                if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) setExpanded(false);
+                else setExpanded(true);
+              } catch (e) { setExpanded(true); }
+              toggle.addEventListener('click', function () { setExpanded(!shell.classList.contains('expanded')); });
+            }
+          })();
+        </script>
+        <script>
+          // Reading Tools - text size, font, line spacing, and letter spacing.
           (function () {
             var KEY = 'alloflow-reader-text';
             var SCALES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
             var LEADS = [1.5, 1.8, 2.1];
-            var st = { s: 1, l: 0 };
-            try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv && typeof sv.s === "number") st = sv; } catch (e) {}
+            var LETTERS = [0, 0.03, 0.06, 0.1];
+            var FONTS = {
+              original: '',
+              system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              readable: 'Verdana, Geneva, Tahoma, Arial, sans-serif',
+              serif: 'Georgia, "Times New Roman", serif',
+              dyslexic: '"Comic Sans MS", "Trebuchet MS", Arial, sans-serif',
+              mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace'
+            };
+            var st = { s: 1, l: 0, c: 0, f: 'original' };
+            function clampIndex(v, len, fallback) {
+              var n = Number(v);
+              if (!isFinite(n)) n = fallback;
+              n = Math.round(n);
+              return Math.max(0, Math.min(len - 1, n));
+            }
+            try {
+              var sv = JSON.parse(localStorage.getItem(KEY));
+              if (sv && typeof sv === 'object') {
+                st.s = typeof sv.s === 'number' ? sv.s : st.s;
+                st.l = typeof sv.l === 'number' ? sv.l : st.l;
+                st.c = typeof sv.c === 'number' ? sv.c : st.c;
+                st.f = typeof sv.f === 'string' ? sv.f : st.f;
+              }
+            } catch (e) {}
             function apply(save) {
+              st.s = clampIndex(st.s, SCALES.length, 1);
+              st.l = clampIndex(st.l, LEADS.length, 0);
+              st.c = clampIndex(st.c, LETTERS.length, 0);
+              if (!Object.prototype.hasOwnProperty.call(FONTS, st.f)) st.f = 'original';
               var host = document.getElementById('main-export-content') || document.body;
-              if (host) { host.style.fontSize = (SCALES[st.s] || 1) + 'em'; host.style.lineHeight = String(LEADS[st.l] || 1.5); }
+              if (host) {
+                host.style.fontSize = (SCALES[st.s] || 1) + 'em';
+                host.style.lineHeight = String(LEADS[st.l] || 1.5);
+                host.style.letterSpacing = (LETTERS[st.c] || 0) ? (LETTERS[st.c] + 'em') : '';
+                host.style.fontFamily = FONTS[st.f] || '';
+              }
+              var fontSel = document.querySelector('[data-rt-font]');
+              if (fontSel && fontSel.value !== st.f) fontSel.value = st.f;
               var largeText = (SCALES[st.s] || 1) >= 1.3;
               var fallbacks = document.querySelectorAll('[data-diagram-auto-open="large-text"]');
               for (var fi = 0; fi < fallbacks.length; fi++) {
@@ -27668,10 +28332,81 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var a = b.getAttribute('data-rt-text');
               if (a === 'larger') st.s = Math.min(SCALES.length - 1, st.s + 1);
               else if (a === 'smaller') st.s = Math.max(0, st.s - 1);
-              else if (a === 'reset') { st.s = 1; st.l = 0; }
+              else if (a === 'reset') { st.s = 1; st.l = 0; st.c = 0; st.f = 'original'; }
               else if (a === 'spacing') st.l = (st.l + 1) % LEADS.length;
+              else if (a === 'letter') st.c = (st.c + 1) % LETTERS.length;
               apply(true);
             });
+            document.addEventListener('change', function (e) {
+              var sel = e.target && e.target.closest && e.target.closest('[data-rt-font]');
+              if (!sel) return;
+              st.f = sel.value || 'original';
+              apply(true);
+            });
+          })();
+        </script>
+        <script>
+          // Reading Tools - line reader and focus mask.
+          (function () {
+            var KEY = 'alloflow-reader-guide';
+            var root = document.documentElement;
+            var mode = 'off';
+            var line = null;
+            var topMask = null;
+            var bottomMask = null;
+            var lastY = 0;
+            function els() {
+              line = line || document.getElementById('alloflow-reader-line');
+              topMask = topMask || document.getElementById('alloflow-reader-mask-top');
+              bottomMask = bottomMask || document.getElementById('alloflow-reader-mask-bottom');
+            }
+            function setPressed(m) {
+              var btns = document.querySelectorAll('[data-rt-guide]');
+              for (var i = 0; i < btns.length; i++) {
+                btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-rt-guide') === m ? 'true' : 'false');
+              }
+            }
+            function place(y) {
+              els();
+              var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+              lastY = Math.max(0, Math.min(vh, Number(y) || (vh / 2)));
+              if (line) line.style.top = lastY + 'px';
+              if (topMask && bottomMask) {
+                var band = Math.max(84, Math.min(150, vh * 0.18));
+                var top = Math.max(0, lastY - band / 2);
+                var bottom = Math.min(vh, lastY + band / 2);
+                topMask.style.top = '0px';
+                topMask.style.height = top + 'px';
+                bottomMask.style.top = bottom + 'px';
+                bottomMask.style.height = Math.max(0, vh - bottom) + 'px';
+              }
+            }
+            function setGuide(next, save) {
+              mode = (next === 'line' || next === 'focus') ? next : 'off';
+              if (mode === 'off') root.removeAttribute('data-alloflow-reader-guide');
+              else root.setAttribute('data-alloflow-reader-guide', mode);
+              setPressed(mode);
+              if (mode !== 'off') place(lastY || ((window.innerHeight || 800) / 2));
+              if (save) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
+            }
+            try { mode = localStorage.getItem(KEY) || 'off'; } catch (e) {}
+            setGuide(mode, false);
+            document.addEventListener('click', function (e) {
+              var btn = e.target && e.target.closest && e.target.closest('[data-rt-guide]');
+              if (!btn) return;
+              setGuide(btn.getAttribute('data-rt-guide'), true);
+            });
+            document.addEventListener('mousemove', function (e) { if (mode !== 'off') place(e.clientY); }, { passive: true });
+            document.addEventListener('touchmove', function (e) {
+              if (mode === 'off' || !e.touches || !e.touches.length) return;
+              place(e.touches[0].clientY);
+            }, { passive: true });
+            document.addEventListener('focusin', function (e) {
+              if (mode === 'off' || !e.target || !e.target.getBoundingClientRect) return;
+              var r = e.target.getBoundingClientRect();
+              place(r.top + r.height / 2);
+            });
+            window.addEventListener('resize', function () { if (mode !== 'off') place(lastY || ((window.innerHeight || 800) / 2)); });
           })();
         </script>
         <script>
@@ -27685,6 +28420,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (!btn) return;
               btn.textContent = label;
               btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+              btn.setAttribute('aria-label', label.replace(/[^\w\s-]/g, '').trim() || 'Read aloud');
+            }
+            function findAudioBox(id) {
+              var boxes = document.querySelectorAll('.allo-ka-audios');
+              for (var bi = 0; bi < boxes.length; bi++) {
+                if ((boxes[bi].getAttribute('data-ka-for') || '') === String(id || '')) return boxes[bi];
+              }
+              return null;
             }
             function ensureStopButton(btn) {
               if (!btn || !btn.parentNode) return null;
@@ -27707,7 +28450,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function stop() {
               if (!active) return;
-              try { var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; } } catch (e) {}
+              try {
+                if (active.mode === 'browser') {
+                  if (window.speechSynthesis) window.speechSynthesis.cancel();
+                  active.utter = null;
+                } else {
+                  var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; }
+                }
+              } catch (e) {}
               clearHi(active.spans);
               setPlayButton(active.btn, "\u{1F50A} Read aloud", false);
               if (active.stopBtn) { try { active.stopBtn.remove(); } catch (e) {} }
@@ -27715,12 +28465,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function pause() {
               if (!active || active.paused) return;
-              try { var a = active.audios[active.idx]; if (a) a.pause(); } catch (e) {}
+              try {
+                if (active.mode === 'browser') { if (window.speechSynthesis) window.speechSynthesis.pause(); }
+                else { var a = active.audios[active.idx]; if (a) a.pause(); }
+              } catch (e) {}
               active.paused = true;
               setPlayButton(active.btn, "\u25B6 Resume", true);
             }
             function resume() {
               if (!active || !active.paused) return;
+              if (active.mode === 'browser') {
+                active.paused = false;
+                setPlayButton(active.btn, "\u23F8 Pause", true);
+                try { if (window.speechSynthesis) window.speechSynthesis.resume(); } catch (e) {}
+                return;
+              }
               var a = active.audios[active.idx];
               if (!a) { step(active, active.idx + 1); return; }
               active.paused = false;
@@ -27730,9 +28489,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function step(state, i) {
               if (!active || active !== state) return;
-              if (i >= state.audios.length) { stop(); return; }
+              var count = state.mode === 'browser' ? state.spans.length : state.audios.length;
+              if (i >= count) { stop(); return; }
               state.idx = i;
               state.paused = false;
+              if (state.mode === 'browser') {
+                var sp = state.spans[i];
+                if (!sp) { step(state, i + 1); return; }
+                clearHi(state.spans);
+                sp.classList.add('ka-on');
+                var text = (sp.textContent || '').trim();
+                if (!text) { step(state, i + 1); return; }
+                if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+                  if (window.AlloFlowUX) window.AlloFlowUX.toast('Browser read-aloud is not available here.', 'error'); else alert('Browser read-aloud is not available here.');
+                  stop();
+                  return;
+                }
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                var u = new SpeechSynthesisUtterance(text);
+                state.utter = u;
+                u.rate = 1;
+                u.onend = function () { if (active === state && !state.paused) step(state, i + 1); };
+                u.onerror = function () { if (active === state) stop(); };
+                setPlayButton(state.btn, "\u23F8 Pause", true);
+                try { window.speechSynthesis.speak(u); } catch (e) { stop(); }
+                return;
+              }
               var a = state.audios[i];
               if (!a) { step(state, i + 1); return; }
               var sidx = a.getAttribute("data-ka-s");
@@ -27757,14 +28539,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               if (active) stop();
               var id = btn.getAttribute("data-ka-for");
-              var box = document.querySelector('.allo-ka-audios[data-ka-for="' + id + '"]');
               var sec = btn.closest(".section") || document;
               var spans = Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));
-              var audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
-              if (!audios.length || !spans.length) return;
+              var mode = btn.getAttribute('data-ka-mode') || 'embedded';
+              var audios = [];
+              if (mode === 'browser') {
+                if (!spans.length) return;
+              } else {
+                var box = findAudioBox(id);
+                audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
+                if (!audios.length || !spans.length) return;
+              }
               var stopControl = ensureStopButton(btn);
               setPlayButton(btn, "\u23F8 Pause", true);
-              active = { audios: audios, spans: spans, idx: 0, btn: btn, stopBtn: stopControl, paused: false };
+              active = { mode: mode, audios: audios, spans: spans, idx: 0, btn: btn, stopBtn: stopControl, paused: false, utter: null };
               step(active, 0);
             });
           })();
@@ -27999,6 +28787,59 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return parts.join(' • ');
             }
+            var notePopoverEl = null;
+            function closeNotePopover() {
+              if (!notePopoverEl) return;
+              try { notePopoverEl.remove(); } catch (e) {}
+              notePopoverEl = null;
+            }
+            function showNotePopover(a, anchor) {
+              closeNotePopover();
+              var pop = document.createElement('div');
+              pop.className = 'alloflow-note-popover';
+              pop.setAttribute('role', 'dialog');
+              pop.setAttribute('aria-label', 'Annotation note');
+              var header = document.createElement('div');
+              header.className = 'alloflow-note-popover-header';
+              var label = document.createElement('span');
+              label.textContent = a && a.author === 'teacher' ? 'Teacher note' : 'Your note';
+              var close = document.createElement('button');
+              close.type = 'button';
+              close.className = 'alloflow-note-popover-close';
+              close.setAttribute('aria-label', 'Close note');
+              close.textContent = '×';
+              close.addEventListener('click', function (ev) { ev.stopPropagation(); closeNotePopover(); try { anchor && anchor.focus && anchor.focus(); } catch (e) {} });
+              header.appendChild(label);
+              header.appendChild(close);
+              var body = document.createElement('div');
+              body.className = 'alloflow-note-popover-body';
+              body.textContent = (a && a.content) ? a.content : '(empty note)';
+              var meta = document.createElement('div');
+              meta.className = 'alloflow-note-popover-meta';
+              meta.textContent = buildTitle(a || {});
+              pop.appendChild(header);
+              pop.appendChild(body);
+              if (meta.textContent) pop.appendChild(meta);
+              document.body.appendChild(pop);
+              notePopoverEl = pop;
+              try {
+                var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 16, top: 16, bottom: 44 };
+                var top = Math.min(window.innerHeight - pop.offsetHeight - 12, Math.max(12, r.bottom + 8));
+                var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(12, r.left));
+                pop.style.top = top + 'px';
+                pop.style.left = left + 'px';
+                close.focus();
+              } catch (e) {}
+            }
+            document.addEventListener('keydown', function (e) {
+              if (e.key === 'Escape') closeNotePopover();
+            });
+            document.addEventListener('click', function (e) {
+              if (!notePopoverEl) return;
+              if (notePopoverEl.contains(e.target)) return;
+              if (e.target && e.target.closest && e.target.closest('.alloflow-anno-note')) return;
+              closeNotePopover();
+            });
 
             // Attach a drag handler to a DOM element representing an
             // annotation. Same contract as the in-app version: only fires
@@ -28090,8 +28931,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
                 note.addEventListener('click', function (e) {
                   e.stopPropagation();
-                  var noteMessage = (a.content || '(empty note)') + (buildTitle(a) ? '\\n\\n— ' + buildTitle(a) : '');
-                  if (window.AlloFlowUX) window.AlloFlowUX.toast(noteMessage, 'error'); else alert(noteMessage);
+                  showNotePopover(a, note);
                 });
                 attachDrag(note, a);
                 return note;
@@ -28896,10 +29736,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </main>
         <aside class="alloflow-export-save-tools" aria-label="Save your work">
         ${_submissionSaveButton}
-        <div id="alloflow-savejson-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:#eef2ff;border:2px solid #c7d2fe;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+        <div id="alloflow-savejson-cta" style="display:none;margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Save a file of your answers and send it to your teacher.</p>
-          <button type="button" id="alloflow-savejson-btn" style="padding:12px 28px;background:#4f46e5;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,0.3);">&#128190; Save my answers</button>
+          <button type="button" id="alloflow-savejson-btn" style="padding:10px 22px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(79,70,229,0.22);">&#128190; Save my answers</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">Saves a .json file your teacher opens in AlloFlow.</p>
         </div>
         </aside>
@@ -29387,7 +30227,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     if (!pbtn) return;
                     var pcta = document.getElementById('alloflow-savejson-cta');
                     if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
-                    if (document.querySelectorAll('.interactive-textarea, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (pcta) pcta.style.display = 'block';
                     var _pcollect = function() {
                         var out = {};
                         var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
@@ -29541,11 +30382,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

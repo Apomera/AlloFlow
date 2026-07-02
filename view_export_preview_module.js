@@ -565,7 +565,7 @@ function ExportPreviewView(props) {
         },
         opt.label
       );
-    }))))), /* @__PURE__ */ React.createElement("div", { className: exportPreviewMode !== "html" ? "opacity-50" : "", style: { display: "none" } }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u{1F50A} Audio"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" ? "cursor-pointer hover:bg-white" : "cursor-not-allowed"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeAudioSource, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeAudioSource: e.target.checked })), className: "rounded", disabled: exportPreviewMode !== "html" }), "Read-aloud: Source text"), /* @__PURE__ */ React.createElement("label", { className: `flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === "html" ? "cursor-pointer hover:bg-white" : "cursor-not-allowed"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeAudioLeveled, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeAudioLeveled: e.target.checked })), className: "rounded", disabled: exportPreviewMode !== "html" }), "Read-aloud: Leveled text"), exportPreviewMode !== "html" ? /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-500 font-medium px-1" }, "Switch to HTML format to enable audio embedding") : /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic px-1" }, "Audio embeds as inline players in HTML exports."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u2728 AI Style Studio"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
+    }))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u2728 AI Style Studio"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
       { label: "\u{1F3A8} Auto-Beautify", prompt: "Make this document visually stunning and professional with a modern color scheme, elegant typography, subtle gradients, well-spaced sections with rounded cards, and a cohesive design system. Use a sophisticated palette." },
       { label: "\u{1F3EB} Academic", prompt: "Professional academic style with serif headings (Georgia or similar), clean layout, navy/gold color scheme, formal table styling, proper margins, and a scholarly appearance suitable for university submissions." },
       { label: "\u{1F308} Elementary", prompt: "Bright, playful, and colorful style for elementary students. Use rounded corners, fun colors (teal, coral, purple), larger friendly fonts, emoji-friendly, card-based layout with soft shadows." },
@@ -762,8 +762,16 @@ function ExportPreviewView(props) {
               const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
               if (_mk) {
                 const _inst = window.__alloAuditPipeline || (window.__alloAuditPipeline = _mk({
-                  callGemini: async () => "{}", callGeminiVision: async () => "{}", callImagen: async () => null,
-                  addToast: () => {}, t: (k) => k, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => ""
+                  callGemini: async () => "{}",
+                  callGeminiVision: async () => "{}",
+                  callImagen: async () => null,
+                  addToast: () => {
+                  },
+                  t: (k) => k,
+                  isRtlLang: () => false,
+                  updateExportPreview: () => {
+                  },
+                  getDefaultTitle: () => ""
                 }));
                 if (_inst && typeof _inst.runEqualAccessAudit === "function") _runEA = _inst.runEqualAccessAudit;
               }
@@ -787,7 +795,7 @@ function ExportPreviewView(props) {
               combined.summary = (combined.summary || "") + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
             }
             if (axeResult && eaResult) {
-              combined.deterministicConsensus = (axeResult.totalViolations === 0 && eaResult.failViolations === 0) ? "clean" : "issues";
+              combined.deterministicConsensus = axeResult.totalViolations === 0 && eaResult.failViolations === 0 ? "clean" : "issues";
             }
             setExportAuditResult(combined);
           } catch (e) {
@@ -801,7 +809,7 @@ function ExportPreviewView(props) {
         className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
       },
       exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
-    ), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "WCAG 2.1 AA Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border p-2 text-[11px] " + (exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800") }, exportAuditResult.deterministicConsensus === "clean" ? "✓ Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines — axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable — showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can’t confirm full WCAG 2.1 AA conformance — a manual screen-reader + keyboard pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-500 font-medium" }, "Click text to edit directly")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    ), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "WCAG 2.1 AA Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.1 AA conformance \u2014 a manual screen-reader + keyboard pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-500 font-medium" }, "Click text to edit directly")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
@@ -877,8 +885,20 @@ function ExportPreviewView(props) {
     ), /* @__PURE__ */ React.createElement("details", { className: "relative" }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F Alt Formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-48 space-y-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
-      const html = doc.documentElement.outerHTML;
-      const text = html.replace(/<[^>]*>/g, "\n").replace(/&[^;]+;/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+      let text = "";
+      try {
+        const _tClone = doc.body.cloneNode(true);
+        _tClone.querySelectorAll(".allo-block-controls, .allo-block-remove, script, style").forEach((el) => el.remove());
+        _tClone.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div").forEach((el) => {
+          try {
+            el.appendChild(doc.createTextNode("\n"));
+          } catch (_) {
+          }
+        });
+        text = (_tClone.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      } catch (_) {
+        text = (doc.body.innerText || doc.body.textContent || "").trim();
+      }
       const blob = new Blob([text], { type: "text/plain" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -889,7 +909,14 @@ function ExportPreviewView(props) {
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
-      const html = doc.documentElement.outerHTML;
+      let html = "";
+      try {
+        const _mClone = doc.documentElement.cloneNode(true);
+        _mClone.querySelectorAll(".allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style").forEach((el) => el.remove());
+        html = _mClone.outerHTML;
+      } catch (_) {
+        html = doc.documentElement.outerHTML;
+      }
       let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
       const blob = new Blob([md], { type: "text/markdown" });
       const a = document.createElement("a");
@@ -926,13 +953,17 @@ function ExportPreviewView(props) {
                 (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + ". " + esc(o)));
                 out.push("");
               });
-              out.push("### Answer Key", "");
-              d.questions.forEach((q, i) => {
-                const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                out.push("- **Q" + (i + 1) + ":** " + (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(q.correctAnswer));
-                if (q.factCheck) out.push("  - " + esc(q.factCheck));
-              });
-              out.push("");
+              if (exportConfig && exportConfig.includeAnswerKey === true) {
+                out.push("### Answer Key", "");
+                d.questions.forEach((q, i) => {
+                  const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
+                  out.push("- **Q" + (i + 1) + ":** " + (li >= 0 ? String.fromCharCode(65 + li) + ". " : "") + esc(q.correctAnswer));
+                  if (q.factCheck) out.push("  - " + esc(q.factCheck));
+                });
+                out.push("");
+              } else {
+                out.push("*Answer key omitted from this export (assessment integrity \u2014 anyone with this file can read it). Use the Teacher Copy export for the key.*", "");
+              }
             } else if (ty === "outline" && d && Array.isArray(d.branches)) {
               if (d.main) out.push("**" + esc(d.main) + "**", "");
               d.branches.forEach((b) => {
@@ -962,7 +993,14 @@ function ExportPreviewView(props) {
             }
           });
         } else if (doc) {
-          const html = doc.documentElement.outerHTML;
+          let html = "";
+          try {
+            const _mdClone = doc.documentElement.cloneNode(true);
+            _mdClone.querySelectorAll(".allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style").forEach((el) => el.remove());
+            html = _mdClone.outerHTML;
+          } catch (_) {
+            html = doc.documentElement.outerHTML;
+          }
           const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
           out.push(body);
         } else {
@@ -992,21 +1030,42 @@ function ExportPreviewView(props) {
         addToast("ePub library loading...", "info");
         return;
       }
-      const html = doc.documentElement.outerHTML;
-      const title = "AlloFlow Document";
-      const xmlTitle = title.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+      const _clone = doc.documentElement.cloneNode(true);
+      try {
+        _clone.querySelectorAll(".allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script").forEach((el) => el.remove());
+        _clone.querySelectorAll("[contenteditable]").forEach((el) => el.removeAttribute("contenteditable"));
+      } catch (_) {
+      }
+      const _escXml = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle) || (doc.title || "").trim() || "AlloFlow Document").substring(0, 120);
+      const lang = (doc.documentElement.getAttribute("lang") || "en").split(/[_ ]/)[0];
+      const xmlTitle = _escXml(title);
+      const _navItems = [];
+      try {
+        const _hs = _clone.querySelectorAll("h1, h2, h3");
+        for (let _hi = 0; _hi < _hs.length; _hi++) {
+          const _h = _hs[_hi];
+          const _txt = (_h.textContent || "").replace(/\s+/g, " ").trim().substring(0, 120);
+          if (!_txt) continue;
+          if (!_h.id) _h.id = "allo-toc-" + _hi;
+          _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + "</a></li>");
+        }
+      } catch (_) {
+      }
+      const _navList = _navItems.length ? _navItems.join("") : '<li><a href="content.xhtml">' + xmlTitle + "</a></li>";
       const zip = new window.JSZip();
       zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
       zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-      zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>en</dc:language></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
-      let xhtml = html.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+      const _uid = "alloflow-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+      zip.file("OEBPS/content.opf", `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z$/, "Z")}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+      let xhtml = _clone.outerHTML.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
       if (!xhtml.includes("xmlns")) xhtml = xhtml.replace("<html", '<html xmlns="http://www.w3.org/1999/xhtml"');
       zip.file("OEBPS/content.xhtml", xhtml);
-      zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">Document</a></li></ol></nav></body></html>`);
+      zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} \u2014 Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
       zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" }).then((blob) => {
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = title + ".epub";
+        a.download = (title.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "").substring(0, 40) || "document") + ".epub";
         a.click();
         URL.revokeObjectURL(a.href);
         addToast("ePub downloaded", "success");
@@ -1014,7 +1073,14 @@ function ExportPreviewView(props) {
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DA} ePub (e-readers)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
-      const text = doc.body.innerText || doc.body.textContent || "";
+      let text = "";
+      try {
+        const _bClone = doc.body.cloneNode(true);
+        _bClone.querySelectorAll(".allo-block-controls, .allo-block-remove, script, style").forEach((el) => el.remove());
+        text = _bClone.innerText || _bClone.textContent || "";
+      } catch (_) {
+        text = doc.body.innerText || doc.body.textContent || "";
+      }
       const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
       const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": "7", ")": "7", '"': "7", "'": "'", "-": "-", "/": "/", "*": "9", "&": "&", "@": "@", "#": "#" };
       const _toBRF = (src) => {
@@ -1132,7 +1198,15 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (!doc) return;
           const url = prompt("Link URL:");
-          if (url) doc.execCommand("createLink", false, url);
+          if (!url) return;
+          const _u = url.trim();
+          const _schemeMatch = _u.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+          const _okScheme = !_schemeMatch || ["http", "https", "mailto", "tel"].includes(_schemeMatch[1].toLowerCase());
+          if (!_okScheme) {
+            alert("Only web (http/https), mailto:, tel:, and internal links are allowed.");
+            return;
+          }
+          doc.execCommand("createLink", false, _u);
         },
         className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Insert link",
@@ -1294,6 +1368,63 @@ function ExportPreviewView(props) {
         sandbox: "allow-same-origin allow-scripts allow-forms",
         onLoad: () => {
           console.info("[ExportPreview] iframe loaded");
+          try {
+            const doc = exportPreviewRef.current?.contentDocument;
+            if (!doc || doc.__alloPasteGuard) return;
+            doc.__alloPasteGuard = true;
+            const _sanitizeFragment = (html) => {
+              try {
+                const p = new DOMParser().parseFromString("<body>" + String(html || "") + "</body>", "text/html");
+                p.querySelectorAll("script,style,iframe,object,embed,link,meta,base,form").forEach((el) => el.remove());
+                p.querySelectorAll("*").forEach((el) => {
+                  for (const a of Array.from(el.attributes)) {
+                    const n = a.name.toLowerCase(), v = String(a.value || "");
+                    if (n.startsWith("on")) el.removeAttribute(a.name);
+                    else if ((n === "href" || n === "src" || n === "xlink:href" || n === "formaction" || n === "action") && /^\s*(javascript|vbscript|data)\s*:/i.test(v) && !/^\s*data:image\/(png|jpe?g|gif|webp)/i.test(v)) el.removeAttribute(a.name);
+                  }
+                });
+                return p.body.innerHTML;
+              } catch (_) {
+                return String(html || "").replace(/</g, "&lt;");
+              }
+            };
+            const _insertSanitized = (e, dt) => {
+              const html = dt && dt.getData && dt.getData("text/html");
+              if (!html) return;
+              e.preventDefault();
+              try {
+                doc.execCommand("insertHTML", false, _sanitizeFragment(html));
+              } catch (_) {
+              }
+            };
+            doc.addEventListener("paste", (e) => {
+              try {
+                _insertSanitized(e, e.clipboardData);
+              } catch (_) {
+              }
+            }, true);
+            doc.addEventListener("drop", (e) => {
+              try {
+                _insertSanitized(e, e.dataTransfer);
+              } catch (_) {
+              }
+            }, true);
+            let _capT = null;
+            const _captureEdits = () => {
+              try {
+                window.__alloBuilderEditedPack = { html: "<!DOCTYPE html>\n" + doc.documentElement.outerHTML, at: Date.now() };
+              } catch (_) {
+              }
+            };
+            doc.addEventListener("input", () => {
+              try {
+                if (_capT) clearTimeout(_capT);
+                _capT = setTimeout(_captureEdits, 800);
+              } catch (_) {
+              }
+            }, true);
+          } catch (_) {
+          }
         }
       }
     ))))

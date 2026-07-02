@@ -51,6 +51,7 @@
   // State (object-bundle)
   var personaState = props.personaState;
   // State reads (scalar/boolean)
+  var theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
   var t = props.t;
   var isPersonaFreeResponse = props.isPersonaFreeResponse;
   var showPersonaHints = props.showPersonaHints;
@@ -107,7 +108,7 @@
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Interview Interface encountered an error. Please close and reopen."
   }, /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
+    className: `fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`,
     style: {
       position: 'fixed',
       top: 0,

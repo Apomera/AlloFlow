@@ -1,0 +1,437 @@
+{
+  "generatedAt": "2026-07-02T00:27:16.760Z",
+  "harness": "standalone SEL Hub browser fixture",
+  "summary": {
+    "total": 12,
+    "failed": 1,
+    "passed": 11
+  },
+  "scenarios": [
+    {
+      "name": "desktop-light-focus",
+      "theme": "light",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280,
+            "dialogScrollWidth": 1280,
+            "dialogClientWidth": 1280,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": false,
+            "selText": "rgb(15, 23, 42)"
+          }
+        },
+        {
+          "id": "first-run-explainer-dismissable",
+          "pass": true,
+          "activeBeforeDismiss": {
+            "tag": "button",
+            "id": "",
+            "text": "Got it",
+            "aria": "Got it, start using the SEL Hub",
+            "inExplainer": true,
+            "inSharePacket": false,
+            "inEducators": false
+          }
+        },
+        {
+          "id": "for-educators-focus-trap",
+          "pass": true,
+          "modalId": "sel-for-educators-modal",
+          "allTabStopsInside": true,
+          "focusRestoredToTrigger": true,
+          "activeAfterClose": {
+            "tag": "body",
+            "id": "",
+            "text": "Open SEL HubFor Educators guide opened❤️‍🔥 SEL HubElementary🎓 For Educators☀️L",
+            "aria": "",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          },
+          "steps": [
+            {
+              "key": "initial",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close For Educators guide",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            },
+            {
+              "key": "Shift+Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "🗑️ Clear my SEL data",
+                "aria": "Clear all my SEL data from this device",
+                "inExplainer": false,
+                "inSharePacket": false,
+                "inEducators": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "share-packet-focus-trap",
+          "pass": true,
+          "modalId": "sel-share-packet-modal",
+          "allTabStopsInside": true,
+          "focusRestoredToTrigger": true,
+          "activeAfterClose": {
+            "tag": "body",
+            "id": "",
+            "text": "Open SEL HubCreate SEL Share Packet opened.❤️‍🔥 SEL HubElementary🎓 For Educato",
+            "aria": "",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          },
+          "steps": [
+            {
+              "key": "initial",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close SEL Share Packet builder",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Zone check reflection from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Zone check reflection",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "input",
+                "id": "",
+                "text": "",
+                "aria": "Remove Strengths checkpoint from SEL Share Packet",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "select",
+                "id": "",
+                "text": "Share summary onlyShare full saved textAsk adult to follow upKeep private",
+                "aria": "Sharing choice for Strengths checkpoint",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Download text",
+                "aria": "",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Print / Save PDF",
+                "aria": "",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Save to AlloHaven",
+                "aria": "",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "✕",
+                "aria": "Close SEL Share Packet builder",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            },
+            {
+              "key": "Shift+Tab",
+              "active": {
+                "tag": "button",
+                "id": "",
+                "text": "Save to AlloHaven",
+                "aria": "",
+                "inExplainer": false,
+                "inSharePacket": true,
+                "inEducators": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "station-builder-focus-handoff",
+          "pass": false,
+          "activeAfterOpen": {
+            "tag": "body",
+            "id": "",
+            "text": "Open SEL HubStation builder opened❤️‍🔥 SEL HubElementary🎓 For Educators☀️Light",
+            "aria": "",
+            "inExplainer": false,
+            "inSharePacket": false,
+            "inEducators": false
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "desktop-dark-responsive",
+      "theme": "dark",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 1280,
+            "viewportWidth": 1280,
+            "dialogScrollWidth": 1280,
+            "dialogClientWidth": 1280,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": true,
+            "contrast": false,
+            "selText": "rgb(241, 245, 249)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "tablet-high-contrast-responsive",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 820,
+        "height": 900
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 820,
+            "viewportWidth": 820,
+            "dialogScrollWidth": 820,
+            "dialogClientWidth": 820,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": true,
+            "selText": "rgb(255, 255, 0)"
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "name": "mobile-high-contrast-responsive",
+      "theme": "high-contrast",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "checks": [
+        {
+          "id": "responsive-overflow",
+          "pass": true,
+          "details": {
+            "bodyScrollWidth": 390,
+            "viewportWidth": 390,
+            "dialogScrollWidth": 390,
+            "dialogClientWidth": 390,
+            "offenders": []
+          }
+        },
+        {
+          "id": "theme-class-detected",
+          "pass": true,
+          "details": {
+            "dark": false,
+            "contrast": true,
+            "selText": "rgb(255, 255, 0)"
+          }
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

@@ -153,8 +153,25 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
   });
 
   it('keeps export toolbars and save controls inside landmarks', () => {
-    expect(html).toContain('<aside class="alloflow-reading-tools-shell" aria-label="Reading and annotation tools">');
+    expect(html).toContain('class="alloflow-reading-tools-shell expanded" aria-label="Reading and annotation tools"');
     expect(html).toContain('<aside class="alloflow-export-save-tools" aria-label="Save your work">');
+  });
+
+  it('ships exported reading tools for font, spacing, and pointer-guided reading', () => {
+    expect(html).toContain('data-rt-font');
+    expect(html).toContain('Dyslexia-friendly');
+    expect(html).toContain('data-rt-text="letter"');
+    expect(html).toContain('data-rt-guide="line"');
+    expect(html).toContain('data-rt-guide="focus"');
+    expect(html).toContain('id="alloflow-reader-line"');
+    expect(html).toContain('id="alloflow-reader-mask-top"');
+    expect(html).toContain('alloflow-reader-guide');
+  });
+
+  it('collapses reading tools into a compact mobile tray', () => {
+    expect(html).toContain('class="alloflow-tools-toggle"');
+    expect(html).toContain('id="alloflow-tools-panel"');
+    expect(html).toContain("matchMedia('(max-width: 720px)')");
   });
 
   it('SCORECARD: log axe pass/incomplete/violation counts + every violation', () => {
@@ -204,15 +221,43 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     expect(dom.window.document.querySelector('.alloflow-note-editor textarea')).toBeTruthy();
   });
 
+  it('teacher note pins open as an inline popover instead of a toast or alert', () => {
+    expect(html).toContain('className = \'alloflow-note-popover\'');
+    expect(html).toContain('function showNotePopover');
+    expect(html).toContain('showNotePopover(a, note)');
+    expect(html).not.toContain('alert(noteMessage)');
+  });
+
   it('annotation color swatches are wired to the toolbar mode classes', () => {
     expect(html).toContain('.alloflow-reading-tools.mode-note ~ .alloflow-anno-colors-note');
     expect(html).toContain('.alloflow-reading-tools.mode-highlight ~ .alloflow-anno-colors-hl');
+  });
+
+  it('keeps the plain JSON save CTA hidden unless answer fields exist', () => {
+    expect(html).toContain('id="alloflow-savejson-cta" style="display:none;');
+    expect(html).toContain(".interactive-textarea, .interactive-blank, .question[data-correct]");
+  });
+
+  it('keeps export-only chrome themed across dark, sepia, and high contrast modes', () => {
+    expect(html).toContain('html[data-alloflow-theme="dark"] .alloflow-toc');
+    expect(html).toContain('html[data-alloflow-theme="sepia"] .alloflow-audio-downloads');
+    expect(html).toContain('html[data-alloflow-theme="hc"] .alloflow-export-save-tools');
+    expect(html).toContain('html[data-alloflow-theme="dark"] .alloflow-rt-select');
+    expect(html).toContain('html[data-alloflow-theme="hc"] .alloflow-section-marker span:last-child');
+  });
+
+  it('keeps default downloaded HTML useful offline and printable for long sections', () => {
+    expect(html).not.toContain('fonts.googleapis.com/css2?family=Inter');
+    expect(html).toContain('.section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto;');
+    expect(html).toContain('.resource-header, .card, .quiz-box, .question, .reflection-block, figure');
   });
 
   it('read-aloud controls support pause/resume without stealing text clicks from annotations', () => {
     expect(html).toContain('function pause()');
     expect(html).toContain('function resume()');
     expect(html).toContain('allo-ka-stop');
+    expect(html).toContain('function findAudioBox');
+    expect(html).toContain('speechSynthesis');
     expect(html).toContain('Resume');
   });
 

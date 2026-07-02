@@ -27367,10 +27367,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _submissionEncryptScript = _hasSubmission ? `<script>${_getInlineEncryptScript()}</script>` : '';
       // Visible CTA inserted right before the footer.
       const _submissionSaveButton = _hasSubmission ? `
-        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
-          <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
+          <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 Save my work</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
         </div>
       ` : '';
@@ -27487,12 +27487,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         ${_submissionPublicKeyJson}
         ${_submissionEncryptScript}
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+          /* Keep downloaded HTML useful offline: only explicit teacher-selected
+             web fonts are imported; default themes use system fallbacks. */
           ${exportFontImport}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
-          .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+          .section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
           table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
           /* Border bumped from 1px → 1.5px to clear WCAG 1.4.11 (3:1 non-text
@@ -27612,6 +27613,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              Page-break rule preserved for printability. */
           .reflection-block { margin-bottom: 20px; padding: 10px 14px 4px; border-left: 3px solid #c7d2fe; background: rgba(238,242,255,0.4); border-radius: 0 8px 8px 0; page-break-inside: avoid; }
           .reflection-block > p:first-child { color: #3730a3; }
+          .venn-print-wrapper .venn-visual,
+          .flowchart-print-wrapper > [role="img"],
+          .ce-print-wrapper,
+          .ps-print-wrapper,
+          .fishbone-print-wrapper,
+          .cmap-print-wrapper,
+          .mindmap-print-wrapper > [role="img"],
+          .outline-print-wrapper {
+            font-size: 16px;
+            line-height: 1.35;
+          }
+          .venn-print-wrapper li,
+          .flowchart-print-wrapper li,
+          .ce-print-wrapper li,
+          .ps-print-wrapper li,
+          .fishbone-print-wrapper li,
+          .cmap-print-wrapper li,
+          .mindmap-print-wrapper li,
+          .outline-print-wrapper li {
+            overflow-wrap: anywhere;
+            hyphens: auto;
+          }
+          @media (max-width: 820px) {
+            .flowchart-print-wrapper,
+            .ce-print-wrapper,
+            .ps-print-wrapper,
+            .fishbone-print-wrapper,
+            .cmap-print-wrapper,
+            .mindmap-print-wrapper,
+            .outline-print-wrapper {
+              overflow-x: auto;
+            }
+          }
           .worksheet-header { margin-bottom: 40px; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
           .header-row { display: flex; gap: 30px; }
           .header-item { display: flex; align-items: flex-end; gap: 10px; }
@@ -27652,7 +27686,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             dd { page-break-before: avoid; break-before: avoid; }
             .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
             .page-break:after { content: ""; }
-            .section { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
+            .section { page-break-inside: auto; break-inside: auto; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
+            .resource-header, .card, .quiz-box, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
@@ -27702,15 +27737,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              Sepia / High Contrast at any time, persisted in localStorage.
              The teacher-chosen exportTheme is the baseline (Light = no
              override). Print rule hides the toolbar on paper output. */
-          .alloflow-reading-tools { position: sticky; top: 0; z-index: 9999; background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
+          .alloflow-reading-tools-shell { position: sticky; top: 0; z-index: 9999; font-family: system-ui, -apple-system, sans-serif; }
+          .alloflow-tools-toggle { display: none; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; background: rgba(255,255,255,0.97); color: #1e293b; border: 0; border-bottom: 1px solid #cbd5e1; font: 700 13px system-ui,-apple-system,sans-serif; cursor: pointer; }
+          .alloflow-tools-toggle:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
+          .alloflow-tools-toggle-icon { transition: transform 0.16s ease; }
+          .alloflow-reading-tools-shell:not(.expanded) .alloflow-tools-toggle-icon { transform: rotate(-90deg); }
+          .alloflow-tools-panel { display: block; }
+          .alloflow-reading-tools { background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
           .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
           .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
+          .alloflow-rt-select { min-width: 150px; max-width: 220px; border: 0; background: transparent; color: #334155; padding: 6px 28px 6px 10px; font: 600 12px system-ui,-apple-system,sans-serif; cursor: pointer; }
+          .alloflow-rt-select:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
           .alloflow-rt-btn { padding: 6px 12px; font-size: 12px; font-weight: 600; background: transparent; color: #334155; border: 0; border-left: 1px solid #cbd5e1; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
           .alloflow-rt-btn:first-of-type { border-left: 0; }
           .alloflow-rt-btn:hover { background: #e2e8f0; }
           .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
           .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
-          @media print { .alloflow-reading-tools-shell, .alloflow-reading-tools { display: none !important; } }
+          #alloflow-reader-line { position: fixed; left: 0; right: 0; top: 50%; height: 2.8em; transform: translateY(-50%); background: rgba(250,204,21,0.18); border-top: 2px solid rgba(202,138,4,0.72); border-bottom: 2px solid rgba(202,138,4,0.72); pointer-events: none; z-index: 9997; display: none; }
+          .alloflow-reader-mask { position: fixed; left: 0; right: 0; height: 0; background: rgba(15,23,42,0.58); pointer-events: none; z-index: 9996; display: none; }
+          html[data-alloflow-reader-guide="line"] #alloflow-reader-line { display: block; }
+          html[data-alloflow-reader-guide="focus"] .alloflow-reader-mask { display: block; }
+          @media print { .alloflow-reading-tools-shell, .alloflow-reading-tools, #alloflow-reader-line, .alloflow-reader-mask { display: none !important; } }
           /* Hide the interactive "Save my answers" CTAs on paper (they are dead buttons in print). */
           @media print { #alloflow-save-cta, #alloflow-savejson-cta { display: none !important; } }
           /* Print neutralizes a Dark / Sepia / High-Contrast reading theme. Those modes otherwise
@@ -27743,6 +27790,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
           .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
           .alloflow-anno-swatch[aria-pressed="true"] { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
+          @media (max-width: 720px) {
+            body { padding: 1rem; }
+            .alloflow-tools-toggle { display: flex; }
+            .alloflow-tools-panel { display: none; max-height: 68vh; overflow: auto; background: rgba(255,255,255,0.98); border-bottom: 1px solid #cbd5e1; box-shadow: 0 8px 18px rgba(15,23,42,0.12); }
+            .alloflow-reading-tools-shell.expanded .alloflow-tools-panel { display: block; }
+            .alloflow-reading-tools { position: static; flex-direction: column; align-items: stretch; gap: 8px; border-bottom: 0; box-shadow: none; }
+            .alloflow-reading-tools-group { width: 100%; overflow-x: auto; }
+            .alloflow-reading-tools-label { min-width: 78px; }
+            .alloflow-rt-btn { white-space: nowrap; }
+            .alloflow-anno-colors { position: static; overflow-x: auto; flex-wrap: nowrap; }
+            .alloflow-anno-sb { top: auto; right: 0; left: 0; bottom: 0; width: auto; max-height: 72vh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 28px rgba(15,23,42,0.22); }
+            .export-header { padding: 22px 20px !important; }
+            .section { padding: 1rem; }
+          }
 
           /* ─── Inline note editor (Tier 1: replaces prompt()) ─── */
           .alloflow-note-editor { position: absolute; min-width: 200px; max-width: 280px; border-radius: 8px; box-shadow: 0 4px 14px rgba(15,23,42,0.18); z-index: 56; font-family: system-ui, -apple-system, sans-serif; pointer-events: auto; }
@@ -27781,6 +27842,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-item-del { opacity: 0; background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
           .alloflow-anno-item:hover .alloflow-anno-item-del, .alloflow-anno-item-del:focus { opacity: 1; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
+          .alloflow-note-popover { position: fixed; z-index: 100000; width: min(340px, calc(100vw - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
+          .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
+          .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+          .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
+          .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 3px 6px; cursor: pointer; font-weight: 800; }
+          .alloflow-note-popover-close:hover, .alloflow-note-popover-close:focus-visible { color: #dc2626; background: #ffffff; outline: 2px solid #6366f1; outline-offset: 1px; }
           @media print { .alloflow-anno-sb { display: none !important; } }
 
           /* ─── Sidebar dark/sepia/HC overrides ─── */
@@ -27796,11 +27863,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-anno-item.student:hover { background: rgba(251,191,36,0.20); }
           html[data-alloflow-theme="dark"] .alloflow-anno-item-text { color: #ffffff; }
           html[data-alloflow-theme="dark"] .alloflow-anno-item-meta { color: #cbd5e1; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover { background: #1e293b; color: #ffffff; border-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover-header { background: #0f172a; color: #ffffff; border-bottom-color: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-note-popover-meta { color: #cbd5e1; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb { background: #fdf6e3; border-color: #d4c5a0; color: #5b4636; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-header { background: #f5ecd9; border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-anno-sb-title { color: #4a3a2a; }
+          html[data-alloflow-theme="sepia"] .alloflow-note-popover { background: #fdf6e3; color: #5b4636; border-color: #d4c5a0; }
+          html[data-alloflow-theme="sepia"] .alloflow-note-popover-header { background: #f5ecd9; color: #4a3a2a; border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="hc"] .alloflow-anno-sb { background: #ffffff; border: 2px solid #000000; color: #000000; }
           html[data-alloflow-theme="hc"] .alloflow-anno-sb-pills .active { background: #000000; color: #ffff00; }
+          html[data-alloflow-theme="hc"] .alloflow-note-popover { border: 2px solid #000000; color: #000000; }
 
           /* ─── Dark theme ─── */
           html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
@@ -27980,13 +28053,96 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] .interactive-textarea { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-rt-btn[aria-pressed="true"] { background: #000000; color: #ffff00; }
+
+          /* Theme coverage for export-only chrome and inline-styled resource helpers. */
+          html[data-alloflow-theme="dark"] .alloflow-rt-select { background: #1e293b !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-select { background: #fdf6e3 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-rt-select { background: #ffffff !important; color: #000000 !important; border-left: 2px solid #000000 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="dark"] .alloflow-tools-panel,
+          html[data-alloflow-theme="dark"] .alloflow-anno-colors,
+          html[data-alloflow-theme="dark"] .alloflow-toc,
+          html[data-alloflow-theme="dark"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="dark"] #alloflow-save-cta,
+          html[data-alloflow-theme="dark"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="dark"] .a11y-badge,
+          html[data-alloflow-theme="dark"] footer[role="contentinfo"] { background: #1e293b !important; color: #ffffff !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-toc h2,
+          html[data-alloflow-theme="dark"] .alloflow-toc a,
+          html[data-alloflow-theme="dark"] .alloflow-toc li,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="dark"] #alloflow-save-cta p,
+          html[data-alloflow-theme="dark"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="dark"] .a11y-badge strong { color: #e2e8f0 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-toc li:hover { background: #334155 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-section-marker span:last-child { background: #1e293b !important; color: #ffffff !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-audio-downloads a { background: #38bdf8 !important; color: #082f49 !important; }
+          html[data-alloflow-theme="dark"] #alloflow-reader-line { background: rgba(250,204,21,0.24); border-color: #facc15; }
+          html[data-alloflow-theme="dark"] .alloflow-reader-mask { background: rgba(2,6,23,0.64); }
+          html[data-alloflow-theme="sepia"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="sepia"] .alloflow-tools-panel,
+          html[data-alloflow-theme="sepia"] .alloflow-anno-colors,
+          html[data-alloflow-theme="sepia"] .alloflow-toc,
+          html[data-alloflow-theme="sepia"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="sepia"] #alloflow-save-cta,
+          html[data-alloflow-theme="sepia"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="sepia"] .a11y-badge,
+          html[data-alloflow-theme="sepia"] footer[role="contentinfo"] { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-toc h2,
+          html[data-alloflow-theme="sepia"] .alloflow-toc a,
+          html[data-alloflow-theme="sepia"] .alloflow-toc li,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="sepia"] #alloflow-save-cta p,
+          html[data-alloflow-theme="sepia"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="sepia"] .a11y-badge strong { color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-toc li:hover { background: #ede0c4 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-section-marker span:last-child { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #d4c5a0 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-audio-downloads a { background: #6e5636 !important; color: #fdf6e3 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-reader-mask { background: rgba(74,58,42,0.38); }
+          html[data-alloflow-theme="hc"] .alloflow-tools-toggle,
+          html[data-alloflow-theme="hc"] .alloflow-tools-panel,
+          html[data-alloflow-theme="hc"] .alloflow-anno-colors,
+          html[data-alloflow-theme="hc"] .alloflow-toc,
+          html[data-alloflow-theme="hc"] .alloflow-export-save-tools,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads,
+          html[data-alloflow-theme="hc"] .a11y-badge,
+          html[data-alloflow-theme="hc"] footer[role="contentinfo"] { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; box-shadow: none !important; }
+          html[data-alloflow-theme="hc"] .alloflow-toc h2,
+          html[data-alloflow-theme="hc"] .alloflow-toc a,
+          html[data-alloflow-theme="hc"] .alloflow-toc li,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads h2,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads p,
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads span,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta p,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta p,
+          html[data-alloflow-theme="hc"] .a11y-badge strong { color: #000000 !important; border-color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-toc li:hover { background: #ffff00 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-section-marker span:first-child { background: #000000 !important; color: #ffff00 !important; box-shadow: none !important; }
+          html[data-alloflow-theme="hc"] .alloflow-section-marker span:last-child { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-audio-downloads a,
+          html[data-alloflow-theme="hc"] #alloflow-save-cta button,
+          html[data-alloflow-theme="hc"] #alloflow-savejson-cta button { background: #000000 !important; color: #ffff00 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] #alloflow-reader-line { background: rgba(255,255,0,0.38); border-color: #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-reader-mask { background: rgba(0,0,0,0.72); }
         </style>
       </head>
       <body>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
         ${_brandHeaderHTML}
-        <aside class="alloflow-reading-tools-shell" aria-label="Reading and annotation tools">
+        <aside class="alloflow-reading-tools-shell expanded" aria-label="Reading and annotation tools">
         <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
+        <button type="button" class="alloflow-tools-toggle" aria-expanded="true" aria-controls="alloflow-tools-panel">
+          <span>Tools</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
+        </button>
+        <div id="alloflow-tools-panel" class="alloflow-tools-panel">
         <div class="alloflow-reading-tools">
           <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
             <span class="alloflow-reading-tools-label">Theme</span>
@@ -27995,12 +28151,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="Sepia (warm, low-glare)">\u{1F4DC} Sepia</button>
             <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="High Contrast (WCAG AAA)">◼ High Contrast</button>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Text size">
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Font family">
+            <span class="alloflow-reading-tools-label">Font</span>
+            <select class="alloflow-rt-select" data-rt-font aria-label="Font family">
+              <option value="original">Original</option>
+              <option value="system">Sans</option>
+              <option value="readable">Readable</option>
+              <option value="serif">Serif</option>
+              <option value="dyslexic">Dyslexia-friendly</option>
+              <option value="mono">Monospace</option>
+            </select>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Text display">
             <span class="alloflow-reading-tools-label">Text</span>
             <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="Smaller text" aria-label="Smaller text">A-</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Reset text size" aria-label="Reset text size">A</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="Larger text" aria-label="Larger text">A+</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="Cycle line spacing" aria-label="Line spacing">Spacing</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="Cycle letter spacing" aria-label="Letter spacing">Letter</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="Reading guide">
+            <span class="alloflow-reading-tools-label">Guide</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="Turn reading guide off">Off</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="Line reader follows your pointer">Line</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="Focus mask follows your pointer">Focus</button>
           </div>
           <div class="alloflow-reading-tools-group" role="group" aria-label="Annotations">
             <span class="alloflow-reading-tools-label">Annotate</span>
@@ -28028,7 +28202,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="Blue highlight" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
           <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="Pink highlight" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
         </div>
+        </div>
         </aside>
+        <div id="alloflow-reader-line" aria-hidden="true"></div>
+        <div id="alloflow-reader-mask-top" class="alloflow-reader-mask" aria-hidden="true"></div>
+        <div id="alloflow-reader-mask-bottom" class="alloflow-reader-mask" aria-hidden="true"></div>
         <script type="application/json" id="alloflow-teacher-annotations">${_jsonForScript(_teacherAnnotations)}</script>
         <script type="application/json" id="alloflow-teacher-annotations-by-resource">${_jsonForScript(_teacherAnnotationsByResource)}</script>
         <script>
@@ -28070,16 +28248,68 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           })();
         </script>
         <script>
-          // Reading Tools - text size + line spacing (offline; event delegation).
+          // Reading Tools - compact mobile tray.
+          (function () {
+            var shell = document.querySelector('.alloflow-reading-tools-shell');
+            var toggle = document.querySelector('.alloflow-tools-toggle');
+            if (shell && toggle) {
+              function setExpanded(v) {
+                shell.classList.toggle('expanded', !!v);
+                toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
+              }
+              try {
+                if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) setExpanded(false);
+                else setExpanded(true);
+              } catch (e) { setExpanded(true); }
+              toggle.addEventListener('click', function () { setExpanded(!shell.classList.contains('expanded')); });
+            }
+          })();
+        </script>
+        <script>
+          // Reading Tools - text size, font, line spacing, and letter spacing.
           (function () {
             var KEY = 'alloflow-reader-text';
             var SCALES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
             var LEADS = [1.5, 1.8, 2.1];
-            var st = { s: 1, l: 0 };
-            try { var sv = JSON.parse(localStorage.getItem(KEY)); if (sv && typeof sv.s === "number") st = sv; } catch (e) {}
+            var LETTERS = [0, 0.03, 0.06, 0.1];
+            var FONTS = {
+              original: '',
+              system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              readable: 'Verdana, Geneva, Tahoma, Arial, sans-serif',
+              serif: 'Georgia, "Times New Roman", serif',
+              dyslexic: '"Comic Sans MS", "Trebuchet MS", Arial, sans-serif',
+              mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace'
+            };
+            var st = { s: 1, l: 0, c: 0, f: 'original' };
+            function clampIndex(v, len, fallback) {
+              var n = Number(v);
+              if (!isFinite(n)) n = fallback;
+              n = Math.round(n);
+              return Math.max(0, Math.min(len - 1, n));
+            }
+            try {
+              var sv = JSON.parse(localStorage.getItem(KEY));
+              if (sv && typeof sv === 'object') {
+                st.s = typeof sv.s === 'number' ? sv.s : st.s;
+                st.l = typeof sv.l === 'number' ? sv.l : st.l;
+                st.c = typeof sv.c === 'number' ? sv.c : st.c;
+                st.f = typeof sv.f === 'string' ? sv.f : st.f;
+              }
+            } catch (e) {}
             function apply(save) {
+              st.s = clampIndex(st.s, SCALES.length, 1);
+              st.l = clampIndex(st.l, LEADS.length, 0);
+              st.c = clampIndex(st.c, LETTERS.length, 0);
+              if (!Object.prototype.hasOwnProperty.call(FONTS, st.f)) st.f = 'original';
               var host = document.getElementById('main-export-content') || document.body;
-              if (host) { host.style.fontSize = (SCALES[st.s] || 1) + 'em'; host.style.lineHeight = String(LEADS[st.l] || 1.5); }
+              if (host) {
+                host.style.fontSize = (SCALES[st.s] || 1) + 'em';
+                host.style.lineHeight = String(LEADS[st.l] || 1.5);
+                host.style.letterSpacing = (LETTERS[st.c] || 0) ? (LETTERS[st.c] + 'em') : '';
+                host.style.fontFamily = FONTS[st.f] || '';
+              }
+              var fontSel = document.querySelector('[data-rt-font]');
+              if (fontSel && fontSel.value !== st.f) fontSel.value = st.f;
               var largeText = (SCALES[st.s] || 1) >= 1.3;
               var fallbacks = document.querySelectorAll('[data-diagram-auto-open="large-text"]');
               for (var fi = 0; fi < fallbacks.length; fi++) {
@@ -28100,10 +28330,81 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var a = b.getAttribute('data-rt-text');
               if (a === 'larger') st.s = Math.min(SCALES.length - 1, st.s + 1);
               else if (a === 'smaller') st.s = Math.max(0, st.s - 1);
-              else if (a === 'reset') { st.s = 1; st.l = 0; }
+              else if (a === 'reset') { st.s = 1; st.l = 0; st.c = 0; st.f = 'original'; }
               else if (a === 'spacing') st.l = (st.l + 1) % LEADS.length;
+              else if (a === 'letter') st.c = (st.c + 1) % LETTERS.length;
               apply(true);
             });
+            document.addEventListener('change', function (e) {
+              var sel = e.target && e.target.closest && e.target.closest('[data-rt-font]');
+              if (!sel) return;
+              st.f = sel.value || 'original';
+              apply(true);
+            });
+          })();
+        </script>
+        <script>
+          // Reading Tools - line reader and focus mask.
+          (function () {
+            var KEY = 'alloflow-reader-guide';
+            var root = document.documentElement;
+            var mode = 'off';
+            var line = null;
+            var topMask = null;
+            var bottomMask = null;
+            var lastY = 0;
+            function els() {
+              line = line || document.getElementById('alloflow-reader-line');
+              topMask = topMask || document.getElementById('alloflow-reader-mask-top');
+              bottomMask = bottomMask || document.getElementById('alloflow-reader-mask-bottom');
+            }
+            function setPressed(m) {
+              var btns = document.querySelectorAll('[data-rt-guide]');
+              for (var i = 0; i < btns.length; i++) {
+                btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-rt-guide') === m ? 'true' : 'false');
+              }
+            }
+            function place(y) {
+              els();
+              var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+              lastY = Math.max(0, Math.min(vh, Number(y) || (vh / 2)));
+              if (line) line.style.top = lastY + 'px';
+              if (topMask && bottomMask) {
+                var band = Math.max(84, Math.min(150, vh * 0.18));
+                var top = Math.max(0, lastY - band / 2);
+                var bottom = Math.min(vh, lastY + band / 2);
+                topMask.style.top = '0px';
+                topMask.style.height = top + 'px';
+                bottomMask.style.top = bottom + 'px';
+                bottomMask.style.height = Math.max(0, vh - bottom) + 'px';
+              }
+            }
+            function setGuide(next, save) {
+              mode = (next === 'line' || next === 'focus') ? next : 'off';
+              if (mode === 'off') root.removeAttribute('data-alloflow-reader-guide');
+              else root.setAttribute('data-alloflow-reader-guide', mode);
+              setPressed(mode);
+              if (mode !== 'off') place(lastY || ((window.innerHeight || 800) / 2));
+              if (save) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
+            }
+            try { mode = localStorage.getItem(KEY) || 'off'; } catch (e) {}
+            setGuide(mode, false);
+            document.addEventListener('click', function (e) {
+              var btn = e.target && e.target.closest && e.target.closest('[data-rt-guide]');
+              if (!btn) return;
+              setGuide(btn.getAttribute('data-rt-guide'), true);
+            });
+            document.addEventListener('mousemove', function (e) { if (mode !== 'off') place(e.clientY); }, { passive: true });
+            document.addEventListener('touchmove', function (e) {
+              if (mode === 'off' || !e.touches || !e.touches.length) return;
+              place(e.touches[0].clientY);
+            }, { passive: true });
+            document.addEventListener('focusin', function (e) {
+              if (mode === 'off' || !e.target || !e.target.getBoundingClientRect) return;
+              var r = e.target.getBoundingClientRect();
+              place(r.top + r.height / 2);
+            });
+            window.addEventListener('resize', function () { if (mode !== 'off') place(lastY || ((window.innerHeight || 800) / 2)); });
           })();
         </script>
         <script>
@@ -28117,6 +28418,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (!btn) return;
               btn.textContent = label;
               btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+              btn.setAttribute('aria-label', label.replace(/[^\w\s-]/g, '').trim() || 'Read aloud');
+            }
+            function findAudioBox(id) {
+              var boxes = document.querySelectorAll('.allo-ka-audios');
+              for (var bi = 0; bi < boxes.length; bi++) {
+                if ((boxes[bi].getAttribute('data-ka-for') || '') === String(id || '')) return boxes[bi];
+              }
+              return null;
             }
             function ensureStopButton(btn) {
               if (!btn || !btn.parentNode) return null;
@@ -28139,7 +28448,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function stop() {
               if (!active) return;
-              try { var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; } } catch (e) {}
+              try {
+                if (active.mode === 'browser') {
+                  if (window.speechSynthesis) window.speechSynthesis.cancel();
+                  active.utter = null;
+                } else {
+                  var a = active.audios[active.idx]; if (a) { a.pause(); a.onended = null; }
+                }
+              } catch (e) {}
               clearHi(active.spans);
               setPlayButton(active.btn, "\u{1F50A} Read aloud", false);
               if (active.stopBtn) { try { active.stopBtn.remove(); } catch (e) {} }
@@ -28147,12 +28463,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function pause() {
               if (!active || active.paused) return;
-              try { var a = active.audios[active.idx]; if (a) a.pause(); } catch (e) {}
+              try {
+                if (active.mode === 'browser') { if (window.speechSynthesis) window.speechSynthesis.pause(); }
+                else { var a = active.audios[active.idx]; if (a) a.pause(); }
+              } catch (e) {}
               active.paused = true;
               setPlayButton(active.btn, "\u25B6 Resume", true);
             }
             function resume() {
               if (!active || !active.paused) return;
+              if (active.mode === 'browser') {
+                active.paused = false;
+                setPlayButton(active.btn, "\u23F8 Pause", true);
+                try { if (window.speechSynthesis) window.speechSynthesis.resume(); } catch (e) {}
+                return;
+              }
               var a = active.audios[active.idx];
               if (!a) { step(active, active.idx + 1); return; }
               active.paused = false;
@@ -28162,9 +28487,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function step(state, i) {
               if (!active || active !== state) return;
-              if (i >= state.audios.length) { stop(); return; }
+              var count = state.mode === 'browser' ? state.spans.length : state.audios.length;
+              if (i >= count) { stop(); return; }
               state.idx = i;
               state.paused = false;
+              if (state.mode === 'browser') {
+                var sp = state.spans[i];
+                if (!sp) { step(state, i + 1); return; }
+                clearHi(state.spans);
+                sp.classList.add('ka-on');
+                var text = (sp.textContent || '').trim();
+                if (!text) { step(state, i + 1); return; }
+                if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+                  if (window.AlloFlowUX) window.AlloFlowUX.toast('Browser read-aloud is not available here.', 'error'); else alert('Browser read-aloud is not available here.');
+                  stop();
+                  return;
+                }
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                var u = new SpeechSynthesisUtterance(text);
+                state.utter = u;
+                u.rate = 1;
+                u.onend = function () { if (active === state && !state.paused) step(state, i + 1); };
+                u.onerror = function () { if (active === state) stop(); };
+                setPlayButton(state.btn, "\u23F8 Pause", true);
+                try { window.speechSynthesis.speak(u); } catch (e) { stop(); }
+                return;
+              }
               var a = state.audios[i];
               if (!a) { step(state, i + 1); return; }
               var sidx = a.getAttribute("data-ka-s");
@@ -28189,14 +28537,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               if (active) stop();
               var id = btn.getAttribute("data-ka-for");
-              var box = document.querySelector('.allo-ka-audios[data-ka-for="' + id + '"]');
               var sec = btn.closest(".section") || document;
               var spans = Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));
-              var audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
-              if (!audios.length || !spans.length) return;
+              var mode = btn.getAttribute('data-ka-mode') || 'embedded';
+              var audios = [];
+              if (mode === 'browser') {
+                if (!spans.length) return;
+              } else {
+                var box = findAudioBox(id);
+                audios = box ? Array.prototype.slice.call(box.querySelectorAll("audio")) : [];
+                if (!audios.length || !spans.length) return;
+              }
               var stopControl = ensureStopButton(btn);
               setPlayButton(btn, "\u23F8 Pause", true);
-              active = { audios: audios, spans: spans, idx: 0, btn: btn, stopBtn: stopControl, paused: false };
+              active = { mode: mode, audios: audios, spans: spans, idx: 0, btn: btn, stopBtn: stopControl, paused: false, utter: null };
               step(active, 0);
             });
           })();
@@ -28431,6 +28785,59 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return parts.join(' • ');
             }
+            var notePopoverEl = null;
+            function closeNotePopover() {
+              if (!notePopoverEl) return;
+              try { notePopoverEl.remove(); } catch (e) {}
+              notePopoverEl = null;
+            }
+            function showNotePopover(a, anchor) {
+              closeNotePopover();
+              var pop = document.createElement('div');
+              pop.className = 'alloflow-note-popover';
+              pop.setAttribute('role', 'dialog');
+              pop.setAttribute('aria-label', 'Annotation note');
+              var header = document.createElement('div');
+              header.className = 'alloflow-note-popover-header';
+              var label = document.createElement('span');
+              label.textContent = a && a.author === 'teacher' ? 'Teacher note' : 'Your note';
+              var close = document.createElement('button');
+              close.type = 'button';
+              close.className = 'alloflow-note-popover-close';
+              close.setAttribute('aria-label', 'Close note');
+              close.textContent = '×';
+              close.addEventListener('click', function (ev) { ev.stopPropagation(); closeNotePopover(); try { anchor && anchor.focus && anchor.focus(); } catch (e) {} });
+              header.appendChild(label);
+              header.appendChild(close);
+              var body = document.createElement('div');
+              body.className = 'alloflow-note-popover-body';
+              body.textContent = (a && a.content) ? a.content : '(empty note)';
+              var meta = document.createElement('div');
+              meta.className = 'alloflow-note-popover-meta';
+              meta.textContent = buildTitle(a || {});
+              pop.appendChild(header);
+              pop.appendChild(body);
+              if (meta.textContent) pop.appendChild(meta);
+              document.body.appendChild(pop);
+              notePopoverEl = pop;
+              try {
+                var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 16, top: 16, bottom: 44 };
+                var top = Math.min(window.innerHeight - pop.offsetHeight - 12, Math.max(12, r.bottom + 8));
+                var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(12, r.left));
+                pop.style.top = top + 'px';
+                pop.style.left = left + 'px';
+                close.focus();
+              } catch (e) {}
+            }
+            document.addEventListener('keydown', function (e) {
+              if (e.key === 'Escape') closeNotePopover();
+            });
+            document.addEventListener('click', function (e) {
+              if (!notePopoverEl) return;
+              if (notePopoverEl.contains(e.target)) return;
+              if (e.target && e.target.closest && e.target.closest('.alloflow-anno-note')) return;
+              closeNotePopover();
+            });
 
             // Attach a drag handler to a DOM element representing an
             // annotation. Same contract as the in-app version: only fires
@@ -28522,8 +28929,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
                 note.addEventListener('click', function (e) {
                   e.stopPropagation();
-                  var noteMessage = (a.content || '(empty note)') + (buildTitle(a) ? '\\n\\n— ' + buildTitle(a) : '');
-                  if (window.AlloFlowUX) window.AlloFlowUX.toast(noteMessage, 'error'); else alert(noteMessage);
+                  showNotePopover(a, note);
                 });
                 attachDrag(note, a);
                 return note;
@@ -29328,10 +29734,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </main>
         <aside class="alloflow-export-save-tools" aria-label="Save your work">
         ${_submissionSaveButton}
-        <div id="alloflow-savejson-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:#eef2ff;border:2px solid #c7d2fe;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+        <div id="alloflow-savejson-cta" style="display:none;margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Save a file of your answers and send it to your teacher.</p>
-          <button type="button" id="alloflow-savejson-btn" style="padding:12px 28px;background:#4f46e5;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(79,70,229,0.3);">&#128190; Save my answers</button>
+          <button type="button" id="alloflow-savejson-btn" style="padding:10px 22px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(79,70,229,0.22);">&#128190; Save my answers</button>
           <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">Saves a .json file your teacher opens in AlloFlow.</p>
         </div>
         </aside>
@@ -29819,7 +30225,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     if (!pbtn) return;
                     var pcta = document.getElementById('alloflow-savejson-cta');
                     if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
-                    if (document.querySelectorAll('.interactive-textarea, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (pcta) pcta.style.display = 'block';
                     var _pcollect = function() {
                         var out = {};
                         var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];

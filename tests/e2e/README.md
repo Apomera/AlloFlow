@@ -23,6 +23,9 @@ PW_BASE_URL=http://localhost:3000 npm run test:e2e
 
 # Open HTML report after run
 npm run test:e2e:report
+
+# Generate the offline HTML export visual gallery
+npm run visual:export-gallery
 ```
 
 ## Suite organization
@@ -64,3 +67,16 @@ catching real regressions (broken JS, missing CDN files, registry mismatches).
 - TTS / Speech-to-Text / camera / microphone
 - Deep interaction with each of 174 tools (covered by render contract instead)
 - Visual regression snapshots
+
+## HTML export visual gallery
+
+`npm run visual:export-gallery` generates a local contact sheet at
+`test-results/export-visual-gallery/index.html`. It renders a representative
+Document Builder HTML export in Chromium across:
+
+- 4 reader themes: light, dark, sepia, high contrast
+- 6 exported text-size stops
+- 2 viewports: desktop and mobile
+
+The gallery is intentionally artifact-only, so it is ignored by Git and can be
+refreshed whenever HTML export styling or resource rendering changes.

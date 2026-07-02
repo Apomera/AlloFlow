@@ -73,33 +73,528 @@
   // a .ka-s span, add a Read-aloud button, and generate one clip per sentence
   // with the selected voice. The doc's highlighter plays them in order, lighting
   // each sentence as its clip plays.
-  const _alloReadAloudModal = () => new Promise((resolve) => {
+  const _alloNormalizeAudioConfig = (mode) => {
+    if (!mode) return null;
+    if (typeof mode === 'string') {
+      if (mode === 'compressed' || mode === 'embedded') {
+        return { quality: mode, variants: ['standard'], inlinePassageAudio: true };
+      }
+      if (mode === 'structured') return { quality: 'compressed', variants: ['structured'], inlinePassageAudio: false };
+      if (mode === 'both') return { quality: 'compressed', variants: ['standard', 'structured'], inlinePassageAudio: true };
+      return null;
+    }
+    const quality = mode.quality === 'embedded' ? 'embedded' : 'compressed';
+    let variants = [];
+    if (Array.isArray(mode.variants)) variants = mode.variants.slice();
+    else if (mode.variant) variants = [mode.variant];
+    variants = variants.filter((v, i, a) => (v === 'standard' || v === 'structured') && a.indexOf(v) === i);
+    if (!variants.length) variants = ['standard'];
+    return {
+      quality: quality,
+      variants: variants,
+      inlinePassageAudio: mode.inlinePassageAudio !== false && variants.indexOf('standard') !== -1
+    };
+  };
+  const _alloReadAloudModal = (canEmbed) => new Promise((resolve) => {
     try {
       const ov = document.createElement('div');
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
       ov.style.cssText = 'position:fixed;inset:0;z-index:2147483600;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;';
       const box = document.createElement('div');
-      box.style.cssText = 'background:#fff;border-radius:16px;max-width:460px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);';
+      box.style.cssText = 'background:#fff;border-radius:16px;max-width:660px;width:100%;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);';
+      const disabled = canEmbed ? '' : 'disabled aria-disabled="true" ';
+      const mutedStyle = canEmbed ? '' : 'opacity:.62;';
       box.innerHTML =
-        '<h2 style="margin:0 0 8px;font-size:1.2rem;color:#0f172a;">\u{1F50A} Add read-aloud audio?</h2>' +
-        '<p style="margin:0 0 6px;font-size:0.92rem;color:#475569;line-height:1.5;">Generate audio for every reading passage so students can listen offline, with each sentence highlighted as it is read.</p>' +
-        '<p style="margin:0 0 18px;font-size:0.8rem;color:#64748b;line-height:1.45;">Uses your selected voice. Adds a moment to export and some file size.</p>' +
+        '<h2 style="margin:0 0 8px;font-size:1.2rem;color:#0f172a;">Add read-aloud audio?</h2>' +
+        '<p style="margin:0 0 6px;font-size:0.92rem;color:#475569;line-height:1.5;">Use the selected voice to add offline audio to the downloaded HTML. Standard audio is the lean default; structured audio adds screen-reader-style cues for headings, lists, tables, and images.</p>' +
+        '<p style="margin:0 0 16px;font-size:0.8rem;color:#64748b;line-height:1.45;">To keep downloads smaller, both audio versions are only included when you choose that option.</p>' +
+        '<fieldset style="border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;margin:0 0 12px;' + mutedStyle + '">' +
+          '<legend style="font-weight:800;color:#0f172a;padding:0 6px;">Audio version</legend>' +
+          '<label style="display:block;margin:8px 0;color:#0f172a;line-height:1.4;"><input type="radio" name="allo-audio-variant" value="standard" checked ' + disabled + 'style="margin-right:8px;"> <strong>Standard narration</strong><span style="display:block;margin-left:24px;font-size:0.82rem;color:#475569;">Adds inline passage playback with highlighting and one full-document audio download.</span></label>' +
+          '<label style="display:block;margin:8px 0;color:#0f172a;line-height:1.4;"><input type="radio" name="allo-audio-variant" value="structured" ' + disabled + 'style="margin-right:8px;"> <strong>Structured audio</strong><span style="display:block;margin-left:24px;font-size:0.82rem;color:#475569;">Creates a screen-reader-style audio file with structural cues. No inline passage clips.</span></label>' +
+          '<label style="display:block;margin:8px 0;color:#0f172a;line-height:1.4;"><input type="radio" name="allo-audio-variant" value="both" ' + disabled + 'style="margin-right:8px;"> <strong>Both versions</strong><span style="display:block;margin-left:24px;font-size:0.82rem;color:#475569;">Includes standard playback plus the structured audio file. Largest download.</span></label>' +
+        '</fieldset>' +
+        '<fieldset style="border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;margin:0 0 18px;' + mutedStyle + '">' +
+          '<legend style="font-weight:800;color:#0f172a;padding:0 6px;">File size</legend>' +
+          '<label style="display:block;margin:8px 0;color:#0f172a;line-height:1.4;"><input type="radio" name="allo-audio-quality" value="compressed" checked ' + disabled + 'style="margin-right:8px;"> <strong>Smaller file</strong><span style="display:block;margin-left:24px;font-size:0.82rem;color:#475569;">Keeps the selected voice, then tries to compress generated audio. Smaller download, slightly lower quality.</span></label>' +
+          '<label style="display:block;margin:8px 0;color:#0f172a;line-height:1.4;"><input type="radio" name="allo-audio-quality" value="embedded" ' + disabled + 'style="margin-right:8px;"> <strong>Best quality</strong><span style="display:block;margin-left:24px;font-size:0.82rem;color:#475569;">Keeps the original generated audio for maximum compatibility. Larger download.</span></label>' +
+        '</fieldset>' +
+        (canEmbed ? '' : '<p style="margin:0 0 14px;font-size:0.84rem;color:#9f1239;line-height:1.4;">Selected-voice audio is not available right now.</p>') +
         '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">' +
           '<button type="button" data-r="cancel" style="padding:9px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:9px;font-weight:600;cursor:pointer;">Cancel</button>' +
           '<button type="button" data-r="no" style="padding:9px 16px;background:#fff;color:#0369a1;border:1px solid #7dd3fc;border-radius:9px;font-weight:700;cursor:pointer;">Without audio</button>' +
-          '<button type="button" data-r="yes" style="padding:9px 18px;background:#0369a1;color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">\u{1F50A} Yes, read aloud</button>' +
+          '<button type="button" data-r="continue" ' + (canEmbed ? '' : 'disabled aria-disabled="true" ') + 'style="padding:9px 16px;background:' + (canEmbed ? '#0369a1' : '#94a3b8') + ';color:#fff;border:1px solid ' + (canEmbed ? '#075985' : '#94a3b8') + ';border-radius:9px;font-weight:800;cursor:' + (canEmbed ? 'pointer' : 'not-allowed') + ';">Add audio</button>' +
         '</div>';
       ov.appendChild(box);
       const done = (val) => { try { ov.remove(); } catch (e) {} resolve(val); };
       ov.addEventListener('click', (e) => {
         const b = e.target && e.target.closest && e.target.closest('[data-r]');
-        if (b) { const r = b.getAttribute('data-r'); done(r === 'yes' ? true : (r === 'no' ? false : null)); return; }
+        if (b) {
+          const r = b.getAttribute('data-r');
+          if (r === 'continue') {
+            if (!canEmbed) return;
+            const v = box.querySelector('input[name="allo-audio-variant"]:checked');
+            const q = box.querySelector('input[name="allo-audio-quality"]:checked');
+            const variant = v ? v.value : 'standard';
+            const quality = q ? q.value : 'compressed';
+            done(_alloNormalizeAudioConfig({
+              quality: quality,
+              variants: variant === 'both' ? ['standard', 'structured'] : [variant],
+              inlinePassageAudio: variant !== 'structured'
+            }));
+          } else {
+            done(r === 'no' ? false : null);
+          }
+          return;
+        }
         if (e.target === ov) done(null);
       });
       document.body.appendChild(ov);
-      const y = box.querySelector('[data-r="yes"]'); if (y) y.focus();
+      const y = box.querySelector('[data-r="continue"]') || box.querySelector('[data-r="no"]'); if (y) y.focus();
     } catch (e) { resolve(false); }
   });
+  const _alloAudioProgress = () => {
+    let ov = null, status = null, detail = null, bar = null, pctText = null;
+    try {
+      ov = document.createElement('div');
+      ov.setAttribute('role', 'status');
+      ov.setAttribute('aria-live', 'polite');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483601;background:rgba(15,23,42,0.62);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;';
+      const box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;max-width:520px;width:100%;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.32);';
+      box.innerHTML =
+        '<h2 style="margin:0 0 8px;font-size:1.15rem;color:#0f172a;">Preparing embedded read-aloud audio</h2>' +
+        '<p data-ka-status style="margin:0 0 8px;font-size:0.92rem;color:#475569;line-height:1.45;">Getting passages ready...</p>' +
+        '<p data-ka-detail style="margin:0 0 14px;font-size:0.78rem;color:#64748b;line-height:1.35;">This can take a while for long documents. Keep this tab open.</p>' +
+        '<div style="width:100%;height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;"><div data-ka-bar style="height:100%;width:0%;background:#0369a1;transition:width .18s ease;"></div></div>' +
+        '<div data-ka-pct style="margin-top:8px;text-align:right;font-size:0.78rem;color:#475569;font-variant-numeric:tabular-nums;">0%</div>';
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+      status = box.querySelector('[data-ka-status]');
+      detail = box.querySelector('[data-ka-detail]');
+      bar = box.querySelector('[data-ka-bar]');
+      pctText = box.querySelector('[data-ka-pct]');
+    } catch (e) {}
+    return {
+      update(done, total, label) {
+        const pct = total ? Math.max(0, Math.min(100, Math.round((done / total) * 100))) : 0;
+        if (status) status.textContent = label || 'Generating audio...';
+        if (detail) detail.textContent = total ? ('Clip ' + Math.min(done + 1, total) + ' of ' + total + '. Keep this tab open until the download starts.') : 'Keep this tab open until the download starts.';
+        if (bar) bar.style.width = pct + '%';
+        if (pctText) pctText.textContent = pct + '%';
+      },
+      done(message) {
+        if (status && message) status.textContent = message;
+        if (bar) bar.style.width = '100%';
+        if (pctText) pctText.textContent = '100%';
+        setTimeout(() => { try { if (ov) ov.remove(); } catch (e) {} }, 350);
+      }
+    };
+  };
+  const _alloAudioMimeForCompression = () => {
+    try {
+      if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return '';
+      const choices = [
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/mp4;codecs=mp4a.40.2',
+        'audio/webm',
+        'audio/mp4'
+      ];
+      for (let i = 0; i < choices.length; i++) {
+        if (MediaRecorder.isTypeSupported(choices[i])) return choices[i];
+      }
+    } catch (e) {}
+    return '';
+  };
+  const _alloBlobToDataUrl = (blob) => new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onloadend = () => res(fr.result);
+    fr.onerror = () => rej(new Error('read'));
+    fr.readAsDataURL(blob);
+  });
+  const _alloCompressAudioBlob = async (blob) => {
+    const mimeType = _alloAudioMimeForCompression();
+    const AC = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
+    if (!blob || !mimeType || !AC || typeof MediaRecorder === 'undefined') return blob;
+    let ctx = null;
+    try {
+      ctx = new AC();
+      const bytes = await blob.arrayBuffer();
+      const decoded = await ctx.decodeAudioData(bytes.slice(0));
+      const dest = ctx.createMediaStreamDestination();
+      const src = ctx.createBufferSource();
+      src.buffer = decoded;
+      src.connect(dest);
+      const chunks = [];
+      const recorder = new MediaRecorder(dest.stream, { mimeType: mimeType, audioBitsPerSecond: 32000 });
+      const done = new Promise((resolve, reject) => {
+        recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        recorder.onerror = (ev) => reject((ev && ev.error) || new Error('encode'));
+        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
+      });
+      recorder.start();
+      src.start();
+      await new Promise((resolve) => { src.onended = resolve; });
+      if (recorder.state !== 'inactive') recorder.stop();
+      const compressed = await done;
+      if (compressed && compressed.size > 0 && compressed.size < blob.size * 0.92) return compressed;
+    } catch (e) {
+      console.warn('[Export] Audio compression skipped:', e && e.message ? e.message : e);
+    } finally {
+      try { if (ctx && ctx.close) await ctx.close(); } catch (e) {}
+    }
+    return blob;
+  };
+  const _alloSpokenText = (txt) => String(txt || '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .replace(/([.!?])\s*\.+/g, '$1')
+    .replace(/\.{2,}/g, '.')
+    .trim();
+  const _alloAudioDocRoot = (root) => {
+    if (!root) return null;
+    const clone = root.cloneNode(true);
+    const scoped = (clone.querySelector && (clone.querySelector('body') || clone.querySelector('main'))) || clone;
+    try {
+      const kill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],script,style,button,input,select,textarea,audio,video,noscript');
+      for (let i = 0; i < kill.length; i++) kill[i].remove();
+      const hidden = scoped.querySelectorAll('[hidden],[aria-hidden="true"]');
+      for (let i = 0; i < hidden.length; i++) hidden[i].remove();
+      const detailsSummaries = scoped.querySelectorAll('details > summary');
+      for (let i = 0; i < detailsSummaries.length; i++) detailsSummaries[i].remove();
+      const annotations = scoped.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]');
+      for (let i = 0; i < annotations.length; i++) annotations[i].remove();
+    } catch (e) {}
+    return scoped;
+  };
+  const _alloAudioReadyTextFromRoot = (root) => {
+    const scoped = _alloAudioDocRoot(root);
+    if (!scoped) return '';
+    const doc = scoped.ownerDocument || document;
+    let preamble = '';
+    try {
+      const note = scoped.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
+      const nt = note && _alloSpokenText(note.textContent || '');
+      if (nt) preamble = nt + '. ';
+    } catch (e) {}
+    try {
+      const notes = scoped.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note]');
+      for (let i = 0; i < notes.length; i++) notes[i].remove();
+      const figures = scoped.querySelectorAll('figure');
+      for (let i = 0; i < figures.length; i++) {
+        const fig = figures[i];
+        const img = fig.querySelector && fig.querySelector('img');
+        const cap = fig.querySelector && fig.querySelector('figcaption');
+        if (fig.hasAttribute('data-img-placeholder') || (fig.hasAttribute('data-img-idx') && !img)) {
+          const d = cap ? _alloSpokenText(cap.textContent || '') : '';
+          fig.replaceWith(doc.createTextNode(d ? ('Image: ' + d + '. ') : ''));
+          continue;
+        }
+        if (img) {
+          const alt = _alloSpokenText(img.getAttribute('alt') || '');
+          const isPres = img.getAttribute('role') === 'presentation' || img.getAttribute('aria-hidden') === 'true';
+          const capText = cap ? _alloSpokenText(cap.textContent || '') : '';
+          if (cap) cap.remove();
+          const say = capText || (isPres ? '' : alt);
+          img.replaceWith(doc.createTextNode(say ? ('Image: ' + say + '. ') : ''));
+        }
+      }
+      const looseImgs = scoped.querySelectorAll('img');
+      for (let i = 0; i < looseImgs.length; i++) {
+        const img = looseImgs[i];
+        const alt = _alloSpokenText(img.getAttribute('alt') || '');
+        const isPres = img.getAttribute('role') === 'presentation' || img.getAttribute('aria-hidden') === 'true';
+        img.replaceWith(doc.createTextNode(!isPres && alt ? ('Image: ' + alt + '. ') : ''));
+      }
+      const pauses = scoped.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption');
+      for (let i = 0; i < pauses.length; i++) pauses[i].appendChild(doc.createTextNode('. '));
+    } catch (e) {}
+    return _alloSpokenText(preamble + (scoped.textContent || ''));
+  };
+  const _alloStructuredAudioTextFromRoot = (root) => {
+    const scoped = _alloAudioDocRoot(root);
+    if (!scoped) return '';
+    const out = [];
+    const txt = (el) => _alloSpokenText(el && el.textContent ? el.textContent : '');
+    const directText = (el) => {
+      try {
+        const c = el.cloneNode(true);
+        const nested = c.querySelectorAll('ul,ol,table,figure');
+        for (let i = 0; i < nested.length; i++) nested[i].remove();
+        return txt(c);
+      } catch (e) { return txt(el); }
+    };
+    const walk = (el) => {
+      const kids = Array.prototype.slice.call((el && el.children) || []);
+      for (let i = 0; i < kids.length; i++) {
+        const node = kids[i];
+        if (!node.tagName) continue;
+        const tag = node.tagName.toLowerCase();
+        if (node.hasAttribute('hidden') || node.getAttribute('aria-hidden') === 'true') continue;
+        if (/^h[1-6]$/.test(tag)) { const h = txt(node); if (h) out.push('Heading level ' + tag[1] + '. ' + h + '.'); continue; }
+        if (tag === 'figure') {
+          const img = node.querySelector('img');
+          const cap = node.querySelector('figcaption');
+          const alt = img ? _alloSpokenText(img.getAttribute('alt') || '') : '';
+          const capText = cap ? txt(cap) : '';
+          const say = capText || alt;
+          if (say) out.push('Figure. ' + say + '.');
+          continue;
+        }
+        if (tag === 'img') {
+          const alt = _alloSpokenText(node.getAttribute('alt') || '');
+          if (node.getAttribute('role') !== 'presentation' && alt) out.push('Image. ' + alt + '.');
+          continue;
+        }
+        if (tag === 'ul' || tag === 'ol') {
+          const items = Array.prototype.slice.call(node.children || []).filter((c) => c.tagName && c.tagName.toLowerCase() === 'li');
+          out.push((tag === 'ul' ? 'List, ' : 'Numbered list, ') + items.length + ' item' + (items.length === 1 ? '' : 's') + '.');
+          for (let j = 0; j < items.length; j++) {
+            const liText = directText(items[j]);
+            if (liText) out.push((tag === 'ul' ? 'Bullet. ' : ('Item ' + (j + 1) + '. ')) + liText + '.');
+            walk(items[j]);
+          }
+          out.push('List end.');
+          continue;
+        }
+        if (tag === 'table') {
+          const rows = Array.prototype.slice.call(node.querySelectorAll('tr'));
+          const cols = rows.length ? Math.max.apply(null, rows.map((r) => r.children.length)) : 0;
+          const cap = node.querySelector('caption');
+          const capText = cap ? txt(cap) : '';
+          out.push('Table' + (capText ? (', ' + capText) : '') + ', ' + rows.length + ' row' + (rows.length === 1 ? '' : 's') + ', ' + cols + ' column' + (cols === 1 ? '' : 's') + '.');
+          for (let r = 0; r < rows.length; r++) {
+            const cells = Array.prototype.slice.call(rows[r].children || []).map((c) => txt(c)).filter(Boolean);
+            if (cells.length) out.push('Row ' + (r + 1) + '. ' + cells.join('. ') + '.');
+          }
+          out.push('Table end.');
+          continue;
+        }
+        if (tag === 'details') {
+          const sum = node.querySelector('summary');
+          const st = sum ? txt(sum) : '';
+          if (st) out.push('Disclosure section. ' + st + '.');
+          walk(node);
+          continue;
+        }
+        if (tag === 'p' || tag === 'blockquote' || tag === 'figcaption') {
+          if (!node.closest('table') && !node.closest('figure')) { const p = txt(node); if (p) out.push(p); }
+          continue;
+        }
+        walk(node);
+      }
+    };
+    walk(scoped);
+    return out.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+  };
+  const _alloChunkAudioText = (text, maxLen) => {
+    maxLen = maxLen || 1200;
+    const chunks = [];
+    const raw = _alloSpokenText(text).replace(/\r/g, '');
+    if (!raw) return chunks;
+    const pieces = raw.match(/[^.!?\u3002\uff01\uff1f]+[.!?\u3002\uff01\uff1f]+["')\]]*|\S[^.!?\u3002\uff01\uff1f]*$/g) || [raw];
+    let cur = '';
+    const flush = () => { if (cur.trim()) chunks.push(cur.trim()); cur = ''; };
+    for (let i = 0; i < pieces.length; i++) {
+      let part = pieces[i].trim();
+      if (!part) continue;
+      while (part.length > maxLen) {
+        const cut = part.lastIndexOf(' ', maxLen) > maxLen * 0.55 ? part.lastIndexOf(' ', maxLen) : maxLen;
+        if (cur) flush();
+        chunks.push(part.slice(0, cut).trim());
+        part = part.slice(cut).trim();
+      }
+      if ((cur + ' ' + part).trim().length > maxLen) flush();
+      cur = (cur ? (cur + ' ') : '') + part;
+    }
+    flush();
+    return chunks;
+  };
+  const _alloAudioLanguageFromRoot = (root) => {
+    try {
+      const raw = ((root && root.getAttribute && root.getAttribute('lang')) || (root && root.querySelector && root.querySelector('html[lang]') && root.querySelector('html[lang]').getAttribute('lang')) || '').toLowerCase();
+      const code = raw.split('-')[0];
+      const map = { en: 'English', es: 'Spanish', fr: 'French', de: 'German', pt: 'Portuguese', it: 'Italian', ar: 'Arabic', zh: 'Chinese', ja: 'Japanese', ko: 'Korean', vi: 'Vietnamese', ru: 'Russian', uk: 'Ukrainian', hi: 'Hindi', bn: 'Bengali', ur: 'Urdu', fa: 'Persian', he: 'Hebrew', tr: 'Turkish', pl: 'Polish', nl: 'Dutch', sv: 'Swedish', no: 'Norwegian', da: 'Danish', fi: 'Finnish', el: 'Greek', ro: 'Romanian', id: 'Indonesian', ms: 'Malay', th: 'Thai', tl: 'Tagalog' };
+      return map[code] || raw || undefined;
+    } catch (e) { return undefined; }
+  };
+  const _alloFetchAudioBlob = async (audioUrl) => {
+    if (!audioUrl || typeof audioUrl !== 'string') return null;
+    try {
+      const resp = await fetch(audioUrl);
+      return await resp.blob();
+    } catch (e) { return null; }
+  };
+  const _alloCallExportTTS = async (callTTS, text, voice, language) => {
+    try {
+      return await callTTS(text, voice, 1, { language: language });
+    } catch (e) {
+      try { return await callTTS(text, voice, 1, null, language); }
+      catch (e2) { return await callTTS(text, voice, 1); }
+    }
+  };
+  const _alloConcatAudioBlobs = async (blobs) => {
+    blobs = (blobs || []).filter(Boolean);
+    if (!blobs.length) return null;
+    if (blobs.length === 1) return blobs[0];
+    const first = new Uint8Array(await blobs[0].arrayBuffer());
+    const isWav = first.length > 12 &&
+      first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46 &&
+      first[8] === 0x57 && first[9] === 0x41 && first[10] === 0x56 && first[11] === 0x45;
+    if (!isWav) return new Blob(blobs, { type: blobs[0].type || 'audio/mpeg' });
+    const parsePcm = (buf) => {
+      if (buf.length <= 44 || buf[0] !== 0x52 || buf[1] !== 0x49 || buf[2] !== 0x46 || buf[3] !== 0x46) return null;
+      let dataStart = 44, rate = 0;
+      for (let j = 12; j < Math.min(buf.length - 8, 256); j++) {
+        if (rate === 0 && buf[j] === 0x66 && buf[j + 1] === 0x6d && buf[j + 2] === 0x74 && buf[j + 3] === 0x20) {
+          const o = j + 12; rate = buf[o] | (buf[o + 1] << 8) | (buf[o + 2] << 16) | (buf[o + 3] << 24);
+        }
+        if (buf[j] === 0x64 && buf[j + 1] === 0x61 && buf[j + 2] === 0x74 && buf[j + 3] === 0x61) { dataStart = j + 8; break; }
+      }
+      return { dataStart: dataStart, len: buf.length - dataStart, rate: rate };
+    };
+    const rates = [];
+    let total = 0, used = 0;
+    for (let i = 0; i < blobs.length; i++) {
+      const buf = i === 0 ? first : new Uint8Array(await blobs[i].arrayBuffer());
+      const m = parsePcm(buf);
+      if (!m) continue;
+      if (m.rate > 0) rates.push(m.rate);
+      total += m.len; used++;
+    }
+    if (!used) return null;
+    const sampleRate = rates[0] || 24000, numCh = 1, bps = 16;
+    const blockAlign = numCh * bps / 8, byteRate = sampleRate * blockAlign;
+    const outBuf = new ArrayBuffer(44 + total);
+    const dv = new DataView(outBuf);
+    const ws = (o, s) => { for (let k = 0; k < s.length; k++) dv.setUint8(o + k, s.charCodeAt(k)); };
+    ws(0, 'RIFF'); dv.setUint32(4, 36 + total, true); ws(8, 'WAVE');
+    ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, numCh, true);
+    dv.setUint32(24, sampleRate, true); dv.setUint32(28, byteRate, true);
+    dv.setUint16(32, blockAlign, true); dv.setUint16(34, bps, true);
+    ws(36, 'data'); dv.setUint32(40, total, true);
+    const outPcm = new Uint8Array(outBuf, 44);
+    let poff = 0;
+    for (let i = 0; i < blobs.length; i++) {
+      const buf = new Uint8Array(await blobs[i].arrayBuffer());
+      const m = parsePcm(buf);
+      if (!m) continue;
+      outPcm.set(buf.subarray(m.dataStart), poff); poff += m.len;
+    }
+    return new Blob([outBuf], { type: 'audio/wav' });
+  };
+  const _alloAudioExtForBlob = (blob) => {
+    const type = String((blob && blob.type) || '').toLowerCase();
+    if (type.indexOf('webm') !== -1) return 'webm';
+    if (type.indexOf('ogg') !== -1 || type.indexOf('opus') !== -1) return 'ogg';
+    if (type.indexOf('mp4') !== -1 || type.indexOf('m4a') !== -1) return 'm4a';
+    if (type.indexOf('mpeg') !== -1 || type.indexOf('mp3') !== -1) return 'mp3';
+    return 'wav';
+  };
+  const _alloPlanAudioDownloads = (root, config) => {
+    const plans = [];
+    const variants = (config && config.variants) || [];
+    for (let i = 0; i < variants.length; i++) {
+      const variant = variants[i];
+      const text = variant === 'structured' ? _alloStructuredAudioTextFromRoot(root) : _alloAudioReadyTextFromRoot(root);
+      const chunks = _alloChunkAudioText(text, 1200);
+      if (!chunks.length) continue;
+      plans.push({
+        variant: variant,
+        label: variant === 'structured' ? 'Structured audio' : 'Standard narration',
+        description: variant === 'structured' ? 'Screen-reader-style narration with headings, lists, tables, and image cues.' : 'Plain full-document narration in the selected voice.',
+        chunks: chunks
+      });
+    }
+    return plans;
+  };
+  const _alloBuildAudioDownloadAssets = async (plans, opts, progress, state) => {
+    opts = opts || {};
+    state = state || { done: 0, total: 0 };
+    const out = { assets: [], downloads: [] };
+    const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice || 'Puck';
+    const compressAudio = opts.quality === 'compressed';
+    const singleFile = !!opts.singleFile;
+    const language = opts.language;
+    for (let i = 0; i < (plans || []).length; i++) {
+      const plan = plans[i];
+      const blobs = [];
+      for (let j = 0; j < plan.chunks.length; j++) {
+        if (progress) progress.update(state.done, state.total, 'Generating ' + plan.label.toLowerCase() + ' chunk ' + (j + 1) + ' of ' + plan.chunks.length + '...');
+        let au = null;
+        try { au = await _alloCallExportTTS(callTTS, plan.chunks[j], selectedVoice, language); } catch (e) { au = null; }
+        const blob = await _alloFetchAudioBlob(au);
+        if (au && au.indexOf && au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
+        if (blob) blobs.push(blob);
+        state.done++;
+      }
+      let combined = await _alloConcatAudioBlobs(blobs);
+      if (!combined) continue;
+      if (compressAudio) {
+        if (progress) progress.update(state.done, state.total, 'Compressing ' + plan.label.toLowerCase() + '...');
+        combined = await _alloCompressAudioBlob(combined);
+      }
+      const ext = _alloAudioExtForBlob(combined);
+      const filename = 'alloflow-' + plan.variant + '-audio.' + ext;
+      const path = 'audio/' + filename;
+      let href = path;
+      if (singleFile) href = await _alloBlobToDataUrl(combined);
+      else out.assets.push({ path: path, blob: combined });
+      out.downloads.push({ variant: plan.variant, label: plan.label, description: plan.description, href: href, download: filename, type: combined.type || 'audio/' + ext, size: combined.size || 0 });
+    }
+    return out;
+  };
+  const _alloInsertAudioDownloads = (root, downloads) => {
+    if (!downloads || !downloads.length || !root || !root.ownerDocument) return;
+    const doc = root.ownerDocument;
+    const target = (root.querySelector && (root.querySelector('main') || root.querySelector('body'))) || root;
+    if (!target) return;
+    try {
+      const prior = target.querySelectorAll && target.querySelectorAll('.alloflow-audio-downloads');
+      for (let i = 0; prior && i < prior.length; i++) prior[i].remove();
+    } catch (e) {}
+    const aside = doc.createElement('aside');
+    aside.className = 'alloflow-audio-downloads';
+    aside.setAttribute('aria-label', 'Downloadable audio files');
+    aside.style.cssText = 'margin:18px 0;padding:14px 16px;border:1px solid #bae6fd;border-radius:12px;background:#f0f9ff;color:#0f172a;';
+    const h = doc.createElement('h2');
+    h.textContent = 'Download audio';
+    h.style.cssText = 'margin:0 0 8px;font-size:1.05rem;color:#0f172a;';
+    aside.appendChild(h);
+    const p = doc.createElement('p');
+    p.textContent = 'Audio files use the selected voice and can be saved separately for offline listening.';
+    p.style.cssText = 'margin:0 0 10px;color:#334155;font-size:0.9rem;line-height:1.45;';
+    aside.appendChild(p);
+    for (let i = 0; i < downloads.length; i++) {
+      const item = downloads[i];
+      const row = doc.createElement('div');
+      row.setAttribute('data-audio-variant', item.variant);
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0;';
+      const link = doc.createElement('a');
+      link.href = item.href;
+      link.download = item.download;
+      link.textContent = 'Download ' + item.label.toLowerCase();
+      link.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:#0369a1;color:#fff;text-decoration:none;border-radius:8px;font-weight:800;';
+      const desc = doc.createElement('span');
+      desc.textContent = item.description;
+      desc.style.cssText = 'font-size:0.84rem;color:#475569;line-height:1.35;';
+      row.appendChild(link);
+      row.appendChild(desc);
+      aside.appendChild(row);
+    }
+    const st = root.querySelector && root.querySelector('#alloflow-audio-download-style');
+    if (!st) {
+      const style = doc.createElement('style');
+      style.id = 'alloflow-audio-download-style';
+      style.textContent = '@media print{.alloflow-audio-downloads{display:none!important;}}';
+      const head = root.querySelector && (root.querySelector('head') || root);
+      if (head) head.appendChild(style);
+    }
+    const first = target.firstElementChild;
+    if (first && first.nextSibling) target.insertBefore(aside, first.nextSibling);
+    else target.insertBefore(aside, target.firstChild);
+  };
   const _alloKaClean = (txt) => String(txt || '')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1')
@@ -109,10 +604,24 @@
   const _alloKaEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const _alloKaSplit = (t) => (String(t).match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [t]).map((x) => String(x).trim()).filter(Boolean);
   const _alloKaraokeProcess = async (root, opts) => {
+    opts = opts || {};
     const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice, addToast = opts.addToast;
+    const audioConfig = _alloNormalizeAudioConfig(opts.mode) || { quality: 'embedded', variants: ['standard'], inlinePassageAudio: true };
+    const compressAudio = audioConfig.quality === 'compressed';
+    const mode = 'embedded';
     const doc = root.ownerDocument || document;
-    let sections = root.querySelectorAll('[data-ka-readable]');
-    if (!sections.length) {
+    const result = { assets: [], downloads: [] };
+    if (typeof callTTS !== 'function') {
+      if (addToast) addToast('Selected-voice audio is not available right now, so the export will download without audio.', 'info');
+      return result;
+    }
+    const downloadPlans = _alloPlanAudioDownloads(root, audioConfig);
+    const docLanguage = opts.language || _alloAudioLanguageFromRoot(root);
+    let sections = [];
+    if (audioConfig.inlinePassageAudio) {
+      sections = root.querySelectorAll('[data-ka-readable]');
+    }
+    if (audioConfig.inlinePassageAudio && !sections.length) {
       // Fallback (the CDN may still serve an older doc without the tags): detect
       // reading passages by content — .section blocks of real prose with no
       // interactive widgets (quizzes, blanks, tables, visual panels).
@@ -128,28 +637,30 @@
       }
       sections = _picked;
     }
-    if (!sections.length) {
+    if (!sections.length && !downloadPlans.length) {
       if (addToast) addToast('No reading passages in this document to read aloud — exporting without audio.', 'info');
-      return;
+      return result;
     }
-    if (addToast) addToast('Generating read-aloud audio... this may take a moment.', 'info');
+    if (addToast) addToast(compressAudio ? 'Generating and compressing selected-voice audio... this may take a moment.' : 'Generating read-aloud audio... this may take a moment.', 'info');
     // Self-contained highlighter + CSS — inject so the file works even when the
     // CDN serves an older doc_pipeline that lacks them. Idempotent at runtime via
     // window.__alloKaBound (a freshly-propagated doc highlighter sets it too).
-    try {
+    if (audioConfig.inlinePassageAudio && sections.length) try {
       const _head = root.querySelector('head') || root;
       const _body = root.querySelector('body') || root;
       if (!root.querySelector('#allo-ka-style')) {
         const _st = doc.createElement('style'); _st.id = 'allo-ka-style';
-        _st.textContent = '.allo-ka-passage .ka-s{transition:background-color .12s ease,box-shadow .12s ease;border-radius:3px;}.allo-ka-passage .ka-s.ka-on{background-color:#fde047;color:#1e293b;box-shadow:0 0 0 3px #fde047;}html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on{background-color:#ca8a04;color:#fff;box-shadow:0 0 0 3px #ca8a04;}.allo-ka-play:hover{filter:brightness(1.08);}@media print{.allo-ka-bar{display:none !important;}}';
+        _st.textContent = '.allo-ka-passage .ka-s{transition:background-color .12s ease,box-shadow .12s ease;border-radius:3px;}.allo-ka-passage .ka-s.ka-on{background-color:#fde047;color:#1e293b;box-shadow:0 0 0 3px #fde047;}html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on{background-color:#ca8a04;color:#fff;box-shadow:0 0 0 3px #ca8a04;}.allo-ka-play:hover,.allo-ka-stop:hover{filter:brightness(1.08);}@media print{.allo-ka-bar{display:none !important;}}';
         _head.appendChild(_st);
       }
       if (!root.querySelector('#allo-ka-script')) {
         const _sc = doc.createElement('script'); _sc.id = 'allo-ka-script';
-        _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function stop(){if(!active)return;try{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}catch(e){}clearHi(active.spans);if(active.btn)active.btn.textContent="\u{1F50A} Read aloud";active=null;}function step(state,i){if(!active||active!==state)return;if(i>=state.audios.length){stop();return;}state.idx=i;var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx)state.spans[k].classList.add("ka-on");}try{a.currentTime=0;}catch(e){}a.onended=function(){step(state,i+1);};var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("click",function(e){var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active){stop();return;}var id=btn.getAttribute("data-ka-for");var box=document.querySelector('.allo-ka-audios[data-ka-for="'+id+'"]');var sec=btn.closest(".section")||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return;btn.textContent="⏹ Stop";active={audios:audios,spans:spans,idx:0,btn:btn};step(active,0);});})();`;
+        _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function setBtn(b,t,p){if(!b)return;b.textContent=t;b.setAttribute("aria-pressed",p?"true":"false");b.setAttribute("aria-label",t.replace(/[^\\w\\s-]/g,"").trim()||"Read aloud");}function findBox(id){var boxes=document.querySelectorAll(".allo-ka-audios");for(var i=0;i<boxes.length;i++){if((boxes[i].getAttribute("data-ka-for")||"")===String(id||""))return boxes[i];}return null;}function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function ensureStopButton(btn){if(!btn||!btn.parentNode)return null;var ex=btn.parentNode.querySelector(".allo-ka-stop");if(ex)return ex;var s=document.createElement("button");s.type="button";s.className="allo-ka-stop";s.textContent="Stop";s.style.cssText="margin-left:8px;padding:7px 12px;background:#475569;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9em;";s.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();stop();});btn.parentNode.insertBefore(s,btn.nextSibling);return s;}function stop(){if(!active)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.cancel();active.utter=null;}else{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}}catch(e){}clearHi(active.spans);setBtn(active.btn,"\\u{1F50A} Read aloud",false);if(active.stopBtn){try{active.stopBtn.remove();}catch(e){}}active=null;}function pause(){if(!active||active.paused)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.pause();}else{var a=active.audios[active.idx];if(a)a.pause();}}catch(e){}active.paused=true;setBtn(active.btn,"\\u25B6 Resume",true);}function resume(){if(!active||!active.paused)return;if(active.mode==="browser"){active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);try{if(window.speechSynthesis)window.speechSynthesis.resume();}catch(e){}return;}var a=active.audios[active.idx];if(!a){step(active,active.idx+1);return;}active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}function step(state,i){if(!active||active!==state)return;var count=state.mode==="browser"?state.spans.length:state.audios.length;if(i>=count){stop();return;}state.idx=i;state.paused=false;if(state.mode==="browser"){var sp=state.spans[i];if(!sp){step(state,i+1);return;}clearHi(state.spans);sp.classList.add("ka-on");var text=(sp.textContent||"").trim();if(!text){step(state,i+1);return;}if(!window.speechSynthesis||typeof SpeechSynthesisUtterance==="undefined"){alert("Browser read-aloud is not available here.");stop();return;}try{window.speechSynthesis.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(text);state.utter=u;u.rate=1;u.onend=function(){if(active===state&&!state.paused)step(state,i+1);};u.onerror=function(){if(active===state)stop();};setBtn(state.btn,"\\u23F8 Pause",true);try{window.speechSynthesis.speak(u);}catch(e){stop();}return;}var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx)state.spans[k].classList.add("ka-on");}try{a.currentTime=0;}catch(e){}a.onended=function(){if(active===state&&!state.paused)step(state,i+1);};setBtn(state.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("click",function(e){var stopBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-stop");if(stopBtn){e.preventDefault();stop();return;}var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active&&active.btn===btn){if(active.paused)resume();else pause();return;}if(active)stop();var id=btn.getAttribute("data-ka-for");var sec=btn.closest(".section")||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var mode=btn.getAttribute("data-ka-mode")||"embedded";var audios=[];if(mode==="browser"){if(!spans.length)return;}else{var box=findBox(id);audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return;}active={mode:mode,audios:audios,spans:spans,idx:0,btn:btn,stopBtn:ensureStopButton(btn),paused:false,utter:null};step(active,0);});})();`;
         _body.appendChild(_sc);
       }
     } catch (e) { /* injection best-effort */ }
+    const processed = [];
+    const audioJobs = [];
     for (let si = 0; si < sections.length; si++) {
       const sec = sections[si];
       const ps = sec.querySelectorAll('p');
@@ -168,37 +679,76 @@
       const forId = sec.id || ('ka' + si);
       const bar = doc.createElement('div'); bar.className = 'allo-ka-bar'; bar.style.cssText = 'margin:6px 0 10px;';
       const btn = doc.createElement('button'); btn.type = 'button'; btn.className = 'allo-ka-play'; btn.setAttribute('data-ka-for', forId);
+      btn.setAttribute('data-ka-mode', mode);
+      btn.setAttribute('aria-pressed', 'false');
       btn.style.cssText = 'padding:7px 16px;background:#0369a1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;';
       btn.textContent = '\u{1F50A} Read aloud';
       bar.appendChild(btn);
-      const abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
+      let abox = null;
+      if (mode === 'embedded') {
+        abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
+      }
       const fe = sec.firstElementChild;
       if (fe && fe.nextSibling) sec.insertBefore(bar, fe.nextSibling); else sec.appendChild(bar);
-      sec.appendChild(abox);
+      if (abox) sec.appendChild(abox);
       for (let k = 0; k < items.length; k++) {
+        if (!abox) continue;
+        audioJobs.push({ item: items[k], abox: abox });
+      }
+      processed.push({ bar: bar, abox: abox });
+    }
+    if (!processed.length && !downloadPlans.length) {
+      if (addToast) addToast('No readable passage text was found for read-aloud.', 'info');
+      return result;
+    }
+    const downloadChunkTotal = downloadPlans.reduce((n, p) => n + ((p && p.chunks && p.chunks.length) || 0), 0);
+    const progressTotal = audioJobs.length + downloadChunkTotal;
+    const progressState = { done: 0, total: progressTotal };
+    const progress = _alloAudioProgress();
+    let embeddedCount = 0;
+    if (progress) progress.update(0, progressTotal, compressAudio ? 'Generating compressed selected-voice audio...' : 'Generating selected-voice audio...');
+    for (let k = 0; k < audioJobs.length; k++) {
+        const job = audioJobs[k];
+        if (progress) progress.update(progressState.done, progressState.total, 'Generating audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
         let au = null;
-        try { au = await callTTS(items[k].text, selectedVoice || 'Puck', 1); } catch (e) { au = null; }
+        try { au = await _alloCallExportTTS(callTTS, job.item.text, selectedVoice || 'Puck', docLanguage); } catch (e) { au = null; }
         if (!au || typeof au !== 'string') continue;
         let dataUrl = null;
-        if (au.indexOf('data:') === 0) {
-          dataUrl = au;
-        } else {
-          // callTTS returns a blob: object URL (session-scoped, in-memory). Fetch
-          // it and convert to a base64 data: URL so the clip embeds in the file and
-          // plays fully offline after download.
-          try {
-            const _resp = await fetch(au);
-            const _blob = await _resp.blob();
-            dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onloadend = () => res(fr.result); fr.onerror = () => rej(new Error('read')); fr.readAsDataURL(_blob); });
-          } catch (e) { dataUrl = null; }
-          if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
-        }
+        let _blob = null;
+        // callTTS returns a blob: object URL for Gemini/Kokoro/Piper in this app.
+        // Fetch it and convert to a base64 data: URL so the clip embeds in the
+        // file and plays fully offline after download. data: URLs work too.
+        try {
+          const _resp = await fetch(au);
+          _blob = await _resp.blob();
+          if (compressAudio && _blob) {
+            if (progress) progress.update(progressState.done, progressState.total, 'Compressing audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
+            _blob = await _alloCompressAudioBlob(_blob);
+          }
+          dataUrl = await _alloBlobToDataUrl(_blob);
+        } catch (e) { dataUrl = au.indexOf('data:') === 0 ? au : null; }
+        if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
         if (dataUrl && typeof dataUrl === 'string' && dataUrl.indexOf('data:') === 0) {
-          const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(items[k].idx)); a.src = dataUrl;
-          abox.appendChild(a);
+          const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(job.item.idx)); a.src = dataUrl;
+          job.abox.appendChild(a);
+          embeddedCount++;
         }
-      }
+        progressState.done++;
+        if (progress) progress.update(progressState.done, progressState.total, 'Preparing embedded audio...');
     }
+    if (audioJobs.length && !embeddedCount) {
+      for (let r = 0; r < processed.length; r++) {
+        try { if (processed[r].bar) processed[r].bar.remove(); } catch (e) {}
+        try { if (processed[r].abox) processed[r].abox.remove(); } catch (e) {}
+      }
+      if (addToast) addToast('Could not generate inline passage audio, so that playback control was removed.', 'info');
+    }
+    const built = await _alloBuildAudioDownloadAssets(downloadPlans, { callTTS: callTTS, selectedVoice: selectedVoice, quality: audioConfig.quality, singleFile: !!opts.singleFile, language: docLanguage }, progress, progressState);
+    result.assets = built.assets || [];
+    result.downloads = built.downloads || [];
+    if (result.downloads.length) _alloInsertAudioDownloads(root, result.downloads);
+    if (progress) progress.done('Audio ready. Starting download...');
+    return result;
   };
 
   const executeExportFromPreview = async (deps) => {
@@ -216,15 +766,18 @@
     }
     const mode = exportPreviewMode;
     const isWorksheet = mode === 'worksheet';
+    const _wantSingleFile = mode === 'html' && (!!(exportConfig && exportConfig.singleFileHtml) || !(typeof window !== 'undefined' && window.JSZip));
     // Read-aloud modal — asked at download time for HTML exports. Yes => inline
     // sentence-karaoke on every reading passage (generated on the DOM clone below).
-    let _readAloud = false;
-    if (mode === 'html' && typeof callTTS === 'function') {
-      const _ans = await _alloReadAloudModal();
+    let _readAloudMode = false;
+    if (mode === 'html') {
+      const _ans = await _alloReadAloudModal(typeof callTTS === 'function');
       if (_ans === null) return; // cancelled — abort the export entirely
-      _readAloud = _ans;
+      _readAloudMode = _ans;
     }
     let htmlContent;
+    let _audioAssets = [];
+    let _readAloudApplied = false;
     const iframe = exportPreviewRef && exportPreviewRef.current;
     const iframeDoc = iframe && iframe.contentDocument;
     const iframeHasRealContent = (function() {
@@ -261,8 +814,12 @@
       } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
       // Read-aloud: turn every [data-ka-readable] passage into inline
       // sentence-karaoke on the clone (modal-driven, at download time).
-      if (_readAloud && typeof callTTS === 'function') {
-        try { await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast }); }
+      if (_readAloudMode) {
+        try {
+          const _kaResult = await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile });
+          _audioAssets = (_kaResult && _kaResult.assets) || [];
+          _readAloudApplied = true;
+        }
         catch (_kaErr) { console.warn('[Export] karaoke failed', _kaErr); }
       }
       htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
@@ -287,6 +844,18 @@
       return;
     }
 
+    if (_readAloudMode && !_readAloudApplied && mode === 'html' && typeof DOMParser !== 'undefined') {
+      try {
+        const _kaDoc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        const _kaResult = await _alloKaraokeProcess(_kaDoc.documentElement, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile });
+        _audioAssets = (_kaResult && _kaResult.assets) || [];
+        htmlContent = '<!DOCTYPE html>\n' + _kaDoc.documentElement.outerHTML;
+        _readAloudApplied = true;
+      } catch (_kaFallbackErr) {
+        console.warn('[Export] karaoke fallback failed', _kaFallbackErr);
+      }
+    }
+
     // Read-aloud audio is handled by the download-time modal above (inline
     // sentence-karaoke on every reading passage), replacing the old per-text toggles.
 
@@ -308,12 +877,15 @@
       // Single-file option: skip the zip and download just the self-contained
       // .html (images are base64-inlined), so teachers can email one file that
       // offline students double-click. The zip path still bundles allo-project.json.
-      const _wantSingleFile = !!(exportConfig && exportConfig.singleFileHtml);
       if (window.JSZip && !_wantSingleFile) {
         if (addToast) addToast((t && t('export_status.bundling_zip')) || 'Bundling export...', 'info');
         const zip = new window.JSZip();
         zip.file('index.html', htmlContent);
         zip.file('allo-project.json', JSON.stringify(history, null, 2));
+        for (let _aa = 0; _aa < _audioAssets.length; _aa++) {
+          const _asset = _audioAssets[_aa];
+          if (_asset && _asset.path && _asset.blob) zip.file(_asset.path, _asset.blob);
+        }
         const content = await zip.generateAsync({ type: 'blob' });
         const url = URL.createObjectURL(content);
         const link = document.createElement('a');

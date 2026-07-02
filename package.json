@@ -6,6 +6,7 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
+    "visual:export-gallery": "node dev-tools/export_visual_gallery.cjs",
     "build:lang": "node dev-tools/build_language_pack.cjs",
     "build:lang:dry": "node dev-tools/build_language_pack.cjs --dry-run",
     "build:lang:priority": "node dev-tools/build_priority_packs.cjs",

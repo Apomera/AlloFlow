@@ -91,6 +91,7 @@ function PdfDiffViewer(props) {
     toggleDiffChunk,
     warnLog
   } = props;
+  const theme = ["light", "dark", "contrast"].includes(props.theme) ? props.theme : "light";
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
     const _ov = pdfFixResult._diffOverride && typeof pdfFixResult._diffOverride.before === "string" ? pdfFixResult._diffOverride : null;
@@ -454,7 +455,7 @@ ${_effectiveText}`;
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "allo-diff-title",
-        className: "fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4",
+        className: `fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 theme-${theme}`,
         onClick: (e) => {
           if (e.target === e.currentTarget) _closeDiff();
         }
