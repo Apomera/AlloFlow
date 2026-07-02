@@ -17038,6 +17038,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   quizState: { isActive: false },
                   status: 'ended',
               });
+              // Data hygiene: session metadata (roster codenames, xp, signals,
+              // quiz answers) must not outlive the class period. The soft-end
+              // marker above gives connected students their terminal signal;
+              // the delayed delete then removes the doc entirely — student
+              // listeners handle doc-not-found identically, so laggy clients
+              // still exit cleanly. With this, ALL end paths (session modal,
+              // quiz dashboard, teacher tab close) converge on deletion.
+              setTimeout(() => { deleteDoc(sessionRef).catch(() => {}); }, 8000);
           } catch (e) {
               warnLog("Firestore soft-end failed (Canvas sandbox):", e.message);
           }
