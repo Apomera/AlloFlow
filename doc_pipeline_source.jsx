@@ -386,6 +386,97 @@ var _ocrJunkRatio = function (s) {
 // reliably flags BADLY-garbled OCR, not every single-character error. MATH-AWARE (2026-07-01): on
 // equation-dense pages the expected math tokens are excluded from the garble blend (see mathContext
 // below) so clean STEM text is not falsely banded 'poor'. Pure + unit-tested.
+// ── Alt-text QUALITY heuristics (2026-07-02, deep-dive follow-up) ──
+// Presence has always been checked (axe image-alt + the deterministic placeholder fix);
+// QUALITY never was — "Image of chart", "IMG_0417.jpg", or alt echoing the caption all pass
+// every automated gate while telling a screen-reader user nothing. Deterministic, pure,
+// unit-tested (tests/alt_quality.test.js). ENGLISH-PATTERN boilerplate detection only — a
+// non-English alt simply doesn't match (no false flags), disclosed limit. Severity:
+//   'high' → placeholder / pure boilerplate / filename — the alt is INFORMATION-FREE.
+//   'warn' → redundant prefix, too short/long, truncation, caption/nearby echo — degraded.
+var _alloAltQuality = function (alt, opts) {
+  opts = opts || {};
+  var a = String(alt == null ? '' : alt);
+  var trimmed = a.trim();
+  var issues = [];
+  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim(); };
+  if (trimmed === '') return { flagged: false, severity: null, issues: [] }; // decorative convention — presence policing is axe's job
+  // Deliberate honest placeholders from our own pipeline — surfaced as needs-review, not "quality".
+  if (/needs description/i.test(trimmed) || /^(image|extracted image \d+)( placeholder)?$/i.test(trimmed)) {
+    issues.push({ id: 'placeholder', label: 'placeholder text — the description was never written' });
+  }
+  // Whole alt is a generic noun (with optional article/connector): information-free.
+  if (/^\s*(an?\s+|the\s+)?(image|picture|photo(graph)?|graphic|screenshot|img|logo|icon|chart|graph|diagram|figure|illustration)\s*((of|showing|depicting)\s*)?[.!]?\s*$/i.test(trimmed)) {
+    issues.push({ id: 'boilerplate', label: 'generic boilerplate — names the medium, not the content' });
+  }
+  // Filename-shaped alt (export artifacts): "photo.jpg", "IMG_0417", "scan-003".
+  if (/\.(png|jpe?g|gif|webp|svg|bmp|tiff?)\s*$/i.test(trimmed) || /^(img|dsc|image|scan|screenshot|photo)[-_ ]?\d+$/i.test(trimmed)) {
+    issues.push({ id: 'filename', label: 'looks like a filename, not a description' });
+  }
+  // Redundant medium prefix on an otherwise-real description (SR already announces "graphic").
+  if (issues.length === 0 && /^\s*(an?\s+)?(image|picture|photo(graph)?|graphic) (of|showing|depicting)\s+\S/i.test(trimmed)) {
+    issues.push({ id: 'redundant-prefix', label: 'starts with "image of…" — screen readers already announce the element type' });
+  }
+  if (trimmed.length > 0 && trimmed.length < 8 && issues.length === 0) {
+    issues.push({ id: 'too-short', label: 'very short — likely not descriptive enough' });
+  }
+  if (trimmed.length > 250) {
+    issues.push({ id: 'too-long', label: 'over 250 characters — consider moving detail into a caption or surrounding text' });
+  }
+  if (/(\.\.\.|…)\s*$/.test(trimmed)) {
+    issues.push({ id: 'truncated', label: 'ends mid-sentence — looks truncated' });
+  }
+  var nAlt = norm(trimmed);
+  if (nAlt && opts.figcaptionText && norm(opts.figcaptionText) === nAlt) {
+    issues.push({ id: 'caption-echo', label: 'identical to the visible caption — screen readers announce it twice' });
+  }
+  if (nAlt && nAlt.length >= 12 && opts.nearbyText && norm(opts.nearbyText).indexOf(nAlt) !== -1) {
+    issues.push({ id: 'nearby-echo', label: 'repeats adjacent body text verbatim — redundant announcement' });
+  }
+  var severity = issues.some(function (i) { return i.id === 'placeholder' || i.id === 'boilerplate' || i.id === 'filename'; }) ? 'high' : (issues.length ? 'warn' : null);
+  // Built as a var, NOT a 2-space `return {` — check-pipeline-integrity.js locates the
+  // factory export block via the FIRST `\n  return {` in the file, and a module-level
+  // function returning an object literal at that indent corrupts its parse (same trap
+  // _alloComputeHeadline's comment documents).
+  var _result = { flagged: issues.length > 0, severity: severity, issues: issues };
+  return _result;
+};
+// Scan a remediated document's <img> alts through _alloAltQuality. DOMParser-based (returns
+// null headless without one). figcaption echo only counts VISIBLE captions — our own
+// pipeline deliberately aria-hides captions that duplicate the alt (2026-06-16 pattern).
+var _alloScanAltQuality = function (html) {
+  try {
+    if (typeof DOMParser === 'undefined' || !html) return null;
+    var doc = new DOMParser().parseFromString(String(html), 'text/html');
+    if (!doc || !doc.body) return null;
+    var imgs = doc.body.querySelectorAll('img');
+    var flagged = [];
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      var alt = img.getAttribute('alt');
+      if (alt == null) continue; // MISSING alt = axe's finding, not a quality question
+      var fig = img.closest ? img.closest('figure') : null;
+      var capEl = fig ? fig.querySelector('figcaption') : null;
+      var capVisible = '';
+      if (capEl) {
+        var hiddenSpan = capEl.querySelector('[aria-hidden="true"]');
+        capVisible = (capEl.getAttribute('aria-hidden') === 'true') ? '' : (hiddenSpan ? '' : (capEl.textContent || ''));
+      }
+      var container = fig || img.parentElement;
+      // "Nearby" = the SURROUNDING text, excluding the figure's own caption/contents —
+      // aria-hidden only hides from the a11y tree, not from textContent, so without this
+      // subtraction an alt correctly paired with its own (hidden) caption reads as an echo.
+      var _parentText = container && container.parentElement ? String(container.parentElement.textContent || '') : '';
+      var _ownText = container ? String(container.textContent || '') : '';
+      var nearby = (_ownText && _parentText.indexOf(_ownText) !== -1 ? _parentText.replace(_ownText, ' ') : _parentText).slice(0, 600);
+      var q = _alloAltQuality(alt, { figcaptionText: capVisible, nearbyText: nearby });
+      if (q.flagged) flagged.push({ index: i, alt: String(alt).slice(0, 120), severity: q.severity, issues: q.issues.map(function (x) { return x.id; }) });
+    }
+    // Worst-first: high before warn, then document order.
+    flagged.sort(function (x, y) { return (x.severity === y.severity) ? (x.index - y.index) : (x.severity === 'high' ? -1 : 1); });
+    return { total: imgs.length, flaggedCount: flagged.length, highCount: flagged.filter(function (f) { return f.severity === 'high'; }).length, flagged: flagged };
+  } catch (_) { return null; }
+};
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -17767,6 +17858,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_oaErr) { ocrAccuracy = null; }
 
+      // ── Alt-text QUALITY scan (2026-07-02) ── presence was always gated; quality never was.
+      // "Image of chart" / "IMG_0417.jpg" pass every automated check while telling a
+      // screen-reader user nothing. HIGH-severity findings (placeholder/boilerplate/filename —
+      // information-free alts) push a fidelity note through the EXISTING panel plumbing (same
+      // pattern as lowOcrAccuracy) and thereby drive needsExpertReview; WARN-level findings
+      // (echo/length/prefix) ride the result payload + log only. Alts are editable in the
+      // image review panel, which the note points at.
+      let altQualityReport = null;
+      try {
+        altQualityReport = _alloScanAltQuality(accessibleHtml);
+        if (altQualityReport && altQualityReport.flaggedCount > 0) {
+          warnLog('[AltQuality] ' + altQualityReport.flaggedCount + '/' + altQualityReport.total + ' image description(s) flagged (' + altQualityReport.highCount + ' high): ' + altQualityReport.flagged.slice(0, 5).map(f => '"' + f.alt.slice(0, 40) + '" [' + f.issues.join(',') + ']').join('; '));
+          if (altQualityReport.highCount > 0) {
+            const _aqTop = altQualityReport.flagged.filter(f => f.severity === 'high').slice(0, 3).map(f => '"' + f.alt.slice(0, 40) + '"').join(', ');
+            _structuralFidelityNotes.push({ kind: 'altQuality', msg: altQualityReport.highCount + ' image description' + (altQualityReport.highCount === 1 ? ' is' : 's are') + ' information-free (placeholder, boilerplate, or a filename — e.g. ' + _aqTop + '). A screen-reader user learns nothing from these; edit them in the image review panel before distributing.' });
+          }
+        }
+      } catch (_aqErr) { altQualityReport = null; }
+
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
       let axeCritical = axeResults ? axeResults.critical.length : 0;
@@ -17966,6 +18076,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // Estimated OCR-quality of the embedded searchable text (scanned docs only; null otherwise).
         // { score, band, confidence, basis, metrics, suspectSamples } — see _alloOcrAccuracy.
         ocrAccuracy,
+        // Alt-text quality scan (2026-07-02): { total, flaggedCount, highCount, flagged:[{index,alt,severity,issues}] }
+        // worst-first; null when no DOM/none scanned. High-severity items also push a fidelity note.
+        altQuality: altQualityReport,
         // Structural fidelity nets (links/tables/refusal) — [{kind,msg}], drives the review banner.
         fidelityNotes: _structuralFidelityNotes,
         // #1 score↔fidelity coupling: when content fidelity is in question, the displayed
@@ -30143,5 +30256,7 @@ window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // 
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
 window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; // static: S7 (2026-07-02) — the view's missing-word/restoration UI folds tokens with the SAME function the pipeline's residual count uses
 window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested
+window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: alt-text quality heuristics (2026-07-02), unit-tested
+window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
