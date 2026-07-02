@@ -1,5 +1,5 @@
 // @section SPEECH_BUBBLE — Allobot speech bubble component
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech' }) => {
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState('top-right');
@@ -13,6 +13,11 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       setDisplayedText('');
       if (onTyping) onTyping(true);
       const chars = Array.from(text);
+      if (disableAnimations) {
+          setDisplayedText(text);
+          if (onTyping) onTyping(false);
+          return;
+      }
       let i = 0;
       const speed = 30;
       const timer = setInterval(() => {
@@ -48,7 +53,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       return () => {
           clearInterval(timer);
       };
-  }, [text, isVisible, onTyping, soundEnabled]);
+  }, [text, isVisible, onTyping, soundEnabled, disableAnimations]);
   React.useLayoutEffect(() => {
     if (!isVisible || !bubbleRef.current) return;
     const rect = bubbleRef.current.getBoundingClientRect();
@@ -222,8 +227,32 @@ const BotConfettiBurst = ({ onComplete }) => {
 const spokenEventIds = new Set();
 const lastGlobalSpeech = { text: '', time: 0 };
 let introFiredGlobal = false;
+const useAlloMotionDisabled = (disableAnimations) => {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+      try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+      catch (_) { return false; }
+  });
+  useEffect(() => {
+      let mq = null;
+      try { mq = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)'); } catch (_) { mq = null; }
+      if (!mq) return;
+      const apply = () => setPrefersReducedMotion(!!mq.matches);
+      apply();
+      if (mq.addEventListener) {
+          mq.addEventListener('change', apply);
+          return () => mq.removeEventListener('change', apply);
+      }
+      if (mq.addListener) {
+          mq.addListener(apply);
+          return () => mq.removeListener(apply);
+      }
+  }, []);
+  return !!disableAnimations || !!prefersReducedMotion;
+};
 // @section ALLOBOT — Embodied pedagogical tour agent
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => { useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; var _mq = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)")) || null; var _apply = function () { var _r = disableAnimations || (_mq && _mq.matches); try { if (_r) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} }; _apply(); if (_mq && _mq.addEventListener) { _mq.addEventListener("change", _apply); return function () { _mq.removeEventListener("change", _apply); }; } } catch (e) {} }, [disableAnimations]);
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+  const motionDisabled = useAlloMotionDisabled(disableAnimations);
+  useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
       try {
@@ -236,15 +265,24 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [isHovered, setIsHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
   useEffect(() => {
+      if (motionDisabled) {
+          setPulseScale(1);
+          return;
+      }
       const pulseInterval = setInterval(() => {
           setPulseScale(prev => prev === 1 ? 1.02 : 1);
       }, 2000);
       return () => clearInterval(pulseInterval);
-  }, []);
+  }, [motionDisabled]);
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   useEffect(() => {
+      if (motionDisabled) {
+          setEyePosition({ x: 0, y: 0 });
+          setVisorPosition({ x: 0, y: 0 });
+          return;
+      }
       const handleMouseMove = (e) => {
           if (!containerRef.current) return;
           const rect = containerRef.current.getBoundingClientRect();
@@ -271,7 +309,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       };
       window.addEventListener('mousemove', handleMouseMove);
       return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [motionDisabled]);
   const [customMessage, setCustomMessage] = useState(null);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
@@ -302,6 +340,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const lastPosRef = useRef({ x: position.x, y: position.y, time: Date.now() });
   const velocityTimerRef = useRef(null);
   useEffect(() => {
+      if (motionDisabled) {
+          setVelocity({ dx: 0, dy: 0 });
+          lastPosRef.current = { x: position.x, y: position.y, time: Date.now() };
+          return;
+      }
       const now = Date.now();
       const dt = Math.max(1, now - lastPosRef.current.time);
       const dx = ((position.x - lastPosRef.current.x) / dt) * 10;
@@ -313,12 +356,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setVelocity({ dx: 0, dy: 0 });
       }, 100);
       return () => clearTimeout(velocityTimerRef.current);
-  }, [position]);
+  }, [position, motionDisabled]);
   const [antennaAction, setAntennaAction] = useState(null);
   const [wobbleState, setWobbleState] = useState({ active: false, deg: 0 });
   const lastRotationRef = useRef(0);
-  const isFlightActive = isFlying || localIsFlying;
+  const isFlightActive = !motionDisabled && (isFlying || localIsFlying);
   useEffect(() => {
+    if (isFlying && motionDisabled) {
+      setLocalIsFlying(false);
+      setIsLanding(false);
+      setMoveDuration(0);
+      return;
+    }
     if (isFlying && !isSleeping) {
       // Fly from bottom-left to resting position over 2s
       const startX = 5;
@@ -338,7 +387,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }, 100);
       return () => clearTimeout(flyTimer);
     }
-  }, [isFlying]);
+  }, [isFlying, motionDisabled]);
   const getHeldItem = () => {
       if (holdingPointer) return 'flashlight';
       if (isFlightActive || isSleeping) return null;
@@ -371,6 +420,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       lastRotationRef.current = antennaRotation;
   }
   useEffect(() => {
+      if (motionDisabled) {
+          setWobbleState({ active: false, deg: 0 });
+          lastRotationRef.current = 0;
+          return;
+      }
       if (!isMoving && Math.abs(lastRotationRef.current) > 2 && !wobbleState.active) {
            setWobbleState({ active: true, deg: lastRotationRef.current });
            const timer = setTimeout(() => {
@@ -379,7 +433,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
            }, 500);
            return () => clearTimeout(timer);
       }
-  }, [isMoving]);
+  }, [isMoving, motionDisabled]);
   const speechTimeoutRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
@@ -400,10 +454,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
   }, [position]);
   useEffect(() => {
-      // Blink is a JS timer (not CSS), so it must honor the motion toggle itself:
-      // freeze eyes open when sleeping, the app reduce-motion toggle, or the OS
-      // prefers-reduced-motion is set. Reactive via a matchMedia change listener.
-      const mq = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')) || null;
       let timer, innerTimer;
       const scheduleBlink = () => {
           const delay = 3000 + Math.random() * 3000;
@@ -415,30 +465,31 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               }, 150);
           }, delay);
       };
-      const start = () => {
-          clearTimeout(timer); clearTimeout(innerTimer);
-          if (isSleeping || disableAnimations || (mq && mq.matches)) { setBlinkScale(1); return; }
-          scheduleBlink();
-      };
-      start();
-      if (mq && mq.addEventListener) mq.addEventListener('change', start);
+      if (isSleeping || motionDisabled) {
+          setBlinkScale(1);
+          return () => {
+              clearTimeout(timer);
+              clearTimeout(innerTimer);
+          };
+      }
+      scheduleBlink();
       return () => {
-          clearTimeout(timer); clearTimeout(innerTimer);
-          if (mq && mq.removeEventListener) mq.removeEventListener('change', start);
+          clearTimeout(timer);
+          clearTimeout(innerTimer);
       };
-  }, [isSleeping, disableAnimations]);
+  }, [isSleeping, motionDisabled]);
   useEffect(() => {
       // One-shot accessory "pop" when generation finishes (thinking -> not thinking).
       const prev = prevMoodRef.current;
       prevMoodRef.current = effectiveMood;
-      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping && !disableAnimations) {
+      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping && !motionDisabled) {
           setAccPop(true);
           const t = setTimeout(() => setAccPop(false), 650);
           return () => clearTimeout(t);
       }
-  }, [effectiveMood, isSleeping, disableAnimations]);
+  }, [effectiveMood, isSleeping, motionDisabled]);
   useEffect(() => {
-      if (!isTalking) {
+      if (!isTalking || motionDisabled) {
           setViseme('neutral');
           return;
       }
@@ -450,9 +501,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           if (Math.random() > 0.8) index = (index + 1) % mouthShapes.length;
       }, 120);
       return () => clearInterval(interval);
-  }, [isTalking]);
+  }, [isTalking, motionDisabled]);
   useEffect(() => {
-      if (isSleeping || isFlightActive || effectiveMood === 'thinking') {
+      if (isSleeping || motionDisabled || isFlightActive || effectiveMood === 'thinking') {
           setAntennaAction(null);
           return;
       }
@@ -468,7 +519,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           }
       }, 5000);
       return () => clearInterval(timer);
-  }, [isSleeping, isFlightActive, effectiveMood]);
+  }, [isSleeping, motionDisabled, isFlightActive, effectiveMood]);
   useEffect(() => {
       if (isFlightActive && soundEnabled && !isGlobalMuted()) {
           try {
@@ -528,11 +579,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   }, []);
   const moveTo = useCallback((targetX, targetY, duration = 1000) => {
       if (isSleeping) return;
+      const newRight = window.innerWidth - targetX - 32;
+      const newTop = Math.max(10, targetY);
+      if (motionDisabled) {
+          setMoveDuration(0);
+          setLocalIsFlying(false);
+          setIsLanding(false);
+          setPosition({
+              x: Math.max(10, newRight),
+              y: newTop
+          });
+          return;
+      }
       setMoveDuration(duration);
       setLocalIsFlying(true);
       setIsLanding(false);
-      const newRight = window.innerWidth - targetX - 32;
-      const newTop = Math.max(10, targetY);
       setPosition({
           x: Math.max(10, newRight),
           y: newTop
@@ -542,15 +603,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setIsLanding(true);
           setTimeout(() => setIsLanding(false), 1000);
       }, duration);
-  }, [isSleeping]);
+  }, [isSleeping, motionDisabled]);
   const triggerReaction = useCallback((emoji) => {
+      if (motionDisabled) return;
       const id = Date.now() + Math.random();
       setReactions(prev => [...prev, { id, emoji }]);
       if (emoji === '🎉') {
           const burstId = Date.now() + Math.random();
           setBursts(prev => [...prev, { id: burstId }]);
       }
-  }, []);
+  }, [motionDisabled]);
   const speak = useCallback(async (text, isSilent = false) => {
       const safeText = (text || "").toString();
       const now = Date.now();
@@ -576,8 +638,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       if (onSpeechStart) onSpeechStart();
       setIsSleeping(false);
-      setWobbleState({ active: true, deg: 3 });
-      setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      if (!motionDisabled) {
+          setWobbleState({ active: true, deg: 3 });
+          setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      }
       let cleanText = safeText
           .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
           .replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '')   // superscript citations ⁽³⁾
@@ -722,7 +786,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           const duration = Math.min(90000, 4000 + (cleanText.length * 80));
           speechTimeoutRef.current = setTimeout(resetState, duration);
       }
-  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio]);
+  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled]);
   const handleTypingState = useCallback((isTyping) => {
     if (isTyping) { setIsTalking(true); }
     else if (!currentAudioRef.current) { setIsTalking(false); }
@@ -733,13 +797,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       lastSummonTimeRef.current = now;
       setPosition({ x: 24, y: 20 });
       setIsSleeping(false);
-      setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500);
+      if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500); }
       speak(t('bot.summon_msg'));
-  }, [speak, t]);
+  }, [speak, t, motionDisabled]);
   const handleSleep = (e) => {
       e.stopPropagation();
-      setIsPoofing(true);
       setCustomMessage(null);
+      if (motionDisabled) {
+          setIsPoofing(false);
+          setIsSleeping(true);
+          return;
+      }
+      setIsPoofing(true);
       setTimeout(() => {
           setIsSleeping(true);
           setIsPoofing(false);
@@ -756,10 +825,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           setIsTalking(false);
       },
       playAnimation: (animName, durationMs = 1200) => {
+          if (motionDisabled) return;
           setIdleAnimation(animName);
           setTimeout(() => setIdleAnimation(null), durationMs);
       },
       flyTo: (targetX, targetY, duration = 2000) => {
+          if (motionDisabled) {
+              setMoveDuration(0);
+              setLocalIsFlying(false);
+              setIsLanding(false);
+              setPosition({ x: targetX, y: targetY });
+              return;
+          }
           setLocalIsFlying(true);
           setMoveDuration(duration);
           setTimeout(() => {
@@ -782,14 +859,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             if (welcomeMsg && welcomeMsg !== 'sidebar.ai_guide_welcome') {
                 speak(welcomeMsg);
             }
-            setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 2500);
+            if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 2500); }
             if (onBotIntroSeen) onBotIntroSeen();
         }, 2500);
       }
     }
-  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t]);
+  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t, motionDisabled]);
   useEffect(() => {
     const onCelebrate = (e) => {
+      if (motionDisabled) return;
       const detail = (e && e.detail) || {};
       const kind = detail.kind || 'backflip';
       const wantConfetti = detail.confetti !== false;
@@ -804,7 +882,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     };
     window.addEventListener('alloflow:bot-celebrate', onCelebrate);
     return () => window.removeEventListener('alloflow:bot-celebrate', onCelebrate);
-  }, []);
+  }, [motionDisabled]);
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
        if (isSleeping) {
@@ -1050,10 +1128,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                 scheduleAmbientAction();
                 return;
             }
-            const anims = ['wave', 'backflip', 'shrug', 'look-around'];
-            const action = anims[Math.floor(Math.random() * anims.length)];
-            setIdleAnimation(action);
-            setTimeout(() => setIdleAnimation(null), 2000);
+            if (!motionDisabled) {
+                const anims = ['wave', 'backflip', 'shrug', 'look-around'];
+                const action = anims[Math.floor(Math.random() * anims.length)];
+                setIdleAnimation(action);
+                setTimeout(() => setIdleAnimation(null), 2000);
+            }
             if (Math.random() < 0.3) {
                  const tip = getRandomTip();
                  speak(tip, true);
@@ -1090,7 +1170,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         window.removeEventListener('click', resetInactivity);
         window.removeEventListener('scroll', resetInactivity);
     };
-  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t]);
+  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t, motionDisabled]);
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -1196,13 +1276,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const effectiveAccessory = displayedAccessory;
   useEffect(() => {
       if (targetAccessory === displayedAccessory) return;
-      const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-      const instant = !displayedAccessory || disableAnimations || (mq && mq.matches) || isSleeping;
+      const instant = !displayedAccessory || motionDisabled || isSleeping;
       if (instant) { setDisplayedAccessory(targetAccessory); setAccExiting(false); return; }
       setAccExiting(true);
       const t = setTimeout(() => { setDisplayedAccessory(targetAccessory); setAccExiting(false); }, 200);
       return () => clearTimeout(t);
-  }, [targetAccessory, displayedAccessory, disableAnimations, isSleeping]);
+  }, [targetAccessory, displayedAccessory, motionDisabled, isSleeping]);
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
@@ -1242,7 +1321,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
     }
   };
-  const trailFilter = (isFlying || localIsFlying)
+  const trailFilter = isFlightActive
       ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
       : 'none';
   const renderHologramContent = () => {
@@ -1609,6 +1688,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     transition: none !important;
   }
 }
+.allobot-motion-disabled *, .allobot-motion-disabled *::before, .allobot-motion-disabled *::after {
+  animation: none !important;
+  transition: none !important;
+}
 /* WCAG 2.4.7 Focus Visible — ensure all interactive elements show focus */
 *:focus-visible {
   outline: 2px solid #6366f1 !important;
@@ -1626,15 +1709,17 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       tabIndex={0} data-help-key="bot_avatar"
       aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
       onKeyDown={handleKeyDown}
-      className={`fixed z-[10000] group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
+      className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
       style={{
         top: `${position.y}px`,
         right: `${position.x}px`,
-        transform: `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
+        transform: motionDisabled ? 'translateY(0px) scale(1)' : `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
         touchAction: 'none',
-        transition: isDragging || isSquashed
-            ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
-            : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`,
+        transition: motionDisabled
+            ? 'none'
+            : (isDragging || isSquashed
+                ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`),
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -1654,8 +1739,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       }}
     >
       <div
-        className={`${isDragging ? "" : ((isFlying || localIsFlying) ? "animate-bot-fly-tilt" : (isLanding ? "animate-bot-land" : (idleAnimation ? `animate-allo-${idleAnimation}` : (isSleeping ? "" : "animate-allo-float"))))} ${isPoofing ? "animate-allo-puff" : ""}`}
-        style={isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: 'transform 0.2s ease-out' } : (isSleeping ? { transform: 'translateY(10px)' } : undefined)}
+        className={motionDisabled ? "" : `${isDragging ? "" : (isFlightActive ? "animate-bot-fly-tilt" : (isLanding ? "animate-bot-land" : (idleAnimation ? `animate-allo-${idleAnimation}` : (isSleeping ? "" : "animate-allo-float"))))} ${isPoofing ? "animate-allo-puff" : ""}`}
+        style={motionDisabled ? (isSleeping ? { transform: 'translateY(10px)' } : undefined) : (isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: 'transform 0.2s ease-out' } : (isSleeping ? { transform: 'translateY(10px)' } : undefined))}
       >
           <SpeechBubble
             text={isSleeping ? t('bot.sleeping') : (customMessage || colors.msg)}
@@ -1665,29 +1750,30 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             onTyping={handleTypingState}
             soundEnabled={soundEnabled && !isSleeping}
             variant={effectiveMood === 'thinking' && !isTalking ? 'thought' : 'speech'}
+            disableAnimations={motionDisabled}
           />
-          {reactions.map(r => (
+          {!motionDisabled && reactions.map(r => (
               <ReactionBubble
                   key={r.id}
                   emoji={r.emoji}
                   onComplete={() => setReactions(prev => prev.filter(item => item.id !== r.id))}
               />
           ))}
-          {bursts.map(b => (
+          {!motionDisabled && bursts.map(b => (
               <BotConfettiBurst
                   key={b.id}
                   onComplete={() => setBursts(prev => prev.filter(item => item.id !== b.id))}
               />
           ))}
           <div
-            className={`relative drop-shadow-2xl ${!isFlightActive ? "animate-bot-breathe" : ""} ${isCelebrating ? "animate-allo-backflip" : ""}`}
+            className={`relative drop-shadow-2xl ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
             style={{
                 filter: trailFilter,
-                transition: 'filter 0.3s ease',
+                transition: motionDisabled ? 'none' : 'filter 0.3s ease',
             }}
           >
-              <JetpackParticles active={isFlying || localIsFlying} />
-              <LandingDust active={isLanding} />
+              <JetpackParticles active={isFlightActive} />
+              <LandingDust active={!motionDisabled && isLanding} />
               {!isDragging && !isPoofing && !isSleeping && (
                   <>
                     <button data-help-key="bot_sleep_btn"
@@ -1790,7 +1876,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         rx="18"
                         ry="4"
                         fill="#000"
-                        className={isSleeping ? "opacity-20" : "animate-shadow-pulse"}
+                        className={isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"}
                     />
                 )}
                     <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
@@ -1800,7 +1886,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
                     <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
                     <path d="M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
-                    {(isFlying || localIsFlying) && (
+                    {isFlightActive && (
                         <g className="animate-jetpack-flame">
                              <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
                              <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
@@ -1808,14 +1894,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
                         </g>
                     )}
-                {(isFlying || localIsFlying) && (
+                {isFlightActive && (
                     <g transform="translate(-10, 0)" className="animate-fade-in" style={{ opacity: 0.6 }}>
                        <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.4s', animationDelay: '0s' }} />
                        <rect x="-10" y="50" width="40" height="1" rx="0.5" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.6s', animationDelay: '0.2s' }} />
                        <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.5s', animationDelay: '0.1s' }} />
                     </g>
                 )}
-                {effectiveMood === 'thinking' && !isSleeping && (
+                {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
                     <g className="animate-pulse" style={{ animationDuration: '2s' }}>
                         <path
                             d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
@@ -1849,10 +1935,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
                     </g>
                 )}
-                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping ? "" : "animate-pulse"} />
+                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping || motionDisabled ? "" : "animate-pulse"} />
                 <g
                     className={
-                        isSleeping ? "" :
+                        isSleeping || motionDisabled ? "" :
                         (isMoving ? "transition-transform duration-100 ease-out" :
                         (wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway"))
                     }
@@ -1863,7 +1949,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     }}
                 >
                     <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
-                    {antennaAction === 'signal' && !isSleeping && effectiveMood !== 'thinking' && (
+                    {antennaAction === 'signal' && !motionDisabled && !isSleeping && effectiveMood !== 'thinking' && (
                         <g>
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
@@ -1874,14 +1960,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         cx="50" cy="5" r="5"
                         fill={isSleeping ? "#64748B" : "#FACC15"}
                         className={
-                            effectiveMood === 'thinking' && !isSleeping ? "animate-ping" :
-                            (isTalking ? "animate-pulse" :
+                            effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
+                            (!motionDisabled && isTalking ? "animate-pulse" :
                             (isSleeping ? "" :
                             (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
                         }
                     />
                 </g>
-                {effectiveMood === 'thinking' && !isSleeping && (
+                {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
                     <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
                         <path
                             d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
@@ -1896,12 +1982,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 )}
                 <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
                 <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
-                {activeView === 'faq' && !isSleeping && (
+                {activeView === 'faq' && !isSleeping && !motionDisabled && (
                      <g className="animate-bounce" style={{ animationDuration: '2.5s' }}>
                           <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
                      </g>
                 )}
-                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
                     <rect
                         x="20"
                         y="30"
@@ -1931,7 +2017,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     />
                 </g>
                 <g
-                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
                 >
                     <circle cx="10" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
@@ -1970,7 +2056,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                 </g>
                 <g
-                    className={!isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
                 >
                     <circle cx="90" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
@@ -2087,7 +2173,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         )}
                     </g>
                 )}
-                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: 'transform 0.1s ease-out' }}>
+                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
                     {isSleeping ? (
                         <g className="transition-all duration-500">
                             <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
