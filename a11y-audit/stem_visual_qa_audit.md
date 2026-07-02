@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T17:07:59.007Z
+Generated: 2026-07-02T18:16:47.601Z
 
 ## Scope
 
@@ -17,9 +17,9 @@ Generated: 2026-07-02T17:07:59.007Z
 | Marker failures | 0 |
 | Monitored first-screen findings | 30 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 1 |
-| Monitored file drift | 1 |
+| Source/public drift | 1 |
+| Any source/public/build drift | 4 |
+| Monitored file drift | 2 |
 
 ## Visual Marker Coverage
 
@@ -67,6 +67,9 @@ Generated: 2026-07-02T17:07:59.007Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
+| source-public-drift | `stem_tool_brainatlas.js` | yes | source `B11CEB0B53CE`, public `C6F8EE753C13`, build `C6F8EE753C13` |
+| build-drift | `stem_tool_geosandbox.js` | no | source `4A9F496EE597`, public `4A9F496EE597`, build `A93770EF94D4` |
+| build-drift | `stem_tool_rocks.js` | no | source `AAD3D827749D`, public `AAD3D827749D`, build `C4FA18E66992` |
 | build-drift | `stem_tool_watercycle.js` | yes | source `E85421A360B0`, public `E85421A360B0`, build `8B9DB4731B22` |
 
 ## Gate Policy

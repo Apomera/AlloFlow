@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T17:08:46.937Z
+Generated: 2026-07-02T18:16:50.663Z
 
 ## Scope
 
@@ -67,7 +67,7 @@ Generated: 2026-07-02T17:08:46.937Z
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 0 | 0 | 0 | 1 | 2 | horizontal-overflow-risk x1, metadata x1, tiny-text x1 |
-| `brainAtlas` Brain Atlas Explorer | science | standard | 35 | 1 | 1 | 0 | 1 | 0 | canvas-focus x1 |
+| `brainAtlas` Brain Atlas Explorer | science | standard | 31 | 1 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 0 | 0 |  |
 | `cell` Cell Simulator | science | standard | 34 | 3 | 1 | 0 | 1 | 0 | tiny-text x1 |

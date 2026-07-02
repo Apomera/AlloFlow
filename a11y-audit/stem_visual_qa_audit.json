@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T17:07:59.007Z",
+  "generatedAt": "2026-07-02T18:16:47.601Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
@@ -13,9 +13,9 @@
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 21,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 1,
-    "sourcePublicDriftCount": 0,
-    "monitoredSyncDriftCount": 1
+    "syncDriftCount": 4,
+    "sourcePublicDriftCount": 1,
+    "monitoredSyncDriftCount": 2
   },
   "loadErrors": [],
   "markerResults": [
@@ -290,14 +290,14 @@
       "marker": "data-dna-mission",
       "label": "DNA mission control",
       "ok": true,
-      "htmlBytes": 36979,
+      "htmlBytes": 38423,
       "issues": [],
       "metrics": {
         "buttons": 103,
         "fields": 0,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 36979
+        "htmlBytes": 38423
       }
     },
     {
@@ -306,7 +306,7 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 15237,
+      "htmlBytes": 14502,
       "issues": [
         {
           "toolId": "brainAtlas",
@@ -318,11 +318,11 @@
         }
       ],
       "metrics": {
-        "buttons": 35,
+        "buttons": 31,
         "fields": 1,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 15237
+        "htmlBytes": 14502
       }
     },
     {
@@ -431,7 +431,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17209,
+      "htmlBytes": 17214,
       "issues": [
         {
           "toolId": "playlab",
@@ -460,7 +460,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17209
+        "htmlBytes": 17214
       }
     },
     {
@@ -558,14 +558,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13326,
+      "htmlBytes": 13327,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13326
+        "htmlBytes": 13327
       }
     },
     {
@@ -634,7 +634,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46590,
+      "htmlBytes": 46575,
       "issues": [
         {
           "toolId": "throwlab",
@@ -663,7 +663,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46590
+        "htmlBytes": 46575
       }
     },
     {
@@ -810,6 +810,57 @@
   "sync": {
     "drift": [
       {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B11CEB0B53CE",
+          "public": "C6F8EE753C13",
+          "build": "C6F8EE753C13"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
+      {
+        "file": "stem_tool_geosandbox.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "4A9F496EE597",
+          "public": "4A9F496EE597",
+          "build": "A93770EF94D4"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_rocks.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "AAD3D827749D",
+          "public": "AAD3D827749D",
+          "build": "C4FA18E66992"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
         "file": "stem_tool_watercycle.js",
         "monitored": true,
         "exists": {
@@ -827,8 +878,43 @@
         "status": "build-drift"
       }
     ],
-    "sourcePublicDrift": [],
+    "sourcePublicDrift": [
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B11CEB0B53CE",
+          "public": "C6F8EE753C13",
+          "build": "C6F8EE753C13"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
     "monitoredDrift": [
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "B11CEB0B53CE",
+          "public": "C6F8EE753C13",
+          "build": "C6F8EE753C13"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      },
       {
         "file": "stem_tool_watercycle.js",
         "monitored": true,

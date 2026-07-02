@@ -591,12 +591,12 @@ window.StemLab = window.StemLab || {
             }
           }
 
-          ctx2d.fillStyle = '#475569'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'middle';
+          ctx2d.fillStyle = '#cbd5e1'; ctx2d.font = 'bold 10px sans-serif'; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'middle';
           ctx2d.fillText("3'", startX - 18, midY - 25);
           ctx2d.fillText("5'", startX + dnaSeq.length * baseW + 4, midY - 25);
           ctx2d.fillText("5'", startX - 18, midY + 25);
           ctx2d.fillText("3'", startX + dnaSeq.length * baseW + 4, midY + 25);
-          ctx2d.fillStyle = '#1e293b';
+          ctx2d.fillStyle = '#f8fafc';
           ctx2d.fillText('Template', startX - 18, midY - 45);
           ctx2d.fillText('Coding', startX - 18, midY + 45);
 
@@ -1751,6 +1751,46 @@ window.StemLab = window.StemLab || {
         announceToSR('Switched to ' + (target ? target.label : nextTab));
       }
 
+      function dnaInstrumentFrame(title, subtitle, accent, chips, canvasNode, ariaLabel) {
+        return h("div", {
+          className: "overflow-hidden rounded-xl border bg-slate-950 shadow-xl",
+          role: "application",
+          "aria-label": ariaLabel || title,
+          "data-dna-molecular-frame": true,
+          style: {
+            borderColor: accent + '66',
+            boxShadow: '0 18px 45px rgba(15,23,42,0.18)'
+          }
+        },
+          h("div", {
+            className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3 py-2",
+            style: { background: 'linear-gradient(90deg,rgba(15,23,42,0.98),rgba(30,41,59,0.95))' }
+          },
+            h("div", { className: "min-w-0" },
+              h("div", { className: "text-[11px] font-black uppercase text-white" }, title),
+              subtitle && h("div", { className: "mt-0.5 text-[11px] font-medium text-slate-300" }, subtitle)
+            ),
+            h("div", { className: "flex flex-wrap gap-1.5" },
+              (chips || []).map(function(chip, idx) {
+                var tone = chip.tone || accent;
+                return h("span", {
+                  key: chip.label + idx,
+                  className: "rounded-full border px-2.5 py-1 text-[11px] font-black shadow-sm",
+                  style: { borderColor: tone + '66', background: tone + '18', color: '#f8fafc' }
+                }, chip.label + (chip.value != null ? ' ' + chip.value : ''));
+              })
+            )
+          ),
+          h("div", {
+            className: "relative",
+            style: { background: 'radial-gradient(circle at 18% 18%,' + accent + '2e 0,rgba(2,6,23,0) 32%),radial-gradient(circle at 82% 12%,rgba(34,211,238,0.18) 0,rgba(2,6,23,0) 28%),linear-gradient(180deg,#020617 0%,#0f172a 100%)' }
+          },
+            h("div", { className: "pointer-events-none absolute inset-x-4 top-3 h-px bg-white/20", "aria-hidden": "true" }),
+            canvasNode
+          )
+        );
+      }
+
       var __dnaMainView = h("div", { className: "space-y-4 max-w-6xl mx-auto animate-in fade-in duration-200", "data-dna-tool": true },
 
         // ═══ HEADER ═══
@@ -1937,8 +1977,17 @@ window.StemLab = window.StemLab || {
         // BUILD TAB
         // ═══════════════════════════════════════════
         tab === 'build' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application", 'aria-label': t('stem.dna.dna_helix_visualization', 'DNA helix visualization') },
-            h("canvas", { ref: _dnaCanvasRef, style: { width: '100%', height: 200 }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq })
+          dnaInstrumentFrame(
+            "Live Double Helix",
+            "Click a base on the model or sequence strip to cycle A/T/G/C.",
+            "#a855f7",
+            [
+              { label: "Sequence", value: dnaSeq.length + " bp", tone: "#a855f7" },
+              { label: "GC", value: gcPercent + "%", tone: "#22c55e" },
+              { label: "Protein", value: fullProtein.length + " aa", tone: "#06b6d4" }
+            ],
+            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240 }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
+            t('stem.dna.dna_helix_visualization', 'DNA helix visualization')
           ),
           h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
@@ -1972,8 +2021,17 @@ window.StemLab = window.StemLab || {
         // REPLICATION TAB
         // ═══════════════════════════════════════════
         tab === 'replicate' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application", 'aria-label': t('stem.dna.dna_replication_fork_visualization', 'DNA replication fork visualization') },
-            h("canvas", { ref: _replCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, 'aria-label': 'Replication: ' + replStep + '/' + dnaSeq.length })
+          dnaInstrumentFrame(
+            "Replication Fork",
+            "Helicase opens the ladder while DNA polymerase builds matching strands.",
+            "#14b8a6",
+            [
+              { label: "Copied", value: replStep + "/" + dnaSeq.length, tone: "#14b8a6" },
+              { label: "Progress", value: Math.round(replStep / dnaSeq.length * 100) + "%", tone: "#22c55e" },
+              { label: "Speed", value: speed + "x", tone: "#0ea5e9" }
+            ],
+            h("canvas", { ref: _replCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': 'Replication: ' + replStep + '/' + dnaSeq.length }),
+            t('stem.dna.dna_replication_fork_visualization', 'DNA replication fork visualization')
           ),
           h("div", { className: "flex items-center gap-3 flex-wrap" },
             h("button", { onClick: function() {
@@ -2015,8 +2073,17 @@ window.StemLab = window.StemLab || {
         // TRANSCRIPTION TAB
         // ═══════════════════════════════════════════
         tab === 'transcribe' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application" },
-            h("canvas", { ref: _dnaCanvasRef, style: { width: '100%', height: 220 }, tabIndex: 0, 'aria-label': 'Transcription: ' + animStep + '/' + dnaSeq.length })
+          dnaInstrumentFrame(
+            "Transcription Chamber",
+            "RNA polymerase reads the DNA and produces a single mRNA message.",
+            "#8b5cf6",
+            [
+              { label: "Read", value: animStep + "/" + dnaSeq.length, tone: "#8b5cf6" },
+              { label: "mRNA", value: (mRNA ? mRNA.length : 0) + "/" + fullMRNA.length + " nt", tone: "#06b6d4" },
+              { label: "Speed", value: speed + "x", tone: "#f59e0b" }
+            ],
+            h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': 'Transcription: ' + animStep + '/' + dnaSeq.length }),
+            t('stem.dna.transcription_dna_mrna', 'Transcription - DNA to mRNA')
           ),
           h("div", { className: "flex items-center gap-3" },
             h("button", { onClick: function() { if (animPlaying) upd('animPlaying', false); else { if (animStep >= dnaSeq.length) updMulti({ animStep: 0, mRNA: '', animPlaying: true }); else upd('animPlaying', true); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (animPlaying ? "bg-amber-700 text-white" : "transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]") }, animPlaying ? "\u23F8 Pause" : "\u25B6 Transcribe"),
@@ -2052,8 +2119,17 @@ window.StemLab = window.StemLab || {
               builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[11px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); }),
               builtProtein.length === 0 && h("span", { className: "text-[11px] text-slate-600 italic" }, t('stem.dna.press_start_to_begin', "Press Start to begin..."))
             ),
-            h("div", { className: "bg-slate-950 border border-slate-800 rounded-xl overflow-hidden mb-4 shadow-inner" },
-              h("canvas", { ref: _translationCanvasRef, style: { width: '100%', height: 240 }, tabIndex: 0, 'aria-label': t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator') })
+            dnaInstrumentFrame(
+              "Ribosome Runway",
+              "Watch codons slide through E/P/A sites as the amino acid chain grows.",
+              "#10b981",
+              [
+                { label: "Codon", value: Math.min(transStep + 1, Math.max(1, Math.ceil(fullMRNA.length / 3))) + "/" + Math.max(1, Math.ceil(fullMRNA.length / 3)), tone: "#10b981" },
+                { label: "Built", value: builtProtein.length + " aa", tone: "#06b6d4" },
+                { label: "State", value: transPlaying ? "running" : "ready", tone: transPlaying ? "#f59e0b" : "#64748b" }
+              ],
+              h("canvas", { ref: _translationCanvasRef, className: "block w-full", style: { width: '100%', height: 260 }, tabIndex: 0, role: "img", 'aria-label': t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator') }),
+              t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator')
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
               h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else { updMulti({ transStep: 0, builtProtein: [], transPlaying: true }); } }, className: "px-4 py-2 text-sm font-bold rounded-xl " + (transPlaying ? "bg-amber-700 text-white" : "transition-colors bg-emerald-700 text-white hover:bg-emerald-700 active:scale-[0.97]") }, transPlaying ? "\u23F8 Pause" : "\u25B6 Translate"),
@@ -2132,8 +2208,17 @@ window.StemLab = window.StemLab || {
         // CRISPR TAB
         // ═══════════════════════════════════════════
         tab === 'crispr' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application", 'aria-label': t('stem.dna.crispr_cas9_gene_editing_simulation', 'CRISPR-Cas9 gene editing simulation') },
-            h("canvas", { ref: _crisprCanvasRef, style: { width: '100%', height: 260 }, tabIndex: 0, 'aria-label': 'CRISPR: ' + crisprPhase })
+          dnaInstrumentFrame(
+            "CRISPR Targeting Bay",
+            "Guide RNA locks onto the PAM zone before Cas9 cuts and repairs.",
+            "#ef4444",
+            [
+              { label: "Phase", value: crisprPhase, tone: "#ef4444" },
+              { label: "PAM", value: pamSites.length, tone: "#8b5cf6" },
+              { label: "Scan", value: crisprScanPos + "/" + (selectedPAMSite ? selectedPAMSite.cutSite : 0), tone: "#0ea5e9" }
+            ],
+            h("canvas", { ref: _crisprCanvasRef, className: "block w-full", style: { width: '100%', height: 280 }, tabIndex: 0, role: "img", 'aria-label': 'CRISPR: ' + crisprPhase }),
+            t('stem.dna.crispr_cas9_gene_editing_simulation', 'CRISPR-Cas9 gene editing simulation')
           ),
 
           h("div", { className: "bg-gradient-to-br from-violet-50 to-blue-50 rounded-xl border-2 border-violet-200 p-4 space-y-3" },
