@@ -14119,7 +14119,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const _seed = window.__resumeExtractedText;
           window.__resumeExtractedText = null;
           if ((!extractedText || extractedText.length <= 100) && !_forceFullOcr && _seed && _seed.fileName === _fileName && typeof _seed.text === 'string' && _seed.text.trim().length >= 50) {
-            if (_textLayerLooksGarbage(_seed.text)) {
+            // H2 (deep dive 2026-07-02): content identity, not just the name. Filename-only
+            // matching meant a DIFFERENT "scan.pdf" re-uploaded at the resume prompt shipped the
+            // previous document's banked text as this document's remediation (scanned docs have
+            // empty deterministic text, so the seed always won). Legacy saves without a docKey
+            // keep the old filename-only behavior.
+            const _seedKeyMismatch = (() => {
+              try {
+                if (!_seed.docKey) return false;
+                const _curKey = _alloDocFingerprint(_base64);
+                return !!(_curKey && _curKey !== _seed.docKey);
+              } catch (_) { return false; }
+            })();
+            if (_seedKeyMismatch) {
+              warnLog('[Resume] Banked text REFUSED — the re-uploaded file shares the saved session\'s name but has DIFFERENT content (fingerprint mismatch); running fresh extraction/OCR.');
+              if (typeof addToast === 'function') addToast(t('toasts.resume_file_mismatch') || 'The uploaded file has the same name as your saved session but different content — running a fresh scan instead of reusing the saved text.', 'warning');
+            } else if (_textLayerLooksGarbage(_seed.text)) {
               // The banked text looks garbled (broken encoding) — don't silently reuse it; re-OCR for a
               // clean copy. Falls through to the OCR path (extractedText stays empty) + force the flag.
               // Keep the seed as the fallback so a false trip can't lose it (adopt OCR only if no junkier).
@@ -29831,5 +29846,6 @@ window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // st
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
+window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
