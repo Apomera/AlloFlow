@@ -161,3 +161,21 @@ describe('export-format review (round 3)', () => {
     expect(idx).toBeGreaterThan(gateIdx);
   });
 });
+
+describe('export-format review round 2 (ePub/txt/md/BRF)', () => {
+  it('C17: ePub builds a real TOC from headings + carries title/lang metadata + strips editor chrome', () => {
+    const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+    expect(ve).toMatch(/allo-toc-/);                                    // generated heading anchors
+    expect(ve).toMatch(/querySelectorAll\('h1, h2, h3'\)/);             // TOC sourced from content headings
+    expect(ve).toMatch(/<dc:language>\$\{_escXml\(lang\)\}/);           // real language, not hardcoded en
+    expect(ve).not.toMatch(/<dc:language>en<\/dc:language>/);           // the hardcoded literal is gone
+    expect(ve).toMatch(/dcterms:modified/);                             // EPUB3 required meta
+  });
+  it('C18: txt/md/BRF flatten CLEANED clones (no style/script bodies, no editor chrome)', () => {
+    const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
+    const strips = ve.match(/\.allo-block-controls, \.allo-block-remove/g) || [];
+    expect(strips.length).toBeGreaterThanOrEqual(4);                    // epub + txt + brf + md + notebooklm fallback
+    // the raw tag-strip txt path is gone
+    expect(ve).not.toMatch(/const text = html\.replace\(\/<\[\^>\]\*>\/g, '\n'\)/);
+  });
+});

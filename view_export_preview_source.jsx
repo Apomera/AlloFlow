@@ -1032,8 +1032,17 @@ function ExportPreviewView(props) {
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const html = doc.documentElement.outerHTML;
-                          const text = html.replace(/<[^>]*>/g, '\n').replace(/&[^;]+;/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                          // #7/#14 (export-format review): the old export tag-stripped the RAW
+                          // outerHTML — <style>/<script> BODIES and editor-chrome labels landed in
+                          // the .txt as garbage lines. Flatten a CLEANED body clone instead, with a
+                          // newline per block element so the text keeps its reading structure.
+                          let text = '';
+                          try {
+                            const _tClone = doc.body.cloneNode(true);
+                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, script, style').forEach(el => el.remove());
+                            _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                          } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
                           const blob = new Blob([text], { type: 'text/plain' });
                           const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.txt'; a.click(); URL.revokeObjectURL(a.href);
                           addToast('Plain text downloaded', 'success');
@@ -1041,7 +1050,13 @@ function ExportPreviewView(props) {
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const html = doc.documentElement.outerHTML;
+                          // #14: strip editor chrome + style/script bodies before the regex conversion.
+                          let html = '';
+                          try {
+                            const _mClone = doc.documentElement.cloneNode(true);
+                            _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                            html = _mClone.outerHTML;
+                          } catch (_) { html = doc.documentElement.outerHTML; }
                           let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
                             .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
                             .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
@@ -1113,7 +1128,14 @@ function ExportPreviewView(props) {
                                 else { const tx = (d && (d.text || d.content || d.summary)) || ''; if (tx) out.push(esc(tx).trim(), ''); }
                               });
                             } else if (doc) {
-                              const html = doc.documentElement.outerHTML;
+                              // #14: strip editor chrome before the regex conversion (button labels
+                              // and editor CSS were leaking into the markdown).
+                              let html = '';
+                              try {
+                                const _mdClone = doc.documentElement.cloneNode(true);
+                                _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                                html = _mdClone.outerHTML;
+                              } catch (_) { html = doc.documentElement.outerHTML; }
                               const body = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*').replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
                               out.push(body);
                             } else { addToast('Nothing to export yet — generate a lesson first', 'error'); return; }
@@ -1130,26 +1152,61 @@ function ExportPreviewView(props) {
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
-                          const html = doc.documentElement.outerHTML;
-                          const title = 'AlloFlow Document';
-                          const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+                          // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
+                          // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
+                          // TOC — the thing low-vision readers navigate by), title always "AlloFlow
+                          // Document" and language always "en". Now: strip editor chrome, build a real
+                          // EPUB3 toc nav from the content headings (ids assigned so targets resolve),
+                          // and carry the document's actual title + language into the OPF metadata.
+                          const _clone = doc.documentElement.cloneNode(true);
+                          try {
+                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+                          } catch (_) {}
+                          const _escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                          const title = ((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc.title || '').trim() || 'AlloFlow Document').substring(0, 120);
+                          const lang = (doc.documentElement.getAttribute('lang') || 'en').split(/[_ ]/)[0];
+                          const xmlTitle = _escXml(title);
+                          // Real TOC: every h1-h3 in content order, anchored by generated ids.
+                          const _navItems = [];
+                          try {
+                            const _hs = _clone.querySelectorAll('h1, h2, h3');
+                            for (let _hi = 0; _hi < _hs.length; _hi++) {
+                              const _h = _hs[_hi];
+                              const _txt = (_h.textContent || '').replace(/\s+/g, ' ').trim().substring(0, 120);
+                              if (!_txt) continue;
+                              if (!_h.id) _h.id = 'allo-toc-' + _hi;
+                              _navItems.push('<li><a href="content.xhtml#' + _escXml(_h.id) + '">' + _escXml(_txt) + '</a></li>');
+                            }
+                          } catch (_) {}
+                          const _navList = _navItems.length ? _navItems.join('') : '<li><a href="content.xhtml">' + xmlTitle + '</a></li>';
                           const zip = new window.JSZip();
                           zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
                           zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>en</dc:language></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
-                          let xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+                          const _uid = 'alloflow-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+                          zip.file('OEBPS/content.opf', `<?xml version="1.0" encoding="UTF-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${_uid}</dc:identifier><dc:title>${xmlTitle}</dc:title><dc:language>${_escXml(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="content" href="content.xhtml" media-type="application/xhtml+xml"/><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/></manifest><spine><itemref idref="content"/></spine></package>`);
+                          let xhtml = _clone.outerHTML.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
                           if (!xhtml.includes('xmlns')) xhtml = xhtml.replace('<html', '<html xmlns="http://www.w3.org/1999/xhtml"');
                           zip.file('OEBPS/content.xhtml', xhtml);
-                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Navigation</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol><li><a href="content.xhtml">Document</a></li></ol></nav></body></html>`);
+                          zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
                           zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
-                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '.epub'; a.click(); URL.revokeObjectURL(a.href);
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                            a.download = (title.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').substring(0, 40) || 'document') + '.epub';
+                            a.click(); URL.revokeObjectURL(a.href);
                             addToast('ePub downloaded', 'success');
                           });
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📚 ePub (e-readers)</button>
                         <button onClick={() => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
-                          const text = doc.body.innerText || doc.body.textContent || '';
+                          // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
+                          // were being embossed into the braille output.
+                          let text = '';
+                          try {
+                            const _bClone = doc.body.cloneNode(true);
+                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, script, style').forEach(el => el.remove());
+                            text = _bClone.innerText || _bClone.textContent || '';
+                          } catch (_) { text = doc.body.innerText || doc.body.textContent || ''; }
                           // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
                           // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
                           // Computer Code), NOT Unicode braille patterns — embossers and braille
