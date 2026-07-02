@@ -819,6 +819,8 @@ function vsComputePeaks(samples, buckets) {
     micOn = !micOn;
     $('micBtn').setAttribute('aria-pressed', String(micOn));
     $('micBtn').textContent = micOn ? '🎙️ Microphone on' : '🎙️ Microphone off';
+    if (!micOn && capOn) setStatus($('capNote'), 'Live captions pause while the microphone is off (they listen through the mic). You can still auto-caption afterwards in the Edit tab.');
+    else if (SR && capOn) setStatus($('capNote'), 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).');
   });
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   if (!SR) { capOn = false; $('capBtn').disabled = true; $('capBtn').textContent = '💬 Captions unavailable'; setStatus($('capNote'), 'Live captions need Chrome/Edge speech recognition. You can still add captions by hand in the Edit tab.'); }
@@ -860,7 +862,9 @@ function vsComputePeaks(samples, buckets) {
   }
 
   function startCaptions() {
-    if (!capOn || !SR) return;
+    // Requires the mic to be ON: Web Speech captures audio independently of
+    // our streams, so captioning with the mic "off" would secretly listen.
+    if (!capOn || !SR || !micOn) return;
     try {
       recog = new SR();
       recog.continuous = true;
@@ -1174,6 +1178,13 @@ function vsComputePeaks(samples, buckets) {
   // audio never leaves this computer (unlike live Web Speech captions).
   var TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1';
   var _asrPipelines = {};
+  var _asrForceWasm = false; // set after a GPU-path failure so retries use CPU
+  function _asrFailed(modelId) {
+    // A pipeline that crashed mid-run stays broken — drop it so the next try
+    // rebuilds, and prefer WASM (the reliable path) from then on.
+    try { delete _asrPipelines[modelId]; } catch (_) {}
+    _asrForceWasm = true;
+  }
 
   async function extractPcm16k(blob) {
     var buf = await blob.arrayBuffer();
@@ -1191,7 +1202,7 @@ function vsComputePeaks(samples, buckets) {
   async function loadAsr(modelId, onProgress) {
     if (_asrPipelines[modelId]) return _asrPipelines[modelId];
     var lib = await import(TRANSFORMERS_URL);
-    var attempts = navigator.gpu ? [{ device: 'webgpu' }, { device: 'wasm', dtype: 'q8' }] : [{ device: 'wasm', dtype: 'q8' }];
+    var attempts = (navigator.gpu && !_asrForceWasm) ? [{ device: 'webgpu' }, { device: 'wasm', dtype: 'q8' }] : [{ device: 'wasm', dtype: 'q8' }];
     var lastErr = null;
     for (var i = 0; i < attempts.length; i++) {
       try {
@@ -1241,9 +1252,10 @@ function vsComputePeaks(samples, buckets) {
         announce(cues.length + ' captions generated');
       }
     } catch (e) {
+      _asrFailed($('whisperModel').value);
       var msg = (e && e.message) || String(e);
       if (/fetch|network|Failed to/i.test(msg)) msg = 'Could not download the engine — check the internet connection and try again (after the first download it works offline). [' + msg.slice(0, 120) + ']';
-      setStatus($('autoCapStatus'), 'Auto-captioning failed: ' + msg, 'bad');
+      setStatus($('autoCapStatus'), 'Auto-captioning failed: ' + msg + ' — trying again will use the slower, more reliable CPU path.', 'bad');
     }
     prog.hidden = true; prog.value = 0;
     btn.disabled = false;
@@ -1489,7 +1501,8 @@ function vsComputePeaks(samples, buckets) {
         announce(spans.length + ' filler moments found');
       }
     } catch (e) {
-      setStatus($('aiReviewStatus'), 'Filler scan failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+      _asrFailed($('whisperModel').value);
+      setStatus($('aiReviewStatus'), 'Filler scan failed: ' + String((e && e.message) || e).slice(0, 160) + ' — trying again will use the slower, more reliable CPU path.', 'bad');
     }
     prog.hidden = true; prog.value = 0;
     btn.disabled = false;
@@ -1944,8 +1957,14 @@ function vsComputePeaks(samples, buckets) {
       ctx.fillRect(xOf(c.t), 11 * dpr, 3 * dpr, 6 * dpr);
     });
     // Playhead
+    var cur = $('editVideo').currentTime || 0;
     ctx.fillStyle = '#f1f5f9';
-    ctx.fillRect(xOf($('editVideo').currentTime || 0) - 1, 0, 2, H);
+    ctx.fillRect(xOf(cur) - 1, 0, 2, H);
+    // role="slider" semantics for screen readers
+    cv.setAttribute('aria-valuemin', '0');
+    cv.setAttribute('aria-valuemax', String(Math.round(dur)));
+    cv.setAttribute('aria-valuenow', String(Math.round(cur)));
+    cv.setAttribute('aria-valuetext', fmtClock(cur) + ' of ' + fmtClock(dur));
   }
   function waveFollow() {
     drawWave();
@@ -2023,7 +2042,17 @@ function vsComputePeaks(samples, buckets) {
         takes = takes.filter(function (x) { return x.id !== t.id; });
         deleteDraft(t.id);
         try { URL.revokeObjectURL(t.url); } catch (_) {}
-        if (selectedTakeId === t.id) { selectedTakeId = null; if (takes.length) selectTake(takes[takes.length - 1].id); else $('editVideo').src = ''; }
+        if (selectedTakeId === t.id) {
+          selectedTakeId = null;
+          if (takes.length) { selectTake(takes[takes.length - 1].id); }
+          else {
+            // Last take gone: clear every editor panel so nothing stale lingers.
+            $('editVideo').src = '';
+            aiNarrSegments = [];
+            resetPreviewAudio();
+            renderCues(); renderZooms(); renderAudio(); renderNarration(); renderClips(); renderAiNarr(); drawWave();
+          }
+        }
         renderTakes();
       });
       row.addEventListener('click', function () { selectTake(t.id); renderTakes(); });
@@ -2160,6 +2189,7 @@ function vsComputePeaks(samples, buckets) {
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
       var vtt = (capMode !== 'none' && cues.length) ? vsBuildVtt(cues) : null;
+      if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
       lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type) };
       $('resultCard').hidden = false;
       $('resultVideo').src = lastExport.url;
@@ -2299,19 +2329,32 @@ function vsComputePeaks(samples, buckets) {
           }
           raf = requestAnimationFrame(frame);
         }
-        mr.start(1000);
-        if (!titleCard) {
-          v.currentTime = seg.start;
-          v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { reject(new Error('playback blocked')); });
-        } else {
-          raf = requestAnimationFrame(frame);
-        }
-        var prog = setInterval(function () {
-          var el2 = startedAt ? (performance.now() - startedAt) / 1000 : 0;
-          $('exportProgress').hidden = false;
-          $('exportProgress').value = Math.min(100, Math.round(el2 / totalDur * 100));
-          if (mr.state === 'inactive') { clearInterval(prog); $('exportProgress').hidden = true; }
-        }, 300);
+        // Wait for narration/clip audio metadata before rolling: currentTime
+        // set on an unloaded element is ignored, which would desync trimmed
+        // narration. 3s cap per element so a broken clip can't hang exports.
+        var readyAll = Promise.all(mixItems.map(function (m) {
+          return new Promise(function (res) {
+            if (!m._el || m._el.readyState >= 1) { res(); return; }
+            m._el.addEventListener('loadedmetadata', res, { once: true });
+            m._el.addEventListener('error', res, { once: true });
+            setTimeout(res, 3000);
+          });
+        }));
+        readyAll.then(function () {
+          mr.start(1000);
+          if (!titleCard) {
+            v.currentTime = seg.start;
+            v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { reject(new Error('playback blocked')); });
+          } else {
+            raf = requestAnimationFrame(frame);
+          }
+          var prog = setInterval(function () {
+            var el2 = startedAt ? (performance.now() - startedAt) / 1000 : 0;
+            $('exportProgress').hidden = false;
+            $('exportProgress').value = Math.min(100, Math.round(el2 / totalDur * 100));
+            if (mr.state === 'inactive') { clearInterval(prog); $('exportProgress').hidden = true; }
+          }, 300);
+        });
       });
     });
   }
@@ -2340,10 +2383,27 @@ function vsComputePeaks(samples, buckets) {
   $('sendBtn').addEventListener('click', function () {
     if (!lastExport) return;
     if (!opener || opener.closed) { setStatus($('resultStatus'), 'AlloFlow window not found — download the file instead.', 'warn'); return; }
+    setStatus($('resultStatus'), 'Sending…');
     makeThumb(lastExport.url).then(function (thumb) {
+      // Success is only claimed after AlloFlow ACKS receipt — if its Video
+      // Studio panel is closed, the message would silently vanish and a bare
+      // "Sent ✓" here would be a lie.
+      var acked = false;
+      var onAck = function (ev) {
+        if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-video-ack') {
+          acked = true;
+          window.removeEventListener('message', onAck);
+          setStatus($('resultStatus'), 'Sent to AlloFlow ✓ (it’s in the Video Studio panel)', 'ok');
+          announce('Video sent to AlloFlow');
+        }
+      };
+      window.addEventListener('message', onAck);
       postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb } });
-      setStatus($('resultStatus'), 'Sent to AlloFlow ✓ (find it in the Video Studio panel)', 'ok');
-      announce('Video sent to AlloFlow');
+      setTimeout(function () {
+        if (acked) return;
+        window.removeEventListener('message', onAck);
+        setStatus($('resultStatus'), 'AlloFlow didn’t confirm receipt — open the Video Studio panel there and press Send again, or use Download (always works).', 'warn');
+      }, 6000);
     });
   });
   function makeThumb(url) {

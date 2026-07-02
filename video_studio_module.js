@@ -682,6 +682,9 @@
             if (hex) setVideos(function (cur) { return cur.map(function (v) { return v.id === vid.id ? Object.assign({}, v, { sha256: hex }) : v; }); });
           });
           setVideos(function (cur) { return [vid].concat(cur); });
+          // Ack so the Studio can honestly say "sent" — without this, a send
+          // while the panel is closed silently vanishes.
+          try { if (studioWinRef.current && !studioWinRef.current.closed) studioWinRef.current.postMessage({ type: 'allostudio-video-ack' }, '*'); } catch (_) {}
           addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
           announce(T('video_studio.received_sr', 'Video received from the Studio.'));
         }
