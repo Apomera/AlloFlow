@@ -11,7 +11,7 @@ const srcPath = path.join(ROOT, 'stem_lab', 'stem_tool_' + tool + '.js');
 const src = fs.readFileSync(srcPath, 'utf8');
 // t(  <q1> stem.<tool>.<key> <q1> , <q2> <english> <q2>
 const re = new RegExp(
-  "t\\(\\s*(['\"])stem\\." + tool + "\\.([a-zA-Z0-9_]+)\\1\\s*,\\s*(['\"])((?:\\\\.|(?!\\3).)*)\\3",
+  "(?:__alloT|ctx\\.t|t)\\(\\s*(['\"])stem\\." + tool + "\\.([a-zA-Z0-9_]+)\\1\\s*,\\s*(['\"])((?:\\\\.|(?!\\3).)*)\\3",
   'g');
 let m, dup = 0;
 const out = {};
