@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -16291,16 +16291,29 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         try {
           const jsonResult = await callGeminiVision(jsonPrompt, _base64, _mimeType);
           let cleaned = _stripCodeFence(jsonResult);
+          // Blocks must be an ARRAY with at least one RENDERABLE entry (2026-07-02,
+          // corpus-caught): a refusal-shaped reply like {} or {"error":"..."} parses as
+          // valid JSON and used to sail through here — renderJsonToHtml('') downstream
+          // shipped an all-boilerplate shell with a passing score (silent total data
+          // loss). "Renderable" mirrors renderJsonToHtml's own normalization keys; real
+          // arrays pass through UNTOUCHED (no filtering — the renderer already skips
+          // junk entries), so the happy path is byte-identical.
+          const _renderableBlock = (b) => !!(b && typeof b === 'object' && (b.type || b.tag || b.element || b.text || b.content || b.value || b.body || b.html || b.fixed_html || b.output_html || b.accessible_html || b.title || b.items || b.headers || b.description));
+          const _asBlockArray = (v) => {
+            if (v && !Array.isArray(v) && typeof v === 'object' && Array.isArray(v.blocks)) v = v.blocks; // {"blocks":[...]} wrapper variant
+            if (v && !Array.isArray(v) && _renderableBlock(v)) v = [v]; // bare single block
+            return (Array.isArray(v) && v.some(_renderableBlock)) ? v : null;
+          };
           // JSON self-repair for single-pass extraction
           const repairSingle = (raw) => {
             let s = raw.trim();
             const fi = s.indexOf('['); if (fi >= 0) s = s.substring(fi);
             const li = s.lastIndexOf(']'); if (li > 0) s = s.substring(0, li + 1);
-            try { return JSON.parse(s); } catch(e) {}
+            try { const p = _asBlockArray(JSON.parse(s)); if (p) return p; } catch(e) {}
             let r = s.replace(/,\s*([}\]])/g,'$1').replace(/([{,]\s*)(\w+)\s*:/g,'$1"$2":').replace(/:\s*'([^']*)'/g,':"$1"').replace(/}\s*\n?\s*{/g,'},{');
             if (!r.startsWith('[')) r = '[' + r;
             const lb = r.lastIndexOf('}'); if (lb > 0 && !r.endsWith(']')) r = r.substring(0, lb + 1) + ']';
-            try { return JSON.parse(r); } catch(e) {}
+            try { const p = _asBlockArray(JSON.parse(r)); if (p) return p; } catch(e) {}
             // Object-by-object recovery
             const objs = raw.match(/\{[^{}]*"type"\s*:\s*"[^"]+?"[^{}]*\}/g);
             if (objs) { const recovered = []; objs.forEach(o => { try { recovered.push(JSON.parse(o)); } catch(e) {} }); if (recovered.length > 0) return recovered; }
@@ -16964,6 +16977,37 @@ ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage
           + (_sorted.some(im => im.alt) ? ' with their original descriptions' : '') + '.</em></p>\n'
           + _figParts.join('\n') + '\n</section>';
         _pipeLog('Images', 'Spliced ' + _embedded + ' Office embedded image(s) (+' + (_sorted.length - _embedded) + ' description-only) into the remediated document');
+      }
+
+      // ── Empty-body honesty guard (2026-07-02, corpus-caught) ──
+      // If the AI transform yielded no real TEXT but deterministic extraction HAS text,
+      // the document's own words must not vanish: before this guard, a refusal-shaped
+      // model reply could reach the wrap with an empty body and ship an all-boilerplate
+      // shell that still scored high — silent total data loss behind a passing number.
+      // Deterministic paragraphs are the floor; every downstream fix pass still runs
+      // against them. Figure/caption text is excluded from the probe so an image-only
+      // body with lost text still triggers.
+      {
+        const _visibleProbe = String(bodyContent || '')
+          .replace(/<figure[\s\S]*?<\/figure>/gi, ' ')
+          .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/__ALLOFLOW_[A-Z0-9_]+__/g, ' ')
+          .replace(/\s+/g, ' ').trim();
+        const _extProbe = String(extractedText || '').trim();
+        if (_visibleProbe.length < 30 && _extProbe.length >= 30) {
+          const _escPara = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const _paras = _extProbe.split(/\n\s*\n/)
+            .map((p) => p.trim())
+            .filter((p) => p && p !== '---')
+            .map((p) => '<p>' + _escPara(p).replace(/\n/g, '<br>') + '</p>')
+            .join('\n');
+          bodyContent = '<div class="extraction-note" role="note"><p><strong>Formatting notice:</strong> '
+            + 'The document structure could not be reconstructed automatically, so the original text is '
+            + 'presented as plain paragraphs below. The wording is the document\'s own extracted text.</p></div>\n'
+            + _paras + (bodyContent || '');
+          _pipeLog('PDF Fix', 'Empty-body guard: transform produced no visible text — spliced ' + _extProbe.length + ' chars of deterministic extraction as paragraphs');
+        }
       }
 
       // Wrap in full HTML document
@@ -30521,11 +30565,6 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

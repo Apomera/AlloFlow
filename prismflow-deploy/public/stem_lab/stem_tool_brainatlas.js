@@ -476,7 +476,7 @@ var d = labToolData.brainAtlas || {};
           var currentView = VIEWS[viewKey] || VIEWS.lateral;
           if (!VIEWS[viewKey]) viewKey = 'lateral';
 
-          var regions = currentView.regions;
+          var regions = Array.isArray(currentView.regions) ? currentView.regions : [];
 
           var searchTerm = (d.search || '').toLowerCase();
 
@@ -3624,7 +3624,8 @@ var d = labToolData.brainAtlas || {};
           var VIEW_KEYS = Object.keys(VIEWS);
           var viewsExploredCount = Object.keys(d.viewsExplored || {}).length;
           var atlasCompletion = VIEW_KEYS.length ? Math.min(100, Math.round((viewsExploredCount / VIEW_KEYS.length) * 100)) : 0;
-          var selectedLabel = sel && sel.name ? sel.name : t('stem.brainatlas.none_selected', 'None selected');
+          var selectedLabel = sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected');
+          selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
           var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
           var atlasW = specialAtlasView ? 600 : 520;
@@ -3885,7 +3886,10 @@ var d = labToolData.brainAtlas || {};
 
             // \u2550\u2550 NEUROTRANSMITTER INQUIRY widget (H7b'') \u2550\u2550
             (function() {
-              var iq = d.ntInquiry || { dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iqDefaults = { dopamine: 50, serotonin: 50, gaba: 50, glutamate: 50, norepi: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iqSaved = d.ntInquiry && typeof d.ntInquiry === 'object' ? d.ntInquiry : {};
+              var iq = Object.assign({}, iqDefaults, iqSaved);
+              if (!Array.isArray(iq.log)) iq.log = [];
               function setIQ(patch) { upd('ntInquiry', Object.assign({}, iq, patch)); }
               function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
               var arousal = (iq.norepi + iq.glutamate - iq.gaba) / 3;

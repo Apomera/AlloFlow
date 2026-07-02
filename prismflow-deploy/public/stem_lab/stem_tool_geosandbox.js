@@ -108,43 +108,22 @@ window.StemLab = window.StemLab || {
     try {
       themeBg = window.getComputedStyle(document.body).getPropertyValue('--allo-stem-canvas').trim() || '#0f172a';
     } catch(e) {}
-    // ── Gradient backdrop (replaces the flat theme color) ──
-    // Dark themes get a deep-space radial gradient with a faint starfield;
-    // light themes get a soft paper vignette. Luma of the theme color decides.
     var bgLuma = 0.1;
     try {
       var bgHex = new THREE.Color(themeBg);
       bgLuma = 0.299 * bgHex.r + 0.587 * bgHex.g + 0.114 * bgHex.b;
     } catch(e) {}
     var isDarkBg = bgLuma < 0.45;
-    var bgCv = document.createElement('canvas'); bgCv.width = 512; bgCv.height = 512;
-    var bgCtx2d = bgCv.getContext('2d');
-    var bgGrad = bgCtx2d.createRadialGradient(256, 190, 60, 256, 300, 430);
-    if (isDarkBg) {
-      bgGrad.addColorStop(0, '#1c2947');
-      bgGrad.addColorStop(0.55, themeBg);
-      bgGrad.addColorStop(1, '#04060d');
-    } else {
-      bgGrad.addColorStop(0, '#ffffff');
-      bgGrad.addColorStop(0.6, themeBg);
-      bgGrad.addColorStop(1, '#cbd5e1');
-    }
-    bgCtx2d.fillStyle = bgGrad; bgCtx2d.fillRect(0, 0, 512, 512);
-    if (isDarkBg) {
-      for (var bgs = 0; bgs < 90; bgs++) {
-        bgCtx2d.fillStyle = 'rgba(255,255,255,' + (0.08 + Math.random() * 0.25).toFixed(3) + ')';
-        bgCtx2d.fillRect(Math.random() * 512, Math.random() * 340, 1, 1);
-      }
-    }
-    scene.background = new THREE.CanvasTexture(bgCv);
+    scene.background = new THREE.Color(themeBg);
     var camera = new THREE.PerspectiveCamera(50, cnv.clientWidth / cnv.clientHeight, 0.1, 1000);
     camera.position.set(6, 5, 8);
     camera.lookAt(0, 0, 0);
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
     renderer.setSize(cnv.clientWidth, cnv.clientHeight);
-    // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+    // Geometry needs crisp edges, so bloom is opt-in for this tool.
     renderer._alloComposer = null;
     (function(){
+      if (window.AlloGeoSandboxPostFXEnabled !== true) return;
       if (window.AlloPostFXEnabled === false) return;
       var _ens = function(cb){
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
@@ -187,7 +166,7 @@ window.StemLab = window.StemLab || {
     rim.position.set(0, 6, -10);
     scene.add(rim);
     // Ground
-    scene.add(new THREE.GridHelper(20, 20, 0x334155, 0x1e293b));
+    scene.add(new THREE.GridHelper(20, 20, isDarkBg ? 0x64748b : 0x475569, isDarkBg ? 0x334155 : 0xcbd5e1));
     // Shadow catcher — invisible plane that only shows the soft shadow
     var shadowPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(40, 40),
@@ -197,20 +176,6 @@ window.StemLab = window.StemLab || {
     shadowPlane.position.y = 0.001;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
-    // ── Dust motes (dark themes) — faint drifting points give the space depth ──
-    if (isDarkBg) {
-      var moteGeo = new THREE.BufferGeometry();
-      var motePos = new Float32Array(180);
-      for (var mi = 0; mi < 60; mi++) {
-        motePos[mi * 3] = (Math.random() - 0.5) * 16;
-        motePos[mi * 3 + 1] = Math.random() * 8 + 0.5;
-        motePos[mi * 3 + 2] = (Math.random() - 0.5) * 16;
-      }
-      moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
-      var motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ color: 0x93c5fd, size: 0.05, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
-      scene.add(motes);
-      scene._alloMotes = motes;
-    }
     // Controls
     var controls = null;
     if (THREE.OrbitControls) {
@@ -233,7 +198,6 @@ window.StemLab = window.StemLab || {
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
       if (controls) controls.update();
-      if (scene._alloMotes && !prefersRM) scene._alloMotes.rotation.y += 0.0005;
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
     };
     animate();
@@ -265,17 +229,12 @@ window.StemLab = window.StemLab || {
       }
       default: geometry = new THREE.BoxGeometry(dims.w || 3, dims.h || 3, dims.d || 3); break;
     }
-    // Clearcoated physical material — solids read as polished museum pieces
-    // instead of flat plastic (the clearcoat sheen also feeds the bloom pass).
-    var material = new THREE.MeshPhysicalMaterial({
+    var material = new THREE.MeshPhongMaterial({
       color: new THREE.Color(shapeColor),
       wireframe: wireframe,
       transparent: opacity < 1,
       opacity: opacity,
-      metalness: 0.08,
-      roughness: 0.32,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.25,
+      shininess: 80,
       flatShading: false
     });
     var mesh = new THREE.Mesh(geometry, material);
@@ -284,9 +243,13 @@ window.StemLab = window.StemLab || {
     // (this is a geometry tool: the edge skeleton IS the content). Skipped in
     // wireframe mode, where the whole mesh already renders as lines.
     if (!wireframe) {
+      var bgColor = gs.scene && gs.scene.background && gs.scene.background.isColor ? gs.scene.background : null;
+      var edgeLuma = bgColor ? (0.299 * bgColor.r + 0.587 * bgColor.g + 0.114 * bgColor.b) : 0.1;
+      var edgeColor = edgeLuma < 0.45 ? 0xffffff : 0x0f172a;
+      var edgeOpacity = edgeLuma < 0.45 ? 0.36 : 0.42;
       var edgeLines = new THREE.LineSegments(
         new THREE.EdgesGeometry(geometry, 25),
-        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, depthWrite: false })
+        new THREE.LineBasicMaterial({ color: edgeColor, transparent: true, opacity: edgeOpacity, depthWrite: false })
       );
       mesh.add(edgeLines);
     }
