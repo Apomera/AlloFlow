@@ -177,6 +177,20 @@
           </div>
           <div id="zoomList"></div>
         </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Audio</h2>
+          <div class="row" style="margin-bottom:8px">
+            <label for="volSlider">Volume</label>
+            <input type="range" id="volSlider" min="0" max="2" step="0.05" value="1" style="width:140px">
+            <span class="status" id="volLabel" style="margin-top:0">100%</span>
+            <label><input type="checkbox" id="removeAudioChk"> 🔇 Remove audio entirely</label>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="addMuteBtn">🤫 Silence from playhead</button>
+            <span class="status" style="margin-top:0">Silences a stretch without cutting the video — a name said aloud, a cough, an interruption. The preview honors it; export makes it permanent. Above 100% can distort.</span>
+          </div>
+          <div id="muteList"></div>
+        </div>
       </div>
       <div>
         <div class="card">
@@ -543,6 +557,25 @@ function vsZoomState(keyframes, tSec) {
     x: 0.5 + (cl(best.k.x, 0.5) - 0.5) * f,
     y: 0.5 + (cl(best.k.y, 0.5) - 0.5) * f
   };
+}
+
+// Audio-edit state → gain at time t (take-absolute seconds). muteSpans
+// [{start,end}] are silenced ranges (order-tolerant, end-exclusive); volume
+// is a 0..2 master gain (200% can distort — the UI says so). "Remove audio
+// entirely" is the caller's job: it omits the audio track, not a gain of 0.
+function vsGainAt(muteSpans, volume, tSec) {
+  var vol = Number(volume);
+  if (!isFinite(vol)) vol = 1;
+  vol = Math.max(0, Math.min(2, vol));
+  var t = Number(tSec) || 0;
+  var spans = Array.isArray(muteSpans) ? muteSpans : [];
+  for (var i = 0; i < spans.length; i++) {
+    var s = spans[i];
+    if (!s) continue;
+    var a = Number(s.start), b = Number(s.end);
+    if (isFinite(a) && isFinite(b) && t >= Math.min(a, b) && t < Math.max(a, b)) return 0;
+  }
+  return vol;
 }
 // [VS_SHARED_END]
 
@@ -1094,6 +1127,79 @@ function vsZoomState(keyframes, tSec) {
     ev.preventDefault();
   });
 
+  // ── Audio: master volume, remove-all, and mute spans ──
+  function ensureAudio(t) {
+    if (!t.audio) t.audio = { volume: 1, removeAll: false, muteSpans: [] };
+    if (!Array.isArray(t.audio.muteSpans)) t.audio.muteSpans = [];
+    return t.audio;
+  }
+  function audioIsDefault(a) {
+    return !a || ((a.volume == null || Math.abs(Number(a.volume) - 1) < 0.001) && !a.removeAll && (!a.muteSpans || !a.muteSpans.length));
+  }
+  function renderAudio() {
+    var t = currentTake();
+    var a = t ? ensureAudio(t) : { volume: 1, removeAll: false, muteSpans: [] };
+    $('volSlider').value = String(a.volume != null ? a.volume : 1);
+    $('volLabel').textContent = Math.round((a.volume != null ? a.volume : 1) * 100) + '%';
+    $('removeAudioChk').checked = !!a.removeAll;
+    var host = $('muteList');
+    host.innerHTML = '';
+    a.muteSpans.sort(function (x, y) { return x.start - y.start; });
+    a.muteSpans.forEach(function (s, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px';
+      var mk = function (label, field) {
+        var l = document.createElement('label'); l.textContent = label + ' ';
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.step = '0.1'; inp.min = '0'; inp.style.width = '76px';
+        inp.value = (Math.round((s[field] || 0) * 10) / 10).toFixed(1);
+        inp.setAttribute('aria-label', label + ' of silence ' + (idx + 1) + ' in seconds');
+        inp.addEventListener('change', function () { s[field] = Number(inp.value) || 0; saveDraft(t); });
+        l.appendChild(inp); return l;
+      };
+      row.appendChild(mk('Silence from (s)', 'start'));
+      row.appendChild(mk('to (s)', 'end'));
+      var toHere = document.createElement('button'); toHere.className = 'quiet'; toHere.textContent = '⏱ End at playhead';
+      toHere.setAttribute('aria-label', 'Set end of silence ' + (idx + 1) + ' to the current playhead');
+      toHere.addEventListener('click', function () { s.end = $('editVideo').currentTime || s.end; saveDraft(t); renderAudio(); });
+      row.appendChild(toHere);
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Delete silence ' + (idx + 1));
+      del.addEventListener('click', function () { a.muteSpans.splice(a.muteSpans.indexOf(s), 1); saveDraft(t); renderAudio(); });
+      row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+  $('volSlider').addEventListener('input', function () {
+    var t = currentTake(); if (!t) return;
+    ensureAudio(t).volume = Number($('volSlider').value);
+    $('volLabel').textContent = Math.round(Number($('volSlider').value) * 100) + '%';
+    saveDraft(t);
+  });
+  $('removeAudioChk').addEventListener('change', function () {
+    var t = currentTake(); if (!t) return;
+    ensureAudio(t).removeAll = $('removeAudioChk').checked;
+    saveDraft(t);
+  });
+  $('addMuteBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    var a = ensureAudio(t);
+    var cur = $('editVideo').currentTime || 0;
+    a.muteSpans.push({ start: cur, end: Math.min(t.duration || cur + 2, cur + 2) });
+    saveDraft(t);
+    renderAudio();
+    announce('Silence added — adjust its end time or press End-at-playhead');
+  });
+  // Preview approximates the audio edits (element volume caps at 100%; the
+  // export GainNode is exact and can boost past it).
+  $('editVideo').addEventListener('timeupdate', function () {
+    var t = currentTake(); if (!t || !t.audio) return;
+    var g = vsGainAt(t.audio.muteSpans, t.audio.volume, $('editVideo').currentTime);
+    $('editVideo').muted = !!t.audio.removeAll || g === 0;
+    try { $('editVideo').volume = Math.min(1, g); } catch (_) {}
+  });
+
   // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
   function importCaptionFile(file) {
     var t = currentTake();
@@ -1157,6 +1263,7 @@ function vsZoomState(keyframes, tSec) {
     aimingZoomId = null;
     renderCues();
     renderZooms();
+    renderAudio();
   }
 
   // Trim preview: clamp playback into the kept window.
@@ -1239,7 +1346,8 @@ function vsZoomState(keyframes, tSec) {
     var cues = t.captions.filter(function (c) { return c.text && c.end > seg.segments[0].start && c.start < seg.segments[0].end; })
       .map(function (c) { return { start: Math.max(0, c.start - seg.segments[0].start), end: Math.max(0.2, c.end - seg.segments[0].start), text: c.text }; });
     var zooms = (t.zooms || []).filter(function (z) { return z && Number(z.scale) > 1; });
-    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0;
+    var audioCfg = t.audio || null;
+    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || !audioIsDefault(audioCfg);
     $('exportBtn').disabled = true;
     try {
       var outBlob, outDur;
@@ -1257,7 +1365,7 @@ function vsZoomState(keyframes, tSec) {
         setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms);
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg);
         outBlob = res.blob; outDur = res.duration;
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
@@ -1277,7 +1385,7 @@ function vsZoomState(keyframes, tSec) {
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
-  function reencode(take, seg, cues, burnCaptions, titleCard, zooms) {
+  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
@@ -1288,9 +1396,18 @@ function vsZoomState(keyframes, tSec) {
         var ctx = cv.getContext('2d');
         var ac = new (window.AudioContext || window.webkitAudioContext)();
         var dest = ac.createMediaStreamDestination();
-        try { ac.createMediaElementSource(v).connect(dest); } catch (_) {}
+        var removeAudio = !!(audioCfg && audioCfg.removeAll);
+        var gainNode = null;
+        if (!removeAudio) {
+          try {
+            gainNode = ac.createGain();
+            gainNode.gain.value = vsGainAt(audioCfg && audioCfg.muteSpans, audioCfg ? audioCfg.volume : 1, seg.start);
+            ac.createMediaElementSource(v).connect(gainNode);
+            gainNode.connect(dest);
+          } catch (_) { gainNode = null; }
+        }
         var stream = cv.captureStream(30);
-        if (dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
+        if (!removeAudio && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
         var mime = pickMime();
         var mr;
         try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { reject(e); return; }
@@ -1337,6 +1454,12 @@ function vsZoomState(keyframes, tSec) {
               v.play().catch(function () { reject(new Error('playback blocked')); });
             }
           } else {
+            // Audio edits track the playhead: mute spans + master volume via
+            // the GainNode (15ms smoothing avoids clicks at span edges).
+            if (gainNode) {
+              var tgtGain = vsGainAt(audioCfg && audioCfg.muteSpans, audioCfg ? audioCfg.volume : 1, v.currentTime);
+              try { gainNode.gain.setTargetAtTime(tgtGain, ac.currentTime, 0.015); } catch (_) { gainNode.gain.value = tgtGain; }
+            }
             // Zoom keyframes use take-absolute time (v.currentTime), so a
             // trimmed start doesn't shift where the teacher aimed them.
             var zs = vsZoomState(zooms || [], v.currentTime);
@@ -1440,7 +1563,7 @@ function vsZoomState(keyframes, tSec) {
   }
   function saveDraft(take) {
     withDb(function (db) {
-      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], createdAt: take.createdAt }); } catch (_) {}
+      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, createdAt: take.createdAt }); } catch (_) {}
     });
   }
   function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
@@ -1455,7 +1578,7 @@ function vsZoomState(keyframes, tSec) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], createdAt: r.createdAt });
+              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, createdAt: r.createdAt });
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }

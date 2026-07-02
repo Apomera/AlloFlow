@@ -278,6 +278,34 @@ describe('vsZoomState', () => {
   });
 });
 
+// ─── vsGainAt (audio mute spans + master volume) ─────────────────────────────
+describe('vsGainAt', () => {
+  const spans = [{ start: 5, end: 8 }, { start: 20, end: 21.5 }];
+  it('passes the master volume outside every span', () => {
+    expect(VS.vsGainAt(spans, 1, 0)).toBe(1);
+    expect(VS.vsGainAt(spans, 0.5, 10)).toBe(0.5);
+    expect(VS.vsGainAt([], 1.4, 3)).toBeCloseTo(1.4);
+  });
+  it('silences inside a span (end-exclusive boundaries)', () => {
+    expect(VS.vsGainAt(spans, 1, 5)).toBe(0);
+    expect(VS.vsGainAt(spans, 1, 6.5)).toBe(0);
+    expect(VS.vsGainAt(spans, 1, 8)).toBe(1); // end is exclusive
+    expect(VS.vsGainAt(spans, 2, 21)).toBe(0);
+  });
+  it('tolerates inverted spans (start > end)', () => {
+    expect(VS.vsGainAt([{ start: 8, end: 5 }], 1, 6)).toBe(0);
+  });
+  it('clamps volume to 0..2 and defaults bad input to 1', () => {
+    expect(VS.vsGainAt([], 99, 0)).toBe(2);
+    expect(VS.vsGainAt([], -3, 0)).toBe(0);
+    expect(VS.vsGainAt([], NaN, 0)).toBe(1);
+    expect(VS.vsGainAt(null, undefined, 0)).toBe(1);
+  });
+  it('skips malformed spans without silencing everything', () => {
+    expect(VS.vsGainAt([null, { start: NaN, end: 5 }, { start: 1 }], 1, 2)).toBe(1);
+  });
+});
+
 // ─── vsMakePackReference ─────────────────────────────────────────────────────
 describe('vsMakePackReference (pack-size guard)', () => {
   it('produces metadata only — never video bytes', () => {

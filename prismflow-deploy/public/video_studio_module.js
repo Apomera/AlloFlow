@@ -343,9 +343,28 @@
       y: 0.5 + (cl(best.k.y, 0.5) - 0.5) * f
     };
   }
+
+  // Audio-edit state → gain at time t (take-absolute seconds). muteSpans
+  // [{start,end}] are silenced ranges (order-tolerant, end-exclusive); volume
+  // is a 0..2 master gain (200% can distort — the UI says so). "Remove audio
+  // entirely" is the caller's job: it omits the audio track, not a gain of 0.
+  function vsGainAt(muteSpans, volume, tSec) {
+    var vol = Number(volume);
+    if (!isFinite(vol)) vol = 1;
+    vol = Math.max(0, Math.min(2, vol));
+    var t = Number(tSec) || 0;
+    var spans = Array.isArray(muteSpans) ? muteSpans : [];
+    for (var i = 0; i < spans.length; i++) {
+      var s = spans[i];
+      if (!s) continue;
+      var a = Number(s.start), b = Number(s.end);
+      if (isFinite(a) && isFinite(b) && t >= Math.min(a, b) && t < Math.max(a, b)) return 0;
+    }
+    return vol;
+  }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
