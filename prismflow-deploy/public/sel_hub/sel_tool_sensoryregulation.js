@@ -197,11 +197,58 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         );
       }
 
+      function sensoryCommandPanel() {
+        var profileCount = Object.keys(d.profile || {}).filter(function(k) { return !!d.profile[k]; }).length;
+        var activities = (d.regulatingActivities || []).length;
+        var accommodations = (d.myAccommodations || []).length;
+        function status(label, value, color) {
+          return h('div', { style: { padding: 10, borderRadius: 8, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
+            h('div', { style: { fontSize: 20, color: color, fontWeight: 900 } }, value)
+          );
+        }
+        function route(label, blurb, target, color) {
+          return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
+            style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, background: _senBg('#0f172a'), color: _senFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
+            h('div', { style: { fontSize: 13, color: color, fontWeight: 900, marginBottom: 4 } }, label),
+            h('div', { style: { fontSize: 11.5, color: _senFg('#94a3b8'), lineHeight: 1.5 } }, blurb)
+          );
+        }
+        return h('section', { className: 'no-print', 'aria-label': 'Sensory Regulation workspace summary',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(249,115,22,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _senFg('#fdba74'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Sensory workspace'),
+              h('div', { style: { fontSize: 13, color: _senFg('#e2e8f0'), lineHeight: 1.55 } }, 'Map what your nervous system notices, then turn the map into supports.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))', gap: 6, flex: '1 1 260px' } },
+              status('Profile', profileCount + '/8', '#f97316'),
+              status('Plan', String(activities), '#22c55e'),
+              status('Supports', String(accommodations), '#6366f1')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 12 } },
+            route('Profile map', 'Mark seeking, avoiding, mixed, or typical for each system.', 'profile', '#f97316'),
+            route('Regulation plan', 'Collect the body-based supports that actually help.', 'diet', '#22c55e'),
+            route('Advocacy list', 'Name school supports you can ask for clearly.', 'accommodations', '#6366f1')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6 } },
+            SYSTEMS.map(function(s) {
+              var marked = !!((d.profile || {})[s.id]);
+              return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 8, background: marked ? s.color + '16' : _senBg('#1e293b'), border: '1px solid ' + (marked ? s.color : '#334155'), color: marked ? s.color : _senFg('#94a3b8'), fontSize: 11, fontWeight: 800, textAlign: 'center' } },
+                s.label
+              );
+            })
+          )
+        );
+      }
+
       // ═══════════════════════════════════════════════════════════
       // HOME — psychoeducation
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
         return h('div', null,
+          sensoryCommandPanel(),
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(249,115,22,0.4)', marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _senFg('#fed7aa'), marginBottom: 4 } }, 'Sensory difference is identity, not deficit.'),
             h('p', { style: { margin: '0 0 8px', color: _senFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },

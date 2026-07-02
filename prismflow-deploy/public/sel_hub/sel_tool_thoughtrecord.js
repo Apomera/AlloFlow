@@ -153,6 +153,64 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         );
       }
 
+      function commandMetric(label, value, blurb, color) {
+        return h('div', { style: { padding: 12, borderRadius: 8, background: _thBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, minHeight: 92 } },
+          h('div', { style: { fontSize: 11, color: _thFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, label),
+          h('div', { style: { fontSize: 20, color: color, fontWeight: 900, marginBottom: 4 } }, value),
+          h('div', { style: { fontSize: 11.5, color: _thFg('#cbd5e1'), lineHeight: 1.5 } }, blurb)
+        );
+      }
+
+      function thoughtCommandPanel(draft) {
+        var fields = [
+          draft.situation,
+          draft.emotion1,
+          draft.thought,
+          draft.evidenceFor,
+          draft.evidenceAgainst,
+          draft.balanced
+        ];
+        var completed = fields.filter(function(v) { return v && String(v).trim(); }).length;
+        if (typeof draft.emotion2Rating === 'number' && draft.emotion2Rating !== 50) completed += 1;
+        var initial = typeof draft.emotion1Rating === 'number' ? draft.emotion1Rating : 50;
+        var current = typeof draft.emotion2Rating === 'number' ? draft.emotion2Rating : 50;
+        var shift = initial - current;
+        var savedCount = (d.entries || []).length;
+        var rail = [
+          { label: 'Facts', done: !!(draft.situation && String(draft.situation).trim()) },
+          { label: 'Feeling', done: !!(draft.emotion1 && String(draft.emotion1).trim()) },
+          { label: 'Thought', done: !!(draft.thought && String(draft.thought).trim()) },
+          { label: 'For', done: !!(draft.evidenceFor && String(draft.evidenceFor).trim()) },
+          { label: 'Against', done: !!(draft.evidenceAgainst && String(draft.evidenceAgainst).trim()) },
+          { label: 'Balanced', done: !!(draft.balanced && String(draft.balanced).trim()) },
+          { label: 'Re-rate', done: current !== 50 }
+        ];
+        return h('section', { className: 'no-print', 'aria-label': 'Thought Record workspace summary',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(124,58,237,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(167,139,250,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _thFg('#c4b5fd'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Thought lab'),
+              h('div', { style: { fontSize: 13, color: _thFg('#e2e8f0'), lineHeight: 1.55 } }, 'Start with facts, test the thought, then check whether the feeling shifted.')
+            ),
+            h('button', { onClick: function() { goto('past'); }, 'aria-label': 'View past thought records',
+              style: { padding: '8px 12px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.14)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 800, fontSize: 12 } },
+              'Past records')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
+            commandMetric('Entry progress', completed + '/7', 'Each box can be short. Complete what helps today.', '#a78bfa'),
+            commandMetric('Feeling shift', (shift > 0 ? '-' : shift < 0 ? '+' : '') + Math.abs(shift), shift > 0 ? 'Intensity is moving down.' : shift < 0 ? 'Intensity rose; pause and get support if needed.' : 'Re-rate after the balanced thought.', '#22c55e'),
+            commandMetric('Saved records', String(savedCount), savedCount ? 'Patterns get easier to see over time.' : 'Nothing saved yet. Drafts stay local until saved.', '#0ea5e9')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))', gap: 6 } },
+            rail.map(function(item) {
+              return h('div', { key: item.label, style: { padding: '7px 6px', borderRadius: 8, textAlign: 'center', background: item.done ? 'rgba(34,197,94,0.16)' : _thBg('#1e293b'), border: '1px solid ' + (item.done ? '#22c55e' : '#334155'), color: item.done ? _thFg('#bbf7d0') : _thFg('#94a3b8'), fontSize: 10.5, fontWeight: 800 } },
+                item.label
+              );
+            })
+          )
+        );
+      }
+
       // ═══════════════════════════════════════════════════════════
       // NEW ENTRY — guided walk through 7 columns
       // ═══════════════════════════════════════════════════════════
@@ -191,6 +249,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
         function clearDraft() { setTR({ activeEntry: null }); }
 
         return h('div', null,
+          thoughtCommandPanel(draft),
           safetyBanner(),
 
           // 1 Situation

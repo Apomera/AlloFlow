@@ -155,6 +155,12 @@ function makeCtx(toolId, themeVariant) {
     toolData: {}, setToolData: noop, update: noop, updateMulti: noop,
     setSelHubTool: noop, setSelHubTab: noop, selHubTab: 'explore', selHubTool: toolId,
     addToast: noop, awardXP: noop, getXP: function () { return 0; },
+    getSavePolicy: function () {
+      return {
+        checkpointLabel: 'Private checkpoint',
+        sharePacketLabel: 'Share Packet eligible'
+      };
+    },
     announceToSR: noop, celebrate: noop, beep: noop, t: function (k) { return k; },
     theme: theme,
     isDark: !!themeBase.isDark, isContrast: !!themeBase.isContrast, themePalette: themeBase.palette,

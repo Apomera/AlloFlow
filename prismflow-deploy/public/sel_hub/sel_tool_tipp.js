@@ -208,6 +208,44 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         );
       }
 
+      function tippCommandPanel() {
+        var log = d.log || [];
+        var helped = log.filter(function(e) { return e.helped; }).length;
+        var routes = [
+          { signal: 'Too hot or impulsive', skill: 'temperature', fit: 'Fastest reset' },
+          { signal: 'Adrenaline is high', skill: 'intense', fit: 'Use the body' },
+          { signal: 'Breath can lead', skill: 'paced', fit: 'Quietest option' },
+          { signal: 'Clenched or tense', skill: 'paired', fit: 'Release tension' }
+        ];
+        return h('section', { 'aria-label': 'TIPP quick chooser',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(239,68,68,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _tpFg('#fca5a5'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Body-first chooser'),
+              h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), lineHeight: 1.55 } }, 'Match the skill to the signal your body is giving right now.')
+            ),
+            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _tpBg('#0f172a'), border: '1px solid #334155', color: _tpFg('#cbd5e1'), fontSize: 12, fontWeight: 800 } },
+              log.length ? helped + '/' + log.length + ' helped' : 'No sessions logged'
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+            routes.map(function(route) {
+              var skill = SKILLS.find(function(s) { return s.id === route.skill; });
+              return h('button', { key: route.skill, onClick: function() { if (skill) setTIPP({ activeSkill: skill.id, timerSeconds: 0 }); },
+                'aria-label': skill ? 'Start ' + skill.label : route.signal,
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, border: '1px solid ' + (skill ? skill.color : '#334155'), background: skill ? skill.color + '16' : _tpBg('#1e293b'), color: _tpFg('#e2e8f0'), cursor: 'pointer', minHeight: 104 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                  h('span', { style: { fontSize: 20 } }, skill ? skill.icon : '+'),
+                  h('div', { style: { fontSize: 12, color: skill ? skill.color : _tpFg('#fca5a5'), fontWeight: 900 } }, route.signal)
+                ),
+                h('div', { style: { fontSize: 13, color: _tpFg('#e2e8f0'), fontWeight: 800, marginBottom: 3 } }, skill ? skill.label : 'Choose'),
+                h('div', { style: { fontSize: 11, color: _tpFg('#94a3b8'), lineHeight: 1.45 } }, route.fit)
+              );
+            })
+          )
+        );
+      }
+
       // ═══════════════════════════════════════════════════════════
       // HOME — pick a skill
       // ═══════════════════════════════════════════════════════════
@@ -216,6 +254,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
         return h('div', null,
           safetyBanner(),
+          tippCommandPanel(),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(239,68,68,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(239,68,68,0.4)', marginBottom: 14, textAlign: 'center' } },
             h('div', { style: { fontSize: 38, marginBottom: 4 } }, '🆘'),
             h('h3', { style: { margin: '0 0 6px', color: _tpFg('#fecaca'), fontSize: 18 } }, 'Pick one. Do it. Notice if the dial moves.'),

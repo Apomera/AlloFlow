@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T19:53:47.971Z",
+  "generatedAt": "2026-07-02T20:42:08.284Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
@@ -366,7 +366,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 111903
+            "bytes": 111912
           }
         },
         {

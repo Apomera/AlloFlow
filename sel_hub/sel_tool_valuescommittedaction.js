@@ -207,6 +207,46 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         return total;
       }
 
+      function valuesCommandPanel(rc, topCount, acts) {
+        var core = coreCount();
+        var done = 0;
+        Object.keys(d.actions || {}).forEach(function(k) {
+          (d.actions[k] || []).forEach(function(a) { if (a && a.done) done += 1; });
+        });
+        function stat(label, value, color) {
+          return h('div', { style: { padding: 10, borderRadius: 8, background: _vcaBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 11, color: _vcaFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
+            h('div', { style: { fontSize: 20, color: color, fontWeight: 900 } }, value)
+          );
+        }
+        function route(label, blurb, target, color) {
+          return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
+            style: { textAlign: 'left', padding: 12, borderRadius: 8, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, background: _vcaBg('#0f172a'), color: _vcaFg('#e2e8f0'), cursor: 'pointer', minHeight: 92 } },
+            h('div', { style: { fontSize: 13, color: color, fontWeight: 900, marginBottom: 4 } }, label),
+            h('div', { style: { fontSize: 11.5, color: _vcaFg('#94a3b8'), lineHeight: 1.5 } }, blurb)
+          );
+        }
+        return h('section', { className: 'no-print', 'aria-label': 'Values and committed action workspace summary',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(129,140,248,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _vcaFg('#a5b4fc'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Direction board'),
+              h('div', { style: { fontSize: 13, color: _vcaFg('#e2e8f0'), lineHeight: 1.55 } }, 'Move from a big deck of values to a few small actions you can actually do.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(84px, 1fr))', gap: 6, flex: '1 1 260px' } },
+              stat('Sorted', rc + '/' + VALUE_CARDS.length, '#818cf8'),
+              stat('Core', String(core), '#22c55e'),
+              stat('Done', done + '/' + acts, '#f59e0b')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
+            route('Sort values', 'Mark what is core, meaningful, or not really you.', 'sort', '#818cf8'),
+            route('Choose top values', topCount ? topCount + ' selected. Refine the short list.' : 'Pick 3 to 5 that matter right now.', 'top', '#a855f7'),
+            route('Commit actions', acts ? acts + ' action' + (acts === 1 ? '' : 's') + ' listed.' : 'Turn values into small weekly moves.', 'actions', '#22c55e')
+          )
+        );
+      }
+
       // ═══════════════════════════════════════════════════════════
       // HOME — overview + 3-step roadmap
       // ═══════════════════════════════════════════════════════════
@@ -216,6 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         var acts = actionCount();
 
         return h('div', null,
+          valuesCommandPanel(rc, topCount, acts),
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _vcaFg('#e0e7ff'), marginBottom: 4 } }, 'Values direct your action.'),
             h('p', { style: { margin: 0, color: _vcaFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },

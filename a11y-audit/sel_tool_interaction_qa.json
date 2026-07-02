@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T19:54:29.789Z",
+  "generatedAt": "2026-07-02T20:46:18.257Z",
   "scope": [
     "zones",
     "coping",
@@ -348,9 +348,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 3157,
+                "textLength": 3496,
                 "hasHeading": true,
-                "controlCount": 32,
+                "controlCount": 33,
                 "selectedToolText": "Opened CBT Thought Record ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Inner work CBT Thought Record 8-15 min Private checkpoint Share Packet eligible Exp"
               }
             },

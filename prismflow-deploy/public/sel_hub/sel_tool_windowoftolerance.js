@@ -194,6 +194,51 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         );
       }
 
+      function windowCommandPanel() {
+        var signs = (d.hyperSigns || []).length + (d.windowSigns || []).length + (d.hypoSigns || []).length;
+        var triggers = (d.triggers || []).length;
+        var practices = (d.practices || []).length;
+        var zoneColor = d.currentZone === 'hyper' ? _wtFg('#ef4444') : d.currentZone === 'hypo' ? _wtFg('#0ea5e9') : d.currentZone === 'window' ? _wtFg('#14b8a6') : _wtFg('#fbbf24');
+        var zoneLabel = d.currentZone === 'hyper' ? 'Hyper' : d.currentZone === 'hypo' ? 'Hypo' : d.currentZone === 'window' ? 'In window' : 'Not checked';
+        function stat(label, value, color) {
+          return h('div', { style: { padding: 10, borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 11, color: _wtFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
+            h('div', { style: { fontSize: 20, color: color, fontWeight: 900 } }, value)
+          );
+        }
+        function action(label, target, color, filled) {
+          var borderColor = _wtHC ? '#ffff00' : color;
+          var bgColor = filled ? (_wtHC ? '#000000' : color) : 'rgba(15,23,42,0.55)';
+          var fgColor = _wtHC ? '#ffff00' : (filled ? '#0f172a' : color);
+          return h('button', { onClick: function() { goto(target); }, 'aria-label': label,
+            style: { padding: '9px 12px', borderRadius: 8, border: '1px solid ' + borderColor, background: bgColor, color: fgColor, cursor: 'pointer', fontWeight: 900, fontSize: 12 } },
+            label
+          );
+        }
+        return h('section', { className: 'no-print', 'aria-label': 'Window of Tolerance workspace summary',
+          style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(20,184,166,0.16) 0%, rgba(15,23,42,0.62) 70%)', border: '1px solid rgba(20,184,166,0.34)', marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 12, color: _wtFg('#5eead4'), fontWeight: 900, textTransform: 'uppercase', marginBottom: 2 } }, 'Regulation map'),
+              h('div', { style: { fontSize: 13, color: _wtFg('#e2e8f0'), lineHeight: 1.55 } }, 'Name your zones, spot what pushes you out, and keep return-to-window practices close.')
+            ),
+            h('div', { style: { padding: '8px 10px', borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid #334155', color: zoneColor, fontSize: 12, fontWeight: 900 } },
+              'Today: ' + zoneLabel
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 8, marginBottom: 12 } },
+            stat('Zone signs', String(signs), _wtFg('#14b8a6')),
+            stat('Triggers', String(triggers), _wtFg('#fbbf24')),
+            stat('Practices', String(practices), _wtFg('#a78bfa'))
+          ),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            action(signs ? 'Edit map' : 'Build map', 'edit', '#14b8a6', true),
+            action('Check in', 'checkin', d.currentZone === 'hyper' ? '#ef4444' : d.currentZone === 'hypo' ? '#0ea5e9' : d.currentZone === 'window' ? '#14b8a6' : '#fbbf24', false),
+            action('Print map', 'print', '#a78bfa', false)
+          )
+        );
+      }
+
       // ═══════════════════════════════════════════════════════════
       // WINDOW — main visualization
       // ═══════════════════════════════════════════════════════════
@@ -217,6 +262,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         var totalSigns = (d.hyperSigns || []).length + (d.windowSigns || []).length + (d.hypoSigns || []).length;
         if (totalSigns === 0 && (d.triggers || []).length === 0 && (d.practices || []).length === 0) {
           return h('div', null,
+            windowCommandPanel(),
             h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(20,184,166,0.4)', textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🪟'),
               h('h3', { style: { margin: '0 0 8px', color: _wtFg('#99f6e4'), fontSize: 18 } }, 'Your Window is empty'),
@@ -231,6 +277,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         }
 
         return h('div', null,
+          windowCommandPanel(),
           zone('🔺 Hyperarousal (above the window)', _wtFg('#ef4444'), d.hyperSigns || [],
             'Too activated. Fight or flight territory. Hard to think, hard to sit still, snappy, racing.'),
 
