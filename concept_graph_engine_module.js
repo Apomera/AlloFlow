@@ -220,6 +220,50 @@
     return Object.assign({}, graph, { nodes: nodes });
   }
 
+  // ── Strand Challenge — the 3D-native "sort game" ────────────────────
+  // Counterpart of the 2D organizer sort games: strip strand membership from
+  // ITEM nodes (they fall onto the trailing "Ungrouped" plane) and drop every
+  // edge touching an item (a branch→item edge would give the answer away).
+  // Branch nodes keep their categories so the strand planes stay visible as
+  // the drop targets. Scoring is a pure comparison — the whole game loop is
+  // unit-testable without WebGL.
+  function buildStrandChallenge(graph) {
+    graph = normalizeGraph(graph);
+    var answerKey = {}, targets = [], strands = [], seenStrand = {};
+    graph.nodes.forEach(function (n) {
+      if (n.type === 'item' && typeof n.category === 'string' && n.category) {
+        answerKey[n.id] = n.category;
+        targets.push(n.id);
+        if (!seenStrand[n.category]) { seenStrand[n.category] = true; strands.push(n.category); }
+      }
+    });
+    var targetSet = {}; targets.forEach(function (id) { targetSet[id] = 1; });
+    var nodes = graph.nodes.map(function (n) {
+      if (!targetSet[n.id]) return n;
+      var av = Object.assign({}, n.axisValues || {});
+      delete av.z;
+      return Object.assign({}, n, { category: null, axisValues: av });
+    });
+    var edges = (graph.edges || []).filter(function (e) { return !targetSet[e.fromId] && !targetSet[e.toId]; });
+    var g = Object.assign({}, graph, { nodes: nodes, edges: edges });
+    g.layers = deriveLanes(g);
+    return { graph: g, answerKey: answerKey, targets: targets, strands: strands };
+  }
+
+  // placed = {nodeId: strand} (from the emitted arrangement's categories).
+  function scoreStrandChallenge(answerKey, placed) {
+    placed = placed || {};
+    var results = {}, total = 0, correct = 0, unplaced = 0, incorrect = 0;
+    Object.keys(answerKey || {}).forEach(function (id) {
+      total++;
+      var p = placed[id];
+      if (!p) { results[id] = 'unplaced'; unplaced++; }
+      else if (p === answerKey[id]) { results[id] = 'correct'; correct++; }
+      else { results[id] = 'incorrect'; incorrect++; }
+    });
+    return { total: total, correct: correct, incorrect: incorrect, unplaced: unplaced, results: results, complete: total > 0 && correct === total };
+  }
+
   // ── Throughline (unit builder) ↔ acg ────────────────────────────────
   function fromThroughlineUnit(unit) {
     var g = emptyGraph();
@@ -439,6 +483,8 @@
     ensureDefaultAxisValues: ensureDefaultAxisValues,
     setNodeStrand: setNodeStrand,
     nudgeNodeAxis: nudgeNodeAxis,
+    buildStrandChallenge: buildStrandChallenge,
+    scoreStrandChallenge: scoreStrandChallenge,
     fromThroughlineUnit: fromThroughlineUnit,
     toThroughlineUnit: toThroughlineUnit,
     fromConceptMap: fromConceptMap,

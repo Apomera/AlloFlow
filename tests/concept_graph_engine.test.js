@@ -275,6 +275,32 @@ describe('ConceptGraphEngine — arrangements (persistable 3D placement + constr
     expect(E.setNodeStrand(g, 'ghost', 'S2')).toBe(g);              // unknown id ⇒ unchanged
   });
 
+  it('buildStrandChallenge strips item strands + answer-leaking edges but keeps the strand planes', () => {
+    const g = E.ensureDefaultAxisValues(E.adaptGenerated({
+      main: 'T',
+      branches: [{ title: 'S1', items: ['a', 'b'] }, { title: 'S2', items: ['c'] }],
+    }));
+    const ch = E.buildStrandChallenge(g);
+    expect(ch.targets.slice().sort()).toEqual(['b0_i0', 'b0_i1', 'b1_i0']);
+    expect(ch.answerKey).toEqual({ b0_i0: 'S1', b0_i1: 'S1', b1_i0: 'S2' });
+    expect(ch.strands).toEqual(['S1', 'S2']);
+    const items = ch.graph.nodes.filter((n) => n.type === 'item');
+    expect(items.every((n) => n.category === null)).toBe(true);                    // items fall off their strands
+    expect(items.every((n) => !n.axisValues || n.axisValues.z === undefined)).toBe(true);
+    expect(ch.graph.nodes.find((n) => n.id === 'b0').category).toBe('S1');         // strand planes remain as targets
+    expect(ch.graph.edges.some((e) => /_i\d/.test(e.fromId) || /_i\d/.test(e.toId))).toBe(false);   // no giveaway edges
+    expect(ch.graph.layers.map((l) => l.key)).toEqual(['S1', 'S2', null]);         // trailing Ungrouped plane holds the items
+  });
+
+  it('scoreStrandChallenge classifies correct / incorrect / unplaced and detects completion', () => {
+    const key = { i1: 'A', i2: 'B', i3: 'B' };
+    const partial = E.scoreStrandChallenge(key, { i1: 'A', i2: 'A' });
+    expect(partial).toMatchObject({ total: 3, correct: 1, incorrect: 1, unplaced: 1, complete: false });
+    expect(partial.results).toEqual({ i1: 'correct', i2: 'incorrect', i3: 'unplaced' });
+    expect(E.scoreStrandChallenge(key, { i1: 'A', i2: 'B', i3: 'B' }).complete).toBe(true);
+    expect(E.scoreStrandChallenge({}, {}).complete).toBe(false);   // empty key can never be "won"
+  });
+
   it('nudgeNodeAxis clamps to 0..1 and derives a start from current coords when axisValues are absent', () => {
     const g = { version: 'acg/v1', nodes: [{ id: 'd', x: 1000, y: 600, z: 0 }], edges: [], layers: [] };
     const once = E.nudgeNodeAxis(g, 'd', 'x', 0.06, { width: 2000, height: 1200 });

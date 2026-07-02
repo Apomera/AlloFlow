@@ -965,6 +965,30 @@
     }
     el.addEventListener('keydown', onKeyDown);
 
+    // ── Challenge feedback: tint spheres by placement result ──
+    // statusById: {nodeId: 'correct'|'incorrect'|'unplaced'}; anything else (or a
+    // missing entry) restores the node's strand colour. announce goes to the
+    // aria-live region so screen-reader players hear the score too.
+    state.flagNodes = function (statusById, announce) {
+      statusById = statusById || {};
+      var TINT = { correct: '#22c55e', incorrect: '#ef4444', unplaced: '#eab308' };
+      nodeMeshes.forEach(function (m) {
+        var tint = TINT[statusById[m.node.id]];
+        try {
+          if (tint) {
+            m.sphere.material.emissive.set(tint);
+            m.sphere.material.emissiveIntensity = 1.4;
+            m.glow.material.color.set(tint);
+          } else {
+            m.sphere.material.emissive.set(m.node.color).multiplyScalar(0.5);
+            m.sphere.material.emissiveIntensity = m.baseEmissive;
+            m.glow.material.color.set(m.node.color);
+          }
+        } catch (e) {}
+      });
+      try { if (live && announce) live.textContent = announce; } catch (e) {}
+    };
+
     state.cleanup.push(function () {
       el.removeEventListener('pointerdown', onDown); window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp); el.removeEventListener('wheel', onWheel);
@@ -1102,9 +1126,13 @@
       container.insertBefore(note, outlineEl);
     }
 
+    function flagNodes(statusById, announce) {
+      try { if (state.flagNodes) state.flagNodes(statusById, announce); } catch (e) {}
+    }
+
     if (!isWebGLAvailable()) {
       showFallback(t('cg3d.no_webgl') || 'This browser cannot show the 3D view. Showing the reading-order outline instead.');
-      return { destroy: destroy, update: function () {}, fellBack: true };
+      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes };
     }
 
     var holder = document.createElement('div');
@@ -1126,7 +1154,7 @@
       showFallback(t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.');
     });
 
-    return { destroy: destroy, update: function () {}, fellBack: false };
+    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes };
   }
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──

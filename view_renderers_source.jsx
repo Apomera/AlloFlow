@@ -1682,6 +1682,9 @@ const renderOutlineContent = (deps) => {
                             t={t}
                             addToast={deps.addToast}
                             onPersist={deps.handleConceptSpacePersist}
+                            playSound={playSound}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
                         />
                     </ErrorBoundary>
                 </div>
@@ -1959,7 +1962,7 @@ function openConceptMap3D(opts) {
 // onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
 // becomes visible on any load/WebGL failure), and this component adds its own
 // static-outline fallback for the case where the modules themselves never load.
-const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const handleRef = React.useRef(null);
@@ -1969,6 +1972,19 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
     const [arranging, setArranging] = React.useState(false);
     const [nonce, setNonce] = React.useState(0);   // bump to rebuild the scene from persisted data
     const persist = typeof onPersist === 'function' ? onPersist : null;
+    // ── Strand Challenge (the 3D-native sort game) ──
+    // challenge = {graph, answerKey, targets, strands} from engine.buildStrandChallenge.
+    // Placements arrive through the SAME edit pipeline students already use
+    // (strand chips / [ ] keys) — the game IS the editing mechanics, scored.
+    const [challenge, setChallenge] = React.useState(null);
+    const [placedCount, setPlacedCount] = React.useState(0);
+    const placedRef = React.useRef({});
+    const attemptsRef = React.useRef(0);
+    const challengeEligible = React.useMemo(() => {
+        const branches = Array.isArray(data?.branches) ? data.branches : [];
+        const items = branches.reduce((s, b) => s + ((b.items || []).filter((it) => (typeof it === 'object' ? it.text : it)).length), 0);
+        return branches.length >= 2 && items >= 4;   // same bar as the 2D sort games
+    }, [data]);
     // Scene identity = the CONTENT (not the arrangement): edits update
     // data.conceptSpace continuously and must NOT remount the GL scene.
     const dataKey = JSON.stringify({ m: data?.main, b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items })) });
@@ -1984,22 +2000,78 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
         if (!E || !CG3D) { setFailed(true); return undefined; }
-        let graph = E.adaptGenerated(data || {});
-        if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
-        if (data?.conceptSpace && E.applyArrangement) graph = E.applyArrangement(graph, data.conceptSpace);
-        graphRef.current = graph;
+        let graph;
+        if (challenge) {
+            graph = challenge.graph;   // items stripped of strands, answer-leaking edges removed
+        } else {
+            graph = E.adaptGenerated(data || {});
+            if (E.ensureDefaultAxisValues) graph = E.ensureDefaultAxisValues(graph);
+            if (data?.conceptSpace && E.applyArrangement) graph = E.applyArrangement(graph, data.conceptSpace);
+            graphRef.current = graph;
+        }
         handleRef.current = CG3D.render(hostRef.current, graph, {
             t,
             autoRotate: false,
-            editable: !!persist,
-            onArrangementChange: persist ? ((arr) => persist(arr, 'conceptSpace')) : undefined,
+            editable: challenge ? true : !!persist,
+            onArrangementChange: challenge
+                ? ((arr) => {
+                    // Collect placements; NEVER persist during a challenge.
+                    const placed = {};
+                    challenge.targets.forEach((id) => { if (arr && arr.categories && arr.categories[id]) placed[id] = arr.categories[id]; });
+                    placedRef.current = placed;
+                    setPlacedCount(Object.keys(placed).length);
+                })
+                : (persist ? ((arr) => persist(arr, 'conceptSpace')) : undefined),
         });
         return () => {
             try { if (handleRef.current && handleRef.current.destroy) handleRef.current.destroy(); } catch (e) {}
             handleRef.current = null;
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ready, failed, dataKey, nonce]);
+    }, [ready, failed, dataKey, nonce, challenge]);
+
+    const startChallenge = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !E.buildStrandChallenge || !graphRef.current) return;
+        const ch = E.buildStrandChallenge(graphRef.current);
+        if (!ch.targets.length) { if (addToast) addToast(t('concept_space.challenge_empty') || 'No concepts to sort yet.', 'info'); return; }
+        placedRef.current = {}; setPlacedCount(0); attemptsRef.current = 0;
+        setChallenge(ch);
+        if (addToast) addToast(t('concept_space.challenge_start') || '🎯 Every concept fell off its strand! Click one, then pick its strand.', 'info');
+    };
+    const exitChallenge = () => { setChallenge(null); placedRef.current = {}; setPlacedCount(0); attemptsRef.current = 0; };
+    const retryChallenge = () => { placedRef.current = {}; setPlacedCount(0); setChallenge((c) => (c ? { ...c } : c)); };   // new identity ⇒ scene remounts fresh
+    const checkChallenge = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        if (!E || !challenge || !handleRef.current) return;
+        attemptsRef.current += 1;
+        const score = E.scoreStrandChallenge(challenge.answerKey, placedRef.current);
+        const summary = (t('concept_space.challenge_result') || 'Placed {correct} of {total} correctly.')
+            .replace('{correct}', String(score.correct)).replace('{total}', String(score.total));
+        if (handleRef.current.flagNodes) handleRef.current.flagNodes(score.results, summary);
+        const points = score.correct * 10;
+        const labelOf = (id) => { const n = (challenge.graph.nodes || []).find((x) => x.id === id); return (n && n.label) || id; };
+        if (score.complete) {
+            if (playSound) playSound('correct');
+            if (addToast) addToast(t('concept_space.challenge_win') || '🎉 Every concept is on the right strand!', 'success');
+            if (onScoreUpdate) onScoreUpdate(points, 'Strand Challenge Complete');
+            if (onGameComplete) onGameComplete('strandChallenge3d', { score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: true, attempts: attemptsRef.current, bestScore: points, incorrectPlacements: [] });
+        } else {
+            if (playSound) playSound('reveal');
+            if (addToast) addToast(summary, 'info');
+            // Partial attempts still reach the teacher dashboard (misconception data),
+            // mirroring the 2D sort games' contract.
+            if (onGameComplete) onGameComplete('strandChallenge3dAttempt', {
+                score: points, correctPlacements: score.correct, totalItems: score.total, isPerfect: false,
+                attempts: attemptsRef.current, bestScore: points,
+                incorrectPlacements: Object.keys(score.results).filter((id) => score.results[id] !== 'correct').map((id) => ({
+                    itemId: id, itemText: labelOf(id),
+                    placedCategoryLabel: placedRef.current[id] || 'unplaced',
+                    correctCategoryId: challenge.answerKey[id], correctCategoryLabel: challenge.answerKey[id],
+                })),
+            });
+        }
+    };
 
     const handleArrange = () => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -2035,36 +2107,77 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist }) => {
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                 <div className="text-xs text-slate-500">
-                    {t('concept_space.hint') || 'Position carries meaning: left → right = sequence · higher = more abstract · depth = strand.'}
+                    {challenge
+                        ? (t('concept_space.challenge_hint') || '🎯 Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready.')
+                        : (t('concept_space.hint') || 'Position carries meaning: left → right = sequence · higher = more abstract · depth = strand.')}
                 </div>
                 <div className="flex items-center gap-2">
-                    {hasContent && typeof window.callGemini === 'function' && !failed && (
-                        <button
-                            onClick={handleArrange}
-                            disabled={arranging}
-                            className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={t('concept_space.arrange_tooltip') || 'Ask the AI to score every concept on the sequence, abstraction, and strand axes, then re-project the space'}
-                        >
-                            ✨ {arranging ? (t('concept_map.view_3d_arranging') || 'Arranging…') : (t('concept_map.view_3d_arrange') || 'Arrange by meaning')}
-                        </button>
-                    )}
-                    {hasContent && persist && data?.conceptSpace && !failed && (
-                        <button
-                            onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
-                            className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
-                            title={t('concept_space.reset_tooltip') || 'Discard the saved arrangement and return to the default layout'}
-                        >
-                            ↺ {t('concept_space.reset') || 'Reset arrangement'}
-                        </button>
-                    )}
-                    {hasContent && !failed && (
-                        <button
-                            onClick={handleFullscreen}
-                            className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors"
-                            title={t('concept_space.fullscreen_tooltip') || 'Open this concept space full screen'}
-                        >
-                            ⛶ {t('concept_space.fullscreen') || 'Fullscreen'}
-                        </button>
+                    {challenge ? (
+                        <>
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full" role="status">
+                                {(t('concept_space.challenge_progress') || '{placed}/{total} placed')
+                                    .replace('{placed}', String(placedCount)).replace('{total}', String(challenge.targets.length))}
+                            </span>
+                            <button
+                                onClick={checkChallenge}
+                                disabled={placedCount === 0}
+                                className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                ✔ {t('concept_space.challenge_check') || 'Check placements'}
+                            </button>
+                            <button
+                                onClick={retryChallenge}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                ↺ {t('concept_space.challenge_retry') || 'Retry'}
+                            </button>
+                            <button
+                                onClick={exitChallenge}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                {t('concept_space.challenge_exit') || 'Exit challenge'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            {hasContent && challengeEligible && !failed && (
+                                <button
+                                    onClick={startChallenge}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                    title={t('concept_space.challenge_tooltip') || 'Practice: every concept falls off its strand — put each one back where it belongs'}
+                                >
+                                    🎯 {t('concept_space.challenge_play') || 'Strand Challenge'}
+                                </button>
+                            )}
+                            {hasContent && typeof window.callGemini === 'function' && !failed && (
+                                <button
+                                    onClick={handleArrange}
+                                    disabled={arranging}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('concept_space.arrange_tooltip') || 'Ask the AI to score every concept on the sequence, abstraction, and strand axes, then re-project the space'}
+                                >
+                                    ✨ {arranging ? (t('concept_map.view_3d_arranging') || 'Arranging…') : (t('concept_map.view_3d_arrange') || 'Arrange by meaning')}
+                                </button>
+                            )}
+                            {hasContent && persist && data?.conceptSpace && !failed && (
+                                <button
+                                    onClick={() => { persist(null, 'conceptSpace'); setNonce((n) => n + 1); }}
+                                    className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                    title={t('concept_space.reset_tooltip') || 'Discard the saved arrangement and return to the default layout'}
+                                >
+                                    ↺ {t('concept_space.reset') || 'Reset arrangement'}
+                                </button>
+                            )}
+                            {hasContent && !failed && (
+                                <button
+                                    onClick={handleFullscreen}
+                                    className="flex items-center gap-1 bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors"
+                                    title={t('concept_space.fullscreen_tooltip') || 'Open this concept space full screen'}
+                                >
+                                    ⛶ {t('concept_space.fullscreen') || 'Fullscreen'}
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
