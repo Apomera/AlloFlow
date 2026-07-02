@@ -131,3 +131,26 @@ redistributes outputs with implicit "district-approved accessible" status:
 3. A2 metadata scrub-or-disclose + A3 signature disclosure — honesty class.
 4. A1 Document Safety scan panel — design first (detect+disclose+opt-strip).
 5. C4 ZIP byte cache + C5 exclusion toast.
+
+## Queue outcomes — @eac0ea12 (2026-07-02)
+
+- **C1 — NO CHANGE (agent false positive):** the image-extraction pdf.js
+  doc is hoisted + destroyed in `finally` on every path (H-2, 2026-06-23,
+  ~15318/15554). Verified, nothing to fix.
+- **C2 — FIXED:** 8-min per-file wall-clock backstop around both
+  _processOne stages; a hang now fails the file and the batch continues.
+- **B1 — FIXED:** all 3 Vision caption/description hints routed through
+  _neutralizePromptFence (3× caption, 2× description).
+- **B2 — FIXED (recalibrated):** agent's svg/iframe/object claim was
+  false (already stripped ~11315); real gap was form-control FORBID_TAGS
+  parity + unclosed <script/<style — both closed.
+- **Rebuild-clean affordance — SHIPPED:** _runTypesetExport(opts) factored;
+  PDF-only "🧼 Rebuild clean (drops embedded scripts)" button added. This
+  is the first concrete piece of the A-cluster answer — a sanitized OUTPUT
+  for untrusted-origin PDFs, without needing the full Document Safety
+  scanner yet. Locks D1–D5, 165/165.
+
+Remaining queue (unchanged priority): A2/A3 honesty (metadata + signature
+disclosure), A1 Document Safety scan PANEL (detect+disclose the active
+content the rebuild silently drops — pairs with the new button), C4 ZIP
+byte cache, C5 batch-exclusion toast (long-standing open item).
