@@ -137,10 +137,12 @@ async function _sha256OfBytes(bytes) {
 // timeout helper, so those awaits were unbounded — this mirrors doc_pipeline's _withTimeout. Race-based:
 // the underlying op may still run after the reject, so callers wrap in try/catch and degrade gracefully.
 function _withTimeout(promise, ms, label) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Timed out after ' + ms + 'ms: ' + (label || 'operation'))), ms)),
-  ]);
+  // S7 (deep dive 2026-07-02): clear the timer when the op settles first — doc_pipeline's
+  // copy does; this one leaked a live timer per call, which adds up across a long batch
+  // (thousands of pending timeouts holding their closures).
+  let _t = null;
+  const timeout = new Promise((_, reject) => { _t = setTimeout(() => reject(new Error('Timed out after ' + ms + 'ms: ' + (label || 'operation'))), ms); });
+  return Promise.race([promise, timeout]).finally(() => { if (_t) clearTimeout(_t); });
 }
 
 // _htmlToDocxSpec: pure HTML → block-spec transformer. Deliberately free of
@@ -1852,7 +1854,7 @@ function PdfAuditView(props) {
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
     auditOutputAccessibility, recomputeIssueResolution, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+    applyFormBlanks, callTTS, detectPdfBlankFields, overlayPdfFormFields, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, detectFormBlanks, languageToTTSCode, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
     createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,
@@ -3456,7 +3458,7 @@ function PdfAuditView(props) {
   return (
         <div
           data-help-key="pdf_audit_view_panel"
-          className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="allo-docsuite fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
           onClick={(e) => {
@@ -3478,6 +3480,15 @@ function PdfAuditView(props) {
             {/* Persistent close button — sticky so it stays visible when the modal content scrolls.
                 Disabled while remediation is mid-flight so users don't kill a running pipeline by accident. */}
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
+              <button
+                type="button"
+                onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
+                aria-label={t('a11y.toggle_theme') || 'Toggle color theme'}
+                title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}
+                className="pointer-events-auto w-9 h-9 me-2 bg-white hover:bg-indigo-50 text-slate-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors"
+              >
+                <span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span>
+              </button>
               <button
                 data-help-key="pdf_audit_view_close_btn"
                 type="button"
@@ -4756,16 +4767,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         try {
                           const project = JSON.parse(ev.target.result);
                           if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
+                          // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
+                          // silently would drop whatever fields the newer format carries. Warn, keep going.
+                          if (typeof project.version === 'number' && project.version > 2) { addToast(t('toasts.project_newer_version') || ('This project was saved by a newer AlloFlow (v' + project.version + ' format). Loading what this version understands — some saved data may be ignored.'), 'warning'); }
                           // Resume an interrupted run (resumable-incomplete-project 2026-06-20): an
                           // incomplete project has the banked extraction + source bytes but no finished
                           // HTML. Restore enough to re-run from "Make Accessible" without re-scanning.
                           if (project.incomplete) {
                             if (project.pdfBase64 && typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64);
-                            setPendingPdfFile({ name: project.fileName || 'resumed-project.pdf' });
+                            // H2 (deep dive 2026-07-02): restore fileSize — the stub used to carry NO size,
+                            // so every size-keyed store (multi-session ranges, chunk progress, score trend)
+                            // computed its key with size=0 and all resumed docs sharing the fallback name
+                            // collided on the same msdoc_ key.
+                            setPendingPdfFile({ name: project.fileName || 'resumed-project.pdf', size: (typeof project.fileSize === 'number' && project.fileSize > 0) ? project.fileSize : undefined });
                             // OCR-skip seed (2026-06-20): park the already-extracted text under the SAME
                             // filename fixAndVerifyPdf will compute (pendingPdfFile.name), so Step 1 reuses
                             // it instead of re-running the slow OCR. Single-use; cleared once consumed.
-                            try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText }; } catch (_) {}
+                            // H2: thread the saved docKey through — the consume site refuses the seed when
+                            // the re-uploaded bytes fingerprint differently (same name, different file).
+                            try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText, docKey: project.docKey || null }; } catch (_) {}
                             if (project.auditResult) {
                               setPdfAuditResult(project.auditResult);
                             } else {
@@ -11456,7 +11476,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           layers above the audit modal (z-[210] vs z-[200]) without nesting. */}
       {showCloseConfirm && (
         <div
-          className="fixed inset-0 z-[210] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="allo-docsuite fixed inset-0 z-[210] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           role="dialog" aria-modal="true" aria-labelledby="pdf-close-confirm-title"
           onClick={(e) => { if (e.target === e.currentTarget) setShowCloseConfirm(false); }}
           onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowCloseConfirm(false); } }}
@@ -11503,7 +11523,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
       {/* ═══ PDF Preview & Edit Modal ═══ */}
       {pdfPreviewOpen && pdfFixResult && (
-        <div className="fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}>
+        <div className="allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}>
           <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
             {/* Left panel: controls */}
             <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
@@ -14417,7 +14437,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   plus a confidence chip — 'approx' rects are estimated from
                   character widths and worth a glance in the result. */}
               {pdfFieldCandidates && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
                   <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.pdf_panel_heading') || 'Blanks found on the original pages — review before placing fields')}</div>
@@ -14471,7 +14491,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   silent — every detected blank listed, labels editable,
                   each rejectable. */}
               {fillableCandidates && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
                   <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.panel_heading') || 'Detected blanks — review before converting')}</div>
@@ -14510,7 +14530,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
               )}
               {/* Plain-language compare (2026-06-12) */}
               {showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
                   <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {t('pdf_audit.plain.compare_heading') || 'Original ↔ Plain language'}</span>
@@ -14539,7 +14559,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   translation, side by side. srcdoc iframes; the translated
                   pane carries its own lang/dir so SRs pronounce correctly. */}
               {showTranslationCompare && pdfFixResult && pdfFixResult._translation && (
-                <div className="fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowTranslationCompare(false)}>
+                <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowTranslationCompare(false)}>
                   <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.translate.compare_aria') || 'Original and translated document, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {(t('pdf_audit.translate.compare_heading') || 'Original ↔ ') + pdfFixResult._translation.lang}</span>
