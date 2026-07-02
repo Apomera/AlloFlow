@@ -723,11 +723,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         return hh + ':' + mm + ':' + ss;
       }
 
+      var activePhase = PHASES[Math.min(phase, PHASES.length - 1)] || { name: t('stem.moonmission.complete', 'Complete'), icon: '\uD83C\uDF0A', desc: t('stem.moonmission.splashdown_debrief', 'Splashdown and debrief') };
+      var nextPhase = phase + 1 < PHASES.length ? PHASES[phase + 1] : null;
+      var phaseProgressPct = Math.min(100, Math.round((Math.min(phase, 10) / 10) * 100));
+      var crewMorale = d.crewMorale != null ? d.crewMorale : 75;
+      var earnedBadgeCount = Object.keys(d.earnedBadges || {}).length;
+      var flightPlanGroups = [
+        { id: 'brief', label: t('stem.moonmission.plan_brief', 'Brief'), icon: '\uD83D\uDCCB', phases: [0, 1] },
+        { id: 'transit', label: t('stem.moonmission.plan_transit', 'Transit'), icon: '\uD83C\uDF0D', phases: [2, 3, 4] },
+        { id: 'landing', label: t('stem.moonmission.plan_landing', 'Landing'), icon: '\uD83C\uDF15', phases: [5] },
+        { id: 'surface', label: t('stem.moonmission.plan_surface', 'Surface'), icon: '\uD83E\uDEA8', phases: [6, 7] },
+        { id: 'return', label: t('stem.moonmission.plan_return', 'Return'), icon: '\uD83C\uDF0A', phases: [8, 9] }
+      ];
+
       // ═══════════════════════════════════
       // RENDER
       // ═══════════════════════════════════
 
-      return h('div', { className: 'max-w-2xl mx-auto px-1', role: 'main', 'aria-label': 'Apollo Moon Mission Simulator - Phase ' + (phase + 1) + ': ' + (PHASES[phase] ? PHASES[phase].name : 'Mission Complete') },
+      return h('div', { className: 'max-w-5xl mx-auto px-1 space-y-3', role: 'main', 'data-moonmission-tool': 'true', 'aria-label': 'Apollo Moon Mission Simulator - Phase ' + (phase + 1) + ': ' + (PHASES[phase] ? PHASES[phase].name : 'Mission Complete') },
 
         // Header
         h('div', { className: 'flex items-center justify-between mb-3' },
@@ -750,6 +763,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'text-right' },
             h('div', { className: 'text-[11px] text-slate-200 font-mono' }, 'MET ' + getMissionElapsed()),
             h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
+          )
+        ),
+
+        h('section', {
+          className: 'rounded-2xl overflow-hidden border border-indigo-200 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white shadow-xl shadow-indigo-950/10',
+          'data-moonmission-control': 'true',
+          'aria-label': t('stem.moonmission.mission_control_dashboard', 'Mission Control dashboard')
+        },
+          h('div', { className: 'p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4' },
+            h('div', { className: 'lg:col-span-7' },
+              h('div', { className: 'flex items-center gap-2 text-[11px] font-black uppercase text-cyan-200' },
+                h('span', null, t('stem.moonmission.mission_control', 'Mission Control')),
+                h('span', { className: 'px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-white' }, DIFFICULTIES[difficulty].icon + ' ' + DIFFICULTIES[difficulty].label)
+              ),
+              h('div', { className: 'mt-2 flex items-start gap-3' },
+                h('div', { className: 'w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-3xl flex-shrink-0' }, activePhase.icon),
+                h('div', { className: 'min-w-0' },
+                  h('h4', { className: 'text-xl sm:text-2xl font-black leading-tight' }, activePhase.name),
+                  h('p', { className: 'mt-1 text-[12px] sm:text-sm text-indigo-100/85 leading-relaxed' }, activePhase.desc),
+                  h('p', { className: 'mt-2 text-[11px] text-cyan-200 font-bold' },
+                    nextPhase ? t('stem.moonmission.next_phase_prefix', 'Next: ') + nextPhase.name : t('stem.moonmission.ready_for_debrief', 'Ready for debrief and replay.')
+                  )
+                )
+              ),
+              h('div', { className: 'mt-4' },
+                h('div', { className: 'flex justify-between text-[11px] font-bold text-indigo-100/80 mb-1' },
+                  h('span', null, t('stem.moonmission.launch_2', 'Launch')),
+                  h('span', null, phaseProgressPct + '%'),
+                  h('span', null, t('stem.moonmission.splashdown', 'Splashdown'))
+                ),
+                h('div', { className: 'h-2 rounded-full bg-white/10 overflow-hidden' },
+                  h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-300 via-indigo-300 to-fuchsia-300', style: { width: phaseProgressPct + '%' } })
+                )
+              )
+            ),
+            h('div', { className: 'lg:col-span-5 grid grid-cols-2 gap-2' },
+              [
+                { label: t('stem.moonmission.met', 'MET'), value: getMissionElapsed(), tone: 'text-cyan-200' },
+                { label: t('stem.moonmission.mission_xp', 'Mission XP'), value: missionXP + ' XP', tone: 'text-amber-200' },
+                { label: t('stem.moonmission.samples', 'Samples'), value: samples.length + '/' + LUNAR_SAMPLES_DATA.length, tone: 'text-lime-200' },
+                { label: t('stem.moonmission.quiz', 'Quiz'), value: quizCorrect + '/' + QUIZ_BANK.length, tone: 'text-violet-200' },
+                { label: t('stem.moonmission.crew_morale', 'Crew morale'), value: crewMorale + '%', tone: crewMorale >= 70 ? 'text-emerald-200' : crewMorale >= 45 ? 'text-amber-200' : 'text-rose-200' },
+                { label: t('stem.moonmission.badges', 'Badges'), value: earnedBadgeCount + '/' + BADGES.length, tone: 'text-sky-200' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'rounded-xl bg-white/8 border border-white/10 px-3 py-2' },
+                  h('div', { className: 'text-[10px] font-black uppercase text-slate-300' }, stat.label),
+                  h('div', { className: 'text-sm font-black ' + stat.tone }, stat.value)
+                );
+              })
+            )
+          ),
+          h('div', { className: 'px-4 sm:px-5 pb-4 grid grid-cols-2 sm:grid-cols-5 gap-2', 'data-moonmission-flight-plan': 'true' },
+            flightPlanGroups.map(function(group) {
+              var active = group.phases.indexOf(Math.min(phase, 9)) >= 0;
+              var complete = group.phases[group.phases.length - 1] < phase;
+              return h('div', { key: group.id, className: 'rounded-xl border px-3 py-2 ' + (active ? 'bg-cyan-400/15 border-cyan-300/40 text-cyan-100' : complete ? 'bg-emerald-400/10 border-emerald-300/30 text-emerald-100' : 'bg-white/5 border-white/10 text-slate-300') },
+                h('div', { className: 'text-lg leading-none mb-1' }, complete ? '\u2713' : group.icon),
+                h('div', { className: 'text-[11px] font-black' }, group.label),
+                h('div', { className: 'text-[10px] opacity-75' }, active ? t('stem.moonmission.active', 'Active') : complete ? t('stem.moonmission.complete', 'Complete') : t('stem.moonmission.upcoming', 'Upcoming'))
+              );
+            })
           )
         ),
 

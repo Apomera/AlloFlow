@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T13:35:34.845Z",
+  "generatedAt": "2026-07-02T13:40:50.426Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 24
+    "monitoredMarkerCount": 25
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 24,
+    "markerPassCount": 25,
     "markerFailCount": 0,
     "monitoredIssueCount": 29,
     "monitoredErrorCount": 0,
@@ -390,7 +390,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17209,
+      "htmlBytes": 17200,
       "issues": [
         {
           "toolId": "playlab",
@@ -419,7 +419,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17209
+        "htmlBytes": 17200
       }
     },
     {
@@ -509,6 +509,22 @@
         "canvases": 0,
         "headings": 3,
         "htmlBytes": 28684
+      }
+    },
+    {
+      "id": "moonMission",
+      "file": "stem_tool_moonmission.js",
+      "marker": "data-moonmission-control",
+      "label": "Moon Mission control panel",
+      "ok": true,
+      "htmlBytes": 13350,
+      "issues": [],
+      "metrics": {
+        "buttons": 8,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 13350
       }
     },
     {
