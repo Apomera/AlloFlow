@@ -37,13 +37,23 @@ service cloud.firestore {
             .diff(request.resource.data.get('roster', {}))
             .affectedKeys().hasOnly([request.auth.uid]);
         }
+        function quizNestedOnlySelf(field) {
+          return !(field in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || resource.data.get('quizState', {}).get(field, {})
+                .diff(request.resource.data.get('quizState', {}).get(field, {}))
+                .affectedKeys().hasOnly([request.auth.uid]);
+        }
         function quizOnlySelf() {
+          // Students write three quizState surfaces, each keyed by their own
+          // uid: allResponses (live quiz), responses + teams (class-vs-boss
+          // one-question mode: answer option index + auto-assigned team color).
           return resource.data.get('quizState', {})
               .diff(request.resource.data.get('quizState', {}))
-              .affectedKeys().hasOnly(['allResponses'])
-            && resource.data.get('quizState', {}).get('allResponses', {})
-              .diff(request.resource.data.get('quizState', {}).get('allResponses', {}))
-              .affectedKeys().hasOnly([request.auth.uid]);
+              .affectedKeys().hasOnly(['allResponses', 'responses', 'teams'])
+            && quizNestedOnlySelf('allResponses')
+            && quizNestedOnlySelf('responses')
+            && quizNestedOnlySelf('teams');
         }
         function reactionsOnlySelf() {
           return resource.data.get('bridgeReactions', {})

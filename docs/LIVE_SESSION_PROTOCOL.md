@@ -187,24 +187,31 @@ Who sees what, in precedence order (student `onSnapshot` consumer):
 
 ---
 
-### 4.2 Niche live features — audit results (2026-07-02)
+### 4.2 Niche live features — audit results (2026-07-02, corrected same day)
+
+> Audit lesson recorded here deliberately: these features' student writes are spread across
+> FOUR files (ANTI shell, escape_room_module, teacher_module, ui_modals) — grep ALL modules
+> before declaring a write path missing. Two initial findings below were corrected after wider
+> sweeps.
 
 - **Adventure democracy mode:** real and working. Students write `democracy.votes.{uid}` (option
   string from the scene's fixed choice list); the teacher's next turn tallies and resets votes.
-  Covered by rules (`democracyOnlySelfVote`). Improvement candidates: votes are visible tallies
-  only after teacher advance (no live tally UI for students); no vote-changed indicator.
-- **Collaborative escape room:** two defects found. (1) The student team-progress sync wrote to a
-  malformed Firestore path (missing `public/data`) and failed silently into a catch — teams never
-  saw each other's solves. **Fixed 2026-07-02.** (2) Nothing anywhere writes
-  `escapeRoomState.teams.{uid}` — there is no team-assignment UI, so the collaborative path was
-  unreachable even without the path bug. [ROADMAP #11: a team picker (student self-select or
-  teacher-assign in the escape controls) makes the feature real; rules already permit per-uid
-  team claims.]
-- **Class-vs-boss / review game:** despite `bossStats` being seeded in the session doc, no code
-  writes boss HP or team state to the session — the whole game runs in teacher-local React state.
-  It is a **projector experience** (class watches the teacher screen), not a device-synced
-  activity. Fine as designed; do not "fix" the unused `bossStats` seed without deciding whether
-  the feature should become device-synced (it would need the quiz P2P channel, not Firestore).
+  Covered by rules (`democracyOnlySelfVote`). Improvement candidates: no live tally for students;
+  no change-my-vote affordance.
+- **Collaborative escape room:** WORKS end-to-end after the 2026-07-02 path fix. Students
+  auto-assign teams on entry (`escapeRoomState.teams.{uid}`, StudentEscapeRoomOverlay in
+  teacher_module); the overlay plays the session-doc room; the one real defect was the student
+  team-progress sync writing to a malformed Firestore path (missing `public/data`), failing
+  silently forever — teams never saw each other's solves. **Fixed.** Rules cover both writes
+  (`escapeRoomTeamPlay`). *(Earlier "no team-assignment UI exists" finding was WRONG — the
+  auto-assign lives in teacher_module, outside the initially-grepped files.)*
+- **Class-vs-boss (live pulse mode):** **fully built and device-synced via Firestore** — teacher
+  broadcasts `quizState.phase/currentQuestionIndex/bossStats.*`; students auto-join teams
+  (`quizState.teams.{uid}`) and answer (`quizState.responses.{uid}`) from StudentQuizOverlay
+  (ui_modals); teacher reveal scores teams (`teamScores/lastRoundStats`) and damages the boss.
+  Rules cover the student writes (`quizOnlySelf` extended to responses/teams per-uid).
+  *(Earlier "teacher-local projector game" finding was WRONG — same grep-scope mistake.)*
+  P2P-migration candidate like the main quiz path, but functional as-is.
 - **Adventure sync:** teacher pushes `activeAdventureScene/State` + `currentResourceId:
   'adventure-sync'`; students mirror it (verified §4.1). Teacher-written only; rules-safe.
 

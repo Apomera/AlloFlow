@@ -35,4 +35,16 @@ describe('firestore.rules cover the niche student writes', () => {
     expect(rules).toContain('function escapeRoomTeamPlay()');
     expect(rules).toContain("hasOnly(['teamProgress', 'teams'])");
   });
+
+  it('lets boss-mode students answer and auto-join teams (per-uid)', () => {
+    // StudentQuizOverlay (ui_modals) writes quizState.responses.{uid} and
+    // quizState.teams.{uid} — the original quizOnlySelf allowed only
+    // allResponses and would have blocked class-vs-boss entirely.
+    expect(rules).toContain("hasOnly(['allResponses', 'responses', 'teams'])");
+    expect(rules).toContain("quizNestedOnlySelf('responses')");
+    expect(rules).toContain("quizNestedOnlySelf('teams')");
+    const uiModals = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
+    expect(uiModals).toContain('quizState.responses.${user.uid}');
+    expect(uiModals).toContain('quizState.teams.${user.uid}');
+  });
 });
