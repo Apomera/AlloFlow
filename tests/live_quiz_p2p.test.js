@@ -120,6 +120,30 @@ describe('pictionary moderation + presence polish (2026-07-02)', () => {
   });
 });
 
+describe('confidence-aware routing (screening heuristics with integrity floor)', () => {
+  it('router evaluates confidencePattern rules with the >=2 usable AND >=2 matched floor', () => {
+    expect(anti).toContain('const _confidencePatternMatch = (when, uid)');
+    expect(anti).toContain('if (when.acrossQuestions.length < 2) return false;');
+    expect(anti).toContain('return usable >= 2 && matched >= 2;');
+    expect(anti).toContain("entry.confidence === 'guessed'");
+    expect(anti).toContain("when.confidencePattern === 'confident-wrong'");
+    // Dispatched before aggregate + legacy paths
+    const conf = anti.indexOf('r.when.confidencePattern && Array.isArray(r.when.acrossQuestions)');
+    const agg = anti.indexOf('r.when.aggregate && Array.isArray(r.when.acrossQuestions)');
+    expect(conf).toBeGreaterThan(-1);
+    expect(conf).toBeLessThan(agg);
+  });
+
+  it('editor quick-adds seed >=2 gradable items and label rules as screening heuristics', () => {
+    const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
+    expect(teacher).toContain('const addConfidencePatternRule = (pattern)');
+    expect(teacher).toContain('if (seed.length < 2)');
+    expect(teacher).toContain('Screening heuristic, not a measurement');
+    expect(teacher).toContain("addConfidencePatternRule('fragile')");
+    expect(teacher).toContain("addConfidencePatternRule('confident-wrong')");
+  });
+});
+
 describe('student answer-progress pill (2026-07-02)', () => {
   it('teacher broadcasts deduped progress; students render the pill', () => {
     expect(anti).toContain("host.broadcastPoll({ id: '__progress__'");

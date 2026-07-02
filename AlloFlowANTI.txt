@@ -4718,39 +4718,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     //    module's load + runtime. Surfaces a hidden-by-default red badge that
     //    only appears after an error is captured, then opens a panel with a
     //    one-click "Send to Aaron" button that pre-fills the bug-report form.
-    //    Same CDN + raw-fallback pattern as the AIBackend loader below.
-    (function() {
-      const url = pluginCdnBase + 'error_reporter_module.js?v=' + pluginCdnVersion;
-      const s = document.createElement('script');
-      s.src = url;
-      s.crossOrigin = 'anonymous';
-      s.onload = () => { console.log('[CDN] ErrorReporter loaded'); };
-      s.onerror = () => {
-        console.warn('[CDN] ErrorReporter CDN failed, trying raw fallback');
-        const fb = document.createElement('script');
-        fb.src = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/error_reporter_module.js?v=' + Date.now();
-        document.head.appendChild(fb);
-      };
-      document.head.appendChild(s);
-    })();
+    loadModule('ErrorReporter', 'https://alloflow-cdn.pages.dev/error_reporter_module.js?v=b7725da5');
     // Translation Feedback: lets multilingual users suggest a fix to a translated
     // string, sent the same way as a bug report (pre-filled Google Form). Rides
     // help-mode — when help-mode is on and a help string is opened, the help-click
     // handler calls window.AlloModules.TranslationFeedback.offerFor(...) (guarded).
-    (function() {
-      const url = pluginCdnBase + 'translation_feedback_module.js?v=' + pluginCdnVersion;
-      const s = document.createElement('script');
-      s.src = url;
-      s.crossOrigin = 'anonymous';
-      s.onload = () => { console.log('[CDN] TranslationFeedback loaded'); };
-      s.onerror = () => {
-        console.warn('[CDN] TranslationFeedback CDN failed, trying raw fallback');
-        const fb = document.createElement('script');
-        fb.src = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/translation_feedback_module.js?v=' + Date.now();
-        document.head.appendChild(fb);
-      };
-      document.head.appendChild(s);
-    })();
+    loadModule('TranslationFeedback', 'https://alloflow-cdn.pages.dev/translation_feedback_module.js?v=98d1a3da');
     (function() {
       const url = pluginCdnBase + 'ai_backend_module.js?v=' + pluginCdnVersion;
       const s = document.createElement('script');
@@ -4824,7 +4797,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=0ebd500d');
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=0ebd500d');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=0ebd500d');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0ebd500d');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=fa7dc48b');
     loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=0ebd500d');
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=0ebd500d');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=0ebd500d');
@@ -4845,12 +4818,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=0ebd500d'); }; })();
     window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=0ebd500d'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=0ebd500d'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0ebd500d'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=0ebd500d'); }; })();
     loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=0ebd500d');
     loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=0ebd500d');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=0ebd500d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=0ebd500d');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d9dbb5b6');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=0ebd500d');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=0ebd500d');
     loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=0ebd500d');
@@ -6354,7 +6327,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const addXp = useCallback((amount) => {
     try {
-      const x = window.AlloModules && window.AlloModules.XP;
+      const x = window.AlloModules && window.AlloModules['XP'];
       if (x && typeof x.addXp === 'function') return x.addXp(amount);
     } catch (e) {}
   }, []);
@@ -12613,10 +12586,49 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               default: return null;
           }
       };
+      // Confidence-pattern rules (screening heuristics, NOT measurements —
+      // see spec roadmap #9). Patterns over the student's graded structured
+      // answers across when.acrossQuestions (same >=2 integrity floor as
+      // Likert aggregation; additionally >=2 items must MATCH the pattern):
+      //   'fragile'         correct + 'guessed'  → consolidation support
+      //   'confident-wrong' incorrect + 'knew'   → misconception unteaching
+      //   'calibrated'      correct + 'knew'     → earned extension
+      // Items without a confidence report or without a gradable structured
+      // correctAnswer are skipped; if fewer than 2 usable items exist yet,
+      // the rule waits (returns no match) rather than firing early.
+      const _confidencePatternMatch = (when, uid) => {
+          if (!when || !when.confidencePattern || !Array.isArray(when.acrossQuestions)) return false;
+          if (when.acrossQuestions.length < 2) return false;
+          const uidEntry = (quizMergedAllResponses || {})[uid];
+          if (!uidEntry) return false;
+          const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
+          let usable = 0, matched = 0;
+          for (let i = 0; i < when.acrossQuestions.length; i++) {
+              const tIdx = when.acrossQuestions[i];
+              const entry = uidEntry[tIdx];
+              const tq = allQuestions[tIdx];
+              if (!entry || entry.answer == null || !entry.confidence || !tq || tq.correctAnswer == null) continue;
+              let answerText = entry.answer;
+              if (typeof answerText === 'number' && Array.isArray(tq.options) && tq.options[answerText] !== undefined) answerText = tq.options[answerText];
+              if (typeof answerText === 'object') continue; // match/sequence payloads — not gradable here
+              const correct = String(answerText).trim().toLowerCase() === String(tq.correctAnswer).trim().toLowerCase();
+              usable++;
+              if (when.confidencePattern === 'fragile' && correct && entry.confidence === 'guessed') matched++;
+              else if (when.confidencePattern === 'confident-wrong' && !correct && entry.confidence === 'knew') matched++;
+              else if (when.confidencePattern === 'calibrated' && correct && entry.confidence === 'knew') matched++;
+          }
+          return usable >= 2 && matched >= 2;
+      };
       const _findMatchedThen = (response, uid) => {
           for (let i = 0; i < rules.length; i++) {
               const r = rules[i];
               if (!r || !r.when || !r.then) continue;
+              // Confidence-pattern rules: evaluated across questions; the
+              // single-response argument is ignored.
+              if (r.when.confidencePattern && Array.isArray(r.when.acrossQuestions)) {
+                  if (_confidencePatternMatch(r.when, uid)) return r.then;
+                  continue;
+              }
               // Aggregation rules ignore the single-response argument and pull
               // the student's responses across acrossQuestions instead.
               if (r.when.aggregate && Array.isArray(r.when.acrossQuestions)) {
@@ -24731,6 +24743,30 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     setReadingTheme, setBaseFontSize, setLineHeight, setLetterSpacing, setSelectedFont,
     toggleTheme, toggleOverlay,
   }), [theme, colorOverlay, readingTheme, focusMode, disableAnimations, baseFontSize, lineHeight, letterSpacing, selectedFont]);
+  const studentLobbyStyles = useMemo(() => {
+    if (theme === 'contrast') {
+      return {
+        panel: 'bg-black text-yellow-400 border-4 border-yellow-400 shadow-none',
+        icon: 'bg-black border-2 border-yellow-400 text-yellow-400',
+        subText: 'text-white',
+        badge: 'bg-yellow-400 text-black border-2 border-yellow-400',
+      };
+    }
+    if (theme === 'dark') {
+      return {
+        panel: 'bg-slate-900 text-slate-100 border-2 border-emerald-600 shadow-lg shadow-slate-950/50',
+        icon: 'bg-emerald-950 text-emerald-200 border border-emerald-700',
+        subText: 'text-emerald-100',
+        badge: 'bg-emerald-950 text-emerald-100 border border-emerald-700',
+      };
+    }
+    return {
+      panel: 'bg-emerald-700 text-white border-2 border-emerald-400 shadow-lg',
+      icon: 'bg-white/20',
+      subText: 'text-emerald-100',
+      badge: 'bg-white/20',
+    };
+  }, [theme]);
   return (
     <ActiveViewContext.Provider value={_activeViewCtx}>
     <RoleContext.Provider value={_roleCtx}>
@@ -24799,6 +24835,132 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             color: #000000 !important;
             border: 2px solid #FFFFFF !important;
         }
+      `}</style>
+      <style data-docsuite-theme="v1">{`
+/* ── Document-suite theme remaps (GENERATED — do not hand-edit) ──
+ * Source of truth: dev-tools/gen_docsuite_theme.cjs (regenerate + re-paste
+ * when view_pdf_audit / view_export_preview gain new color utilities).
+ * Contrast matrix enforced by tests/docsuite_theme_contrast.test.js. */
+.theme-dark .allo-docsuite { color-scheme: dark; }
+.theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.theme-dark .allo-docsuite textarea,
+.theme-dark .allo-docsuite select {
+  background-color:#1e293b;
+  color:#e2e8f0;
+  border-color:#334155;
+}
+.theme-dark .allo-docsuite .ring-green-300 { --tw-ring-color:#15803d !important; }
+.theme-dark .allo-docsuite .ring-indigo-200, .theme-dark .allo-docsuite .ring-indigo-300, .theme-dark .allo-docsuite .ring-indigo-400 { --tw-ring-color:#4338ca !important; }
+.theme-dark .allo-docsuite .ring-slate-400 { --tw-ring-color:#475569 !important; }
+.theme-dark .allo-docsuite .ring-violet-300, .theme-dark .allo-docsuite .ring-violet-400 { --tw-ring-color:#6d28d9 !important; }
+.theme-dark .allo-docsuite .ring-purple-400 { --tw-ring-color:#7e22ce !important; }
+.theme-dark .allo-docsuite .ring-amber-300 { --tw-ring-color:#b45309 !important; }
+.theme-dark .allo-docsuite .ring-red-300, .theme-dark .allo-docsuite .ring-red-400 { --tw-ring-color:#b91c1c !important; }
+.theme-dark .allo-docsuite .ring-rose-300, .theme-dark .allo-docsuite .ring-rose-400 { --tw-ring-color:#be123c !important; }
+.theme-dark .allo-docsuite .bg-emerald-100, .theme-dark .allo-docsuite .bg-emerald-200, .theme-dark .allo-docsuite .bg-emerald-50, .theme-dark .allo-docsuite [class~="bg-emerald-50/40"] { background-color:#022c22 !important; }
+.theme-dark .allo-docsuite .bg-teal-100, .theme-dark .allo-docsuite .bg-teal-200, .theme-dark .allo-docsuite .bg-teal-50, .theme-dark .allo-docsuite [class~="bg-teal-50/60"] { background-color:#042f2e !important; }
+.theme-dark .allo-docsuite .bg-green-100, .theme-dark .allo-docsuite .bg-green-50 { background-color:#052e16 !important; }
+.theme-dark .allo-docsuite .bg-sky-100, .theme-dark .allo-docsuite .bg-sky-200, .theme-dark .allo-docsuite .bg-sky-50 { background-color:#082f49 !important; }
+.theme-dark .allo-docsuite .bg-slate-50 { background-color:#0f172a !important; }
+.theme-dark .allo-docsuite .bg-blue-100, .theme-dark .allo-docsuite .bg-blue-50 { background-color:#172554 !important; }
+.theme-dark .allo-docsuite .bg-indigo-100, .theme-dark .allo-docsuite [class~="bg-indigo-100/60"], .theme-dark .allo-docsuite .bg-indigo-200, .theme-dark .allo-docsuite .bg-indigo-300, .theme-dark .allo-docsuite .bg-indigo-50, .theme-dark .allo-docsuite [class~="bg-indigo-50/40"], .theme-dark .allo-docsuite [class~="bg-indigo-50/50"], .theme-dark .allo-docsuite [class~="bg-indigo-50/60"] { background-color:#1e1b4b !important; }
+.theme-dark .allo-docsuite .bg-slate-100, .theme-dark .allo-docsuite .bg-white { background-color:#1e293b !important; }
+.theme-dark .allo-docsuite .bg-slate-200 { background-color:#26334a !important; }
+.theme-dark .allo-docsuite .bg-violet-100, .theme-dark .allo-docsuite .bg-violet-200, .theme-dark .allo-docsuite .bg-violet-50, .theme-dark .allo-docsuite [class~="bg-violet-50/70"] { background-color:#2e1065 !important; }
+.theme-dark .allo-docsuite .bg-slate-300 { background-color:#334155 !important; }
+.theme-dark .allo-docsuite .bg-purple-100, .theme-dark .allo-docsuite .bg-purple-50 { background-color:#3b0764 !important; }
+.theme-dark .allo-docsuite .bg-yellow-100, .theme-dark .allo-docsuite .bg-yellow-50 { background-color:#422006 !important; }
+.theme-dark .allo-docsuite .bg-orange-100, .theme-dark .allo-docsuite .bg-orange-50 { background-color:#431407 !important; }
+.theme-dark .allo-docsuite .bg-red-100, .theme-dark .allo-docsuite .bg-red-200, .theme-dark .allo-docsuite .bg-red-50 { background-color:#450a0a !important; }
+.theme-dark .allo-docsuite .bg-amber-100, .theme-dark .allo-docsuite .bg-amber-200, .theme-dark .allo-docsuite .bg-amber-50 { background-color:#451a03 !important; }
+.theme-dark .allo-docsuite .bg-fuchsia-100, .theme-dark .allo-docsuite .bg-fuchsia-50, .theme-dark .allo-docsuite [class~="bg-fuchsia-50/50"] { background-color:#4a044e !important; }
+.theme-dark .allo-docsuite .bg-rose-100, .theme-dark .allo-docsuite .bg-rose-50 { background-color:#4c0519 !important; }
+.theme-dark .allo-docsuite [class~="bg-white/20"], .theme-dark .allo-docsuite [class~="bg-white/30"], .theme-dark .allo-docsuite [class~="bg-white/70"], .theme-dark .allo-docsuite [class~="bg-white/80"] { background-color:rgba(30,41,59,0.85) !important; }
+.theme-dark .allo-docsuite [class~="bg-white/90"] { background-color:rgba(30,41,59,0.9) !important; }
+.theme-dark .allo-docsuite [class~="bg-white/95"] { background-color:rgba(30,41,59,0.95) !important; }
+.theme-dark .allo-docsuite .from-emerald-50, .theme-dark .allo-docsuite .to-emerald-50 { background-image:none !important;background-color:#022c22 !important; }
+.theme-dark .allo-docsuite .from-teal-50, .theme-dark .allo-docsuite .to-teal-50 { background-image:none !important;background-color:#042f2e !important; }
+.theme-dark .allo-docsuite .from-sky-50, .theme-dark .allo-docsuite .to-sky-50 { background-image:none !important;background-color:#082f49 !important; }
+.theme-dark .allo-docsuite .from-cyan-50, .theme-dark .allo-docsuite .to-cyan-50 { background-image:none !important;background-color:#083344 !important; }
+.theme-dark .allo-docsuite .from-slate-50, .theme-dark .allo-docsuite .to-slate-50 { background-image:none !important;background-color:#0f172a !important; }
+.theme-dark .allo-docsuite .from-blue-50, .theme-dark .allo-docsuite .to-blue-50, .theme-dark .allo-docsuite [class~="via-blue-50/40"] { background-image:none !important;background-color:#172554 !important; }
+.theme-dark .allo-docsuite .from-indigo-50, .theme-dark .allo-docsuite .to-indigo-50, .theme-dark .allo-docsuite [class~="to-indigo-50/30"], .theme-dark .allo-docsuite [class~="via-indigo-50/40"], .theme-dark .allo-docsuite [class~="via-indigo-50/50"] { background-image:none !important;background-color:#1e1b4b !important; }
+.theme-dark .allo-docsuite .from-white, .theme-dark .allo-docsuite .to-white { background-image:none !important;background-color:#1e293b !important; }
+.theme-dark .allo-docsuite .from-violet-50, .theme-dark .allo-docsuite .to-violet-50, .theme-dark .allo-docsuite [class~="to-violet-50/30"], .theme-dark .allo-docsuite [class~="to-violet-50/40"] { background-image:none !important;background-color:#2e1065 !important; }
+.theme-dark .allo-docsuite .to-yellow-50 { background-image:none !important;background-color:#422006 !important; }
+.theme-dark .allo-docsuite .to-orange-100, .theme-dark .allo-docsuite .to-orange-50, .theme-dark .allo-docsuite [class~="via-orange-50/40"] { background-image:none !important;background-color:#431407 !important; }
+.theme-dark .allo-docsuite .from-amber-100, .theme-dark .allo-docsuite .from-amber-50, .theme-dark .allo-docsuite [class~="from-amber-50/80"] { background-image:none !important;background-color:#451a03 !important; }
+.theme-dark .allo-docsuite .from-rose-100, .theme-dark .allo-docsuite .from-rose-50, .theme-dark .allo-docsuite .to-rose-50, .theme-dark .allo-docsuite [class~="to-rose-50/30"] { background-image:none !important;background-color:#4c0519 !important; }
+.theme-dark .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:rgba(30,41,59,0.95) !important; }
+.theme-dark .allo-docsuite .border-emerald-600 { border-color:#047857 !important; }
+.theme-dark .allo-docsuite .border-emerald-100, .theme-dark .allo-docsuite .border-emerald-200, .theme-dark .allo-docsuite .border-emerald-300 { border-color:#065f46 !important; }
+.theme-dark .allo-docsuite .border-sky-100, .theme-dark .allo-docsuite .border-sky-200, .theme-dark .allo-docsuite [class~="border-sky-200/60"], .theme-dark .allo-docsuite .border-sky-300 { border-color:#075985 !important; }
+.theme-dark .allo-docsuite .border-teal-600 { border-color:#0f766e !important; }
+.theme-dark .allo-docsuite .border-teal-300 { border-color:#115e59 !important; }
+.theme-dark .allo-docsuite .border-cyan-300 { border-color:#155e75 !important; }
+.theme-dark .allo-docsuite .border-green-200, .theme-dark .allo-docsuite .border-green-300 { border-color:#166534 !important; }
+.theme-dark .allo-docsuite .border-blue-600 { border-color:#1d4ed8 !important; }
+.theme-dark .allo-docsuite .border-blue-300 { border-color:#1e40af !important; }
+.theme-dark .allo-docsuite .border-slate-100, .theme-dark .allo-docsuite .border-slate-200, .theme-dark .allo-docsuite [class~="border-white/50"] { border-color:#334155 !important; }
+.theme-dark .allo-docsuite .border-indigo-100, .theme-dark .allo-docsuite .border-indigo-200, .theme-dark .allo-docsuite [class~="border-indigo-200/60"], .theme-dark .allo-docsuite [class~="border-indigo-200/70"], .theme-dark .allo-docsuite .border-indigo-300 { border-color:#3730a3 !important; }
+.theme-dark .allo-docsuite .border-indigo-400, .theme-dark .allo-docsuite .border-indigo-500, .theme-dark .allo-docsuite .border-indigo-600, .theme-dark .allo-docsuite [class~="border-indigo-600/60"] { border-color:#4338ca !important; }
+.theme-dark .allo-docsuite .border-slate-300, .theme-dark .allo-docsuite .border-slate-400 { border-color:#475569 !important; }
+.theme-dark .allo-docsuite .border-violet-200, .theme-dark .allo-docsuite .border-violet-300 { border-color:#5b21b6 !important; }
+.theme-dark .allo-docsuite .border-purple-200, .theme-dark .allo-docsuite .border-purple-300 { border-color:#6b21a8 !important; }
+.theme-dark .allo-docsuite .border-violet-400, .theme-dark .allo-docsuite .border-violet-600 { border-color:#6d28d9 !important; }
+.theme-dark .allo-docsuite .border-purple-600 { border-color:#7e22ce !important; }
+.theme-dark .allo-docsuite .border-yellow-100 { border-color:#854d0e !important; }
+.theme-dark .allo-docsuite .border-fuchsia-200 { border-color:#86198f !important; }
+.theme-dark .allo-docsuite .border-amber-100, .theme-dark .allo-docsuite .border-amber-200, .theme-dark .allo-docsuite [class~="border-amber-200/60"], .theme-dark .allo-docsuite .border-amber-300 { border-color:#92400e !important; }
+.theme-dark .allo-docsuite .border-red-100, .theme-dark .allo-docsuite .border-red-200, .theme-dark .allo-docsuite .border-red-300 { border-color:#991b1b !important; }
+.theme-dark .allo-docsuite .border-orange-200 { border-color:#9a3412 !important; }
+.theme-dark .allo-docsuite .border-rose-300 { border-color:#9f1239 !important; }
+.theme-dark .allo-docsuite .border-amber-400, .theme-dark .allo-docsuite .border-amber-500, .theme-dark .allo-docsuite .border-amber-600 { border-color:#b45309 !important; }
+.theme-dark .allo-docsuite .border-red-600 { border-color:#b91c1c !important; }
+.theme-dark .allo-docsuite .border-rose-400 { border-color:#be123c !important; }
+.theme-dark .allo-docsuite .border-orange-400, .theme-dark .allo-docsuite .border-orange-500 { border-color:#c2410c !important; }
+.theme-dark .allo-docsuite .text-teal-700, .theme-dark .allo-docsuite .text-teal-800 { color:#5eead4 !important; }
+.theme-dark .allo-docsuite .text-cyan-900 { color:#67e8f9 !important; }
+.theme-dark .allo-docsuite .text-emerald-600, .theme-dark .allo-docsuite .text-emerald-700, .theme-dark .allo-docsuite .text-emerald-800, .theme-dark .allo-docsuite .text-emerald-900 { color:#6ee7b7 !important; }
+.theme-dark .allo-docsuite .text-sky-600, .theme-dark .allo-docsuite .text-sky-700, .theme-dark .allo-docsuite .text-sky-800, .theme-dark .allo-docsuite .text-sky-900 { color:#7dd3fc !important; }
+.theme-dark .allo-docsuite .text-green-400, .theme-dark .allo-docsuite .text-green-500, .theme-dark .allo-docsuite .text-green-600, .theme-dark .allo-docsuite .text-green-700, .theme-dark .allo-docsuite .text-green-800 { color:#86efac !important; }
+.theme-dark .allo-docsuite .text-blue-500, .theme-dark .allo-docsuite .text-blue-600, .theme-dark .allo-docsuite .text-blue-700, .theme-dark .allo-docsuite .text-blue-800, .theme-dark .allo-docsuite .text-blue-900 { color:#93c5fd !important; }
+.theme-dark .allo-docsuite .text-slate-400 { color:#a3b1c2 !important; }
+.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900 { color:#a5b4fc !important; }
+.theme-dark .allo-docsuite .text-slate-500 { color:#a9b7c8 !important; }
+.theme-dark .allo-docsuite .text-violet-400, .theme-dark .allo-docsuite .text-violet-500, .theme-dark .allo-docsuite .text-violet-600, .theme-dark .allo-docsuite .text-violet-700, .theme-dark .allo-docsuite .text-violet-800, .theme-dark .allo-docsuite .text-violet-900 { color:#c4b5fd !important; }
+.theme-dark .allo-docsuite .text-slate-600 { color:#cbd5e1 !important; }
+.theme-dark .allo-docsuite .text-purple-400, .theme-dark .allo-docsuite .text-purple-500, .theme-dark .allo-docsuite .text-purple-600, .theme-dark .allo-docsuite .text-purple-700, .theme-dark .allo-docsuite .text-purple-800, .theme-dark .allo-docsuite .text-purple-900 { color:#d8b4fe !important; }
+.theme-dark .allo-docsuite .text-slate-700 { color:#e2e8f0 !important; }
+.theme-dark .allo-docsuite .text-fuchsia-700 { color:#f0abfc !important; }
+.theme-dark .allo-docsuite .text-slate-800 { color:#f1f5f9 !important; }
+.theme-dark .allo-docsuite .text-slate-900 { color:#f8fafc !important; }
+.theme-dark .allo-docsuite .text-red-400, .theme-dark .allo-docsuite .text-red-500, .theme-dark .allo-docsuite .text-red-600, .theme-dark .allo-docsuite .text-red-700, .theme-dark .allo-docsuite .text-red-800, .theme-dark .allo-docsuite .text-red-900 { color:#fca5a5 !important; }
+.theme-dark .allo-docsuite .text-amber-500, .theme-dark .allo-docsuite .text-amber-600, .theme-dark .allo-docsuite .text-amber-700, .theme-dark .allo-docsuite .text-amber-800, .theme-dark .allo-docsuite .text-amber-900 { color:#fcd34d !important; }
+.theme-dark .allo-docsuite .text-rose-600, .theme-dark .allo-docsuite .text-rose-700, .theme-dark .allo-docsuite .text-rose-800, .theme-dark .allo-docsuite .text-rose-900 { color:#fda4af !important; }
+.theme-dark .allo-docsuite .text-orange-600, .theme-dark .allo-docsuite .text-orange-700, .theme-dark .allo-docsuite .text-orange-800, .theme-dark .allo-docsuite .text-orange-900 { color:#fdba74 !important; }
+.theme-dark .allo-docsuite .text-yellow-500, .theme-dark .allo-docsuite .text-yellow-600, .theme-dark .allo-docsuite .text-yellow-700 { color:#fde047 !important; }
+.theme-contrast .allo-docsuite { color-scheme: dark; }
+.theme-contrast .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.theme-contrast .allo-docsuite textarea,
+.theme-contrast .allo-docsuite select {
+  background-color:#000000 !important;
+  color:#ffff00 !important;
+  border-color:#ffff00 !important;
+}
+.theme-contrast .allo-docsuite button {
+  color:#00ff00 !important;
+  border-color:#00ff00 !important;
+}
+.theme-contrast .allo-docsuite [class*="bg-gradient"] {
+  background-image:none !important;
+  background-color:#000000 !important;
+}
+.theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400 { --tw-ring-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite .bg-yellow-50 { background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-600, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite .from-red-500, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite .border-yellow-100 { border-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite .text-yellow-700 { color:#ffff00 !important; }
       `}</style>
       <a
         href="#main-content"
@@ -25717,6 +25879,130 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             animation: none !important;
         }
       `}</style>
+      <style data-docsuite-theme="v1">{`/* ── Document-suite theme remaps (GENERATED — do not hand-edit) ──
+ * Source of truth: dev-tools/gen_docsuite_theme.cjs (regenerate + re-paste
+ * when view_pdf_audit / view_export_preview gain new color utilities).
+ * Contrast matrix enforced by tests/docsuite_theme_contrast.test.js. */
+.theme-dark .allo-docsuite { color-scheme: dark; }
+.theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.theme-dark .allo-docsuite textarea,
+.theme-dark .allo-docsuite select {
+  background-color:#1e293b;
+  color:#e2e8f0;
+  border-color:#334155;
+}
+.theme-dark .allo-docsuite .ring-green-300 { --tw-ring-color:#15803d !important; }
+.theme-dark .allo-docsuite .ring-indigo-200, .theme-dark .allo-docsuite .ring-indigo-300, .theme-dark .allo-docsuite .ring-indigo-400 { --tw-ring-color:#4338ca !important; }
+.theme-dark .allo-docsuite .ring-slate-400 { --tw-ring-color:#475569 !important; }
+.theme-dark .allo-docsuite .ring-violet-300, .theme-dark .allo-docsuite .ring-violet-400 { --tw-ring-color:#6d28d9 !important; }
+.theme-dark .allo-docsuite .ring-purple-400 { --tw-ring-color:#7e22ce !important; }
+.theme-dark .allo-docsuite .ring-amber-300 { --tw-ring-color:#b45309 !important; }
+.theme-dark .allo-docsuite .ring-red-300, .theme-dark .allo-docsuite .ring-red-400 { --tw-ring-color:#b91c1c !important; }
+.theme-dark .allo-docsuite .ring-rose-300, .theme-dark .allo-docsuite .ring-rose-400 { --tw-ring-color:#be123c !important; }
+.theme-dark .allo-docsuite .bg-emerald-100, .theme-dark .allo-docsuite .bg-emerald-200, .theme-dark .allo-docsuite .bg-emerald-50, .theme-dark .allo-docsuite [class~="bg-emerald-50/40"] { background-color:#022c22 !important; }
+.theme-dark .allo-docsuite .bg-teal-100, .theme-dark .allo-docsuite .bg-teal-200, .theme-dark .allo-docsuite .bg-teal-50, .theme-dark .allo-docsuite [class~="bg-teal-50/60"] { background-color:#042f2e !important; }
+.theme-dark .allo-docsuite .bg-green-100, .theme-dark .allo-docsuite .bg-green-50 { background-color:#052e16 !important; }
+.theme-dark .allo-docsuite .bg-sky-100, .theme-dark .allo-docsuite .bg-sky-200, .theme-dark .allo-docsuite .bg-sky-50 { background-color:#082f49 !important; }
+.theme-dark .allo-docsuite .bg-slate-50 { background-color:#0f172a !important; }
+.theme-dark .allo-docsuite .bg-blue-100, .theme-dark .allo-docsuite .bg-blue-50 { background-color:#172554 !important; }
+.theme-dark .allo-docsuite .bg-indigo-100, .theme-dark .allo-docsuite [class~="bg-indigo-100/60"], .theme-dark .allo-docsuite .bg-indigo-200, .theme-dark .allo-docsuite .bg-indigo-300, .theme-dark .allo-docsuite .bg-indigo-50, .theme-dark .allo-docsuite [class~="bg-indigo-50/40"], .theme-dark .allo-docsuite [class~="bg-indigo-50/50"], .theme-dark .allo-docsuite [class~="bg-indigo-50/60"] { background-color:#1e1b4b !important; }
+.theme-dark .allo-docsuite .bg-slate-100, .theme-dark .allo-docsuite .bg-white { background-color:#1e293b !important; }
+.theme-dark .allo-docsuite .bg-slate-200 { background-color:#26334a !important; }
+.theme-dark .allo-docsuite .bg-violet-100, .theme-dark .allo-docsuite .bg-violet-200, .theme-dark .allo-docsuite .bg-violet-50, .theme-dark .allo-docsuite [class~="bg-violet-50/70"] { background-color:#2e1065 !important; }
+.theme-dark .allo-docsuite .bg-slate-300 { background-color:#334155 !important; }
+.theme-dark .allo-docsuite .bg-purple-100, .theme-dark .allo-docsuite .bg-purple-50 { background-color:#3b0764 !important; }
+.theme-dark .allo-docsuite .bg-yellow-100, .theme-dark .allo-docsuite .bg-yellow-50 { background-color:#422006 !important; }
+.theme-dark .allo-docsuite .bg-orange-100, .theme-dark .allo-docsuite .bg-orange-50 { background-color:#431407 !important; }
+.theme-dark .allo-docsuite .bg-red-100, .theme-dark .allo-docsuite .bg-red-200, .theme-dark .allo-docsuite .bg-red-50 { background-color:#450a0a !important; }
+.theme-dark .allo-docsuite .bg-amber-100, .theme-dark .allo-docsuite .bg-amber-200, .theme-dark .allo-docsuite .bg-amber-50 { background-color:#451a03 !important; }
+.theme-dark .allo-docsuite .bg-fuchsia-100, .theme-dark .allo-docsuite .bg-fuchsia-50, .theme-dark .allo-docsuite [class~="bg-fuchsia-50/50"] { background-color:#4a044e !important; }
+.theme-dark .allo-docsuite .bg-rose-100, .theme-dark .allo-docsuite .bg-rose-50 { background-color:#4c0519 !important; }
+.theme-dark .allo-docsuite [class~="bg-white/20"], .theme-dark .allo-docsuite [class~="bg-white/30"], .theme-dark .allo-docsuite [class~="bg-white/70"], .theme-dark .allo-docsuite [class~="bg-white/80"] { background-color:rgba(30,41,59,0.85) !important; }
+.theme-dark .allo-docsuite [class~="bg-white/90"] { background-color:rgba(30,41,59,0.9) !important; }
+.theme-dark .allo-docsuite [class~="bg-white/95"] { background-color:rgba(30,41,59,0.95) !important; }
+.theme-dark .allo-docsuite .from-emerald-50, .theme-dark .allo-docsuite .to-emerald-50 { background-image:none !important;background-color:#022c22 !important; }
+.theme-dark .allo-docsuite .from-teal-50, .theme-dark .allo-docsuite .to-teal-50 { background-image:none !important;background-color:#042f2e !important; }
+.theme-dark .allo-docsuite .from-sky-50, .theme-dark .allo-docsuite .to-sky-50 { background-image:none !important;background-color:#082f49 !important; }
+.theme-dark .allo-docsuite .from-cyan-50, .theme-dark .allo-docsuite .to-cyan-50 { background-image:none !important;background-color:#083344 !important; }
+.theme-dark .allo-docsuite .from-slate-50, .theme-dark .allo-docsuite .to-slate-50 { background-image:none !important;background-color:#0f172a !important; }
+.theme-dark .allo-docsuite .from-blue-50, .theme-dark .allo-docsuite .to-blue-50, .theme-dark .allo-docsuite [class~="via-blue-50/40"] { background-image:none !important;background-color:#172554 !important; }
+.theme-dark .allo-docsuite .from-indigo-50, .theme-dark .allo-docsuite .to-indigo-50, .theme-dark .allo-docsuite [class~="to-indigo-50/30"], .theme-dark .allo-docsuite [class~="via-indigo-50/40"], .theme-dark .allo-docsuite [class~="via-indigo-50/50"] { background-image:none !important;background-color:#1e1b4b !important; }
+.theme-dark .allo-docsuite .from-white, .theme-dark .allo-docsuite .to-white { background-image:none !important;background-color:#1e293b !important; }
+.theme-dark .allo-docsuite .from-violet-50, .theme-dark .allo-docsuite .to-violet-50, .theme-dark .allo-docsuite [class~="to-violet-50/30"], .theme-dark .allo-docsuite [class~="to-violet-50/40"] { background-image:none !important;background-color:#2e1065 !important; }
+.theme-dark .allo-docsuite .to-yellow-50 { background-image:none !important;background-color:#422006 !important; }
+.theme-dark .allo-docsuite .to-orange-100, .theme-dark .allo-docsuite .to-orange-50, .theme-dark .allo-docsuite [class~="via-orange-50/40"] { background-image:none !important;background-color:#431407 !important; }
+.theme-dark .allo-docsuite .from-amber-100, .theme-dark .allo-docsuite .from-amber-50, .theme-dark .allo-docsuite [class~="from-amber-50/80"] { background-image:none !important;background-color:#451a03 !important; }
+.theme-dark .allo-docsuite .from-rose-100, .theme-dark .allo-docsuite .from-rose-50, .theme-dark .allo-docsuite .to-rose-50, .theme-dark .allo-docsuite [class~="to-rose-50/30"] { background-image:none !important;background-color:#4c0519 !important; }
+.theme-dark .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:rgba(30,41,59,0.95) !important; }
+.theme-dark .allo-docsuite .border-emerald-600 { border-color:#047857 !important; }
+.theme-dark .allo-docsuite .border-emerald-100, .theme-dark .allo-docsuite .border-emerald-200, .theme-dark .allo-docsuite .border-emerald-300 { border-color:#065f46 !important; }
+.theme-dark .allo-docsuite .border-sky-100, .theme-dark .allo-docsuite .border-sky-200, .theme-dark .allo-docsuite [class~="border-sky-200/60"], .theme-dark .allo-docsuite .border-sky-300 { border-color:#075985 !important; }
+.theme-dark .allo-docsuite .border-teal-600 { border-color:#0f766e !important; }
+.theme-dark .allo-docsuite .border-teal-300 { border-color:#115e59 !important; }
+.theme-dark .allo-docsuite .border-cyan-300 { border-color:#155e75 !important; }
+.theme-dark .allo-docsuite .border-green-200, .theme-dark .allo-docsuite .border-green-300 { border-color:#166534 !important; }
+.theme-dark .allo-docsuite .border-blue-600 { border-color:#1d4ed8 !important; }
+.theme-dark .allo-docsuite .border-blue-300 { border-color:#1e40af !important; }
+.theme-dark .allo-docsuite .border-slate-100, .theme-dark .allo-docsuite .border-slate-200, .theme-dark .allo-docsuite [class~="border-white/50"] { border-color:#334155 !important; }
+.theme-dark .allo-docsuite .border-indigo-100, .theme-dark .allo-docsuite .border-indigo-200, .theme-dark .allo-docsuite [class~="border-indigo-200/60"], .theme-dark .allo-docsuite [class~="border-indigo-200/70"], .theme-dark .allo-docsuite .border-indigo-300 { border-color:#3730a3 !important; }
+.theme-dark .allo-docsuite .border-indigo-400, .theme-dark .allo-docsuite .border-indigo-500, .theme-dark .allo-docsuite .border-indigo-600, .theme-dark .allo-docsuite [class~="border-indigo-600/60"] { border-color:#4338ca !important; }
+.theme-dark .allo-docsuite .border-slate-300, .theme-dark .allo-docsuite .border-slate-400 { border-color:#475569 !important; }
+.theme-dark .allo-docsuite .border-violet-200, .theme-dark .allo-docsuite .border-violet-300 { border-color:#5b21b6 !important; }
+.theme-dark .allo-docsuite .border-purple-200, .theme-dark .allo-docsuite .border-purple-300 { border-color:#6b21a8 !important; }
+.theme-dark .allo-docsuite .border-violet-400, .theme-dark .allo-docsuite .border-violet-600 { border-color:#6d28d9 !important; }
+.theme-dark .allo-docsuite .border-purple-600 { border-color:#7e22ce !important; }
+.theme-dark .allo-docsuite .border-yellow-100 { border-color:#854d0e !important; }
+.theme-dark .allo-docsuite .border-fuchsia-200 { border-color:#86198f !important; }
+.theme-dark .allo-docsuite .border-amber-100, .theme-dark .allo-docsuite .border-amber-200, .theme-dark .allo-docsuite [class~="border-amber-200/60"], .theme-dark .allo-docsuite .border-amber-300 { border-color:#92400e !important; }
+.theme-dark .allo-docsuite .border-red-100, .theme-dark .allo-docsuite .border-red-200, .theme-dark .allo-docsuite .border-red-300 { border-color:#991b1b !important; }
+.theme-dark .allo-docsuite .border-orange-200 { border-color:#9a3412 !important; }
+.theme-dark .allo-docsuite .border-rose-300 { border-color:#9f1239 !important; }
+.theme-dark .allo-docsuite .border-amber-400, .theme-dark .allo-docsuite .border-amber-500, .theme-dark .allo-docsuite .border-amber-600 { border-color:#b45309 !important; }
+.theme-dark .allo-docsuite .border-red-600 { border-color:#b91c1c !important; }
+.theme-dark .allo-docsuite .border-rose-400 { border-color:#be123c !important; }
+.theme-dark .allo-docsuite .border-orange-400, .theme-dark .allo-docsuite .border-orange-500 { border-color:#c2410c !important; }
+.theme-dark .allo-docsuite .text-teal-700, .theme-dark .allo-docsuite .text-teal-800 { color:#5eead4 !important; }
+.theme-dark .allo-docsuite .text-cyan-900 { color:#67e8f9 !important; }
+.theme-dark .allo-docsuite .text-emerald-600, .theme-dark .allo-docsuite .text-emerald-700, .theme-dark .allo-docsuite .text-emerald-800, .theme-dark .allo-docsuite .text-emerald-900 { color:#6ee7b7 !important; }
+.theme-dark .allo-docsuite .text-sky-600, .theme-dark .allo-docsuite .text-sky-700, .theme-dark .allo-docsuite .text-sky-800, .theme-dark .allo-docsuite .text-sky-900 { color:#7dd3fc !important; }
+.theme-dark .allo-docsuite .text-green-400, .theme-dark .allo-docsuite .text-green-500, .theme-dark .allo-docsuite .text-green-600, .theme-dark .allo-docsuite .text-green-700, .theme-dark .allo-docsuite .text-green-800 { color:#86efac !important; }
+.theme-dark .allo-docsuite .text-blue-500, .theme-dark .allo-docsuite .text-blue-600, .theme-dark .allo-docsuite .text-blue-700, .theme-dark .allo-docsuite .text-blue-800, .theme-dark .allo-docsuite .text-blue-900 { color:#93c5fd !important; }
+.theme-dark .allo-docsuite .text-slate-400 { color:#a3b1c2 !important; }
+.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900 { color:#a5b4fc !important; }
+.theme-dark .allo-docsuite .text-slate-500 { color:#a9b7c8 !important; }
+.theme-dark .allo-docsuite .text-violet-400, .theme-dark .allo-docsuite .text-violet-500, .theme-dark .allo-docsuite .text-violet-600, .theme-dark .allo-docsuite .text-violet-700, .theme-dark .allo-docsuite .text-violet-800, .theme-dark .allo-docsuite .text-violet-900 { color:#c4b5fd !important; }
+.theme-dark .allo-docsuite .text-slate-600 { color:#cbd5e1 !important; }
+.theme-dark .allo-docsuite .text-purple-400, .theme-dark .allo-docsuite .text-purple-500, .theme-dark .allo-docsuite .text-purple-600, .theme-dark .allo-docsuite .text-purple-700, .theme-dark .allo-docsuite .text-purple-800, .theme-dark .allo-docsuite .text-purple-900 { color:#d8b4fe !important; }
+.theme-dark .allo-docsuite .text-slate-700 { color:#e2e8f0 !important; }
+.theme-dark .allo-docsuite .text-fuchsia-700 { color:#f0abfc !important; }
+.theme-dark .allo-docsuite .text-slate-800 { color:#f1f5f9 !important; }
+.theme-dark .allo-docsuite .text-slate-900 { color:#f8fafc !important; }
+.theme-dark .allo-docsuite .text-red-400, .theme-dark .allo-docsuite .text-red-500, .theme-dark .allo-docsuite .text-red-600, .theme-dark .allo-docsuite .text-red-700, .theme-dark .allo-docsuite .text-red-800, .theme-dark .allo-docsuite .text-red-900 { color:#fca5a5 !important; }
+.theme-dark .allo-docsuite .text-amber-500, .theme-dark .allo-docsuite .text-amber-600, .theme-dark .allo-docsuite .text-amber-700, .theme-dark .allo-docsuite .text-amber-800, .theme-dark .allo-docsuite .text-amber-900 { color:#fcd34d !important; }
+.theme-dark .allo-docsuite .text-rose-600, .theme-dark .allo-docsuite .text-rose-700, .theme-dark .allo-docsuite .text-rose-800, .theme-dark .allo-docsuite .text-rose-900 { color:#fda4af !important; }
+.theme-dark .allo-docsuite .text-orange-600, .theme-dark .allo-docsuite .text-orange-700, .theme-dark .allo-docsuite .text-orange-800, .theme-dark .allo-docsuite .text-orange-900 { color:#fdba74 !important; }
+.theme-dark .allo-docsuite .text-yellow-500, .theme-dark .allo-docsuite .text-yellow-600, .theme-dark .allo-docsuite .text-yellow-700 { color:#fde047 !important; }
+.theme-contrast .allo-docsuite { color-scheme: dark; }
+.theme-contrast .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.theme-contrast .allo-docsuite textarea,
+.theme-contrast .allo-docsuite select {
+  background-color:#000000 !important;
+  color:#ffff00 !important;
+  border-color:#ffff00 !important;
+}
+.theme-contrast .allo-docsuite button {
+  color:#00ff00 !important;
+  border-color:#00ff00 !important;
+}
+.theme-contrast .allo-docsuite [class*="bg-gradient"] {
+  background-image:none !important;
+  background-color:#000000 !important;
+}
+.theme-contrast .allo-docsuite .ring-amber-300, .theme-contrast .allo-docsuite .ring-green-300, .theme-contrast .allo-docsuite .ring-indigo-200, .theme-contrast .allo-docsuite .ring-indigo-300, .theme-contrast .allo-docsuite .ring-indigo-400, .theme-contrast .allo-docsuite .ring-purple-400, .theme-contrast .allo-docsuite .ring-red-300, .theme-contrast .allo-docsuite .ring-red-400, .theme-contrast .allo-docsuite .ring-rose-300, .theme-contrast .allo-docsuite .ring-rose-400, .theme-contrast .allo-docsuite .ring-slate-400, .theme-contrast .allo-docsuite .ring-violet-300, .theme-contrast .allo-docsuite .ring-violet-400 { --tw-ring-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite .bg-yellow-50 { background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-600, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite .from-red-500, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
+.theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite .border-yellow-100 { border-color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite .text-yellow-700 { color:#ffff00 !important; }`}</style>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:font-bold focus:text-sm"
@@ -26532,15 +26818,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
             {!isTeacherMode && !activeSessionCode && <StudentJoinPanel appId={appId} handleSetIsJoinPanelExpandedToFalse={handleSetIsJoinPanelExpandedToFalse} handleSetIsJoinPanelExpandedToTrue={handleSetIsJoinPanelExpandedToTrue} isJoinPanelExpanded={isJoinPanelExpanded} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} t={t} />}
             {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
-                <div className="bg-emerald-700 text-white p-4 rounded-3xl shadow-lg mb-4 flex items-center justify-between animate-in slide-in-from-top-4 border-2 border-emerald-400">
+                <div className={`${studentLobbyStyles.panel} p-4 rounded-3xl mb-4 flex items-center justify-between animate-in slide-in-from-top-4`}>
                     <div className="flex items-center gap-3">
-                        <div className="bg-white/20 p-2 rounded-full"><Users size={20} className="animate-pulse"/></div>
+                        <div className={`${studentLobbyStyles.icon} p-2 rounded-full`}><Users size={20} className="animate-pulse"/></div>
                         <div>
                             <h3 className="font-bold text-sm">{t('session.lobby_title')}</h3>
-                            <p className="text-xs text-emerald-100">{t('session.lobby_waiting')}</p>
+                            <p className={`text-xs ${studentLobbyStyles.subText}`}>{t('session.lobby_waiting')}</p>
                         </div>
                     </div>
-                     <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
+                     <div className={`${studentLobbyStyles.badge} px-3 py-1 rounded-full text-xs font-bold`}>
                         {t('session.status_connected')}
                     </div>
                 </div>
@@ -28678,7 +28964,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, updatePdfPreview,
+          applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
@@ -29113,7 +29399,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,
-          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, toggleA11yInspect, updateExportPreview,
+          setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview: setShowExportPreviewWrapped, showExportPreview, t, theme, toggleA11yInspect, updateExportPreview,
           exportPreviewSource
         })}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEM Lab" t={t}>

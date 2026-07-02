@@ -1504,6 +1504,34 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         return next;
       });
     };
+    // Confidence-pattern rules (screening heuristics, not measurements).
+    // Quick-add seeds the current question + the next gradable question so
+    // the >=2-item integrity floor holds at authoring time; the router
+    // additionally requires >=2 items to MATCH before firing.
+    const _gradableIdxs = (generatedContent?.data?.questions || [])
+      .map((q, i) => ({ q, i }))
+      .filter(({ q }) => q && q.correctAnswer != null && Array.isArray(q.options))
+      .map(({ i }) => i);
+    const addConfidencePatternRule = (pattern) => {
+      const seed = [currentQuestionIndex].concat(_gradableIdxs.filter(i => i !== currentQuestionIndex).slice(0, 1));
+      if (seed.length < 2) {
+        if (typeof window !== 'undefined' && window.AlloFlowUX) window.AlloFlowUX.toast('Confidence rules need at least 2 gradable questions in this quiz.', 'info');
+        return;
+      }
+      const firstGroup = (groupEntriesForRouting[0] && groupEntriesForRouting[0][0]) || '';
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+        existing.push({
+          id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
+          version: 1,
+          when: { confidencePattern: pattern, acrossQuestions: seed },
+          then: { groupId: firstGroup }
+        });
+        next[currentQuestionIndex] = existing;
+        return next;
+      });
+    };
     // Phase E (poll subtype) — note: aggregation-rule CREATION in the inline
     // editor is deferred to V1.1 (requires a chip-picker UI for acrossQuestions).
     // Pre-authored / AI-generated aggregation rules ARE renderable + deletable
@@ -2103,6 +2131,38 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      // doesn't ship with a chip picker for acrossQuestions in V1,
                                      // so pre-authored / AI-generated aggregation rules render as
                                      // a read-only summary with a delete affordance only.
+                                     if (rule.when && rule.when.confidencePattern) {
+                                       const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
+                                       const patternLabel = rule.when.confidencePattern === 'fragile' ? '🌱 Fragile knowledge (correct but guessed)'
+                                         : rule.when.confidencePattern === 'confident-wrong' ? '🧭 Confident misconception (wrong but sure)'
+                                         : '⭐ Calibrated mastery (correct and sure)';
+                                       return (
+                                         <div key={rule.id} className="bg-white border border-sky-200 rounded p-1.5 text-xs space-y-1">
+                                           <div className="flex flex-wrap items-center gap-1">
+                                             <span className="px-1 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold uppercase tracking-wide">Confidence</span>
+                                             <span className="text-slate-700">{patternLabel} across {across.map(i => `Q${i + 1}`).join(', ')}</span>
+                                             <span className="text-slate-600">→</span>
+                                             <select
+                                                 value={rule.then.groupId || ''}
+                                                 onChange={e => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
+                                                 aria-label="Destination group"
+                                                 className="border border-slate-300 rounded px-1 py-0.5 text-[11px]"
+                                             >
+                                               <option value="">— pick group —</option>
+                                               {groupEntriesForRouting.map(([gid, g]) => <option key={gid} value={gid}>{g.name || gid}</option>)}
+                                             </select>
+                                             <button
+                                                 onClick={() => removeQuizRoutingRule(rule.id)}
+                                                 aria-label="Remove confidence rule"
+                                                 className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+                                             >✕</button>
+                                           </div>
+                                           <div className="text-[10px] text-slate-500 italic pl-1">
+                                             Screening heuristic, not a measurement: fires only when ≥2 of these items match the pattern (with a confidence report). Use it to start a conversation, not to label a learner.
+                                           </div>
+                                         </div>
+                                       );
+                                     }
                                      if (rule.when && rule.when.aggregate) {
                                        const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
                                        return (
@@ -2216,11 +2276,25 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                      <strong className="font-bold">Likert routing:</strong> single-item Likert routing is refused — a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across ≥2 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.
                                    </div>
                                  ) : (
-                                   <button
-                                       onClick={addQuizRoutingRule}
-                                       disabled={groupEntriesForRouting.length === 0}
-                                       className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
-                                   >+ Add rule</button>
+                                   <div className="flex flex-wrap gap-1">
+                                     <button
+                                         onClick={addQuizRoutingRule}
+                                         disabled={groupEntriesForRouting.length === 0}
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
+                                     >+ Add rule</button>
+                                     <button
+                                         onClick={() => addConfidencePatternRule('fragile')}
+                                         disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
+                                         title="Route students who are getting answers right while reporting 'I guessed' (≥2 items) — consolidation support, not a label"
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${(groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2) ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-sky-500 text-sky-800 hover:bg-sky-100'}`}
+                                     >+ 🌱 Fragile-knowledge rule</button>
+                                     <button
+                                         onClick={() => addConfidencePatternRule('confident-wrong')}
+                                         disabled={groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2}
+                                         title="Route students who are answering wrong while reporting 'I knew it' (≥2 items) — misconception conference list"
+                                         className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${(groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2) ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-sky-500 text-sky-800 hover:bg-sky-100'}`}
+                                     >+ 🧭 Misconception rule</button>
+                                   </div>
                                  )}
                              </div>
                          )}

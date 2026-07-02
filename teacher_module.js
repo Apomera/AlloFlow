@@ -1166,6 +1166,27 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       return next;
     });
   };
+  const _gradableIdxs = (generatedContent?.data?.questions || []).map((q, i) => ({ q, i })).filter(({ q }) => q && q.correctAnswer != null && Array.isArray(q.options)).map(({ i }) => i);
+  const addConfidencePatternRule = (pattern) => {
+    const seed = [currentQuestionIndex].concat(_gradableIdxs.filter((i) => i !== currentQuestionIndex).slice(0, 1));
+    if (seed.length < 2) {
+      if (typeof window !== "undefined" && window.AlloFlowUX) window.AlloFlowUX.toast("Confidence rules need at least 2 gradable questions in this quiz.", "info");
+      return;
+    }
+    const firstGroup = groupEntriesForRouting[0] && groupEntriesForRouting[0][0] || "";
+    setQuizRoutingRulesByQ((prev) => {
+      const next = { ...prev };
+      const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+      existing.push({
+        id: "qr-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 5),
+        version: 1,
+        when: { confidencePattern: pattern, acrossQuestions: seed },
+        then: { groupId: firstGroup }
+      });
+      next[currentQuestionIndex] = existing;
+      return next;
+    });
+  };
   const removeQuizRoutingRule = (rid) => {
     setQuizRoutingRulesByQ((prev) => {
       const next = { ...prev };
@@ -1637,6 +1658,29 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-700" }, "(", currentRules.length, " rule", currentRules.length === 1 ? "" : "s", ")")
   ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, t("teacher.quiz_routing.no_groups_warning") || "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => {
     const hiddenIds = Array.isArray(rule.then.hiddenResourceIds) ? rule.then.hiddenResourceIds : [];
+    if (rule.when && rule.when.confidencePattern) {
+      const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
+      const patternLabel = rule.when.confidencePattern === "fragile" ? "\u{1F331} Fragile knowledge (correct but guessed)" : rule.when.confidencePattern === "confident-wrong" ? "\u{1F9ED} Confident misconception (wrong but sure)" : "\u2B50 Calibrated mastery (correct and sure)";
+      return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-sky-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-1 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold uppercase tracking-wide" }, "Confidence"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, patternLabel, " across ", across.map((i) => `Q${i + 1}`).join(", ")), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2192"), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: rule.then.groupId || "",
+          onChange: (e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } }),
+          "aria-label": "Destination group",
+          className: "border border-slate-300 rounded px-1 py-0.5 text-[11px]"
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick group \u2014"),
+        groupEntriesForRouting.map(([gid, g2]) => /* @__PURE__ */ React.createElement("option", { key: gid, value: gid }, g2.name || gid))
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => removeQuizRoutingRule(rule.id),
+          "aria-label": "Remove confidence rule",
+          className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+        },
+        "\u2715"
+      )), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic pl-1" }, "Screening heuristic, not a measurement: fires only when \u22652 of these items match the pattern (with a confidence report). Use it to start a conversation, not to label a learner."));
+    }
     if (rule.when && rule.when.aggregate) {
       const across = Array.isArray(rule.when.acrossQuestions) ? rule.when.acrossQuestions : [];
       return /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "bg-white border border-purple-200 rounded p-1.5 text-xs space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "px-1 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold uppercase tracking-wide" }, "Aggregation"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, String(rule.when.aggregate), " of items ", across.map((i) => `Q${i + 1}`).join(", ") || "(none)", " ", rule.when.predicate, " ", String(rule.when.value)), across.length < 2 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] text-red-700 italic" }, "\u2014 needs \u22652 items to fire"), /* @__PURE__ */ React.createElement(
@@ -1701,7 +1745,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         }
       ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 uppercase text-[9px] font-bold min-w-[40px]" }, item.type), /* @__PURE__ */ React.createElement("span", { className: "truncate flex-1" }, label));
     }))));
-  }), _currentQuestionIsLikert ? /* @__PURE__ */ React.createElement("div", { className: "rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug" }, /* @__PURE__ */ React.createElement("strong", { className: "font-bold" }, "Likert routing:"), " single-item Likert routing is refused \u2014 a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across \u22652 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.") : /* @__PURE__ */ React.createElement(
+  }), _currentQuestionIsLikert ? /* @__PURE__ */ React.createElement("div", { className: "rounded border border-purple-200 bg-purple-50 px-2 py-1.5 text-[11px] text-purple-900 leading-snug" }, /* @__PURE__ */ React.createElement("strong", { className: "font-bold" }, "Likert routing:"), " single-item Likert routing is refused \u2014 a single self-report tick is not measurement-reliable. Multi-item aggregation rules (avg / min / max across \u22652 items) are supported by the router and can be pre-authored or AI-generated; in-editor rule creation lands in a future update.") : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: addQuizRoutingRule,
@@ -1709,7 +1753,25 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-amber-500 text-amber-800 hover:bg-amber-100"}`
     },
     "+ Add rule"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => addConfidencePatternRule("fragile"),
+      disabled: groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2,
+      title: "Route students who are getting answers right while reporting 'I guessed' (\u22652 items) \u2014 consolidation support, not a label",
+      className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-sky-500 text-sky-800 hover:bg-sky-100"}`
+    },
+    "+ \u{1F331} Fragile-knowledge rule"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => addConfidencePatternRule("confident-wrong"),
+      disabled: groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2,
+      title: "Route students who are answering wrong while reporting 'I knew it' (\u22652 items) \u2014 misconception conference list",
+      className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-sky-500 text-sky-800 hover:bg-sky-100"}`
+    },
+    "+ \u{1F9ED} Misconception rule"
+  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.toggle_visibility"),
