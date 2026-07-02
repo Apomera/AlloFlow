@@ -47,6 +47,24 @@ students authenticate anonymously and create no account.
   school sign-in is murkier), and the injected backend remains district-inaccessible (no export,
   retention, or audit controls) — which is why the architecture keeps anything record-like off
   it entirely (§4).
+**Platform compliance is not application compliance.** Google's Core-Service FERPA posture
+covers the *platform substrate* — how Google processes, protects, and refrains from training on
+data that flows through the Gemini app. It does **not** bless the data flows any particular app
+built inside Canvas creates. AlloFlow uses Canvas in ways its compliance statement was not
+written around: the injected Firebase runtime as a multi-user classroom backend, WebRTC
+signaling between student devices, a teacher-shared app joined by a whole class. A badly designed
+app could absolutely create FERPA problems *inside* a compliant platform (e.g., storing student
+work keyed by real names), and responsibility for that would sit with the school/operator, not
+Google. AlloFlow's answer is to make the application layer defensible **without leaning on the
+platform statement at all**: student content never enters the shared backend (peer-to-peer), what
+does enter is enum/ID-only under curated codenames and is deleted at session end, and the whole
+flow is documented in this file. Treat Google's statement as covering the substrate; treat this
+document as covering the app. (Also note: the injected Canvas Firebase is a runtime affordance,
+not a contracted service — Google can change it without notice, which is an availability
+argument, alongside the privacy one, for the owned deployment below. And WebRTC's normal ICE
+exchange briefly reveals device network addresses between class peers — routine for
+peer-to-peer, low-risk on a school LAN, disclosed here for completeness.)
+
 - **Owned deployment (classroom phase):** project `prismflow-911fe` (or a pilot-dedicated
   successor) — district-inspectable on request, server-side rules deployed from the repo's
   `firestore.rules`, TTL policies available. **Recommendation: all student classroom traffic runs
