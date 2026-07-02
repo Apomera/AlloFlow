@@ -121,6 +121,53 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
 
+  // Fraction Lab workspace polish: responsive framing, stable controls, and focus states.
+  (function() {
+    if (document.getElementById('allo-fractions-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-fractions-polish-css';
+    st.textContent = [
+      '.fraction-lab-practice-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:14px;align-items:stretch}',
+      '.fraction-lab-panel{border:1px solid rgba(225,29,72,.22);background:linear-gradient(180deg,#fff 0%,#fff7fb 100%);box-shadow:0 14px 34px rgba(190,18,60,.10);border-radius:18px}',
+      '.fraction-lab-visual-panel{position:relative;overflow:hidden;padding:14px}',
+      '.fraction-lab-visual-panel:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 12%,rgba(251,113,133,.16),transparent 28%),radial-gradient(circle at 84% 18%,rgba(14,165,233,.11),transparent 24%);pointer-events:none}',
+      '.fraction-lab-panel-inner{position:relative;z-index:1}',
+      '.fraction-lab-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}',
+      '.fraction-lab-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#be123c}',
+      '.fraction-lab-model-stage{min-height:286px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(244,63,94,.18);border-radius:16px;background:linear-gradient(180deg,#fff 0%,#fff1f5 100%);padding:14px;overflow:hidden}',
+      '.fraction-lab-model-stage svg{max-width:100%;height:auto}',
+      '.fraction-lab-control-stack{display:grid;gap:12px}',
+      '.fraction-lab-control-card{border:1px solid rgba(148,163,184,.35);border-radius:16px;background:#fff;padding:13px;box-shadow:0 10px 24px rgba(15,23,42,.06)}',
+      '.fraction-lab-slider-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:8px}',
+      '.fraction-lab-slider-row input[type=range]{width:100%;accent-color:#e11d48}',
+      '.fraction-lab-value-chip{min-width:42px;text-align:center;border-radius:12px;background:#fff1f2;color:#9f1239;font-weight:900;padding:6px 9px;border:1px solid #fecdd3}',
+      '.fraction-lab-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}',
+      '.fraction-lab-summary-tile{border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:8px;text-align:center;min-height:58px}',
+      '.fraction-lab-summary-tile b{display:block;color:#0f172a;font-size:15px}',
+      '.fraction-lab-summary-tile span{display:block;color:#64748b;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}',
+      '.fraction-lab-strip-grid{display:flex;gap:3px;min-height:46px;border-radius:14px;overflow:hidden;background:#fee2e2;padding:3px;margin-top:12px;border:1px solid #fecdd3}',
+      '.fraction-lab-strip-segment{flex:1;min-width:12px;border-radius:9px;border:0;cursor:pointer;transition:transform .14s ease,background .14s ease,box-shadow .14s ease}',
+      '.fraction-lab-strip-segment.is-filled{background:#e11d48;box-shadow:inset 0 -10px 18px rgba(136,19,55,.18)}',
+      '.fraction-lab-strip-segment.is-empty{background:#fff7ed}',
+      '.fraction-lab-strip-segment:hover{transform:translateY(-1px)}',
+      '.fraction-lab-strip-segment:focus-visible{outline:3px solid #0ea5e9;outline-offset:2px}',
+      '.fraction-lab-mode-toggle{display:flex;gap:4px;background:#fff;border:1px solid #fecdd3;border-radius:999px;padding:3px}',
+      '.fraction-lab-mode-toggle button{border:0;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;color:#9f1239;background:transparent}',
+      '.fraction-lab-mode-toggle button[aria-pressed=true]{background:#e11d48;color:#fff;box-shadow:0 4px 10px rgba(225,29,72,.22)}',
+      '.fraction-lab-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}',
+      '.fraction-lab-presets button{border:1px solid #fecdd3;background:#fff1f2;color:#9f1239;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900}',
+      '.fraction-lab-presets button:hover{background:#ffe4e6}',
+      '.fraction-lab-equivalence-card{border:1px solid rgba(244,114,182,.45);background:linear-gradient(180deg,#fff 0%,#fff5fb 100%);border-radius:18px;padding:12px;box-shadow:0 12px 28px rgba(190,24,93,.09)}',
+      '.fraction-lab-equivalence-canvas-wrap{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(244,114,182,.35);background:#020210;aspect-ratio:16/5;min-height:138px}',
+      '.fraction-lab-equivalence-canvas-wrap:after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none}',
+      '.fraction-lab-equivalence-canvas{width:100%;height:100%;display:block}',
+      '.fraction-lab-equivalence-canvas:focus-visible{outline:3px solid #0ea5e9;outline-offset:-4px}',
+      '@media (max-width:780px){.fraction-lab-practice-grid{grid-template-columns:1fr}.fraction-lab-model-stage{min-height:236px}.fraction-lab-summary-grid{grid-template-columns:1fr 1fr}}',
+      '@media (max-width:480px){.fraction-lab-toolbar{align-items:flex-start}.fraction-lab-summary-grid{grid-template-columns:1fr}.fraction-lab-control-card{padding:11px}.fraction-lab-model-stage{min-height:210px;padding:10px}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ═══════════════════════════════════════════════════════════════════════
   // ═══ CONSTANTS & DATA LIBRARIES (defined once at module load) ═══
@@ -2632,83 +2679,135 @@ window.StemLab = window.StemLab || {
       var pd = pieces.denominator;
       var pSimp = simplify(pn, pd);
       var isSimplified = (pSimp[0] === pn && pSimp[1] === pd);
-      return h('div', { className: 'space-y-4' },
-        // Sliders
-        h('div', { className: 'grid grid-cols-2 gap-3' },
-          h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
-            h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.denominator_parts', 'Denominator (parts)')),
-            h('input', {
-              type: 'range', min: '2', max: '20', value: pd,
-              onChange: function(e) { var v = parseInt(e.target.value); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pn, v) } }); },
-              className: 'w-full accent-rose-600'
-            }),
-            h('div', { className: 'text-center text-lg font-bold text-rose-700' }, pd)
-          ),
-          h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
-            h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator_selected', 'Numerator (selected)')),
-            h('input', {
-              type: 'range', min: '0', max: String(pd), value: pn,
-              onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pd, numerator: parseInt(e.target.value) } }); },
-              className: 'w-full accent-rose-600'
-            }),
-            h('div', { className: 'text-center text-lg font-bold text-rose-700' }, pn)
+      var pct = pd > 0 ? (pn / pd * 100) : 0;
+      var dec = pd > 0 ? (pn / pd) : 0;
+      var relation = pn === 0 ? 'No parts selected'
+        : pn === pd ? 'Exactly one whole'
+          : pn > pd ? 'More than one whole'
+            : Math.abs(dec - 0.5) < 0.001 ? 'Exactly one half'
+              : dec > 0.5 ? 'More than one half' : 'Less than one half';
+      var denId = 'fraction-practice-denominator';
+      var numId = 'fraction-practice-numerator';
+      return h('section', {
+        className: 'fraction-lab-practice-grid',
+        'aria-labelledby': 'fraction-practice-title',
+        'data-fraction-focus': 'true'
+      },
+        h('div', {
+          className: 'fraction-lab-panel fraction-lab-visual-panel',
+          'data-fraction-visual-shell': 'true'
+        },
+          h('div', { className: 'fraction-lab-panel-inner' },
+            h('div', { className: 'fraction-lab-toolbar' },
+              h('div', null,
+                h('div', { className: 'fraction-lab-kicker' }, 'Live fraction model'),
+                h('h4', { id: 'fraction-practice-title', className: 'text-lg font-black text-rose-900 leading-tight m-0' }, pn + '/' + pd + ' of the whole')
+              ),
+              h('div', { className: 'fraction-lab-mode-toggle', role: 'group', 'aria-label': 'Visual model' },
+                ['pie', 'bar'].map(function(m) {
+                  return h('button', { key: m,
+                    type: 'button',
+                    'aria-pressed': mode === m,
+                    onClick: function() { sfxClick(); upd({ mode: m }); },
+                    title: m === 'bar' ? 'Show as a bar model' : 'Show as a pie model'
+                  }, m === 'bar' ? 'Bar' : 'Pie');
+                })
+              )
+            ),
+            h('div', {
+              className: 'fraction-lab-model-stage',
+              role: 'img',
+              'aria-label': 'Visual model showing ' + pn + ' of ' + pd + ' equal parts selected'
+            },
+              mode === 'pie'
+                ? drawPie(pn, pd, 260, null)
+                : h('div', { style: { width: '100%', maxWidth: 460 } }, drawBar(pn, pd, null))
+            ),
+            h('div', {
+              className: 'fraction-lab-strip-grid',
+              role: 'group',
+              'aria-label': 'Choose how many parts are selected'
+            },
+              Array.from({ length: pd }, function(_, i) {
+                var nextValue = i < pn ? i : i + 1;
+                return h('button', {
+                  key: i,
+                  type: 'button',
+                  'aria-pressed': i < pn,
+                  'aria-label': 'Set numerator to ' + nextValue + ' out of ' + pd,
+                  title: 'Set to ' + nextValue + '/' + pd,
+                  onClick: function() { sfxClick(); upd({ pieces: { denominator: pd, numerator: nextValue } }); },
+                  className: 'fraction-lab-strip-segment ' + (i < pn ? 'is-filled' : 'is-empty')
+                }, h('span', { className: 'sr-only' }, (i + 1) + ' of ' + pd));
+              })
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 mt-2 mb-0' },
+              'Click the strip to set the numerator directly; use the sliders to change the whole.'
+            )
           )
         ),
-        // Pie + bar
-        h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-6 flex justify-center' },
-          mode === 'pie'
-            ? drawPie(pn, pd, 240, null)
-            : h('div', { className: 'w-full max-w-md' }, drawBar(pn, pd, null))
-        ),
-        // Clickable bar
-        h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4' },
-          h('div', { className: 'flex gap-[2px] h-12 rounded-lg overflow-hidden' },
-            Array.from({ length: pd }, function(_, i) {
-              return h('div', { 
-                key: i,
-                role: 'button', tabIndex: 0,
-                onClick: function() { sfxClick(); upd({ pieces: { denominator: pd, numerator: i < pn ? i : i + 1 } }); },
-                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfxClick(); upd({ pieces: { denominator: pd, numerator: i < pn ? i : i + 1 } }); } },
-                className: 'flex-1 cursor-pointer transition-all outline-none focus:ring-2 focus:ring-rose-500 focus:relative focus:z-10 ' + (i < pn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-rose-100 hover:bg-rose-200'),
-                'aria-label': (i + 1) + ' of ' + pd, title: (i + 1) + '/' + pd
-              });
-            })
+        h('div', { className: 'fraction-lab-control-stack', 'data-fraction-controls': 'true' },
+          h('div', { className: 'fraction-lab-control-card' },
+            h('div', { className: 'fraction-lab-kicker' }, 'Build the fraction'),
+            h('div', { className: 'mt-2' },
+              h('label', { htmlFor: denId, className: 'block text-xs font-black text-slate-700' }, __alloT('stem.fractions.denominator_parts', 'Denominator (parts)')),
+              h('p', { id: denId + '-hint', className: 'text-[11px] text-slate-500 mt-0.5 mb-0' }, 'How many equal parts make one whole.'),
+              h('div', { className: 'fraction-lab-slider-row' },
+                h('input', {
+                  id: denId,
+                  type: 'range', min: '2', max: '20', value: pd,
+                  'aria-describedby': denId + '-hint',
+                  onChange: function(e) { var v = parseInt(e.target.value, 10); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pn, v) } }); }
+                }),
+                h('output', { htmlFor: denId, className: 'fraction-lab-value-chip' }, pd)
+              )
+            ),
+            h('div', { className: 'mt-3' },
+              h('label', { htmlFor: numId, className: 'block text-xs font-black text-slate-700' }, __alloT('stem.fractions.numerator_selected', 'Numerator (selected)')),
+              h('p', { id: numId + '-hint', className: 'text-[11px] text-slate-500 mt-0.5 mb-0' }, 'How many of those equal parts are filled.'),
+              h('div', { className: 'fraction-lab-slider-row' },
+                h('input', {
+                  id: numId,
+                  type: 'range', min: '0', max: String(pd), value: pn,
+                  'aria-describedby': numId + '-hint',
+                  onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pd, numerator: parseInt(e.target.value, 10) } }); }
+                }),
+                h('output', { htmlFor: numId, className: 'fraction-lab-value-chip' }, pn)
+              )
+            )
+          ),
+          h('div', { className: 'fraction-lab-control-card', role: 'status', 'aria-live': 'polite' },
+            h('div', { className: 'fraction-lab-kicker' }, 'What it means'),
+            h('div', { className: 'flex items-center justify-center gap-3 mt-2' },
+              h('div', { className: 'inline-flex flex-col items-center' },
+                h('span', { className: 'text-4xl font-black text-rose-700 border-b-4 border-rose-400 px-5 pb-1 leading-none' }, pn),
+                h('span', { className: 'text-4xl font-black text-rose-700 px-5 pt-1 leading-none' }, pd)
+              )
+            ),
+            h('div', { className: 'fraction-lab-summary-grid' },
+              h('div', { className: 'fraction-lab-summary-tile' }, h('span', null, 'Percent'), h('b', null, pct.toFixed(0) + '%')),
+              h('div', { className: 'fraction-lab-summary-tile' }, h('span', null, 'Decimal'), h('b', null, dec.toFixed(3))),
+              h('div', { className: 'fraction-lab-summary-tile' }, h('span', null, 'Simplify'), h('b', null, isSimplified ? 'Ready' : pSimp[0] + '/' + pSimp[1]))
+            ),
+            h('p', { className: 'text-sm font-bold text-slate-700 text-center mt-3 mb-0' }, relation),
+            pn > pd && h('p', { className: 'text-xs font-bold text-orange-700 text-center mt-1 mb-0' }, 'Mixed number: ' + toMixed(pn, pd)),
+            pn === pd && h('p', { className: 'text-xs font-bold text-emerald-700 text-center mt-1 mb-0' }, __alloT('stem.fractions.1_whole', '= 1 whole! \uD83C\uDF89'))
+          ),
+          h('div', { className: 'fraction-lab-control-card' },
+            h('div', { className: 'fraction-lab-kicker' }, 'Quick fractions'),
+            h('div', { className: 'fraction-lab-presets' },
+              [{ n: 1, d: 2, l: '\u00BD' }, { n: 1, d: 3, l: '\u2153' }, { n: 1, d: 4, l: '\u00BC' }, { n: 2, d: 3, l: '\u2154' },
+               { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' },
+               { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }
+              ].map(function(p) {
+                return h('button', { key: p.l,
+                  type: 'button',
+                  'aria-label': 'Set fraction to ' + p.n + '/' + p.d,
+                  onClick: function() { sfxClick(); upd({ pieces: { numerator: p.n, denominator: p.d } }); }
+                }, p.l);
+              })
+            )
           )
-        ),
-        // Value display
-        h('div', { className: 'bg-white rounded-xl p-4 border border-rose-100 text-center' },
-          h('div', { className: 'inline-flex flex-col items-center' },
-            h('span', { className: 'text-3xl font-bold text-rose-700 border-b-4 border-rose-400 px-4 pb-1' }, pn),
-            h('span', { className: 'text-3xl font-bold text-rose-700 px-4 pt-1' }, pd)
-          ),
-          h('div', { className: 'text-sm text-rose-600 mt-2 space-x-3' },
-            h('span', null, '= ' + (pd > 0 ? (pn / pd * 100).toFixed(0) : 0) + '%'),
-            pn > 0 && h('span', { className: 'text-slate-600' }, '\u2248 ' + (pd > 0 ? (pn / pd).toFixed(3) : 0)),
-            !isSimplified && h('span', { className: 'text-violet-600 font-bold' }, '\u2192 ' + pSimp[0] + '/' + pSimp[1])
-          ),
-          pn > pd && h('div', { className: 'text-sm font-bold text-orange-600 mt-1' }, '\uD83D\uDCE6 Mixed: ' + toMixed(pn, pd)),
-          pn === pd && h('div', { className: 'text-sm font-bold text-green-600 mt-1' }, __alloT('stem.fractions.1_whole', '= 1 whole! \uD83C\uDF89'))
-        ),
-        // Toggle mode
-        h('div', { className: 'flex justify-center gap-2' },
-          ['pie', 'bar'].map(function(m) {
-            return h('button', { key: m,
-              onClick: function() { sfxClick(); upd({ mode: m }); },
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold capitalize ' + (mode === m ? 'bg-rose-600 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-rose-50')
-            }, m === 'bar' ? '\u2588 Bar' : '\u25CF Pie');
-          })
-        ),
-        // Preset buttons
-        h('div', { className: 'flex flex-wrap gap-2' },
-          [{ n: 1, d: 2, l: '\u00BD' }, { n: 1, d: 3, l: '\u2153' }, { n: 1, d: 4, l: '\u00BC' }, { n: 2, d: 3, l: '\u2154' },
-           { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' },
-           { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }
-          ].map(function(p) {
-            return h('button', { key: p.l,
-              onClick: function() { sfxClick(); upd({ pieces: { numerator: p.n, denominator: p.d } }); },
-              className: 'px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all'
-            }, p.l);
-          })
         )
       );
     };
@@ -11074,10 +11173,15 @@ window.StemLab = window.StemLab || {
       ),
 
       // \u2550\u2550\u2550 EQUIVALENT FRACTIONS \u2550\u2550\u2550
-      h('div', { className: 'mt-5 rounded-2xl border border-pink-300 bg-white p-3 shadow-sm' },
+      h('div', { className: 'fraction-lab-equivalence-card mt-5', 'data-fraction-equivalence-card': 'true' },
         h('h4', { className: 'text-sm font-bold text-pink-700 mb-2' }, __alloT('stem.fractions.equivalent_fractions_same_value_differ', '\uD83C\uDF70 Equivalent Fractions \u2014 Same value, different forms')),
-        h('div', { className: 'rounded-xl overflow-hidden border border-pink-200', style: { background: 'var(--allo-stem-deeper, #020210)', aspectRatio: '16/5' } },
+        h('div', { className: 'fraction-lab-equivalence-canvas-wrap' },
           h('canvas', {
+            className: 'fraction-lab-equivalence-canvas',
+            role: 'img',
+            tabIndex: 0,
+            'aria-label': 'Equivalent fractions canvas comparing one half, two fourths, four eighths, and eight sixteenths as the same value.',
+            'data-fraction-equivalence-canvas': 'true',
             ref: function(cvEl) {
               if (!cvEl) return;
               if (cvEl._efDone) return;
@@ -11156,8 +11260,7 @@ window.StemLab = window.StemLab || {
               if (window.AlloStemTheme && window.AlloStemTheme.onChange) {
                 window.AlloStemTheme.onChange(drawEf);
               }
-            },
-            style: { width: '100%', height: '100%', display: 'block' }
+            }
           })
         )
       )
