@@ -1125,7 +1125,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", { onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    React.createElement("button", { "aria-label": t('stem.datastudio.remove_row', "Remove row") + " " + (row.label || (i + 1)), onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
                       className: "text-red-400 hover:text-red-600 font-bold text-xs"
 

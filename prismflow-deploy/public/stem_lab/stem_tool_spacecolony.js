@@ -1081,7 +1081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
             React.createElement('div', { className: 'flex items-center justify-between mb-4' },
               React.createElement('div', { className: 'flex items-center gap-2' },
-                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, className: 'transition-colors text-slate-200 hover:text-white text-lg' }, '\u2190'),
+                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors text-slate-200 hover:text-white text-lg' }, '\u2190'),
                 React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony')),
                 React.createElement('span', { className: 'text-[11px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, t('stem.spacecolony.turn_based_strategy', 'Turn-Based Strategy'))
               ),

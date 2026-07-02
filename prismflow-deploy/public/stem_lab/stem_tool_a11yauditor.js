@@ -486,7 +486,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-teal-100 text-teal-600 transition-colors' }, a11yClick(function() { ctx.setStemLabTool(null); })),
+          h('button', Object.assign({
+            className: 'p-2 rounded-full hover:bg-teal-100 text-teal-600 transition-colors',
+            'aria-label': t('stem.a11yauditor.back_to_stem_tools', 'Back to STEM tools'),
+            title: t('stem.a11yauditor.back', 'Back')
+          }, a11yClick(function() { ctx.setStemLabTool(null); })),
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { className: 'flex-1' },

@@ -1392,6 +1392,10 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
+                "aria-label": t('stem.economicslab.back_to_stem_tools', 'Back to STEM tools'),
+
+                title: t('stem.economicslab.back', 'Back'),
+
                 onClick: function () { setStemLabTool(null); },
 
                 className: 'text-slate-200 hover:text-white transition-colors text-lg'

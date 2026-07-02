@@ -1,0 +1,784 @@
+{
+  "generatedAt": "2026-07-02T07:09:02.752Z",
+  "source": {
+    "stemToolFileCount": 110,
+    "registeredToolCount": 113,
+    "monitoredMarkerCount": 23
+  },
+  "summary": {
+    "loadErrorCount": 0,
+    "markerPassCount": 23,
+    "markerFailCount": 0,
+    "monitoredIssueCount": 29,
+    "monitoredErrorCount": 0,
+    "monitoredWarningCount": 20,
+    "monitoredNoticeCount": 9,
+    "syncDriftCount": 0,
+    "sourcePublicDriftCount": 0,
+    "monitoredSyncDriftCount": 0
+  },
+  "loadErrors": [],
+  "markerResults": [
+    {
+      "id": "opticsLab",
+      "file": "stem_tool_optics.js",
+      "marker": "data-opticslab-focus",
+      "label": "Optics focus panel",
+      "ok": true,
+      "htmlBytes": 20319,
+      "issues": [
+        {
+          "toolId": "opticsLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div.opticslab-tool-shell"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 34,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 20319
+      }
+    },
+    {
+      "id": "microbiology",
+      "file": "stem_tool_microbiology.js",
+      "marker": "data-microbiology-focus",
+      "label": "Microbiology mission panel",
+      "ok": true,
+      "htmlBytes": 40472,
+      "issues": [],
+      "metrics": {
+        "buttons": 14,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 40472
+      }
+    },
+    {
+      "id": "ecosystem",
+      "file": "stem_tool_ecosystem.js",
+      "marker": "data-ecosystem-field-brief",
+      "label": "Ecosystem field brief",
+      "ok": true,
+      "htmlBytes": 23592,
+      "issues": [],
+      "metrics": {
+        "buttons": 33,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 1,
+        "htmlBytes": 23592
+      }
+    },
+    {
+      "id": "epidemicSim",
+      "file": "stem_tool_epidemic.js",
+      "marker": "data-epidemic-triage",
+      "label": "Epidemic triage panel",
+      "ok": true,
+      "htmlBytes": 89119,
+      "issues": [
+        {
+          "toolId": "epidemicSim",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
+        },
+        {
+          "toolId": "epidemicSim",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
+        }
+      ],
+      "metrics": {
+        "buttons": 21,
+        "fields": 4,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 89119
+      }
+    },
+    {
+      "id": "renewablesLab",
+      "file": "stem_tool_renewables.js",
+      "marker": "data-renewables-launch-panel",
+      "label": "Renewables launch panel",
+      "ok": true,
+      "htmlBytes": 12883,
+      "issues": [
+        {
+          "toolId": "renewablesLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 12,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 12883
+      }
+    },
+    {
+      "id": "climateExplorer",
+      "file": "stem_tool_climateExplorer.js",
+      "marker": "data-climate-mission-panel",
+      "label": "Climate mission panel",
+      "ok": true,
+      "htmlBytes": 32842,
+      "issues": [
+        {
+          "toolId": "climateExplorer",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div:nth-of-type(5) > div > div:nth-of-type(7) > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 39,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 32842
+      }
+    },
+    {
+      "id": "bridgeLab",
+      "file": "stem_tool_bridgelab.js",
+      "marker": "data-bridgelab-design-brief",
+      "label": "Bridge design brief",
+      "ok": true,
+      "htmlBytes": 37600,
+      "issues": [],
+      "metrics": {
+        "buttons": 24,
+        "fields": 8,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 37600
+      }
+    },
+    {
+      "id": "nutritionLab",
+      "file": "stem_tool_nutritionlab.js",
+      "marker": "data-nutrition-practice-path",
+      "label": "Nutrition practice path",
+      "ok": true,
+      "htmlBytes": 23951,
+      "issues": [],
+      "metrics": {
+        "buttons": 19,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 16,
+        "htmlBytes": 23951
+      }
+    },
+    {
+      "id": "bakingScience",
+      "file": "stem_tool_bakingscience.js",
+      "marker": "data-baking-kitchen-bench",
+      "label": "Baking kitchen bench",
+      "ok": true,
+      "htmlBytes": 11164,
+      "issues": [],
+      "metrics": {
+        "buttons": 16,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 11164
+      }
+    },
+    {
+      "id": "cellularLab",
+      "file": "stem_tool_cellular.js",
+      "marker": "data-cellularlab-focus-panel",
+      "label": "Cellular focus panel",
+      "ok": true,
+      "htmlBytes": 13063,
+      "issues": [
+        {
+          "toolId": "cellularLab",
+          "severity": "warning",
+          "code": "heading",
+          "message": "No semantic heading rendered for this tool."
+        },
+        {
+          "toolId": "cellularLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 6,
+          "examples": [
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(3)"
+            },
+            {
+              "selector": "div#cell-panel > div > div:nth-of-type(4) > button:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 22,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 0,
+        "htmlBytes": 13063
+      }
+    },
+    {
+      "id": "brainAtlas",
+      "file": "stem_tool_brainatlas.js",
+      "marker": "data-brainatlas-mission",
+      "label": "Brain Atlas mission panel",
+      "ok": true,
+      "htmlBytes": 15237,
+      "issues": [
+        {
+          "toolId": "brainAtlas",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div.brainatlas-tool-shell.max-w-6xl > div.brainatlas-main-stack:nth-of-type(5) > div.brainatlas-canvas-shell:nth-of-type(1) > div.brainatlas-canvas-stage:nth-of-type(2) > canvas.brainatlas-canvas.border-2"
+        }
+      ],
+      "metrics": {
+        "buttons": 35,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 15237
+      }
+    },
+    {
+      "id": "anatomy",
+      "file": "stem_tool_anatomy.js",
+      "marker": "data-anatomy-mission",
+      "label": "Anatomy mission panel",
+      "ok": true,
+      "htmlBytes": 32942,
+      "issues": [
+        {
+          "toolId": "anatomy",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
+        },
+        {
+          "toolId": "anatomy",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
+        }
+      ],
+      "metrics": {
+        "buttons": 66,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 32942
+      }
+    },
+    {
+      "id": "birdLab",
+      "file": "stem_tool_birdlab.js",
+      "marker": "data-birdlab-field-station",
+      "label": "Bird Lab field station",
+      "ok": true,
+      "htmlBytes": 141328,
+      "issues": [
+        {
+          "toolId": "birdLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 2,
+          "examples": [
+            {
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
+              "width": "800"
+            },
+            {
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
+              "width": "800"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 127,
+        "fields": 0,
+        "canvases": 0,
+        "headings": 127,
+        "htmlBytes": 141328
+      }
+    },
+    {
+      "id": "waterCycle",
+      "file": "stem_tool_watercycle.js",
+      "marker": "data-watercycle-focus",
+      "label": "Water Cycle focus panel",
+      "ok": true,
+      "htmlBytes": 17501,
+      "issues": [
+        {
+          "toolId": "waterCycle",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "canvas#wcCanvas"
+        },
+        {
+          "toolId": "waterCycle",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "canvas#wcCanvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 17,
+        "fields": 4,
+        "canvases": 1,
+        "headings": 6,
+        "htmlBytes": 17501
+      }
+    },
+    {
+      "id": "playlab",
+      "file": "stem_tool_playlab.js",
+      "marker": "data-playlab-gameplan",
+      "label": "PlayLab game plan",
+      "ok": true,
+      "htmlBytes": 17200,
+      "issues": [
+        {
+          "toolId": "playlab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 29,
+          "examples": [
+            {
+              "selector": "div > div"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(2) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(2) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(5) > button:nth-of-type(1)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 31,
+        "fields": 5,
+        "canvases": 1,
+        "headings": 6,
+        "htmlBytes": 17200
+      }
+    },
+    {
+      "id": "plateTectonics",
+      "file": "stem_tool_platetectonics.js",
+      "marker": "data-pt-sim-focus",
+      "label": "Plate Tectonics sim focus",
+      "ok": true,
+      "htmlBytes": 23160,
+      "issues": [
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 1,
+          "selector": "canvas#geology-earth-canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 2,
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 2,
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 3,
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 3,
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 4,
+          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
+        },
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 4,
+          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 22,
+        "fields": 5,
+        "canvases": 6,
+        "headings": 5,
+        "htmlBytes": 23160
+      }
+    },
+    {
+      "id": "bikeLab",
+      "file": "stem_tool_bikelab.js",
+      "marker": "data-bikelab-ride-focus",
+      "label": "BikeLab ride focus",
+      "ok": true,
+      "htmlBytes": 13572,
+      "issues": [
+        {
+          "toolId": "bikeLab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div#bikelab-sandbox-fs > canvas.w-full.block"
+        },
+        {
+          "toolId": "bikeLab",
+          "severity": "warning",
+          "code": "heading",
+          "message": "No semantic heading rendered for this tool."
+        },
+        {
+          "toolId": "bikeLab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div#bikelab-sandbox-fs > canvas.w-full.block",
+              "width": "900"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 21,
+        "fields": 4,
+        "canvases": 1,
+        "headings": 0,
+        "htmlBytes": 13572
+      }
+    },
+    {
+      "id": "throwlab",
+      "file": "stem_tool_throwlab.js",
+      "marker": "data-throwlab-run-focus",
+      "label": "ThrowLab run focus",
+      "ok": true,
+      "htmlBytes": 46578,
+      "issues": [
+        {
+          "toolId": "throwlab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 29,
+          "examples": [
+            {
+              "selector": "div > div"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(2)"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(3)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 53,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 46578
+      }
+    },
+    {
+      "id": "echolocation",
+      "file": "stem_tool_echolocation.js",
+      "marker": "data-echolocation-run-focus",
+      "label": "Echolocation run focus",
+      "ok": true,
+      "htmlBytes": 22026,
+      "issues": [
+        {
+          "toolId": "echolocation",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 3,
+          "examples": [
+            {
+              "selector": "div#echo-sonar-fs-wrap > canvas",
+              "width": "800"
+            },
+            {
+              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(1)"
+            },
+            {
+              "selector": "div#echo-sonar-fs-wrap > div > div:nth-of-type(2)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 16,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 1,
+        "htmlBytes": 22026
+      }
+    },
+    {
+      "id": "skatelab",
+      "file": "stem_tool_skatelab.js",
+      "marker": "data-skatelab-run-focus",
+      "label": "SkateLab run focus",
+      "ok": true,
+      "htmlBytes": 68804,
+      "issues": [
+        {
+          "toolId": "skatelab",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
+          "width": "720",
+          "height": "320"
+        },
+        {
+          "toolId": "skatelab",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas"
+        },
+        {
+          "toolId": "skatelab",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 48,
+          "examples": [
+            {
+              "selector": "div > div"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(1) > button"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(1)"
+            },
+            {
+              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(2)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 58,
+        "fields": 10,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 68804
+      }
+    },
+    {
+      "id": "fractions",
+      "file": "stem_tool_fractions.js",
+      "marker": "data-fraction-focus",
+      "label": "Fraction Lab focus panel",
+      "ok": true,
+      "htmlBytes": 15192,
+      "issues": [],
+      "metrics": {
+        "buttons": 41,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 15192
+      }
+    },
+    {
+      "id": "galaxy",
+      "file": "stem_tool_galaxy.js",
+      "marker": "data-galaxy-canvas",
+      "label": "Galaxy 3D canvas",
+      "ok": true,
+      "htmlBytes": 22154,
+      "issues": [],
+      "metrics": {
+        "buttons": 30,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 22154
+      }
+    },
+    {
+      "id": "wave",
+      "file": "stem_tool_wave.js",
+      "marker": "data-wave-canvas",
+      "label": "Wave canvas",
+      "ok": true,
+      "htmlBytes": 28667,
+      "issues": [],
+      "metrics": {
+        "buttons": 68,
+        "fields": 8,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 28667
+      }
+    }
+  ],
+  "sync": {
+    "drift": [],
+    "sourcePublicDrift": [],
+    "monitoredDrift": []
+  },
+  "topFindings": [
+    {
+      "code": "canvas-focus",
+      "severity": "warning",
+      "count": 11,
+      "toolCount": 8,
+      "exampleTools": [
+        "epidemicSim",
+        "climateExplorer",
+        "brainAtlas",
+        "anatomy",
+        "waterCycle",
+        "plateTectonics",
+        "bikeLab",
+        "skatelab"
+      ]
+    },
+    {
+      "code": "canvas-name",
+      "severity": "warning",
+      "count": 7,
+      "toolCount": 5,
+      "exampleTools": [
+        "epidemicSim",
+        "anatomy",
+        "waterCycle",
+        "plateTectonics",
+        "skatelab"
+      ]
+    },
+    {
+      "code": "heading",
+      "severity": "warning",
+      "count": 2,
+      "toolCount": 2,
+      "exampleTools": [
+        "cellularLab",
+        "bikeLab"
+      ]
+    },
+    {
+      "code": "horizontal-overflow-risk",
+      "severity": "notice",
+      "count": 9,
+      "toolCount": 9,
+      "exampleTools": [
+        "opticsLab",
+        "renewablesLab",
+        "cellularLab",
+        "birdLab",
+        "playlab",
+        "bikeLab",
+        "throwlab",
+        "echolocation",
+        "skatelab"
+      ]
+    }
+  ]
+}

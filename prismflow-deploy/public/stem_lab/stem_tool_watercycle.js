@@ -3837,6 +3837,7 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-amber-400" : "text-amber-700") }, "\u2600\uFE0F Solar: " + ((d.climSolar != null ? d.climSolar : 1.0) * 100).toFixed(0) + "%"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "2", step: "0.05",
+                    "aria-label": t('stem.watercycle.solar_intensity_slider', 'Solar intensity'),
                     value: d.climSolar != null ? d.climSolar : 1.0,
                     onChange: function(e) { adjustClimate('climSolar', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-indigo-300 via-amber-300 to-amber-500 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
@@ -3852,6 +3853,7 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-sky-400" : "text-sky-700") }, "\uD83C\uDF21\uFE0F Temp: " + (d.climTemp != null ? d.climTemp : 15) + "\u00B0C"),
                   React.createElement("input", {
                     type: "range", min: "-20", max: "45", step: "1",
+                    "aria-label": t('stem.watercycle.temperature_slider_celsius', 'Temperature in degrees Celsius'),
                     value: d.climTemp != null ? d.climTemp : 15,
                     onChange: function(e) { adjustClimate('climTemp', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-blue-400 via-emerald-300 to-red-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",
@@ -3867,6 +3869,7 @@ const d = labToolData.waterCycle || {};
                   React.createElement("label", { className: "text-[11px] font-bold flex items-center gap-1 " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "\uD83C\uDF2C\uFE0F Wind: " + ((d.climWind != null ? d.climWind : 1.0)).toFixed(1) + "x"),
                   React.createElement("input", {
                     type: "range", min: "0", max: "3", step: "0.1",
+                    "aria-label": t('stem.watercycle.wind_speed_slider', 'Wind speed multiplier'),
                     value: d.climWind != null ? d.climWind : 1.0,
                     onChange: function(e) { adjustClimate('climWind', parseFloat(e.target.value)); },
                     className: "w-full h-1.5 rounded-full appearance-none bg-gradient-to-r from-slate-200 to-emerald-400 cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none",

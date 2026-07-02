@@ -786,7 +786,8 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
           h('div', { className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
           h('div', { className: 'flex items-center justify-center gap-2' },
-            h('button', { onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
+            h('button', { 'aria-label': __alloT('stem.manipulatives.remove_one_place', 'Remove one ') + place,
+              onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
               className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '\u2212'),

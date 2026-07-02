@@ -1474,13 +1474,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('span', null, t('stem.bikelab.rider_power', 'Rider Power')), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
                   onChange: function(e) { setPower(parseInt(e.target.value)); },
-                  className: 'w-full mt-1 accent-cyan-500' }),
+                  className: 'w-full mt-1 accent-cyan-500',
+                  'aria-label': t('stem.bikelab.rider_power_watts', 'Rider power in watts') }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.pro_300_w_amateur_150_w_casual_80_w', 'Pro: ~300 W · Amateur: ~150 W · Casual: ~80 W')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.gear_ratio', 'Gear Ratio')), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
-                  className: 'w-full mt-1 accent-violet-500' }),
+                  className: 'w-full mt-1 accent-violet-500',
+                  'aria-label': t('stem.bikelab.gear_ratio_slider', 'Gear ratio') }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.low_gear_more_torque_less_top_speed_se', 'Low gear = more torque, less top speed. See Gearing Lab for math.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.wind', 'Wind')),
@@ -1488,7 +1490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     wind === 0 ? 'calm' : (Math.abs(wind * 2.23694).toFixed(0) + ' mph ' + (wind > 0 ? 'headwind' : 'tailwind')))),
                 h('input', { type: 'range', min: -11, max: 11, step: 0.5, value: wind,
                   onChange: function(e) { setWind(parseFloat(e.target.value)); },
-                  className: 'w-full mt-1 accent-rose-500' }),
+                  className: 'w-full mt-1 accent-rose-500',
+                  'aria-label': t('stem.bikelab.wind_speed_slider', 'Wind speed and direction') }),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1' }, t('stem.bikelab.drag_scales_with_v_wind_a_10_mph_headw', 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')),
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
                   h('span', null, t('stem.bikelab.rider_mass', 'Rider Mass')),
@@ -1715,7 +1718,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     h('span', { className: 'text-violet-600' }, cadence)),
                   h('input', { type: 'range', min: 40, max: 120, value: cadence,
                     onChange: function(e) { setCadence(parseInt(e.target.value)); },
-                    className: 'w-full accent-violet-500' }),
+                    className: 'w-full accent-violet-500',
+                    'aria-label': t('stem.bikelab.pedal_cadence_rpm_slider', 'Pedal cadence in RPM') }),
                   h('div', { className: 'text-[11px] text-slate-600' }, t('stem.bikelab.casual_riders_60_80_trained_80_100_spi', 'Casual riders: 60–80. Trained: 80–100. Spin classes: 100+.'))
                 )
               ),
@@ -2076,12 +2080,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                     h('span', null, t('stem.bikelab.height', 'Height')), h('span', { className: 'text-sky-600' }, heightCm + ' cm · ' + (heightCm / 2.54).toFixed(1) + '″')),
                   h('input', { type: 'range', min: 140, max: 210, value: heightCm,
                     onChange: function(e) { var v = parseInt(e.target.value); setHeightCm(v); upd('fitHeightCm', v); },
-                    className: 'w-full mt-1 accent-sky-500' }),
+                    className: 'w-full mt-1 accent-sky-500',
+                    'aria-label': t('stem.bikelab.rider_height_centimeters', 'Rider height in centimeters') }),
                   h('label', { className: 'text-sm font-bold text-slate-700 flex justify-between mt-3' },
                     h('span', null, t('stem.bikelab.inseam_cm', 'Inseam (cm)')), h('span', { className: 'text-emerald-600' }, inseamCm + ' cm · ' + (inseamCm / 2.54).toFixed(1) + '″')),
                   h('input', { type: 'range', min: 60, max: 100, value: inseamCm,
                     onChange: function(e) { var v = parseInt(e.target.value); setInseamCm(v); upd('fitInseamCm', v); },
-                    className: 'w-full mt-1 accent-emerald-500' }),
+                    className: 'w-full mt-1 accent-emerald-500',
+                    'aria-label': t('stem.bikelab.rider_inseam_centimeters', 'Rider inseam in centimeters') }),
                   h('div', { className: 'text-[11px] text-slate-600 mt-2 leading-relaxed bg-slate-50 p-2 rounded' },
                     h('strong', null, t('stem.bikelab.how_to_measure_inseam', 'How to measure inseam: ')),
                     t('stem.bikelab.stand_barefoot_against_a_wall_place_a_', 'Stand barefoot against a wall. Place a hardcover book snug between your legs. Measure from floor to the top spine of the book.')),
@@ -2250,7 +2256,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('span', null, t('stem.bikelab.initial_speed', 'Initial Speed')), h('span', { className: 'text-rose-600' }, speedMph + ' mph')),
                 h('input', { type: 'range', min: 5, max: 40, value: speedMph,
                   onChange: function(e) { var v = parseInt(e.target.value); setSpeedMph(v); upd('brakingMph', v); },
-                  className: 'w-full mt-2 accent-rose-500' }),
+                  className: 'w-full mt-2 accent-rose-500',
+                  'aria-label': t('stem.bikelab.initial_speed_mph_slider', 'Initial speed in miles per hour') }),
                 h('div', { className: 'text-[10px] text-slate-600' }, (speedMph / 2.237).toFixed(1) + ' m/s · ' + (speedMph * 1.609).toFixed(1) + ' km/h')
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-4' },
@@ -2284,7 +2291,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('span', null, t('stem.bikelab.reaction_time', 'Reaction Time')), h('span', { className: 'text-amber-600' }, reaction.toFixed(1) + ' s')),
                 h('input', { type: 'range', min: 0.3, max: 2.5, step: 0.1, value: reaction,
                   onChange: function(e) { var v = parseFloat(e.target.value); setReaction(v); upd('brakingReactionSec', v); },
-                  className: 'w-full mt-2 accent-amber-500' }),
+                  className: 'w-full mt-2 accent-amber-500',
+                  'aria-label': t('stem.bikelab.reaction_time_seconds_slider', 'Reaction time in seconds') }),
                 h('div', { className: 'text-[10px] text-slate-600' }, t('stem.bikelab.alert_adult_1_0_s_pro_racer_0_3_s', 'Alert adult: 1.0 s · Pro racer: 0.3 s'))
               )
             ),
@@ -2911,7 +2919,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   h('span', null, t('stem.bikelab.gear', 'Gear (↑/↓)')), h('span', { className: 'text-violet-600' }, (gear * 100).toFixed(0) + '%')),
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
-                  className: 'w-full accent-violet-500' }),
+                  className: 'w-full accent-violet-500',
+                  'aria-label': t('stem.bikelab.neighborhood_ride_gear_ratio', 'Neighborhood ride gear ratio') }),
                 // Discrete gear-step buttons — easier on touch devices (no precise
                 // drag needed) and don't require looking at the slider mid-ride.
                 h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
@@ -2932,7 +2941,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                   // NaN-guard: parseInt('') returns NaN; clamp to 0 so an empty
                   // keyboard-edited slider value can't poison physics.
                   onChange: function(e) { var v = parseInt(e.target.value, 10); setPower(isFinite(v) ? v : 0); },
-                  className: 'w-full accent-cyan-500' })
+                  className: 'w-full accent-cyan-500',
+                  'aria-label': t('stem.bikelab.neighborhood_ride_pedal_power_watts', 'Neighborhood ride pedal power in watts') })
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.bikelab.brake_space', 'Brake (Space)')),
@@ -3227,6 +3237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 var v = parseFloat(e.target.value);
                 setter(isFinite(v) ? v : 0);
               },
+              'aria-label': label,
               'aria-valuetext': statusText,
               className: 'w-full accent-pink-500'
             })

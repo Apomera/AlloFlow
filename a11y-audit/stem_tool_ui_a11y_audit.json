@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-01T19:15:24.632Z",
+  "generatedAt": "2026-07-02T07:08:47.804Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 256,
-    "errorCount": 59,
-    "warningCount": 180,
+    "issueCount": 173,
+    "errorCount": 0,
+    "warningCount": 156,
     "noticeCount": 17,
-    "toolsWithIssues": 85,
-    "toolsWithErrors": 19,
-    "toolsWithWarnings": 72,
+    "toolsWithIssues": 76,
+    "toolsWithErrors": 0,
+    "toolsWithWarnings": 71,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -24,14 +24,14 @@
     "categorySummary": {
       "coding": {
         "toolCount": 2,
-        "errorCount": 1,
+        "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
       },
       "math": {
         "toolCount": 22,
-        "errorCount": 26,
-        "warningCount": 34,
+        "errorCount": 0,
+        "warningCount": 30,
         "noticeCount": 0
       },
       "Games": {
@@ -42,8 +42,8 @@
       },
       "science": {
         "toolCount": 46,
-        "errorCount": 6,
-        "warningCount": 87,
+        "errorCount": 0,
+        "warningCount": 72,
         "noticeCount": 6
       },
       "technology": {
@@ -54,20 +54,20 @@
       },
       "strategy": {
         "toolCount": 2,
-        "errorCount": 1,
+        "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
       },
       "explore": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 3,
         "noticeCount": 4
       },
       "creative": {
         "toolCount": 6,
-        "errorCount": 20,
-        "warningCount": 15,
+        "errorCount": 0,
+        "warningCount": 10,
         "noticeCount": 1
       },
       "Literacy": {
@@ -84,19 +84,19 @@
       },
       "life-skills": {
         "toolCount": 7,
-        "errorCount": 2,
+        "errorCount": 0,
         "warningCount": 5,
         "noticeCount": 0
       },
       "general": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 3,
+        "warningCount": 2,
         "noticeCount": 5
       },
       "tech": {
         "toolCount": 1,
-        "errorCount": 1,
+        "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 1
       },
@@ -126,7 +126,7 @@
       },
       "Life Skills": {
         "toolCount": 1,
-        "errorCount": 2,
+        "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
       },
@@ -170,48 +170,10 @@
   },
   "topFindings": [
     {
-      "code": "control-name",
-      "severity": "error",
-      "count": 33,
-      "toolCount": 13,
-      "exampleTools": [
-        "a11yAuditor",
-        "autoRepair",
-        "base10",
-        "cyberDefense",
-        "dataPlot",
-        "dataStudio",
-        "economicsLab",
-        "fractionViz",
-        "fractions",
-        "graphCalc",
-        "learningLab",
-        "spaceColony"
-      ],
-      "recommendation": "Add a specific aria-label/title or visible text to icon-only controls."
-    },
-    {
-      "code": "field-name",
-      "severity": "error",
-      "count": 26,
-      "toolCount": 8,
-      "exampleTools": [
-        "ecosystem",
-        "fractionViz",
-        "fractions",
-        "lifeSkills",
-        "musicSynth",
-        "numberline",
-        "plateTectonics",
-        "waterCycle"
-      ],
-      "recommendation": "Pair each field with a label/aria-label that names what the value controls."
-    },
-    {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 34,
-      "toolCount": 26,
+      "count": 32,
+      "toolCount": 24,
       "exampleTools": [
         "anatomy",
         "areamodel",
@@ -223,39 +185,40 @@
         "codingPlayground",
         "companionPlanting",
         "epidemicSim",
-        "fractionViz",
-        "fractions"
+        "logicLab",
+        "moneyMath"
       ],
       "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
     },
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 24,
-      "toolCount": 24,
+      "count": 22,
+      "toolCount": 22,
       "exampleTools": [
         "areamodel",
         "birdLab",
-        "brainAtlas",
         "cell",
         "chemBalance",
         "circuit",
-        "codingPlayground",
-        "dataStudio",
         "dissection",
         "dnaLab",
+        "galaxy",
         "inequality",
-        "molecule"
+        "molecule",
+        "moonMission",
+        "multtable"
       ],
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
       "code": "heading",
       "severity": "warning",
-      "count": 19,
-      "toolCount": 19,
+      "count": 20,
+      "toolCount": 20,
       "exampleTools": [
         "aquacultureLab",
+        "archStudio",
         "astronomy",
         "bridgeLab",
         "cellularLab",
@@ -265,16 +228,15 @@
         "flightSim",
         "funcGrapher",
         "geoSandbox",
-        "geometryWorld",
-        "graphCalc"
+        "geometryWorld"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 22,
-      "toolCount": 18,
+      "count": 19,
+      "toolCount": 16,
       "exampleTools": [
         "anatomy",
         "areamodel",
@@ -283,19 +245,19 @@
         "dnaLab",
         "economicsLab",
         "epidemicSim",
-        "fractionViz",
-        "fractions",
         "graphCalc",
         "musicSynth",
-        "plateTectonics"
+        "plateTectonics",
+        "rockCycle",
+        "rocks"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
     },
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 78,
-      "toolCount": 15,
+      "count": 61,
+      "toolCount": 14,
       "exampleTools": [
         "algebraCAS",
         "appLab",
@@ -306,19 +268,18 @@
         "fireEcology",
         "kitchenLab",
         "llmLiteracy",
-        "playlab",
         "probability",
-        "skatelab"
+        "skatelab",
+        "throwlab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
       "code": "svg-name",
       "severity": "warning",
-      "count": 3,
-      "toolCount": 3,
+      "count": 2,
+      "toolCount": 2,
       "exampleTools": [
-        "birdLab",
         "molecule",
         "printingPress"
       ],
@@ -396,10 +357,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Audit websites and documents for WCAG 2.1 AA accessibility compliance. Learn about digital accessibility by analyzing real-world content.",
-      "renderedBytes": 7075,
+      "renderedBytes": 7120,
       "standardShell": true,
-      "issueCount": 1,
-      "errorCount": 1,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -414,18 +375,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "a11yAuditor",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "button",
-          "selector": "div > div.space-y-4.animate-in > div.flex.items-center:nth-of-type(1) > button.p-2.rounded-full",
-          "text": ""
-        }
-      ]
+      "issues": []
     },
     {
       "id": "algebraCAS",
@@ -528,20 +478,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 10 body systems with layered anatomical visualization",
-      "renderedBytes": 31934,
+      "renderedBytes": 32942,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 63,
+        "buttons": 66,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -553,7 +503,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.flex.gap-4:nth-of-type(12) > div.flex-shrink-0:nth-of-type(1) > canvas.rounded-xl.border-2"
+          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
         },
         {
           "toolId": "anatomy",
@@ -561,7 +511,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.flex.gap-4:nth-of-type(12) > div.flex-shrink-0:nth-of-type(1) > canvas.rounded-xl.border-2"
+          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
         }
       ]
     },
@@ -705,25 +655,31 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 28620,
+      "renderedBytes": 25709,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 85,
+        "buttons": 83,
         "roleButtons": 0,
-        "fields": 7,
+        "fields": 2,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 0,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
+        {
+          "toolId": "archStudio",
+          "severity": "warning",
+          "code": "heading",
+          "message": "No semantic heading rendered for this tool."
+        },
         {
           "toolId": "archStudio",
           "severity": "notice",
@@ -1032,10 +988,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Diagnose, repair, and maintain a vehicle. OBD-II code reading, listening / fluid / visual diagnosis, 7 step-by-step repair scenarios (oil change, brakes, alternator, tires, air filter, A/C, timing belt), tool selection mini-game, safety modules (jack stands, electrical, refrigerant). Career data for ASE certification + Maine vocational pathways. Pairs with RoadReady (you DRIVE the car). Educational only — get certified at ase.com.",
-      "renderedBytes": 23956,
+      "renderedBytes": 23999,
       "standardShell": true,
-      "issueCount": 1,
-      "errorCount": 1,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -1050,18 +1006,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "autoRepair",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "div",
-          "selector": "div#ar-menu-categories",
-          "text": ""
-        }
-      ]
+      "issues": []
     },
     {
       "id": "bakingScience",
@@ -1071,14 +1016,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore the chemistry, ratios, and heat science that make baking work",
-      "renderedBytes": 8056,
+      "renderedBytes": 11164,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 12,
+        "buttons": 16,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -1099,10 +1044,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Base-10 blocks, abacus, slide rule & place value quiz.",
-      "renderedBytes": 14685,
+      "renderedBytes": 14810,
       "standardShell": true,
-      "issueCount": 4,
-      "errorCount": 4,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -1117,48 +1062,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "base10",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 29,
-          "tag": "button",
-          "selector": "div.bg-gradient-to-b.from-orange-50:nth-of-type(2) > div.grid.grid-cols-4:nth-of-type(3) > div.bg-white.rounded-xl:nth-of-type(1) > div.flex.items-center:nth-of-type(3) > button.w-8.h-8:nth-of-type(1)",
-          "text": "−"
-        },
-        {
-          "toolId": "base10",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 31,
-          "tag": "button",
-          "selector": "div.bg-gradient-to-b.from-orange-50:nth-of-type(2) > div.grid.grid-cols-4:nth-of-type(3) > div.bg-white.rounded-xl:nth-of-type(2) > div.flex.items-center:nth-of-type(3) > button.w-8.h-8:nth-of-type(1)",
-          "text": "−"
-        },
-        {
-          "toolId": "base10",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 33,
-          "tag": "button",
-          "selector": "div.bg-gradient-to-b.from-orange-50:nth-of-type(2) > div.grid.grid-cols-4:nth-of-type(3) > div.bg-white.rounded-xl:nth-of-type(3) > div.flex.items-center:nth-of-type(3) > button.w-8.h-8:nth-of-type(1)",
-          "text": "−"
-        },
-        {
-          "toolId": "base10",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 35,
-          "tag": "button",
-          "selector": "div.bg-gradient-to-b.from-orange-50:nth-of-type(2) > div.grid.grid-cols-4:nth-of-type(3) > div.bg-white.rounded-xl:nth-of-type(4) > div.flex.items-center:nth-of-type(3) > button.w-8.h-8:nth-of-type(1)",
-          "text": "−"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "beehive",
@@ -1168,14 +1072,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colony dynamics, nectar flow, and the science of superorganisms",
-      "renderedBytes": 60619,
+      "renderedBytes": 62239,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 64,
+        "buttons": 65,
         "roleButtons": 0,
         "fields": 5,
         "canvases": 1,
@@ -1261,33 +1165,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 141600,
+      "renderedBytes": 141328,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 3,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 1,
       "noticeCount": 2,
       "metrics": {
-        "buttons": 125,
+        "buttons": 127,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
-        "svgs": 2,
+        "svgs": 1,
         "images": 0,
-        "headings": 126,
+        "headings": 127,
         "links": 0,
         "tinyTextClassHits": 1,
         "fixedWidthRiskCount": 2
       },
       "issues": [
-        {
-          "toolId": "birdLab",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 1,
-          "selector": "div.p-6.max-w-6xl > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
-        },
         {
           "toolId": "birdLab",
           "severity": "warning",
@@ -1306,11 +1202,11 @@
           "count": 2,
           "examples": [
             {
-              "selector": "div > div.p-6.max-w-6xl > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(1)",
               "width": "800"
             },
             {
-              "selector": "div > div.p-6.max-w-6xl > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
+              "selector": "div > div.birdlab-shell.p-6 > div.mb-6.rounded-3xl:nth-of-type(1) > svg > rect:nth-of-type(2)",
               "width": "800"
             }
           ]
@@ -1331,22 +1227,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
-      "renderedBytes": 17051,
+      "renderedBytes": 15237,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 30,
+        "buttons": 35,
         "roleButtons": 0,
-        "fields": 8,
+        "fields": 1,
         "canvases": 1,
-        "svgs": 1,
+        "svgs": 0,
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 5,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
@@ -1356,18 +1252,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.space-y-3:nth-of-type(7) > div:nth-of-type(1) > canvas.rounded-xl.border-2"
-        },
-        {
-          "toolId": "brainAtlas",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 5,
-          "classes": [
-            "text-[8px]",
-            "text-[9px]"
-          ]
+          "selector": "div.brainatlas-tool-shell.max-w-6xl > div.brainatlas-main-stack:nth-of-type(5) > div.brainatlas-canvas-shell:nth-of-type(1) > div.brainatlas-canvas-stage:nth-of-type(2) > canvas.brainatlas-canvas.border-2"
         }
       ]
     },
@@ -1481,14 +1366,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Watch complexity emerge from tiny rules: Conway's Game of Life (draw cells, stamp gliders & a Gosper gun, play/step/wrap) plus elementary 1-D Wolfram rules 0–255 with live rule tables and space-time diagrams. Pattern gallery + Wolfram-class explainer.",
-      "renderedBytes": 8866,
+      "renderedBytes": 13063,
       "standardShell": true,
       "issueCount": 4,
       "errorCount": 0,
       "warningCount": 4,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 18,
+        "buttons": 22,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
@@ -1511,7 +1396,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 25,
+          "index": 55,
           "selector": "div#cell-panel > div > div:nth-of-type(2) > button:nth-of-type(1)",
           "ratio": 1.92,
           "color": "#ffffff",
@@ -1523,7 +1408,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 30,
+          "index": 60,
           "selector": "div#cell-panel > div > div:nth-of-type(3) > button:nth-of-type(1)",
           "ratio": 1.92,
           "color": "#ffffff",
@@ -1535,7 +1420,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 32,
+          "index": 62,
           "selector": "div#cell-panel > div > div:nth-of-type(3) > button:nth-of-type(3)",
           "ratio": 1.92,
           "color": "#ffffff",
@@ -1642,22 +1527,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build series & parallel circuits with Ohm's Law",
-      "renderedBytes": 28985,
+      "renderedBytes": 16477,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 82,
+        "buttons": 39,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 1,
         "links": 0,
-        "tinyTextClassHits": 12,
+        "tinyTextClassHits": 6,
         "fixedWidthRiskCount": 0
       },
       "issues": [
@@ -1666,7 +1551,7 @@
           "severity": "warning",
           "code": "tiny-text",
           "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 12,
+          "count": 6,
           "classes": [
             "text-[9px]"
           ]
@@ -1681,14 +1566,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Carbon calculator, renewables simulator, climate justice & solutions.",
-      "renderedBytes": 29423,
+      "renderedBytes": 32842,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 36,
+        "buttons": 39,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 1,
@@ -1718,22 +1603,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 34636,
+      "renderedBytes": 25306,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 1,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 58,
+        "buttons": 57,
         "roleButtons": 0,
-        "fields": 8,
+        "fields": 2,
         "canvases": 1,
-        "svgs": 1,
+        "svgs": 0,
         "images": 0,
-        "headings": 10,
+        "headings": 9,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
@@ -1744,16 +1629,6 @@
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
           "selector": "div > div.grid.gap-4 > div.flex.flex-col:nth-of-type(6) > div.bg-slate-900.rounded-xl:nth-of-type(1) > canvas.w-full.rounded-lg"
-        },
-        {
-          "toolId": "codingPlayground",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
         },
         {
           "toolId": "codingPlayground",
@@ -1771,7 +1646,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
-      "renderedBytes": 16885,
+      "renderedBytes": 16881,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -1836,10 +1711,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 10796,
+      "renderedBytes": 10841,
       "standardShell": true,
-      "issueCount": 2,
-      "errorCount": 1,
+      "issueCount": 1,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
@@ -1857,16 +1732,6 @@
       "issues": [
         {
           "toolId": "cyberDefense",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "button",
-          "selector": "div > div.animate-in.fade-in > div:nth-of-type(1) > button",
-          "text": "←"
-        },
-        {
-          "toolId": "cyberDefense",
           "severity": "notice",
           "code": "metadata",
           "message": "Tool registry description is missing or too short for catalog/context UI."
@@ -1881,10 +1746,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Plot data, calculate regression & R²",
-      "renderedBytes": 11706,
+      "renderedBytes": 11792,
       "standardShell": true,
-      "issueCount": 2,
-      "errorCount": 2,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -1899,28 +1764,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dataPlot",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 3,
-          "tag": "button",
-          "selector": "div > div.max-w-4xl.mx-auto > div.flex.items-center:nth-of-type(1) > div.ml-auto.flex > button.text-[11px].font-bold:nth-of-type(2)",
-          "text": "⌨️"
-        },
-        {
-          "toolId": "dataPlot",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 4,
-          "tag": "button",
-          "selector": "div > div.max-w-4xl.mx-auto > div.flex.items-center:nth-of-type(1) > div.ml-auto.flex > button.text-sm.px-1:nth-of-type(3)",
-          "text": "🔊"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dataStudio",
@@ -1930,87 +1774,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build bar, pie, line, scatter, and histogram charts from your data and explore stats like mean, median, and trendlines.",
-      "renderedBytes": 15794,
+      "renderedBytes": 11128,
       "standardShell": true,
-      "issueCount": 12,
-      "errorCount": 5,
-      "warningCount": 7,
+      "issueCount": 3,
+      "errorCount": 0,
+      "warningCount": 3,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 31,
+        "buttons": 24,
         "roleButtons": 0,
-        "fields": 10,
+        "fields": 5,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 1,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "dataStudio",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 18,
-          "tag": "button",
-          "selector": "div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.max-h-28.overflow-y-auto:nth-of-type(3) > div.flex.items-center:nth-of-type(1) > button.text-red-400.hover:text-red-600",
-          "text": "✕"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 19,
-          "tag": "button",
-          "selector": "div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.max-h-28.overflow-y-auto:nth-of-type(3) > div.flex.items-center:nth-of-type(2) > button.text-red-400.hover:text-red-600",
-          "text": "✕"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 20,
-          "tag": "button",
-          "selector": "div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.max-h-28.overflow-y-auto:nth-of-type(3) > div.flex.items-center:nth-of-type(3) > button.text-red-400.hover:text-red-600",
-          "text": "✕"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 21,
-          "tag": "button",
-          "selector": "div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.max-h-28.overflow-y-auto:nth-of-type(3) > div.flex.items-center:nth-of-type(4) > button.text-red-400.hover:text-red-600",
-          "text": "✕"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 22,
-          "tag": "button",
-          "selector": "div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.max-h-28.overflow-y-auto:nth-of-type(3) > div.flex.items-center:nth-of-type(5) > button.text-red-400.hover:text-red-600",
-          "text": "✕"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 3,
-          "selector": "div > div.p-4.space-y-4 > div.flex.items-center:nth-of-type(1) > div.flex.gap-2:nth-of-type(2) > button.px-3.py-1.5:nth-of-type(1)",
-          "ratio": 3.68,
-          "color": "#fff",
-          "background": "#0891b2",
-          "text": "📊 Stats On"
-        },
         {
           "toolId": "dataStudio",
           "severity": "warning",
@@ -2046,40 +1828,6 @@
           "color": "#fff",
           "background": "#0891b2",
           "text": "+ Add"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 82,
-          "selector": "div.p-4.space-y-4 > div.mt-2.rounded-xl:nth-of-type(9) > div.flex.items-center > div.ml-auto.flex > button.px-2.py-0.5:nth-of-type(2)",
-          "ratio": 1.81,
-          "color": "#fff",
-          "background": "#22d3ee",
-          "text": "Grade 5"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 84,
-          "selector": "div > div.p-4.space-y-4 > div.mt-2.rounded-xl:nth-of-type(9) > div.flex.items-center > button.px-3.py-1",
-          "ratio": 1.81,
-          "color": "#fff",
-          "background": "#22d3ee",
-          "text": "🧠 Tell the story"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
         }
       ]
     },
@@ -2385,10 +2133,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
-      "renderedBytes": 13290,
+      "renderedBytes": 13335,
       "standardShell": true,
-      "issueCount": 2,
-      "errorCount": 1,
+      "issueCount": 1,
+      "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
@@ -2404,16 +2152,6 @@
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "economicsLab",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "button",
-          "selector": "div > div.max-w-4xl.mx-auto > div.flex.items-center:nth-of-type(1) > button.text-slate-200.hover:text-white:nth-of-type(1)",
-          "text": "←"
-        },
         {
           "toolId": "economicsLab",
           "severity": "warning",
@@ -2432,14 +2170,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Model predator-prey dynamics with Lotka–Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.",
-      "renderedBytes": 19776,
+      "renderedBytes": 23592,
       "standardShell": true,
-      "issueCount": 1,
-      "errorCount": 1,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 29,
+        "buttons": 33,
         "roleButtons": 0,
         "fields": 8,
         "canvases": 1,
@@ -2450,18 +2188,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "ecosystem",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 7,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.space-y-3.pb-4 > div.space-y-3:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(11) > div.space-y-1:nth-of-type(6) > input.w-full.h-1.5"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "epidemicSim",
@@ -2471,14 +2198,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.",
-      "renderedBytes": 86485,
+      "renderedBytes": 89119,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 22,
+        "buttons": 21,
         "roleButtons": 0,
         "fields": 4,
         "canvases": 1,
@@ -2551,7 +2278,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22778,
+      "renderedBytes": 22800,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2730,132 +2457,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
-      "renderedBytes": 14443,
+      "renderedBytes": 15194,
       "standardShell": true,
-      "issueCount": 11,
-      "errorCount": 9,
-      "warningCount": 2,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 33,
-        "roleButtons": 8,
+        "buttons": 41,
+        "roleButtons": 0,
         "fields": 2,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 25,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(1)",
-          "text": "½"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 26,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(2)",
-          "text": "⅓"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 27,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(3)",
-          "text": "¼"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 28,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(4)",
-          "text": "⅔"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 29,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(5)",
-          "text": "¾"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 30,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(6)",
-          "text": "⅜"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 31,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(7)",
-          "text": "⅚"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-rose-50.rounded-lg:nth-of-type(1) > input.w-full.accent-rose-600"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-rose-50.rounded-lg:nth-of-type(2) > input.w-full.accent-rose-600"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(9) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "fractionViz",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(9) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "fractions",
@@ -2865,132 +2485,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
-      "renderedBytes": 14441,
+      "renderedBytes": 15192,
       "standardShell": true,
-      "issueCount": 11,
-      "errorCount": 9,
-      "warningCount": 2,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 33,
-        "roleButtons": 8,
+        "buttons": 41,
+        "roleButtons": 0,
         "fields": 2,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 25,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(1)",
-          "text": "½"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 26,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(2)",
-          "text": "⅓"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 27,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(3)",
-          "text": "¼"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 28,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(4)",
-          "text": "⅔"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 29,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(5)",
-          "text": "¾"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 30,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(6)",
-          "text": "⅜"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 31,
-          "tag": "button",
-          "selector": "div > div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.flex.flex-wrap:nth-of-type(6) > button.px-3.py-1.5:nth-of-type(7)",
-          "text": "⅚"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-rose-50.rounded-lg:nth-of-type(1) > input.w-full.accent-rose-600"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-rose-50.rounded-lg:nth-of-type(2) > input.w-full.accent-rose-600"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(9) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "fractions",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(9) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "funcGrapher",
@@ -3035,25 +2548,36 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
-      "renderedBytes": 15075,
+      "renderedBytes": 22154,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 27,
+        "buttons": 30,
         "roleButtons": 0,
         "fields": 2,
         "canvases": 1,
-        "svgs": 2,
+        "svgs": 3,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "galaxy",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "gameStudio",
@@ -3217,7 +2741,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1586,
+      "renderedBytes": 1598,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3258,10 +2782,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Graph functions, analyze zeros and intersections, explore transformations",
-      "renderedBytes": 13613,
+      "renderedBytes": 13617,
       "standardShell": true,
-      "issueCount": 3,
-      "errorCount": 1,
+      "issueCount": 2,
+      "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
@@ -3277,16 +2801,6 @@
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "graphCalc",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 21,
-          "tag": "button",
-          "selector": "div > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(1) > button:nth-of-type(4)",
-          "text": "🏅"
-        },
         {
           "toolId": "graphCalc",
           "severity": "warning",
@@ -3311,7 +2825,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.",
-      "renderedBytes": 15404,
+      "renderedBytes": 15408,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3397,14 +2911,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The science of how learning works. Bloom's Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking, education-career pathways. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0). Honest about contested claims. Maine education programs + EL Education context.",
-      "renderedBytes": 81086,
+      "renderedBytes": 15715,
       "standardShell": true,
-      "issueCount": 1,
-      "errorCount": 1,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 134,
+        "buttons": 22,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -3415,18 +2929,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "learningLab",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "div",
-          "selector": "div#ll-menu-categories",
-          "text": ""
-        }
-      ]
+      "issues": []
     },
     {
       "id": "lifeSkills",
@@ -3436,10 +2939,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Essential knowledge for adulting — taxes, data literacy, contracts, car care, home systems, and critical thinking.",
-      "renderedBytes": 14171,
+      "renderedBytes": 14242,
       "standardShell": true,
-      "issueCount": 2,
-      "errorCount": 2,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -3454,28 +2957,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "lifeSkills",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "input",
-          "type": "number",
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-2 > div:nth-of-type(1) > input.w-full.px-2"
-        },
-        {
-          "toolId": "lifeSkills",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "input",
-          "type": "number",
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-2 > div:nth-of-type(2) > input.w-full.px-2"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "llmLiteracy",
@@ -3817,7 +3299,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 9329,
+      "renderedBytes": 9336,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3895,10 +3377,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Play a piano, build beats, and learn the science of sound with real-time waveform visualization.",
-      "renderedBytes": 44113,
+      "renderedBytes": 44522,
       "standardShell": true,
-      "issueCount": 16,
-      "errorCount": 12,
+      "issueCount": 4,
+      "errorCount": 0,
       "warningCount": 4,
       "noticeCount": 0,
       "metrics": {
@@ -3914,126 +3396,6 @@
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 3,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 4,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(1) > div.flex.items-center:nth-of-type(3) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 5,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(1) > div.flex.items-center:nth-of-type(4) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 6,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(1) > div.flex.items-center:nth-of-type(5) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 7,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.flex.items-center:nth-of-type(2) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 8,
-          "tag": "input",
-          "type": "range",
-          "selector": "div:nth-of-type(5) > div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.flex.items-center:nth-of-type(3) > input.flex-1.accent-purple-600"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 10,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(4) > div.flex.items-center:nth-of-type(2) > input.flex-1.accent-cyan-500"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 11,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(4) > div.flex.items-center:nth-of-type(3) > input.flex-1.accent-cyan-500"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 12,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(5) > div.flex.items-center:nth-of-type(2) > input.flex-1.accent-pink-500"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 13,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(5) > div.flex.items-center:nth-of-type(3) > input.flex-1.accent-pink-500"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 14,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(5) > div.flex.items-center:nth-of-type(4) > input.flex-1.accent-pink-500"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 15,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.grid.grid-cols-2:nth-of-type(6) > div.bg-slate-50.rounded-xl:nth-of-type(2) > div.mt-1.pt-1:nth-of-type(5) > div.flex.items-center:nth-of-type(5) > input.flex-1.accent-pink-500"
-        },
         {
           "toolId": "musicSynth",
           "severity": "warning",
@@ -4076,10 +3438,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.",
-      "renderedBytes": 10746,
+      "renderedBytes": 10826,
       "standardShell": true,
-      "issueCount": 4,
-      "errorCount": 3,
+      "issueCount": 1,
+      "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
@@ -4095,36 +3457,6 @@
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "numberline",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "input",
-          "type": "number",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4.allo-nl-bg-explore:nth-of-type(4) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-blue-50.rounded-lg:nth-of-type(1) > input.w-full.px-3"
-        },
-        {
-          "toolId": "numberline",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "input",
-          "type": "number",
-          "selector": "div.space-y-4.max-w-3xl > div.space-y-4.allo-nl-bg-explore:nth-of-type(4) > div.grid.grid-cols-2:nth-of-type(1) > div.bg-blue-50.rounded-lg:nth-of-type(2) > input.w-full.px-3"
-        },
-        {
-          "toolId": "numberline",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 4,
-          "tag": "input",
-          "type": "color",
-          "selector": "input#nlMarkerColor"
-        },
         {
           "toolId": "numberline",
           "severity": "warning",
@@ -4143,14 +3475,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first (\"what your body uses food for\"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.",
-      "renderedBytes": 20752,
+      "renderedBytes": 23951,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 15,
+        "buttons": 19,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -4178,20 +3510,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "AP Physics 2 geometric + wave optics: ray diagrams, Snell's law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.",
-      "renderedBytes": 22189,
+      "renderedBytes": 20319,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 41,
+        "buttons": 34,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4330,11 +3662,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
-      "renderedBytes": 20800,
+      "renderedBytes": 23160,
       "standardShell": true,
-      "issueCount": 10,
-      "errorCount": 1,
-      "warningCount": 8,
+      "issueCount": 8,
+      "errorCount": 0,
+      "warningCount": 7,
       "noticeCount": 1,
       "metrics": {
         "buttons": 22,
@@ -4343,30 +3675,12 @@
         "canvases": 6,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 2
       },
       "issues": [
-        {
-          "toolId": "plateTectonics",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 2,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div.rounded-lg.p-2:nth-of-type(2) > input.focus:ring-2.focus:ring-yellow-500"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.space-y-4:nth-of-type(3) > div.rounded-2xl.overflow-hidden:nth-of-type(2) > canvas.w-full.cursor-grab"
-        },
         {
           "toolId": "plateTectonics",
           "severity": "warning",
@@ -4381,7 +3695,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 2,
-          "selector": "div > div.max-w-4xl.mx-auto > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4389,7 +3703,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 2,
-          "selector": "div > div.max-w-4xl.mx-auto > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4397,7 +3711,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 3,
-          "selector": "div > div.max-w-4xl.mx-auto > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4405,7 +3719,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 3,
-          "selector": "div > div.max-w-4xl.mx-auto > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
+          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4413,7 +3727,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 4,
-          "selector": "div.max-w-4xl.mx-auto > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
+          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4421,7 +3735,7 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 4,
-          "selector": "div.max-w-4xl.mx-auto > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
+          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
         },
         {
           "toolId": "plateTectonics",
@@ -4431,11 +3745,11 @@
           "count": 2,
           "examples": [
             {
-              "selector": "div.max-w-4xl.mx-auto > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
+              "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
               "width": "540px"
             },
             {
-              "selector": "div.max-w-4xl.mx-auto > div.rounded-2xl.border-2:nth-of-type(10) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
+              "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(10) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas",
               "width": "540px"
             }
           ]
@@ -4450,193 +3764,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 82558,
+      "renderedBytes": 17347,
       "standardShell": true,
-      "issueCount": 15,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 14,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 169,
+        "buttons": 31,
         "roleButtons": 0,
         "fields": 5,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 1
       },
       "issues": [
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 41,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(1)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🎯 Smash Hit"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 42,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(2)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "⚡ Hot Route"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 43,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(3)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🔁 Iso Pep"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 44,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(4)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "⚽ Top Bins"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 45,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(5)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🪂 Delap"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 46,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(6)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🏈 Triple-Threat"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 47,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(7)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🏆 Coordinator"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 48,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(8)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "⫷ Triangle"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 49,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(9)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🎯 Streak Hunter"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 50,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(10)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "👑 Legendary"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 51,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(11)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🏆 All-Pro"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 52,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(12)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🪂 Set-Piece Master"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 53,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(13)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "📋 Tactician"
-        },
-        {
-          "toolId": "playlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 54,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(14)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🌍 Globetrotter"
-        },
         {
           "toolId": "playlab",
           "severity": "notice",
@@ -4645,7 +3791,7 @@
           "count": 1,
           "examples": [
             {
-              "selector": "div > div > div:nth-of-type(11) > div:nth-of-type(1) > canvas",
+              "selector": "div > div.playlab-field-layout:nth-of-type(10) > div.playlab-field-column:nth-of-type(1) > section.playlab-field-shell:nth-of-type(1) > canvas.playlab-field-canvas",
               "width": "720"
             }
           ]
@@ -4862,7 +4008,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 22283,
+      "renderedBytes": 22355,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4897,14 +4043,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "How each renewable energy source actually works — the physics and engineering. Solar PV, wind (Betz limit), hydro (head + flow), geothermal, CSP, wave/tidal, biomass, and storage. Live sliders driven by the real formulas. Cited to NREL, IEA, IRENA, DOE.",
-      "renderedBytes": 25663,
+      "renderedBytes": 12883,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 32,
+        "buttons": 12,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
@@ -4925,7 +4071,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40512,
+      "renderedBytes": 40507,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -5173,14 +4319,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 64195,
+      "renderedBytes": 68804,
       "standardShell": true,
       "issueCount": 4,
       "errorCount": 0,
       "warningCount": 3,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 57,
+        "buttons": 58,
         "roleButtons": 0,
         "fields": 10,
         "canvases": 1,
@@ -5198,7 +4344,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 0,
-          "selector": "div > div > div:nth-of-type(8) > canvas",
+          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
           "width": "720",
           "height": "320"
         },
@@ -5208,15 +4354,15 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div > div > div:nth-of-type(8) > canvas"
+          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas"
         },
         {
           "toolId": "skatelab",
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 88,
-          "selector": "div > div:nth-of-type(12) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3)",
+          "index": 115,
+          "selector": "div > div.sk-control-grid:nth-of-type(13) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3)",
           "ratio": 3.19,
           "color": "#fff",
           "background": "#d97706",
@@ -5230,7 +4376,7 @@
           "count": 1,
           "examples": [
             {
-              "selector": "div > div > div:nth-of-type(8) > canvas",
+              "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
               "width": "720"
             }
           ]
@@ -5284,10 +4430,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.",
-      "renderedBytes": 11633,
+      "renderedBytes": 11683,
       "standardShell": true,
-      "issueCount": 1,
-      "errorCount": 1,
+      "issueCount": 0,
+      "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
@@ -5302,18 +4448,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "spaceColony",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "button",
-          "selector": "div > div.bg-gradient-to-b.from-slate-900 > div.flex.items-center:nth-of-type(1) > div.flex.items-center > button.transition-colors.text-slate-200",
-          "text": "←"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "spaceExplorer",
@@ -5435,14 +4570,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 42794,
+      "renderedBytes": 46575,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,
       "warningCount": 16,
       "noticeCount": 1,
       "metrics": {
-        "buttons": 52,
+        "buttons": 53,
         "roleButtons": 0,
         "fields": 8,
         "canvases": 1,
@@ -5459,7 +4594,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 55,
+          "index": 77,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(1)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5471,7 +4606,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 56,
+          "index": 78,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(2)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5483,7 +4618,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 57,
+          "index": 79,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(3)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5495,7 +4630,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 58,
+          "index": 80,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(4)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5507,7 +4642,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 59,
+          "index": 81,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(5)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5519,7 +4654,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 60,
+          "index": 82,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(6)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5531,7 +4666,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 61,
+          "index": 83,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(7)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5543,7 +4678,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 62,
+          "index": 84,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(8)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5555,7 +4690,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 63,
+          "index": 85,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(9)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5567,7 +4702,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 64,
+          "index": 86,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(10)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5579,7 +4714,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 65,
+          "index": 87,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(11)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5591,7 +4726,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 66,
+          "index": 88,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(12)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5603,7 +4738,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 67,
+          "index": 89,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(13)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5615,7 +4750,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 68,
+          "index": 90,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(14)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5627,7 +4762,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 69,
+          "index": 91,
           "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(15)",
           "ratio": 1.93,
           "color": "#475569",
@@ -5695,7 +4830,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30470,
+      "renderedBytes": 30468,
       "standardShell": true,
       "issueCount": 5,
       "errorCount": 0,
@@ -5921,10 +5056,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 16004,
+      "renderedBytes": 17501,
       "standardShell": true,
-      "issueCount": 7,
-      "errorCount": 3,
+      "issueCount": 4,
+      "errorCount": 0,
       "warningCount": 4,
       "noticeCount": 0,
       "metrics": {
@@ -5934,42 +5069,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 6,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "waterCycle",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.max-w-3xl.mx-auto > div.rounded-xl.p-3:nth-of-type(5) > div.grid.grid-cols-3:nth-of-type(2) > div.space-y-1:nth-of-type(1) > input.w-full.h-1.5"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 1,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.max-w-3xl.mx-auto > div.rounded-xl.p-3:nth-of-type(5) > div.grid.grid-cols-3:nth-of-type(2) > div.space-y-1:nth-of-type(2) > input.w-full.h-1.5"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "error",
-          "code": "field-name",
-          "message": "Form field is missing a meaningful accessible name.",
-          "index": 2,
-          "tag": "input",
-          "type": "range",
-          "selector": "div.max-w-3xl.mx-auto > div.rounded-xl.p-3:nth-of-type(5) > div.grid.grid-cols-3:nth-of-type(2) > div.space-y-1:nth-of-type(3) > input.w-full.h-1.5"
-        },
         {
           "toolId": "waterCycle",
           "severity": "warning",
@@ -5991,8 +5096,8 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 15,
-          "selector": "div > div.max-w-3xl.mx-auto > div.flex.flex-wrap:nth-of-type(6) > button.px-2.5.py-1.5:nth-of-type(1)",
+          "index": 14,
+          "selector": "div > div.wc-explorer-root.max-w-3xl > div.wc-stage-rack.flex:nth-of-type(6) > button.px-2.5.py-1.5:nth-of-type(1)",
           "ratio": 2.15,
           "color": "white",
           "background": "#f59e0b",
@@ -6098,10 +5203,10 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose.",
-      "renderedBytes": 12481,
+      "renderedBytes": 12526,
       "standardShell": true,
-      "issueCount": 2,
-      "errorCount": 1,
+      "issueCount": 1,
+      "errorCount": 0,
       "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
@@ -6117,16 +5222,6 @@
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "worldBuilder",
-          "severity": "error",
-          "code": "control-name",
-          "message": "Interactive control is missing a meaningful accessible name.",
-          "index": 0,
-          "tag": "button",
-          "selector": "div > div.space-y-4.animate-in > div.flex.items-center:nth-of-type(1) > button.p-2.rounded-full",
-          "text": ""
-        },
         {
           "toolId": "worldBuilder",
           "severity": "warning",

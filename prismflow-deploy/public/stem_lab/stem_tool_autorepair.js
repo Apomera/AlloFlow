@@ -3727,7 +3727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('span', { 'aria-hidden': 'true', className: 'ar-pulse-ring' }, '🏅 '),
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.autorepair.tap_to_view_gallery', ' — tap to view gallery →')
           ),
-          h('div', { id: 'ar-menu-categories', tabIndex: -1 }),
+          h('div', { id: 'ar-menu-categories', tabIndex: -1, 'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories') }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },

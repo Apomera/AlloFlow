@@ -996,7 +996,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
-          h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-violet-100 text-violet-600 transition-colors' }, a11yClick(function() { ctx.setStemLabTool(null); })),
+          h('button', Object.assign({
+            className: 'p-2 rounded-full hover:bg-violet-100 text-violet-600 transition-colors',
+            'aria-label': __alloT('stem.worldbuilder.back_to_stem_tools', 'Back to STEM tools'),
+            title: __alloT('stem.worldbuilder.back', 'Back')
+          }, a11yClick(function() { ctx.setStemLabTool(null); })),
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { className: 'flex-1' },

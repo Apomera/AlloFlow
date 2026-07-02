@@ -759,9 +759,9 @@
             // Right sidebar
             h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))' } },
               h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5' }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
+                [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5', ariaLabel: __alloT('stem.graphcalc.badges', 'Badges') }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
-                  return h('button', { 'aria-label': st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
+                  return h('button', { 'aria-label': st.ariaLabel || st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
               ),
               // Coach

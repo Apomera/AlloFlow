@@ -990,6 +990,7 @@
           h('label', { className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') + ' uppercase' }, 'Plate rate: ' + s.rate + ' cm/year'),
           h('input', {
             type: 'range', min: 1, max: 15, step: 1, value: s.rate,
+            'aria-label': 'Plate movement rate in centimeters per year',
             onChange: function(e) {
               var newRate = parseInt(e.target.value);
               update({ rate: newRate });

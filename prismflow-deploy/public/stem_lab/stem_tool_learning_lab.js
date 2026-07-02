@@ -16236,7 +16236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             h('span', { 'aria-hidden': 'true' }, '🏅 '),
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.learning_lab.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.learning_lab.tap_to_view_gallery', ' — tap to view gallery →')
           ),
-          h('div', { id: 'll-menu-categories', tabIndex: -1 }),
+          h('div', { id: 'll-menu-categories', tabIndex: -1, 'aria-label': __alloT('stem.learning_lab.module_categories', 'Learning Lab module categories') }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },

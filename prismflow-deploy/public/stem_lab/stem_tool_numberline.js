@@ -625,6 +625,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.min,
                     onChange: function(e) { upd({ range: { min: parseInt(e.target.value) || 0, max: range.max } }); },
+                    'aria-label': t('stem.numberline.minimum_value', 'Minimum value'),
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 ),
@@ -633,6 +634,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.max,
                     onChange: function(e) { upd({ range: { min: range.min, max: parseInt(e.target.value) || 20 } }); },
+                    'aria-label': t('stem.numberline.maximum_value', 'Maximum value'),
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 )
@@ -664,7 +666,7 @@ window.StemLab = window.StemLab || {
                   'aria-label': t('stem.numberline.marker_label', 'Marker label'),
                   className: 'flex-1 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
-                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
+                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': t('stem.numberline.marker_color', 'Marker color'), className: 'w-8 h-8 rounded cursor-pointer' }),
                 h('button', { 'aria-label': t('stem.numberline.add', '+ Add'),
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
