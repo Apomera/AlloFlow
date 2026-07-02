@@ -11,6 +11,14 @@ session-code entropy — plus the client-side mitigations already shipped and th
 
 ## 0. Threat model (what we are and aren't defending against)
 
+**Two backends (correction, verified 2026-07-01):** on **Gemini Canvas** the platform injects
+`__firebase_config` — a *Google-managed* project we cannot configure (no console, no rules
+deploy; platform policy governs it; per-app `artifacts/{appId}` namespacing). Outside Canvas, the
+prismflow-deploy demo uses the *owned* project **`prismflow-911fe`** (`prismflow-deploy/.env`) —
+everything in §2/§3 applies to that project, and to whatever owned project hosts the classroom
+phase. The classroom phase should run on an owned project regardless: a platform-managed backend
+offers no DPA, retention control, or auditability for a district.
+
 AlloFlow's live sessions run on a Firebase project using **anonymous authentication**. All live
 data lives under `artifacts/{appId}/public/data/…`. Students' content (poll answers, free text,
 drawings, guesses) travels **peer-to-peer over WebRTC** and never touches the backend; Firestore
@@ -49,6 +57,15 @@ There is **no rules file in the repo** and, as far as we know, the project runs 
 defaults. This is the single biggest gap: rules are the only *server-enforced* boundary.
 
 ### 2.1 Draft rules
+
+> **Update 2026-07-01 (later the same day):** the refined, deployable version now lives at
+> [`firestore.rules`](../firestore.rules) in the repo root, desk-checked against a full
+> enumeration of every student-mode write site in the code (roster.{uid} join/xp/signals/acks,
+> quizState.allResponses.{uid}, bridgeReactions.{uid} — nothing else; the one conflicting write,
+> students performing the stale-bridgePayload TTL cleanup, was relocated in code so the host
+> performs it). Step-by-step deploy/rollback/smoke instructions for Aaron:
+> `docs/FIRESTORE_RULES_DEPLOY.md`. Emulator testing (§2.2.5) remains the gold standard and
+> should still happen with IT; the in-app smoke matrix covers the demo phase.
 
 The draft below matches the actual data model (paths verified against the code 2026-07-01). It is
 a **starting point for review and Firebase-emulator testing, not a paste-and-deploy artifact** —
@@ -228,8 +245,8 @@ is already shipped: the Worker's response gets assigned to `window.__alloRtcConf
   `appId` and rules aren't enforced.
 - With §2's rules (`list` denied, so guessing requires full-path GETs) plus §3's App Check, the
   practical enumeration surface shrinks dramatically. Codes are also short-lived (per lesson).
-- Cheap additional margin if IT wants it: move to **5–6 characters** (33M–1B combinations) — a
-  one-line change in `generateSessionCode()` — accepting slightly more typing for students.
+- **[SHIPPED 2026-07-01]** codes are now **5 characters** (~28.6M combinations, 31× the old
+  space). Moving to 6 remains available if IT wants more margin.
 - Not recommended: CAPTCHA or accounts for students — the anonymous-join flow is a deliberate
   FERPA-minimization feature (no student accounts, no PII), and rules+attestation address the
   actual risk.

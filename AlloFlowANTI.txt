@@ -2369,8 +2369,11 @@ const countWords = (text) => {
 };
 const generateSessionCode = () => {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  // 5 chars over the 31-symbol confusable-stripped alphabet ≈ 28.6M codes
+  // (was 4 ≈ 923k) — raises the enumeration bar for drive-by join attempts
+  // while staying easy to read aloud. See LIVE_SESSION_HARDENING_PROPOSAL §5.
   let result = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
@@ -9394,6 +9397,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   addToast(t('session.toast_connected'), "success");
               }
               setSessionData(data);
+              // Stale bridge-payload cleanup (24h TTL) runs on BOTH roles: under
+              // Firestore rules only the session host's delete succeeds (students'
+              // attempts fail silently via the .catch), so this must not live in
+              // the student-only branch or the TTL never fires post-rules.
+              if (data.bridgePayload && data.bridgePayload.timestamp && (Date.now() - data.bridgePayload.timestamp > 86400000)) {
+                try {
+                  const staleRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+                  updateDoc(staleRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(() => {});
+                } catch(e) { /* ignore */ }
+              }
               if (!isTeacherMode) {
                   let resourcesToRender = [];
                   if (data.resources && Array.isArray(data.resources)) {
@@ -9414,12 +9427,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
                       }
-                  }
-                  if (data.bridgePayload && data.bridgePayload.timestamp && (Date.now() - data.bridgePayload.timestamp > 86400000)) {
-                    try {
-                      const staleRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
-                      updateDoc(staleRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(() => {});
-                    } catch(e) { /* ignore */ }
                   }
                   if (data.bridgePayload && data.bridgePayload.timestamp) {
                     const payloadTs = data.bridgePayload.timestamp;
@@ -24736,6 +24743,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             background: #000 !important;
             background-color: #000 !important;
         }
+        /* Inline light/pastel support tiles and panels -> pure black so forced yellow text remains readable. */
+        .theme-contrast [style*="background: white"],
+        .theme-contrast [style*="background:#fff"],
+        .theme-contrast [style*="background: #fff"],
+        .theme-contrast [style*="background:#ffffff"],
+        .theme-contrast [style*="background: #ffffff"],
+        .theme-contrast [style*="background: rgb(255, 255, 255"],
+        .theme-contrast [style*="background: #fef9c3"],
+        .theme-contrast [style*="background: rgb(254, 249, 195"],
+        .theme-contrast [style*="background: #dcfce7"],
+        .theme-contrast [style*="background: rgb(220, 252, 231"],
+        .theme-contrast [style*="background: #dbeafe"],
+        .theme-contrast [style*="background: rgb(219, 234, 254"],
+        .theme-contrast [style*="background: #f3f4f6"],
+        .theme-contrast [style*="background: rgb(243, 244, 246"],
+        .theme-contrast [style*="background: #fafafa"],
+        .theme-contrast [style*="background: rgb(250, 250, 250"],
+        .theme-contrast [style*="background: #f8fafc"],
+        .theme-contrast [style*="background: rgb(248, 250, 252"],
+        .theme-contrast [style*="background: #fffbeb"],
+        .theme-contrast [style*="background: rgb(255, 251, 235"],
+        .theme-contrast [style*="background: #eff6ff"],
+        .theme-contrast [style*="background: rgb(239, 246, 255"],
+        .theme-contrast [style*="background: #f0fdf4"],
+        .theme-contrast [style*="background: rgb(240, 253, 244"],
+        .theme-contrast [style*="background: #eef2ff"],
+        .theme-contrast [style*="background: rgb(238, 242, 255"],
+        .theme-contrast [style*="background: #e0e7ff"],
+        .theme-contrast [style*="background: rgb(224, 231, 255"] {
+            background: #000 !important;
+            background-color: #000 !important;
+        }
         /* Light text on dark → high-contrast yellow */
         .theme-contrast [style*="color: #cbd5e1"],
         .theme-contrast [style*="color:#cbd5e1"],
@@ -24980,7 +25019,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-dark .text-slate-700 { color: #f8fafc !important; }
         .theme-dark .text-slate-600 { color: #cbd5e1 !important; } /* slate-300 — secondary text, AAA on dark bg */
         .theme-dark .text-slate-500 { color: #94a3b8 !important; } /* slate-400 — helper/label text */
-        .theme-dark .text-slate-400 { color: #64748b !important; } /* slate-500 — muted/disabled text */
+        .theme-dark .text-slate-400 { color: #94a3b8 !important; } /* slate-400 — muted/helper text, AA on dark panels */
         .theme-dark .border-slate-100,
         .theme-dark .border-slate-200,
         .theme-dark .border-slate-300 { border-color: #334155 !important; }
@@ -24988,6 +25027,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         .theme-dark .text-indigo-800 { color: #a5b4fc !important; } /* Indigo-300 */
         .theme-dark .text-indigo-700 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg */
         .theme-dark .text-indigo-600 { color: #a5b4fc !important; } /* Indigo-300 — 9:1 on dark bg, passes WCAG AA */
+        .theme-dark .text-indigo-500 { color: #a5b4fc !important; } /* Indigo-300 — keep small modal action labels AA */
         .theme-dark .bg-indigo-700,
         .theme-dark .bg-indigo-800,
         .theme-dark .bg-indigo-900 { background-color: #312e81 !important; border-color: #4338ca !important; }
@@ -25090,7 +25130,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             background-color: #1e293b !important;
             color: #f8fafc !important;
         }
-        .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #64748b !important; }
+        .theme-dark input::placeholder, .theme-dark textarea::placeholder { color: #94a3b8 !important; }
         .theme-dark input:focus, .theme-dark textarea:focus, .theme-dark select:focus {
             border-color: #818cf8 !important;
             --tw-ring-color: #4338ca !important;

@@ -36,7 +36,8 @@ student-content bus. Every live feature is one of three transport patterns:
 
 **Paths** (all under `artifacts/{appId}/public/data/`):
 
-- `sessions/{code}` — the session doc. `code` = 4 chars, A–Z minus confusables + 2–9.
+- `sessions/{code}` — the session doc. `code` = 5 chars (was 4 until 2026-07-01), A–Z minus
+  confusables + 2–9.
 - `signaling/{code}/peers/{uid}` — polling WebRTC handshake docs (SDP + ICE + codename), deleted ~750ms after connect.
 - `pictionary-signaling/{code}/peers/{uid}` — same shape, separate collection so both games can coexist.
 - `session-assets/…` (via `getSessionAssetRef`) — chunked teacher assets + resources manifest (see §4).
@@ -283,12 +284,12 @@ while `pictionaryRound.active`/role assignment says so, and `hostClosed` closes 
 > rules file and a rollout order — in `docs/LIVE_SESSION_HARDENING_PROPOSAL.md` (2026-07-01),
 > written for external IT review.
 
-1. **Firestore security rules** — no rules file exists in the repo (they live in the Firebase
-   console, unaudited). Minimum: signaling docs writable only by `auth.uid == {uid}`; session-doc
-   field-level validation mirroring Tier-1; `conceptMastery/{uid}` self-write only. Without rules,
-   any authed client that guesses appId + 4-char code can read/write session state.
-   *(4-char code space is ~1.2M with the confusable-stripped alphabet — fine against typos, weak
-   against enumeration; rules + join-rate limits matter more than longer codes.)*
+1. **Firestore security rules** — [DRAFTED 2026-07-01, deploy pending] `firestore.rules` now
+   exists at the repo root, desk-checked against every student-mode write site; deploy +
+   rollback + smoke instructions in `docs/FIRESTORE_RULES_DEPLOY.md`; emulator test matrix still
+   owed with IT (proposal §2.2.5). Until published in the Firebase console, any authed client
+   that guesses appId + code can still write session state.
+   *(Session codes bumped 4→5 chars — ~28.6M combinations — same day.)*
 2. **Host-side roster check** — [SHIPPED 2026-07-01] both hosts ignore offers from uids not in the
    session roster (`allowedUids` gate, kept fresh as students join). Defense-in-depth only until
    #1's rules make the roster itself trustworthy.

@@ -37,6 +37,29 @@ describe('student-side terminal handling of a soft-ended session', () => {
   });
 });
 
+describe('session code entropy + rules-compatible TTL cleanup', () => {
+  it('session codes are 5 characters over the confusable-stripped alphabet', () => {
+    const idx = src.indexOf('const generateSessionCode');
+    expect(idx).toBeGreaterThan(-1);
+    const fn = src.slice(idx, idx + 600);
+    expect(fn).toContain("'ABCDEFGHJKMNPQRSTUVWXYZ23456789'");
+    expect(fn).toContain('for (let i = 0; i < 5; i++)');
+  });
+
+  it('stale bridge-payload TTL cleanup runs for BOTH roles (host succeeds under rules)', () => {
+    // Under firestore.rules only the session host may delete bridgePayload /
+    // bridgeChat; if this cleanup lived in the student-only branch the 24h
+    // TTL would never fire post-rules. Pin: cleanup sits BEFORE the
+    // !isTeacherMode gate in the session onSnapshot handler.
+    const cleanupIdx = src.indexOf('bridgePayload: deleteField(), bridgeChat: deleteField()');
+    expect(cleanupIdx).toBeGreaterThan(-1);
+    const snapshotIdx = src.indexOf('setSessionData(data);');
+    const studentGateIdx = src.indexOf('if (!isTeacherMode) {', snapshotIdx);
+    expect(cleanupIdx).toBeGreaterThan(snapshotIdx);
+    expect(cleanupIdx).toBeLessThan(studentGateIdx);
+  });
+});
+
 describe('live polling presence gating (Tier-1 livePolling leaf)', () => {
   it('allowlists the livePolling leaf for writeToSession', () => {
     expect(src).toContain("'livePolling',");

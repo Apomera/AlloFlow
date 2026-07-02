@@ -1,0 +1,123 @@
+rules_version = '2';
+// AlloFlow Firestore security rules — v1.0 draft (2026-07-01).
+//
+// Deploy: Firebase console → Firestore Database → Rules → paste → Publish.
+// BEFORE deploying, copy the currently published rules into
+// docs/firestore.rules.PREVIOUS so rollback is one paste away.
+// Full context + threat model: docs/LIVE_SESSION_HARDENING_PROPOSAL.md.
+// Deploy/rollback/smoke checklist: docs/FIRESTORE_RULES_DEPLOY.md.
+//
+// Design summary (matches the write paths verified in code on 2026-07-01):
+//   - Everything requires Firebase (anonymous) auth.
+//   - Session docs: created/deleted/edited freely ONLY by the creating
+//     teacher (hostId == auth.uid). Other participants may write exactly
+//     three surfaces, each restricted to their own uid:
+//       roster.{uid}, quizState.allResponses.{uid}, bridgeReactions.{uid}.
+//   - LIST on sessions is denied → codes can't be enumerated via queries.
+//   - WebRTC signaling docs: the guest owns their doc; the session host may
+//     merge only answer/iceFromHost and may delete post-connect.
+//   - Student CONTENT never appears in any of these paths by design (it is
+//     WebRTC peer-to-peer) — these rules protect metadata integrity.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function authed() { return request.auth != null; }
+
+    match /artifacts/{appId} {
+
+      // ── Live session documents ─────────────────────────────────────────
+      match /public/data/sessions/{code} {
+        function isHost() { return authed() && resource.data.hostId == request.auth.uid; }
+        function changedTop() {
+          return request.resource.data.diff(resource.data).affectedKeys();
+        }
+        function rosterOnlySelf() {
+          return resource.data.get('roster', {})
+            .diff(request.resource.data.get('roster', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function quizOnlySelf() {
+          return resource.data.get('quizState', {})
+              .diff(request.resource.data.get('quizState', {}))
+              .affectedKeys().hasOnly(['allResponses'])
+            && resource.data.get('quizState', {}).get('allResponses', {})
+              .diff(request.resource.data.get('quizState', {}).get('allResponses', {}))
+              .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function reactionsOnlySelf() {
+          return resource.data.get('bridgeReactions', {})
+            .diff(request.resource.data.get('bridgeReactions', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+        }
+
+        // Students need GET by code; LIST would allow code enumeration.
+        allow get: if authed();
+        allow list: if false;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow delete: if isHost();
+        allow update: if isHost() || (
+          authed()
+          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions'])
+          && (!('roster' in changedTop()) || rosterOnlySelf())
+          && (!('quizState' in changedTop()) || quizOnlySelf())
+          && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
+        );
+      }
+
+      // ── WebRTC signaling handshakes (polling + pictionary) ─────────────
+      // Docs live at {signaling|pictionary-signaling}/{code}/peers/{peerUid}
+      // and hold only SDP offers/answers, ICE candidates, and a codename;
+      // both sides delete the doc ~750ms after the connection opens.
+      match /public/data/{signalingCollection}/{code}/peers/{peerUid} {
+        function isSignaling() {
+          return signalingCollection == 'signaling'
+              || signalingCollection == 'pictionary-signaling';
+        }
+        function isSessionHost() {
+          return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
+        }
+        allow read: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow create: if isSignaling() && authed() && request.auth.uid == peerUid;
+        allow delete: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow update: if isSignaling() && authed() && (
+          (request.auth.uid == peerUid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest']))
+          || (isSessionHost()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['answer', 'iceFromHost']))
+        );
+      }
+
+      // ── Chunked session assets (teacher resource manifest + chunks) ────
+      // Read by students during resource hydration; written by teachers.
+      // Authed-write is a known soft spot (see proposal §2.2.2) — tightening
+      // requires binding assets to a session host, a follow-up code change.
+      match /public/data/session_assets/{assetId} {
+        allow read, write: if authed();
+      }
+
+      // ── Cross-session concept mastery ──────────────────────────────────
+      // Self-write only. Authed-read is intentional for now: teachers read
+      // students' docs for retention dashboards (proposal §2.2.3 discusses
+      // the design question). Contains status enums + timestamps only.
+      match /public/data/conceptMastery/{uid} {
+        allow write: if authed() && request.auth.uid == uid;
+        allow read: if authed();
+      }
+
+      // ── Per-user private data (teacher history, adventure images) ──────
+      match /users/{uid}/{document=**} {
+        allow read, write: if authed() && request.auth.uid == uid;
+      }
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
