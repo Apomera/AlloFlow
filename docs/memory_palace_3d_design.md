@@ -181,6 +181,74 @@ Aaron's storage concern (2026-07-02), resolved:
 
 ---
 
+## 4.5 Constellation mode — student-weighted edges (Aaron, 2026-07-02)
+
+Aaron's proposal: students connect concepts and set each connection's **strength** by how
+related they believe the concepts are; strength renders as the **brightness/intensity** of the
+line — a constellation. The AI can rate the same pairs; images/statues can join the graph.
+Assessment: **this is not a gimmick — it has a real research lineage**, and it lands almost
+free on the shipped stack.
+
+### Why it's pedagogically serious
+
+- **Relatedness ratings are a validated knowledge-elicitation method.** Pairwise relatedness
+  judgments → network structures (Pathfinder networks, Schvaneveldt) have decades of use
+  comparing novice vs expert knowledge structures; structural agreement with a referent map
+  correlates with achievement. The student act — "how strongly do these connect, and why?" —
+  is elaborative processing, a generative learning task.
+- **The neural-network framing, stated honestly**: hand-set symmetric relatedness weights are
+  closest to a **semantic network / spreading-activation model of human memory** (Collins &
+  Loftus), not to a trained layered NN (directed weights, gradient descent, many examples).
+  The honest and still-exciting claim: *weighted connections are the shared substrate* — the
+  same idea cognitive scientists use to model semantic memory is what NN embeddings learn
+  automatically from co-occurrence. Frame as "build intuition for weighted connections and
+  semantic similarity," never "this is how neural networks work." The **AI-literacy payoff**
+  is comparing *your* weights to *the AI's* weights and asking where the AI's numbers come
+  from — a concrete, demystifying embeddings lesson.
+- **The comparison IS the lesson (Pathfinder-style)**: My constellation / AI constellation /
+  **Diff view** — the biggest disagreements become discussion prompts, not "wrong answers."
+  The AI's weights are explicitly NOT ground truth; where possible, ground weights in
+  **source-text evidence** ("find the sentence that connects these") — the acg spec's
+  `provenance.span` field was designed for exactly this.
+
+### Pedagogical intensifiers (in seriousness order)
+
+1. **Justify-your-weight**: setting a strong edge optionally asks for a one-sentence why —
+   the justification is the elaboration, and it feeds the teacher dashboard.
+2. **Evidence-grounded weighting**: link an edge to the text span that supports it; unsupported
+   strong edges get flagged for discussion, not penalized.
+3. **My-vs-AI diff view** with "where do the AI's numbers come from?" micro-lesson.
+4. **Recall-driven dimming (the honest forgetting visual)**: loci/edges where the student's
+   own Recall-walk results were weak render dimmer — the palace literally shows *their
+   measured* fragile spots, and re-walking/re-rating restores brightness. Data-driven, not a
+   fake forgetting-curve animation (we already capture per-locus recall results).
+5. **Self-authored mnemonics** (generation effect: self-generated mnemonics beat provided
+   ones): AI mnemonics become editable scaffolds; "write your own, then render it" is the
+   stronger form of Furnish.
+
+### Implementation sketch (cheap on the shipped stack)
+
+- acg edges gain optional `weight` (0..1); persistence rides the existing store pattern
+  (`data.constellation` beside conceptSpace/memoryPalace). cg3d already renders
+  gradient/bloom edges — weight → opacity/width/glow is a small mapping; nodes already glow
+  in a starfield, so the metaphor is nearly free visually.
+- Interaction: select node → "🔗 Connect" → click target → strength slider (keyboard path via
+  the existing detail panel). AI side: a pure `buildRelatednessPrompt` sibling of
+  `buildSemanticGraphPrompt` (testable), Gemini returns pair weights.
+- Palace cross-links: same weights drawn as glowing threads between rooms/loci.
+- A "Constellation challenge" reuses the challenge scaffolding — but score against
+  evidence/discussion, not raw AI agreement.
+
+### Unified furnishing + stereograms (the other half of the question)
+
+- **Yes, unify the image pattern**: lift Furnish into a shared helper so 3D Concept Space
+  nodes (and the cg3d overlay for all 13 legacy types) can carry generated images/statues
+  exactly like palace loci — same persistence shape, same sequential/capped/consented flow.
+  Depth-relief statues (the Art Studio trick, §3) upgrade both surfaces at once.
+- **Stereograms: novelty export tier only.** ~5% of people cannot fuse autostereograms (the
+  Art Studio copy already says so) — a Magic-Eye poster of your constellation/palace is a
+  delightful *bonus artifact*, but it must never be the sole carrier of any content.
+
 ## 5. Phased plan
 
 1. **P0 — this doc** (decisions below).
