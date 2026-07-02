@@ -8655,6 +8655,68 @@ var createDocPipeline = function(deps) {
   // P4 (deep dive 2026-07-02): delegate to _b64ToBytes — this duplicate had NO 200MB OOM cap,
   // so the audit path could still crash the tab on an input the fix path would have rejected.
   const _auditB64ToBytes = (b64) => _b64ToBytes(b64);
+  // ── Document Safety scan (dive-1 A1, built 2026-07-02): detect + DISCLOSE active content ──
+  // The tagging path preserves original bytes by design (its fidelity guarantee), so it also
+  // preserves whatever the source carried: auto-run actions, JavaScript, launch actions,
+  // embedded files. The 🧼 Rebuild-clean export DROPS all of it — but until now nothing
+  // DETECTED it, so the disclosure was generic. Pure pdf-lib walk; detection only, no
+  // mutation, fail-soft (returns null when pdf-lib/parse unavailable).
+  const _alloScanActiveContent = (pdfDoc, PDFLibNS) => {
+    try {
+      const NS = PDFLibNS || (typeof window !== 'undefined' && window.PDFLib) || null;
+      if (!pdfDoc || !NS || !NS.PDFName) return null;
+      const nm = (s) => NS.PDFName.of(s);
+      const ctx = pdfDoc.context;
+      const _resolve = (o) => { try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; } catch (_) { return o; } };
+      const counts = { openAction: 0, javascript: 0, launch: 0, embeddedFiles: 0, additionalActions: 0, externalLinks: 0 };
+      const catalog = pdfDoc.catalog;
+      if (catalog.get(nm('OpenAction'))) counts.openAction = 1;
+      if (catalog.get(nm('AA'))) counts.additionalActions++;
+      const names = _resolve(catalog.get(nm('Names')));
+      if (names && names.get) {
+        const jsTree = _resolve(names.get(nm('JavaScript')));
+        if (jsTree && jsTree.get) {
+          const jsNames = _resolve(jsTree.get(nm('Names')));
+          counts.javascript += (jsNames && jsNames.size) ? Math.ceil(jsNames.size() / 2) : 1;
+        }
+        const efTree = _resolve(names.get(nm('EmbeddedFiles')));
+        if (efTree && efTree.get) {
+          const efNames = _resolve(efTree.get(nm('Names')));
+          counts.embeddedFiles += (efNames && efNames.size) ? Math.ceil(efNames.size() / 2) : 1;
+        }
+      }
+      const pages = pdfDoc.getPages ? pdfDoc.getPages() : [];
+      for (const pg of pages) {
+        try {
+          if (pg.node.get(nm('AA'))) counts.additionalActions++;
+          const annots = _resolve(pg.node.get(nm('Annots')));
+          if (annots && annots.size) {
+            for (let i = 0; i < annots.size(); i++) {
+              const an = _resolve(annots.get(i));
+              if (!an || !an.get) continue;
+              if (an.get(nm('AA'))) counts.additionalActions++;
+              const act = _resolve(an.get(nm('A')));
+              if (act && act.get) {
+                const sType = String(act.get(nm('S')) || '');
+                if (sType === '/JavaScript') counts.javascript++;
+                else if (sType === '/Launch') counts.launch++;
+                else if (sType === '/URI') counts.externalLinks++;
+              }
+            }
+          }
+        } catch (_) { /* per-page fail-soft */ }
+      }
+      const findings = [];
+      if (counts.openAction) findings.push({ type: 'open-action', count: counts.openAction, label: 'auto-run action on open (/OpenAction)' });
+      if (counts.javascript) findings.push({ type: 'javascript', count: counts.javascript, label: 'embedded JavaScript action(s)' });
+      if (counts.launch) findings.push({ type: 'launch', count: counts.launch, label: 'launch-external-program action(s)' });
+      if (counts.embeddedFiles) findings.push({ type: 'embedded-files', count: counts.embeddedFiles, label: 'embedded file attachment(s)' });
+      if (counts.additionalActions) findings.push({ type: 'additional-actions', count: counts.additionalActions, label: 'additional-action (/AA) trigger(s)' });
+      // externalLinks reported separately (ordinary links are NOT active content — context only)
+      const _sc = { any: findings.length > 0, findings: findings, externalLinks: counts.externalLinks };
+      return _sc;
+    } catch (_) { return null; }
+  };
   const _pdfAuditPageCount = async (base64Data) => {
     try {
       try { await ensurePdfLibLoaded(); } catch (_) {} // live-bug fix 2026-07-02: load, don't hope
@@ -8843,6 +8905,22 @@ var createDocPipeline = function(deps) {
     const _officeKind = /\.docx$/i.test(_optFileName) ? 'docx'
       : /\.pptx$/i.test(_optFileName) ? 'pptx'
       : (_isZipContainer && !/\.pdf$/i.test(_optFileName)) ? 'docx' : null;
+    // ── Document Safety scan (dive-1 A1, 2026-07-02): PDFs only, detection-only, fail-soft ──
+    // Rides pdf-lib (now deterministically loadable). Result travels on the audit object so
+    // Fix & Verify can disclose it in the fidelity panel and the Rebuild-clean flow is an
+    // informed choice instead of a generic warning.
+    let _activeContent = null;
+    if (!_officeKind && typeof base64Data === 'string' && base64Data.slice(0, 5) === 'JVBER') {
+      try {
+        await ensurePdfLibLoaded();
+        const _NSs = (typeof window !== 'undefined' && window.PDFLib) || null;
+        if (_NSs && _NSs.PDFDocument) {
+          const _sdoc = await _NSs.PDFDocument.load(_auditB64ToBytes(base64Data), { ignoreEncryption: true, updateMetadata: false });
+          _activeContent = _alloScanActiveContent(_sdoc, _NSs);
+          if (_activeContent && _activeContent.any) warnLog('[Doc Safety] active content in source PDF: ' + _activeContent.findings.map(f => f.count + '× ' + f.type).join(', '));
+        }
+      } catch (_) { _activeContent = null; }
+    }
     if (_officeKind) {
       try {
         let det = _officeKind === 'pptx' ? await extractPptxTextDeterministic(base64Data) : await extractDocxTextDeterministic(base64Data);
@@ -9325,6 +9403,8 @@ Return ONLY valid JSON:
         cronbachAlpha,
         auditorCount: n,
         requestedAuditors: numAuditors,
+        // Document Safety (A1): { any, findings:[{type,count,label}], externalLinks } or null.
+        activeContent: _activeContent,
         needsAdditionalAnalysis: false, // High variance on pre-remediation is expected — flag only post-remediation
         reliability: _reliabilityDegenerate ? 'n/a' : (icc >= 0.9 ? 'excellent' : icc >= 0.75 ? 'good' : icc >= 0.5 ? 'moderate' : 'variable'),
         reliabilityDegenerate: _reliabilityDegenerate, // true = uniform-at-floor / single pass → agreement not meaningful
@@ -17943,6 +18023,17 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_aqErr) { altQualityReport = null; }
 
+      // ── Document Safety disclosure (dive-1 A1, 2026-07-02) ── the audit's active-content
+      // scan travels on _auditResult; surface it through the same fidelity plumbing so the
+      // teacher makes an INFORMED choice: standard tagged export preserves original bytes
+      // (including these), 🧼 Rebuild-clean drops them.
+      try {
+        const _ac = _auditResult && _auditResult.activeContent;
+        if (_ac && _ac.any) {
+          _structuralFidelityNotes.push({ kind: 'activeContent', msg: 'The ORIGINAL PDF contains ' + _ac.findings.map(f => f.count + ' ' + f.label).join(', ') + '. The remediated HTML and generated exports do not carry active content, but the standard tagged-PDF export preserves the original bytes — including these. For a distributable PDF without them, use the 🧼 Rebuild-clean export.' });
+        }
+      } catch (_) {}
+
       // ── Triage: flag documents that need expert remediation ──
       let axeViolations = axeResults ? axeResults.totalViolations : 0;       // let: re-audit after recovery mutations may reassign (recov-score-order)
       let axeCritical = axeResults ? axeResults.critical.length : 0;
@@ -18145,6 +18236,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // Alt-text quality scan (2026-07-02): { total, flaggedCount, highCount, flagged:[{index,alt,severity,issues}] }
         // worst-first; null when no DOM/none scanned. High-severity items also push a fidelity note.
         altQuality: altQualityReport,
+        // Document Safety (A1): active content detected in the SOURCE PDF (or null).
+        activeContent: (_auditResult && _auditResult.activeContent) || null,
         // Structural fidelity nets (links/tables/refusal) — [{kind,msg}], drives the review banner.
         fidelityNotes: _structuralFidelityNotes,
         // #1 score↔fidelity coupling: when content fidelity is in question, the displayed
@@ -30388,5 +30481,6 @@ window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; /
 window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested
 window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: alt-text quality heuristics (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
+window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
