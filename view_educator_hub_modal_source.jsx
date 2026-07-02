@@ -17,6 +17,9 @@ function EducatorHubModal(props) {
     // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
     // Optional default so legacy hosts that haven't wired the setter still render.
     setIsVideoStudioOpen = (() => {}),
+    // AlloStudio launcher (2026-07-02): flyer/worksheet/poster editor with
+    // born-accessible exports + process provenance (docs/studio_design.md).
+    setIsAlloStudioOpen = (() => {}),
     // Phase A.3 polish (May 12 2026): renamed from setPdfBatchFiles (which was
     // never defined in host scope). The real host setter is setPdfBatchQueue,
     // matching the batch-files array shape stored in `pdfBatchQueue` state.
@@ -189,6 +192,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
                   <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export video demos — plus prompt tools for NotebookLM and other AI video generators'}</p>
+                </div>
+              </button>
+              <button data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">🎨</span>
+                <div>
+                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'AlloStudio'}</h3>
+                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, and posters that export born-accessible (tagged PDF, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
                 </div>
               </button>
               <button data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
