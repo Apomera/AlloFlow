@@ -27486,7 +27486,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>${pageTitle}</title>
+        <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
         ${_submissionPublicKeyJson}
         ${_submissionEncryptScript}
         <style>

@@ -423,9 +423,34 @@ function _htmlToOdtContentXml(html) {
         (it) => '<text:list-item><text:p text:style-name="Standard">' + _odtRuns(it.runs, spec.footnotes) + '</text:p>',
         '</text:list-item>', '</text:list>')); // nested by it.level (audit #24)
     } else if (b.type === 'table') {
-      const cols = (b.rows && b.rows[0] && b.rows[0].cells.length) || 1;
-      const _odtRow = (r) => '<table:table-row>' + (r.cells || []).map((c) => '<table:table-cell office:value-type="string"><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>').join('') + '</table:table-row>';
-      const _rows = b.rows || [];
+      // Merge parity (#10): ODF merges = table:number-columns/rows-spanned on the
+      // anchor cell + <table:covered-table-cell/> placeholders for every covered
+      // position (same-row trailing for colspan; tracked into FOLLOWING rows for
+      // rowspan via _pend[col] = remaining covered rows). HTML omits covered
+      // cells, so the grid tracker reconstructs the true geometry.
+      const _rows0 = b.rows || [];
+      const cols = Math.max(1, ..._rows0.map((r) => (r.cells || []).reduce((s, c) => s + Math.max(1, c.colSpan || 1), 0)));
+      const _pend = [];
+      const _odtRow = (r) => {
+        let out = '<table:table-row>';
+        const cells = r.cells || [];
+        let col = 0, ci = 0;
+        while (col < cols && (ci < cells.length || (_pend[col] || 0) > 0)) {
+          if ((_pend[col] || 0) > 0) { out += '<table:covered-table-cell/>'; _pend[col]--; col++; continue; }
+          const c = cells[ci++];
+          if (!c) break;
+          const cs = Math.max(1, c.colSpan || 1), rs = Math.max(1, c.rowSpan || 1);
+          out += '<table:table-cell office:value-type="string"'
+            + (cs > 1 ? ' table:number-columns-spanned="' + cs + '"' : '')
+            + (rs > 1 ? ' table:number-rows-spanned="' + rs + '"' : '')
+            + '><text:p text:style-name="Standard">' + _odtRuns(c.runs, spec.footnotes) + '</text:p></table:table-cell>';
+          if (cs > 1) out += Array(cs - 1).fill('<table:covered-table-cell/>').join('');
+          if (rs > 1) for (let k = 0; k < cs; k++) _pend[col + k] = (_pend[col + k] || 0) + (rs - 1);
+          col += cs;
+        }
+        return out + '</table:table-row>';
+      };
+      const _rows = _rows0;
       // ODF: wrap the leading header row(s) in <table:table-header-rows> so AT announces them as
       // headers (audit #19 — every row used to serialize as a plain table-row, so DOCX/DTBook kept
       // header semantics but ODT alone lost them). r.header is the spec's all-th/<thead> flag.
@@ -1092,7 +1117,9 @@ function _docxSpecToSlides(spec) {
         if (t) pushItem({ kind: 'bullet', text: t, level: Math.min(it.level || 0, 4) }, 1);
       }
     } else if (b.type === 'table') {
-      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => runsText(c.runs)) }));
+      // Merge parity (#10): carry the spec's colSpan/rowSpan so the PPTX table
+      // can emit real merges instead of flattening to a rectangular grid.
+      const rows = (b.rows || []).map((r) => ({ header: !!r.header, cells: (r.cells || []).map((c) => ({ text: runsText(c.runs), colSpan: c.colSpan || 1, rowSpan: c.rowSpan || 1 })) }));
       if (rows.length) pushItem({ kind: 'table', rows }, rows.length + 1);
     } else if (b.type === 'image') {
       pushItem({ kind: 'image', src: b.src || null, alt: b.alt || '', width: b.width, height: b.height }, 8);
@@ -1182,7 +1209,13 @@ async function _buildPptxBlobFromSlides(deck, P, theme) {
       if (it.kind === 'text' || it.kind === 'bullet' || it.kind === 'subhead') { runs.push(it); continue; }
       flushText();
       if (it.kind === 'table' && it.rows.length) {
-        const tableRows = it.rows.map((r) => r.cells.map((c) => ({ text: c, options: r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {} })));
+        // Merge parity (#10): pptxgenjs cell options take lowercase colspan/rowspan.
+        // Cells may be legacy strings (older saved items) or {text, colSpan, rowSpan}.
+        const tableRows = it.rows.map((r) => r.cells.map((c) => {
+          const _txt = (typeof c === 'string') ? c : (c && c.text) || '';
+          const _cs = (c && c.colSpan) || 1, _rs = (c && c.rowSpan) || 1;
+          return { text: _txt, options: { ...(r.header ? { bold: true, fill: th.tableHeadFill, color: th.tableHeadText } : {}), ...(_cs > 1 ? { colspan: _cs } : {}), ...(_rs > 1 ? { rowspan: _rs } : {}) } };
+        }));
         slide.addTable(tableRows, { x: 0.5, y, w: 9, fontSize: 12, border: { type: 'solid', color: th.tableBorder, pt: 0.5 }, color: th.body, fontFace: th.font });
         y += 0.35 * it.rows.length + 0.25;
       } else if (it.kind === 'image') {

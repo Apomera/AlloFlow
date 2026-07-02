@@ -1224,11 +1224,17 @@ function ExportPreviewView(props) {
                           if (!doc) return;
                           // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
                           // were being embossed into the braille output.
+                          // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
+                          // unit) with a blank line before each heading — braille convention for a
+                          // new section — instead of the layout-driven innerText soup. Footnote refs
+                          // and emphasis remain future work; structure is the big win.
                           let text = '';
                           try {
                             const _bClone = doc.body.cloneNode(true);
                             _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, script, style').forEach(el => el.remove());
-                            text = _bClone.innerText || _bClone.textContent || '';
+                            _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
+                            text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
                           } catch (_) { text = doc.body.innerText || doc.body.textContent || ''; }
                           // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit 2026-06-13):
                           // a .brf must be ASCII braille (the 0x20–0x5F North-American Braille
