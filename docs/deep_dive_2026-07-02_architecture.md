@@ -353,6 +353,29 @@ side); batch cache keys now derive from the batch's own settings.
 Canvas smoke: add "change target-score mid-run → applies to next run"
 and the restoration flow (restore → preview → export) to the checklist.
 
+## OUTCOMES — wave 5: post-deploy enhancements (Aaron-picked: alt quality + NVDA)
+
+- @04848873 **Alt-text QUALITY gate**: presence was always checked, quality never —
+  "Image of chart"/"IMG_0417.jpg"/caption-echo alts passed every automated gate.
+  Pure heuristics (_alloAltQuality: placeholder/boilerplate/filename=HIGH;
+  prefix/length/truncation/echo=WARN) + worst-first document scan wired into
+  fixAndVerifyPdf; HIGH findings ride the EXISTING fidelity-panel plumbing
+  (lowOcrAccuracy pattern → needsExpertReview, points at the image review
+  panel); full report on result.altQuality; non-English alts deliberately
+  unflagged. 24 golden tests. TWO TRAPS: module-level 2-space `return {`
+  corrupts check-pipeline-integrity.js's export parse (computeHeadline trap —
+  now documented at the site); aria-hidden captions still appear in textContent
+  (nearby-echo must subtract the figure's own text).
+- @be379937 **NVDA verification harness** (dev-tools/nvda-harness/): derives the
+  expected announcement sequence from remediated HTML, diffs NVDA's real speech
+  log in order (OK/ORD/MISS/VIOL incl. decorative-leak detection), PowerShell
+  runner + README (NVDA + Speech Logger add-on setup — NVDA NOT installed on
+  this machine yet; Aaron installs + runs). Tagged-PDF flow via Acrobat Reader
+  against the HTML twin. 11 unit tests + CLI smoke (exit 0/2 verified).
+  Semi-automated by design: one human keypress starts say-all.
+- NOT deployed (Aaron mid-testing @9c403e13); both ride the next deploy.
+  First real NVDA run = new Canvas-smoke-adjacent item.
+
 ## Suggested sequence
 
 1. **H1-H3** (Office image/alt injection + honest toast; v2 fingerprint; rescue
