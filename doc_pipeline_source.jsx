@@ -9382,7 +9382,9 @@ Return ONLY valid JSON:
     // races with React's commit cycle after a setPdfBatchQueue from the
     // Resume banner. Falls back to the proxy queue for the normal flow.
     const _resumeQueue = opts && Array.isArray(opts.resumeQueue) ? opts.resumeQueue : null;
-    const _sourceQueue = _resumeQueue || pdfBatchQueue;
+    // S1 step 6: run-entry snapshot — queue and settings lock here for the whole batch.
+    const _run = _makeRunCtx();
+    const _sourceQueue = _resumeQueue || _run.batchQueue;
     if (!_sourceQueue || _sourceQueue.length === 0) return;
     // If caller passed a resumeQueue, sync it into React state so the UI
     // reflects what the loop is actually processing.
@@ -9397,12 +9399,15 @@ Return ONLY valid JSON:
     // ── Tier 4: persist batch state so a closed tab can be resumed ──
     // Two-store split: heavy payload (base64) written once at start;
     // light status delta rewritten after each file completion.
+    // S1 step 6: this snapshot (which Tier-4 persistence already used) is now ALSO the
+    // configuration every per-file audit/fix runs with AND the cache-key input — the whole
+    // batch runs on ONE configuration captured at entry, deterministically.
     const _batchSettings = {
-      pdfAuditorCount,
-      leveledTextLanguage,
-      pdfTargetScore,
-      pdfAutoFixPasses,
-      pdfPolishPasses,
+      pdfAuditorCount: _run.auditorCount,
+      leveledTextLanguage: _run.outputLanguage,
+      pdfTargetScore: _run.targetScore,
+      pdfAutoFixPasses: _run.autoFixPasses,
+      pdfPolishPasses: _run.polishPasses,
     };
     const _persistBatchStatus = () => {
       // Fire-and-forget — never block the loop on storage writes.
@@ -9438,7 +9443,11 @@ Return ONLY valid JSON:
       // last 7 days, return the cached result and skip audit + remediation.
       // The full mid-batch resume (close tab during file 13 of 50, reload,
       // resume from 13) requires a separate persistence layer not added yet.
-      const _remedKey = await _remediationCacheKey(item.base64, pdfAuditorCount, leveledTextLanguage, pdfTargetScore, pdfAutoFixPasses);
+      // S1 step 6 (bug fix): the key used to read the LIVE bound vars mid-batch — a settings
+      // change during a long batch silently changed cache keys between files. Now keyed on
+      // the batch's own settings snapshot. (Entries cached under previously-drifted keys
+      // become unreachable — harmless, 7-day TTL.)
+      const _remedKey = await _remediationCacheKey(item.base64, _batchSettings.pdfAuditorCount, _batchSettings.leveledTextLanguage, _batchSettings.pdfTargetScore, _batchSettings.pdfAutoFixPasses);
       if (_remedKey) {
         const cached = await _readRemediationCache(_remedKey);
         if (cached) {
@@ -9461,7 +9470,7 @@ Return ONLY valid JSON:
       // Step 1: per-file audit (suppresses single-file UI updates)
       progress('Auditing...');
       const auditResult = await _withTimeout(
-        runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName }),
+        runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage }),
         _PER_FILE_MS, 'batch audit: ' + item.fileName);
       if (!auditResult || auditResult.score === -1) {
         throw new Error(auditResult?.summary || 'Audit failed');
@@ -9470,7 +9479,11 @@ Return ONLY valid JSON:
       const result = await _withTimeout(fixAndVerifyPdf({
         base64: item.base64,
         fileName: item.fileName,
+        fileSize: item.fileSize || null,
         auditResult: auditResult,
+        targetScore: _batchSettings.pdfTargetScore,
+        autoFixPasses: _batchSettings.pdfAutoFixPasses,
+        polishPasses: _batchSettings.pdfPolishPasses,
         onProgress: (step, msg) => progress(msg),
       }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
 
