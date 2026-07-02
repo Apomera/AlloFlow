@@ -145,6 +145,23 @@ function _withTimeout(promise, ms, label) {
   return Promise.race([promise, timeout]).finally(() => { if (_t) clearTimeout(_t); });
 }
 
+// S7 (deep dive 2026-07-02): unicode token fold for missing-word diffs — DELEGATES to the
+// pipeline's canonical _alloNormTokenForDiff (normTokenForDiff static). This fold feeds
+// teacher-visible numbers (residual missing-word counts, restoration UI), and the view used
+// to carry TWO inline copies that could silently drift from the pipeline's (and did,
+// 2026-06-23). The fallback below is for load-order edge cases only and is drift-sentinel
+// tested against the pipeline's copy (tests/norm_token_drift.test.js) — edit BOTH or neither.
+function _viewNormTokenFallback(s) {
+  return String(s || '').toLowerCase().replace(/[​‌‍﻿]/g, '').replace(/ﬀ/g, 'ff').replace(/ﬁ/g, 'fi').replace(/ﬂ/g, 'fl').replace(/ﬃ/g, 'ffi').replace(/ﬄ/g, 'ffl').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/(\p{L})[-­‐‑](\p{L})/gu, '$1$2').replace(/­/g, '').replace(/\s+/g, '');
+}
+function _normTokenForDiffShared(s) {
+  try {
+    const f = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.normTokenForDiff;
+    if (f) return f(s);
+  } catch (_) {}
+  return _viewNormTokenFallback(s);
+}
+
 // _htmlToDocxSpec: pure HTML → block-spec transformer. Deliberately free of
 // docx-library types so it stays unit-testable headlessly —
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
@@ -3310,7 +3327,7 @@ function PdfAuditView(props) {
   // remediation) so Recovery is runnable any time after remediation, not only right after a Tagged PDF
   // export. Pure (no closure deps) → testable. Returns { missingTokens, residual, freshMode }.
   const _recoveryResidualSource = (td, sourceText, finalText) => {
-    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, '').replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl').replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2').replace(/\u00ad/g, '').replace(/\s+/g, '');
+    const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
     const _normalize = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
     const snap = td && typeof td.residualMissingCount === 'number' ? td.residualMissingCount : null;
     if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
@@ -9867,7 +9884,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setPdfFixStep && setPdfFixStep('Restoring (1/3): word-level splice…');
                                     // Re-derive residual tokens from the textDiff. The same normalization
                                     // check used by the surface layer; agree-with-Tier-A floor.
-                                    const _normTokenForDiff = (s) => String(s || '').toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, '').replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl').replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2').replace(/\u00ad/g, '').replace(/\s+/g, '');
+                                    const _normTokenForDiff = _normTokenForDiffShared; // S7: single-sourced from the pipeline
                                     const shipNorm = new Set();
                                     const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
                                     const shipTokens = _normalize(pdfFixResult.finalText || '').split(' ').filter(t => t.length >= 3);

@@ -174,6 +174,17 @@ function _withTimeout(promise, ms, label) {
     if (_t) clearTimeout(_t);
   });
 }
+function _viewNormTokenFallback(s) {
+  return String(s || "").toLowerCase().replace(/[​‌‍﻿]/g, "").replace(/ﬀ/g, "ff").replace(/ﬁ/g, "fi").replace(/ﬂ/g, "fl").replace(/ﬃ/g, "ffi").replace(/ﬄ/g, "ffl").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/(\p{L})[-­‐‑](\p{L})/gu, "$1$2").replace(/­/g, "").replace(/\s+/g, "");
+}
+function _normTokenForDiffShared(s) {
+  try {
+    const f = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.normTokenForDiff;
+    if (f) return f(s);
+  } catch (_) {
+  }
+  return _viewNormTokenFallback(s);
+}
 function _htmlToDocxSpec(html) {
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   const title = ((doc.querySelector("title") || {}).textContent || (doc.querySelector("h1") || {}).textContent || "Accessible document").trim().slice(0, 200) || "Accessible document";
@@ -3604,7 +3615,7 @@ function PdfAuditView(props) {
     if (_rs && _rs.ok === false) addToast(t("pdf_audit.region.restyle_norescore") || "\u2728 Applied. Couldn\u2019t re-score automatically (the checker was busy) \u2014 the document is updated; re-run the audit when ready.", "info");
   };
   const _recoveryResidualSource = (td, sourceText, finalText) => {
-    const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
+    const _normTokenForDiff = _normTokenForDiffShared;
     const _normalize = (s) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
     const snap = td && typeof td.residualMissingCount === "number" ? td.residualMissingCount : null;
     if (td && snap && snap > 0 && Array.isArray(td.missingTokens)) {
@@ -7910,7 +7921,7 @@ Return ONLY JSON:
         try {
           setTierBStage("word-splice");
           setPdfFixStep && setPdfFixStep("Restoring (1/3): word-level splice\u2026");
-          const _normTokenForDiff = (s) => String(s || "").toLowerCase().replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\ufb00/g, "ff").replace(/\ufb01/g, "fi").replace(/\ufb02/g, "fl").replace(/\ufb03/g, "ffi").replace(/\ufb04/g, "ffl").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, "$1$2").replace(/\u00ad/g, "").replace(/\s+/g, "");
+          const _normTokenForDiff = _normTokenForDiffShared;
           const shipNorm = /* @__PURE__ */ new Set();
           const _normalize = (s) => String(s).toLowerCase().replace(/\s+/g, " ").trim();
           const shipTokens = _normalize(pdfFixResult.finalText || "").split(" ").filter((t2) => t2.length >= 3);

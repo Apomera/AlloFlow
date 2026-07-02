@@ -14,6 +14,46 @@ var processMathHTML = window.processMathHTML || function(t) { return t; };
 // deductions — the old `pass factor` discount of up to 40% on UNVERIFIED self-praise was removed.)
 var _alloIssueWeight = function (count) { return Math.min(3, 1 + Math.log2(Math.max(1, Math.floor(Number(count) || 1)))); };
 var _alloBinDed = function (arr, base) { return (arr || []).reduce(function (s, iss) { return s + base * _alloIssueWeight(iss && iss.count); }, 0); };
+// ── S6 (deep dive 2026-07-02): single-source pipeline config ──
+// SEVERITY_WEIGHTS previously lived, hand-synchronized, in FOUR kinds of places: the rubric
+// PROMPT text (what the AI is told to deduct), the deduction-grounding recalculations
+// (_alloBinDed sums), the axe-derived score formulas, and the report's methodology table.
+// Missing one desynchronized the AI's self-scores from the override that grounds them.
+// PIPELINE_DEFAULTS.targetScore was inlined as `|| 95` at six sites (docs said 90).
+// Change these HERE only — every consumer interpolates from them.
+var SEVERITY_WEIGHTS = { critical: 15, serious: 10, moderate: 5, minor: 2 };
+var PIPELINE_DEFAULTS = { targetScore: 95 };
+// Shared per-call HTML chunk budget. Was defined FOUR times ("16000" at HTML_FIX_CHUNK,
+// AUDIT_CHUNK_SIZE, MAX_CHUNK, POLISH_CHUNK) with the same maxOutputTokens=65536 rationale —
+// if the model's output budget changes, change it here. (Vision page-chunking is separate:
+// PAGES_PER_CHUNK is sized to output tokens per PAGE, not chars.)
+var GEMINI_CHUNK_CHARS = 16000;
+// Axe-weighted score on the shared severity weights (was re-derived inline at 4+ sites).
+var _alloAxeWeightedScore = function (ax) {
+  if (!ax) return 0;
+  return Math.max(0, Math.min(100, 100 - (
+    (ax.critical || []).length * SEVERITY_WEIGHTS.critical +
+    (ax.serious || []).length * SEVERITY_WEIGHTS.serious +
+    (ax.moderate || []).length * SEVERITY_WEIGHTS.moderate +
+    (ax.minor || []).length * SEVERITY_WEIGHTS.minor)));
+};
+// ── S7 (deep dive 2026-07-02): canonical unicode token fold for missing-word diffs ──
+// Was TRIPLICATED (here + twice in view_pdf_audit) — adding a fold class in one copy (as
+// happened 2026-06-23) silently made the pipeline's residual count disagree with the view's
+// restoration UI. This is the ONLY copy; the view delegates via the exported static (its
+// fallback copy is drift-sentinel-tested). SAFE fold classes only: ligatures, zero-width/BOM,
+// smart quotes, line-break hyphenation — never en/em-dashes or numeric separators (they can
+// join genuinely distinct tokens: resign/re-sign).
+var _alloNormTokenForDiff = function (t) {
+  return String(t || '')
+    .toLowerCase()
+    .replace(/[​‌‍﻿]/g, '')  // zero-width + BOM
+    .replace(/ﬀ/g, 'ff').replace(/ﬁ/g, 'fi').replace(/ﬂ/g, 'fl').replace(/ﬃ/g, 'ffi').replace(/ﬄ/g, 'ffl')  // ligatures
+    .replace(/[‘’]/g, "'").replace(/[“”]/g, '"')  // smart quotes
+    .replace(/(\p{L})[-­‐‑](\p{L})/gu, '$1$2')  // line-break hyphenation
+    .replace(/­/g, '')  // remaining soft hyphen
+    .replace(/\s+/g, '');
+};
 // Weighted deduction sum: Σ (per-issue deduction × sub-linear count-weight). The SINGLE source for the
 // output-audit deduction so the single-chunk and chunked-merge paths can't drift apart by chunk boundary
 // (#5, 2026-06-21). Behavior-preserving: AI-returned issues carry no `count`, so weight = 1× (= "deduct
@@ -2647,7 +2687,7 @@ var createDocPipeline = function(deps) {
     pdfExperimentMode = s.pdfExperimentMode;
     pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
-    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || 95;
+    pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
     setPdfAuditResult = s.setPdfAuditResult; setPdfAuditLoading = s.setPdfAuditLoading;
     setPdfFixResult = s.setPdfFixResult; setPdfFixLoading = s.setPdfFixLoading;
     setPdfFixStep = s.setPdfFixStep; setPendingPdfBase64 = s.setPendingPdfBase64;
@@ -3099,7 +3139,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
+  const HTML_FIX_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     // H-6 (2026-06-24): never cut a chunk INSIDE a table/list/figure/dl. A boundary between </td> and <td>
@@ -8290,7 +8330,7 @@ var createDocPipeline = function(deps) {
     const hash = await _sha256Hex(base64Data || '');
     if (!hash) return null;
     const lang = (outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_');
-    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || 95}_p${autoFixPasses || 0}`;
+    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || PIPELINE_DEFAULTS.targetScore}_p${autoFixPasses || 0}`;
   };
   const _readRemediationCache = async (key) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
@@ -8733,10 +8773,10 @@ Check for these specific issues:
 10. METADATA: Missing document title, author, or subject
 
 SCORING RUBRIC — Start at 100, deduct points for each unique violation:
-  CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
-  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
-  MINOR (-2 each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
+  CRITICAL (-${SEVERITY_WEIGHTS.critical} each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1, no searchable text layer
+  SERIOUS (-${SEVERITY_WEIGHTS.serious} each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MODERATE (-${SEVERITY_WEIGHTS.moderate} each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
+  MINOR (-${SEVERITY_WEIGHTS.minor} each): Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity
 
 IMPORTANT FORMATTING RULES for the "issue" field:
 - Write each issue as ONE complete sentence. Do NOT split sentences across fields.
@@ -8874,7 +8914,7 @@ Return ONLY valid JSON:
         const modCount = (a.moderate || []).length;
         const minCount = (a.minor || []).length;
         const passCount = (a.passes || []).length;
-        const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
+        const rawDed = _alloBinDed(a.critical, SEVERITY_WEIGHTS.critical) + _alloBinDed(a.serious || a.major, SEVERITY_WEIGHTS.serious) + _alloBinDed(a.moderate, SEVERITY_WEIGHTS.moderate) + _alloBinDed(a.minor, SEVERITY_WEIGHTS.minor); // C: count-weighted
         const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back (was rawDed * (1 - passRatio*0.4))
         // Transparency (2026-06-21): the auditor's score is ALWAYS the deterministic rubric calculation,
         // never the model's self-reported number. The model was asked to do ~40-term arithmetic in-head
@@ -8909,7 +8949,7 @@ Return ONLY valid JSON:
           const modCount = (a.moderate || []).length;
           const minCount = (a.minor || []).length;
           const passCount = (a.passes || []).length;
-          const rawDed = _alloBinDed(a.critical, 15) + _alloBinDed(a.serious || a.major, 10) + _alloBinDed(a.moderate, 5) + _alloBinDed(a.minor, 2); // C: count-weighted
+          const rawDed = _alloBinDed(a.critical, SEVERITY_WEIGHTS.critical) + _alloBinDed(a.serious || a.major, SEVERITY_WEIGHTS.serious) + _alloBinDed(a.moderate, SEVERITY_WEIGHTS.moderate) + _alloBinDed(a.minor, SEVERITY_WEIGHTS.minor); // C: count-weighted
           const calculatedScore = Math.max(0, 100 - Math.round(rawDed)); // D: dropped the unverified-pass buy-back
           if (typeof a.score === 'number' && a.score !== calculatedScore) a._aiReportedScore = a.score;
           a.score = calculatedScore; // always deduction-grounded — never the model's self-reported number (2026-06-21)
@@ -9045,7 +9085,7 @@ Return ONLY valid JSON:
       const _mSerious  = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.serious || a.major)));
       const _mModerate = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.moderate)));
       const _mMinor    = _attachAgreement(mergeIssues(...parsedAudits.map(a => a.minor)));
-      const _consolidatedDed = _alloBinDed(_mCritical, 15) + _alloBinDed(_mSerious, 10) + _alloBinDed(_mModerate, 5) + _alloBinDed(_mMinor, 2);
+      const _consolidatedDed = _alloBinDed(_mCritical, SEVERITY_WEIGHTS.critical) + _alloBinDed(_mSerious, SEVERITY_WEIGHTS.serious) + _alloBinDed(_mModerate, SEVERITY_WEIGHTS.moderate) + _alloBinDed(_mMinor, SEVERITY_WEIGHTS.minor);
       const _consolidatedContentScore = Math.max(0, 100 - Math.round(_consolidatedDed));
       // Cross-pass agreement is MEANINGLESS when there's only one pass, or when every pass floored to 0 (the
       // deduction clamp pins them at the floor — "excellent agreement" on five 0s reads as a contradiction
@@ -9795,10 +9835,10 @@ If there are no significant images, return: {"images": [], "totalImages": 0}`,
   // Chunks the full HTML into sections and audits each, then merges results.
   // Uses a strict point-deduction rubric for consistent, reproducible scoring.
   const AUDIT_RUBRIC_PROMPT = `SCORING RUBRIC — Start at 100, deduct points for each violation found:
-  CRITICAL (-15 each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1
-  SERIOUS (-10 each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
-  MODERATE (-5 each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
-  MINOR (-2 each): Extra whitespace in alt text, multiple h1 elements, missing aria-labels on icon buttons, inconsistent heading granularity
+  CRITICAL (-${SEVERITY_WEIGHTS.critical} each): Missing lang attribute, no page title, images without alt text, no main landmark, color contrast below 3:1
+  SERIOUS (-${SEVERITY_WEIGHTS.serious} each): Missing heading hierarchy (no h1), heading level skips, data tables without th/scope, form inputs without labels, color contrast below 4.5:1
+  MODERATE (-${SEVERITY_WEIGHTS.moderate} each): Missing skip-to-content link, missing header/footer/nav landmarks, non-descriptive link text, missing table caption, bullet characters instead of semantic lists
+  MINOR (-${SEVERITY_WEIGHTS.minor} each): Extra whitespace in alt text, multiple h1 elements, missing aria-labels on icon buttons, inconsistent heading granularity
 
 AUDIT CHECKLIST:
 1. LANGUAGE: <html> has lang attribute
@@ -9831,7 +9871,7 @@ Return ONLY JSON:
   // Module-level chunk constants for auditOutputAccessibility. OVERLAP doubled
   // from 400→800 because WCAG violations in tables, code blocks, and long links
   // can span more than 400 chars at a chunk boundary and slip past the audit.
-  const AUDIT_CHUNK_SIZE = 16000; // with maxOutputTokens=65536, well within model capacity
+  const AUDIT_CHUNK_SIZE = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
   const AUDIT_CHUNK_OVERLAP = 800;
   // $2 (deep dive 2026-07-02): chunk-level audit memoization. Audit calls run at temperature=0
   // (deterministic by design), yet the fix loop re-audits ALL chunks every pass even though a
@@ -10313,7 +10353,7 @@ HTML section ${chunkNum}/${chunks.length}:
         minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', ') })),
         passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), nodes: p.nodes.length })),
         incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length })),
-        score: Math.max(0, Math.round(100 - (critical.length * 15) - (serious.length * 10) - (moderate.length * 5) - (minor.length * 2))),
+        score: Math.max(0, Math.round(100 - (critical.length * SEVERITY_WEIGHTS.critical) - (serious.length * SEVERITY_WEIGHTS.serious) - (moderate.length * SEVERITY_WEIGHTS.moderate) - (minor.length * SEVERITY_WEIGHTS.minor))), // S6: shared weights (per failed RULE — axe nodes are counted separately)
       };
     } catch (err) {
       warnLog('[axe-core] Audit failed:', err);
@@ -12474,7 +12514,7 @@ HTML section ${chunkNum}/${chunks.length}:
         // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
         // This prevents truncation from Gemini's output token limit (~8K tokens).
         {
-        const MAX_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
+        const MAX_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
 
         if (currentHtml.length <= MAX_CHUNK) {
           // Small document: single-pass fix
@@ -15815,7 +15855,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
           if (pdfPolishPasses > 0) {
-            const POLISH_CHUNK = 16000; // with maxOutputTokens=65536, 16KB chunks are well within capacity
+            const POLISH_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
@@ -16601,7 +16641,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _totalIssues = bestAxeViolations + _aiIssueCount;
-      const _targetScore = pdfTargetScore || 95;
+      const _targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
       // A PARTIAL audit (throttle failed some sections) scored only PART of the document, so a high score does
       // NOT verifiably meet the target — the un-audited sections could still have issues. Don't let a partial
       // "target met" stop the loop before it starts; keep going to try for complete coverage. This mirrors the
@@ -16839,7 +16879,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
 
           // If BOTH engines are satisfied, stop
-          const targetScore = pdfTargetScore || 95;
+          const targetScore = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
           if (newAxeViolations === 0 && !_rePartial && newAiScore >= targetScore) {
             warnLog(`[Auto-fix] Excellent: axe clean + AI ${newAiScore}/100 (target ${targetScore}) — stopping`);
             break;
@@ -17213,7 +17253,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // so a run could declare "target 95 reached" and then display 88 with no explanation.
         // Say so explicitly when it happens.
         {
-          const _tgt = pdfTargetScore || 95;
+          const _tgt = pdfTargetScore || PIPELINE_DEFAULTS.targetScore;
           if (bestAiScore >= _tgt && governingFinal < _tgt) {
             warnLog(`[PDF Fix] Note: the fix loop reached its AI target (${bestAiScore} >= ${_tgt}) but a deterministic engine governs the headline at ${governingFinal} — the displayed score is the weakest verified layer, not the loop's stop score.`);
           }
@@ -18304,10 +18344,10 @@ tr { page-break-inside: avoid; }
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem">
       <thead><tr style="background:#f8fafc"><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Severity</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:center">Deduction</th><th style="padding:8px;border:1px solid #e2e8f0;text-align:left">Examples</th></tr></thead>
       <tbody>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#dc2626">Critical</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-15</td><td style="padding:8px;border:1px solid #e2e8f0">Missing lang attribute, no page title, images without alt text, no main landmark, contrast below 3:1</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-10</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#d97706">Moderate</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-5</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
-        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-2</td><td style="padding:8px;border:1px solid #e2e8f0">Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#dc2626">Critical</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.critical}</td><td style="padding:8px;border:1px solid #e2e8f0">Missing lang attribute, no page title, images without alt text, no main landmark, contrast below 3:1</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#ea580c">Serious</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.serious}</td><td style="padding:8px;border:1px solid #e2e8f0">No h1 heading, heading level skips, data tables without th/scope, form inputs without labels, contrast below 4.5:1</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#d97706">Moderate</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.moderate}</td><td style="padding:8px;border:1px solid #e2e8f0">Missing skip-to-content link, missing landmarks, non-descriptive links, bullet characters instead of lists</td></tr>
+        <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#2563eb">Minor</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">-${SEVERITY_WEIGHTS.minor}</td><td style="padding:8px;border:1px solid #e2e8f0">Missing document metadata, extra whitespace in alt text, multiple h1 elements, inconsistent heading granularity</td></tr>
         <tr><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#16a34a">Passes</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:center;font-weight:bold">Informational</td><td style="padding:8px;border:1px solid #e2e8f0">Passed checks are listed for transparency but do <strong>not</strong> buy back deductions — the score reflects only confirmed issues, so it stays reconstructable from the list above.</td></tr>
       </tbody>
     </table>
@@ -21837,14 +21877,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // zero-width/BOM, and smart quotes can NEVER merge two distinct words; U+2010/2011 extend the
           // existing line-break-hyphen fold. NOT folding en/em-dashes or numeric separators - they can
           // join genuinely distinct tokens (the resign/re-sign concern above).
-          const _normTokenForDiff = (t) => String(t || '')
-            .toLowerCase()
-            .replace(/[\u200b\u200c\u200d\ufeff]/g, '')  // zero-width + BOM
-            .replace(/\ufb00/g, 'ff').replace(/\ufb01/g, 'fi').replace(/\ufb02/g, 'fl').replace(/\ufb03/g, 'ffi').replace(/\ufb04/g, 'ffl')  // ligatures
-            .replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"')  // smart quotes
-            .replace(/(\p{L})[-\u00ad\u2010\u2011](\p{L})/gu, '$1$2')  // line-break hyphenation
-            .replace(/\u00ad/g, '')  // remaining soft hyphen
-            .replace(/\s+/g, '');
+          const _normTokenForDiff = _alloNormTokenForDiff; // S7: single-sourced (module-level canonical copy)
           const _shipNormSet = new Set();
           for (const t of _shipTokens) _shipNormSet.add(_normTokenForDiff(t));
           let _normEquivCount = 0;
@@ -22536,7 +22569,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     options = options || {};
     const surgicalTools = SHARED_SURGICAL_TOOLS;
     const maxPasses = options.maxPasses || 5;
-    const targetScore = options.targetScore || 95;
+    const targetScore = options.targetScore || PIPELINE_DEFAULTS.targetScore;
     const onProgress = options.onProgress || function() {};
     const onActivity = options.onActivity || function() {};
 
@@ -22553,8 +22586,8 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     let bestScore = -1;
     let bestHtml = null;
     let bestPass = 0;
-    // axe-only score on the same -15/-10/-5/-2 weights used throughout this loop
-    const _axeOnlyScore = (ax) => Math.max(0, Math.min(100, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)));
+    // axe-only score on the shared severity weights (S6: single-sourced)
+    const _axeOnlyScore = (ax) => _alloAxeWeightedScore(ax);
     const activityLog = [];
 
     function logActivity(msg, type) {
@@ -22860,7 +22893,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     if (cmd === 'audit' || cmd === 'check') {
       onActivity({ text: '\uD83D\uDD0D Running WCAG audit...', type: 'audit', time: ts() });
       var axe = await runAxeAudit(currentHtml);
-      var sc = axe ? Math.max(0, 100 - ((axe.critical || []).length * 15 + (axe.serious || []).length * 10 + (axe.moderate || []).length * 5 + (axe.minor || []).length * 2)) : 0;
+      var sc = _alloAxeWeightedScore(axe); // S6: shared severity weights
       onActivity({ text: '\uD83D\uDCCA Score: ' + sc + '/100 — ' + (axe ? axe.totalViolations : '?') + ' violations', type: 'score', time: ts() });
       return { type: 'audit', html: currentHtml, score: sc, axe: axe };
     }
@@ -22873,7 +22906,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     }
     if (cmd === 'score') {
       var ax = await runAxeAudit(currentHtml);
-      var s = ax ? Math.max(0, 100 - ((ax.critical || []).length * 15 + (ax.serious || []).length * 10 + (ax.moderate || []).length * 5 + (ax.minor || []).length * 2)) : 0;
+      var s = _alloAxeWeightedScore(ax); // S6: shared severity weights
       onActivity({ text: '\uD83D\uDCCA Current score: ' + s + '/100', type: 'score', time: ts() });
       return { type: 'score', html: currentHtml, score: s };
     }
@@ -29847,5 +29880,6 @@ window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoun
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
+window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; // static: S7 (2026-07-02) — the view's missing-word/restoration UI folds tokens with the SAME function the pipeline's residual count uses
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
