@@ -7569,7 +7569,9 @@ var createDocPipeline = function(deps) {
     return out;
   };
 
-  // Word-level reconciliation between two OCR outputs. "Perfect accuracy" for scanned PDFs
+  // Page-level reconciliation between two OCR outputs (H9 honesty note, 2026-07-02: this was
+  // long mislabeled "word-level" here and in PIPELINE_ARCHITECTURE.md — it is per-page
+  // winner-take-all, not token merging). "Perfect accuracy" for scanned PDFs
   // means losing no content, so the per-page rule is: take whichever output has more chars.
   // Record disagreements (pages where length differs materially) so the fidelity panel can
   // surface them for review. This is a union-of-best-per-page strategy, not a set-union on
@@ -7858,17 +7860,103 @@ var createDocPipeline = function(deps) {
   const _W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
   const _A_NS = 'http://schemas.openxmlformats.org/drawingml/2006/main';
 
+  // H7 (deep dive 2026-07-02): deterministic HTML→markdown for the mammoth convertToHtml seed.
+  // Handles the structures mammoth emits (headings, paragraphs, lists incl. nesting, tables,
+  // links, blockquotes). Inline <img> elements are dropped, keeping only "[Image: alt]" — the
+  // H1 Office-media splice carries the actual images with their authored alt text. Best-effort:
+  // any failure returns '' and the caller falls back to extractRawText.
+  const _docxHtmlToMarkdown = (html) => {
+    try {
+      if (!html || typeof DOMParser === 'undefined') return '';
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      if (!doc || !doc.body) return '';
+      const out = [];
+      const inline = (node) => {
+        let s = '';
+        node.childNodes.forEach((ch) => {
+          if (ch.nodeType === 3) { s += ch.textContent; return; }
+          if (ch.nodeType !== 1) return;
+          const tag = ch.tagName.toLowerCase();
+          if (tag === 'a') {
+            const href = ch.getAttribute('href') || '';
+            const txt = inline(ch).trim() || href;
+            s += (href && href !== '#') ? '[' + txt + '](' + href + ')' : txt;
+          } else if (tag === 'img') {
+            const alt = (ch.getAttribute('alt') || '').trim();
+            if (alt) s += '[Image: ' + alt + ']';
+          } else if (tag === 'br') s += '\n';
+          else s += inline(ch);
+        });
+        return s;
+      };
+      const walkList = (el, ordered, depth) => {
+        let idx = 1;
+        Array.from(el.children).forEach((li) => {
+          if (li.tagName.toLowerCase() !== 'li') return;
+          const nested = Array.from(li.children).filter((c) => /^(ul|ol)$/i.test(c.tagName));
+          nested.forEach((nl) => li.removeChild(nl));
+          out.push('  '.repeat(depth) + (ordered ? (idx + '. ') : '* ') + inline(li).replace(/\s+/g, ' ').trim());
+          idx++;
+          nested.forEach((nl) => walkList(nl, nl.tagName.toLowerCase() === 'ol', depth + 1));
+        });
+      };
+      const blocks = (root) => {
+        Array.from(root.children).forEach((el) => {
+          const tag = el.tagName.toLowerCase();
+          const hm = tag.match(/^h([1-6])$/);
+          if (hm) { const t = inline(el).replace(/\s+/g, ' ').trim(); if (t) { out.push('#'.repeat(+hm[1]) + ' ' + t); out.push(''); } return; }
+          if (tag === 'p') { const t = inline(el).trim(); if (t) { out.push(t); out.push(''); } return; }
+          if (tag === 'ul' || tag === 'ol') { walkList(el, tag === 'ol', 0); out.push(''); return; }
+          if (tag === 'table') {
+            const rows = Array.from(el.querySelectorAll('tr')).map((tr) =>
+              '| ' + Array.from(tr.children).map((td) => inline(td).replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim()).join(' | ') + ' |');
+            if (rows.length) {
+              out.push(rows[0]);
+              const cols = (rows[0].match(/\|/g) || []).length - 1;
+              out.push('|' + Array.from({ length: Math.max(1, cols) }).map(() => ' --- |').join(''));
+              for (let ri = 1; ri < rows.length; ri++) out.push(rows[ri]);
+              out.push('');
+            }
+            return;
+          }
+          if (tag === 'blockquote') { const t = inline(el).trim(); if (t) { out.push('> ' + t.replace(/\n/g, '\n> ')); out.push(''); } return; }
+          if (el.children.length) { blocks(el); return; }
+          const t = inline(el).trim(); if (t) { out.push(t); out.push(''); }
+        });
+      };
+      blocks(doc.body);
+      return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    } catch (_) { return ''; }
+  };
+
   const extractDocxTextDeterministic = async (base64) => {
     // Body text via mammoth (primary path — best handling of styles/structure)
     let bodyText = '';
     let usedMammoth = false;
+    let usedMammothHtml = false;
     try {
       await ensureMammothLoaded();
-      if (window.mammoth && typeof window.mammoth.extractRawText === 'function') {
+      if (window.mammoth) {
         const bytes = _base64ToBytes(base64);
-        const result = await window.mammoth.extractRawText({ arrayBuffer: bytes.buffer });
-        bodyText = (result && result.value) || '';
-        if (bodyText && bodyText.length > 0) usedMammoth = true;
+        // H7 (deep dive 2026-07-02): prefer convertToHtml → markdown. extractRawText FLATTENED
+        // author-declared structure — Heading styles, list numbering, table geometry, hyperlink
+        // URLs — to plain text, and the AI transform then RE-GUESSED all of it: a born-accessible
+        // DOCX could come out worse-structured than it went in. Markdown is exactly what the
+        // Vision extraction path already feeds the transform, so every downstream consumer
+        // (prompts, fidelity/coverage nets, diff) treats it identically. Raw text remains the
+        // fallback for old mammoth builds or converter failures.
+        if (typeof window.mammoth.convertToHtml === 'function') {
+          try {
+            const _hr = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
+            const _mdown = _docxHtmlToMarkdown((_hr && _hr.value) || '');
+            if (_mdown && _mdown.trim().length > 0) { bodyText = _mdown; usedMammoth = true; usedMammothHtml = true; }
+          } catch (eH) { warnLog('[DOCX Det] convertToHtml failed — falling back to raw text:', eH?.message); }
+        }
+        if (!bodyText && typeof window.mammoth.extractRawText === 'function') {
+          const result = await window.mammoth.extractRawText({ arrayBuffer: bytes.buffer });
+          bodyText = (result && result.value) || '';
+          if (bodyText && bodyText.length > 0) usedMammoth = true;
+        }
       }
     } catch (e) {
       warnLog('[DOCX Det] mammoth failed, falling back to jszip+DOM:', e?.message);
@@ -7878,7 +7966,7 @@ var createDocPipeline = function(deps) {
     // failed entirely. Loosened regex (\d*) catches Google-Docs no-digit variants
     // like word/header.xml in addition to numbered Office365/LibreOffice variants.
     let augmentedParts = [];
-    let method = usedMammoth ? 'mammoth' : '';
+    let method = usedMammoth ? (usedMammothHtml ? 'mammoth-html' : 'mammoth') : '';
     try {
       await ensureJsZipLoaded();
       if (!window.JSZip) throw new Error('jszip unavailable');
@@ -7911,7 +7999,16 @@ var createDocPipeline = function(deps) {
         const f = zip.file(path);
         if (!f) return;
         const txt = await _ooxmlExtractPart(f, 'p', 't', _W_NS);
-        if (txt && txt.trim()) augmentedParts.push(_ALLO_SECTION_OPEN(kind, id) + '\n' + txt + '\n' + _ALLO_SECTION_CLOSE);
+        if (!txt || !txt.trim()) return;
+        // H8 (deep dive 2026-07-02): the ALLO_SECTION sentinel is opaque to the transform model
+        // (no prompt defines KIND semantics), so a draft's margin comments could be woven into
+        // student-facing body text ("check with mom about meds" class of leak). Mirror the PPTX
+        // speaker-notes pattern: a human-readable label the model can actually act on. Label
+        // only — no omission instruction — so the fidelity/coverage nets keep counting the text.
+        const labeled = kind === 'COMMENTS'
+          ? '[Reviewer margin comments — document review notes, not part of the document body]\n' + txt
+          : txt;
+        augmentedParts.push(_ALLO_SECTION_OPEN(kind, id) + '\n' + labeled + '\n' + _ALLO_SECTION_CLOSE);
       };
       for (const name of allEntries) {
         const hdrM = name.match(/^word\/header(\d*)\.xml$/);
@@ -8115,10 +8212,12 @@ var createDocPipeline = function(deps) {
     } catch (_) { return null; }
   };
   const _auditCacheKey = async (base64Data, numAuditors, outLang) => {
-    const sample = base64Data ? (base64Data.length > 8192
-      ? base64Data.slice(0, 4096) + '|' + base64Data.length + '|' + base64Data.slice(-4096)
-      : base64Data) : '';
-    const hash = await _sha256Hex(sample);
+    // H10 (deep dive 2026-07-02): hash the FULL content — the old head-4KB+length+tail-4KB
+    // sample collided for same-length template PDFs differing only in interior pages
+    // (per-student filled forms), replaying one student's cached audit for another's file.
+    // crypto.subtle digests tens of MB in ~100ms, once per run — the sample saved nothing
+    // that matters against a cross-document replay.
+    const hash = await _sha256Hex(base64Data || '');
     return hash ? `pdf_audit_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${(outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_')}` : null;
   };
   const _readAuditCache = async (key) => {
@@ -8188,10 +8287,9 @@ var createDocPipeline = function(deps) {
   // case (user re-uploads same files after closing the tab) without needing
   // a full mid-batch persistence layer. TTL: 7 days (same as audit cache).
   const _remediationCacheKey = async (base64Data, numAuditors, outLang, targetScore, autoFixPasses) => {
-    const sample = base64Data ? (base64Data.length > 8192
-      ? base64Data.slice(0, 4096) + '|' + base64Data.length + '|' + base64Data.slice(-4096)
-      : base64Data) : '';
-    const hash = await _sha256Hex(sample);
+    // H10: full-content hash — see _auditCacheKey. A collision HERE was the worse case:
+    // _readRemediationCache replays a full accessibleHtml, i.e. another document's content.
+    const hash = await _sha256Hex(base64Data || '');
     if (!hash) return null;
     const lang = (outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_');
     return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || 95}_p${autoFixPasses || 0}`;
@@ -8833,8 +8931,13 @@ Return ONLY valid JSON:
       const scoreSD = Math.round(rawSD * 10) / 10; // display version (1 decimal)
       const scoreRange = n > 1 ? Math.max(...scores) - Math.min(...scores) : 0;
       const scoreSEM = n > 1 ? Math.round((rawSD / Math.sqrt(n)) * 10) / 10 : 0;
-      const ci95Lower = Math.max(0, Math.round(rawMean - 1.96 * (rawSD / Math.sqrt(n))));
-      const ci95Upper = Math.min(100, Math.round(rawMean + 1.96 * (rawSD / Math.sqrt(n))));
+      // H11 stats (deep dive 2026-07-02): Student-t critical values, not z=1.96 — with n=2-10
+      // auditors the normal approximation made the displayed 95% interval ~30-85% too narrow
+      // (n=3 needs 4.30, n=5 needs 2.78). Two-sided 95%, df = n-1; falls back to 1.96 for n>10.
+      const _T95 = { 2: 12.71, 3: 4.30, 4: 3.18, 5: 2.78, 6: 2.57, 7: 2.45, 8: 2.36, 9: 2.31, 10: 2.26 };
+      const _tCrit = (n >= 2 && n <= 10) ? _T95[n] : 1.96;
+      const ci95Lower = Math.max(0, Math.round(rawMean - _tCrit * (rawSD / Math.sqrt(n))));
+      const ci95Upper = Math.min(100, Math.round(rawMean + _tCrit * (rawSD / Math.sqrt(n))));
 
       // Pass-to-pass score agreement (heuristic): custom formula 1 - (SD / 50) using raw unrounded SD.
       // NOT the textbook intraclass correlation coefficient — this is a lightweight agreement
@@ -14113,7 +14216,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             for (let ii = 0; ii < outBytes.length; ii += CH) bin += String.fromCharCode.apply(null, outBytes.subarray(ii, ii + CH));
             return btoa(bin);
           };
-          const _EXTRACT_RULES = `RULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`;
+          const _EXTRACT_RULES = `RULES:\n- Use # for titles, ## for sections, ### for subsections\n- Preserve tables as markdown tables with | pipes and --- dividers\n- Describe images as: [Image: detailed description]\n- Use * for bullet lists, 1. for numbered lists\n- LINKS: Preserve ALL hyperlinks as [link text](URL). If you can see blue/underlined text with a visible URL, include it. If the URL destination isn't visible, use [link text](#).\n- Keep ALL content — do not skip any paragraphs or details\n- READING ORDER: If the page has multiple text columns, return content in correct reading order — finish the left column top-to-bottom before starting the right column. Two-column academic layouts and newspaper layouts MUST be linearized, not interleaved.\n- PAGE BREAKS: insert a line containing exactly [[PAGE BREAK]] between the content of consecutive pages (not before the first page or after the last).\n\nIMPORTANT: Return ONLY plain text with markdown formatting. Do NOT wrap in JSON. Do NOT use \\n escape sequences — use actual line breaks. Just the document text.`;
           let _slicedChunks = 0;
           const chunkPromises = [];
           for (let i = 0; i < numChunks; i++) {
@@ -14162,22 +14265,36 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return unwrapped
               .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
           });
-          // For reconciliation we want a pseudo per-page split. Vision's chunks cover
-          // PAGES_PER_CHUNK pages each; split the chunk text into page-count equal slices
-          // when we can't do better. Far from perfect alignment but beats nothing.
+          // Per-page split for reconciliation. H9 (deep dive 2026-07-02): prefer the model-emitted
+          // [[PAGE BREAK]] sentinel (real page boundaries — the equal-char pseudo-split could
+          // splice content misaligned to page edges, making per-page winner-take-all reconcile
+          // duplicate/drop text on mixed-quality docs). Fall back to the historical equal-char
+          // split when the sentinel count doesn't match the expected page count. The sentinel is
+          // stripped from the joined fullText either way — it must never leak into the document.
+          const _PB_RE = /[ \t]*\[\[PAGE BREAK\]\][ \t]*/g;
           const pagesOut = [];
-          chunks.forEach((chunkText, ci) => {
+          let _sentinelSplits = 0;
+          const cleanedChunks = chunks.map((chunkText, ci) => {
             const startPage = ci * PAGES_PER_CHUNK;
             const pageCount = Math.min(PAGES_PER_CHUNK, effectivePageCount - startPage);
-            const chunkLen = chunkText.length;
+            const parts = chunkText.split(_PB_RE);
+            const cleaned = chunkText.replace(_PB_RE, '\n');
+            if (pageCount > 0 && parts.length === pageCount) {
+              _sentinelSplits++;
+              for (let q = 0; q < pageCount; q++) pagesOut.push({ pageNum: _rangeStart + startPage + q, text: String(parts[q] || '').trim() });
+              return cleaned;
+            }
+            const chunkLen = cleaned.length;
             const per = pageCount > 0 ? Math.floor(chunkLen / pageCount) : chunkLen;
             for (let q = 0; q < pageCount; q++) {
               const from = q * per;
               const to = q === pageCount - 1 ? chunkLen : (q + 1) * per;
-              pagesOut.push({ pageNum: _rangeStart + startPage + q, text: chunkText.slice(from, to).trim() }); // ABSOLUTE page number (#20) — was range-relative, mis-aligning the reconcile
+              pagesOut.push({ pageNum: _rangeStart + startPage + q, text: cleaned.slice(from, to).trim() }); // ABSOLUTE page number (#20) — was range-relative, mis-aligning the reconcile
             }
+            return cleaned;
           });
-          return { fullText: chunks.join('\n\n---\n\n'), pages: pagesOut };
+          if (_sentinelSplits > 0) warnLog(`[Vision] ${_sentinelSplits}/${chunks.length} chunk(s) page-split via the [[PAGE BREAK]] sentinel (exact boundaries; rest fell back to equal-char)`);
+          return { fullText: cleanedChunks.join('\n\n---\n\n'), pages: pagesOut };
         };
 
         // ── OCR language resolution (light, best-effort) ──
