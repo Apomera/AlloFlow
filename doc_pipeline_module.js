@@ -2758,6 +2758,40 @@ var createDocPipeline = function(deps) {
     setError = s.setError;
   };
 
+  // ── S1 (deep dive 2026-07-02): per-run state snapshot ──
+  // _bindState copies the host state into SHARED factory vars at every public-call entry,
+  // with no rebind after `await` — so a wrapped call entering while an async run is awaiting
+  // used to clobber the run's state mid-flight (the __alloPdfRunGen zombie guard patched the
+  // worst symptom). Async runs now snapshot the VALUES they need here, at entry, and read
+  // only the snapshot; React setters stay on _bindState (they are identity-stable, so a
+  // rebind writes the same function — no staleness hazard).
+  //
+  // RULES:
+  // - An async run that must read its own write mutates its runCtx — never the module vars.
+  // - Settings LOCK at run entry (product decision 2026-07-02): a mid-run slider change
+  //   applies to the NEXT run, deterministically.
+  // - Deliberately read-fresh (do NOT snapshot): window.__docPipelineState.pdfOcrLanguage
+  //   (a mid-run OCR-language correction applies to later chunks by design) and the
+  //   _s().exportAuditResult duplicate-audit gate in updatePdfPreview.
+  var _makeRunCtx = function (overrides) {
+    var s = _s();
+    var ctx = {
+      auditorCount: s.pdfAuditorCount,
+      autoFixPasses: s.pdfAutoFixPasses,
+      polishPasses: s.pdfPolishPasses,
+      targetScore: s.pdfTargetScore || PIPELINE_DEFAULTS.targetScore,
+      outputLanguage: s.leveledTextLanguage,
+      base64: s.pendingPdfBase64,
+      file: s.pendingPdfFile,
+      auditResult: s.pdfAuditResult,
+      batchQueue: s.pdfBatchQueue,
+      batchSummary: s.pdfBatchSummary,
+      stylePrompt: s.exportStylePrompt,
+    };
+    if (overrides) { for (var k in overrides) { if (Object.prototype.hasOwnProperty.call(overrides, k)) ctx[k] = overrides[k]; } }
+    return ctx;
+  };
+
   // ── IndexedDB chunk progress persistence ──
   // Survives tab close, browser crash, API quota exhaustion.
   // Session ID = simple hash of filename + size + page count for stable identification.
@@ -23966,10 +24000,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
   };
 
   const generateCustomExportStyle = async () => {
-    if (!exportStylePrompt.trim() || !callGemini) return;
+    // S1 step 1: snapshot the prompt at entry — the third read below used to happen AFTER
+    // two IDB awaits, a real window for a concurrent call's rebind to swap the prompt.
+    const _run = _makeRunCtx();
+    const _stylePrompt = String(_run.stylePrompt || '');
+    if (!_stylePrompt.trim() || !callGemini) return;
     setIsGeneratingStyle(true);
     // Cache check before the Gemini call — instant return on repeat prompts.
-    const _cacheKey = await _themeCacheKey(exportStylePrompt.trim());
+    const _cacheKey = await _themeCacheKey(_stylePrompt.trim());
     if (_cacheKey) {
       const cached = await _readThemeCache(_cacheKey);
       if (cached) {
@@ -23984,7 +24022,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     try {
       const result = await callGemini(`You are a CSS expert creating a beautiful, accessible stylesheet for an educational document export.
 
-The user wants: "${exportStylePrompt}"
+The user wants: "${_stylePrompt}"
 
 The HTML has these CSS classes you can style:
 - body (main container, max-width 800px)
