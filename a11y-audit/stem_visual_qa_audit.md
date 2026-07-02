@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-02T16:16:59.126Z
+Generated: 2026-07-02T16:37:01.854Z
 
 ## Scope
 
@@ -17,7 +17,7 @@ Generated: 2026-07-02T16:16:59.126Z
 | Marker failures | 0 |
 | Monitored first-screen findings | 30 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 1 |
+| Source/public drift | 0 |
 | Any source/public/build drift | 1 |
 | Monitored file drift | 1 |
 
@@ -35,7 +35,7 @@ Generated: 2026-07-02T16:16:59.126Z
 | pass | `nutritionLab` | `data-nutrition-practice-path` | Rendered |
 | pass | `bakingScience` | `data-baking-kitchen-bench` | Rendered |
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
-| pass | `companionPlanting` | `data-companion-command` | Rendered |
+| pass | `companionPlanting` | `data-companion-workspace-stage` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
@@ -66,7 +66,7 @@ Generated: 2026-07-02T16:16:59.126Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| source-public-drift | `stem_tool_watercycle.js` | yes | source `0C7A91306D64`, public `8B9DB4731B22`, build `8B9DB4731B22` |
+| build-drift | `stem_tool_watercycle.js` | yes | source `0C7A91306D64`, public `0C7A91306D64`, build `8B9DB4731B22` |
 
 ## Gate Policy
 

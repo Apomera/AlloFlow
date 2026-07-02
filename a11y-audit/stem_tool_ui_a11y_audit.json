@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T16:17:52.759Z",
+  "generatedAt": "2026-07-02T16:37:24.458Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,9 +8,9 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 173,
+    "issueCount": 175,
     "errorCount": 0,
-    "warningCount": 156,
+    "warningCount": 158,
     "noticeCount": 17,
     "toolsWithIssues": 76,
     "toolsWithErrors": 0,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 72,
+        "warningCount": 74,
         "noticeCount": 6
       },
       "technology": {
@@ -256,21 +256,21 @@
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 61,
-      "toolCount": 14,
+      "count": 63,
+      "toolCount": 15,
       "exampleTools": [
         "algebraCAS",
         "appLab",
         "atcTower",
         "cellularLab",
+        "companionPlanting",
         "dataStudio",
         "echoTrainer",
         "fireEcology",
         "kitchenLab",
         "llmLiteracy",
         "probability",
-        "skatelab",
-        "throwlab"
+        "skatelab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
@@ -1646,20 +1646,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
-      "renderedBytes": 13679,
+      "renderedBytes": 17869,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 3,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 3,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 17,
+        "buttons": 20,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1671,7 +1671,31 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(3) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
+          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(4) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
+        },
+        {
+          "toolId": "companionPlanting",
+          "severity": "warning",
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 8,
+          "selector": "div.space-y-3:nth-of-type(2) > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(1) > div.flex.items-center:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 3.77,
+          "color": "#ffffff",
+          "background": "#059669",
+          "text": "Active"
+        },
+        {
+          "toolId": "companionPlanting",
+          "severity": "warning",
+          "code": "inline-contrast",
+          "message": "Inline foreground/background contrast is below 4.5:1.",
+          "index": 18,
+          "selector": "div.space-y-3:nth-of-type(2) > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(4) > div.flex.items-center > span.rounded-full.px-2:nth-of-type(2)",
+          "ratio": 3.07,
+          "color": "#d97706",
+          "background": "#fffbeb",
+          "text": "Open"
         }
       ]
     },
@@ -1908,7 +1932,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16026,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2278,7 +2302,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22793,
+      "renderedBytes": 22808,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2741,7 +2765,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1578,
+      "renderedBytes": 1575,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3299,7 +3323,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13356,
+      "renderedBytes": 13339,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3764,7 +3788,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17339,
+      "renderedBytes": 17335,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,

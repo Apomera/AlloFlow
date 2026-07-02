@@ -705,12 +705,72 @@ var d = (labToolData.companionPlanting) || {};
               ? (gardenAlerts[0] ? gardenAlerts[0].action : 'Advance the season')
               : 'Review the harvest and begin another cycle';
           var workspaceTabs = [
-            { id: 'operate', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.' },
-            { id: 'science', label: 'Science Lab', desc: 'Three Sisters evidence, soil science, and quiz.' },
-            { id: 'systems', label: 'Systems', desc: 'Food miles, water, carbon, and regenerative practices.' },
-            { id: 'reference', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.' },
-            { id: 'inquiry', label: 'Inquiry', desc: 'Run a density-ratio investigation.' }
+            { id: 'operate', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.', intent: 'Keep the simulation loop front and center.', accent: '#059669', soft: '#ecfdf5', border: '#a7f3d0' },
+            { id: 'science', label: 'Science Lab', desc: 'Three Sisters evidence, soil science, and quiz.', intent: 'Unpack why the garden system works.', accent: '#4f46e5', soft: '#eef2ff', border: '#c7d2fe' },
+            { id: 'systems', label: 'Systems', desc: 'Food miles, water, carbon, and regenerative practices.', intent: 'Connect the bed to larger food systems.', accent: '#0f766e', soft: '#f0fdfa', border: '#99f6e4' },
+            { id: 'reference', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.', intent: 'Look up practical garden knowledge on demand.', accent: '#d97706', soft: '#fffbeb', border: '#fde68a' },
+            { id: 'inquiry', label: 'Inquiry', desc: 'Run a density-ratio investigation.', intent: 'Experiment with crop balance before explaining the pattern.', accent: '#7c3aed', soft: '#f5f3ff', border: '#ddd6fe' }
           ];
+          var activeWorkspace = workspaceTabs.filter(function(tab) { return tab.id === gardenWorkspace; })[0] || workspaceTabs[0];
+          var activeWorkspaceStats = ({
+            operate: [
+              { label: 'Current focus', value: nextGardenMove },
+              { label: 'Readiness', value: allPlanted ? 'Ready' : plantedCount + '/3 planted' },
+              { label: 'Garden alerts', value: gardenAlerts.length ? gardenAlerts.length + ' active' : 'Clear' }
+            ],
+            science: [
+              { label: 'Evidence panel', value: showSciencePanel ? 'Open' : 'Closed' },
+              { label: 'Quiz', value: quizActive ? 'Active' : 'Ready' },
+              { label: 'Scenario score', value: gardenScenarioScore + '/' + gardenScenarioTotal }
+            ],
+            systems: [
+              { label: 'Farm compare', value: d.showFarmCompare ? 'Open' : 'Closed' },
+              { label: 'Food miles', value: d.showFoodMiles ? 'Open' : 'Closed' },
+              { label: 'Carbon lens', value: d.showRegen ? 'Open' : 'Ready' }
+            ],
+            reference: [
+              { label: 'Quick cards', value: d.showGardenRef ? 'Open' : 'Closed' },
+              { label: 'Pair guide', value: d.showPairs ? 'Open' : 'Closed' },
+              { label: 'Pest guide', value: d.showPests ? 'Open' : 'Closed' }
+            ],
+            inquiry: [
+              { label: 'Question', value: 'Density ratio' },
+              { label: 'Trial log', value: ((d.synergyHunt && d.synergyHunt.log) || []).length + '/8' },
+              { label: 'Explanation', value: d.synergyHunt && d.synergyHunt.understood ? 'Started' : 'Not yet' }
+            ]
+          })[gardenWorkspace] || [];
+          function setSynergyHunt(patch) {
+            var current = d.synergyHunt || { cornDensity: 50, beanDensity: 30, squashDensity: 20, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            upd('synergyHunt', Object.assign({}, current, patch));
+          }
+          var workspaceActionSets = {
+            operate: [
+              { label: showSoilDetail ? 'Hide soil detail' : 'Open soil detail', sub: 'Needs and chemistry', onClick: function() { upd('showSoilDetail', !showSoilDetail); } },
+              { label: compareMode ? 'Hide comparison' : 'Compare polyculture', sub: 'See monoculture contrast', onClick: function() { upd('compareMode', !compareMode); } },
+              { label: 'Community garden', sub: 'Switch to plot planner', onClick: function() { upd('gardenMode', 'community'); } }
+            ],
+            science: [
+              { label: showSciencePanel ? 'Hide evidence' : 'Open evidence', sub: 'Three Sisters science', onClick: function() { upd('showSciencePanel', !showSciencePanel); } },
+              { label: quizActive ? 'Hide quiz' : 'Start quiz', sub: 'Check understanding', onClick: function() { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); } },
+              { label: d.showNitrogen ? 'Hide nitrogen cycle' : 'Nitrogen cycle', sub: 'Follow bean chemistry', onClick: function() { upd('showNitrogen', !d.showNitrogen); } }
+            ],
+            systems: [
+              { label: d.showFarmCompare ? 'Hide farm compare' : 'Compare farms', sub: 'Industrial vs regenerative', onClick: function() { upd('showFarmCompare', !d.showFarmCompare); } },
+              { label: d.showFoodMiles ? 'Hide food miles' : 'Food miles', sub: 'Transport and carbon', onClick: function() { upd('showFoodMiles', !d.showFoodMiles); } },
+              { label: d.showWaterFoot ? 'Hide water lens' : 'Water footprint', sub: 'Virtual water use', onClick: function() { upd('showWaterFoot', !d.showWaterFoot); } }
+            ],
+            reference: [
+              { label: d.showGardenRef ? 'Hide quick cards' : 'Quick cards', sub: 'Planting reminders', onClick: function() { upd('showGardenRef', !d.showGardenRef); } },
+              { label: d.showPairs ? 'Hide pair guide' : 'Pair guide', sub: 'Friends and conflicts', onClick: function() { upd('showPairs', !d.showPairs); } },
+              { label: showCulture ? 'Hide origins' : 'Origins', sub: 'Cultural context', onClick: function() { upd('showCulture', !showCulture); } }
+            ],
+            inquiry: [
+              { label: 'Balanced trio', sub: '35 / 35 / 35 trial', onClick: function() { setSynergyHunt({ cornDensity: 35, beanDensity: 35, squashDensity: 35 }); } },
+              { label: 'Overcrowd trial', sub: 'Test competition', onClick: function() { setSynergyHunt({ cornDensity: 70, beanDensity: 45, squashDensity: 35 }); } },
+              { label: 'Show prompts', sub: 'Open reflection cues', onClick: function() { setSynergyHunt({ stuckRevealed: true }); } }
+            ]
+          };
+          var activeWorkspaceActions = workspaceActionSets[gardenWorkspace] || [];
 
           var _lastGardenCanvas = null;
 
@@ -6237,13 +6297,65 @@ var d = (labToolData.companionPlanting) || {};
                       return React.createElement("button", {
                         key: tab.id,
                         onClick: function() { upd('gardenWorkspace', tab.id); },
-                        className: "rounded-lg border p-3 text-left transition-all " + (active ? 'border-emerald-400 bg-emerald-50 text-emerald-900 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-300')
+                        className: "rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm " + (active ? 'text-slate-900 shadow-sm ring-1 ring-white' : 'text-slate-700'),
+                        style: { borderColor: active ? tab.accent : tab.border, background: active ? tab.soft : '#ffffff' }
                       },
                         React.createElement("div", { className: "flex items-center justify-between gap-2" },
-                          React.createElement("span", { className: "text-sm font-black" }, tab.label),
-                          React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
+                          React.createElement("span", { className: "flex min-w-0 items-center gap-2 text-sm font-black" },
+                            React.createElement("span", { className: "h-2.5 w-2.5 shrink-0 rounded-full", style: { background: tab.accent } }),
+                            React.createElement("span", { className: "truncate" }, tab.label)
+                          ),
+                          React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? tab.accent : tab.soft, color: active ? '#ffffff' : tab.accent } }, active ? 'Active' : 'Open')
                         ),
-                        React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-500" }, tab.desc)
+                        React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-500" }, tab.desc),
+                        active && React.createElement("div", { className: "mt-2 text-[11px] font-semibold", style: { color: tab.accent } }, tab.intent)
+                      );
+                    })
+                  )
+                )
+              )
+            ),
+
+            React.createElement("div", {
+              "data-companion-workspace-stage": true,
+              className: "overflow-hidden rounded-xl border bg-white shadow-sm",
+              style: { borderColor: activeWorkspace.border }
+            },
+              React.createElement("div", {
+                className: "grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.85fr)]",
+                style: { background: 'linear-gradient(135deg,' + activeWorkspace.soft + ' 0%,#ffffff 56%,#f8fafc 100%)' }
+              },
+                React.createElement("div", { className: "min-w-0" },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "h-2.5 w-2.5 rounded-full", style: { background: activeWorkspace.accent } }),
+                    React.createElement("span", { className: "text-[11px] font-black uppercase text-slate-500" }, "Active Workspace")
+                  ),
+                  React.createElement("h4", { className: "mt-1 text-lg font-black text-slate-900" }, activeWorkspace.label),
+                  React.createElement("p", { className: "mt-1 max-w-3xl text-sm leading-relaxed text-slate-600" }, activeWorkspace.intent),
+                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
+                    activeWorkspaceStats.map(function(stat) {
+                      return React.createElement("div", { key: stat.label, className: "min-w-0 rounded-lg border border-white bg-white/85 p-2.5 shadow-sm" },
+                        React.createElement("div", { className: "text-[11px] font-bold uppercase text-slate-500" }, stat.label),
+                        React.createElement("div", { className: "mt-0.5 truncate text-sm font-black text-slate-900" }, stat.value)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "rounded-lg border border-white bg-white/90 p-3 shadow-sm" },
+                  React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                    React.createElement("span", { className: "text-xs font-black text-slate-800" }, "Quick Actions"),
+                    React.createElement("span", { className: "text-[11px] font-bold", style: { color: activeWorkspace.accent } }, activeWorkspace.label)
+                  ),
+                  React.createElement("div", { className: "grid gap-2 sm:grid-cols-3 lg:grid-cols-1" },
+                    activeWorkspaceActions.map(function(action) {
+                      return React.createElement("button", {
+                        key: action.label,
+                        onClick: action.onClick,
+                        className: "min-w-0 rounded-lg border bg-white p-2.5 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm",
+                        style: { borderColor: activeWorkspace.border }
+                      },
+                        React.createElement("div", { className: "truncate text-xs font-black text-slate-900" }, action.label),
+                        React.createElement("div", { className: "mt-0.5 truncate text-[11px] text-slate-500" }, action.sub)
                       );
                     })
                   )

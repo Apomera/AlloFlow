@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T16:17:52.759Z
+Generated: 2026-07-02T16:37:24.458Z
 
 ## Scope
 
@@ -13,9 +13,9 @@ Generated: 2026-07-02T16:17:52.759Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 173 |
+| Total findings | 175 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 156 |
+| Tool-level warnings | 158 |
 | Review notices | 17 |
 | Tools with any finding | 76 |
 | Tools with high-confidence errors | 0 |
@@ -29,7 +29,7 @@ Generated: 2026-07-02T16:17:52.759Z
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 20 | 20 | aquacultureLab, archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, dinoLab, fisherLab, flightSim, funcGrapher, geoSandbox, geometryWorld | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `canvas-name` | 19 | 16 | anatomy, areamodel, chemBalance, dissection, dnaLab, economicsLab, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
-| warning | `inline-contrast` | 61 | 14 | algebraCAS, appLab, atcTower, cellularLab, dataStudio, echoTrainer, fireEcology, kitchenLab, llmLiteracy, probability, skatelab, throwlab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `inline-contrast` | 63 | 15 | algebraCAS, appLab, atcTower, cellularLab, companionPlanting, dataStudio, echoTrainer, fireEcology, kitchenLab, llmLiteracy, probability, skatelab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 12 | 12 | archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks, weldLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 5 | 5 | birdLab, plateTectonics, playlab, skatelab, throwlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
@@ -77,7 +77,7 @@ Generated: 2026-07-02T16:17:52.759Z
 | `circuit` Circuit Builder | science | standard | 39 | 1 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `climateExplorer` Climate Explorer | science | standard | 39 | 0 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `codingPlayground` codingPlayground | creative | standard | 57 | 2 | 1 | 0 | 1 | 1 | canvas-focus x1, metadata x1 |
-| `companionPlanting` Companion Planting Lab | science | standard | 17 | 0 | 1 | 0 | 1 | 0 | canvas-focus x1 |
+| `companionPlanting` Companion Planting Lab | science | standard | 20 | 0 | 1 | 0 | 3 | 0 | inline-contrast x2, canvas-focus x1 |
 | `coordinate` Coordinate Grid | math | standard | 14 | 1 | 0 | 0 | 0 | 0 |  |
 | `cyberDefense` Cyber Defense Lab | tech | standard | 20 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `dataPlot` Data Plotter | creative | standard | 31 | 10 | 0 | 0 | 0 | 0 |  |

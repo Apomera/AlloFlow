@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T16:16:59.126Z",
+  "generatedAt": "2026-07-02T16:37:01.854Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
@@ -14,7 +14,7 @@
     "monitoredWarningCount": 21,
     "monitoredNoticeCount": 9,
     "syncDriftCount": 1,
-    "sourcePublicDriftCount": 1,
+    "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 1
   },
   "loadErrors": [],
@@ -262,10 +262,10 @@
     {
       "id": "companionPlanting",
       "file": "stem_tool_companionplanting.js",
-      "marker": "data-companion-command",
-      "label": "Companion Planting command dashboard",
+      "marker": "data-companion-workspace-stage",
+      "label": "Companion Planting workspace stage",
       "ok": true,
-      "htmlBytes": 13679,
+      "htmlBytes": 17869,
       "issues": [
         {
           "toolId": "companionPlanting",
@@ -273,15 +273,15 @@
           "code": "canvas-focus",
           "message": "Canvas is not focusable in initial markup.",
           "index": 0,
-          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(3) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
+          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(4) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
         }
       ],
       "metrics": {
-        "buttons": 17,
+        "buttons": 20,
         "fields": 0,
         "canvases": 1,
-        "headings": 3,
-        "htmlBytes": 13679
+        "headings": 4,
+        "htmlBytes": 17869
       }
     },
     {
@@ -415,7 +415,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17202,
+      "htmlBytes": 17204,
       "issues": [
         {
           "toolId": "playlab",
@@ -444,7 +444,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17202
+        "htmlBytes": 17204
       }
     },
     {
@@ -542,14 +542,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13348,
+      "htmlBytes": 13350,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13348
+        "htmlBytes": 13350
       }
     },
     {
@@ -618,7 +618,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46581,
+      "htmlBytes": 46587,
       "issues": [
         {
           "toolId": "throwlab",
@@ -647,7 +647,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46581
+        "htmlBytes": 46587
       }
     },
     {
@@ -803,33 +803,15 @@
         },
         "hashes": {
           "source": "0C7A91306D64",
-          "public": "8B9DB4731B22",
+          "public": "0C7A91306D64",
           "build": "8B9DB4731B22"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ],
-    "sourcePublicDrift": [
-      {
-        "file": "stem_tool_watercycle.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "0C7A91306D64",
-          "public": "8B9DB4731B22",
-          "build": "8B9DB4731B22"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
+    "sourcePublicDrift": [],
     "monitoredDrift": [
       {
         "file": "stem_tool_watercycle.js",
@@ -841,12 +823,12 @@
         },
         "hashes": {
           "source": "0C7A91306D64",
-          "public": "8B9DB4731B22",
+          "public": "0C7A91306D64",
           "build": "8B9DB4731B22"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ]
   },
