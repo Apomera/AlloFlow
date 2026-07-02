@@ -296,7 +296,9 @@ var _ocrJunkRatio = function (s) {
 // a doc for failing an English dictionary). Returns a band + a heuristic %; it is an ESTIMATE, surfaced
 // as such, never a measured accuracy. KNOWN LIMIT (disclosed): subtle swaps that yield REAL words
 // (modern->modem) or that leave function words intact are not detectable without ground truth — this
-// reliably flags BADLY-garbled OCR, not every single-character error. Pure + unit-tested.
+// reliably flags BADLY-garbled OCR, not every single-character error. MATH-AWARE (2026-07-01): on
+// equation-dense pages the expected math tokens are excluded from the garble blend (see mathContext
+// below) so clean STEM text is not falsely banded 'poor'. Pure + unit-tested.
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -311,6 +313,27 @@ var _alloOcrAccuracy = function (text) {
   var nonWs = (s.replace(/\s+/g, '')).length || 1;
   var replacementRatio = fffd / nonWs;
   var junkRatio = _ocrJunkRatio(s);
+  // ── Math-notation context (2026-07-01, STEM assessment vs real Regents exams) ──
+  // Clean equation-dense text LOOKS like OCR garble to the plausibility nets: bare variables
+  // ("x", "y", "P") count as 1-char fragments (a CLEAN born-digital Algebra II page measured
+  // fragmentRatio 0.51), coefficient/function mashes ("3x", "5sin") count as letter/digit
+  // mashes, and operators/superscripts count toward junk — that page scored 48/'poor' at HIGH
+  // confidence, which both cries wolf in the review banner and feeds the reconcile accuracy-flip
+  // toward the engine that may have LOST the math. Detect math context from the token stream
+  // (number tokens + single-letter variables + short coefficient mashes) and score with those
+  // EXPECTED tokens excluded, DISCLOSING the adjustment in `basis`/metrics. Genuinely garbled
+  // math pages remain catchable: replacement chars, vowel-less words, and the English dictionary
+  // net (corrupted prose drops out of the common set) are unaffected by the exclusions.
+  var _isVarTok = function (low) { return low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i'; };
+  var _isCoefTok = function (tok) { return /^\d{0,4}[a-z]{1,4}\d{0,4}$/i.test(tok) && /\d/.test(tok); };
+  var numTok = 0;
+  for (var rj = 0; rj < rawTokens.length; rj++) { if (/^[\p{N}][\p{N}.,]*$/u.test(rawTokens[rj])) numTok++; }
+  var _mathish = 0;
+  for (var rk = 0; rk < alphaTokens.length; rk++) {
+    var _lk = alphaTokens[rk].toLowerCase();
+    if (_isVarTok(_lk) || _isCoefTok(alphaTokens[rk])) _mathish++;
+  }
+  var mathContext = numTok >= 5 && ((numTok + _mathish) / (rawTokens.length || 1)) >= 0.22;
   var noVowel = 0, frag = 0, mash = 0, dictHits = 0, latinTokens = 0;
   var suspect = [];
   var _commonSet = Object.create(null);
@@ -318,8 +341,8 @@ var _alloOcrAccuracy = function (text) {
   for (var i = 0; i < alphaTokens.length; i++) {
     var tok = alphaTokens[i];
     var low = tok.toLowerCase();
-    if (/[a-z]/i.test(tok) && /[0-9]/.test(tok)) { mash++; if (suspect.length < 8) suspect.push(tok); }
-    if (low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i') frag++;
+    if (/[a-z]/i.test(tok) && /[0-9]/.test(tok)) { if (!(mathContext && _isCoefTok(tok))) { mash++; if (suspect.length < 8) suspect.push(tok); } }
+    if (low.replace(/[^a-z]/g, '').length === 1 && low !== 'a' && low !== 'i') { if (!(mathContext && _isVarTok(low))) frag++; }
     var isLatin = /^[a-z']+$/.test(low.replace(/[0-9]/g, ''));
     if (isLatin) {
       latinTokens++;
@@ -332,7 +355,13 @@ var _alloOcrAccuracy = function (text) {
   var noVowelRatio = noVowel / nAlpha;
   var fragmentRatio = frag / nAlpha;
   var mashRatio = mash / nAlpha;
-  var garble = Math.min(1, 1.4 * replacementRatio + 0.9 * junkRatio + 0.7 * noVowelRatio + 0.5 * fragmentRatio + 0.8 * mashRatio);
+  // In math context, measure symbol junk with common math operators/delimiters stripped — an
+  // equals sign in an equation is content, not OCR noise. Outside math context nothing changes.
+  var junkForBlend = junkRatio;
+  if (mathContext) {
+    try { junkForBlend = _ocrJunkRatio(s.replace(/[=+\-*/^()<>{}\[\]|,.:;%°·×÷±√π∑∫≤≥≠≈]/g, '')); } catch (_) { junkForBlend = junkRatio; }
+  }
+  var garble = Math.min(1, 1.4 * replacementRatio + 0.9 * junkForBlend + 0.7 * noVowelRatio + 0.5 * fragmentRatio + 0.8 * mashRatio);
   var plausibility = 1 - garble;
   var EN_TARGET = 0.33;                 // clean English running text hits ~0.33-0.55 of the common set
   var looksEnglish = dictHitRate >= 0.18;
@@ -352,7 +381,8 @@ var _alloOcrAccuracy = function (text) {
   }
   score = Math.max(0, Math.min(100, score));
   var band = score >= 90 ? 'good' : score >= 70 ? 'fair' : 'poor';
-  var _result = { score: score, band: band, confidence: confidence, basis: basis, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
+  if (mathContext) basis += ' — math notation detected: expected math tokens (variables, coefficients, operators) excluded from the garble estimate';
+  var _result = { score: score, band: band, confidence: confidence, basis: basis, mathContext: mathContext, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, junkRatioForBlend: Math.round(junkForBlend * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, mashRatio: Math.round(mashRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
   return _result;
 };
 // _textLayerLooksGarbage: HIGH-PRECISION "broken text layer" detector. Fires ONLY on replacement-char
