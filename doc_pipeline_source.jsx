@@ -42,7 +42,7 @@ var _alloAxeWeightedScore = function (ax) {
 // runAutoFixLoop, autoFixAxeViolations) historically re-implemented these decisions and
 // every convergence bugfix (2026-06-15 noise, 2026-06-19 AND-only guard) had to be found
 // and re-applied per loop. This is the canonical policy for the SHIPPED main loop —
-// extracted verbatim (goldens: tests/fix_loop_policy_golden.test.js pin the boundaries).
+// extracted verbatim (goldens: tests/loop_policy_golden.test.js pin the boundaries).
 // Tolerances default to the long-standing values: aiTol 5 (AI-rubric noise), axeTol 2
 // (±2 axe-violation noise), minDetectable floor 2 (plateau).
 var _alloLoopPolicy = {
@@ -16832,7 +16832,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           if (_rePartial) warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI audit was PARTIAL (${Math.round(_reCoverage * 100)}% section coverage — Canvas throttle); its score (${newAiScore}) is non-authoritative — not using it to stop the loop or promote best-so-far.`);
 
           // Regression guard — decisions via the canonical, golden-tested policy (S3 2026-07-02;
-          // tests/fix_loop_policy_golden.test.js pins the boundaries). Semantics unchanged: an
+          // tests/loop_policy_golden.test.js pins the boundaries). Semantics unchanged: an
           // axe regression beyond ±2 always reverts; an AI drop >5 reverts only when no axe
           // violation was fixed to justify it (the 2026-06-19 AND-only guard fix).
           const _policyArgs = { newAi: newAiScore, bestAi: bestAiScore, newAxe: newAxeViolations, bestAxe: bestAxeViolations };
