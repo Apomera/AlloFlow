@@ -2696,8 +2696,14 @@ var createDocPipeline = function(deps) {
   // for resources without an explicit title. Threaded via deps from
   // host scope (host const at AlloFlowANTI.txt:15623).
   var getDefaultTitle = deps.getDefaultTitle || function() { return ''; };
-  // Proxy all state access through window.__docPipelineState
-  var _s = function() { return window.__docPipelineState || {}; };
+  // Proxy all state access through window.__docPipelineState.
+  // S1 step 0b (deep dive 2026-07-02): prefer an injected state bag (deps.state) — the
+  // headless test has been PASSING `state: {}` since decoupling Phase 1, but it was silently
+  // ignored. Fallback-preserving: the live host does not pass deps.state, so production reads
+  // the window global exactly as before. This seam is what makes the per-run-snapshot
+  // semantics unit-testable (inject a bag, mutate it mid-run, assert the run doesn't move).
+  var _injectedState = deps && deps.state;
+  var _s = function() { return _injectedState || (typeof window !== 'undefined' && window.__docPipelineState) || {}; };
   // Re-expose state vars as getters so existing code works unchanged.
   // S1 step 0 (deep dive 2026-07-02): 12 DEAD bindings deleted — projectName (never even
   // published by the host), pdfFixModeRef, inputText, gradeLevel, studentNickname,
