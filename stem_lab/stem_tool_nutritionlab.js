@@ -15994,6 +15994,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
         var totalCount = BADGE_IDS.length;
         var allDone = visitedCount === totalCount;
+        var nutritionRouteCards = ['myNutritionKit', 'labelReader', 'hydrationLab', 'macroInquiry'].map(function(id) {
+          return bigCards.concat(miniCards).find(function(c) { return c.id === id; });
+        }).filter(Boolean);
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -16084,6 +16087,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 className: 'h-full nutritionlab-stripe-anim ' + (allDone ? 'bg-emerald-500' : 'bg-emerald-400') + ' transition-all',
                 style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
               })
+            )
+          ),
+          h('section', { 'data-nutrition-practice-path': 'true', className: 'mb-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 p-4 text-white shadow-lg' },
+            h('div', { className: 'grid gap-3 lg:grid-cols-[1.2fr_0.8fr]' },
+              h('div', null,
+                h('div', { className: 'text-[10px] font-black uppercase text-emerald-200' }, __alloT('stem.nutritionlab.practice_path', 'Practice path')),
+                h('div', { className: 'text-xl font-black leading-tight' }, __alloT('stem.nutritionlab.practice_path_title', 'Start with a useful, low-pressure action')),
+                h('p', { className: 'mt-1 mb-3 text-xs leading-relaxed text-emerald-50/85' },
+                  __alloT('stem.nutritionlab.practice_path_copy', 'The full library is still below. These four routes keep the first move concrete: build a private kit, decode a label, check hydration, or explore macro patterns.')),
+                h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                  nutritionRouteCards.map(function(c) {
+                    return h('button', { key: c.id, type: 'button',
+                      onClick: function() { goto(c.id); },
+                      className: 'min-h-[80px] rounded-xl border border-white/15 bg-white/10 p-3 text-left text-white transition hover:bg-white/15 active:scale-[0.99]' },
+                      h('div', { className: 'text-lg' }, c.icon),
+                      h('div', { className: 'text-xs font-black' }, c.title),
+                      h('div', { className: 'mt-1 text-[10px] leading-snug text-emerald-100/85' }, c.subtitle)
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-2 content-start' },
+                [
+                  { label: __alloT('stem.nutritionlab.modules_seen', 'Modules seen'), value: visitedCount + '/' + totalCount },
+                  { label: __alloT('stem.nutritionlab.core_modules', 'Core modules'), value: bigCards.length },
+                  { label: __alloT('stem.nutritionlab.quick_labs', 'Quick labs'), value: miniCards.length },
+                  { label: __alloT('stem.nutritionlab.frame', 'Frame'), value: __alloT('stem.nutritionlab.physiology_first', 'Physiology-first') }
+                ].map(function(card) {
+                  return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
+                    h('div', { className: 'text-lg font-black tabular-nums text-emerald-100' }, card.value),
+                    h('div', { className: 'text-[10px] font-black uppercase text-emerald-200/80' }, card.label)
+                  );
+                })
+              )
             )
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.core_simulators', 'Core Simulators')),

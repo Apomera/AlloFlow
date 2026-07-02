@@ -39,7 +39,8 @@
     _st.textContent = [
       '@keyframes cellularlab-pop { 0% { transform: scale(0.4); opacity: 0.2; } 100% { transform: scale(1); opacity: 1; } }',
       '.cellularlab-svg rect.born { animation: cellularlab-pop 220ms ease-out; transform-box: fill-box; transform-origin: center; }',
-      '.cellularlab-tab:focus-visible { outline: 3px solid #6366f1; outline-offset: 2px; }'
+      '.cellularlab-tab:focus-visible, .cellularlab-route-button:focus-visible { outline: 3px solid #6366f1; outline-offset: 2px; }',
+      '@media (max-width: 720px) { [data-cellularlab-focus-panel] { grid-template-columns: 1fr !important; } [data-cellularlab-route-grid] { grid-template-columns: 1fr !important; } [data-cellularlab-status-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
   }
@@ -663,8 +664,19 @@
       : tab === 'rules' ? renderRulesTab()
       : tab === 'patterns' ? renderPatternsTab()
       : renderLearnTab();
+    var cellularRoutes = [
+      { id: 'life', label: 'Life grid', detail: 'Draw, stamp, run.' },
+      { id: 'rules', label: 'Rule lab', detail: 'Test 1-D rules.' },
+      { id: 'patterns', label: 'Pattern shelf', detail: 'Load classic forms.' },
+      { id: 'learn', label: 'Field notes', detail: 'Connect the ideas.' }
+    ];
+    function focusMetric(label, value) {
+      return h('div', { key: label, style: { minWidth: 0, background: C.bg, border: '1px solid ' + C.border, borderRadius: '11px', padding: '9px 10px' } },
+        h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.04em' } }, label),
+        h('div', { style: { marginTop: '3px', fontSize: '14px', fontWeight: 900, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, value));
+    }
 
-    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
+    return h('div', { 'data-cellularlab-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
       // header
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': 'Back to STEM Lab',
@@ -673,6 +685,33 @@
         h('div', null,
           h('div', { style: { fontSize: '17px', fontWeight: 800 } }, 'Cellular Automaton Lab'),
           h('div', { style: { fontSize: '11px', color: C.sub } }, 'Simple rules · surprising worlds'))
+      ),
+      h('section', { 'data-cellularlab-focus-panel': 'true', 'aria-label': 'Cellular Automaton Lab focus panel',
+        style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(220px, 0.75fr)', gap: '12px',
+          background: C.panel, border: '1px solid ' + C.border, borderRadius: '14px', padding: '12px',
+          boxShadow: dark ? '0 18px 42px rgba(0,0,0,0.22)' : '0 16px 36px rgba(15,23,42,0.08)' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '9px', minWidth: 0 } },
+          h('div', null,
+            h('div', { style: { fontSize: '10px', fontWeight: 900, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Start here'),
+            h('div', { style: { marginTop: '2px', fontSize: '16px', fontWeight: 900, color: C.text } }, 'Pick the world you want to investigate')),
+          h('div', { 'data-cellularlab-route-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '8px' } },
+            cellularRoutes.map(function (route) {
+              var active = tab === route.id;
+              return h('button', { key: route.id, type: 'button', className: 'cellularlab-route-button',
+                'aria-pressed': active ? 'true' : 'false',
+                onClick: function () { setTab(route.id); announce(route.label + ' selected.'); },
+                style: { minHeight: '76px', textAlign: 'left', cursor: 'pointer', borderRadius: '12px', padding: '10px',
+                  border: '1px solid ' + (active ? C.accent : C.border), background: active ? C.accentBg : C.bg,
+                  color: C.text, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' } },
+                h('span', { style: { fontSize: '12px', fontWeight: 900 } }, route.label),
+                h('span', { style: { fontSize: '11px', lineHeight: 1.35, color: active ? C.text : C.sub } }, route.detail));
+            }))
+        ),
+        h('div', { 'data-cellularlab-status-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', alignContent: 'start' } },
+          focusMetric('Mode', running ? 'Running' : 'Paused'),
+          focusMetric('Cells', pop),
+          focusMetric('Generation', gen),
+          focusMetric('Rule', 'R' + rule))
       ),
       // tabs
       h('div', { role: 'tablist', 'aria-label': 'Cellular Automaton Lab sections', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid ' + C.border, paddingBottom: '8px' } },

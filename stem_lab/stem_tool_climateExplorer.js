@@ -1277,6 +1277,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
         'url("' + ceGrainSvg + '"), ' +
         'linear-gradient(135deg, var(--allo-stem-deeper, #0d2922) 0%, var(--allo-stem-canvas, #0f172a) 50%, var(--allo-stem-deeper, #0d2922) 100%)';
+      var CE_CORE_TABS_UI = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions'];
+      var showClimateAdvanced = !!d.showClimateAdvanced || CE_CORE_TABS_UI.indexOf(tab) === -1;
+      var ceTabTitles = {
+        carbon: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator'),
+        renewables: t('stem.climateExplorer.renewables', 'Renewables'),
+        keeling: t('stem.climateExplorer.keeling_curve', 'Keeling Curve'),
+        tipping: t('stem.climateExplorer.tipping_points', 'Tipping Points'),
+        justice: t('stem.climateExplorer.climate_justice', 'Climate Justice'),
+        solutions: t('stem.climateExplorer.solutions', 'Solutions'),
+        pathways: t('stem.climateExplorer.policy_pathways', 'Policy Pathways'),
+        forceHunt: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing')
+      };
+      var ceRoutes = [
+        { id: 'carbon', label: ceTabTitles.carbon, hint: t('stem.climateExplorer.route_carbon_hint', 'Estimate footprint drivers.') },
+        { id: 'keeling', label: ceTabTitles.keeling, hint: t('stem.climateExplorer.route_keeling_hint', 'Read the CO2 record.') },
+        { id: 'justice', label: ceTabTitles.justice, hint: t('stem.climateExplorer.route_justice_hint', 'Compare risk and responsibility.') },
+        { id: 'solutions', label: ceTabTitles.solutions, hint: t('stem.climateExplorer.route_solutions_hint', 'Choose practical levers.') }
+      ];
       return el('div', {
         style: {
           background: ceBgLayers,
@@ -1324,6 +1342,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         ),
 
         // ── Badge Panel (collapsible) ──
+        el('section', { 'data-climate-mission-panel': 'true',
+          style: { margin: '12px 24px 0', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.78), rgba(15,23,42,0.92))', border: '1px solid rgba(74,222,128,0.28)', color: '#ecfdf5', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(230px,0.8fr)', gap: 12 } },
+            el('div', null,
+              el('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, t('stem.climateExplorer.climate_mission', 'Climate mission')),
+              el('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ceTabTitles[tab] || t('stem.climateExplorer.climate_explorer', 'Climate Explorer')),
+              el('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                t('stem.climateExplorer.mission_panel_copy', 'Move from personal data to global evidence, justice, and solutions. Advanced policy and forcing labs stay available when you expand them.')),
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(128px,1fr))', gap: 8 } },
+                ceRoutes.map(function(route) {
+                  var active = tab === route.id;
+                  return el('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { visitTab(route.id); },
+                    style: { minHeight: 74, padding: 9, borderRadius: 8, border: '1px solid ' + (active ? 'rgba(134,239,172,0.72)' : 'rgba(134,239,172,0.24)'), background: active ? 'rgba(34,197,94,0.18)' : 'rgba(15,23,42,0.55)', color: '#ecfdf5', textAlign: 'left', cursor: 'pointer' } },
+                    el('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            el('div', null,
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                [
+                  { label: t('stem.climateExplorer.status_hope', 'Hope'), value: hopePts + '/' + HOPE_MILESTONES.length },
+                  { label: t('stem.climateExplorer.status_badges', 'Badges'), value: Object.keys(badges).length + '/' + BADGES.length },
+                  { label: t('stem.climateExplorer.status_xp', 'XP'), value: String(getStemXP ? getStemXP('climateExplorer') : 0) },
+                  { label: t('stem.climateExplorer.status_advanced', 'Advanced'), value: showClimateAdvanced ? t('stem.climateExplorer.visible', 'Visible') : t('stem.climateExplorer.hidden', 'Hidden') }
+                ].map(function(card) {
+                  return el('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    el('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    el('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                })
+              ),
+              el('button', { type: 'button', 'aria-expanded': showClimateAdvanced ? 'true' : 'false',
+                onClick: function() { upd('showClimateAdvanced', !d.showClimateAdvanced); },
+                style: { width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(34,197,94,0.12)', color: '#bbf7d0', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                showClimateAdvanced ? t('stem.climateExplorer.hide_advanced_labs', 'Hide advanced labs') : t('stem.climateExplorer.show_advanced_labs', 'Show advanced labs'))
+            )
+          )
+        ),
+
         badgesOpen && el('div', { style: { padding: '12px 24px', borderBottom: '1px solid rgba(245,158,11,0.1)' } },
           el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 } },
             BADGES.map(function(b) {
@@ -1341,7 +1401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Tab Bar ──
         el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(34,197,94,0.1)', padding: '0 16px', overflowX: 'auto' }, role: 'tablist', 'aria-label': t('stem.climateExplorer.climate_explorer_sections', 'Climate Explorer sections') },
-          [
+          (showClimateAdvanced ? [
             { id: 'carbon', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator') },
             { id: 'renewables', icon: '\u26A1', label: t('stem.climateExplorer.renewables', 'Renewables') },
             { id: 'keeling', icon: '\uD83D\uDCC8', label: t('stem.climateExplorer.keeling_curve', 'Keeling Curve') },
@@ -1350,7 +1410,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             { id: 'solutions', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solutions', 'Solutions') },
             { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: t('stem.climateExplorer.policy_pathways', 'Policy Pathways') },
             { id: 'forceHunt', icon: '\u2600\uFE0F', label: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing') }
-          ].map(function(t) {
+          ] : [
+            { id: 'carbon', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator') },
+            { id: 'renewables', icon: '\u26A1', label: t('stem.climateExplorer.renewables', 'Renewables') },
+            { id: 'keeling', icon: '\uD83D\uDCC8', label: t('stem.climateExplorer.keeling_curve', 'Keeling Curve') },
+            { id: 'tipping', icon: '\u26A0\uFE0F', label: t('stem.climateExplorer.tipping_points', 'Tipping Points') },
+            { id: 'justice', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.climate_justice', 'Climate Justice') },
+            { id: 'solutions', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solutions', 'Solutions') }
+          ]).map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
               role: 'tab', 'aria-selected': active,

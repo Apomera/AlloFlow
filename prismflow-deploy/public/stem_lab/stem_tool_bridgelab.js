@@ -470,6 +470,7 @@
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { bridgeLab: {
             tab: 'build',
+            showBridgeLibrary: false,
             span: 30, height: 6, nBays: 4, loadPerJoint: 50, materialId: 'steel',
             crossSectionMm2: 5000, // member cross-section in mm² (default 50 cm²)
             bridgeType: 'truss',
@@ -584,11 +585,22 @@
         { id: 'inquiry',   icon: '🔬', label: __alloT('stem.bridgelab.inquiry', 'Inquiry') }
       ];
 
+      var BRIDGE_CORE_TABS = ['build', 'types', 'materials', 'forces', 'cycle', 'quiz'];
+      var showFullBridgeNav = !!d.showBridgeLibrary || BRIDGE_CORE_TABS.indexOf(d.tab) === -1;
+      var visibleBridgeTabs = showFullBridgeNav ? TABS : TABS.filter(function(tab) { return BRIDGE_CORE_TABS.indexOf(tab.id) !== -1; });
+      var currentBridgeTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      var bridgeRoutes = [
+        { id: 'build', label: __alloT('stem.bridgelab.route_stress', 'Stress test'), hint: __alloT('stem.bridgelab.route_stress_hint', 'Change span, loads, and truss style.') },
+        { id: 'materials', label: __alloT('stem.bridgelab.route_materials', 'Materials'), hint: __alloT('stem.bridgelab.route_materials_hint', 'Compare strength, cost, and density.') },
+        { id: 'forces', label: __alloT('stem.bridgelab.route_forces', 'Forces'), hint: __alloT('stem.bridgelab.route_forces_hint', 'Read tension, compression, shear, and torsion.') },
+        { id: 'cycle', label: __alloT('stem.bridgelab.route_cycle', 'Design cycle'), hint: __alloT('stem.bridgelab.route_cycle_hint', 'Plan, test, revise, and document.') }
+      ];
+
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': __alloT('stem.bridgelab.bridge_engineering_sections', 'Bridge Engineering sections'),
         style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
       },
-        TABS.map(function(t) {
+        visibleBridgeTabs.map(function(t) {
           var active = d.tab === t.id;
           return h('button', {
             key: t.id, role: 'tab', 'aria-selected': active,
@@ -4496,6 +4508,47 @@
           h('div', null,
             h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 20, fontWeight: 900 } }, __alloT('stem.bridgelab.bridge_engineering_lab', 'Bridge Engineering Lab')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.bridgelab.engineering_design_structural_mechanic', 'Engineering Design · Structural Mechanics · NGSS HS-ETS1 + HS-PS2'))
+          )
+        ),
+        h('section', { 'data-bridgelab-design-brief': 'true',
+          style: { margin: '12px 16px 10px', padding: 14, borderRadius: 8, background: 'linear-gradient(135deg, rgba(120,53,15,0.84), rgba(15,23,42,0.94))', border: '1px solid rgba(251,191,36,0.32)', color: '#fffbeb', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(230px,0.85fr)', gap: 12 } },
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#fde68a', letterSpacing: 0, marginBottom: 4 } }, __alloT('stem.bridgelab.design_brief', 'Design brief')),
+              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, currentBridgeTab.label),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#e2e8f0' } },
+                __alloT('stem.bridgelab.design_brief_copy', 'Start by stress-testing a bridge, then use material and force references only when you need evidence for a redesign.')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 } },
+                bridgeRoutes.map(function(route) {
+                  var active = d.tab === route.id;
+                  return h('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { upd({ tab: route.id }); },
+                    style: { minHeight: 72, padding: 9, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (active ? 'rgba(251,191,36,0.72)' : 'rgba(251,191,36,0.24)'), background: active ? 'rgba(245,158,11,0.18)' : 'rgba(15,23,42,0.55)', color: '#fffbeb', cursor: 'pointer' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#fde68a' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            h('div', null,
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                [
+                  { label: __alloT('stem.bridgelab.status_span', 'Span'), value: d.span + ' m' },
+                  { label: __alloT('stem.bridgelab.status_load', 'Load'), value: d.loadMode === 'vehicle' ? (d.vehicleLoad + ' kN') : (d.loadPerJoint + ' kN') },
+                  { label: __alloT('stem.bridgelab.status_material', 'Material'), value: (MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[0]).name },
+                  { label: __alloT('stem.bridgelab.status_library', 'Library'), value: showFullBridgeNav ? __alloT('stem.bridgelab.expanded', 'Expanded') : __alloT('stem.bridgelab.core', 'Core') }
+                ].map(function(card) {
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                })
+              ),
+              h('button', { type: 'button', 'aria-expanded': showFullBridgeNav ? 'true' : 'false',
+                onClick: function() { upd({ showBridgeLibrary: !d.showBridgeLibrary }); },
+                style: { width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.32)', background: 'rgba(245,158,11,0.12)', color: '#fde68a', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                showFullBridgeNav ? __alloT('stem.bridgelab.hide_reference_tabs', 'Hide reference tabs') : __alloT('stem.bridgelab.show_reference_tabs', 'Show reference tabs'))
+            )
           )
         ),
         tabBar,

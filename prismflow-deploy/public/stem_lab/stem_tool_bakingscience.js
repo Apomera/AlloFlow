@@ -476,12 +476,50 @@
         var subtoolDesc  = function(st) { return tr((subtoolI18n[st.id] || {}).desc,  st.desc ); };
 
         var renderMenu = function() {
-          return h('div', { className: 'p-4 sm:p-6 max-w-5xl mx-auto' },
+          var bakeRoutes = ['leavening', 'emulsion', 'scaler', 'browning'].map(function(id) {
+            return SUBTOOLS.find(function(st) { return st.id === id; });
+          }).filter(Boolean);
+          return h('div', { className: 'p-4 sm:p-6 max-w-5xl mx-auto', 'data-baking-tool': 'true' },
             h('div', { className: 'mb-6 text-center' },
               h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDD50\uD83D\uDC69\u200D\uD83C\uDF73'),
               h('h2', { className: 'text-2xl sm:text-3xl font-black text-amber-900' }, tr('baking.title', 'Baking Lab')),
               h('p', { className: 'text-sm text-slate-600 mt-1 max-w-xl mx-auto' },
                 tr('baking.subtitle', 'Baking is chemistry, physics, and math you can taste. Pick an activity to explore the science behind your favorite bakes.'))
+            ),
+            h('section', { 'data-baking-kitchen-bench': 'true', className: 'mb-5 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-900 via-orange-900 to-slate-900 p-4 text-white shadow-lg' },
+              h('div', { className: 'grid gap-3 lg:grid-cols-[1.2fr_0.8fr]' },
+                h('div', null,
+                  h('div', { className: 'text-[10px] font-black uppercase text-amber-200' }, tr('baking.kitchen_bench', 'Kitchen bench')),
+                  h('div', { className: 'text-xl font-black leading-tight' }, tr('baking.kitchen_bench_title', 'Start with a visible reaction')),
+                  h('p', { className: 'mt-1 mb-3 text-xs leading-relaxed text-amber-50/85' },
+                    tr('baking.kitchen_bench_copy', 'Choose a hands-on loop first: bubbles, emulsions, scaling, or browning. The full activity list stays below for deeper practice.')),
+                  h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
+                    bakeRoutes.map(function(st) {
+                      var label = subtoolLabel(st);
+                      return h('button', { key: st.id, type: 'button',
+                        onClick: function() { upd('subtool', st.id); announceToSR && announceToSR('Opening ' + label); playBeep('click'); },
+                        className: 'min-h-[76px] rounded-xl border border-white/15 bg-white/10 p-3 text-left text-white transition hover:bg-white/15 active:scale-[0.99]' },
+                        h('div', { className: 'text-lg' }, st.icon),
+                        h('div', { className: 'text-xs font-black' }, label),
+                        h('div', { className: 'mt-1 text-[10px] leading-snug text-amber-100/85' }, subtoolDesc(st))
+                      );
+                    })
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 content-start' },
+                  [
+                    { label: tr('baking.stats.reactions', 'Reactions'), value: ext.leaveningRuns || 0 },
+                    { label: tr('baking.stats.emulsions', 'Emulsions'), value: ext.emulsionsSolved || 0 },
+                    { label: tr('baking.stats.recipes_scaled', 'Recipes scaled'), value: ext.recipesScaled || 0 },
+                    { label: tr('baking.stats.brownings', 'Perfect bakes'), value: ext.browningPerfections || 0 }
+                  ].map(function(card) {
+                    return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
+                      h('div', { className: 'text-2xl font-black tabular-nums text-amber-100' }, card.value),
+                      h('div', { className: 'text-[10px] font-black uppercase text-amber-200/80' }, card.label)
+                    );
+                  })
+                )
+              )
             ),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4' },
               SUBTOOLS.map(function(st) {

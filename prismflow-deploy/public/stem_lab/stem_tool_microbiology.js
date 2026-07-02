@@ -1034,6 +1034,7 @@
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { microbiology: {
             tab: 'home',
+            showMicroLibrary: false,
             selectedBacterium: 'ecoli',
             selectedVirus: 'covid',
             selectedScope: 'lightbright',
@@ -1141,11 +1142,24 @@
         { id: 'growthLab',  icon: '📈', label: __alloT('stem.microbiology.growth_lab', 'Growth Lab') }
       ];
 
+      var MICRO_CORE_TABS = ['home', 'microscope', 'bacteria', 'viruses', 'resistance', 'microbiome', 'growthLab', 'quiz'];
+      var showFullMicroNav = !!d.showMicroLibrary || MICRO_CORE_TABS.indexOf(d.tab) === -1;
+      var visibleMicroTabs = showFullMicroNav ? TABS : TABS.filter(function(tab) { return MICRO_CORE_TABS.indexOf(tab.id) !== -1; });
+      var currentMicroTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      var microAnsweredCount = Array.isArray(d.quizAnswers) ? d.quizAnswers.filter(function(ans) { return ans != null; }).length : 0;
+      var MICRO_ROUTES = [
+        { id: 'microscope', title: __alloT('stem.microbiology.route_microscope', 'Microscope'), copy: __alloT('stem.microbiology.route_microscope_copy', 'Mount a slide and compare what each instrument can resolve.') },
+        { id: 'bacteria', title: __alloT('stem.microbiology.route_bacteria', 'Bacteria'), copy: __alloT('stem.microbiology.route_bacteria_copy', 'Study shape, Gram behavior, and helpful/pathogenic roles.') },
+        { id: 'resistance', title: __alloT('stem.microbiology.route_resistance', 'Resistance'), copy: __alloT('stem.microbiology.route_resistance_copy', 'Run selection-pressure thinking without digging through the library.') },
+        { id: 'microbiome', title: __alloT('stem.microbiology.route_microbiome', 'Microbiome'), copy: __alloT('stem.microbiology.route_microbiome_copy', 'Compare gut, soil, ocean, and built-environment communities.') },
+        { id: 'growthLab', title: __alloT('stem.microbiology.route_growth', 'Growth Lab'), copy: __alloT('stem.microbiology.route_growth_copy', 'Adjust temperature, pH, and oxygen to test a hypothesis.') }
+      ];
+
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': __alloT('stem.microbiology.microbiology_sections', 'Microbiology sections'),
         className: 'micro-tab-list'
       },
-        TABS.map(function(t) {
+        visibleMicroTabs.map(function(t) {
           var active = d.tab === t.id;
           return h('button', { key: t.id, role: 'tab', 'aria-selected': active, 'aria-label': t.label,
             className: 'micro-tab-btn' + (active ? ' active' : ''),
@@ -4637,8 +4651,25 @@
         default:           body = renderHome();
       }
 
-      return h('div', { className: 'selh-microbiology', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
+      return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
         h('style', null,
+          '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.28); background: linear-gradient(135deg, rgba(6,78,59,0.72), rgba(15,23,42,0.94)); box-shadow: 0 16px 38px rgba(2,8,23,0.24); }\n' +
+          '.micro-focus-panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b, #a78bfa); }\n' +
+          '.micro-focus-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.8fr); gap: 14px; align-items: stretch; }\n' +
+          '.micro-focus-kicker { margin: 0 0 4px; font-size: 10px; font-weight: 900; letter-spacing: 0; text-transform: uppercase; color: #6ee7b7; }\n' +
+          '.micro-focus-title { margin: 0; font-size: 21px; line-height: 1.15; font-weight: 900; color: #ecfdf5; }\n' +
+          '.micro-focus-copy { margin: 7px 0 12px; max-width: 68ch; font-size: 12px; line-height: 1.55; color: #cbd5e1; }\n' +
+          '.micro-route-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; }\n' +
+          '.micro-route-card { min-height: 82px; padding: 10px; text-align: left; border-radius: 8px; border: 1px solid rgba(110,231,183,0.22); background: rgba(15,23,42,0.58); color: #d1fae5; cursor: pointer; }\n' +
+          '.micro-route-card[aria-pressed="true"] { background: rgba(16,185,129,0.16); border-color: rgba(110,231,183,0.58); box-shadow: 0 0 0 2px rgba(16,185,129,0.18); }\n' +
+          '.micro-route-title { display: block; margin-bottom: 3px; font-size: 12px; font-weight: 900; color: #f8fafc; }\n' +
+          '.micro-route-copy { display: block; font-size: 10px; line-height: 1.35; color: #a7f3d0; }\n' +
+          '.micro-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }\n' +
+          '.micro-status-card { min-height: 62px; padding: 9px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.34); }\n' +
+          '.micro-status-label { margin: 0 0 4px; font-size: 10px; font-weight: 900; letter-spacing: 0; text-transform: uppercase; color: #94a3b8; }\n' +
+          '.micro-status-value { margin: 0; font-size: 15px; font-weight: 900; color: #f8fafc; }\n' +
+          '.micro-library-toggle { width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(110,231,183,0.32); background: rgba(16,185,129,0.10); color: #a7f3d0; font-size: 11px; font-weight: 900; cursor: pointer; }\n' +
+          '@media (max-width: 760px) { .micro-focus-grid { grid-template-columns: 1fr; } .micro-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n' +
           '.micro-tab-list { display: flex; gap: 6px; padding: 10px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); overflow-x: auto; flex-shrink: 0; background: rgba(10, 14, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); scrollbar-width: none; }\n' +
           '.micro-tab-list::-webkit-scrollbar { display: none; }\n' +
           '.micro-tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: #94a3b8; font-weight: 500; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 6px; position: relative; }\n' +
@@ -4672,6 +4703,51 @@
           h('div', null,
             h('h2', { style: { margin: 0, color: '#6ee7b7', fontSize: 20, fontWeight: 900 } }, __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.microbiology.ngss_ms_ls1_hs_ls1_hs_ls3_hs_ls4_2', 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4'))
+          )
+        ),
+        h('section', { className: 'micro-focus-panel', 'data-microbiology-focus': 'true' },
+          h('div', { className: 'micro-focus-grid' },
+            h('div', null,
+              h('p', { className: 'micro-focus-kicker' }, __alloT('stem.microbiology.lab_mission', 'Lab mission')),
+              h('h3', { className: 'micro-focus-title' }, currentMicroTab.label || __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
+              h('p', { className: 'micro-focus-copy' }, __alloT('stem.microbiology.lab_mission_copy', 'Start with an observable lab action, then expand the topic library when you want organisms, history, biotech, fermentation, vaccines, and case studies.')),
+              h('div', { className: 'micro-route-grid', 'data-microbiology-route-grid': 'true' },
+                MICRO_ROUTES.map(function(route) {
+                  var active = d.tab === route.id;
+                  return h('button', {
+                    key: route.id,
+                    type: 'button',
+                    className: 'micro-route-card',
+                    'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { upd({ tab: route.id }); }
+                  },
+                    h('span', { className: 'micro-route-title' }, route.title),
+                    h('span', { className: 'micro-route-copy' }, route.copy)
+                  );
+                })
+              )
+            ),
+            h('div', null,
+              h('div', { className: 'micro-status-grid' },
+                [
+                  { label: __alloT('stem.microbiology.status_section', 'Section'), value: currentMicroTab.label || 'Home' },
+                  { label: __alloT('stem.microbiology.status_slide', 'Slide'), value: d.selectedScope || 'lightbright' },
+                  { label: __alloT('stem.microbiology.status_quiz', 'Quiz'), value: microAnsweredCount + '/' + QUIZ_QUESTIONS.length },
+                  { label: __alloT('stem.microbiology.status_library', 'Library'), value: showFullMicroNav ? __alloT('stem.microbiology.expanded', 'Expanded') : __alloT('stem.microbiology.core', 'Core') }
+                ].map(function(card) {
+                  return h('div', { key: card.label, className: 'micro-status-card' },
+                    h('p', { className: 'micro-status-label' }, card.label),
+                    h('p', { className: 'micro-status-value' }, card.value)
+                  );
+                })
+              ),
+              h('button', {
+                type: 'button',
+                className: 'micro-library-toggle',
+                'aria-expanded': showFullMicroNav ? 'true' : 'false',
+                onClick: function() { upd({ showMicroLibrary: !d.showMicroLibrary }); }
+              }, showFullMicroNav ? __alloT('stem.microbiology.hide_topic_library', 'Hide topic library') : __alloT('stem.microbiology.show_topic_library', 'Show topic library'))
+            )
           )
         ),
         tabBar,

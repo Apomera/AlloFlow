@@ -1692,6 +1692,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
+        var RENEWABLES_CORE_TILES = ['solarPv', 'wind', 'compare', 'mix', 'gridBalance', 'quiz'];
+        var showFullRenewablesMenu = !!d.showRenewablesLibrary;
+        var visibleRenewablesTiles = showFullRenewablesMenu ? MENU_TILES : MENU_TILES.filter(function(tile) {
+          return RENEWABLES_CORE_TILES.indexOf(tile.id) !== -1;
+        });
+        var renewablesLaunchTiles = ['solarPv', 'compare', 'mix', 'gridBalance'].map(function(id) {
+          return MENU_TILES.find(function(tile) { return tile.id === id; });
+        }).filter(Boolean);
         // Adaptive "Start Here" suggestion based on visited count.
         // Goal: reduce decision fatigue across 26 tiles.
         function startHereCard() {
@@ -1743,6 +1751,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             __alloT('stem.renewables.how_does_each_renewable_source_actuall', 'How does each renewable source actually generate electricity? This lab walks through the physics and engineering with live sliders. Pair with '),
             h('strong', { style: { color: T.text } }, __alloT('stem.renewables.climate_explorer', 'Climate Explorer')),
             __alloT('stem.renewables.for_the_policy_mix_design_side', ' for the policy + mix-design side.')),
+          h('section', { 'data-renewables-launch-panel': 'true',
+            style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.88), rgba(15,23,42,0.94))', border: '1px solid ' + T.accent + '77', marginBottom: 14, color: '#ecfdf5', boxShadow: '0 16px 38px rgba(2,8,23,0.22)' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(220px,0.8fr)', gap: 12 } },
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Energy launch board'),
+                h('div', { style: { fontSize: 21, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, __alloT('stem.renewables.pick_a_useful_starting_route', 'Pick a useful starting route')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                  __alloT('stem.renewables.launch_panel_copy', 'Start with the physics, compare sources, design a mix, or test grid balance. Open the full module library when you want deeper topics.')),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8 } },
+                  renewablesLaunchTiles.map(function(tile) {
+                    var visited = !!modulesVisited[tile.id];
+                    return h('button', { key: tile.id, type: 'button', 'aria-label': tile.label + (visited ? ' visited' : ''),
+                      onClick: function() { upd('view', tile.id); markVisited(tile.id); rnAnnounce('Opening ' + tile.label); },
+                      style: { minHeight: 82, padding: 10, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (visited ? T.accent : 'rgba(134,239,172,0.25)'), background: visited ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)', color: '#ecfdf5', cursor: 'pointer' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, tile.icon + ' ' + tile.label),
+                      h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, tile.desc)
+                    );
+                  })
+                )
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8, alignContent: 'start' } },
+                [
+                  { label: __alloT('stem.renewables.modules_seen', 'Seen'), value: visitedCount + '/' + (MENU_TILES.length - 2) },
+                  { label: __alloT('stem.renewables.library', 'Library'), value: showFullRenewablesMenu ? __alloT('stem.renewables.expanded', 'Expanded') : __alloT('stem.renewables.core', 'Core') },
+                  { label: __alloT('stem.renewables.quiz', 'Quiz'), value: ((d.quizMastery && Object.keys(d.quizMastery).length) || 0) + '/' + QUIZ.length },
+                  { label: __alloT('stem.renewables.badges', 'Badges'), value: Object.keys(badges).length }
+                ].map(function(card) {
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                  );
+                }),
+                h('button', { type: 'button', 'aria-expanded': showFullRenewablesMenu ? 'true' : 'false',
+                  onClick: function() { upd('showRenewablesLibrary', !d.showRenewablesLibrary); },
+                  style: { gridColumn: '1 / -1', marginTop: 0, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(16,185,129,0.12)', color: '#bbf7d0', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                  showFullRenewablesMenu ? __alloT('stem.renewables.hide_full_module_library', 'Hide full module library') : __alloT('stem.renewables.show_full_module_library', 'Show full module library'))
+              )
+            )
+          ),
           startHereCard(),
           // ── Energy Mastery summary tile (clickable → Mastery view) ──
           (function () {
@@ -1782,7 +1829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           })(),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
-            MENU_TILES.map(function(tile) {
+            visibleRenewablesTiles.map(function(tile) {
               var visited = !!modulesVisited[tile.id];
               return h('button', { key: tile.id, role: 'listitem',
                 'data-rn-focusable': true,

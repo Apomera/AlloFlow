@@ -2988,7 +2988,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         return function() { stopEcoAmbient(); };
       }, []);
 
-      return h('div', { className: 'space-y-3 pb-4' },
+      var ecoRouteCards = [
+        { id: 'explore', label: 'Explore', hint: 'Tune predator-prey dynamics.' },
+        { id: 'sandbox', label: 'Sandbox', hint: 'Build a food web by hand.' },
+        { id: 'conserve', label: 'Conserve', hint: 'Run the Maine campaign.' },
+        { id: 'inquiry', label: 'Inquiry', hint: 'Sweep variables and observe.' }
+      ];
+      var ecoTabNames = { explore: 'Explore', sandbox: 'Sandbox', conserve: 'Conservation', inquiry: 'Inquiry', quiz: 'Quiz', badges: 'Badges' };
+
+      return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true' },
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -3011,6 +3019,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Biome Selector ──
+        h('section', { 'data-ecosystem-field-brief': 'true',
+          style: {
+            padding: '14px', borderRadius: 12,
+            background: 'linear-gradient(135deg, rgba(6,78,59,0.92), rgba(15,23,42,0.96))',
+            border: '1px solid rgba(52,211,153,0.32)',
+            boxShadow: '0 14px 34px rgba(2,8,23,0.20)',
+            color: '#ecfdf5'
+          } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(240px,0.85fr)', gap: 12, alignItems: 'stretch' } },
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, 'Field station'),
+              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ecoTabNames[tab] || 'Explore'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                'Pick a route, watch the live population system, and use the graph or campaign when you need evidence.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(116px,1fr))', gap: 8 } },
+                ecoRouteCards.map(function(route) {
+                  var active = tab === route.id;
+                  return h('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { upd('tab', route.id); },
+                    style: {
+                      minHeight: 70, padding: 9, textAlign: 'left', borderRadius: 8,
+                      border: '1px solid ' + (active ? 'rgba(134,239,172,0.72)' : 'rgba(134,239,172,0.24)'),
+                      background: active ? 'rgba(16,185,129,0.18)' : 'rgba(15,23,42,0.55)',
+                      color: '#ecfdf5', cursor: 'pointer'
+                    } },
+                    h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#bbf7d0' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+              [
+                { label: 'Biome', value: (BIOME_COLORS[biome] && BIOME_COLORS[biome].name) || biome },
+                { label: 'Mode', value: simPaused ? 'Paused' : 'Live' },
+                { label: 'Research', value: researchPoints + ' RP' },
+                { label: 'Badges', value: badgeCount + '/' + BADGES.length }
+              ].map(function(card) {
+                return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
+                  h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
+                  h('div', { style: { fontSize: 15, fontWeight: 900, color: '#f8fafc' } }, card.value)
+                );
+              })
+            )
+          )
+        ),
+
         h('div', { className: 'flex gap-1 mb-1' },
           Object.keys(BIOME_COLORS).map(function(bId) {
             var bInfo = BIOME_COLORS[bId];

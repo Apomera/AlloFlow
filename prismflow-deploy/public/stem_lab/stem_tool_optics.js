@@ -118,6 +118,23 @@
       '.op-aria-live { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }',
       '.op-knob { cursor: grab; touch-action: none; user-select: none; }',
       '.op-knob:active { cursor: grabbing; }',
+      '.opticslab-focus-panel{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.28);border-radius:8px;background:linear-gradient(135deg,rgba(8,47,73,.72),rgba(15,23,42,.92));box-shadow:0 16px 38px rgba(2,8,23,.26);padding:16px;margin-bottom:14px;}',
+      '.opticslab-focus-panel:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,#38bdf8,#22c55e,#f59e0b,#a78bfa);}',
+      '.opticslab-focus-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.85fr);gap:14px;}',
+      '.opticslab-focus-kicker{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:#7dd3fc;margin:0 0 4px;}',
+      '.opticslab-focus-title{font-size:22px;line-height:1.12;font-weight:900;color:#e0f2fe;margin:0;}',
+      '.opticslab-focus-copy{font-size:12px;line-height:1.55;color:#cbd5e1;margin:8px 0 12px;max-width:68ch;}',
+      '.opticslab-route-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;}',
+      '.opticslab-route-card{min-height:82px;text-align:left;border:1px solid rgba(125,211,252,.24);border-radius:8px;background:rgba(15,23,42,.58);color:#e2e8f0;padding:10px;cursor:pointer;}',
+      '.opticslab-route-card[aria-pressed="true"]{box-shadow:0 0 0 2px rgba(56,189,248,.28);background:rgba(14,165,233,.16);}',
+      '.opticslab-route-title{font-size:12px;font-weight:900;margin:0 0 3px;color:#f8fafc;}',
+      '.opticslab-route-copy{font-size:10px;line-height:1.35;color:#bae6fd;margin:0;}',
+      '.opticslab-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}',
+      '.opticslab-status-card{border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(2,6,23,.34);padding:9px;min-height:62px;}',
+      '.opticslab-status-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:#94a3b8;margin:0 0 4px;}',
+      '.opticslab-status-value{font-size:15px;font-weight:900;color:#f8fafc;margin:0;}',
+      '.opticslab-library-toggle{margin-top:8px;width:100%;border-radius:8px;border:1px solid rgba(125,211,252,.32);background:rgba(14,165,233,.10);color:#bae6fd;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
+      '@media (max-width:760px){.opticslab-focus-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
     ].join('\n');
     document.head.appendChild(st);
@@ -2654,6 +2671,7 @@
       // next render. (Rules-of-Hooks fix, 2026-06-20.)
       var OPTICS_DEFAULTS = {
             mode: 'home',  // home | reflection | refraction | lenses | interference | diffraction | polarization | quiz
+            showOpticsLibrary: false,
             // Reflection
             reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflObjH: 6,
             reflShowMath: false,
@@ -2812,7 +2830,35 @@
       } catch (e) {}
 
       // ── Build UI ──
+      var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
+      var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+      var opTotalQuestions = AP_OPTICS_QUIZ.length || 0;
+      var opMasteredCount = AP_OPTICS_QUIZ.filter(function(q) { return !!opMastery[q.q]; }).length;
+      var showFullOpticsNav = !!d.showOpticsLibrary || OP_CORE_MODES.indexOf(d.mode) === -1;
+      var opFocusInfo = {
+        home: { title: t('stem.optics.focus_choose_bench', 'Choose a light bench'), copy: t('stem.optics.focus_choose_bench_copy', 'Start with a core simulation, then open the reference library when you need deeper AP support.') },
+        reflection: { title: t('stem.optics.focus_reflection', 'Mirror bench'), copy: t('stem.optics.focus_reflection_copy', 'Move objects around curved mirrors and compare ray diagrams with the mirror equation.') },
+        refraction: { title: t('stem.optics.focus_refraction', 'Snell lab'), copy: t('stem.optics.focus_refraction_copy', 'Change media and angle to see bending, critical angle, and total internal reflection.') },
+        lenses: { title: t('stem.optics.focus_lenses', 'Lens bench'), copy: t('stem.optics.focus_lenses_copy', 'Test converging and diverging lenses while the thin-lens math updates beside the model.') },
+        interference: { title: t('stem.optics.focus_interference', 'Wave pattern bench'), copy: t('stem.optics.focus_interference_copy', 'Tune slit spacing, wavelength, and screen distance to build fringe intuition.') },
+        diffraction: { title: t('stem.optics.focus_diffraction', 'Diffraction bench'), copy: t('stem.optics.focus_diffraction_copy', 'Compare single-slit and grating patterns without opening the whole reference library.') },
+        polarization: { title: t('stem.optics.focus_polarization', 'Polarizer bench'), copy: t('stem.optics.focus_polarization_copy', 'Rotate polarizers and connect the brightness changes to Malus law.') },
+        quiz: { title: t('stem.optics.focus_quiz', 'AP practice'), copy: t('stem.optics.focus_quiz_copy', 'Check readiness with topic-aware questions and keep mastered items in your study queue.') },
+        mastery: { title: t('stem.optics.focus_mastery', 'Mastery tracker'), copy: t('stem.optics.focus_mastery_copy', 'See which optics concepts are already solid and which deserve another pass.') },
+        inquiry: { title: t('stem.optics.focus_inquiry', 'Inquiry sandbox'), copy: t('stem.optics.focus_inquiry_copy', 'Run prediction-first refraction experiments when you are ready for open-ended exploration.') }
+      };
+      var opCurrentInfo = opFocusInfo[d.mode] || { title: t('stem.optics.focus_library', 'Reference library'), copy: t('stem.optics.focus_library_copy', 'Use the expanded optics library for phenomena, calculators, scientists, history, instruments, and worked AP examples.') };
+      var OP_ROUTES = [
+        { id: 'reflection', title: t('stem.optics.route_reflection', 'Mirrors'), copy: t('stem.optics.route_reflection_copy', 'Trace reflected rays and image type.') },
+        { id: 'refraction', title: t('stem.optics.route_refraction', 'Refraction'), copy: t('stem.optics.route_refraction_copy', 'Bend light across materials.') },
+        { id: 'lenses', title: t('stem.optics.route_lenses', 'Lenses'), copy: t('stem.optics.route_lenses_copy', 'Form real and virtual images.') },
+        { id: 'interference', title: t('stem.optics.route_interference', 'Interference'), copy: t('stem.optics.route_interference_copy', 'Build bright and dark fringes.') },
+        { id: 'polarization', title: t('stem.optics.route_polarization', 'Polarizers'), copy: t('stem.optics.route_polarization_copy', 'Rotate axes and test brightness.') }
+      ];
+
       return h('div', {
+        className: 'opticslab-tool-shell',
+        'data-opticslab-tool': 'true',
         style: {
           fontFamily: 'system-ui, sans-serif',
           color: 'var(--allo-stem-text, #e2e8f0)',
@@ -2829,13 +2875,60 @@
             h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
           )
         ),
+        h('section', { className: 'opticslab-focus-panel', 'data-opticslab-focus': 'true' },
+          h('div', { className: 'opticslab-focus-grid' },
+            h('div', null,
+              h('p', { className: 'opticslab-focus-kicker' }, t('stem.optics.light_bench', 'Light bench')),
+              h('h3', { className: 'opticslab-focus-title' }, opCurrentInfo.title),
+              h('p', { className: 'opticslab-focus-copy' }, opCurrentInfo.copy),
+              h('div', { className: 'opticslab-route-grid', 'data-opticslab-route-grid': 'true' },
+                OP_ROUTES.map(function(route) {
+                  var active = d.mode === route.id;
+                  return h('button', {
+                    key: route.id,
+                    type: 'button',
+                    className: 'opticslab-route-card',
+                    'aria-pressed': active ? 'true' : 'false',
+                    'data-op-focusable': 'true',
+                    onClick: function() { upd({ mode: route.id }); }
+                  },
+                    h('span', { className: 'opticslab-route-title' }, route.title),
+                    h('span', { className: 'opticslab-route-copy' }, route.copy)
+                  );
+                })
+              )
+            ),
+            h('div', null,
+              h('div', { className: 'opticslab-status-grid' },
+                [
+                  { label: t('stem.optics.status_station', 'Station'), value: opCurrentInfo.title },
+                  { label: t('stem.optics.status_mastery', 'AP mastery'), value: opMasteredCount + '/' + opTotalQuestions },
+                  { label: t('stem.optics.status_runs', 'Practice runs'), value: String(d.quizCompletedCount || 0) },
+                  { label: t('stem.optics.status_library', 'Library'), value: showFullOpticsNav ? t('stem.optics.expanded', 'Expanded') : t('stem.optics.core', 'Core') }
+                ].map(function(card) {
+                  return h('div', { key: card.label, className: 'opticslab-status-card' },
+                    h('p', { className: 'opticslab-status-label' }, card.label),
+                    h('p', { className: 'opticslab-status-value' }, card.value)
+                  );
+                })
+              ),
+              h('button', {
+                type: 'button',
+                className: 'opticslab-library-toggle',
+                'data-op-focusable': 'true',
+                'aria-expanded': showFullOpticsNav ? 'true' : 'false',
+                onClick: function() { upd({ showOpticsLibrary: !d.showOpticsLibrary }); }
+              }, showFullOpticsNav ? t('stem.optics.hide_reference_tabs', 'Hide reference tabs') : t('stem.optics.show_reference_tabs', 'Show reference tabs'))
+            )
+          )
+        ),
         // Mode tabs
         h('div', {
           role: 'tablist',
           'aria-label': t('stem.optics.optics_lab_navigation', 'Optics Lab navigation'),
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
         },
-          [
+          (showFullOpticsNav ? [
             { id: 'home', label: t('stem.optics.home', '🏠 Home'), desc: t('stem.optics.sample_problems', 'Sample problems') },
             { id: 'reflection', label: t('stem.optics.reflection', '🪞 Reflection'), desc: t('stem.optics.mirrors_ray_diagrams', 'Mirrors + ray diagrams') },
             { id: 'refraction', label: t('stem.optics.refraction', '🌊 Refraction'), desc: t('stem.optics.snell_s_law_tir', "Snell's law + TIR") },
@@ -2859,7 +2952,18 @@
             { id: 'quiz', label: t('stem.optics.quiz', '📝 Quiz'), desc: t('stem.optics.ap_exam_practice', 'AP exam practice') },
             { id: 'mastery', label: t('stem.optics.mastery', '🏅 Mastery'), desc: t('stem.optics.concept_progress_which_questions_you_h', 'Concept progress + which questions you have nailed') },
             { id: 'inquiry', label: t('stem.optics.inquiry', '🔬 Inquiry'), desc: t('stem.optics.snell_s_law_sandbox_predict_tir_disper', 'Snell\'s law sandbox — predict TIR + dispersion') }
-          ].map(function(tab) {
+          ] : [
+            { id: 'home', label: t('stem.optics.home', 'Home'), desc: t('stem.optics.sample_problems', 'Sample problems') },
+            { id: 'reflection', label: t('stem.optics.reflection', 'Reflection'), desc: t('stem.optics.mirrors_ray_diagrams', 'Mirrors + ray diagrams') },
+            { id: 'refraction', label: t('stem.optics.refraction', 'Refraction'), desc: t('stem.optics.snell_s_law_tir', "Snell's law + TIR") },
+            { id: 'lenses', label: t('stem.optics.lenses', 'Lenses'), desc: t('stem.optics.thin_lens_image_formation', 'Thin lens + image formation') },
+            { id: 'interference', label: t('stem.optics.interference', 'Interference'), desc: t('stem.optics.double_slit_fringes', 'Double-slit fringes') },
+            { id: 'diffraction', label: t('stem.optics.diffraction', 'Diffraction'), desc: t('stem.optics.single_slit_grating', 'Single-slit + grating') },
+            { id: 'polarization', label: t('stem.optics.polarization', 'Polarization'), desc: t('stem.optics.malus_s_law', "Malus's law") },
+            { id: 'quiz', label: t('stem.optics.quiz', 'Quiz'), desc: t('stem.optics.ap_exam_practice', 'AP exam practice') },
+            { id: 'mastery', label: t('stem.optics.mastery', 'Mastery'), desc: t('stem.optics.concept_progress_which_questions_you_h', 'Concept progress + which questions you have nailed') },
+            { id: 'inquiry', label: t('stem.optics.inquiry', 'Inquiry'), desc: t('stem.optics.snell_s_law_sandbox_predict_tir_disper', 'Snell\'s law sandbox - predict TIR + dispersion') }
+          ]).map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
               key: tab.id,

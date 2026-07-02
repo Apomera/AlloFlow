@@ -924,6 +924,16 @@ window.StemLab = window.StemLab || {
       var latentPeriod = d.latentPeriod != null ? d.latentPeriod : 5;
       var popSize = d.popSize != null ? d.popSize : 1000000;
       var selectedPreset = d.selectedPreset != null ? d.selectedPreset : 0;
+      var EPI_CORE_TABS = ['sir', 'seir', 'r0explorer', 'vaccination', 'interventions', 'outbreak', 'challenge', 'inquiry'];
+      var showFullEpiNav = !!d.showEpiLibrary || EPI_CORE_TABS.indexOf(tab) === -1;
+      var visibleSubtools = showFullEpiNav ? SUBTOOLS : SUBTOOLS.filter(function(st) { return EPI_CORE_TABS.indexOf(st.id) !== -1; });
+      var currentSubtool = SUBTOOLS.find(function(st) { return st.id === tab; }) || SUBTOOLS[0];
+      var epiRoutes = [
+        { id: 'sir', label: 'Model spread', hint: 'Start with SIR curves.' },
+        { id: 'vaccination', label: 'Vaccination', hint: 'Test herd immunity.' },
+        { id: 'interventions', label: 'Interventions', hint: 'Stack public-health levers.' },
+        { id: 'outbreak', label: 'Response', hint: 'Run a 26-week campaign.' }
+      ];
 
       // ── SIR/SEIR data compute ──
       var sirData = (tab === 'sir' || tab === 'r0explorer' || tab === 'vaccination') ? solveSIR({ r0: r0, vaccRate: vaccRate, infectPeriod: infectPeriod, popSize: popSize }) : [];
@@ -1524,7 +1534,7 @@ window.StemLab = window.StemLab || {
 
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
 
-      return h('div', { className: 'space-y-4' },
+      return h('div', { className: 'space-y-4', 'data-epidemic-tool': 'true' },
 
         // ── Badge toast ──
         d.badgeToast && h('div', { className: 'fixed top-4 right-4 z-50 bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-4 py-2 rounded-xl shadow-lg text-sm font-bold animate-bounce' },
@@ -1555,8 +1565,61 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Sub-tool tabs ──
+        h('section', { 'data-epidemic-triage': 'true',
+          style: {
+            padding: 14, borderRadius: 16,
+            background: 'linear-gradient(135deg, rgba(49,46,129,0.92), rgba(15,23,42,0.96))',
+            border: '1px solid rgba(129,140,248,0.34)',
+            color: '#eef2ff',
+            boxShadow: '0 16px 36px rgba(30,41,59,0.20)'
+          } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(235px,0.85fr)', gap: 12 } },
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#c4b5fd', letterSpacing: 0, marginBottom: 4 } }, 'Outbreak desk'),
+              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, currentSubtool.label),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#cbd5e1' } },
+                'Choose a modeling route first. Expand the full library when you need maps, tracing, history, scenarios, battle, or reference material.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 } },
+                epiRoutes.map(function(route) {
+                  var active = tab === route.id;
+                  return h('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { updMulti({ tab: route.id, hoverDay: null }); announceToSR('Switched to ' + route.label); },
+                    style: {
+                      minHeight: 72, padding: 9, borderRadius: 10, textAlign: 'left',
+                      border: '1px solid ' + (active ? 'rgba(199,210,254,0.72)' : 'rgba(199,210,254,0.24)'),
+                      background: active ? 'rgba(99,102,241,0.26)' : 'rgba(15,23,42,0.55)',
+                      color: '#eef2ff', cursor: 'pointer'
+                    } },
+                    h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
+                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#c7d2fe' } }, route.hint)
+                  );
+                })
+              )
+            ),
+            h('div', null,
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
+                [
+                  { label: 'R0', value: r0.toFixed(1) },
+                  { label: 'Vaccinated', value: Math.round(vaccRate) + '%' },
+                  { label: 'Peak day', value: String(peakDay || 0) },
+                  { label: 'Library', value: showFullEpiNav ? 'Expanded' : 'Core' }
+                ].map(function(card) {
+                  return h('div', { key: card.label, style: { padding: 9, borderRadius: 10, background: 'rgba(15,23,42,0.42)', border: '1px solid rgba(199,210,254,0.16)' } },
+                    h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#a5b4fc', marginBottom: 4 } }, card.label),
+                    h('div', { style: { fontSize: 15, fontWeight: 900, color: '#fff' } }, card.value)
+                  );
+                })
+              ),
+              h('button', { type: 'button', 'aria-expanded': showFullEpiNav ? 'true' : 'false',
+                onClick: function() { upd('showEpiLibrary', !d.showEpiLibrary); },
+                style: { width: '100%', marginTop: 8, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(199,210,254,0.32)', background: 'rgba(99,102,241,0.16)', color: '#c7d2fe', fontSize: 11, fontWeight: 900, cursor: 'pointer' } },
+                showFullEpiNav ? 'Hide full tool library' : 'Show full tool library')
+            )
+          )
+        ),
+
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
-          SUBTOOLS.map(function(st) {
+          visibleSubtools.map(function(st) {
             var active = tab === st.id;
             return h('button', { 'aria-label': __alloT('stem.epidemic.select_intervention_strategy', 'Select intervention strategy'),
               key: st.id,
