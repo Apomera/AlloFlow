@@ -131,16 +131,28 @@
   function stFrameContainsPoint(frame, x, y) {
     return !!frame && x >= frame.x && x <= frame.x + frame.w && y >= frame.y && y <= frame.y + frame.h;
   }
-  function stTextBackgroundFor(doc, textObj) {
-    var bg = stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff');
+  // Effective background(s) under a text box, sampled at a 3×3 grid — NOT just
+  // the center. A caption that straddles a dark shape and the white page yields
+  // BOTH colors, so the preflight can score the worst-case contrast instead of
+  // passing a box that is only legible in the middle. Returns distinct colors.
+  function stTextBackgroundsFor(doc, textObj) {
+    var pageBg = stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff');
     var f = stClampFrame(textObj && textObj.frame, doc.canvas);
-    var cx = f.x + f.w / 2, cy = f.y + f.h / 2;
-    stOrderedObjects(doc.objects).forEach(function (o) {
-      if (!o || o.id === textObj.id || o.type !== 'shape') return;
-      if (stFiniteNumber(o.z, 1) > stFiniteNumber(textObj.z, 1)) return;
-      if (stFrameContainsPoint(stClampFrame(o.frame, doc.canvas), cx, cy)) bg = stSafeCssColor(o.fill, bg);
+    var shapes = stOrderedObjects(doc.objects).filter(function (o) {
+      return o && o.id !== textObj.id && o.type === 'shape' && stFiniteNumber(o.z, 1) <= stFiniteNumber(textObj.z, 1);
     });
-    return bg;
+    var frac = [0.1, 0.5, 0.9];
+    var seen = {}, out = [];
+    for (var i = 0; i < frac.length; i++) {
+      for (var j = 0; j < frac.length; j++) {
+        var px = f.x + f.w * frac[i], py = f.y + f.h * frac[j];
+        var bg = pageBg;
+        // ordered ascending by z then array index → last match is the topmost
+        shapes.forEach(function (o) { if (stFrameContainsPoint(stClampFrame(o.frame, doc.canvas), px, py)) bg = stSafeCssColor(o.fill, bg); });
+        if (!seen[bg]) { seen[bg] = true; out.push(bg); }
+      }
+    }
+    return out;
   }
   function stAlignFrame(frame, canvas, mode) {
     var f = stClampFrame(frame, canvas);
@@ -450,8 +462,8 @@
         if (text && size < 12) issues.push({ id: o.id, type: 'small-text', severity: 'warning', title: 'Small text', message: 'Text under 12 px can be hard to read in print or projection.' });
         if (text) {
           var fg = stSafeCssColor(s.color, '#111827');
-          var bg = stTextBackgroundFor(doc, o);
-          var ratio = stContrastRatio(fg, bg);
+          // worst contrast across every background the box overlaps
+          var ratio = stTextBackgroundsFor(doc, o).reduce(function (worst, bg) { return Math.min(worst, stContrastRatio(fg, bg)); }, Infinity);
           var large = size >= 24 || (s.bold && size >= 18);
           var required = large ? 3 : 4.5;
           if (ratio < required) {
@@ -460,6 +472,24 @@
         }
       }
     });
+    // Heading hierarchy (WCAG 1.3.1 / 2.4.6): exported tags come straight from
+    // the role field, so a skipped level (H1→H3) or a missing H1 ships as a real
+    // structural defect in the tagged PDF. Evaluated in reading (array) order.
+    var headings = doc.objects.filter(function (o) {
+      return o && o.type === 'text' && /^heading[123]$/.test(o.role) && String((o.runs && o.runs[0] && o.runs[0].text) || '').trim();
+    }).map(function (o) { return { id: o.id, level: parseInt(o.role.slice(7), 10) }; });
+    if (headings.length) {
+      if (!headings.some(function (hd) { return hd.level === 1; })) {
+        issues.push({ id: headings[0].id, type: 'heading-order', severity: 'review', title: 'No top-level heading', message: 'Give the page a Heading 1 so its structure starts at the top level.' });
+      }
+      var prevLevel = 0;
+      headings.forEach(function (hd) {
+        if (prevLevel && hd.level > prevLevel + 1) {
+          issues.push({ id: hd.id, type: 'heading-order', severity: 'warning', title: 'Skipped heading level', message: 'This jumps from Heading ' + prevLevel + ' to Heading ' + hd.level + '. Screen-reader users rely on levels not being skipped.' });
+        }
+        prevLevel = hd.level;
+      });
+    }
     if (doc.objects.length > 1) issues.push({ type: 'reading-order', severity: 'review', title: 'Review reading order', message: 'The right-side order list is what screen readers and tagged PDF follow.' });
     var counts = { error: 0, warning: 0, review: 0 };
     issues.forEach(function (issue) { if (counts[issue.severity] !== undefined) counts[issue.severity]++; });

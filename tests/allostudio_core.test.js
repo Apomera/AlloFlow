@@ -280,6 +280,31 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(result.counts.error).toBeGreaterThanOrEqual(1);
     expect(result.counts.warning).toBeGreaterThanOrEqual(2);
   });
+  it('multi-point sampling catches a caption that straddles a dark shape (center alone would pass)', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Straddle', T0);
+    // dark shape covering only the LEFT region (x 0..200), under the text
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#000000', decorative: true, frame: { x: 0, y: 0, w: 200, h: 100 }, z: 1 } }, 'user', T0);
+    // black text box from x150..350 — its CENTER (x≈250) sits on the white page
+    // (would pass center-only), but its left edge overlaps the black shape.
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 150, y: 0, w: 200, h: 60 }, z: 2, runs: [{ text: 'hard to read on the left', style: { size: 14, color: '#000000' } }] } }, 'user', T0);
+    const types = ST.stAnalyzeDoc(d).issues.map(i => i.type);
+    expect(types).toContain('contrast');
+  });
+  it('flags a skipped heading level and a missing H1', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Headings', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 40, y: 40, w: 400, h: 60 }, z: 1, runs: [{ text: 'Title', style: { size: 40 } }] } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading3', frame: { x: 40, y: 120, w: 400, h: 40 }, z: 1, runs: [{ text: 'Jumped to H3', style: { size: 20 } }] } }, 'user', T0);
+    const skip = ST.stAnalyzeDoc(d).issues.filter(i => i.type === 'heading-order');
+    expect(skip.some(i => /Skipped/.test(i.title))).toBe(true);
+
+    const d2 = ST.stCreateDoc('letter-portrait', 'NoH1', T0);
+    ST.stAppend(d2, { type: 'object.add', object: { type: 'text', role: 'heading2', frame: { x: 40, y: 40, w: 400, h: 40 }, z: 1, runs: [{ text: 'Starts at H2', style: { size: 24 } }] } }, 'user', T0);
+    expect(ST.stAnalyzeDoc(d2).issues.some(i => i.type === 'heading-order' && /No top-level/.test(i.title))).toBe(true);
+  });
+  it('a well-formed H1→H2 document raises no heading-order issue', () => {
+    const d = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
+    expect(ST.stAnalyzeDoc(d).issues.some(i => i.type === 'heading-order')).toBe(false);
+  });
   it('aligns frames to edges, centers, and printable page width', () => {
     const canvas = { w: 500, h: 400 };
     const frame = { x: 10, y: 20, w: 100, h: 50 };
