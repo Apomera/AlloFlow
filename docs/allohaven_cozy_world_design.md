@@ -91,6 +91,61 @@ frame-playback in 3D; reduced-motion = poster frame), `statue` (depth-relief, de
 (door-portal to a nested walk), `constellation` (window-sky), `story/poem/packet` (existing
 StudentArtifactStore types as books/scrolls). Every form: {render3d, render2d, describe}.
 
+## 4.5 CORRECTION (2026-07-02, after reading the module): the substrate is bigger
+
+`allohaven_module.js` (28.6k lines) already contains most of Ring 1: a **token economy**
+(earned via pomodoro/reflections/quizzes/walks with daily caps and no-guilt quest design),
+**AI-generated decorations** (Imagen via template+slot prompts, `tokensSpent`, art styles),
+**four rooms with wall/floor slot placement and unlock criteria**, journals, IEP-style goals,
+achievements — and decorations carry a `linkedContent: null // v2+ memory palace pointer`
+extension slot that literally anticipated this design. So: Ring 1 is mostly *connective*
+work (bridge `globalPoints`/game XP → haven tokens; route new artifact forms through the
+existing decoration pipeline), not new construction. **Ring 0 shipped 2026-07-02**: the
+🏛 "Walk in 3D" button renders the whole haven (unlocked rooms → palace rooms, placed
+decorations wall-then-floor → framed loci with their AI art, portfolio artifacts → a Gallery
+room) through the shared memory-palace walk, as a read-only overlay
+(`buildHavenPalaceData` pure + tested, incl. image↔locus id alignment).
+
+## 4.6 Inquiry Commons — Aaron's live collaborative-inquiry layer (assessed 2026-07-02)
+
+Aaron's refinement of Ring 2: not transactional gifting — **live exchange of ideas**
+(philosophical / scientific / clever-humorous inquiry pertinent to the topic), governed by a
+**teacher/class-authored community agreement**, with Gemini flagging possible violations for
+teacher review, students explicitly told the space is monitored and on-topic. Groups
+participate multimodally: dictation, shared scribes (2–3 typers for a table), etc.
+
+**Assessment: this is Knowledge Building discourse (Scardamalia & Bereiter / CSCL) with an
+AI-assisted moderation layer — a real, respected pedagogical lineage** ("build-on" moves,
+communal idea improvement, discourse norms = accountable talk). It revises this doc's
+"no free-text chat ever" rule into something more precise:
+
+- **Free text is acceptable ONLY inside live, teacher-hosted sessions** (synchronous,
+  teacher present, session-scoped) — never DMs, never async unsupervised channels. The
+  existing hardened live-session protocol is exactly this boundary.
+- **The community agreement is a first-class object**: co-authored by the class (itself a
+  belonging ritual — SEL Hub's crew protocols / restorative circle tools are prior art in
+  this repo), displayed in the space, versioned by the teacher, and injected (fenced,
+  teacher-authored-only, injection-sanitized) into Gemini's moderation rubric.
+- **AI flagging assists, never assures**: false positives/negatives are certain; copy must
+  say "flags for your review," never "keeps the space safe." **Fail-visible, not fail-open**
+  (the SEL-Hub fail-open triage finding is the cautionary tale): if the moderation call
+  errors, messages queue as *unreviewed* with a visible badge — silence never means clean.
+- **Ephemeral by default** (FERPA data minimization): transcripts live in the session doc,
+  teacher may export a packet, nothing persists per-student without explicit action.
+- **Structure beats moderation**: CSCL research says scripted roles (proposer / questioner /
+  connector / scribe) and sentence-frame "talk moves" (Build on / Ask / Connect / Wonder)
+  produce better discourse than open chat AND shrink the moderation surface. Chips-first
+  composer with free-text elaboration is the sweet spot.
+- **Tie to the constellation**: contributions that get *built upon* brighten the class
+  constellation (knowledge-as-light again); quality = peer uptake + teacher endorsement,
+  never AI judgment alone.
+- **Multimodal participation is UDL-right**: dictation (Web Speech / the Whisper popup),
+  scribe roles, chips — multiple means of action & expression.
+
+Sequencing: this is a Ring-2.5/3 feature and should ride the live-session tree, which has
+its own deploy gate (?v= bumps pending) and NEVER-bare-stash rules — build it as its own
+project with the live-session owner's hat on, not as a haven side quest.
+
 ## 5. Sequencing recommendation
 
 Ring 0 first (1–2 sessions; mostly palace-engine reuse + artifact renderers) — it alone

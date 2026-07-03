@@ -10438,6 +10438,145 @@
   //   addToast         : (msg, type?) => void
   //   selectedVoice    : optional, for TTS voice
   //   disableAnimations: bool — accommodation propagation
+  // ─────────────────────────────────────────────────────────
+  // Ring 0 (docs/allohaven_cozy_world_design.md): the haven as a WALKABLE
+  // 3D space. buildHavenPalaceData is PURE (unit-tested via the Internals
+  // seam): it maps the existing 2D state — unlocked rooms, placed
+  // decorations (wall slots first, then floor, by cell index), portfolio
+  // artifacts — onto the memory-palace {main, branches} format, plus an
+  // images map keyed by the palace's locus ids (b{room}_i{item}) so the
+  // AI-generated decoration art hangs in the 3D frames.
+  // ─────────────────────────────────────────────────────────
+  function buildHavenPalaceData(state, artifacts) {
+    state = state || {};
+    var rooms = (Array.isArray(state.rooms) ? state.rooms : []).filter(function(r) { return r && r.unlocked; });
+    var decs = Array.isArray(state.decorations) ? state.decorations : [];
+    var branches = [];
+    var images = {};
+    rooms.forEach(function(room) {
+      var placed = decs.filter(function(d) {
+        return d && d.placement && (d.placement.roomId || 'main') === room.id;
+      }).sort(function(a, b) {
+        var sa = a.placement.surface === 'wall' ? 0 : 1;
+        var sb = b.placement.surface === 'wall' ? 0 : 1;
+        return (sa - sb) || ((a.placement.cellIndex || 0) - (b.placement.cellIndex || 0));
+      });
+      var bi = branches.length;
+      var items = [];
+      var mnemonics = [];
+      placed.forEach(function(d, ii) {
+        items.push(d.templateLabel || d.template || 'Decoration');
+        mnemonics.push(d.studentReflection || d.aiRationale || '');
+        if (d.imageBase64) images['b' + bi + '_i' + ii] = d.imageBase64;
+      });
+      branches.push({ title: (room.icon ? room.icon + ' ' : '') + (room.label || room.id), items: items, mnemonics: mnemonics });
+    });
+    var arts = Array.isArray(artifacts) ? artifacts.slice(0, 12) : [];
+    if (arts.length) {
+      branches.push({
+        title: '🖼 Gallery',
+        items: arts.map(function(a) { return (a && (a.title || a.kindLabel)) || 'Artifact'; }),
+        mnemonics: arts.map(function(a) {
+          if (!a) return '';
+          if (a.kindLabel) return a.kindLabel + (a.sourceLabel ? ' — ' + a.sourceLabel : '');
+          return a.sourceLabel || '';
+        })
+      });
+    }
+    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images };
+  }
+
+  // Lazy-load memory_palace_module.js from wherever this module was served
+  // (CDN fallback); shares the walk renderer with the Memory Palace organizer,
+  // so at most one download of the module AND of three.js.
+  function _havenPalaceEnsure() {
+    if (window.AlloModules && window.AlloModules.MemoryPalace) return Promise.resolve(true);
+    var base = 'https://alloflow-cdn.pages.dev/';
+    var query = '';
+    try {
+      var scripts = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].getAttribute('src') || '';
+        var m = src.match(/^(.*\/)allohaven_module\.js(\?.*)?$/);
+        if (m) { base = m[1]; query = m[2] || ''; break; }
+      }
+    } catch (e) {}
+    return new Promise(function(resolve) {
+      try {
+        var s = document.createElement('script');
+        s.src = base + 'memory_palace_module.js' + query;
+        s.async = true;
+        s.onload = function() { resolve(!!(window.AlloModules && window.AlloModules.MemoryPalace)); };
+        s.onerror = function() { resolve(false); };
+        document.head.appendChild(s);
+      } catch (e2) { resolve(false); }
+    });
+  }
+
+  // "🏛 Walk in 3D" — self-contained overlay (the openConceptMap3D pattern):
+  // Escape/✕ closes, walk state is ephemeral, nothing about the 2D haven
+  // changes. A footer strip mirrors the current locus for sighted users; the
+  // palace module owns the aria-live announcements and the route-list fallback.
+  function openHavenWalk3D(state) {
+    var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
+    var artifacts = (store && typeof store.read === 'function') ? store.read() : [];
+    var built = buildHavenPalaceData(state, artifacts);
+    var totalLoci = built.data.branches.reduce(function(s, b) { return s + b.items.length; }, 0);
+    var overlay = document.createElement('div');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Walk your haven in 3D');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
+    var header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
+    var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
+    var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '🏛 My AlloHaven';
+    var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;';
+    hint.textContent = totalLoci
+      ? 'Walk with ◀ ▶ or the arrow keys · O = overview · your decorations hang where you placed them'
+      : 'Your haven is waiting — earn tokens and place decorations, then walk through them here';
+    titleWrap.appendChild(title); titleWrap.appendChild(hint);
+    var closeBtn = document.createElement('button');
+    closeBtn.setAttribute('aria-label', 'Close'); closeBtn.textContent = '✕';
+    closeBtn.style.cssText = 'border:none;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;padding:4px;';
+    header.appendChild(titleWrap); header.appendChild(closeBtn);
+    var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
+    var status = document.createElement('div');
+    status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
+    status.textContent = '🧭 Loading your haven…';
+    body.appendChild(status);
+    var footer = document.createElement('div');
+    footer.style.cssText = 'padding:8px 16px;background:#0b1020;border-top:1px solid #1e293b;color:#cbd5e1;font-size:12px;min-height:20px;';
+    footer.setAttribute('aria-hidden', 'true');   // the module's live region announces; this is the visual mirror
+    overlay.appendChild(header); overlay.appendChild(body); overlay.appendChild(footer);
+    document.body.appendChild(overlay);
+    var handle = null;
+    function destroy() {
+      try { if (handle && handle.destroy) handle.destroy(); } catch (e) {}
+      try { document.removeEventListener('keydown', onKey, true); } catch (e) {}
+      try { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    }
+    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); destroy(); } }
+    document.addEventListener('keydown', onKey, true);
+    closeBtn.onclick = destroy;
+    _havenPalaceEnsure().then(function(ok) {
+      if (!overlay.parentNode) return;
+      var MP = window.AlloModules && window.AlloModules.MemoryPalace;
+      if (!ok || !MP) { status.textContent = '⚠️ The 3D walk could not load here — your haven is unchanged. Try again from the latest Canvas link.'; return; }
+      if (status.parentNode) status.parentNode.removeChild(status);
+      handle = MP.render(body, built.data, {
+        images: built.images,
+        onLocusChange: function(locus) {
+          if (!locus) return;
+          footer.textContent = locus.id === '__entry'
+            ? ''
+            : (locus.label + (locus.mnemonic ? ' — ' + locus.mnemonic : ''));
+        }
+      });
+    });
+    return destroy;
+  }
+
   function AlloHaven(props) {
     var React = window.React;
     if (!React) {
@@ -15562,6 +15701,24 @@
             })
           );
         })(),
+        // Ring 0 (docs/allohaven_cozy_world_design.md): walk the whole haven —
+        // every unlocked room, placed decoration, and portfolio artifact — as
+        // one 3D memory-palace scene. Read-only view; closing changes nothing.
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '2px', marginBottom: '8px' } },
+          h('button', {
+            onClick: function() { openHavenWalk3D(state); },
+            'aria-label': 'Walk your haven in 3D',
+            title: 'See every room, decoration, and portfolio artifact as one walkable 3D palace',
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px',
+              background: palette.surface, color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '999px', fontSize: '12px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '🏛 Walk in 3D')
+        ),
         renderQuestPanel(),
         renderTodayCard(),
         // Compute responsive row count based on slot count + columns
@@ -28620,6 +28777,7 @@
   window.AlloModules.AlloHavenInternals = {
     computeTenureStats: computeTenureStats, computeSkillLevel: computeSkillLevel,
     computeStreak: computeStreak, cardMasteryBucket: cardMasteryBucket, daysUntilDue: daysUntilDue,
+    buildHavenPalaceData: buildHavenPalaceData,
   };
   console.log('[CDN] AlloHaven loaded');
 
