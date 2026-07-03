@@ -11627,7 +11627,10 @@ HTML section ${chunkNum}/${chunks.length}:
     const newAlt = String(parsed.alt || '').slice(0, 600);
     // Vision saw the pixels — its alt wins over empty/placeholder alts, but
     // never clobbers a substantive human/author-provided description.
-    if (newAlt && (existingAlt.length < 12 || /^(image|figure|photo|img|picture)\b/i.test(existingAlt))) im.setAttribute('alt', newAlt);
+    // L2 (2026-07-03): only overwrite a PLACEHOLDER alt, never a short-but-real one ("pH scale"=8 chars) or a
+    // real caption that merely STARTS with "Figure"/"Photo". Match whole-string generic placeholders only.
+    const _isPlaceholderAlt = !existingAlt || /^(image|figure|photo|img|picture|graphic|illustration|diagram)\s*\d*\.?$/i.test(existingAlt);
+    if (newAlt && _isPlaceholderAlt) im.setAttribute('alt', newAlt);
     if (kind === 'decorative' && !existingAlt) { im.setAttribute('alt', ''); im.setAttribute('role', 'presentation'); }
     if (kind === 'equation' && parsed.latex && String(parsed.latex).length < 2000) im.setAttribute('data-allo-latex', String(parsed.latex));
     // Spoken-math fallback (2026-07-02): the Vision prompt asks for a SPOKEN-form alt on
@@ -14734,8 +14737,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // silently attributed to dual verification. The loop falls through (bounded by
           // maxFixPasses / stall guards / the target-score stop below). (vision-null-audit)
           if (!reVerify) {
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — axe ${newAxeViolations} violation(s); not treating as dual-clean`);
-            if (newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
+            // L4 (2026-07-03): reAxe null means axe did NOT run this pass — newAxeViolations then carries the
+            // previous best (often 0), which is NOT "axe clean". Don't log/claim "axe-only clean" in that case.
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — ${reAxe ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}; not treating as dual-clean`);
+            if (reAxe && newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
           } else if (newAxeViolations === 0 && !_rePartial && (!reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
             break;
@@ -24307,7 +24312,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
     // Tokenize source text — raw array preserves casing/punctuation for re-insertion, lc array
     // is used for matching against normalized HTML text nodes.
     const srcWordsRaw = sourceText.match(/\S+/g) || [];
-    const srcWordsLc = srcWordsRaw.map(w => w.toLowerCase().replace(/[^a-z0-9'-]/g, ''));
+    // H2 (2026-07-03): normalize curly apostrophes to straight FIRST (matching the caller's _arNorm), else a
+    // curly "doesn't" keys the index as "doesnt" while the lookup key is straight "doesn't" -> positions
+    // empty -> the appendix records srcWordsRaw[0] (the doc's FIRST word) instead of the actual lost word.
+    const srcWordsLc = srcWordsRaw.map(w => w.toLowerCase().replace(/[‘’ʼ´`]/g, "'").replace(/[^a-z0-9'-]/g, ''));
     const wordPositions = {};
     srcWordsLc.forEach((w, i) => { if (w) { (wordPositions[w] = wordPositions[w] || []).push(i); } });
     const normalize = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ');
@@ -24412,11 +24420,15 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         if (placed) break;
       }
       if (!placed) {
-        const posForCtx = positions.length > 0 ? positions[0] : 0;
-        const winStart = Math.max(0, posForCtx - 5);
-        const winEnd = Math.min(srcWordsLc.length - 1, posForCtx + 5);
-        const contextSnippet = srcWordsRaw.slice(winStart, winEnd + 1).join(' ');
-        const origWord = srcWordsRaw[posForCtx] || targetWord;
+        // H2 (2026-07-03): when the word isn't in the source index (positions empty), do NOT default
+        // posForCtx to 0 and record srcWordsRaw[0] (the document's FIRST word) as the missing word — record
+        // the actual targetWord with a neutral context.
+        const _hasPos = positions.length > 0;
+        const posForCtx = _hasPos ? positions[0] : -1;
+        const winStart = _hasPos ? Math.max(0, posForCtx - 5) : 0;
+        const winEnd = _hasPos ? Math.min(srcWordsLc.length - 1, posForCtx + 5) : -1;
+        const contextSnippet = _hasPos ? srcWordsRaw.slice(winStart, winEnd + 1).join(' ') : '';
+        const origWord = _hasPos ? (srcWordsRaw[posForCtx] || targetWord) : targetWord;
         // Guard: if the word is already present anywhere in the doc, it's a count-diff
         // artifact (e.g. running-header dedupe), not a real content loss — skip appendix.
         // Hyphen variants: "physical-biological" tokenizes as one key but may appear in the
