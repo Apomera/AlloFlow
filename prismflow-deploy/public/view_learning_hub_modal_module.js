@@ -14,6 +14,7 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen,
+    setIsOpenGrooveOpen,
     setSelHubTab,
     setShowLearningHub,
     setShowLitLab,
@@ -40,7 +41,10 @@ function LearningHubModal(props) {
     setShowLearningHub(false);
     setShowStemLab(true);
     setStemLabTab("explore");
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "100+ interactive math & science explorations"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("learning_hub.stem_title") || "STEM Lab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("learning_hub.stem_desc") || "100+ interactive math & science explorations"))), typeof setIsOpenGrooveOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    setShowLearningHub(false);
+    setIsOpenGrooveOpen(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F39B}\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-cyan-900" }, t("learning_hub.open_groove_title") || "Open Groove Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-cyan-700 mt-1" }, t("learning_hub.open_groove_desc") || "Make beats, shape synths, and connect patterns to real composition and notation."))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setShowStoryForge(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("learning_hub.storyforge_title") || "StoryForge"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-600 mt-1" }, t("learning_hub.storyforge_desc") || "Create illustrated stories with AI writing tools"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {

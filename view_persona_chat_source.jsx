@@ -59,8 +59,11 @@ function PersonaChatView(props) {
   var HarmonyMeter = props.HarmonyMeter;
   return (
         <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
+        {/* allo-docsuite: portal outside the main content wrapper — opts its pastel accents
+            (from-yellow-50 / from-indigo-50 chips + info boxes) into the theme-dark remap so they
+            stop reading light-pastel in dark mode. No-op in light mode. */}
         <div
-            className={`fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`}
+            className={`allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`}
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
         >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl relative border-4 border-yellow-200 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[85vh]">

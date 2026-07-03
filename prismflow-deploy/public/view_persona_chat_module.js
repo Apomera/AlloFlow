@@ -108,7 +108,7 @@
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Interview Interface encountered an error. Please close and reopen."
   }, /*#__PURE__*/React.createElement("div", {
-    className: `fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`,
+    className: `allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 theme-${theme}`,
     style: {
       position: 'fixed',
       top: 0,

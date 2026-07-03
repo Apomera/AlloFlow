@@ -1,7 +1,8 @@
 /**
  * AlloFlow — Learning Hub Modal Module
  *
- * Tool launcher modal: STEM Lab, StoryForge, LitLab, PoetTree, SEL Hub, AlloHaven.
+ * Tool launcher modal: STEM Lab, Open Groove Studio, StoryForge, LitLab,
+ * PoetTree, SEL Hub, AlloHaven.
  * Each button closes this modal and opens the chosen tool.
  *
  * Extracted from AlloFlowANTI.txt lines 23409-23465 (May 2026).
@@ -9,7 +10,7 @@
  */
 function LearningHubModal(props) {
   const {
-    setIsAlloHavenOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
+    setIsAlloHavenOpen, setIsOpenGrooveOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
     setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
@@ -22,7 +23,13 @@ function LearningHubModal(props) {
   } = props;
   return (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
+          {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
+              content wrapper, so the theme-dark gradient/text remaps (which are scoped to
+              .allo-docsuite) never reached the pastel tool cards — they stayed light-pastel in
+              dark mode. Adding the scope class opts the modal into the existing, tested dark
+              remap (from-*-50 gradients -> dark tints, text-*-800/600 -> light). No-op in light
+              mode: every .allo-docsuite rule is prefixed .theme-dark / .theme-contrast. */}
+          <div className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>
@@ -41,6 +48,15 @@ function LearningHubModal(props) {
                   <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '100+ interactive math & science explorations'}</p>
                 </div>
               </button>
+              {typeof setIsOpenGrooveOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsOpenGrooveOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-cyan-50 to-emerald-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'\uD83C\uDF9B\uFE0F'}</span>
+                  <div>
+                    <h3 className="font-bold text-cyan-900">{t('learning_hub.open_groove_title') || 'Open Groove Studio'}</h3>
+                    <p className="text-xs text-cyan-700 mt-1">{t('learning_hub.open_groove_desc') || 'Make beats, shape synths, and connect patterns to real composition and notation.'}</p>
+                  </div>
+                </button>
+              )}
               <button onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDCD6'}</span>
                 <div>
