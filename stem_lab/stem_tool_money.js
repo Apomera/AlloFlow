@@ -97,6 +97,7 @@ window.StemLab = window.StemLab || {
             const grade = d.grade || 'elementary';
             const currency = d.currency || 'USD';
             const challengeMode = !!d.challengeMode;
+            const showDollarLab = !!d.showDollarLab;
 
             // ── Currency definitions ──
             const CURRENCIES = {
@@ -1399,6 +1400,153 @@ window.StemLab = window.StemLab || {
               { id: 'inquiry', label: __alloT('stem.money.compound_inquiry', '\uD83D\uDD2C Compound Inquiry'), icon: '\uD83D\uDD2C' }
             ];
 
+            var renderMoneyStudioFocus = function () {
+              var activeTab = tabs.filter(function (entry) { return entry.id === tab; })[0] || tabs[0];
+              var gradeLabel = (GRADE_CONFIG[grade] && GRADE_CONFIG[grade].label) || grade;
+              var savingsProgress = sgTarget > 0 ? Math.min(100, Math.round((sgHave / sgTarget) * 100)) : 0;
+              var routeCards = [
+                {
+                  id: 'coins',
+                  title: __alloT('stem.money.focus_count_cash', 'Count cash'),
+                  metric: fmt(boardTotal),
+                  body: __alloT('stem.money.focus_count_cash_body', 'Build totals from coins and bills.'),
+                  tone: 'border-amber-400 bg-amber-50 text-amber-900'
+                },
+                {
+                  id: 'store',
+                  title: __alloT('stem.money.focus_shop', 'Shop'),
+                  metric: cart.length + ' items',
+                  body: __alloT('stem.money.focus_shop_body', 'Compare prices, cart totals, and tax.'),
+                  tone: 'border-purple-400 bg-purple-50 text-purple-900'
+                },
+                {
+                  id: 'change',
+                  title: __alloT('stem.money.focus_change', 'Make change'),
+                  metric: changePaid ? fmt(changePaid - changePrice) : 'Ready',
+                  body: __alloT('stem.money.focus_change_body', 'Count up from price to payment.'),
+                  tone: 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                },
+                {
+                  id: 'tips',
+                  title: __alloT('stem.money.focus_deals', 'Deals'),
+                  metric: gc.includePercent ? '%' : 'basic',
+                  body: __alloT('stem.money.focus_deals_body', 'Practice tips, discounts, and sale checks.'),
+                  tone: 'border-rose-400 bg-rose-50 text-rose-900'
+                },
+                {
+                  id: 'finance',
+                  title: __alloT('stem.money.focus_future', 'Future money'),
+                  metric: fmt(ciCompound),
+                  body: __alloT('stem.money.focus_future_body', 'Model interest, loans, and savings goals.'),
+                  tone: 'border-blue-500 bg-blue-50 text-blue-900'
+                }
+              ];
+
+              return React.createElement('section', {
+                className: 'rounded-2xl border border-emerald-200 bg-white shadow-sm overflow-hidden',
+                'data-moneymath-focus': 'true',
+                role: 'region',
+                'aria-label': __alloT('stem.money.money_studio', 'Money Math studio')
+              },
+                React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4 p-4' },
+                  React.createElement('div', { className: 'space-y-3' },
+                    React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3' },
+                      React.createElement('div', null,
+                        React.createElement('p', { className: 'text-xs font-bold uppercase tracking-wide text-emerald-700' }, __alloT('stem.money.money_studio_label', 'Money Studio')),
+                        React.createElement('h2', { className: 'text-xl font-black text-slate-900 leading-tight' }, activeTab.label),
+                        React.createElement('p', { className: 'text-sm text-slate-600 mt-1 leading-relaxed' },
+                          __alloT('stem.money.money_studio_summary', 'Move between hands-on cash, store math, percentage checks, and long-term finance without losing the current setup.')
+                        )
+                      ),
+                      React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center sm:min-w-[230px]' },
+                        React.createElement('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                          React.createElement('p', { className: 'text-xs text-slate-500 font-bold' }, __alloT('stem.money.currency_2', 'Currency')),
+                          React.createElement('p', { className: 'text-sm font-black text-slate-900' }, cur.code)
+                        ),
+                        React.createElement('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                          React.createElement('p', { className: 'text-xs text-slate-500 font-bold' }, __alloT('stem.money.cart', 'Cart')),
+                          React.createElement('p', { className: 'text-sm font-black text-slate-900' }, fmt(cartGrand))
+                        ),
+                        React.createElement('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                          React.createElement('p', { className: 'text-xs text-slate-500 font-bold' }, __alloT('stem.money.savings_2', 'Savings')),
+                          React.createElement('p', { className: 'text-sm font-black text-slate-900' }, savingsProgress + '%')
+                        )
+                      )
+                    ),
+                    React.createElement('div', { className: 'rounded-2xl border border-emerald-200 bg-emerald-950 p-3' },
+                      React.createElement('svg', {
+                        width: '100%',
+                        height: 170,
+                        viewBox: '0 0 680 170',
+                        role: 'img',
+                        'aria-label': 'Money studio overview for ' + cur.code + ' showing cash, receipt, and savings progress'
+                      },
+                        React.createElement('defs', null,
+                          React.createElement('linearGradient', { id: 'moneyStudioBillGrad', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                            React.createElement('stop', { offset: '0%', stopColor: '#bbf7d0' }),
+                            React.createElement('stop', { offset: '100%', stopColor: '#34d399' })
+                          )
+                        ),
+                        React.createElement('rect', { x: 0, y: 0, width: 680, height: 170, rx: 22, fill: '#022c22' }),
+                        React.createElement('rect', { x: 38, y: 30, width: 230, height: 110, rx: 14, fill: '#064e3b', stroke: '#34d399', strokeWidth: 2 }),
+                        React.createElement('text', { x: 58, y: 57, fill: '#a7f3d0', fontSize: 15, fontWeight: '800' }, __alloT('stem.money.cash_mat', 'Cash mat')),
+                        [0, 1, 2].map(function (idx) {
+                          return React.createElement('g', { key: 'focus-bill-' + idx, transform: 'translate(' + (58 + idx * 42) + ' 76)' },
+                            React.createElement('rect', { x: 0, y: 0, width: 76, height: 34, rx: 5, fill: 'url(#moneyStudioBillGrad)', stroke: '#dcfce7', strokeWidth: 1.5 }),
+                            React.createElement('circle', { cx: 38, cy: 17, r: 9, fill: '#047857', opacity: 0.45 }),
+                            React.createElement('text', { x: 38, y: 22, textAnchor: 'middle', fill: '#052e16', fontSize: 13, fontWeight: '900' }, cur.symbol)
+                          );
+                        }),
+                        cur.coins.slice(0, 4).map(function (coin, idx) {
+                          return React.createElement('g', { key: 'focus-coin-' + idx },
+                            React.createElement('circle', { cx: 78 + idx * 42, cy: 126, r: 15, fill: coin.color, stroke: '#fef3c7', strokeWidth: 2 }),
+                            React.createElement('text', { x: 78 + idx * 42, y: 131, textAnchor: 'middle', fill: '#1f2937', fontSize: 9, fontWeight: '900' }, coin.label)
+                          );
+                        }),
+                        React.createElement('rect', { x: 305, y: 30, width: 160, height: 110, rx: 12, fill: '#fefce8', stroke: '#facc15', strokeWidth: 2 }),
+                        React.createElement('text', { x: 325, y: 56, fill: '#713f12', fontSize: 15, fontWeight: '900' }, __alloT('stem.money.receipt', 'Receipt')),
+                        React.createElement('line', { x1: 325, y1: 70, x2: 445, y2: 70, stroke: '#ca8a04', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                        React.createElement('text', { x: 325, y: 94, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cash_total', 'Cash') + ': ' + fmt(boardTotal)),
+                        React.createElement('text', { x: 325, y: 116, fill: '#713f12', fontSize: 13, fontWeight: '800' }, __alloT('stem.money.cart_total', 'Cart') + ': ' + fmt(cartGrand)),
+                        React.createElement('rect', { x: 505, y: 30, width: 128, height: 110, rx: 14, fill: '#0f172a', stroke: '#38bdf8', strokeWidth: 2 }),
+                        React.createElement('text', { x: 569, y: 58, textAnchor: 'middle', fill: '#bae6fd', fontSize: 14, fontWeight: '900' }, __alloT('stem.money.goal', 'Goal')),
+                        React.createElement('rect', { x: 527, y: 78, width: 84, height: 14, rx: 7, fill: '#1e293b', stroke: '#64748b', strokeWidth: 1 }),
+                        React.createElement('rect', { x: 527, y: 78, width: Math.max(4, 84 * savingsProgress / 100), height: 14, rx: 7, fill: '#38bdf8' }),
+                        React.createElement('text', { x: 569, y: 116, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 16, fontWeight: '900' }, savingsProgress + '%')
+                      )
+                    )
+                  ),
+                  React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                    routeCards.map(function (card) {
+                      var isActive = tab === card.id;
+                      return React.createElement('button', {
+                        key: card.id,
+                        type: 'button',
+                        onClick: function () { sfxMoneyClick(); upd('tab', card.id); },
+                        'aria-pressed': isActive,
+                        className: 'rounded-xl border p-3 text-left transition-all hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ' +
+                          (isActive ? card.tone : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'),
+                        style: { minHeight: 94 }
+                      },
+                        React.createElement('div', { className: 'flex items-center justify-between gap-2' },
+                          React.createElement('span', { className: 'text-sm font-black' }, card.title),
+                          React.createElement('span', { className: 'text-sm font-black font-mono' }, card.metric)
+                        ),
+                        React.createElement('p', { className: 'text-xs leading-snug mt-1 opacity-80' }, card.body)
+                      );
+                    })
+                  )
+                ),
+                React.createElement('div', { className: 'px-4 pb-4' },
+                  React.createElement('div', { className: 'rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 font-bold flex flex-wrap gap-2 justify-between' },
+                    React.createElement('span', null, __alloT('stem.money.grade', 'Grade') + ': ' + gradeLabel.replace(/^[^\w]+/, '')),
+                    React.createElement('span', null, __alloT('stem.money.currency_3', 'Currency') + ': ' + cur.name),
+                    React.createElement('span', null, challengeMode ? __alloT('stem.money.challenge_on', 'Challenge on') : __alloT('stem.money.practice_mode', 'Practice mode'))
+                  )
+                )
+              );
+            };
+
             return React.createElement("div", { className: "space-y-4 max-w-4xl mx-auto animate-in fade-in duration-200" },
               // ── HEADER ──
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 rounded-2xl p-5 text-white shadow-xl" },
@@ -1431,10 +1579,12 @@ window.StemLab = window.StemLab || {
               ),
 
               // ── TAB BAR ──
-              React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1", role: 'tablist', 'aria-label': __alloT('stem.money.money_tool_sections', 'Money Tool sections') },
+              renderMoneyStudioFocus(),
+
+              React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 bg-slate-100 rounded-xl p-1", role: 'tablist', 'aria-label': __alloT('stem.money.money_tool_sections', 'Money Tool sections') },
                 tabs.map(function (t) {
                   return React.createElement("button", { key: t.id, onClick: function () { upd('tab', t.id); }, role: 'tab', 'aria-selected': tab === t.id,
-                    className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-700 hover:text-emerald-700 hover:bg-white/60')
+                    className: "min-h-[42px] px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === t.id ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-700 hover:text-emerald-700 hover:bg-white/60')
                   }, t.label);
                 })
               ),
@@ -1491,7 +1641,7 @@ window.StemLab = window.StemLab || {
                           width: coin.size + 'px', height: coin.size + 'px', borderRadius: '50%',
                           background: 'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 36%), radial-gradient(circle at 35% 35%, ' + coin.color + ', ' + coin.color + 'cc)',
                           border: '2px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: Math.max(9, coin.size / 3.5) + 'px', fontWeight: 'bold', color: '#333',
+                          fontSize: Math.round(Math.max(9, coin.size / 3.5)) + 'px', fontWeight: 'bold', color: '#333',
                           boxShadow: '0 2px 6px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.4)',
                           cursor: 'pointer', transition: 'all 0.15s'
                         } }, coin.label),
@@ -1788,6 +1938,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("canvas", {
                           ref: function (el) { drawCashierScene(el); },
                           'role': 'img',
+                          tabIndex: 0,
                           'aria-label': 'Cashier counter with ' + crCustomer.items.length + ' items: ' +
                             crCustomer.items.map(function(it) { return it.name; }).join(', '),
                           style: { width: '100%', display: 'block', height: 280 }
@@ -3238,10 +3389,22 @@ window.StemLab = window.StemLab || {
 
               // ═══ DOLLAR ANATOMY ═══
               React.createElement('div', { className: 'mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm' },
-                React.createElement('h4', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.money.dollar_bill_anti_counterfeit_features', '💵 Dollar Bill — Anti-counterfeit features')),
-                React.createElement('div', { className: 'rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', aspectRatio: '16/5' } },
+                React.createElement('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
+                  React.createElement('div', null,
+                    React.createElement('h4', { className: 'text-sm font-bold text-emerald-700' }, __alloT('stem.money.dollar_bill_anti_counterfeit_features', 'Dollar Bill - Anti-counterfeit features')),
+                    React.createElement('p', { className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.money.dollar_lab_summary', 'Open this mini lab when currency security details are the focus.'))
+                  ),
+                  React.createElement('button', {
+                    type: 'button',
+                    onClick: function () { sfxMoneyClick(); upd('showDollarLab', !showDollarLab); },
+                    'aria-expanded': showDollarLab,
+                    className: 'px-3 py-2 rounded-lg text-xs font-bold border border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                  }, showDollarLab ? __alloT('stem.money.hide_dollar_lab', 'Hide mini lab') : __alloT('stem.money.open_dollar_lab', 'Open mini lab'))
+                ),
+                showDollarLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', aspectRatio: '16/5' } },
                   React.createElement('canvas', {
                     'role': 'img',
+                    tabIndex: 0,
                     'aria-label': __alloT('stem.money.detailed_view_of_a_us_dollar_bill', 'Detailed view of a US dollar bill.'),
                     ref: function(cvEl) {
                       if (!cvEl) return;

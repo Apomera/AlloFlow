@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T15:43:06.685Z",
+  "generatedAt": "2026-07-03T17:25:47.093Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 125,
+    "issueCount": 124,
     "errorCount": 0,
-    "warningCount": 109,
+    "warningCount": 108,
     "noticeCount": 16,
-    "toolsWithIssues": 62,
+    "toolsWithIssues": 61,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 55,
-    "toolsWithCanvas": 36,
+    "toolsWithWarnings": 54,
+    "toolsWithCanvas": 35,
     "shellCoverage": {
       "standardShellTools": 114,
       "lightBackgroundTools": [],
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 21,
+        "warningCount": 20,
         "noticeCount": 0
       },
       "Games": {
@@ -172,8 +172,8 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 28,
-      "toolCount": 20,
+      "count": 27,
+      "toolCount": 19,
       "exampleTools": [
         "anatomy",
         "artStudio",
@@ -184,9 +184,9 @@
         "companionPlanting",
         "epidemicSim",
         "logicLab",
-        "moneyMath",
         "musicSynth",
-        "oratory"
+        "oratory",
+        "plateTectonics"
       ],
       "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
     },
@@ -2123,7 +2123,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22800,
+      "renderedBytes": 22805,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2572,7 +2572,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1586,
+      "renderedBytes": 1597,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3093,34 +3093,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.",
-      "renderedBytes": 13160,
+      "renderedBytes": 20980,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 23,
+        "buttons": 29,
         "roleButtons": 0,
         "fields": 2,
-        "canvases": 1,
-        "svgs": 0,
+        "canvases": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moneyMath",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-4xl > div.mt-5.rounded-2xl:nth-of-type(6) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "moonMission",
@@ -3130,7 +3121,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13343,
+      "renderedBytes": 13364,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3586,7 +3577,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17338,
+      "renderedBytes": 17347,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4271,7 +4262,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47689,
+      "renderedBytes": 47691,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4327,7 +4318,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30468,
+      "renderedBytes": 30470,
       "standardShell": true,
       "issueCount": 5,
       "errorCount": 0,

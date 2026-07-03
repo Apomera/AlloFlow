@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T15:43:50.669Z",
+  "generatedAt": "2026-07-03T17:25:07.471Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 46
+    "monitoredMarkerCount": 47
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 46,
+    "markerPassCount": 47,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17204,
+      "htmlBytes": 17209,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17204
+        "htmlBytes": 17209
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13356,
+      "htmlBytes": 13378,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13356
+        "htmlBytes": 13378
       }
     },
     {
@@ -1058,6 +1058,22 @@
         "canvases": 0,
         "headings": 4,
         "htmlBytes": 18817
+      }
+    },
+    {
+      "id": "moneyMath",
+      "file": "stem_tool_money.js",
+      "marker": "data-moneymath-focus",
+      "label": "Money Math studio",
+      "ok": true,
+      "htmlBytes": 22548,
+      "issues": [],
+      "metrics": {
+        "buttons": 33,
+        "fields": 2,
+        "canvases": 0,
+        "headings": 7,
+        "htmlBytes": 22548
       }
     },
     {
