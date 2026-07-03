@@ -10366,7 +10366,7 @@ Return ONLY valid JSON:
             _batchTaggedCachePut(f.id, { stamp: _tagStamp, bytes: _tsBytes, note: _tsNote, entryName: `${safeName}_typeset_tagged.pdf` }); // C4
             continue;
           }
-          _taggedNotes.set(f.id, 'n/a (no PDF bytes — Office input; use the Word/HTML artifacts)');
+          _taggedNotes.set(f.id, 'n/a (Office input — no tagged PDF; use the accessible HTML artifact in the ZIP)'); // M10: only <name>_accessible.html is written per Office file — no Word artifact exists
           continue;
         }
         try { setPdfBatchStep('Tagging ' + f.fileName + '…'); } catch (_) {}
@@ -11348,7 +11348,7 @@ HTML section ${chunkNum}/${chunks.length}:
     let font = await doc.embedFont(StandardFonts.Helvetica);
     let bold = await doc.embedFont(StandardFonts.HelveticaBold);
     let _uniMode = false, _cjkWrap = false;
-    let _typesetFontInfo = null, _unicodeTypesetWarning = null;
+    let _typesetFontInfo = null, _unicodeTypesetWarning = null, _imagesDropped = 0; // M11: count images the typeset PDF drops (too large / non-PNG-JPEG) so the drop is disclosed, not silent
     {
       const _probeDom = new DOMParser().parseFromString(html, 'text/html');
       const _probeText = ((_probeDom.body && _probeDom.body.textContent) || '') + ' '
@@ -11533,7 +11533,7 @@ HTML section ${chunkNum}/${chunks.length}:
       if (tag === 'img') {
         const src = el.getAttribute('src') || '';
         const m = src.match(/^data:image\/(png|jpe?g);base64,(.+)$/i);
-        if (!m || m[2].length > 2800000) continue;
+        if (!m || m[2].length > 2800000) { _imagesDropped++; continue; } // M11: track the drop instead of silently skipping
         try {
           const bytes = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
           const img = /png/i.test(m[1]) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
@@ -11564,12 +11564,13 @@ HTML section ${chunkNum}/${chunks.length}:
     // Pass the content-drop signal so createTaggedPdf WITHHOLDS the PDF/UA-1 declaration when
     // shaping-required / non-WinAnsi text was dropped — a typeset PDF missing its body content
     // must not ship a conformance claim (the HTML/Word exports keep that content).
-    const _tagged = await createTaggedPdf(typesetBytes, fixResult, { ...opts, contentDropped: !!(_unicodeTypesetWarning && _unicodeTypesetWarning.droppedChars > 0) });
+    const _tagged = await createTaggedPdf(typesetBytes, fixResult, { ...opts, contentDropped: !!(_unicodeTypesetWarning && _unicodeTypesetWarning.droppedChars > 0) || _imagesDropped > 0 });
     // Surface the unicode outcome honestly in the summary the UI reads.
     if (_tagged && _tagged.summary) {
       if (_typesetFontInfo) _tagged.summary.typesetFont = _typesetFontInfo;
       if (_unicodeTypesetWarning) _tagged.summary.unicodeTypesetWarning = _unicodeTypesetWarning;
       if (_fieldsCreated > 0) _tagged.summary.fieldsCreated = _fieldsCreated;
+      if (_imagesDropped > 0) _tagged.summary.imagesDropped = _imagesDropped; // M11: disclose dropped images (mirrors the unicode-drop disclosure)
     }
     return _tagged;
   };
@@ -16641,6 +16642,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               // Unknown block type — salvage any content field we recognize instead of silently dropping it,
               // and log the type so we can extend the switch if Gemini starts emitting new shapes.
               const _salvage = block.text || block.title || block.description || block.caption
+                || block.latex || block.value // L5: math/footnote blocks carry their content here, not in .text
                 || (Array.isArray(block.items) ? block.items.join(', ') : '');
               if (block.type) _pipeLog('renderJsonToHtml', 'unknown block type: ' + block.type + ' — salvaged ' + _salvage.length + ' chars');
               return `<div style="margin:0.6em 0">${escapeTextField(_salvage)}</div>`;
@@ -17363,7 +17365,7 @@ ${!hasSrc ? `<button type="button" data-allo-genai onclick="(function(b){b.disab
 ${hasCropData ? `<button onclick="window.__pdfCropImage && window.__pdfCropImage('${imgId}')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#6d28d9;color:#ffffff;border:1px solid #4c1d95;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Adjust crop for this image"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Adjust Crop</button>` : ''}
 </div>
 </div>
-<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc}</span>${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose + '</em>' : ''}</figcaption>
+<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em"><span aria-hidden="true">${desc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>${purpose ? '<br><em style="font-size:0.85em;color:#475569">Purpose: ' + purpose.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</em>' : ''}</figcaption>
 </figure>` + _carriedOut;
           }
         });
@@ -25182,8 +25184,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       let tableHeaderProcessed = false;
       lines.forEach(line => {
           let content = line.trim();
-          content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-          content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+          // M9 (2026-07-03): escape the raw text BEFORE the inline-markdown transforms add their own
+          // intentional HTML (<strong>/<em>/<a>). Without this a stray < & > in AI/teacher text garbles the
+          // export (WCAG 4.1.1) — every downstream interpolation (cells, headings, lists, paragraphs)
+          // derives from `content`, so escaping once here covers them all; the transforms emit safe tags after.
+          content = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          // Anchor emphasis to non-space-bordered runs so math ("2 * 3 * 4", "a * b") is NOT turned into
+          // "2 <em> 3 </em> 4"; only real *emphasis* / **bold** (no space just inside the markers) matches.
+          content = content.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, '<strong>$1</strong>');
+          content = content.replace(/\*(\S(?:.*?\S)?)\*/g, '<em>$1</em>');
           content = content.replace(/\[(.*?)\]\((.*?)\)/g, (match, txt, url) => {
               const isCitation = txt.startsWith('⁽') && txt.endsWith('⁾');
               const style = isCitation ? "text-decoration: none; color: #2563eb;" : "color: #2563eb; text-decoration: underline;";
