@@ -737,6 +737,46 @@ var _alloLatexToSpeakable = function (raw) {
   return s.replace(/"/g, '&quot;');
 };
 
+// ── P2-a (scanned-OCR fidelity, 2026-07-03): deterministic OCR ground-text cleanup ──
+// Scanned OCR captures running-head folios (bare page numbers) on their own lines and splits words
+// across page/line breaks with a trailing hyphen. Nothing downstream removed either, so the folio
+// tokens ("191", "192") and hyphen fragments ("tal," from "developmen-\ntal") polluted the
+// Content-recovery appendix and the OCR ground truth. This runs on `extractedText` (the OCR reconcile
+// output that feeds the transform / restore / integrity) — NOT on the per-page word boxes that draw
+// the positioned searchable layer, so it can't desync those. Two SAFE deterministic passes:
+//   1. drop standalone FOLIO LINES (a line whose entire content is a 1-4 digit number) — done FIRST
+//      so an interposed folio between the two halves of a page-split word is removed before rejoin;
+//   2. rejoin hyphenation across a line/page break (letter-hyphen-whitespace-letter → one word) — the
+//      SAME rule _normIntegrity uses for measurement, now applied to the actual text.
+// Deliberately does NOT touch a number that sits INSIDE a line with other words (a legit value vs a
+// leaked folio can't be told apart deterministically); inline folios in the Vision-generated BODY are
+// a separate, riskier sub-problem left for a body-level pass. Pure + unit-tested via the static.
+var _cleanScannedOcrText = function (s) {
+  if (!s || typeof s !== 'string') return s || '';
+  // 1. drop standalone folio lines (whole line = only a 1-4 digit number)
+  var out = s.split('\n').filter(function (line) { return !/^\s*\d{1,4}\s*$/.test(line); }).join('\n');
+  // 2. rejoin end-of-line/page hyphenation: letter + regular hyphen + whitespace + letter → one word.
+  // (Regular hyphen only — OCR emits a normal '-' at line breaks; no invisible soft-hyphen char in the
+  // regex, per the noncharacter-in-regex lesson.)
+  out = out.replace(/(\p{L})-\s+(\p{L})/gu, '$1$2');
+  // collapse any blank-line runs a dropped folio left behind
+  out = out.replace(/\n{3,}/g, '\n\n');
+  return out;
+};
+
+// ── P2-b (scanned-OCR fidelity, 2026-07-03): strip markdown from restored fragments ──
+// The sentence/word restore passes inject raw OCR SOURCE text via .textContent — AFTER the markdown /
+// JSON renderers already ran — so a markdown ATX heading marker carried in the OCR source (e.g. the
+// "## 9." from section 9's heading) shipped as literal visible text. Strip standalone ATX markers
+// (1-6 hashes bounded by whitespace) before injection. Conservative: ONLY hash-heading syntax, which
+// never legitimately appears in restored prose; everything else is untouched. Pure + unit-tested.
+var _stripRestoreMarkdown = function (s) {
+  return String(s == null ? '' : s)
+    .replace(/(^|\s)#{1,6}(?=\s)/g, '$1')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+};
+
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -15882,7 +15922,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           _tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === 'number' && p.pageNum >= _rs && p.pageNum <= _re);
         }
         const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
-        extractedText = rec.fullText || tessResult.fullText || visionResult.fullText || '';
+        // P2-a: clean the reconciled OCR ground text (drop standalone folios, rejoin page-break
+        // hyphenation) before it feeds the transform / restore / integrity. rec.pages (the word boxes
+        // for the positioned searchable layer) is left untouched below, so this can't desync it.
+        extractedText = _cleanScannedOcrText(rec.fullText || tessResult.fullText || visionResult.fullText || '');
         // Parity check (2026-06-29): when we forced OCR because a present text layer / banked seed looked
         // garbled, only KEEP the OCR result if it is no junkier than that discarded original — otherwise
         // restore the original. _textLayerLooksGarbage can false-positive (unmapped decorative-font glyphs
@@ -18422,7 +18465,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // loss, suppressing the "review the Diff" warning. Strip it (same selector the
         // restorer/dedup passes already exclude on) before measuring the final text.
         const _stripRecoveryAppendix = (h) => String(h || '')
-          .replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
+          .replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ')
+          // P2-d: the "Preserved source content" sink holds UN-ANCHORED passages — content that could
+          // not be placed in context. Exclude it from the coverage numerator too, so un-anchored text
+          // can't inflate the "100% preserved" reading (present-anywhere ≠ correctly-in-place).
+          .replace(/<section\b[^>]*\bdata-source-preserved-block\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
         const _finalForIntegrity = _stripRecoveryAppendix(accessibleHtml);
         let groundTruth, finalText, groundTruthMethod;
         if (_srcRaw) {
@@ -18448,6 +18495,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           } else if (!_silentMode && integrityCoverage >= 98) {
             addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
           }
+          // P2-d: coverage counts characters PRESENT, not correctly PLACED — a whole section whose body
+          // was mis-anchored (grafted after the wrong heading) still reads ~100%. Count the restore
+          // passages and warn EXPLICITLY, so a high coverage number can't imply the document is
+          // distribution-ready when the reading order for some passages may be wrong.
+          try {
+            const _restoredN = (accessibleHtml.match(/data-source-restored\s*=\s*["']true["']/gi) || []).length;
+            if (_restoredN > 0) {
+              const _hasSink = /data-source-preserved-block\s*=\s*["']true["']/i.test(accessibleHtml);
+              const _placeWarn = `${_restoredN} source passage${_restoredN === 1 ? '' : 's'} could not be confidently placed in ${_restoredN === 1 ? 'its' : 'their'} original location during remediation${_hasSink ? ' (some gathered in the "Preserved source content" box)' : ''} — the text is present but the reading order may be wrong for ${_restoredN === 1 ? 'it' : 'them'}. Review before distributing.`;
+              integrityWarning = integrityWarning ? (integrityWarning + ' ' + _placeWarn) : _placeWarn;
+              if (!_silentMode) addToast('⚠ ' + _placeWarn, 'warning');
+              warnLog('[Integrity] PLACEMENT — ' + _placeWarn);
+            }
+          } catch (_) {}
         }
         // P1 value-fidelity (2026-06-20): the char-coverage gate above is BULK — a swapped or dropped
         // NUMBER barely moves the char count and slips under 97%, and the word-SET integrity check can't
@@ -24504,11 +24565,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // "Conclusion Our planet is seven-tenths ocean." paragraph to be inserted).
       const anchorCandidates = [];
       if (sentIdx > 0) anchorCandidates.push(sourceSentences[sentIdx - 1]);
-      if (sentIdx + 1 < sourceSentences.length) anchorCandidates.push(sourceSentences[sentIdx + 1]);
+      // P2-c: remember the FOLLOWING-sentence anchor so the insert can tell "this sentence precedes the
+      // anchor block" (end of the prior section) from "it follows the anchor block".
+      const _followingAnchor = (sentIdx + 1 < sourceSentences.length) ? sourceSentences[sentIdx + 1] : null;
+      if (_followingAnchor != null) anchorCandidates.push(_followingAnchor);
       // Two-tier threshold: 0.6 first pass over all candidates, 0.4 fallback. Catches cases where
       // both neighbors were heavily paraphrased but still share distinctive vocabulary.
       const pickBest = (minScore) => {
-        let best = null, bestSc = 0;
+        let best = null, bestSc = 0, bestAnchor = null;
         for (const anchor of anchorCandidates) {
           const anchorWords = wordSet(anchor);
           if (anchorWords.size < 3) continue;
@@ -24516,10 +24580,10 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
             let common = 0;
             anchorWords.forEach(w => { if (b.words.has(w)) common++; });
             const score = common / anchorWords.size;
-            if (score > bestSc) { bestSc = score; best = b; }
+            if (score > bestSc) { bestSc = score; best = b; bestAnchor = anchor; }
           }
         }
-        return bestSc >= minScore ? { block: best, score: bestSc } : null;
+        return bestSc >= minScore ? { block: best, score: bestSc, anchorIsFollowing: (bestAnchor != null && bestAnchor === _followingAnchor) } : null;
       };
       const matched = pickBest(0.6) || pickBest(0.5); // raised 0.4→0.5 (2026-06-23): a sub-50% anchor is too weak to graft into; route to Preserved instead
       if (!matched) {
@@ -24571,8 +24635,20 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       if (bestBlock.el.parentNode && !_unsafeSentenceTarget(bestBlock.el)) {
         const newP = doc.createElement('p');
         newP.setAttribute('data-source-restored', 'true');
-        newP.textContent = targetSentence;
-        bestBlock.el.parentNode.insertBefore(newP, bestBlock.el.nextSibling);
+        newP.textContent = _stripRestoreMarkdown(targetSentence); // P2-b: no raw markdown as literal text
+        // P2-c: when the winning anchor was the FOLLOWING source sentence AND the matched block is a
+        // HEADING, this sentence is the content that comes right BEFORE that heading in the source — the
+        // END of the section the heading terminates — so insert it BEFORE the heading (which lands it in
+        // the PRECEDING section) instead of after. Without this, a whole section body whose only surviving
+        // neighbor is the NEXT section's heading grafts after that heading — e.g. an empty
+        // "8. Medical History" with its body dumped after "9. Summary of Prior Evaluations". Any other
+        // case keeps the original after-the-anchor placement.
+        const _anchorIsHeading = /^H[1-6]$/.test((bestBlock.el.tagName || '').toUpperCase());
+        if (matched.anchorIsFollowing && _anchorIsHeading) {
+          bestBlock.el.parentNode.insertBefore(newP, bestBlock.el);
+        } else {
+          bestBlock.el.parentNode.insertBefore(newP, bestBlock.el.nextSibling);
+        }
         usedSentenceIndices.add(sentIdx);
         restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100 });
         // Refresh the inserted block's word set so subsequent anchors can match it if needed
@@ -24605,7 +24681,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       orphanIdxSorted.forEach(i => {
         const p = doc.createElement('p');
         p.setAttribute('data-source-restored', 'true');
-        p.textContent = sourceSentences[i];
+        p.textContent = _stripRestoreMarkdown(sourceSentences[i]); // P2-b: no raw markdown as literal text
         section.appendChild(p);
       });
       const main = body.querySelector('main');
@@ -30974,6 +31050,8 @@ window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: al
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
+window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
+window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsToChunks; // static: $4 violation→chunk router (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
