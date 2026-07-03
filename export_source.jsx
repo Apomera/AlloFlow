@@ -59,6 +59,78 @@ const createExport = (deps) => {
     };
 
     const cleanTextForPptx = (text) => text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '';
+    const _fallbackInteractiveObjectProfileFor = (item) => {
+        const type = item && item.type ? String(item.type) : '';
+        const unsupported = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
+        const interactive = new Set(['glossary', 'quiz', 'sentence-frames', 'concept-sort', 'fluency-record']);
+        return {
+            profileVersion: 'fallback',
+            type,
+            label: type || 'Resource',
+            status: unsupported.has(type) ? 'adapter-needed' : 'ready',
+            html: unsupported.has(type) ? 'none' : (interactive.has(type) ? 'interactive' : 'static'),
+            canExportHtml: !unsupported.has(type),
+            canExportIms: !unsupported.has(type),
+            interactiveHtml: interactive.has(type),
+            qti: type === 'quiz',
+            tracking: type === 'quiz' ? 'qti-or-local' : (interactive.has(type) ? 'local-only' : 'none'),
+            fallback: unsupported.has(type) ? 'adapter-needed' : 'static-html',
+            notes: unsupported.has(type) ? 'No IMS object adapter is registered for this type.' : 'Renderable through the resource HTML exporter.',
+        };
+    };
+    const getInteractiveObjectProfileFor = (item) => {
+        const current = liveRef.current || {};
+        if (typeof current.interactiveObjectProfileFor === 'function') return current.interactiveObjectProfileFor(item);
+        const factory = window.AlloModules && window.AlloModules.createDocPipeline;
+        if (factory && typeof factory.interactiveObjectProfileFor === 'function') return factory.interactiveObjectProfileFor(item);
+        return _fallbackInteractiveObjectProfileFor(item);
+    };
+    const getInteractiveObjectManifestItem = (item, extra) => {
+        const current = liveRef.current || {};
+        if (typeof current.interactiveObjectManifestItem === 'function') return current.interactiveObjectManifestItem(item, extra);
+        const factory = window.AlloModules && window.AlloModules.createDocPipeline;
+        if (factory && typeof factory.interactiveObjectManifestItem === 'function') return factory.interactiveObjectManifestItem(item, extra);
+        const p = getInteractiveObjectProfileFor(item);
+        return Object.assign({
+            id: item && item.id ? String(item.id) : '',
+            type: p.type,
+            title: item && item.title ? String(item.title) : p.label,
+            label: p.label,
+            status: p.status,
+            html: p.html,
+            canExportHtml: p.canExportHtml,
+            canExportIms: p.canExportIms,
+            interactiveHtml: p.interactiveHtml,
+            qti: p.qti,
+            tracking: p.tracking,
+            fallback: p.fallback,
+            notes: p.notes,
+        }, extra || {});
+    };
+    const getInteractiveObjectProfileSummary = (items) => {
+        const current = liveRef.current || {};
+        if (typeof current.interactiveObjectProfileSummary === 'function') return current.interactiveObjectProfileSummary(items);
+        const factory = window.AlloModules && window.AlloModules.createDocPipeline;
+        if (factory && typeof factory.interactiveObjectProfileSummary === 'function') return factory.interactiveObjectProfileSummary(items);
+        const arr = Array.isArray(items) ? items : [];
+        return arr.reduce((summary, item) => {
+            const p = getInteractiveObjectProfileFor(item);
+            summary.total++;
+            if (p.canExportHtml) summary.htmlReady++;
+            if (p.interactiveHtml) summary.interactiveReady++;
+            if (p.canExportIms) summary.imsReady++;
+            if (p.qti) summary.qtiReady++;
+            if (p.status === 'adapter-needed' || p.status === 'partial') summary.adapterNeeded++;
+            if (p.status === 'unsupported') summary.unsupported++;
+            summary.byStatus[p.status] = (summary.byStatus[p.status] || 0) + 1;
+            return summary;
+        }, { profileVersion: 'fallback', total: 0, htmlReady: 0, interactiveReady: 0, imsReady: 0, qtiReady: 0, adapterNeeded: 0, unsupported: 0, byStatus: {} });
+    };
+    const _jsonForHtmlScript = (value) => String(JSON.stringify(value == null ? null : value)).replace(/</g, '\\u003c');
+    const _safeXmlIdentifier = (prefix, raw, idx) => {
+        const body = String(raw || idx || Date.now()).replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || String(idx || '0');
+        return `${prefix}-${body}`;
+    };
 
     // exportLanguagePack NOT extracted — it stays inside useTranslation hook
     // because it closes over languagePack + targetLanguage state that aren't
@@ -262,23 +334,68 @@ const createExport = (deps) => {
         const manifestId = `MANIFEST-${Date.now()}`;
         const orgId = `ORG-${Date.now()}`;
         const defaultTitle = t('export.ims_resource_pack');
-        const itemsToExport = history.filter(item => {
+        const packagedEntries = [];
+        const skippedEntries = [];
+        history.forEach((item, originalIndex) => {
+            const profile = getInteractiveObjectProfileFor(item);
+            if (!profile.canExportIms) {
+                skippedEntries.push(getInteractiveObjectManifestItem(item, {
+                    originalIndex,
+                    reason: 'no-ims-adapter',
+                }));
+                return;
+            }
             const html = generateResourceHTML(item, false, studentResponses);
-            return html && html.trim() !== '';
+            if (html && String(html).trim() !== '') {
+                packagedEntries.push({ item, html, profile, originalIndex });
+            } else {
+                skippedEntries.push(getInteractiveObjectManifestItem(item, {
+                    originalIndex,
+                    reason: 'empty-render',
+                }));
+            }
         });
+        if (!packagedEntries.length) {
+            addToast('No IMS-compatible resources are ready to package yet.', 'error');
+            return;
+        }
+        const packageProfile = {
+            kind: 'alloflow.ims-object-profile',
+            generatedAt: new Date().toISOString(),
+            topic: sourceTopic || defaultTitle,
+            summary: getInteractiveObjectProfileSummary(history),
+            packaged: packagedEntries.map((entry, idx) => getInteractiveObjectManifestItem(entry.item, {
+                originalIndex: entry.originalIndex,
+                packageIndex: idx,
+                filename: `resource_${idx}.html`,
+                renderedInIms: true,
+            })),
+            skipped: skippedEntries,
+        };
+        zip.file("alloflow-object-profile.json", JSON.stringify(packageProfile, null, 2).replace(/</g, '\\u003c'));
         let resourcesXml = '';
         let itemsXml = '';
-        itemsToExport.forEach((item, idx) => {
-            const itemId = `ITEM-${item.id}`;
-            const resId = `RES-${item.id}`;
+        packagedEntries.forEach((entry, idx) => {
+            const item = entry.item;
+            const itemId = _safeXmlIdentifier('ITEM', item && item.id, idx);
+            const resId = _safeXmlIdentifier('RES', item && item.id, idx);
             const filename = `resource_${idx}.html`;
             const title = item.title || getDefaultTitle(item.type);
+            const titleXml = escapeXml(title);
+            const resourceProfile = getInteractiveObjectManifestItem(item, {
+                originalIndex: entry.originalIndex,
+                packageIndex: idx,
+                filename,
+                renderedInIms: true,
+            });
             const contentHtml = `
                 <!DOCTYPE html>
-                <html>
+                <html lang="en">
                 <head>
                     <meta charset="UTF-8">
-                    <title>${title}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${titleXml}</title>
+                    <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForHtmlScript(resourceProfile)}</script>
                     <style>
                         body { font-family: system-ui, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
                         img { max-width: 100%; height: auto; }
@@ -289,30 +406,35 @@ const createExport = (deps) => {
                     </style>
                 </head>
                 <body>
-                    ${generateResourceHTML(item, false, studentResponses)}
+                    ${entry.html}
                 </body>
                 </html>
             `;
             zip.file(filename, contentHtml);
-            itemsXml += `<item identifier="${itemId}" identifierref="${resId}"><title>${title}</title></item>`;
+            itemsXml += `<item identifier="${escapeXml(itemId)}" identifierref="${escapeXml(resId)}"><title>${titleXml}</title></item>`;
             resourcesXml += `<resource identifier="${resId}" type="webcontent" href="${filename}"><file href="${filename}"/></resource>`;
         });
+        const manifestTitle = escapeXml(sourceTopic || defaultTitle);
+        const manifestDescription = escapeXml(`AlloFlow resource package: ${packagedEntries.length} packaged, ${skippedEntries.length} skipped. See alloflow-object-profile.json for static/interactive/LMS compatibility details.`);
         const manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:lom="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2.xsd">
   <metadata>
-    <schema>${t('common.ims_content') || 'IMS Content'}</schema>
+    <schema>${escapeXml(t('common.ims_content') || 'IMS Content')}</schema>
     <schemaversion>1.1</schemaversion>
     <lom:lom>
       <lom:general>
         <lom:title>
-          <lom:string language="en">${sourceTopic || defaultTitle}</lom:string>
+          <lom:string language="en">${manifestTitle}</lom:string>
         </lom:title>
+        <lom:description>
+          <lom:string language="en">${manifestDescription}</lom:string>
+        </lom:description>
       </lom:general>
     </lom:lom>
   </metadata>
   <organizations default="${orgId}">
     <organization identifier="${orgId}">
-      <title>${sourceTopic || defaultTitle}</title>
+      <title>${manifestTitle}</title>
       ${itemsXml}
     </organization>
   </organizations>

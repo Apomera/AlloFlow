@@ -28,6 +28,106 @@ var PIPELINE_DEFAULTS = { targetScore: 95 };
 // if the model's output budget changes, change it here. (Vision page-chunking is separate:
 // PAGES_PER_CHUNK is sized to output tokens per PAGE, not chars.)
 var GEMINI_CHUNK_CHARS = 16000;
+var ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION = '2026.07.03';
+var ALLO_INTERACTIVE_OBJECT_PROFILES = {
+  analysis: { label: 'Source Analysis', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-report', notes: 'Exports as a readable analysis report.' },
+  simplified: { label: 'Leveled Text', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'readable-passage', notes: 'Exports as semantic reading content with optional read-aloud processing.' },
+  glossary: { label: 'Glossary', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'table', notes: 'Flash-card/self-test modes run in the downloaded HTML; LMS scoring is not reported.' },
+  outline: { label: 'Graphic Organizer', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'responsive-diagram', notes: 'Exports as a responsive organizer with text fallback styling.' },
+  image: { label: 'Visual Support', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'image-with-alt', notes: 'Exports the generated image and its accessible description when available.' },
+  quiz: { label: 'Quiz', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, qti: true, tracking: 'qti-or-local', fallback: 'worksheet-questions', notes: 'HTML supports local student responses; QTI export is the tracked LMS path.' },
+  'sentence-frames': { label: 'Sentence Frames', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'writing-prompts', notes: 'Students can type in downloaded HTML; responses save locally unless submitted separately.' },
+  brainstorm: { label: 'Brainstorm', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'idea-list', notes: 'Exports as a readable idea set.' },
+  timeline: { label: 'Timeline', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'chronology', notes: 'Exports as a chronological visual/resource.' },
+  'concept-sort': { label: 'Concept Sort', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'categorized-list', notes: 'Sort/check/reset runs offline; LMS score passback needs a future xAPI/LTI layer.' },
+  faq: { label: 'FAQ', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'question-answer-list', notes: 'Exports as semantic questions and answers.' },
+  dbq: { label: 'Document-Based Question', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'document-packet', notes: 'Exports sources, prompts, and rubric; essay capture is handled by worksheet/submission flows.' },
+  'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
+  'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
+  math: { label: 'STEM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
+  'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
+  'gemini-bridge': { label: 'Generated Interactive Artifact', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'code-snapshot', notes: 'Exports the generated artifact/code text. Running apps need packaged assets and sandboxing.' },
+  'alignment-report': { label: 'Alignment Report', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'audit-report', notes: 'Exports as a standards-alignment report.' },
+  'udl-advice': { label: 'UDL Strategies', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'strategy-list', notes: 'Exports as teacher/student strategy guidance depending on toggles.' },
+  'fluency-record': { label: 'Fluency Record', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'none', fallback: 'metrics-report', notes: 'Exports fluency metrics and optional offline audio playback when the recording is present.' },
+  adventure: { label: 'Adventure', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'storybook-export', notes: 'Use the dedicated storybook export until adventure scenes can be packaged as a resource object.' },
+  persona: { label: 'Persona Chat', status: 'unsupported', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'live-runtime', fallback: 'transcript-snapshot-needed', notes: 'Live chat needs a model/session runtime; export should use a transcript snapshot once implemented.' },
+  'word-sounds': { label: 'Word Sounds Studio', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'Studio tools need their own package adapter.' },
+  'storyforge-config': { label: 'StoryForge Assignment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'studio-adapter-needed', notes: 'StoryForge packages need a separate object adapter.' },
+  'storyforge-submission': { label: 'Story Submission', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'none', fallback: 'submission-export', notes: 'Student submissions are not standard resource objects yet.' },
+  'stem-assessment': { label: 'STEM Assessment', status: 'adapter-needed', html: 'none', canExportHtml: false, canExportIms: false, interactiveHtml: false, tracking: 'assessment-runtime', fallback: 'assessment-adapter-needed', notes: 'Needs assessment-specific packaging/tracking.' },
+};
+function _alloInteractiveObjectProfileFor(typeOrItem) {
+  var type = typeof typeOrItem === 'string' ? typeOrItem : ((typeOrItem && typeOrItem.type) || '');
+  var base = ALLO_INTERACTIVE_OBJECT_PROFILES[type] || {
+    label: type || 'Unknown resource',
+    status: 'unsupported',
+    html: 'none',
+    canExportHtml: false,
+    canExportIms: false,
+    interactiveHtml: false,
+    tracking: 'none',
+    fallback: 'adapter-needed',
+    notes: 'No export profile is registered for this resource type yet.'
+  };
+  return {
+    profileVersion: ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION,
+    type: type,
+    label: base.label,
+    status: base.status,
+    html: base.html,
+    canExportHtml: !!base.canExportHtml,
+    canExportIms: !!base.canExportIms,
+    interactiveHtml: !!base.interactiveHtml,
+    qti: !!base.qti,
+    tracking: base.tracking || 'none',
+    fallback: base.fallback || '',
+    notes: base.notes || ''
+  };
+}
+function _alloInteractiveObjectManifestItem(item, extra) {
+  var profile = _alloInteractiveObjectProfileFor(item);
+  return Object.assign({
+    id: item && item.id ? String(item.id) : '',
+    type: profile.type,
+    title: item && item.title ? String(item.title) : profile.label,
+    label: profile.label,
+    status: profile.status,
+    html: profile.html,
+    canExportHtml: profile.canExportHtml,
+    canExportIms: profile.canExportIms,
+    interactiveHtml: profile.interactiveHtml,
+    qti: profile.qti,
+    tracking: profile.tracking,
+    fallback: profile.fallback,
+    notes: profile.notes
+  }, extra || {});
+}
+function _alloInteractiveObjectProfileSummary(items) {
+  var arr = Array.isArray(items) ? items : [];
+  var out = {
+    profileVersion: ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION,
+    total: arr.length,
+    htmlReady: 0,
+    interactiveReady: 0,
+    imsReady: 0,
+    qtiReady: 0,
+    adapterNeeded: 0,
+    unsupported: 0,
+    byStatus: {}
+  };
+  arr.forEach(function (item) {
+    var p = _alloInteractiveObjectProfileFor(item);
+    if (p.canExportHtml) out.htmlReady++;
+    if (p.interactiveHtml) out.interactiveReady++;
+    if (p.canExportIms) out.imsReady++;
+    if (p.qti) out.qtiReady++;
+    if (p.status === 'adapter-needed' || p.status === 'partial') out.adapterNeeded++;
+    if (p.status === 'unsupported') out.unsupported++;
+    out.byStatus[p.status] = (out.byStatus[p.status] || 0) + 1;
+  });
+  return out;
+}
 // Axe-weighted score on the shared severity weights (was re-derived inline at 4+ sites).
 var _alloAxeWeightedScore = function (ax) {
   if (!ax) return 0;
@@ -27573,8 +27673,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         }
         return true;
       };
-      const _renderableStudent = historyItems.filter(it => _willRenderForCtx(it, false));
-      const _renderableTeacher = cfg.includeTeacherKey ? historyItems.filter(it => _willRenderForCtx(it, true)) : [];
+      const _materializeRenderable = (items, isTeacher) => {
+        return items
+          .filter(it => _willRenderForCtx(it, isTeacher))
+          .map((it) => ({ item: it, html: generateResourceHTML(it, isTeacher, responses, cfg) }))
+          .filter(entry => entry.html && String(entry.html).trim() !== '');
+      };
+      const _studentEntries = _materializeRenderable(historyItems, false);
+      const _teacherEntries = cfg.includeTeacherKey ? _materializeRenderable(historyItems, true) : [];
       const _wrapSection = (item, idx, total, html) => {
         if (!html) return '';
         const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
@@ -27614,10 +27720,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           </nav>
         `;
       };
-      const studentContent = _renderableStudent.map((item, i) => _wrapSection(item, i, _renderableStudent.length, generateResourceHTML(item, false, responses, cfg))).join('');
-      const teacherContent = _renderableTeacher.map((item, i) => _wrapSection(item, i, _renderableTeacher.length, generateResourceHTML(item, true, responses, cfg))).join('');
-      const studentTOC = _buildTOC(_renderableStudent, false);
-      const teacherTOC = _buildTOC(_renderableTeacher, true);
+      const studentContent = _studentEntries.map((entry, i) => _wrapSection(entry.item, i, _studentEntries.length, entry.html)).join('');
+      const teacherContent = _teacherEntries.map((entry, i) => _wrapSection(entry.item, i, _teacherEntries.length, entry.html)).join('');
+      const studentTOC = _buildTOC(_studentEntries.map(entry => entry.item), false);
+      const teacherTOC = _buildTOC(_teacherEntries.map(entry => entry.item), true);
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
@@ -27850,6 +27956,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         });
       }
       const _jsonForScript = (value) => String(JSON.stringify(value == null ? null : value)).replace(/</g, '\\u003c');
+      const _hasRenderedEntry = (entries, item) => entries.some((entry) => {
+        if (!entry || !entry.item || !item) return false;
+        if (entry.item === item) return true;
+        return !!(entry.item.id && item.id && String(entry.item.id) === String(item.id));
+      });
+      const _objectProfileManifest = {
+        kind: 'alloflow.interactive-object-profile',
+        profileVersion: ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION,
+        generatedAt: new Date().toISOString(),
+        topic: lessonTopic,
+        summary: _alloInteractiveObjectProfileSummary(historyItems),
+        resources: historyItems.map((item) => _alloInteractiveObjectManifestItem(item, {
+          renderedInStudentHtml: _hasRenderedEntry(_studentEntries, item),
+          renderedInTeacherHtml: _hasRenderedEntry(_teacherEntries, item),
+        })),
+      };
       const _headerColors = _accessibleHeaderColors(theme.headerBg) || { bg: theme.headerBg, fg: theme.headerText || '#ffffff' };
       const rawHtml = `
       <!DOCTYPE html>
@@ -27859,6 +27981,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
+        <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForScript(_objectProfileManifest)}</script>
         ${_submissionPublicKeyJson}
         ${_submissionEncryptScript}
         <style>
@@ -30741,6 +30864,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     generateCustomExportStyle: _wrapAsync(generateCustomExportStyle),
     parseMarkdownToHTML: _wrap(parseMarkdownToHTML),
     generateResourceHTML: _wrap(generateResourceHTML),
+    interactiveObjectProfileFor: _wrap(_alloInteractiveObjectProfileFor),
+    interactiveObjectManifestItem: _wrap(_alloInteractiveObjectManifestItem),
+    interactiveObjectProfileSummary: _wrap(_alloInteractiveObjectProfileSummary),
+    INTERACTIVE_OBJECT_PROFILE_VERSION: ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION,
     EXPORT_THEMES,
     STYLE_SEEDS,
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
@@ -30765,6 +30892,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.createDocPipeline.interactiveObjectProfileFor = _alloInteractiveObjectProfileFor;
+window.AlloModules.createDocPipeline.interactiveObjectManifestItem = _alloInteractiveObjectManifestItem;
+window.AlloModules.createDocPipeline.interactiveObjectProfileSummary = _alloInteractiveObjectProfileSummary;
+window.AlloModules.createDocPipeline.INTERACTIVE_OBJECT_PROFILE_VERSION = ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION;
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
