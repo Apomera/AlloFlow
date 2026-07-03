@@ -337,6 +337,20 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(data.instructions).toMatch(/Instructions/i);
     expect(data.questions.map(q => q.prompt)).toEqual(['Question 1', 'Question 2', 'Question 3']);
   });
+  it('worksheet bridge emits a linear, semantic worksheet document (ol/li + answer regions)', () => {
+    const ws = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
+    const html = ST.stExportWorksheetHtml(ws, { lang: 'en' });
+    expect(html).toMatch(/<h1>Worksheet title<\/h1>/);
+    expect(html).toContain('<ol class="st-ws-questions">');
+    // one <li> per numbered question (the worksheet template ships 3)
+    expect((html.match(/<li>/g) || []).length).toBe(3);
+    // each question gets a labeled answer region for accessible tagged output
+    expect((html.match(/aria-label="Answer space"/g) || []).length).toBe(3);
+    // prompts are stripped of their leading number (that came from the H2 role)
+    expect(html).toContain('<p class="st-ws-prompt">Question 1</p>');
+    expect(html).not.toMatch(/<p class="st-ws-prompt">1\. /);
+    expect(html).toMatch(/^<!DOCTYPE html>/);
+  });
   it('carries text alignment and bold from object.update into the HTML export', () => {
     // The property-panel align/bold controls dispatch object.update{patch.runs}.
     // Lock that the exported CSS honors both (DOM order = reading order stays real).

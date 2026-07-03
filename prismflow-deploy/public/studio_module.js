@@ -520,6 +520,28 @@
     return out;
   }
 
+  // Worksheet BRIDGE (doc §11): turn the VISUAL worksheet into a LINEAR,
+  // semantically-structured worksheet document — real <ol>/<li> questions with
+  // labeled answer regions — so it flows through the same accessible export
+  // pipeline (tagged PDF / HTML) as a proper worksheet, not just a page picture.
+  // Distinct from stExportHtml (the pixel-faithful design snapshot).
+  function stExportWorksheetHtml(doc, opts) {
+    var lang = (opts && opts.lang) || 'en';
+    var data = stExportWorksheetData(doc);
+    var parts = ['<h1>' + stEscapeHtml(data.title) + '</h1>'];
+    if (data.instructions) parts.push('<p class="st-ws-instructions">' + stEscapeHtml(data.instructions) + '</p>');
+    if (data.questions.length) {
+      parts.push('<ol class="st-ws-questions">');
+      data.questions.forEach(function (q) {
+        parts.push('<li><p class="st-ws-prompt">' + stEscapeHtml(q.prompt) + '</p>'
+          + (q.supportText ? '<p class="st-ws-support">' + stEscapeHtml(q.supportText).replace(/\n/g, '<br>') + '</p>' : '')
+          + '<div class="st-ws-answer" role="group" aria-label="Answer space"></div></li>');
+      });
+      parts.push('</ol>');
+    }
+    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(data.title) + '</title>\n<style>\n  body { font-family: system-ui, sans-serif; color: #111827; max-width: 720px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }\n  h1 { font-size: 28px; }\n  .st-ws-instructions { background: #fef9c3; padding: 10px 12px; border-radius: 8px; }\n  .st-ws-questions { padding-left: 28px; }\n  .st-ws-questions > li { margin: 18px 0; }\n  .st-ws-prompt { font-weight: 600; margin: 0 0 6px; }\n  .st-ws-support { color: #374151; margin: 0 0 8px; }\n  .st-ws-answer { min-height: 96px; border: 1px solid #cbd5e1; border-radius: 8px; }\n  @media print { .st-ws-answer { min-height: 120px; } }\n</style>\n</head>\n<body>\n<main>\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
+  }
+
   function stExportProcessMarkdown(doc, role) {
     var s = stActorSummary((doc.ledger && doc.ledger.ops) || []);
     var mins = Math.max(1, Math.round(s.activeMs / 60000));
@@ -1093,6 +1115,17 @@
       download(new Blob([JSON.stringify(stExportWorksheetData(doc), null, 2)], { type: 'application/json' }), safeName() + '.worksheet.json');
       addToast(TT('studio.exported_worksheet', 'Worksheet data downloaded.'), 'success');
     };
+    var exportWorksheetHtml = function () {
+      download(new Blob([stExportWorksheetHtml(doc, { lang: 'en' })], { type: 'text/html' }), safeName() + '.worksheet.html');
+      addToast(TT('studio.exported_worksheet_html', '📝 Structured worksheet HTML downloaded — real questions and answer spaces.'), 'success');
+    };
+    var exportWorksheetPdf = function () {
+      if (typeof props.onExportTaggedPdf !== 'function') { addToast(TT('studio.tagged_unavailable', 'Tagged PDF export needs the document pipeline — open AlloStudio from the main app.'), 'error'); return; }
+      addToast(TT('studio.ws_building', '📝 Building a structured, tagged worksheet…'), 'info');
+      Promise.resolve(props.onExportTaggedPdf(stExportWorksheetHtml(doc, { lang: 'en' }), (doc.title || 'Worksheet') + ' (worksheet)'))
+        .then(function (ok) { if (ok !== false) addToast(TT('studio.ws_done', '✅ Structured worksheet PDF downloaded (real questions + answer spaces).'), 'success'); })
+        .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
+    };
     var exportProcess = function () {
       download(new Blob([stExportProcessMarkdown(doc, role)], { type: 'text/markdown' }), safeName() + '.process.md');
       addToast(TT('studio.exported_process', 'Process reflection downloaded.'), 'success');
@@ -1413,7 +1446,9 @@
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
           h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
           h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
-          h('button', { style: S.tool, onClick: exportWorksheet }, 'Worksheet JSON'),
+          h('button', { style: Object.assign({}, S.tool, { borderColor: C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')),
+          h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')),
+          h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
           h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: '#b91c1c', fontWeight: 700 } },
             '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
@@ -1494,6 +1529,7 @@
   AlloStudio.stAnalyzeDoc = stAnalyzeDoc;
   AlloStudio.stContrastRatio = stContrastRatio;
   AlloStudio.stExportWorksheetData = stExportWorksheetData;
+  AlloStudio.stExportWorksheetHtml = stExportWorksheetHtml;
   AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
