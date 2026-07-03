@@ -1,6 +1,6 @@
 # SEL Hub Browser QA
 
-Generated: 2026-07-02T20:41:53.442Z
+Generated: 2026-07-03T00:28:49.080Z
 
 Harness: standalone SEL Hub and AlloHaven browser fixture
 

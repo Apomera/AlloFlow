@@ -672,6 +672,26 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'OpenGrooveCore',
+        filename: 'music_studio/open_groove_core.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveScheduler',
+        filename: 'music_studio/open_groove_scheduler.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveAudio',
+        filename: 'music_studio/open_groove_audio.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'OpenGrooveStudio',
+        filename: 'music_studio/open_groove_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ClozeInteractionPanel',
         filename: 'view_cloze_interaction_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -813,6 +833,9 @@ const MODULES = [
 const PLUGIN_FILES = [
     'error_reporter_module.js',
     'ai_backend_module.js',
+    'psychometric_probes.json',
+    'psychometric_math_probes.json',
+    'psychometric_literacy_probes.json',
     'kokoro_tts_loader.js',
     'piper_tts_loader.js',
     'stem_lab/stem_tool_arccity.js',

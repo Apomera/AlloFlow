@@ -27,7 +27,7 @@
    - [FAQ Generator](#-faq-generator)
    - [Socratic Tutor](#-socratic-tutor)
 5. [Word Sounds Studio](#5-word-sounds-studio)
-6. [STEM Lab (108 Tools)](#6-stem-lab)
+6. [STEM Lab (111 tool files / 116 registered IDs)](#6-stem-lab)
 7. [Educator Tools Hub](#7-educator-tools-hub-teachergate-gated)
    - [Student Analytics & RTI Dashboard](#-student-analytics--rti-dashboard)
    - [Psychometric & CBM Probes](#-psychometric--cbm-probes)
@@ -80,7 +80,9 @@ AlloFlow is built upon the principles of Universal Design for Learning (UDL), a 
 
 | Capability | Description |
 | :--- | :--- |
-| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite) load dynamically only when accessed, improving performance on older school devices. ~250 spoke modules served from the Cloudflare Pages CDN. |
+| **Hub-and-Spoke Architecture** | Heavy modules (STEM Lab, Clinical Suite, studios, document pipeline) load dynamically only when accessed, improving performance on older school devices. The July 2026 build map includes 151 top-level modules plus large plugin families served from Cloudflare Pages. |
+| **AlloStudio** | Born-accessible flyer/worksheet/digital-art studio: real text, explicit reading order, image alt/decorative gates, and process/provenance history. |
+| **Open Groove Studio** | Browser-based music-production studio for pads, patterns, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets. |
 | **PDF Accessibility Pipeline** | Upload any PDF → multi-auditor AI audit → one-click WCAG remediation → **native tagged PDF** output with independent PDF/UA-1 (veraPDF) validation. PII redaction + fillable worksheets. See §7. |
 | **Cinematic Studio** | Agentic document → video generator: source-grounded storyboard, captions/translation, rendered client-side (WebCodecs/Remotion). See §7. |
 | **Professional Development** | Community-authored PD modules with AI co-authoring + completion certificates (Educator Hub → Community Catalog). See §7. |
@@ -359,7 +361,7 @@ Launch the ORF assessment from Student Analytics to time student reading. The sy
 
 ## 6. STEM Lab
 
-**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and hosts **108 interactive browser-based simulations** spanning math, science, technology, arts, economics, life skills, and simulation. (The category list below is representative; the full on-disk set is 108 tools and growing — see `stem_lab/stem_tool_*.js`.)
+**Access:** Click the abacus or microscope icon in the right panel. The STEM Lab loads dynamically and, as of the July 3, 2026 code review, has **111 `stem_tool_*.js` files** and **116 registered plugin IDs** spanning math, science, technology, arts, economics, life skills, and simulation. The registered-ID count is higher than the file count because some files preserve aliases or paired tool IDs.
 
 ### How to Use
 1. Click the STEM Lab icon → select a domain category or browse all tools.
@@ -1009,6 +1011,8 @@ Cloudflare Pages CDN (`alloflow-cdn.pages.dev`).
 | Word Sounds | 1.0.0 | Feb 2026 |
 | Student Analytics | 1.0.0 | Jan 2026 |
 | Math Fluency | 1.0.0 | Jan 2026 |
+| AlloStudio | TBD | Jul 2026 |
+| Open Groove Studio | TBD | Jul 2026 |
 | Doc Pipeline (PDF accessibility) | — | Jun 2026 |
 | Cinematic Studio | — | Jun 2026 |
 | PD Core (Professional Development) | — | Jun 2026 |

@@ -326,6 +326,26 @@
     { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
   ];
 
+  // Parallel "coaching" view of the feedback rules above: the same thresholds,
+  // but readable so the year-review debrief can (a) explain WHY a cascade fired
+  // and (b) flag a near-miss — a component sitting just under a threshold, so the
+  // student learns which single move would unlock a free downstream benefit.
+  // Kept in lockstep with STEWARD_FEEDBACK_RULES by hand (only 4 rules).
+  var STEWARD_CASCADE_HINTS = [
+    { id: 'bufferFeedsHeadwaters', comp: 'forestBuffer', field: 'quality', threshold: 70,
+      fired: 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).',
+      near: 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.' },
+    { id: 'beaverHelpsFloodplain', comp: 'floodplainWetlands', field: 'quality', threshold: 60,
+      fired: 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.',
+      near: 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.' },
+    { id: 'agCleansUp', comp: 'agriculturalWatershed', field: 'quality', threshold: 60,
+      fired: 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.',
+      near: 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.' },
+    { id: 'runRestoration', comp: 'riverMainstem', field: 'connectivity', threshold: 60,
+      fired: 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.',
+      near: 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.' }
+  ];
+
   var STEWARD_DIFFICULTIES = {
     volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
     coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
@@ -396,7 +416,8 @@
     { id: 'adjust_climate', name: 'Climate Experimenter', desc: 'Adjust solar, temperature, or wind sliders in the Climate Lab', icon: '🌡️', rp: 20 },
     { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
     { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
-    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 }
+    { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 },
+    { id: 'myth_buster', name: 'Myth Buster', desc: 'Answer 3 water myths (True/False)', icon: '🧠', rp: 30 }
   ];
 
   var WATER_CYCLE_QUIZZES = {
@@ -772,7 +793,8 @@
       { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
       { id: 'complete_3_journeys', label: 'Complete 3 journey loops', icon: '\uD83C\uDFC6', check: function(d) { return (d.journeyLoops || 0) >= 3; }, progress: function(d) { return (d.journeyLoops || 0) + '/3 loops'; } },
       { id: 'explore_all_stages', label: 'View all water cycle stages', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.stagesViewed || {}).length >= 5; }, progress: function(d) { return Object.keys(d.stagesViewed || {}).length + '/5 stages'; } },
-      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } }
+      { id: 'adjust_climate', label: 'Experiment with climate controls', icon: '\uD83C\uDF21', check: function(d) { return d.climateAdjusted || false; }, progress: function(d) { return d.climateAdjusted ? 'Explored!' : 'Try the sliders'; } },
+      { id: 'myth_3', label: 'Answer 3 water myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.wcMythsDone || 0) >= 3; }, progress: function(d) { return (d.wcMythsDone || 0) + '/3 myths'; } }
     ],
     render:function(ctx){
       var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
@@ -820,6 +842,8 @@ const d = labToolData.waterCycle || {};
                 met = (state.vocabWordsStudied || []).length >= 3;
               } else if (ch.id === 'stewardship_win') {
                 met = state.campaignSuccess === true;
+              } else if (ch.id === 'myth_buster') {
+                met = (state.wcMythsDone || 0) >= 3;
               }
 
               if (met) {
@@ -1118,6 +1142,77 @@ const d = labToolData.waterCycle || {};
               priority: 'Hold and read the watershed',
               text: t('stem.watercycle.initial_conditions_look_workable_use_y', 'Initial conditions look workable. Use Year 1 for citizen-science monitoring and education to build community support before spending it on contested actions like dam removal.')
             };
+          }
+
+          // ── Steward's debrief: turn a silent numbers turn into a coaching loop ──
+          // Grades the year's DECISIONS (not just the outcome): were the hours
+          // spent, aimed at the weakest link, and did they trip — or nearly trip —
+          // a downstream feedback cascade? This is the systems-thinking payload the
+          // campaign was missing: interventions have downstream, delayed effects.
+          function stewardYearDebrief() {
+            var snap = steward.yearLog[steward.yearLog.length - 1] || {};
+            var actions = snap.actions || [];
+            var comps = steward.components || [];
+            var byId = {}; comps.forEach(function(c) { byId[c.id] = c; });
+            var techByName = {}; STEWARD_TECHNIQUES.forEach(function(tc) { techByName[tc.name] = tc; });
+            var compByName = {}; MAINE_WATERSHED_COMPONENTS.forEach(function(cd) { compByName[cd.name] = cd; });
+
+            // Hours utilization
+            var hoursSpent = actions.reduce(function(a, x) { return a + (x.hours || 0); }, 0);
+            var hoursPerYear = steward.hoursPerYear || 18;
+            var hoursIdle = Math.max(0, hoursPerYear - hoursSpent);
+
+            // Where did the investment land? Track components touched + notable moves.
+            var investedIds = {}, usedDamRemoval = false, restedOnly = actions.length > 0;
+            actions.forEach(function(a) {
+              var tech = techByName[a.tech];
+              if (tech && tech.id === 'damRemoval') usedDamRemoval = true;
+              if (tech && tech.id !== 'rest') restedOnly = false;
+              var comp = compByName[a.target];
+              if (comp) investedIds[comp.id] = true;
+            });
+
+            // Weakest link = component furthest below its OWN quality target
+            var weakest = null, worstGap = -1;
+            comps.forEach(function(c) {
+              var def = getWatershedComponent(c.id); if (!def) return;
+              var gap = (def.targets && def.targets.quality ? def.targets.quality : 75) - c.quality;
+              if (gap > worstGap) { worstGap = gap; weakest = { c: c, def: def, gap: Math.round(gap) }; }
+            });
+            // Highest-quality technique that directly applies to the weakest link
+            var rec = null, recQ = -1;
+            if (weakest) {
+              STEWARD_TECHNIQUES.forEach(function(tech) {
+                if (tech.appliesTo === 'any' || tech.id === 'rest') return;
+                if (tech.appliesTo.indexOf(weakest.c.id) < 0) return;
+                var q = tech.effects.quality || 0;
+                if (q > recQ) { recQ = q; rec = tech; }
+              });
+              if (!rec) rec = STEWARD_TECHNIQUES.find(function(tc) { return tc.id === 'easement'; });
+            }
+
+            // Cascades: which fired this year, which are one move away
+            var firedIds = {}; (snap.cascades || []).forEach(function(x) { firedIds[x.id] = true; });
+            var firedMsgs = [], nearMsgs = [];
+            STEWARD_CASCADE_HINTS.forEach(function(hint) {
+              var c = byId[hint.comp]; if (!c) return;
+              var v = Math.round(c[hint.field]);
+              if (firedIds[hint.id]) firedMsgs.push(hint.fired);
+              else if (v >= hint.threshold - 8 && v < hint.threshold) nearMsgs.push(hint.near.replace('{v}', v));
+            });
+
+            // Decision grade — targeting × utilization
+            var touchedWeakest = weakest && investedIds[weakest.c.id];
+            var usedMost = hoursSpent >= hoursPerYear * 0.7;
+            var grade;
+            if (touchedWeakest && usedMost) grade = { emoji: '🌟', label: 'Sharp targeting', note: 'You put real hours into the watershed\'s weakest link. That is how a thin stewardship budget actually moves the needle.' };
+            else if (usedMost || touchedWeakest) grade = { emoji: '👍', label: 'Solid year', note: touchedWeakest ? 'Good instinct hitting the priority component — try to spend more of your hour budget next year.' : 'You worked most of your hours; aim them at the single weakest component next year for compounding gains.' };
+            else if (restedOnly) grade = { emoji: '🍃', label: 'Deliberate pause', note: 'Holding steady lets support recover and some components self-heal — a valid move once or twice, but pressures do not wait forever.' };
+            else grade = { emoji: '🤔', label: 'Scattered effort', note: 'A lot of capacity sat idle or spread thin. Pressures never rest — pick the one component holding the watershed back and concentrate there.' };
+
+            var backfire = usedDamRemoval ? 'Dam removal is the single biggest connectivity gain available, but it costs about 12 community support — the backlash is real and modeled. Follow it with public education and River Days to rebuild trust before the support hit stalls your other work.' : '';
+
+            return { hoursSpent: hoursSpent, hoursIdle: hoursIdle, hoursPerYear: hoursPerYear, grade: grade, fired: firedMsgs, near: nearMsgs, weakest: weakest, rec: rec, backfire: backfire };
           }
 
           // ── Per-component deep-dive ──
@@ -1685,6 +1780,41 @@ const d = labToolData.waterCycle || {};
                   h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, t('stem.watercycle.hydrological_feedback_rules_this_year', '🔄 Hydrological feedback rules this year')),
                   lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
                 ) : null,
+
+                // ── Steward's debrief — coaching synthesis of THIS year's decisions ──
+                (function() {
+                  var db = stewardYearDebrief();
+                  var pillBg = isDark ? 'rgba(15,23,42,0.55)' : '#ffffff';
+                  return h('div', {
+                    style: {
+                      padding: 12, borderRadius: 12,
+                      background: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)',
+                      border: isDark ? '1px solid rgba(16,185,129,0.28)' : '1px solid rgba(16,185,129,0.35)',
+                      borderLeft: '4px solid #10b981'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+                      h('strong', { style: { color: isDark ? '#6ee7b7' : '#047857', fontSize: 14 } }, "🧭 Steward's debrief"),
+                      h('span', { style: { fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: pillBg, border: isDark ? '1px solid #334155' : '1px solid #d1fae5', color: isDark ? '#e2e8f0' : '#334155' } }, db.grade.emoji + ' ' + db.grade.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: db.hoursIdle > 0 ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#6ee7b7' : '#047857') } }, db.hoursSpent + '/' + db.hoursPerYear + 'h used' + (db.hoursIdle > 0 ? ' · ' + db.hoursIdle + 'h idle' : ' · full'))
+                    ),
+                    h('p', { style: { margin: '0 0 6px', fontSize: 12.5, lineHeight: 1.55, color: isDark ? '#cbd5e1' : '#334155' } }, db.grade.note),
+                    // Causal chains that fired this year
+                    db.fired.length > 0 ? db.fired.map(function(m, i) {
+                      return h('p', { key: 'f' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#a7f3d0' : '#065f46' } }, '🔗 ' + m);
+                    }) : null,
+                    // Backfire / tradeoff warning
+                    db.backfire ? h('p', { style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#fca5a5' : '#b91c1c' } }, '⚖️ ' + db.backfire) : null,
+                    // Near-miss cascades — the one-move-away coaching
+                    db.near.length > 0 ? db.near.map(function(m, i) {
+                      return h('p', { key: 'n' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#7dd3fc' : '#0369a1' } }, '🎯 ' + m);
+                    }) : null,
+                    // Strategic next priority
+                    db.weakest && db.rec ? h('p', { style: { margin: '6px 0 0', paddingTop: 6, borderTop: isDark ? '1px solid rgba(16,185,129,0.2)' : '1px solid #d1fae5', fontSize: 12, lineHeight: 1.5, fontWeight: 600, color: isDark ? '#e2e8f0' : '#334155' } },
+                      '➡️ Weakest link now: ' + db.weakest.def.icon + ' ' + db.weakest.def.name + ' (quality ' + Math.round(db.weakest.c.quality) + ', ' + db.weakest.gap + ' below its goal). Best matched move: ' + db.rec.icon + ' ' + db.rec.name + '.'
+                    ) : null
+                  );
+                })(),
 
                 // Per-component deltas
                 h('div', {
@@ -2504,7 +2634,32 @@ const d = labToolData.waterCycle || {};
 
               ctx.fillRect(0, 0, cW, cH * 0.65);
 
-
+              // ── Aurora curtains (dark mode) — slow green/violet ribbons above the peaks ──
+              if (isDark) {
+                for (var au = 0; au < 3; au++) {
+                  var auX = cW * (0.12 + au * 0.3) + Math.sin(tick * 0.004 + au * 2.1) * cW * 0.05;
+                  var auW = cW * (0.09 + 0.03 * Math.sin(tick * 0.006 + au));
+                  var auHue = au === 1 ? '168,85,247' : '52,211,153';
+                  var auA = 0.09 + 0.05 * Math.sin(tick * 0.01 + au * 1.7);
+                  var auGrad = ctx.createLinearGradient(0, cH * 0.04, 0, cH * 0.4);
+                  auGrad.addColorStop(0, 'rgba(' + auHue + ',0)');
+                  auGrad.addColorStop(0.45, 'rgba(' + auHue + ',' + auA.toFixed(3) + ')');
+                  auGrad.addColorStop(1, 'rgba(' + auHue + ',0)');
+                  ctx.fillStyle = auGrad;
+                  ctx.beginPath();
+                  ctx.moveTo(auX + Math.sin(tick * 0.008 + au) * cW * 0.02, cH * 0.04);
+                  for (var auy = 0; auy <= 8; auy++) {
+                    var ayy = cH * (0.04 + auy * 0.045);
+                    ctx.lineTo(auX + Math.sin(ayy * 0.012 + tick * 0.008 + au) * cW * 0.03, ayy);
+                  }
+                  for (var auy2 = 8; auy2 >= 0; auy2--) {
+                    var ayy2 = cH * (0.04 + auy2 * 0.045);
+                    ctx.lineTo(auX + auW + Math.sin(ayy2 * 0.012 + tick * 0.008 + au + 0.6) * cW * 0.03, ayy2);
+                  }
+                  ctx.closePath();
+                  ctx.fill();
+                }
+              }
 
               // ── Sun / Moon with animated rays / glow ──
 
@@ -2556,9 +2711,54 @@ const d = labToolData.waterCycle || {};
                   ctx.strokeStyle = 'rgba(251,191,36,' + (0.3 + Math.sin(tick * 0.03 + sr) * 0.2) + ')';
                   ctx.lineWidth = 2 * dpr; ctx.stroke();
                 }
+
+                // ── God rays — volumetric beams fanning down-left across the valley ──
+                // Strength follows the solar slider; beams breathe slowly and are
+                // occluded by the mountains drawn after them (real crepuscular feel).
+                if (skyBright > 0.45) {
+                  var rayAlpha = (skyBright - 0.45) * 0.14;
+                  for (var gr2 = 0; gr2 < 5; gr2++) {
+                    var grA = 2.2 + (gr2 - 2) * 0.18 + Math.sin(tick * 0.002 + gr2 * 1.3) * 0.04;
+                    var grLen = cH * 0.95;
+                    var grHalf = 0.045 + 0.015 * Math.sin(tick * 0.004 + gr2);
+                    var gx1 = sunX + Math.cos(grA - grHalf) * grLen, gy1 = sunY + Math.sin(grA - grHalf) * grLen;
+                    var gx2 = sunX + Math.cos(grA + grHalf) * grLen, gy2 = sunY + Math.sin(grA + grHalf) * grLen;
+                    var grGrad = ctx.createLinearGradient(sunX, sunY, (gx1 + gx2) / 2, (gy1 + gy2) / 2);
+                    grGrad.addColorStop(0, 'rgba(253,224,71,' + rayAlpha.toFixed(3) + ')');
+                    grGrad.addColorStop(0.6, 'rgba(253,224,71,' + (rayAlpha * 0.35).toFixed(3) + ')');
+                    grGrad.addColorStop(1, 'rgba(253,224,71,0)');
+                    ctx.fillStyle = grGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(sunX, sunY);
+                    ctx.lineTo(gx1, gy1);
+                    ctx.lineTo(gx2, gy2);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
+                }
               }
 
-
+              // ── Distant range + horizon haze — atmospheric depth behind the peaks ──
+              // A pale far ridge drifts almost imperceptibly (parallax) over the water
+              // horizon, and a haze band settles between it and the near mountains.
+              var farShift = Math.sin(tick * 0.001) * cW * 0.012;
+              ctx.fillStyle = isDark ? 'rgba(30,41,59,0.55)' : 'rgba(148,163,184,0.4)';
+              ctx.beginPath();
+              ctx.moveTo(cW * 0.3 + farShift, cH * 0.65);
+              ctx.lineTo(cW * 0.46 + farShift, cH * 0.45);
+              ctx.lineTo(cW * 0.62 + farShift, cH * 0.65);
+              ctx.closePath(); ctx.fill();
+              ctx.fillStyle = isDark ? 'rgba(30,41,59,0.4)' : 'rgba(148,163,184,0.28)';
+              ctx.beginPath();
+              ctx.moveTo(cW * 0.05 + farShift * 1.5, cH * 0.65);
+              ctx.lineTo(cW * 0.2 + farShift * 1.5, cH * 0.5);
+              ctx.lineTo(cW * 0.38 + farShift * 1.5, cH * 0.65);
+              ctx.closePath(); ctx.fill();
+              var hazeGrad = ctx.createLinearGradient(0, cH * 0.5, 0, cH * 0.65);
+              hazeGrad.addColorStop(0, isDark ? 'rgba(30,58,138,0)' : 'rgba(224,242,254,0)');
+              hazeGrad.addColorStop(1, isDark ? 'rgba(30,58,138,0.2)' : 'rgba(224,242,254,' + (0.25 + 0.25 * skyBright).toFixed(3) + ')');
+              ctx.fillStyle = hazeGrad;
+              ctx.fillRect(0, cH * 0.5, cW, cH * 0.15);
 
               // ── Mountains ──
 
@@ -2615,7 +2815,24 @@ const d = labToolData.waterCycle || {};
               ctx.beginPath(); ctx.moveTo(cW * 0.8, cH * 0.40); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.84, cH * 0.41);
               ctx.lineTo(cW * 0.83, cH * 0.43); ctx.lineTo(cW * 0.81, cH * 0.42); ctx.closePath(); ctx.fill();
 
-
+              // ── Birds — a small flock gliding on the wind (daylight only) ──
+              // Crossing speed follows the wind slider, wings flap as shallow Vs.
+              if (!isDark && skyBright > 0.4) {
+                var birdWind = parseFloat(canvasEl.dataset.climWind || '1.0');
+                for (var bd = 0; bd < 5; bd++) {
+                  var bT = ((tick * 0.0016 * (0.6 + birdWind * 0.6) + bd * 0.21) % 1.2) - 0.1;
+                  var bx = bT * cW;
+                  var by = cH * (0.14 + (bd % 3) * 0.05) + Math.sin(tick * 0.02 + bd * 2) * cH * 0.008;
+                  var flap = Math.sin(tick * 0.12 + bd * 1.8) * 3.5 * dpr;
+                  var bs = (3 + (bd % 2) * 1.5) * dpr;
+                  ctx.strokeStyle = 'rgba(51,65,85,' + (0.35 + 0.15 * (bd % 2)) + ')';
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.beginPath();
+                  ctx.moveTo(bx - bs, by - flap);
+                  ctx.quadraticCurveTo(bx, by + Math.abs(flap) * 0.4, bx + bs, by - flap);
+                  ctx.stroke();
+                }
+              }
 
               // ── Ground ──
 
@@ -2669,6 +2886,22 @@ const d = labToolData.waterCycle || {};
 
                 }
 
+              }
+
+              // ── Fireflies — warm pulsing glints over the meadow at night ──
+              if (isDark || skyBright < 0.3) {
+                for (var ff = 0; ff < 8; ff++) {
+                  var fseed = Math.sin(ff * 91.7) * 24634.63; fseed -= Math.floor(fseed);
+                  var ffx = cW * (0.58 + fseed * 0.38) + Math.sin(tick * 0.01 + ff * 2.3) * 12 * dpr;
+                  var ffy = cH * 0.6 + Math.sin(tick * 0.013 + ff * 1.1) * cH * 0.02 - fseed * cH * 0.03;
+                  var ffPulse = Math.max(0, Math.sin(tick * 0.03 + ff * 2.9));
+                  if (ffPulse < 0.25) continue;
+                  var ffGlow = ctx.createRadialGradient(ffx, ffy, 0, ffx, ffy, 5 * dpr);
+                  ffGlow.addColorStop(0, 'rgba(253,224,71,' + (0.7 * ffPulse).toFixed(3) + ')');
+                  ffGlow.addColorStop(1, 'rgba(253,224,71,0)');
+                  ctx.fillStyle = ffGlow;
+                  ctx.beginPath(); ctx.arc(ffx, ffy, 5 * dpr, 0, Math.PI * 2); ctx.fill();
+                }
               }
 
 
@@ -2833,6 +3066,32 @@ const d = labToolData.waterCycle || {};
                 ctx.stroke();
 
               }
+
+              // ── Specular glitter — sun/moon light dancing on the wave crests ──
+              // Deterministic per-glint positions; twinkle phase + a brightness bias
+              // toward the sun side so the water reads as lit from the upper right.
+              for (var gl = 0; gl < 24; gl++) {
+                var gseed = Math.sin(gl * 127.1) * 43758.5453; gseed -= Math.floor(gseed);
+                var glx = gseed * cW * 0.53;
+                var gly = cH * (0.655 + (gl % 5) * 0.011);
+                var twinkle = Math.sin(tick * 0.08 + gl * 2.7) * 0.5 + 0.5;
+                var sunBias = 0.25 + 0.75 * (glx / (cW * 0.55));
+                var ga = twinkle * twinkle * sunBias * (isDark ? 0.35 : 0.5) * Math.max(0.25, skyBright);
+                if (ga < 0.04) continue;
+                ctx.strokeStyle = isDark ? 'rgba(165,243,252,' + ga.toFixed(3) + ')' : 'rgba(255,255,255,' + ga.toFixed(3) + ')';
+                ctx.lineWidth = 1 * dpr;
+                ctx.beginPath();
+                ctx.moveTo(glx - (2 + twinkle * 3) * dpr, gly);
+                ctx.lineTo(glx + (2 + twinkle * 3) * dpr, gly);
+                ctx.stroke();
+              }
+
+              // Soft light sheen across the water toward the sun side
+              var sheen = ctx.createLinearGradient(cW * 0.55, 0, cW * 0.15, 0);
+              sheen.addColorStop(0, isDark ? 'rgba(125,211,252,0.10)' : 'rgba(255,255,255,' + (0.12 * skyBright).toFixed(3) + ')');
+              sheen.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = sheen;
+              ctx.fillRect(0, cH * 0.635, cW * 0.55, cH * 0.085);
 
 
 
@@ -4341,6 +4600,83 @@ const d = labToolData.waterCycle || {};
               )
 
             ),
+
+            // \u2550\u2550\u2550 \uD83D\uDCA7 WATER MYTHS \u2014 grade-banded misconceptions, each falsifiable IN the tool \u2550\u2550\u2550
+            // Every myth is a documented water-cycle misconception (clouds-as-containers,
+            // vapor-is-visible, disappearing puddles, underground rivers...), and every
+            // verdict ends with a "Try it" pointing at the Journey Mode path, Climate Lab
+            // slider, or stage view that lets the student SEE the truth for themselves.
+            (function () {
+              var MYTHS_35 = [
+                { s: 'Rain falls when clouds get holes in them, like a leaky bucket.', t: false, why: 'Clouds are not containers \u2014 they are billions of tiny floating droplets. Rain begins when droplets bump together and grow too heavy to float.', tryIt: 'Watch the Condensation stage, then Precipitation: droplets grow until gravity wins.' },
+                { s: 'When a puddle dries up, its water is gone forever.', t: false, why: 'The water turned into invisible vapor and floated into the sky. Later it condenses into clouds and rains back down \u2014 water is never used up, it only changes form.', tryIt: 'Start Journey Mode and ride one droplet from the ocean to a cloud and back again.' },
+                { s: 'The water you drank today may once have been drunk by a dinosaur.', t: true, why: 'Earth has recycled the same water for billions of years \u2014 the cycle never makes new water, it just keeps moving what it has.', tryIt: 'Complete a full Journey Mode loop: the same droplet just keeps going around.' },
+                { s: 'You can see water vapor.', t: false, why: 'Water vapor is an invisible gas. The white mist above a hot drink \u2014 and clouds themselves \u2014 are LIQUID droplets that have already condensed back.', tryIt: 'In the Evaporation stage the rising vapor is invisible; the visible cloud only forms high up, where the air is cold.' }
+              ];
+              var MYTHS_68 = MYTHS_35.concat([
+                { s: 'Clouds are made of water vapor.', t: false, why: 'Clouds are liquid droplets (or ice crystals) condensed onto dust particles. Vapor is the invisible gas BEFORE condensation \u2014 if clouds were vapor, you could not see them.', tryIt: 'Read the Condensation stage: vapor condenses onto tiny nuclei to become ~10 \u00B5m droplets.' },
+                { s: 'Water only evaporates when it is hot or boiling.', t: false, why: 'Evaporation happens at every temperature \u2014 the fastest surface molecules escape even from cold water. Heat just speeds it up.', tryIt: 'In the Climate Lab, drag the temperature down and watch the evaporation index fall \u2014 but never reach zero.' },
+                { s: 'Groundwater flows in big underground rivers and lakes.', t: false, why: 'Almost all groundwater seeps through tiny pores in soil and rock, like water held in a sponge \u2014 often moving just meters per YEAR.', tryIt: 'In Journey Mode, take the Infiltration path \u2014 the aquifer leg is the slowest part of the whole cycle.' }
+              ]);
+              var MYTHS_912 = MYTHS_68.concat([
+                { s: 'A warmer atmosphere can hold more moisture.', t: true, why: 'The Clausius-Clapeyron relation: roughly 7% more water vapor per \u00B0C of warming \u2014 one reason a warming climate produces heavier downpours.', tryIt: 'In the Climate Lab, raise the temperature and watch evaporation and storm behavior climb together.' },
+                { s: 'Rain falls in the same place the water evaporated from.', t: false, why: 'Vapor rides the wind for hundreds of kilometers (atmospheric "flying rivers"). Rain falls where the air COOLS, not where the water left the surface.', tryIt: 'Crank the wind slider and watch the clouds drift far downwind before the rain drops.' },
+                { s: 'Transpiration from plants barely matters to the cycle.', t: false, why: 'Plants pump roughly 10% of all atmospheric moisture \u2014 and the Amazon recycles about HALF of its own rainfall through transpiration.', tryIt: 'Open the Transpiration stage: a single oak moves about 150,000 liters per year.' }
+              ]);
+              var mythBank = gradeBand === '9-12' ? MYTHS_912 : gradeBand === '6-8' ? MYTHS_68 : MYTHS_35;
+              var myth = d.wcMyth || null;
+              function startMyth() {
+                var mi = Math.floor(Math.random() * mythBank.length);
+                if (myth && mi === myth.idx) mi = (mi + 1) % mythBank.length;
+                var m = mythBank[mi];
+                upd('wcMyth', { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null });
+              }
+              return React.createElement("div", { className: "rounded-xl p-3 mb-2 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-violet-900/40 backdrop-blur-md" : "bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200") },
+                React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                  React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? "text-violet-400" : "text-violet-700") }, t('stem.watercycle.water_myths', "\uD83E\uDDE0 Water Myths \u2014 true or false?")),
+                  React.createElement("button", { "aria-label": t('stem.watercycle.start_water_myth', "Start a water myth question"),
+                    onClick: startMyth,
+                    className: "px-3 py-1 bg-violet-600 text-white text-[11px] font-bold rounded-lg hover:bg-violet-700 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  }, myth ? "\uD83D\uDD04 New Myth" : "\u25B6 Start")
+                ),
+                myth && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [true, false].map(function (val) {
+                      return React.createElement("button", { key: String(val),
+                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        onClick: function () {
+                          var right = val === myth.t;
+                          var nextMythsDone = (d.wcMythsDone || 0) + 1;
+                          if (right) {
+                            sfxWcCorrect();
+                            if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 5, 'Water myth busted');
+                          } else {
+                            sfxWcIncorrect();
+                          }
+                          var nextState = Object.assign({}, d, { wcMythsDone: nextMythsDone });
+                          updMulti({
+                            wcMyth: Object.assign({}, myth, { answered: true, chosen: val }),
+                            wcMythsDone: nextMythsDone
+                          });
+                          if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
+                          setTimeout(function () { checkWaterCycleChallenges(nextState); }, 50);
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "bg-slate-900/60 text-slate-300 border-violet-900/50 hover:border-violet-600" : "bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50")
+                      }, val ? '\u2705 True' : '\u274C False');
+                    })
+                  ),
+                  myth.answered && React.createElement("div", { className: "p-2.5 rounded-lg border " + (myth.chosen === myth.t
+                    ? (isDark ? "bg-emerald-950/40 border-emerald-900/50" : "bg-emerald-50 border-emerald-200")
+                    : (isDark ? "bg-red-950/40 border-red-900/50" : "bg-red-50 border-red-200")) },
+                    React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
+                      (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
+                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-350" : "text-slate-700") }, myth.why),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
+                  )
+                )
+              );
+            })(),
 
             React.createElement("button", { "aria-label": t('stem.watercycle.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'wc-' + Date.now(), tool: 'waterCycle', label: sel ? sel.label : t('stem.tools_menu.water_cycle'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none" }, t('stem.watercycle.snapshot_2', "\uD83D\uDCF8 Snapshot"))
 

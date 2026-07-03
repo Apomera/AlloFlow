@@ -108,15 +108,22 @@ window.StemLab = window.StemLab || {
     try {
       themeBg = window.getComputedStyle(document.body).getPropertyValue('--allo-stem-canvas').trim() || '#0f172a';
     } catch(e) {}
+    var bgLuma = 0.1;
+    try {
+      var bgHex = new THREE.Color(themeBg);
+      bgLuma = 0.299 * bgHex.r + 0.587 * bgHex.g + 0.114 * bgHex.b;
+    } catch(e) {}
+    var isDarkBg = bgLuma < 0.45;
     scene.background = new THREE.Color(themeBg);
     var camera = new THREE.PerspectiveCamera(50, cnv.clientWidth / cnv.clientHeight, 0.1, 1000);
     camera.position.set(6, 5, 8);
     camera.lookAt(0, 0, 0);
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
     renderer.setSize(cnv.clientWidth, cnv.clientHeight);
-    // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
+    // Geometry needs crisp edges, so bloom is opt-in for this tool.
     renderer._alloComposer = null;
     (function(){
+      if (window.AlloGeoSandboxPostFXEnabled !== true) return;
       if (window.AlloPostFXEnabled === false) return;
       var _ens = function(cb){
         if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
@@ -136,16 +143,39 @@ window.StemLab = window.StemLab || {
       });
     })();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    var prefersRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    // ── Soft real shadow — grounds the solid on the grid ──
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-    var dir = new THREE.DirectionalLight(0xfff1dd, 0.85); // warm key vs the existing cool fill — solids read 3D
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    var dir = new THREE.DirectionalLight(0xfff1dd, 1.0); // warm key vs the existing cool fill — solids read 3D
     dir.position.set(5, 10, 7.5);
+    dir.castShadow = true;
+    dir.shadow.mapSize.set(1024, 1024);
+    dir.shadow.camera.left = -12; dir.shadow.camera.right = 12;
+    dir.shadow.camera.top = 12; dir.shadow.camera.bottom = -12;
+    dir.shadow.camera.near = 0.5; dir.shadow.camera.far = 40;
+    dir.shadow.radius = 4;
     scene.add(dir);
     var fill = new THREE.DirectionalLight(0xc7d2fe, 0.3);
     fill.position.set(-5, 3, -5);
     scene.add(fill);
+    // Violet rim light from behind — a jewel-case sheen along top edges
+    var rim = new THREE.DirectionalLight(0x8b5cf6, 0.3);
+    rim.position.set(0, 6, -10);
+    scene.add(rim);
     // Ground
-    scene.add(new THREE.GridHelper(20, 20, 0x334155, 0x1e293b));
+    scene.add(new THREE.GridHelper(20, 20, isDarkBg ? 0x64748b : 0x475569, isDarkBg ? 0x334155 : 0xcbd5e1));
+    // Shadow catcher — invisible plane that only shows the soft shadow
+    var shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(40, 40),
+      new THREE.ShadowMaterial({ opacity: isDarkBg ? 0.32 : 0.22 })
+    );
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = 0.001;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
     // Controls
     var controls = null;
     if (THREE.OrbitControls) {
@@ -154,6 +184,12 @@ window.StemLab = window.StemLab || {
       controls.dampingFactor = 0.08;
       controls.minDistance = 2;
       controls.maxDistance = 30;
+      // Showroom idle spin — stops for good the moment the student takes the wheel
+      if (!prefersRM) {
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.9;
+        renderer.domElement.addEventListener('pointerdown', function() { controls.autoRotate = false; }, { once: true });
+      }
     }
     // Animate
     var animId;
@@ -170,8 +206,8 @@ window.StemLab = window.StemLab || {
 
   function updateMesh(gs, shapeType, dims, shapeColor, wireframe, opacity) {
     var THREE = window.THREE;
-    // Remove old
-    if (gs.mesh) { gs.scene.remove(gs.mesh); gs.mesh.geometry.dispose(); if (gs.mesh.material) gs.mesh.material.dispose(); gs.mesh = null; }
+    // Remove old (traverse: the solid carries an edge-overlay child that must dispose too)
+    if (gs.mesh) { gs.scene.remove(gs.mesh); gs.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); gs.mesh = null; }
     // Create geometry
     var geometry;
     switch (shapeType) {
@@ -198,10 +234,25 @@ window.StemLab = window.StemLab || {
       wireframe: wireframe,
       transparent: opacity < 1,
       opacity: opacity,
-      shininess: 90,
+      shininess: 80,
       flatShading: false
     });
     var mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    // Subtle edge overlay — makes faces, edges and vertices legible at a glance
+    // (this is a geometry tool: the edge skeleton IS the content). Skipped in
+    // wireframe mode, where the whole mesh already renders as lines.
+    if (!wireframe) {
+      var bgColor = gs.scene && gs.scene.background && gs.scene.background.isColor ? gs.scene.background : null;
+      var edgeLuma = bgColor ? (0.299 * bgColor.r + 0.587 * bgColor.g + 0.114 * bgColor.b) : 0.1;
+      var edgeColor = edgeLuma < 0.45 ? 0xffffff : 0x0f172a;
+      var edgeOpacity = edgeLuma < 0.45 ? 0.36 : 0.42;
+      var edgeLines = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geometry, 25),
+        new THREE.LineBasicMaterial({ color: edgeColor, transparent: true, opacity: edgeOpacity, depthWrite: false })
+      );
+      mesh.add(edgeLines);
+    }
     var bbox = new THREE.Box3().setFromObject(mesh);
     mesh.position.y = -bbox.min.y;
     gs.scene.add(mesh);
@@ -1120,8 +1171,7 @@ window.StemLab = window.StemLab || {
           // Stretch mode: clear the primitive mesh
           if (window._geoScene.mesh) {
             window._geoScene.scene.remove(window._geoScene.mesh);
-            if (window._geoScene.mesh.geometry) window._geoScene.mesh.geometry.dispose();
-            if (window._geoScene.mesh.material) window._geoScene.mesh.material.dispose();
+            window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
             window._geoScene.mesh = null;
           }
           // Rebuild construction group

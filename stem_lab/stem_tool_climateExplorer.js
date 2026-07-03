@@ -1329,6 +1329,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           )
         ),
 
+        // ── Living Planet hero — an animated Earth that answers YOUR sliders ──
+        // The engagement engine of the tool: a warming signal (0..1) is derived from
+        // whatever the student is currently manipulating (footprint on the carbon tab,
+        // fossil share on renewables) and drives the atmosphere colour, CO₂ particle
+        // density, and heat shimmer live. Move a slider → watch the planet respond.
+        (function() {
+          var heroSignal, heroTicker;
+          if (tab === 'renewables') {
+            var heroFossil = Math.max(0, 100 - (rsSolar + rsWind + rsHydro + rsNuclear));
+            heroSignal = Math.min(1, heroFossil / 100);
+            heroTicker = t('stem.climateExplorer.hero_mix', 'Your energy mix:') + ' ' + heroFossil + '% ' + t('stem.climateExplorer.hero_fossil', 'fossil — watch the sky');
+          } else if (tab === 'carbon') {
+            var heroKg = Math.max(ct.total, granular.total);
+            heroSignal = Math.min(1, heroKg / 15000);
+            heroTicker = t('stem.climateExplorer.hero_footprint', 'Your footprint:') + ' ' + Math.round(heroKg).toLocaleString() + ' kg CO₂e/yr · ' + t('stem.climateExplorer.hero_paris', 'Paris target: 2,300');
+          } else {
+            heroSignal = 0.42;
+            heroTicker = t('stem.climateExplorer.hero_ppm', 'CO₂ today: ~424 ppm — the highest in over 3 million years');
+          }
+          return el('div', { style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+            el('canvas', {
+              'aria-hidden': 'true',
+              ref: function(cv) {
+                if (!cv) return;
+                cv._ceSignal = heroSignal; // refreshed every render — the rAF loop reads live
+                if (cv._ceInit) return;
+                cv._ceInit = true;
+                var g = cv.getContext('2d');
+                if (!g) return;
+                var heroRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                var heroTick = 0;
+                var mols = [];
+                for (var mi = 0; mi < 46; mi++) mols.push({ x: Math.random(), ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8, r: 0.8 + Math.random() * 1.2 });
+                var heroStars = [];
+                for (var hs = 0; hs < 60; hs++) heroStars.push({ x: Math.random(), y: Math.random() * 0.62, r: 0.3 + Math.random() * 1.1, tw: Math.random() * 6.28 });
+                function lerpCh(a, b, f) { return Math.round(a + (b - a) * f); }
+                function heroDraw() {
+                  if (!cv.isConnected) return;
+                  var W = cv.clientWidth || 600, H = cv.clientHeight || 130;
+                  if (cv.width !== W * 2) { cv.width = W * 2; cv.height = H * 2; }
+                  if (!heroRM) heroTick++;
+                  var sig = cv._ceSignal != null ? cv._ceSignal : 0.4;
+                  var dpr = 2;
+                  // Space
+                  g.fillStyle = '#020617';
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  for (var si = 0; si < heroStars.length; si++) {
+                    var st = heroStars[si];
+                    g.globalAlpha = 0.25 + 0.5 * (0.5 + 0.5 * Math.sin(heroTick * 0.02 + st.tw));
+                    g.fillStyle = '#e2e8f0';
+                    g.fillRect(st.x * W * dpr, st.y * H * dpr, st.r * dpr, st.r * dpr);
+                  }
+                  g.globalAlpha = 1;
+                  // Earth limb — a big circle whose centre sits below the strip
+                  var R = W * 0.62, cx = W / 2, cy = H + R * 0.72;
+                  // Atmosphere glow: blue (healthy) → amber → red (hot), by signal
+                  var ar = lerpCh(56, 239, sig), ag = lerpCh(189, 68, sig), ab = lerpCh(248, 68, sig);
+                  var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 30 + sig * 26) * dpr);
+                  atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.5)');
+                  atmoGrad.addColorStop(0.5, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.16)');
+                  atmoGrad.addColorStop(1, 'rgba(' + ar + ',' + ag + ',' + ab + ',0)');
+                  g.fillStyle = atmoGrad;
+                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  // Planet body
+                  var bodyGrad = g.createRadialGradient(cx * dpr, (cy - R * 0.2) * dpr, R * 0.4 * dpr, cx * dpr, cy * dpr, R * dpr);
+                  bodyGrad.addColorStop(0, '#0b3d6b');
+                  bodyGrad.addColorStop(0.75, '#0a2c50');
+                  bodyGrad.addColorStop(1, '#061a33');
+                  g.fillStyle = bodyGrad;
+                  g.beginPath();
+                  g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2);
+                  g.fill();
+                  // Drifting land blotches, clipped to the limb
+                  g.save();
+                  g.beginPath(); g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2); g.clip();
+                  g.fillStyle = 'rgba(34,120,72,0.5)';
+                  for (var lb = 0; lb < 7; lb++) {
+                    var lbSeed = Math.sin(lb * 73.7) * 4375.4; lbSeed -= Math.floor(lbSeed);
+                    var lbx = ((lbSeed + heroTick * 0.0002) % 1) * W;
+                    var lby = H - (0.12 + (lb % 3) * 0.1) * H;
+                    g.beginPath();
+                    g.ellipse(lbx * dpr, lby * dpr, (14 + lb * 5) * dpr, (6 + (lb % 3) * 3) * dpr, lb * 0.6, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.restore();
+                  // CO₂ particles rising off the limb — density follows the signal
+                  var molCount = Math.round(6 + sig * 40);
+                  g.fillStyle = 'rgba(203,213,225,0.5)';
+                  for (var mj = 0; mj < molCount && mj < mols.length; mj++) {
+                    var mo = mols[mj];
+                    var mProg = ((heroTick * 0.003 * mo.sp + mo.ph) % 1);
+                    var mx = mo.x * W + Math.sin(heroTick * 0.02 + mo.ph) * 6;
+                    var my = H - mProg * H * 0.85;
+                    g.globalAlpha = 0.55 * Math.sin(mProg * Math.PI);
+                    g.beginPath();
+                    g.arc(mx * dpr, my * dpr, mo.r * dpr, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.globalAlpha = 1;
+                  // Heat shimmer arcs when the signal runs hot
+                  if (sig > 0.55) {
+                    var heatA = (sig - 0.55) * 0.5;
+                    for (var hw = 0; hw < 3; hw++) {
+                      var hwProg = ((heroTick * 0.006 + hw * 0.33) % 1);
+                      g.strokeStyle = 'rgba(239,68,68,' + (heatA * (1 - hwProg)).toFixed(3) + ')';
+                      g.lineWidth = 1.5 * dpr;
+                      g.beginPath();
+                      g.arc(cx * dpr, cy * dpr, (R + 8 + hwProg * 34) * dpr, Math.PI * 1.15, Math.PI * 1.85);
+                      g.stroke();
+                    }
+                  }
+                  // Hopeful emerald sparkles when the signal runs cool
+                  if (sig < 0.3) {
+                    g.fillStyle = 'rgba(52,211,153,0.8)';
+                    for (var gs = 0; gs < 6; gs++) {
+                      var gsTw = 0.5 + 0.5 * Math.sin(heroTick * 0.05 + gs * 2.2);
+                      if (gsTw < 0.55) continue;
+                      var gsSeed = Math.sin(gs * 41.3) * 7919.7; gsSeed -= Math.floor(gsSeed);
+                      g.globalAlpha = gsTw * 0.8;
+                      g.beginPath();
+                      g.arc(gsSeed * W * dpr, (H - 14 - gsSeed * 20) * dpr, 1.6 * dpr, 0, Math.PI * 2);
+                      g.fill();
+                    }
+                    g.globalAlpha = 1;
+                  }
+                  requestAnimationFrame(heroDraw);
+                }
+                requestAnimationFrame(heroDraw);
+              },
+              style: { width: '100%', height: 130, display: 'block', background: '#020617' }
+            }),
+            el('div', { style: { position: 'absolute', left: 12, bottom: 8, fontSize: 11, fontWeight: 700, color: 'rgba(226,232,240,0.92)', textShadow: '0 1px 3px rgba(0,0,0,0.85)', pointerEvents: 'none' } }, heroTicker)
+          );
+        })(),
+
         // ── Hope Meter ──
         el('div', { style: { padding: '0 24px 0', margin: '8px 0 0' } },
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },

@@ -55,7 +55,8 @@ describe('_spliceBlock: precise single-occurrence replacement, minimal mutation'
 describe('anti-drift: the mini-audit is shared (no drift between Workbench + direct-edit)', () => {
   it('_reauditAndScore exists and folds in score + issueResolution', () => {
     expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity\) => \{/);
-    expect(src).toMatch(/Promise\.all\(\[auditOutputAccessibility\(newHtml\), runAxeAudit\(newHtml\)\]\)/);
+    expect(src).toMatch(/const _weaP = \(_docPipeline && typeof _docPipeline\.runEqualAccessAudit === 'function'\)/);
+    expect(src).toMatch(/Promise\.all\(\[auditOutputAccessibility\(newHtml\), runAxeAudit\(newHtml\), _weaP\]\)/);
     expect(src).toMatch(/recomputeIssueResolution\(prev\.issueResolution, _wv\)/);
     expect(src).toMatch(/_wscore = \(_wdet !== null\) \? _computeHeadline\(_wv\.score, _wdet\)/);
   });

@@ -38,6 +38,23 @@
     return '';
   };
 
+  // ── _alloExportFilename ──────────────────────────────────────────
+  // Derive the download filename from the document's own <title> (the export
+  // titles are topic-derived: "Photosynthesis — Lesson Pack"), so a teacher's
+  // downloads folder reads "photosynthesis.html" instead of N identical
+  // "alloflow-export.html" files. Falls back to the localized generic name.
+  const _alloExportFilename = (htmlContent, fallback) => {
+    try {
+      const m = String(htmlContent || '').match(/<title>([^<]{1,160})<\/title>/i);
+      let raw = m && m[1] ? m[1] : '';
+      raw = raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      raw = raw.split('—')[0].trim(); // strip the " — <pageTitle>" suffix
+      const slug = raw.replace(/[\\/:*?"<>|#%&{}]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+      if (slug.length >= 3) return slug;
+    } catch (_) { /* fall through to the generic name */ }
+    return fallback;
+  };
+
   // ── downloadHtmlBlob ─────────────────────────────────────────────
   // Single-file HTML download fallback used when JSZip is unavailable.
   // Routes through the App-scope safeDownloadBlob helper so cross-browser
@@ -45,15 +62,16 @@
   const downloadHtmlBlob = (content, deps) => {
     const { safeDownloadBlob, addToast, t } = deps || {};
     const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const fname = _alloExportFilename(content, t ? t('export.filenames.html_pack') : 'alloflow-export');
     if (typeof safeDownloadBlob === 'function') {
-      safeDownloadBlob(blob, (t ? t('export.filenames.html_pack') : 'alloflow-export') + '.html');
+      safeDownloadBlob(blob, fname + '.html');
     } else {
       // Last-ditch fallback if the helper isn't available — should never
       // happen in practice but better than throwing.
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = (t ? t('export.filenames.html_pack') : 'alloflow-export') + '.html';
+      link.download = fname + '.html';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
@@ -890,7 +908,7 @@
         const url = URL.createObjectURL(content);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'alloflow-export-' + new Date().toISOString().split('T')[0] + '.zip';
+        link.download = _alloExportFilename(htmlContent, 'alloflow-export') + '-' + new Date().toISOString().split('T')[0] + '.zip';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         URL.revokeObjectURL(url);
         if (addToast) addToast('Export downloaded!', 'success');
@@ -898,7 +916,7 @@
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = url; link.download = 'alloflow-export.html';
+        link.href = url; link.download = _alloExportFilename(htmlContent, 'alloflow-export') + '.html';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         URL.revokeObjectURL(url);
         if (addToast) addToast('HTML export downloaded!', 'success');

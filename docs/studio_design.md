@@ -3,23 +3,30 @@
 **Status:** **Milestone A BUILT** (same day, Aaron-approved go-ahead): `studio_module.js`
 (pure event-sourced core + Tier-2 editor, plain JS on the Video Studio module
 pattern), wired into the app (lazy loadModule + CDNModuleGate + Educator Hub card
-+ Ctrl+K command), tagged-PDF export riding `createTypesetTaggedPdf`, 28 pure-core
++ Ctrl+K command), tagged-PDF export riding `createTypesetTaggedPdf`, 39 pure-core
 tests in `tests/allostudio_core.test.js`. LOCAL/UNCOMMITTED; Canvas smoke pending.
-Tier 1 crop also shipped (see §9). Milestones B/C not started.
+Tier 1 crop also shipped (see §9). Follow-on Studio polish now includes live
+accessibility preflight, expanded templates, worksheet/process exports, layout
+helpers, image fit, and export fidelity fixes. Milestones B/C not started.
 **Owner:** Aaron. **Positioning decision made in session 2026-07-02.**
 **v0.2:** Aaron resolved the §11 open questions same day — name locked (for now),
 teacher + student surface, student-visible process timeline, MVP template set
 chosen. See §11 (now "Decisions").
-**v0.3 build notes (what Milestone A actually shipped):** template picker (all
-four §11 templates, ledger-seeded); object editor (text/shape/image; drag move +
+**v0.3 build notes (what Milestone A actually shipped):** template picker (core
+§11 templates, ledger-seeded); object editor (text/shape/image; drag move +
 corner resize + arrows/Shift+arrows/Delete keyboard grammar; inline text edit);
 reading-order panel with ↑/↓ (design law 1); properties panel (frame, role→tag,
 colors, alt text + decorative); alt gate blocking all exports with per-image Fix
 jump (law 3); exports = tagged PDF / accessible HTML / PNG; save-load
 `.allostudio.json` with validation; undo/redo as ledger navigation; Process tab
 with scrubber, per-actor summary, ≈active-minutes, honesty line, student/teacher
-framing toggle. Deliberately deferred to B/C: AI generate/suggest, raster brushes,
-worksheet→doc_pipeline bridge, in-editor image crop, multi-select, rotation.
+framing toggle.
+**Follow-on polish shipped:** live accessibility preflight (alt, contrast, small
+text, bounds, empty placeholders, reading-order review), expanded classroom
+template gallery, worksheet JSON export, process-notes markdown export, alignment
+and duplicate controls, image fill/fit controls, and PNG/HTML image-fit fidelity.
+Deliberately deferred to B/C: AI generate/suggest, raster brushes, full
+worksheet→doc_pipeline handoff, in-editor image crop, multi-select, rotation.
 
 ---
 
@@ -198,10 +205,11 @@ Replay is also a pedagogy feature (process portfolios), not just oversight.
 | **Print/PDF (visual)** | print CSS of positioned scene | Flyers need visual fidelity; the tagged variant carries the semantics. |
 | **PNG/JPEG** | scene rasterized to canvas | Social/LMS thumbnails. |
 | **Single-file HTML** | reuse offline-export refit | Positioned divs + embedded assets; real text, real alt. |
-| **Worksheet → doc_pipeline** | text/question objects map into generated-content history items | A worksheet made in the studio can join the Document Hub export pack (quiz keys, translations, TTS — for free). |
+| **Worksheet bridge** | current: worksheet JSON export from title/instructions/numbered prompts; later: generated-content history item | A worksheet made in the studio can join the Document Hub export pack (quiz keys, translations, TTS — for free) once the full handoff lands. |
 
 Export preflight panel (reuses house patterns): alt-text gate, contrast
-warnings, reading-order review prompt, oversized-asset warning.
+warnings, small-text warning, empty-placeholder review, reading-order review
+prompt, oversized-asset warning.
 
 ---
 
@@ -262,10 +270,11 @@ Decisions that carry forward into the studio:
    calendar (born-accessible claim depends on it).
 2. **Milestone A (studio MVP)**: `studio_core.js` (scene ops + ledger reducer,
    pure, tested) + Tier 2 editor with text/shape/image, teacher + student modes
-   (§11), the §11 template set (event flyer, worksheet, student poster, blank
-   canvas) + tagged-PDF/PNG export + alt gate. No AI, no raster.
+   (§11), the §11 template set plus expanded classroom templates, tagged-PDF/PNG
+   export, alt gate, live preflight, worksheet JSON export, and process-notes
+   export. No AI, no raster.
 3. **Milestone B**: AI generate + vision suggestions (ledger-attributed),
-   worksheet→doc_pipeline bridge, template gallery.
+   full worksheet→doc_pipeline handoff, template gallery refinements.
 4. **Milestone C (Tier 3)**: raster object + constrained brush set + pressure +
    process-replay tab (the ledger exists since A; this adds the scrubber UI —
    shown to BOTH roles per §11: teacher assessment view and student portfolio
@@ -296,6 +305,9 @@ Decisions that carry forward into the studio:
      content posters and art assignments.
    - **Blank canvas** (letter portrait/landscape + square presets) ships as a
      zeroth option, not counted as a template.
+   Follow-on gallery now also includes exit ticket, vocabulary poster, lab
+   safety poster, checklist, class newsletter, book report poster, CER
+   organizer, and compare/contrast organizer.
 4. **Ledger visibility: student-visible.** The process timeline is the
    student's own portfolio view (same scrubber as the teacher's Process tab).
    Framing in UI copy: "your process," not "monitoring." The §5 honesty line

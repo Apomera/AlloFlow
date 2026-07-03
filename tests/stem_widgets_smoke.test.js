@@ -43,7 +43,7 @@ const WIDGETS = [
   { file: 'stem_lab/stem_tool_fisherlab.js', toolId: 'fisherLab', skip: 'Tool body depends on window.THREE; aqcond inquiry tab is reached after sim init', data: { fisherLab: {} } },
 
   // B12
-  { file: 'stem_lab/stem_tool_circuit.js', toolId: 'circuit', data: { circuit: { expSection: 'ohmInquiry' } } },
+  { file: 'stem_lab/stem_tool_circuit.js', toolId: 'circuit', data: { circuit: { workspaceTab: 'reference', expSection: 'ohmInquiry' } } },
   { file: 'stem_lab/stem_tool_statslab.js', toolId: 'statsLab', data: { statsLab: { mode: 'inquiry' } } },
   { file: 'stem_lab/stem_tool_dna.js', toolId: 'dnaLab', data: { dna: { expSection: 'mutInquiry' } } },
   // skatelab guards on `labToolData.skatelab` being present (line 1664: if (!labToolData || !labToolData.skatelab) return Initializing...); seed an empty object to bypass the init early-return.
@@ -59,7 +59,7 @@ const WIDGETS = [
   { file: 'stem_lab/stem_tool_worldbuilder.js', toolId: 'worldBuilder', data: { worldBuilder: { selectedWorld: null } } },
   { file: 'stem_lab/stem_tool_coding.js', toolId: 'codingPlayground', data: {} },
   { file: 'stem_lab/stem_tool_economicslab.js', toolId: 'economicsLab', data: { econTab: 'inquiry' } },
-  { file: 'stem_lab/stem_tool_brainatlas.js', toolId: 'brainAtlas', data: { brainAtlas: { view: 'lateral' } } },
+  { file: 'stem_lab/stem_tool_brainatlas.js', toolId: 'brainAtlas', data: { brainAtlas: { view: 'neurotransmitters', showNtInquiry: true } } },
 
   // B15
   { file: 'stem_lab/stem_tool_dataplot.js', toolId: 'dataPlot', data: { dataPlot: { activeTab: 'inquiry' } } },

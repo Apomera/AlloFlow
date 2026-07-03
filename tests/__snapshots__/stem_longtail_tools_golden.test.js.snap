@@ -5,7 +5,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 38,
   "inputs": 0,
   "lengthBucket": 119,
-  "sha": "2f4fe9485976185b",
+  "sha": "a9cba48e7f1b7d5e",
   "svgs": 0,
 }
 `;
@@ -32,20 +32,20 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for codingPlayground 1`] = `
 {
-  "buttons": 58,
-  "inputs": 3,
-  "lengthBucket": 172,
-  "sha": "7e4edcb724ca2e42",
-  "svgs": 1,
+  "buttons": 57,
+  "inputs": 0,
+  "lengthBucket": 126,
+  "sha": "e4f80e5f967a8e0e",
+  "svgs": 0,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for companionPlanting 1`] = `
 {
-  "buttons": 33,
-  "inputs": 4,
-  "lengthBucket": 84,
-  "sha": "5f93546540731e60",
+  "buttons": 20,
+  "inputs": 0,
+  "lengthBucket": 89,
+  "sha": "fd50a86a89624c58",
   "svgs": 0,
 }
 `;
@@ -62,10 +62,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for economicsLab 1`] = `
 {
-  "buttons": 26,
+  "buttons": 24,
   "inputs": 5,
-  "lengthBucket": 66,
-  "sha": "510f35995a85f9cd",
+  "lengthBucket": 56,
+  "sha": "aaaddc0b1028bbcb",
   "svgs": 0,
 }
 `;
@@ -95,7 +95,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 15,
   "inputs": 2,
   "lengthBucket": 70,
-  "sha": "e0177d2b00bbb9c1",
+  "sha": "d56dd1a186bdea56",
   "svgs": 0,
 }
 `;
@@ -142,20 +142,20 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for playlab 1`] = `
 {
-  "buttons": 169,
+  "buttons": 31,
   "inputs": 4,
-  "lengthBucket": 412,
-  "sha": "d52a431fe154d176",
+  "lengthBucket": 86,
+  "sha": "b59903166944e7ab",
   "svgs": 0,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for renewablesLab 1`] = `
 {
-  "buttons": 32,
+  "buttons": 12,
   "inputs": 0,
-  "lengthBucket": 127,
-  "sha": "e7c29f610f2aec12",
+  "lengthBucket": 63,
+  "sha": "00f32172a6300a62",
   "svgs": 0,
 }
 `;
@@ -195,7 +195,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 15,
   "inputs": 7,
   "lengthBucket": 62,
-  "sha": "785f99df9fff6bdd",
+  "sha": "be17112a5e48ede3",
   "svgs": 1,
 }
 `;

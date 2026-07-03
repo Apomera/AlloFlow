@@ -30,6 +30,7 @@
       if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
       if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
       if (source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0 || source.indexOf('litlab') >= 0) return 'Story Stage';
+      if (source.indexOf('allostudio') >= 0 || source.indexOf('allo-studio') >= 0) return 'AlloStudio';
       return 'Student work';
     }
     function kindLabelFor(type) {
@@ -39,6 +40,7 @@
       if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
       if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
       if (type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0 || type.indexOf('litlab') >= 0) return 'Performance';
+      if (type.indexOf('allostudio') >= 0 || type.indexOf('allo-studio') >= 0) return 'Accessible Studio Product';
       return 'Student Product';
     }
     function normalize(artifact) {
@@ -24143,6 +24145,7 @@
       if (source.indexOf('adventure') >= 0) return 'Adventure Mode';
       if (source.indexOf('poettree') >= 0 || source.indexOf('poet') >= 0) return 'PoetTree';
       if (source.indexOf('litlab') >= 0 || source.indexOf('story-stage') >= 0 || source.indexOf('storystage') >= 0) return 'Story Stage';
+      if (source.indexOf('allostudio') >= 0 || source.indexOf('allo-studio') >= 0) return 'AlloStudio';
       return 'Student work';
     }
 
@@ -24161,6 +24164,7 @@
       if (type.indexOf('adventure') >= 0) return 'Adventure Storybook';
       if (type.indexOf('poettree') >= 0 || type.indexOf('poem') >= 0) return 'Poem';
       if (type.indexOf('litlab') >= 0 || type.indexOf('story-stage') >= 0 || type.indexOf('storystage') >= 0) return 'Performance';
+      if (type.indexOf('allostudio') >= 0 || type.indexOf('allo-studio') >= 0) return 'Accessible Studio Product';
       return 'Student Product';
     }
 
@@ -24643,7 +24647,7 @@
           ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
             artifacts.length
               ? 'No portfolio products match this source filter or search.'
-              : 'No portfolio products are loaded yet. Create one in SEL Hub, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
+              : 'No portfolio products are loaded yet. Create one in SEL Hub, AlloStudio, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
             h('button', {
               onClick: function() { setStateField('activeModal', null); },

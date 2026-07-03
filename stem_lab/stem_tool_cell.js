@@ -416,7 +416,90 @@ var d = labToolData.cell || {};
       }
 
       // ── Extended state for badges ──
-      var ext = d._cellExt || { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false };
+      var cellExtDefaults = { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false };
+      function normalizeCellExt(raw) {
+        raw = raw || {};
+        return Object.assign({}, cellExtDefaults, raw, {
+          badges: (raw.badges || []).slice(),
+          organismsObserved: (raw.organismsObserved || []).slice(),
+          organellesClicked: (raw.organellesClicked || []).slice(),
+          totalFood: Number(raw.totalFood) || 0,
+          quizCorrect: Number(raw.quizCorrect) || 0,
+          playModeUsed: !!raw.playModeUsed
+        });
+      }
+      var ext = normalizeCellExt(d._cellExt);
+      var cellObservedKey = ext.organismsObserved.join('|');
+      var cellOrganelleKey = ext.organellesClicked.join('|');
+      var cellDiscoveryKey = (d.discoveries || []).join('|');
+      var cellStudyVocabKey = Object.keys(d._studiedVocab || {}).sort().join('|');
+      function updateCellDataFunctional(mutator) {
+        setLabToolData(function(prev) {
+          var p = prev || {};
+          var cel = Object.assign({}, p.cell || {});
+          var nextCell = mutator(cel) || cel;
+          return Object.assign({}, p, { cell: nextCell });
+        });
+      }
+      function updateCellExtFunctional(mutator) {
+        updateCellDataFunctional(function(cel) {
+          var nextExt = normalizeCellExt(cel._cellExt);
+          nextExt = mutator(nextExt, cel) || nextExt;
+          cel._cellExt = normalizeCellExt(nextExt);
+          return cel;
+        });
+      }
+      function selectCanvasOrganism(id) {
+        updateCellDataFunctional(function(cel) {
+          cel.selectedOrganism = id || null;
+          if (id) {
+            var nextExt = normalizeCellExt(cel._cellExt);
+            if (nextExt.organismsObserved.indexOf(id) === -1) nextExt.organismsObserved.push(id);
+            cel._cellExt = nextExt;
+          }
+          return cel;
+        });
+      }
+      function recordCanvasOrganelleClick(name) {
+        if (!name) return;
+        updateCellExtFunctional(function(nextExt) {
+          if (nextExt.organellesClicked.indexOf(name) === -1) nextExt.organellesClicked.push(name);
+          return nextExt;
+        });
+      }
+      function recordCanvasFoodCollected() {
+        updateCellExtFunctional(function(nextExt) {
+          nextExt.totalFood = (Number(nextExt.totalFood) || 0) + 1;
+          return nextExt;
+        });
+      }
+      function recordCanvasPlayModeUsed() {
+        updateCellExtFunctional(function(nextExt) {
+          nextExt.playModeUsed = true;
+          return nextExt;
+        });
+      }
+      function recordCanvasXP(xp, label) {
+        var amt = Number(xp) || 0;
+        updateCellDataFunctional(function(cel) {
+          cel.xpEarned = (Number(cel.xpEarned) || 0) + amt;
+          var orgDef = ORGANISMS.find(function (o) { return o.activity === label || o.id === cel.selectedOrganism; });
+          if (orgDef) {
+            var disc = (cel.discoveries || []).slice();
+            var undisc = orgDef.facts.map(function (f, i) { return orgDef.id + '_' + i; }).filter(function (k) { return disc.indexOf(k) === -1; });
+            if (undisc.length > 0) cel.discoveries = disc.concat([undisc[Math.floor(Math.random() * undisc.length)]]);
+          }
+          return cel;
+        });
+        if (amt > 0 && typeof addToast === 'function') addToast("+" + amt + " XP: " + label + "!", "success");
+      }
+      function syncCanvasZoomState(z) {
+        var nextZoom = Math.max(0.5, Math.min(10, Math.round((Number(z) || 1) * 10) / 10));
+        updateCellDataFunctional(function(cel) {
+          cel.zoom = nextZoom;
+          return cel;
+        });
+      }
       var updExt = function (obj) {
         var merged = Object.assign({}, ext, obj);
         upd('_cellExt', merged);
@@ -471,6 +554,11 @@ var d = labToolData.cell || {};
         if (changed) updExt({ badges: newBadges });
       };
 
+      React.useEffect(function() {
+        var timer = setTimeout(function() { checkCellBadges(); }, 0);
+        return function() { clearTimeout(timer); };
+      }, [cellObservedKey, ext.totalFood, cellOrganelleKey, ext.playModeUsed, ext.quizCorrect, d.quizStreak, cellDiscoveryKey, d.xpEarned]);
+
       var checkCellChallenges = function(updates) {
         var completed = Object.assign({}, d._completedChallenges || {});
         var newlyCompleted = false;
@@ -513,7 +601,7 @@ var d = labToolData.cell || {};
           });
         }, 0);
         return function() { clearTimeout(timer); };
-      }, [ext.organismsObserved, ext.quizCorrect, ext.playModeUsed, ext.organellesClicked, d._studiedVocab]);
+      }, [cellObservedKey, ext.quizCorrect, ext.playModeUsed, cellOrganelleKey, cellStudyVocabKey]);
 
       // ── AI Tutor ──
       var askAI = function (question) {
@@ -16713,30 +16801,50 @@ var d = labToolData.cell || {};
 
 
           // ── Canvas ref callback for simulation ──
+          // Keep the ref callback identity stable so selecting an organism can
+          // refresh the React info panel without tearing down the live canvas.
+          var canvasRefStateRef = React.useRef({ lastCanvas: null });
+          var canvasRefImplRef = React.useRef(null);
+          var canvasRefStableRef = React.useRef(null);
+          if (!canvasRefStableRef.current) {
+            canvasRefStableRef.current = function (canvasEl) {
+              if (canvasRefImplRef.current) canvasRefImplRef.current(canvasEl);
+            };
+          }
 
-          var canvasRefCb = function (canvasEl) {
+          canvasRefImplRef.current = function (canvasEl) {
+
+            var canvasRefState = canvasRefStateRef.current;
 
             if (!canvasEl) {
 
-              if (canvasRefCb._lastCanvas && canvasRefCb._lastCanvas._cellSimCleanup) {
+              stopCellAmbient();
 
-                canvasRefCb._lastCanvas._cellSimCleanup();
+              if (canvasRefState.lastCanvas && canvasRefState.lastCanvas._cellSimCleanup) {
 
-                canvasRefCb._lastCanvas._cellSimInit = false;
+                canvasRefState.lastCanvas._cellSimCleanup();
+
+                canvasRefState.lastCanvas._cellSimInit = false;
 
               }
 
-              canvasRefCb._lastCanvas = null;
+              canvasRefState.lastCanvas = null;
 
               return;
 
             }
 
-            if (canvasEl._cellSimInit) return;
+            if (canvasEl._cellSimInit) {
+
+              canvasRefState.lastCanvas = canvasEl;
+
+              return;
+
+            }
 
             canvasEl._cellSimInit = true;
 
-            canvasRefCb._lastCanvas = canvasEl;
+            canvasRefState.lastCanvas = canvasEl;
 
             var W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
 
@@ -16746,13 +16854,26 @@ var d = labToolData.cell || {};
 
             var dpr = window.devicePixelRatio || 1;
 
+            var prefersReducedCellMotion = false;
+
+            try { prefersReducedCellMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            if (prefersReducedCellMotion && typeof d.paused === 'undefined') {
+              updateCellDataFunctional(function(cel) {
+                if (typeof cel.paused === 'undefined') cel.paused = true;
+                return cel;
+              });
+            }
+
 
 
             // World state
 
             var world = { organisms: [], food: [], lightZones: [], tick: 0 };
 
-            var cam = { x: 0, y: 0, zoom: 1 };
+            var initialZoom = Math.max(0.5, Math.min(10, Number(d.zoom) || 1));
+
+            var cam = { x: 0, y: 0, zoom: initialZoom };
 
             var WORLD_W = 800, WORLD_H = 600;
 
@@ -16824,6 +16945,32 @@ var d = labToolData.cell || {};
 
             spawnWorld();
 
+            var initialSelectedOrg = d.selectedOrganism ? world.organisms.find(function (o) { return o.def.id === d.selectedOrganism; }) : null;
+
+            var initialPlayAsOrg = d.playAsOrganism ? world.organisms.find(function (o) { return o.def.id === d.playAsOrganism; }) : null;
+
+            if (initialSelectedOrg) {
+              selectedOrg = initialSelectedOrg;
+              cam.x = initialSelectedOrg.x;
+              cam.y = initialSelectedOrg.y;
+            }
+
+            if (initialPlayAsOrg) {
+              playAsOrg = initialPlayAsOrg;
+              selectedOrg = initialPlayAsOrg;
+              cam.x = initialPlayAsOrg.x;
+              cam.y = initialPlayAsOrg.y;
+              cam.zoom = 3;
+            }
+
+            if ((d.selectedOrganism && !initialSelectedOrg) || (d.playAsOrganism && !initialPlayAsOrg)) {
+              updateCellDataFunctional(function(cel) {
+                if (d.selectedOrganism && !initialSelectedOrg) cel.selectedOrganism = null;
+                if (d.playAsOrganism && !initialPlayAsOrg) cel.playAsOrganism = null;
+                return cel;
+              });
+            }
+
 
 
             // Drawing helpers
@@ -16833,6 +16980,22 @@ var d = labToolData.cell || {};
               return { x: (wx - cam.x) * cam.zoom * dpr + W / 2, y: (wy - cam.y) * cam.zoom * dpr + HH / 2 };
 
             }
+
+            function canvasNow() {
+              return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            }
+
+            function clampCamera() {
+              cam.zoom = Math.max(0.5, Math.min(10, Number(cam.zoom) || 1));
+              var viewW = W / (dpr * cam.zoom);
+              var viewH = HH / (dpr * cam.zoom);
+              var marginX = Math.max(80, viewW * 0.35);
+              var marginY = Math.max(60, viewH * 0.35);
+              cam.x = Math.max(-marginX, Math.min(WORLD_W + marginX, Number(cam.x) || 0));
+              cam.y = Math.max(-marginY, Math.min(WORLD_H + marginY, Number(cam.y) || 0));
+            }
+
+            clampCamera();
 
 
 
@@ -17836,6 +17999,8 @@ var d = labToolData.cell || {};
 
               var dotGlowColor = hexToRgba(def.color, 0.18);
 
+              var labelBoxes = [];
+
               def.anatomy.forEach(function (a, i) {
 
                 if (typeof a.lx === 'undefined') return;
@@ -17891,6 +18056,52 @@ var d = labToolData.cell || {};
                 var lx = _labelPositions[lerpKey].x;
 
                 var ly = _labelPositions[lerpKey].y;
+
+                var pillW = textW + 4 * dpr;
+
+                var pillH = fontSize * 1.7;
+
+                var pillX = lx - 2 * dpr;
+
+                var pillY = ly - pillH / 2;
+
+                var edgePad = 2 * dpr;
+
+                pillX = Math.max(edgePad, Math.min(W - pillW - edgePad, pillX));
+
+                pillY = Math.max(edgePad, Math.min(HH - pillH - edgePad, pillY));
+
+                for (var bi = 0; bi < labelBoxes.length; bi++) {
+
+                  var b = labelBoxes[bi];
+
+                  var gapX = 4 * dpr;
+
+                  var gapY = 4 * dpr;
+
+                  var overlaps = !(pillX > b.x + b.w + gapX || pillX + pillW + gapX < b.x || pillY > b.y + b.h + gapY || pillY + pillH + gapY < b.y);
+
+                  if (overlaps) {
+
+                    var nudgeDown = b.y + b.h + gapY;
+
+                    var nudgeUp = b.y - pillH - gapY;
+
+                    pillY = (nudgeDown + pillH + edgePad <= HH || nudgeUp < edgePad) ? Math.min(HH - pillH - edgePad, nudgeDown) : Math.max(edgePad, nudgeUp);
+
+                  }
+
+                }
+
+                lx = pillX + 2 * dpr;
+
+                ly = pillY + pillH / 2;
+
+                _labelPositions[lerpKey].x = lx;
+
+                _labelPositions[lerpKey].y = ly;
+
+                labelBoxes.push({ x: pillX, y: pillY, w: pillW, h: pillH });
 
 
 
@@ -18057,6 +18268,8 @@ var d = labToolData.cell || {};
                 cam.x += (o.x - cam.x) * 0.08;
 
                 cam.y += (o.y - cam.y) * 0.08;
+
+                clampCamera();
 
               } else if (def.speed > 0) {
 
@@ -18372,6 +18585,10 @@ var d = labToolData.cell || {};
 
               cctx.clearRect(0, 0, W, HH);
 
+              var renderNow = canvasNow();
+
+              var renderMotion = !canvasEl._cellSimPaused;
+
               var center = toScreen(WORLD_W / 2, WORLD_H / 2);
 
               var dishR = Math.max(WORLD_W, WORLD_H) * 0.55 * cam.zoom * dpr;
@@ -18466,7 +18683,7 @@ var d = labToolData.cell || {};
 
               world._debris.forEach(function (db) {
 
-                db.x += db.dx; db.y += db.dy;
+                if (renderMotion) { db.x += db.dx; db.y += db.dy; }
 
                 if (db.x < 0) db.x += WORLD_W; if (db.x > WORLD_W) db.x -= WORLD_W;
 
@@ -18650,27 +18867,31 @@ var d = labToolData.cell || {};
 
               world._vesicles.forEach(function (v) {
 
-                v.x += v.vx; v.y += v.vy;
+                if (renderMotion) {
 
-                // Gentle wandering
+                  v.x += v.vx; v.y += v.vy;
 
-                v.vx += (Math.random() - 0.5) * 0.02;
+                  // Gentle wandering
 
-                v.vy += (Math.random() - 0.5) * 0.02;
+                  v.vx += (Math.random() - 0.5) * 0.02;
 
-                v.vx = Math.max(-0.4, Math.min(0.4, v.vx));
+                  v.vy += (Math.random() - 0.5) * 0.02;
 
-                v.vy = Math.max(-0.4, Math.min(0.4, v.vy));
+                  v.vx = Math.max(-0.4, Math.min(0.4, v.vx));
 
-                if (v.x < 0) v.x += WORLD_W; if (v.x > WORLD_W) v.x -= WORLD_W;
+                  v.vy = Math.max(-0.4, Math.min(0.4, v.vy));
 
-                if (v.y < 0) v.y += WORLD_H; if (v.y > WORLD_H) v.y -= WORLD_H;
+                  if (v.x < 0) v.x += WORLD_W; if (v.x > WORLD_W) v.x -= WORLD_W;
 
-                // Trail
+                  if (v.y < 0) v.y += WORLD_H; if (v.y > WORLD_H) v.y -= WORLD_H;
 
-                v.trail.push({ x: v.x, y: v.y });
+                  // Trail
 
-                if (v.trail.length > 8) v.trail.shift();
+                  v.trail.push({ x: v.x, y: v.y });
+
+                  if (v.trail.length > 8) v.trail.shift();
+
+                }
 
                 // Draw trail
 
@@ -18748,7 +18969,9 @@ var d = labToolData.cell || {};
 
                 // Fade in
 
-                tt.alpha = Math.min(1, (tt.alpha || 0) + 0.08);
+                var ttAgeMs = tt.startTime ? renderNow - tt.startTime : (world.tick - tt.startTick) * (1000 / 60);
+
+                tt.alpha = Math.min(1, Math.max(tt.alpha || 0, 0.12, ttAgeMs / 180));
 
                 cctx.save();
 
@@ -18866,7 +19089,7 @@ var d = labToolData.cell || {};
 
                 // Auto-dismiss after 5 seconds
 
-                if (world.tick - tt.startTick > 300) world._tooltip = null;
+                if (ttAgeMs > 5000) world._tooltip = null;
 
                 cctx.restore();
 
@@ -18880,9 +19103,11 @@ var d = labToolData.cell || {};
 
                 var hl = world._highlightOrganelle;
 
-                var age = world.tick - hl.startTick;
+                var hlAgeMs = hl.startTime ? renderNow - hl.startTime : (world.tick - hl.startTick) * (1000 / 60);
 
-                if (age > 60) {
+                var age = hlAgeMs / (1000 / 60);
+
+                if (hlAgeMs > 1000) {
 
                   world._highlightOrganelle = null;
 
@@ -19248,16 +19473,70 @@ var d = labToolData.cell || {};
 
             var animId = null;
 
-            var speedMultiplier = 1;
+            var pausedOverlayAnimId = null;
+
+            var speedMultiplier = Math.max(1, Math.min(5, Math.round(Number(d.simSpeed) || 1)));
 
             canvasEl._cellSimAlive = true;
 
+            canvasEl._cellSimPaused = !!d.paused || (prefersReducedCellMotion && typeof d.paused === 'undefined');
+
+            var hiddenAutoPaused = false;
+
+            function cancelScheduledLoop() {
+              if (animId) cancelAnimationFrame(animId);
+              animId = null;
+              if (pausedOverlayAnimId) cancelAnimationFrame(pausedOverlayAnimId);
+              pausedOverlayAnimId = null;
+            }
+
+            function schedulePausedOverlayFrame() {
+              if (!canvasEl._cellSimAlive || !canvasEl._cellSimPaused || pausedOverlayAnimId) return;
+              if (!world._tooltip && !world._highlightOrganelle) return;
+              pausedOverlayAnimId = requestAnimationFrame(function () {
+                pausedOverlayAnimId = null;
+                renderStaticFrame();
+              });
+            }
+
+            function renderStaticFrame() {
+              if (!canvasEl._cellSimAlive || !canvasEl.isConnected) return;
+              var rendered = false;
+              try { render(); rendered = true; } catch (err) {}
+              if (rendered && canvasEl._cellSimPaused) schedulePausedOverlayFrame();
+            }
+
+            function scheduleLoop() {
+              if (!canvasEl._cellSimAlive || canvasEl._cellSimPaused || animId) return;
+              if (pausedOverlayAnimId) cancelAnimationFrame(pausedOverlayAnimId);
+              pausedOverlayAnimId = null;
+              animId = requestAnimationFrame(loop);
+            }
+
+            function onVisibilityChange() {
+              if (document.hidden) {
+                hiddenAutoPaused = !canvasEl._cellSimPaused;
+                canvasEl._cellSimPaused = true;
+                cancelScheduledLoop();
+              } else if (hiddenAutoPaused) {
+                canvasEl._cellSimPaused = false;
+                hiddenAutoPaused = false;
+                scheduleLoop();
+              } else if (canvasEl._cellSimPaused) {
+                renderStaticFrame();
+              }
+            }
+
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange);
+
             function loop() {
-              if (!canvasEl.isConnected) { canvasEl._cellSimAlive = false; if (animId) cancelAnimationFrame(animId); return; }
+              animId = null;
+
+              if (!canvasEl.isConnected) { canvasEl._cellSimAlive = false; return; }
 
               if (!canvasEl._cellSimAlive) return; // stop loop if killed
 
-              if (canvasEl._cellSimPaused) { animId = requestAnimationFrame(loop); return; }
+              if (canvasEl._cellSimPaused) { renderStaticFrame(); return; }
 
               for (var si = 0; si < speedMultiplier; si++) {
 
@@ -19281,11 +19560,11 @@ var d = labToolData.cell || {};
 
               render();
 
-              animId = requestAnimationFrame(loop);
+              scheduleLoop();
 
             }
 
-            animId = requestAnimationFrame(loop);
+            if (canvasEl._cellSimPaused) renderStaticFrame(); else scheduleLoop();
 
             // Restart method - revives a dead loop
 
@@ -19295,149 +19574,169 @@ var d = labToolData.cell || {};
 
               canvasEl._cellSimPaused = false;
 
-              if (animId) cancelAnimationFrame(animId);
+              cancelScheduledLoop();
 
-              animId = requestAnimationFrame(loop);
+              scheduleLoop();
 
             };
 
 
 
-            // Mouse/touch events
+            // Pointer events cover mouse, touch, and pen while preserving drag cleanup.
+            var activePointerId = null;
 
-            canvasEl.addEventListener('mousedown', function (e) {
+            function updateHoverFromPoint(clientX, clientY) {
+              if (playAsOrg) return;
+              var rect = canvasEl.getBoundingClientRect();
+              var hx = (clientX - rect.left) * dpr;
+              var hy = (clientY - rect.top) * dpr;
+              var foundHover = null;
+              world.organisms.forEach(function (o) {
+                var sp = toScreen(o.x, o.y);
+                var dd = Math.hypot(sp.x - hx, sp.y - hy);
+                if (dd < o.size * cam.zoom * dpr * 1.5) foundHover = o;
+              });
+              var hoverChanged = hoveredOrg !== foundHover;
+              hoveredOrg = foundHover;
+              var nextCursor = dragging ? 'grabbing' : (foundHover ? 'pointer' : 'grab');
+              if (canvasEl.style.cursor !== nextCursor) canvasEl.style.cursor = nextCursor;
+              if (hoverChanged && canvasEl._cellSimPaused) renderStaticFrame();
+            }
 
-              if (playAsOrg) return; // disable drag when player is controlling
+            function findOrganelleLabelHit(mx, my) {
+              for (var hi = _labelHitRegions.length - 1; hi >= 0; hi--) {
+                var hr = _labelHitRegions[hi];
+                if (mx >= hr.x && mx <= hr.x + hr.w && my >= hr.y && my <= hr.y + hr.h) return hr;
+              }
+              return null;
+            }
 
-              dragging = true;
+            function showOrganelleLabelTooltip(hitLabel) {
+              world._tooltip = { anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick, startTime: canvasNow() };
+              if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(hitLabel.anatomy.name);
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            }
 
-              dragStartX = e.clientX; dragStartY = e.clientY;
+            function handleCanvasTap(clientX, clientY) {
+              var rect = canvasEl.getBoundingClientRect();
+              var mx = (clientX - rect.left) * dpr;
+              var my = (clientY - rect.top) * dpr;
 
-              camStartX = cam.x; camStartY = cam.y;
+              // Check if click hit an organelle label first (click-to-explain)
+              var hitLabel = findOrganelleLabelHit(mx, my);
 
-            });
-
-            canvasEl.addEventListener('mousemove', function (e) {
-
-              if (dragging) {
-
-                var dx = (e.clientX - dragStartX) / cam.zoom;
-
-                var dy = (e.clientY - dragStartY) / cam.zoom;
-
-                cam.x = camStartX - dx; cam.y = camStartY - dy;
-
+              if (hitLabel) {
+                showOrganelleLabelTooltip(hitLabel);
+                return;
               }
 
-              // Detect organism hover for cursor feedback
+              world._tooltip = null;
+              var clicked = null, bestDist = Infinity;
+              world.organisms.forEach(function (o) {
+                var p = toScreen(o.x, o.y);
+                var dd = Math.hypot(p.x - mx, p.y - my);
+                if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
+              });
 
-              if (!playAsOrg) {
+              selectedOrg = clicked;
+              if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            }
 
+            function onPointerDown(e) {
+              if (typeof e.button === 'number' && e.button !== 0) return;
+              if (playAsOrg) {
                 var rect = canvasEl.getBoundingClientRect();
-
-                var hx = (e.clientX - rect.left) * dpr;
-
-                var hy = (e.clientY - rect.top) * dpr;
-
-                var foundHover = null;
-
-                world.organisms.forEach(function (o) {
-
-                  var sp = toScreen(o.x, o.y);
-
-                  var dd = Math.hypot(sp.x - hx, sp.y - hy);
-
-                  if (dd < o.size * cam.zoom * dpr * 1.5) foundHover = o;
-
-                });
-
-                hoveredOrg = foundHover;
-
-                canvasEl.style.cursor = dragging ? 'grabbing' : (foundHover ? 'pointer' : 'grab');
-
-              }
-
-            });
-
-            canvasEl.addEventListener('mouseup', function (e) {
-
-              if (Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
-
-                var rect = canvasEl.getBoundingClientRect();
-
                 var mx = (e.clientX - rect.left) * dpr;
-
                 var my = (e.clientY - rect.top) * dpr;
-
-                // Check if click hit an organelle label first (click-to-explain)
-
-                var hitLabel = null;
-
-                for (var hi = _labelHitRegions.length - 1; hi >= 0; hi--) {
-
-                  var hr = _labelHitRegions[hi];
-
-                  if (mx >= hr.x && mx <= hr.x + hr.w && my >= hr.y && my <= hr.y + hr.h) {
-
-                    hitLabel = hr; break;
-
-                  }
-
-                }
-
-                if (hitLabel) {
-
-                  // Show tooltip for this organelle
-
-                  world._tooltip = { anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick };
-
-                  if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(hitLabel.anatomy.name);
-
-                } else {
-
-                  // Click - select organism
-
-                  world._tooltip = null;
-
-                  var clicked = null, bestDist = Infinity;
-
-                  world.organisms.forEach(function (o) {
-
-                    var p = toScreen(o.x, o.y);
-
-                    var dd = Math.hypot(p.x - mx, p.y - my);
-
-                    if (dd < o.size * cam.zoom * dpr * 1.5 && dd < bestDist) { bestDist = dd; clicked = o; }
-
-                  });
-
-                  selectedOrg = clicked;
-
-                  if (canvasEl._onSelect) canvasEl._onSelect(clicked ? clicked.def.id : null);
-
-                }
-
+                var playHitLabel = findOrganelleLabelHit(mx, my);
+                if (playHitLabel) showOrganelleLabelTooltip(playHitLabel);
+                if (e.pointerType !== 'mouse') e.preventDefault();
+                return;
               }
+              activePointerId = e.pointerId;
+              dragging = true;
+              dragStartX = e.clientX; dragStartY = e.clientY;
+              camStartX = cam.x; camStartY = cam.y;
+              canvasEl.style.cursor = 'grabbing';
+              try { if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(e.pointerId); } catch (err) {}
+              if (e.pointerType !== 'mouse') e.preventDefault();
+            }
 
+            function onPointerMove(e) {
+              if (dragging) {
+                if (activePointerId !== null && e.pointerId !== activePointerId) return;
+                var dx = (e.clientX - dragStartX) / cam.zoom;
+                var dy = (e.clientY - dragStartY) / cam.zoom;
+                cam.x = camStartX - dx; cam.y = camStartY - dy;
+                clampCamera();
+                if (canvasEl._cellSimPaused) renderStaticFrame();
+                if (e.pointerType !== 'mouse') e.preventDefault();
+              }
+              updateHoverFromPoint(e.clientX, e.clientY);
+            }
+
+            function finishPointer(e, cancelled) {
+              if (activePointerId === null || e.pointerId !== activePointerId) return;
+              if (!cancelled && Math.abs(e.clientX - dragStartX) < 5 && Math.abs(e.clientY - dragStartY) < 5) {
+                handleCanvasTap(e.clientX, e.clientY);
+              }
               dragging = false;
+              activePointerId = null;
+              try { if (canvasEl.releasePointerCapture) canvasEl.releasePointerCapture(e.pointerId); } catch (err2) {}
+              updateHoverFromPoint(e.clientX, e.clientY);
+              if (e.pointerType !== 'mouse') e.preventDefault();
+            }
 
-            });
-
-            canvasEl.addEventListener('wheel', function (e) {
-
+            function onPointerUp(e) { finishPointer(e, false); }
+            function onPointerCancel(e) {
+              if (activePointerId !== null && e.pointerId !== activePointerId) return;
+              dragging = false;
+              activePointerId = null;
+              hoveredOrg = null;
+              canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            }
+            function onPointerLeave() {
+              if (!dragging) {
+                hoveredOrg = null;
+                canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
+                if (canvasEl._cellSimPaused) renderStaticFrame();
+              }
+            }
+            function onWheel(e) {
               e.preventDefault();
-
               cam.zoom = Math.max(0.5, Math.min(10, cam.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-
+              clampCamera();
               if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom);
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            }
 
-            }, { passive: false });
+            canvasEl.addEventListener('pointerdown', onPointerDown);
+            canvasEl.addEventListener('pointermove', onPointerMove);
+            canvasEl.addEventListener('pointerup', onPointerUp);
+            canvasEl.addEventListener('pointercancel', onPointerCancel);
+            canvasEl.addEventListener('lostpointercapture', onPointerCancel);
+            canvasEl.addEventListener('pointerleave', onPointerLeave);
+            canvasEl.addEventListener('wheel', onWheel, { passive: false });
 
 
 
             // Keyboard for player
 
-            function onKey(e) { playerKeys[e.key] = e.type === 'keydown'; }
+            function isMovementKey(key) {
+              return key === 'ArrowRight' || key === 'ArrowLeft' || key === 'ArrowDown' || key === 'ArrowUp' ||
+                key === 'd' || key === 'a' || key === 's' || key === 'w' ||
+                key === 'D' || key === 'A' || key === 'S' || key === 'W';
+            }
+
+            function onKey(e) {
+              if (!playAsOrg || !isMovementKey(e.key)) return;
+              var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+              playerKeys[key] = e.type === 'keydown';
+              if (key !== e.key) playerKeys[e.key] = playerKeys[key];
+              e.preventDefault();
+            }
 
             window.addEventListener('keydown', onKey);
 
@@ -19451,25 +19750,54 @@ var d = labToolData.cell || {};
 
               playAsOrg = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
 
-              if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; }
+              playerKeys = {};
 
-              canvasEl.focus(); // ensure keyboard works
+              if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); }
+
+              canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
+
+              if (playAsOrg) canvasEl.focus(); // ensure keyboard works
+
+              if (canvasEl._cellSimPaused) renderStaticFrame();
 
             };
 
-            canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; };
+            canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; clampCamera(); if (canvasEl._cellSimPaused) renderStaticFrame(); };
 
-            canvasEl._cellSimSetPaused = function (p) { canvasEl._cellSimPaused = p; };
-            // Canvas organism-click -> React state + SR announce. Was a dead wire: _onSelect was
-            // called on click (19261) but never assigned, so canvas clicks updated only the glow,
-            // never d.selectedOrganism / the info card, and were silent to AT. upd is functional
-            // (reads prev), so this stale-closure assignment accumulates into live state correctly.
+            canvasEl._cellSimResetView = function () { cam.x = 0; cam.y = 0; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };
+
+            canvasEl._cellSimSetPaused = function (p) {
+              canvasEl._cellSimPaused = !!p;
+              if (canvasEl._cellSimPaused) {
+                cancelScheduledLoop();
+                renderStaticFrame();
+              } else {
+                scheduleLoop();
+              }
+            };
+
             canvasEl._onSelect = function (id) {
-              upd('selectedOrganism', id);
+              selectCanvasOrganism(id);
               if (id && typeof announceToSR === 'function') {
                 var od = (typeof ORGANISMS !== 'undefined' && ORGANISMS) ? ORGANISMS.find(function (o) { return o.id === id; }) : null;
                 announceToSR('Selected ' + (od && od.name ? od.name : id));
               }
+            };
+            canvasEl._onZoom = function (z) { syncCanvasZoomState(z); };
+            if (playAsOrg && canvasEl._onZoom) canvasEl._onZoom(cam.zoom);
+            canvasEl._onOrganelleClick = function (name) {
+              if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
+              recordCanvasOrganelleClick(name);
+            };
+            canvasEl._onFood = function () {
+              cellSound('food');
+              recordCanvasFoodCollected();
+            };
+            canvasEl._onPhotosynthesis = function () {
+              cellSound('photosynthesis');
+            };
+            canvasEl._onXP = function (xp, label) {
+              recordCanvasXP(xp, label);
             };
 
             canvasEl._cellSimSetSpeed = function (s) { speedMultiplier = Math.max(1, Math.min(5, Math.round(s))); };
@@ -19478,7 +19806,21 @@ var d = labToolData.cell || {};
 
               var target = world.organisms.find(function (o) { return o.def.id === orgId; });
 
-              if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; }
+              if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); }
+
+            };
+
+            canvasEl._cellSimSelectOrganism = function (orgId, focusCamera) {
+
+              var target = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
+
+              selectedOrg = target || null;
+
+              if (target && focusCamera !== false) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); }
+
+              if (canvasEl._onSelect) canvasEl._onSelect(target ? target.def.id : null);
+
+              if (canvasEl._cellSimPaused) renderStaticFrame();
 
             };
 
@@ -19524,9 +19866,28 @@ var d = labToolData.cell || {};
 
                   selectedOrg = null;
 
+                  if (canvasEl._onSelect) canvasEl._onSelect(null);
+
+                }
+
+                if (playAsOrg && playAsOrg.type === orgId) {
+
+                  playAsOrg = null;
+
+                  playerKeys = {};
+
+                  canvasEl.style.cursor = 'grab';
+
+                  updateCellDataFunctional(function(cel) {
+                    if (cel.playAsOrganism === orgId) cel.playAsOrganism = null;
+                    return cel;
+                  });
+
                 }
 
               }
+
+              if (canvasEl._cellSimPaused) renderStaticFrame();
 
             };
 
@@ -19572,7 +19933,9 @@ var d = labToolData.cell || {};
 
                 alpha: 0,
 
-                startTick: world.tick
+                startTick: world.tick,
+
+                startTime: canvasNow()
 
               };
 
@@ -19584,11 +19947,17 @@ var d = labToolData.cell || {};
 
                 color: def.color,
 
-                startTick: world.tick
+                startTick: world.tick,
+
+                startTime: canvasNow()
 
               };
 
               cellSound('select');
+
+              if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(a.name);
+
+              if (canvasEl._cellSimPaused) renderStaticFrame();
 
             };
 
@@ -19600,11 +19969,27 @@ var d = labToolData.cell || {};
 
               canvasEl._cellSimAlive = false;
 
-              if (animId) cancelAnimationFrame(animId);
+              cancelScheduledLoop();
+
+              canvasEl.removeEventListener('pointerdown', onPointerDown);
+
+              canvasEl.removeEventListener('pointermove', onPointerMove);
+
+              canvasEl.removeEventListener('pointerup', onPointerUp);
+
+              canvasEl.removeEventListener('pointercancel', onPointerCancel);
+
+              canvasEl.removeEventListener('lostpointercapture', onPointerCancel);
+
+              canvasEl.removeEventListener('pointerleave', onPointerLeave);
+
+              canvasEl.removeEventListener('wheel', onWheel);
 
               window.removeEventListener('keydown', onKey);
 
               window.removeEventListener('keyup', onKey);
+
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange);
 
               // Disconnect the ResizeObserver here so EVERY unmount path frees it — the
               // canvas ref-null teardown calls _cellSimCleanup but never touched the RO,
@@ -19623,6 +20008,10 @@ var d = labToolData.cell || {};
 
               HH = canvasEl.height = canvasEl.offsetHeight * dpr;
 
+              clampCamera();
+
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+
             });
 
             ro.observe(canvasEl);
@@ -19631,27 +20020,41 @@ var d = labToolData.cell || {};
 
           };
 
+          var canvasRefCb = canvasRefStableRef.current;
+
 
 
           // ── Cleanup on unmount ──
-
-          // Only run cleanup when truly leaving the cell tool, not on re-renders
-
-          var cleanupRef = function (el) {
-
-            if (!el && stemLabTool !== 'cell') {
-
-              var old = document.querySelector('[data-cell-sim-canvas]');
-
-              if (old && old._cellSimCleanup) { old._cellSimCleanup(); if (old._cellSimRO) old._cellSimRO.disconnect(); old._cellSimInit = false; }
-
+          var cleanupRefImplRef = React.useRef(null);
+          var cleanupRefStableRef = React.useRef(null);
+          if (!cleanupRefStableRef.current) {
+            cleanupRefStableRef.current = function (el) {
+              if (cleanupRefImplRef.current) cleanupRefImplRef.current(el);
+            };
+          }
+          cleanupRefImplRef.current = function (el) {
+            if (!el) {
+              stopCellAmbient();
+              var old = canvasRefStateRef.current.lastCanvas || document.querySelector('[data-cell-sim-canvas]');
+              if (old && old._cellSimCleanup) { old._cellSimCleanup(); old._cellSimInit = false; }
+              canvasRefStateRef.current.lastCanvas = null;
             }
-
           };
+          var cleanupRef = cleanupRefStableRef.current;
 
 
 
           var selDef = d.selectedOrganism ? ORGANISMS.find(function (o) { return o.id === d.selectedOrganism; }) : null;
+
+          var selectedStructureCount = selDef && selDef.anatomy ? selDef.anatomy.length : 0;
+
+          var cellRenderPrefersReducedMotion = false;
+
+          try { cellRenderPrefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+          var effectiveCellPaused = !!d.paused || (cellRenderPrefersReducedMotion && typeof d.paused === 'undefined');
+
+          var cellCanvasStatus = (selDef ? selDef.label + ' selected. ' + selectedStructureCount + ' structures available.' : 'No organism selected.') + ' Zoom ' + Math.round(40 * (d.zoom || 1)) + 'x. ' + (effectiveCellPaused ? 'Simulation paused.' : 'Simulation running.');
 
 
 
@@ -19947,6 +20350,8 @@ var d = labToolData.cell || {};
 
             d.mode !== 'interior' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
 
+              React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: srOnly || "sr-only" }, cellCanvasStatus),
+
               React.createElement("div", { className: "absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur" },
                 React.createElement("div", { className: "min-w-0" },
                   React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wide text-emerald-200" }, d.mode === 'play' ? "Live Cell Control" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
@@ -19955,19 +20360,19 @@ var d = labToolData.cell || {};
                 React.createElement("div", { className: "flex flex-wrap gap-1.5" },
                   React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
                   React.createElement("span", { className: "rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
-                  React.createElement("span", { className: "rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100" }, d.paused ? "Paused" : "Running")
+                  React.createElement("span", { className: "rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100" }, effectiveCellPaused ? "Paused" : "Running")
                 )
               ),
 
               React.createElement("canvas", {
 
-                "data-cell-sim-canvas": "", role: "img", "aria-label": "Cell biology simulation showing organism behavior",
+                "data-cell-sim-canvas": "", role: "img", "aria-label": "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy.", "aria-describedby": "cell-sim-status",
 
                 tabIndex: 0,
 
                 ref: canvasRefCb,
 
-                style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', outline: 'none' }
+                style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', outline: 'none', touchAction: 'none', userSelect: 'none' }
 
               }),
 
@@ -19987,7 +20392,14 @@ var d = labToolData.cell || {};
 
                 }),
 
-                Math.round(40 * (d.zoom || 1)) + "x"
+                Math.round(40 * (d.zoom || 1)) + "x",
+
+                React.createElement("button", {
+                  type: "button",
+                  "aria-label": "Reset microscope view",
+                  onClick: function () { var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1); cellSound('select'); },
+                  className: "rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-black text-slate-700 hover:bg-white active:scale-[0.97]"
+                }, "\u21BA")
 
               ),
 
@@ -20009,7 +20421,7 @@ var d = labToolData.cell || {};
 
                 (d.simSpeed || 1) + "x",
 
-                React.createElement("button", { "aria-label": d.paused ? "Play simulation" : "Pause simulation", "aria-pressed": !d.paused, onClick: function () { var p = !d.paused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (d.paused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, d.paused ? "\u25B6" : "\u23F8")
+                React.createElement("button", { "aria-label": effectiveCellPaused ? "Play simulation" : "Pause simulation", "aria-pressed": !effectiveCellPaused, onClick: function () { var p = !effectiveCellPaused; upd("paused", p); if (p) { stopCellAmbient(); } else { startCellAmbient(); } var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv) { if (!p && cv._cellSimRestart && !cv._cellSimAlive) { cv._cellSimRestart(); } else if (cv._cellSimSetPaused) { cv._cellSimSetPaused(p); } } }, className: "text-xs font-bold px-2 py-0.5 rounded " + (effectiveCellPaused ? "bg-green-700 text-white" : "bg-slate-200 text-slate-600") }, effectiveCellPaused ? "\u25B6" : "\u23F8")
 
               ),
 
@@ -20181,13 +20593,18 @@ var d = labToolData.cell || {};
 
                   React.createElement("button", {
 
+                    "aria-label": "Show all cell types in petri dish",
+
                     onClick: function() {
 
                       var nextSpawns = {};
 
                       ORGANISMS.forEach(function(o) { nextSpawns[o.id] = true; });
 
-                      upd('_activeSpawns', nextSpawns);
+                      updateCellDataFunctional(function(cel) {
+                        cel._activeSpawns = nextSpawns;
+                        return cel;
+                      });
 
                       var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20207,13 +20624,20 @@ var d = labToolData.cell || {};
 
                   React.createElement("button", {
 
+                    "aria-label": "Clear all cell types from petri dish",
+
                     onClick: function() {
 
                       var nextSpawns = {};
 
                       ORGANISMS.forEach(function(o) { nextSpawns[o.id] = false; });
 
-                      upd('_activeSpawns', nextSpawns);
+                      updateCellDataFunctional(function(cel) {
+                        cel._activeSpawns = nextSpawns;
+                        cel.selectedOrganism = null;
+                        cel.playAsOrganism = null;
+                        return cel;
+                      });
 
                       var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20235,7 +20659,7 @@ var d = labToolData.cell || {};
 
               ),
 
-              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2" },
+              React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-6 gap-2", role: "group", "aria-label": "Cell type visibility filters" },
 
                 ORGANISMS.map(function(org) {
 
@@ -20245,13 +20669,22 @@ var d = labToolData.cell || {};
 
                     key: org.id,
 
+                    "aria-pressed": isActive,
+
+                    "aria-label": (isActive ? "Hide " : "Show ") + org.label + " in petri dish",
+
                     onClick: function() {
 
                       var nextSpawns = Object.assign({}, d._activeSpawns || {});
 
                       nextSpawns[org.id] = !isActive;
 
-                      upd('_activeSpawns', nextSpawns);
+                      updateCellDataFunctional(function(cel) {
+                        cel._activeSpawns = nextSpawns;
+                        if (!nextSpawns[org.id] && cel.selectedOrganism === org.id) cel.selectedOrganism = null;
+                        if (!nextSpawns[org.id] && cel.playAsOrganism === org.id) cel.playAsOrganism = null;
+                        return cel;
+                      });
 
                       var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20315,7 +20748,10 @@ var d = labToolData.cell || {};
 
                       nextSpawns[org.id] = true;
 
-                      upd('_activeSpawns', nextSpawns);
+                      updateCellDataFunctional(function(cel) {
+                        cel._activeSpawns = nextSpawns;
+                        return cel;
+                      });
 
                       var cv = document.querySelector('[data-cell-sim-canvas]');
 
@@ -20327,20 +20763,23 @@ var d = labToolData.cell || {};
 
                     }
 
-                    upd("selectedOrganism", d.selectedOrganism === org.id ? null : org.id);
-                    if (typeof announceToSR === 'function' && d.selectedOrganism !== org.id) announceToSR('Selected ' + (org.name || org.label || org.id));
-
                     var cv = document.querySelector('[data-cell-sim-canvas]');
 
-                    if (cv && cv._cellSimFocusOrganism) cv._cellSimFocusOrganism(org.id);
+                    var nextSelectedOrg = d.selectedOrganism === org.id ? null : org.id;
+
+                    if (cv && cv._cellSimSelectOrganism) {
+
+                      cv._cellSimSelectOrganism(nextSelectedOrg, true);
+
+                    } else {
+
+                      selectCanvasOrganism(nextSelectedOrg);
+
+                      if (nextSelectedOrg && typeof announceToSR === 'function') announceToSR('Selected ' + (org.name || org.label || org.id));
+
+                    }
 
                     cellSound('select');
-
-                    var obs = ext.organismsObserved.slice();
-
-                    if (obs.indexOf(org.id) === -1) { obs.push(org.id); }
-
-                    updExtAndBadge({ organismsObserved: obs });
 
                   },
 
@@ -20385,40 +20824,24 @@ var d = labToolData.cell || {};
 
                       cv._cellSimSetPlayAs(selDef.id);
 
-                      updExtAndBadge({ playModeUsed: true });
+                      recordCanvasPlayModeUsed();
 
                       cv._onXP = function (xp, label) {
 
-                        setLabToolData(function (prev) { var c = prev.cell || {}; return Object.assign({}, prev, { cell: Object.assign({}, c, { xpEarned: (c.xpEarned || 0) + xp }) }); });
-
-                        if (typeof addToast === 'function') addToast("+" + xp + " XP: " + label + "!", "success");
-
-                        var orgDef = ORGANISMS.find(function (o) { return o.activity === label || o.id === d.selectedOrganism; });
-
-                        if (orgDef) {
-
-                          var disc = (d.discoveries || []).slice();
-
-                          var undisc = orgDef.facts.map(function (f, i) { return orgDef.id + '_' + i; }).filter(function (k) { return disc.indexOf(k) === -1; });
-
-                          if (undisc.length > 0) { disc.push(undisc[Math.floor(Math.random() * undisc.length)]); upd("discoveries", disc); }
-
-                        }
+                        recordCanvasXP(xp, label);
 
                       };
 
                       cv._onFood = function () {
                         cellSound('food');
-                        updExtAndBadge({ totalFood: ext.totalFood + 1 });
+                        recordCanvasFoodCollected();
                       };
                       cv._onPhotosynthesis = function () {
                         cellSound('photosynthesis');
                       };
                       cv._onOrganelleClick = function (name) {
                         if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
-                        var clicks = ext.organellesClicked.slice();
-                        if (clicks.indexOf(name) === -1) clicks.push(name);
-                        updExtAndBadge({ organellesClicked: clicks });
+                        recordCanvasOrganelleClick(name);
                       };
 
                     }
@@ -20486,16 +20909,6 @@ var d = labToolData.cell || {};
                         if (cv && cv._cellSimShowOrganelleTooltip) {
 
                           cv._cellSimShowOrganelleTooltip(selDef.id, a.name);
-
-                        }
-
-                        var clicks = ext.organellesClicked.slice();
-
-                        if (clicks.indexOf(a.name) === -1) {
-
-                          clicks.push(a.name);
-
-                          updExtAndBadge({ organellesClicked: clicks });
 
                         }
 
@@ -20858,27 +21271,72 @@ var d = labToolData.cell || {};
               var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
               var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
               var selOrg = sel && CELL_ORGANELLES[sel] ? CELL_ORGANELLES[sel] : null;
-              function pick(key) { upd('interiorSel', key); if (CELL_ORGANELLES[key] && seen.indexOf(key) < 0) upd('interiorSeen', seen.concat([key])); }
+              function pick(key) {
+                updateCellDataFunctional(function(cel) {
+                  cel.interiorSel = key;
+                  if (CELL_ORGANELLES[key]) {
+                    var nextSeen = (cel.interiorSeen || []).slice();
+                    if (nextSeen.indexOf(key) < 0) nextSeen.push(key);
+                    cel.interiorSeen = nextSeen;
+                  }
+                  return cel;
+                });
+              }
               return h('div', { className: 'mt-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm', "data-cell-interior-workspace": true },
                 h('p', { className: 'text-[13px] text-slate-700 mb-2 leading-relaxed' }, '🔬 ', h('strong', null, 'You are inside a single cell.'), ' This is the textbook cross-section — but alive: organelles drift in the cytoplasm, mitochondria pulse, vesicles shuttle cargo. Switch the cell type to see what changes, and tap any organelle.'),
                 // cell-type toggle
                 h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell type' },
                   CTYPES.map(function (c) {
                     var on = c.id === ctype;
-                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { upd('interiorCellType', c.id); upd('interiorSel', null); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
+                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
                   })),
                 h('div', { className: 'text-[12px] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),
                 // the living cell
                 h('div', { className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
-                  h('canvas', { key: 'interior-' + ctype + '-' + (sel || 'none'), width: 760, height: 440, role: 'img',
+                  h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
                     style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
                     onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height)); },
                     ref: function (cv) {
-                      if (!cv) return; var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
-                      var tt = { v: 0 };
-                      function frame() { if (!cv.isConnected) return; if (!reducedMo) tt.v += 0.016; try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo); } catch (e) {} if (!reducedMo) requestAnimationFrame(frame); }
-                      frame();
+                      if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
+                      if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
+                      try { if (window.__alloCellInteriorCleanup && window.__alloCellInteriorCleanup !== cv._cellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {}
+                      var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
+                      var alive = true;
+                      var frameId = null;
+                      var tt = { v: Number(cv._cellInteriorPhase) || 0 };
+                      function cancelInteriorFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
+                      function drawInteriorFrame() {
+                        if (!alive || !cv.isConnected) return;
+                        try { drawCellInterior(cx2d, cv.width, cv.height, ctype, tt.v, sel, reducedMo); } catch (e) {}
+                      }
+                      function scheduleInteriorFrame() {
+                        if (!alive || reducedMo || frameId) return;
+                        if (typeof document !== 'undefined' && document.hidden) return;
+                        frameId = requestAnimationFrame(frame);
+                      }
+                      function frame() {
+                        frameId = null;
+                        if (!alive || !cv.isConnected) return;
+                        tt.v += 0.016;
+                        cv._cellInteriorPhase = tt.v;
+                        drawInteriorFrame();
+                        scheduleInteriorFrame();
+                      }
+                      function onInteriorVisibilityChange() {
+                        if (typeof document !== 'undefined' && document.hidden) cancelInteriorFrame();
+                        else { drawInteriorFrame(); scheduleInteriorFrame(); }
+                      }
+                      cv._cellInteriorCleanup = function () {
+                        alive = false;
+                        cancelInteriorFrame();
+                        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onInteriorVisibilityChange);
+                        if (window.__alloCellInteriorCleanup === cv._cellInteriorCleanup) window.__alloCellInteriorCleanup = null;
+                      };
+                      try { window.__alloCellInteriorCleanup = cv._cellInteriorCleanup; } catch (e) {}
+                      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onInteriorVisibilityChange);
+                      drawInteriorFrame();
+                      scheduleInteriorFrame();
                     } })),
                 h('div', { className: 'text-[10.5px] text-slate-500 mt-1 leading-snug' }, __alloT('stem.cell.interior_caveat', 'Schematic, not to scale: organelle sizes and numbers are simplified (a real cell has hundreds of mitochondria), and this is one 2-D slice of a 3-D cell. Cells also specialize — this is a “typical” one.')),
                 // organelle legend (keyboard-accessible selection)

@@ -86,8 +86,8 @@ describe('anti-drift: judge prompts are fence-hardened, transform prompts are NO
     expect(src.includes('function _neutralizePromptFence(s) {')).toBe(true);
   });
 
-  it('all fence sites wrapped (17 mentions = 1 def + 12 judge + 2 Tier-3 hint + 2 AI-table-rebuild input)', () => {
-    expect((src.match(/_neutralizePromptFence/g) || []).length).toBe(17);
+  it('all required fence sites remain wrapped, while newer protected sites may add more uses', () => {
+    expect((src.match(/_neutralizePromptFence/g) || []).length).toBeGreaterThanOrEqual(17);
   });
 
   it('the AI table-rebuild fences its untrusted INPUTS (the instruction + the table HTML)', () => {

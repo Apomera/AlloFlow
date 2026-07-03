@@ -29,6 +29,19 @@
     document.body.appendChild(lr);
   })();
 
+  // Local contrast tokens for the graphing calculator side panels.
+  (function() {
+    if (document.getElementById('allo-graphcalc-contrast-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-graphcalc-contrast-css';
+    st.textContent = [
+      '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#b91c1c;}',
+      '.theme-dark .graphcalc-shell{--gc-card:rgba(99,102,241,.16);--gc-card-strong:rgba(99,102,241,.24);--gc-muted:#cbd5e1;--gc-accent:#c7d2fe;--gc-accent-soft:rgba(99,102,241,.22);--gc-accent-border:#818cf8;--gc-button-bg:rgba(99,102,241,.18);--gc-button-text:#c7d2fe;--gc-danger:#fca5a5;}',
+      '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   /* ── StemLab plugin guard ───────────────────────────────── */
   if (!window.StemLab) {
@@ -621,10 +634,31 @@
           if (addToast) addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
         }
 
+        var gcText = 'var(--gc-text)';
+        var gcMuted = 'var(--gc-muted)';
+        var gcPanel = 'var(--gc-panel)';
+        var gcDeeper = 'var(--gc-deeper)';
+        var gcCard = 'var(--gc-card)';
+        var gcCardStrong = 'var(--gc-card-strong)';
+        var gcBorder = 'var(--gc-border)';
+        var gcAccent = 'var(--gc-accent)';
+        var gcAccentSoft = 'var(--gc-accent-soft)';
+        var gcAccentBorder = 'var(--gc-accent-border)';
+        var gcButtonBg = 'var(--gc-button-bg)';
+        var gcButtonText = 'var(--gc-button-text)';
+        var gcDanger = 'var(--gc-danger)';
+        function gcButtonStyle(active, accent) {
+          return {
+            background: active ? gcAccentSoft : gcButtonBg,
+            color: active ? (accent || gcAccent) : gcButtonText,
+            border: '1px solid ' + (active ? (accent || gcAccentBorder) : gcBorder)
+          };
+        }
+
         /* ═══════════════════════════════════════════════════
            UI RENDER
            ═══════════════════════════════════════════════════ */
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+        return h('div', { className: 'graphcalc-shell', style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', color: gcText, fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
@@ -647,86 +681,86 @@
           h('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
 
             // Left sidebar
-            h('div', { style: { width: '220px', borderRight: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))' } },
-              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)', fontSize: '11px', fontWeight: 'bold', color: '#818cf8', letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
+            h('div', { style: { width: '220px', borderRight: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
+              h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 'bold', color: gcAccent, letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
               h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 funcs.map(function(fn, i) {
                   return h('div', { key: 'f' + i, style: { marginBottom: '8px' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
                       h('div', { style: { width: '10px', height: '10px', borderRadius: '50%', background: fn.color } }),
-                      h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'y' + (i + 1) + ' =')
+                      h('span', { style: { fontSize: '10px', color: gcMuted, fontWeight: 700 } }, 'y' + (i + 1) + ' =')
                     ),
                     h('input', { type: 'text', value: fn.expr || '', placeholder: i === 0 ? '2x + 3' : i === 1 ? 'x^2 - 4' : 'sin(x)',
                       onChange: function(e) { var nf = funcs.slice(); nf[i] = Object.assign({}, nf[i], { expr: e.target.value }); upd('funcs', nf); },
                       onFocus: function() { upd('focusedInput', i); },
                       'aria-label': 'Function y' + (i + 1) + ' expression',
                       className: 'focus:ring-2 focus:ring-indigo-500',
-                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color + '44', background: fn.color + '11', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '12px' } })
+                      style: { width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + fn.color, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '12px', fontWeight: 700 } })
                   );
                 })
               ),
               // Math Pad toggle
-              h('div', { style: { padding: '4px 12px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, 'aria-pressed': !!showMathPad, style: { width: '100%', padding: '4px', borderRadius: '6px', background: showMathPad ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showMathPad ? '#a5b4fc' : '#94a3b8', border: showMathPad ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.math_pad', '\u2328 Math Pad')),
+              h('div', { style: { padding: '4px 12px', borderTop: '1px solid ' + gcBorder } },
+                h('button', { onClick: function() { upd('showMathPad', !showMathPad); }, 'aria-pressed': !!showMathPad, style: Object.assign({ width: '100%', padding: '4px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showMathPad)) }, __alloT('stem.graphcalc.math_pad', '\u2328 Math Pad')),
                 showMathPad ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px', paddingBottom: '4px', paddingTop: '4px' } },
                   visibleSymbols.map(function(sym) {
-                    return h('button', { 'aria-label': 'Insert ' + sym.label, key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: 'rgba(99,102,241,0.12)', color: '#c7d2fe', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
+                    return h('button', { 'aria-label': 'Insert ' + sym.label, key: sym.label, onClick: function() { insertSymbol(sym.insert); }, style: { padding: '3px 7px', borderRadius: '5px', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, fontSize: '11px', fontFamily: 'monospace', fontWeight: 'bold', cursor: 'pointer' } }, sym.label);
                   })
                 ) : null
               ),
               // Tool buttons
-              h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                h('button', { onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showTable ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showTable ? '#a5b4fc' : '#94a3b8', border: showTable ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.table', '\uD83D\uDCCA Table')),
-                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.png', '\uD83D\uDCF8 PNG')),
-                h('button', { onClick: function() { upd('showWindow', !showWindow); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showWindow ? '#818cf833' : 'rgba(255,255,255,0.05)', color: showWindow ? '#a5b4fc' : '#94a3b8', border: showWindow ? '1px solid #818cf844' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.window', '\u2699\uFE0F Window')),
-                h('button', { 'aria-label': __alloT('stem.graphcalc.challenge', 'Challenge'), onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showChallenge ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showChallenge ? '#c4b5fd' : '#94a3b8', border: showChallenge ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.challenge_2', '\uD83C\uDFAF Challenge')),
-                h('button', { 'aria-label': __alloT('stem.graphcalc.clear', 'Clear'), onClick: function() { SOUNDS.clearAll(); upd('funcs', funcs.map(function(f) { return Object.assign({}, f, { expr: '' }); })); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.clear_2', '\uD83D\uDDD1 Clear')),
-                h('button', { onClick: function() { SOUNDS.traceOn(); upd('traceMode', !d.traceMode); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.traceMode ? '#fbbf2433' : 'rgba(255,255,255,0.05)', color: d.traceMode ? '#fbbf24' : '#94a3b8', border: d.traceMode ? '1px solid #fbbf2444' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.trace', '\uD83D\uDD0D Trace')),
-                h('button', { onClick: runAnalysis, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showAnalysis ? '#34d39933' : 'rgba(255,255,255,0.05)', color: d.showAnalysis ? '#34d399' : '#94a3b8', border: d.showAnalysis ? '1px solid #34d39944' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.analyze', '\u26A1 Analyze')),
-                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: d.showDeriv ? '#fb923c33' : 'rgba(255,255,255,0.05)', color: d.showDeriv ? '#fb923c' : '#94a3b8', border: d.showDeriv ? '1px solid #fb923c44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.f_x', "\u2202 f'(x)")),
-                h('button', { 'aria-label': __alloT('stem.graphcalc.sliders', 'Sliders'), onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: showSliders ? '#a78bfa33' : 'rgba(255,255,255,0.05)', color: showSliders ? '#a78bfa' : '#94a3b8', border: showSliders ? '1px solid #a78bfa44' : '1px solid transparent', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.sliders_2', '\uD83C\uDFA8 Sliders'))
+              h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, display: 'flex', flexWrap: 'wrap', gap: '4px' } },
+                h('button', { onClick: function() { upd('showTable', !showTable); if (!showTable) upd('_usedTable', true); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showTable)) }, __alloT('stem.graphcalc.table', '\uD83D\uDCCA Table')),
+                h('button', { onClick: function() { try { var _cs = [].slice.call(document.querySelectorAll('canvas')); if (!_cs.length) return; var _c = _cs.sort(function(a,b){ return (b.width*b.height)-(a.width*a.height); })[0]; var _a = document.createElement('a'); _a.href = _c.toDataURL('image/png'); _a.download = 'graphcalc_' + Date.now() + '.png'; _a.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCF8 PNG saved!', 'success'); } catch (e) {} }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(true, '#0369a1')) }, __alloT('stem.graphcalc.png', '\uD83D\uDCF8 PNG')),
+                h('button', { onClick: function() { upd('showWindow', !showWindow); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showWindow)) }, __alloT('stem.graphcalc.window', '\u2699\uFE0F Window')),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.challenge', 'Challenge'), onClick: function() { SOUNDS.challengeOpen(); upd('showChallenge', !showChallenge); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showChallenge)) }, __alloT('stem.graphcalc.challenge_2', '\uD83C\uDFAF Challenge')),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.clear', 'Clear'), onClick: function() { SOUNDS.clearAll(); upd('funcs', funcs.map(function(f) { return Object.assign({}, f, { expr: '' }); })); }, style: { flex: '1 0 45%', padding: '5px', borderRadius: '6px', background: 'rgba(239,68,68,0.14)', color: gcDanger, border: '1px solid rgba(239,68,68,0.45)', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.clear_2', '\uD83D\uDDD1 Clear')),
+                h('button', { onClick: function() { SOUNDS.traceOn(); upd('traceMode', !d.traceMode); }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.traceMode, '#92400e')) }, __alloT('stem.graphcalc.trace', '\uD83D\uDD0D Trace')),
+                h('button', { onClick: runAnalysis, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showAnalysis, '#065f46')) }, __alloT('stem.graphcalc.analyze', '\u26A1 Analyze')),
+                h('button', { onClick: function() { upd('showDeriv', !d.showDeriv); if (!d.showDeriv) { upd('_usedDeriv', true); if (d.derivX == null) upd('derivX', 0); } }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(!!d.showDeriv, '#9a3412')) }, __alloT('stem.graphcalc.f_x', "\u2202 f'(x)")),
+                h('button', { 'aria-label': __alloT('stem.graphcalc.sliders', 'Sliders'), onClick: function() { upd('showSliders', !showSliders); if (!showSliders) { upd('_usedSliders', true); if (d.sliderA == null) upd('sliderA', 1); if (d.sliderB == null) upd('sliderB', 0); if (d.sliderC == null) upd('sliderC', 0); } }, style: Object.assign({ flex: '1 0 45%', padding: '5px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }, gcButtonStyle(showSliders)) }, __alloT('stem.graphcalc.sliders_2', '\uD83C\uDFA8 Sliders'))
               ),
               // Zoom presets
-              h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid rgba(99,102,241,0.1)' } },
-                h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '4px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zoom_presets', 'ZOOM PRESETS')),
+              h('div', { style: { padding: '6px 12px 10px', borderTop: '1px solid ' + gcBorder } },
+                h('div', { style: { fontSize: '11px', color: gcText, marginBottom: '4px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zoom_presets', 'ZOOM PRESETS')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '3px' } },
                   ZOOM_PRESETS.map(function(z) {
-                    return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.2)', fontSize: '11px', cursor: 'pointer' } }, z.name);
+                    return h('button', { 'aria-label': z.name + ' zoom preset', key: z.name, onClick: function() { SOUNDS.zoomPreset(); upd('window', { xmin: z.xmin, xmax: z.xmax, ymin: z.ymin, ymax: z.ymax }); }, style: { padding: '3px 7px', borderRadius: '4px', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, z.name);
                   })
                 )
               ),
               // Sliders
-              showSliders ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(167,139,250,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '6px' } }, __alloT('stem.graphcalc.sliders_use_a_b_c', '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c')),
+              showSliders ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
+                h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '6px' } }, __alloT('stem.graphcalc.sliders_use_a_b_c', '\uD83C\uDFA8 SLIDERS \u2014 Use a, b, c')),
                 ['a', 'b', 'c'].map(function(p) {
                   var key = 'slider' + p.toUpperCase(); var val = d[key] != null ? d[key] : (p === 'a' ? 1 : 0);
                   return h('div', { key: p, style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
-                    h('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: '#c4b5fd', fontSize: '12px', width: '16px' } }, p),
-                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#a78bfa' } }),
-                    h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
+                    h('span', { style: { fontFamily: 'monospace', fontWeight: 'bold', color: gcAccent, fontSize: '12px', width: '16px' } }, p),
+                    h('input', { type: 'range', min: -10, max: 10, step: 0.1, value: val, 'aria-label': 'Parameter ' + p + ': ' + Number(val.toFixed(1)), onChange: function(e) { upd(key, parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
+                    h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcText, minWidth: '36px', textAlign: 'right', fontWeight: 'bold' } }, Number(val.toFixed(1)))
                   );
                 })
               ) : null,
               // Derivative slider
-              d.showDeriv ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(251,146,60,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#fb923c', fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.tangent_to_y', '\u2202 TANGENT to y\u2081')),
+              d.showDeriv ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
+                h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.tangent_to_y', '\u2202 TANGENT to y\u2081')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                  h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'x='),
-                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: '#fb923c' } }),
-                  h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#fb923c', fontWeight: 'bold' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0')
+                  h('span', { style: { fontSize: '10px', color: gcText } }, 'x='),
+                  h('input', { type: 'range', min: win.xmin, max: win.xmax, step: (win.xmax - win.xmin) / 200, value: d.derivX != null ? d.derivX : 0, 'aria-label': 'Tangent x position: ' + (d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0'), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, accentColor: gcAccent } }),
+                  h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, d.derivX != null ? Number(d.derivX.toPrecision(4)) : '0')
                 )
               ) : null,
               // Analysis results
-              d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid rgba(99,102,241,0.1)', background: 'rgba(52,211,153,0.06)' } },
-                h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.analysis', '\u26A1 ANALYSIS')),
+              d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
+                h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '4px' } }, __alloT('stem.graphcalc.analysis', '\u26A1 ANALYSIS')),
                 h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '11px', color: '#34d399', fontWeight: 'bold' } }, __alloT('stem.graphcalc.zeros', 'Zeros')),
-                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#a7f3d0' } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.none', 'None'))
+                    h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, __alloT('stem.graphcalc.zeros', 'Zeros')),
+                    (d._zeros && d._zeros.length > 0) ? d._zeros.map(function(z, zi) { return h('div', { key: zi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, 'x=' + Number(z.x.toPrecision(5))); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, __alloT('stem.graphcalc.none', 'None'))
                   ),
                   h('div', { style: { flex: 1 } },
-                    h('div', { style: { fontSize: '11px', color: '#f472b6', fontWeight: 'bold' } }, __alloT('stem.graphcalc.intersections', 'Intersections')),
-                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: '#f9a8d4' } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.need_2_funcs', 'Need 2+ funcs'))
+                    h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, __alloT('stem.graphcalc.intersections', 'Intersections')),
+                    (d._intersections && d._intersections.length > 0) ? d._intersections.map(function(pt, pi) { return h('div', { key: pi, style: { fontSize: '10px', fontFamily: 'monospace', color: gcText } }, '(' + Number(pt.x.toPrecision(4)) + ',' + Number(pt.y.toPrecision(4)) + ')'); }) : h('div', { style: { fontSize: '10px', color: gcMuted } }, __alloT('stem.graphcalc.need_2_funcs', 'Need 2+ funcs'))
                   )
                 )
               ) : null
@@ -737,40 +771,40 @@
               h('canvas', { ref: canvasRef, 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
                 onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
                 onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
-              showWindow ? h('div', { style: { padding: '8px 12px', background: 'rgba(30,27,75,0.9)', borderTop: '1px solid rgba(99,102,241,0.2)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold' } }, 'WINDOW:'),
+              showWindow ? h('div', { style: { padding: '8px 12px', background: gcPanel, borderTop: '1px solid ' + gcBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: '10px', color: gcAccent, fontWeight: 'bold' } }, 'WINDOW:'),
                 ['xmin', 'xmax', 'ymin', 'ymax'].map(function(k) {
-                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '10px' } }));
+                  return h('label', { key: k, style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: gcText, fontWeight: 700 } }, k + ':', h('input', { type: 'number', value: win[k], onChange: function(e) { var nw = Object.assign({}, win); nw[k] = parseFloat(e.target.value) || 0; upd('window', nw); }, style: { width: '50px', padding: '2px 4px', borderRadius: '4px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '10px' } }));
                 })
               ) : null,
-              showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid rgba(99,102,241,0.2)', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.95))' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
-                  h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: '#818cf8' } }, __alloT('stem.graphcalc.table_2', '\uD83D\uDCCA TABLE')),
-                  h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } })),
-                  h('label', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'flex', alignItems: 'center', gap: '3px' } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.1)', color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'monospace', fontSize: '11px' } }))
+              showTable ? h('div', { style: { maxHeight: '150px', overflowY: 'auto', borderTop: '1px solid ' + gcBorder, background: gcPanel } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderBottom: '1px solid ' + gcBorder } },
+                  h('span', { style: { fontSize: '10px', fontWeight: 'bold', color: gcAccent } }, __alloT('stem.graphcalc.table_2', '\uD83D\uDCCA TABLE')),
+                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Start:', h('input', { type: 'number', value: tableX, onChange: function(e) { upd('tableX', parseFloat(e.target.value) || 0); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } })),
+                  h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Step:', h('input', { type: 'number', value: tableStep, onChange: function(e) { upd('tableStep', parseFloat(e.target.value) || 1); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
-                  h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: '#818cf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : '#38bdf8', fontWeight: 'bold', borderBottom: '1px solid rgba(99,102,241,0.15)' } }, 'y\u2081'))),
-                  h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : 'rgba(99,102,241,0.04)' } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: 'var(--allo-stem-text, #e2e8f0)' } }, r.y)); }))
+                  h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'x'), h('th', { style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'y\u2081'))),
+                  h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : gcCard } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: gcMuted } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: gcText } }, r.y)); }))
                 )
               ) : null
             ),
 
             // Right sidebar
-            h('div', { style: { width: '230px', borderLeft: '1px solid rgba(99,102,241,0.15)', display: 'flex', flexDirection: 'column', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.8))' } },
-              h('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.1)' } },
+            h('div', { style: { width: '230px', borderLeft: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
+              h('div', { style: { display: 'flex', borderBottom: '1px solid ' + gcBorder } },
                 [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5', ariaLabel: __alloT('stem.graphcalc.badges', 'Badges') }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
-                  return h('button', { 'aria-label': st.ariaLabel || st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? '#a5b4fc' : '#94a3b8', background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #818cf8' : '2px solid transparent', cursor: 'pointer' } }, st.label);
+                  return h('button', { 'aria-label': st.ariaLabel || st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? gcAccent : gcMuted, background: active ? gcAccentSoft : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid ' + gcAccentBorder : '2px solid transparent', cursor: 'pointer' } }, st.label);
                 })
               ),
               // Coach
               (d._sideTab || 'coach') === 'coach' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 currentTips.map(function(tip, i) {
-                  return h('div', { key: i, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.12)' } },
-                    h('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: '#a5b4fc' } }, tip.icon + ' ' + tip.title),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #cbd5e1)' } }, tip.text),
-                    h('button', { 'aria-label': __alloT('stem.graphcalc.read_aloud', 'Read aloud'), onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, __alloT('stem.graphcalc.read_aloud_2', '\uD83D\uDD0A Read aloud'))
+                  return h('div', { key: i, style: { padding: '10px', marginBottom: '8px', borderRadius: '10px', background: gcCard, border: '1px solid ' + gcBorder } },
+                    h('div', { style: { fontWeight: 'bold', fontSize: '12px', marginBottom: '4px', color: gcAccent } }, tip.icon + ' ' + tip.title),
+                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: gcText } }, tip.text),
+                    h('button', { 'aria-label': __alloT('stem.graphcalc.read_aloud', 'Read aloud'), onClick: function() { speakText(tip.text, callTTS); }, style: { marginTop: '4px', background: 'none', border: 'none', color: gcAccent, fontSize: '10px', cursor: 'pointer', fontWeight: 'bold' } }, __alloT('stem.graphcalc.read_aloud_2', '\uD83D\uDD0A Read aloud'))
                   );
                 })
               ) : null,
@@ -778,11 +812,11 @@
               (d._sideTab || 'coach') === 'challenge' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 availableChallenges.map(function(ch, ci) {
                   var isActive = d.activeChallenge === ci;
-                  return h('div', { key: ci, role: 'button', tabIndex: 0, 'aria-expanded': isActive, 'aria-label': ch.topic + (isActive ? ' (expanded)' : ' (collapsed)'), onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer' } },
-                    h('div', { style: { fontSize: '11px', color: '#a78bfa', fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
-                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, ch.prompt),
+                  return h('div', { key: ci, role: 'button', tabIndex: 0, 'aria-expanded': isActive, 'aria-label': ch.topic + (isActive ? ' (expanded)' : ' (collapsed)'), onClick: function() { upd('activeChallenge', isActive ? -1 : ci); }, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, style: { padding: '10px', marginBottom: '6px', borderRadius: '10px', background: gcCard, border: '1px solid ' + (isActive ? gcAccentBorder : gcBorder), cursor: 'pointer' } },
+                    h('div', { style: { fontSize: '11px', color: gcAccent, fontWeight: 'bold', marginBottom: '3px' } }, ch.topic),
+                    h('div', { style: { fontSize: '11px', lineHeight: '1.5', color: gcText, marginBottom: '4px' } }, ch.prompt),
                     isActive ? h('div', null,
-                      h('div', { style: { fontSize: '10px', color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px' } }, '\uD83D\uDCA1 ' + ch.hint),
+                      h('div', { style: { fontSize: '10px', color: '#92400e', background: 'rgba(251,191,36,0.16)', padding: '6px 8px', borderRadius: '6px', marginTop: '4px', border: '1px solid rgba(251,191,36,0.35)' } }, '\uD83D\uDCA1 ' + ch.hint),
                       h('button', { 'aria-label': __alloT('stem.graphcalc.complete', 'Complete'), onClick: function(e) { e.stopPropagation(); SOUNDS.quizCorrect(); updMulti({ _challengesCompleted: (d._challengesCompleted || 0) + 1, activeChallenge: -1 }); if (addToast) addToast('\u2705 Challenge done! +5 XP'); if (awardStemXP) awardStemXP('graphCalc', 5, 'Graphing challenge'); }, style: { marginTop: '6px', padding: '4px 12px', borderRadius: '6px', background: '#22c55e', color: '#fff', border: 'none', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' } }, __alloT('stem.graphcalc.complete_2', '\u2705 Complete'))
                     ) : null
                   );
@@ -791,31 +825,31 @@
               // AI
               (d._sideTab || 'coach') === 'ai' ? h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '8px' } },
                 h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '8px' } },
-                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.ask_about_graphing_or_math', 'Ask about graphing or math!'))) : null,
+                  aiMessages.length === 0 ? h('div', { style: { textAlign: 'center', padding: '20px 0' } }, h('div', { style: { fontSize: '24px', marginBottom: '8px' } }, '\uD83E\uDD16'), h('p', { style: { fontSize: '11px', color: gcMuted } }, __alloT('stem.graphcalc.ask_about_graphing_or_math', 'Ask about graphing or math!'))) : null,
                   aiMessages.map(function(msg, i) {
                     return h('div', { key: i, style: { display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: '6px' } },
-                      h('div', { style: { maxWidth: '85%', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', background: msg.role === 'user' ? '#6366f1' : 'rgba(99,102,241,0.1)', color: msg.role === 'user' ? '#fff' : '#cbd5e1' } },
+                      h('div', { style: { maxWidth: '85%', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', lineHeight: '1.5', background: msg.role === 'user' ? '#4338ca' : gcCard, color: msg.role === 'user' ? '#fff' : gcText, border: msg.role === 'user' ? '1px solid #4338ca' : '1px solid ' + gcBorder } },
                         msg.text,
-                        msg.role !== 'user' ? h('button', { 'aria-label': __alloT('stem.graphcalc.speak_text', 'Speak Text'), onClick: function() { speakText(msg.text, callTTS); }, style: { marginLeft: '6px', background: 'none', border: 'none', color: '#818cf8', fontSize: '10px', cursor: 'pointer' } }, '\uD83D\uDD0A') : null
+                        msg.role !== 'user' ? h('button', { 'aria-label': __alloT('stem.graphcalc.speak_text', 'Speak Text'), onClick: function() { speakText(msg.text, callTTS); }, style: { marginLeft: '6px', background: 'none', border: 'none', color: gcAccent, fontSize: '10px', cursor: 'pointer' } }, '\uD83D\uDD0A') : null
                       ));
                   }),
-                  aiLoading ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, 'Thinking...') : null
+                  aiLoading ? h('div', { style: { fontSize: '11px', color: gcMuted, fontStyle: 'italic' } }, 'Thinking...') : null
                 ),
                 h('div', { style: { display: 'flex', gap: '4px' } },
-                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: __alloT('stem.graphcalc.ask_about_math', 'Ask about math...'), 'aria-label': __alloT('stem.graphcalc.ask_the_math_tutor', 'Ask the math tutor'), className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px' } }),
+                  h('input', { type: 'text', value: aiInput, onChange: function(e) { upd('aiInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) handleAiQuestion(aiInput.trim()); }, placeholder: __alloT('stem.graphcalc.ask_about_math', 'Ask about math...'), 'aria-label': __alloT('stem.graphcalc.ask_the_math_tutor', 'Ask the math tutor'), className: 'focus:ring-2 focus:ring-indigo-500', style: { flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontSize: '11px' } }),
                   h('button', { onClick: function() { if (aiInput.trim()) handleAiQuestion(aiInput.trim()); }, 'aria-label': __alloT('stem.graphcalc.send_question_to_ai_math_tutor', 'Send question to AI math tutor'), style: { padding: '6px 10px', borderRadius: '6px', background: '#6366f1', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' } }, '\u2191')
                 )
               ) : null,
               // Badges
               (d._sideTab || 'coach') === 'badges' ? h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
-                h('div', { style: { fontSize: '10px', color: '#818cf8', fontWeight: 'bold', marginBottom: '8px' } }, '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length + ' Earned'),
+                h('div', { style: { fontSize: '10px', color: gcAccent, fontWeight: 'bold', marginBottom: '8px' } }, '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length + ' Earned'),
                 BADGES.map(function(b) {
                   var earned = badges.indexOf(b.id) >= 0;
-                  return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.03)', border: earned ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(99,102,241,0.08)', opacity: earned ? 1 : 0.5 } },
+                  return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? gcCardStrong : gcCard, border: '1px solid ' + gcBorder, opacity: earned ? 1 : 0.72 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
-                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? '#c4b5fd' : '#94a3b8' } }, b.label), h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.graphcalc.' + (b.id) + '_desc', b.desc))),
-                      earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: '#a78bfa', fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
+                      h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? gcAccent : gcMuted } }, b.label), h('div', { style: { fontSize: '11px', color: gcMuted } }, __alloT('stem.graphcalc.' + (b.id) + '_desc', b.desc))),
+                      earned ? h('span', { style: { marginLeft: 'auto', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, '+' + b.xp + ' XP') : null
                     ));
                 })
               ) : null,
@@ -832,13 +866,13 @@
                 function logObs() {
                   setIQ({ log: (iq.log || []).concat([{ a: iq.a, h: iq.hVertex, k: iq.kVertex, st: state }]).slice(-8) });
                 }
-                return h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)' } },
-                  h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.graphcalc.quadratic_discovery', '❔ Quadratic discovery')),
-                  h('p', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.4, marginBottom: '8px' } },
+                return h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px', color: gcText } },
+                  h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: gcAccent, marginBottom: '6px' } }, __alloT('stem.graphcalc.quadratic_discovery', '❔ Quadratic discovery')),
+                  h('p', { style: { fontSize: '10px', color: gcMuted, lineHeight: 1.4, marginBottom: '8px' } },
                     __alloT('stem.graphcalc.sliders_for_vertex_h_k_and_stretch_a_d', 'Sliders for vertex (h, k) and stretch a. Discrete 3-state outcome shows the parabola direction. No score, no reveal — sweep and notice.')),
                   h('div', { style: { marginBottom: '8px', padding: '8px', borderRadius: '6px', textAlign: 'center', background: stateMeta.bg, border: '1px solid ' + stateMeta.border } },
                     h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: stateMeta.color } }, stateMeta.label),
-                    h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '3px', fontFamily: 'monospace' } },
+                    h('div', { style: { fontSize: '10px', color: gcText, marginTop: '3px', fontFamily: 'monospace' } },
                       'y = ' + iq.a.toFixed(2) + '(x − ' + iq.hVertex + ')² + ' + iq.kVertex)
                   ),
                   [
@@ -847,19 +881,19 @@
                     { key: 'kVertex', label: __alloT('stem.graphcalc.vertex_k', 'vertex k'),   val: iq.kVertex, min: -10, max: 10,  step: 1 }
                   ].map(function(s) {
                     return h('div', { key: s.key, style: { marginBottom: '6px' } },
-                      h('label', { htmlFor: 'qh-' + s.key, style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } },
-                        s.label + ': ', h('span', { style: { color: '#a5b4fc', fontFamily: 'monospace' } }, s.val)),
+                      h('label', { htmlFor: 'qh-' + s.key, style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: gcText, marginBottom: '2px' } },
+                        s.label + ': ', h('span', { style: { color: gcAccent, fontFamily: 'monospace' } }, s.val)),
                       h('input', { id: 'qh-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                         onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
                         style: { width: '100%' }, 'aria-label': s.label }));
                   }),
                   h('div', { style: { display: 'flex', gap: '4px', marginBottom: '6px', flexWrap: 'wrap' } },
-                    h('button', { onClick: logObs, style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.log', '📋 Log')),
+                    h('button', { onClick: logObs, style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: gcButtonBg, color: gcButtonText, border: '1px solid ' + gcBorder, borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.log', '📋 Log')),
                     h('button', { onClick: function() { setIQ({ a: 1, hVertex: 0, kVertex: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.reset', '↺ Reset'))
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: gcMuted, border: '1px solid ' + gcBorder, borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.reset', '↺ Reset'))
                   ),
                   (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '8px' } },
-                    h('thead', null, h('tr', { style: { background: 'rgba(99,102,241,0.1)' } },
+                    h('thead', null, h('tr', { style: { background: gcCard } },
                       ['a', 'h', 'k', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, style: { padding: '3px', borderBottom: '1px solid rgba(99,102,241,0.2)', textAlign: 'left' } }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
@@ -870,17 +904,17 @@
                     }))
                   ),
                   h('div', { style: { marginBottom: '8px' } },
-                    h('label', { htmlFor: 'qh-hypo', style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: '#cbd5e1', marginBottom: '2px' } }, __alloT('stem.graphcalc.hypothesis_free_text', 'Hypothesis (free text):')),
+                    h('label', { htmlFor: 'qh-hypo', style: { display: 'block', fontSize: '10px', fontWeight: 'bold', color: gcText, marginBottom: '2px' } }, __alloT('stem.graphcalc.hypothesis_free_text', 'Hypothesis (free text):')),
                     h('textarea', { id: 'qh-hypo', value: iq.hypothesis || '',
                       onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                       placeholder: __alloT('stem.graphcalc.what_does_a_control_what_about_h_and_k', 'What does a control? What about h and k?'),
-                      style: { width: '100%', minHeight: '40px', padding: '4px', background: 'rgba(99,102,241,0.08)', color: '#e2e8f0', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 3 })
+                      style: { width: '100%', minHeight: '40px', padding: '4px', background: gcPanel, color: gcText, border: '1px solid ' + gcBorder, borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 3 })
                   ),
                   h('div', { style: { marginBottom: '8px' } },
                     !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '4px', cursor: 'pointer' } },
+                      style: { padding: '3px 8px', fontSize: '10px', fontWeight: 'bold', background: 'rgba(251,191,36,0.16)', color: '#92400e', border: '1px solid rgba(251,191,36,0.45)', borderRadius: '4px', cursor: 'pointer' } },
                       __alloT('stem.graphcalc.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                    iq.stuckRevealed && h('div', { style: { padding: '6px', fontSize: '10px', color: '#cbd5e1', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '4px' } },
+                    iq.stuckRevealed && h('div', { style: { padding: '6px', fontSize: '10px', color: gcText, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.35)', borderRadius: '4px' } },
                       h('ul', { style: { margin: 0, paddingLeft: '14px' } },
                         h('li', null, __alloT('stem.graphcalc.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch what happens.')),
                         h('li', null, __alloT('stem.graphcalc.log_observations_of_each_state_what_pa', 'Log observations of each state. What patterns emerge?')),
@@ -888,14 +922,14 @@
                         h('li', null, __alloT('stem.graphcalc.can_you_get_the_same_shape_with_two_di', 'Can you get the same shape with two different settings?'))))
                   ),
                   h('div', { style: { padding: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
-                    h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
+                    h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#047857', cursor: 'pointer' } },
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       __alloT('stem.graphcalc.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                       placeholder: __alloT('stem.graphcalc.explain_in_your_own_words_what_does_ea', 'Explain in your own words: what does each slider control?'),
-                      style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
+                      style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: gcPanel, color: gcText, border: '1px solid rgba(16,185,129,0.45)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
                   ),
-                  h('div', { style: { marginTop: '6px', padding: '6px', fontSize: '9px', fontStyle: 'italic', color: '#64748b', background: 'rgba(15,23,42,0.5)', borderRadius: '4px' } },
+                  h('div', { style: { marginTop: '6px', padding: '6px', fontSize: '9px', fontStyle: 'italic', color: gcMuted, background: gcCard, borderRadius: '4px' } },
                     __alloT('stem.graphcalc.design_note_discrete_3_state_marker_no', 'Design note: discrete 3-state marker; no score, no reveal — by design.'))
                 );
               })() : null

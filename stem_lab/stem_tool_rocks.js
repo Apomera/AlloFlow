@@ -3557,6 +3557,11 @@ const d = labToolData.rocks || {};
     desc: '',
     color: 'slate',
     category: 'science',
+    questHooks: [
+      { id: 'view_3_rocks', label: 'Explore all 3 rock families', icon: '🪨', check: function(d) { return Object.keys(d.rcViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.rcViewed || {}).length + '/3 families'; } },
+      { id: 'try_process', label: 'Inspect a transformation process', icon: '↔️', check: function(d) { return !!d.selectedProcess; }, progress: function(d) { return d.selectedProcess ? 'Done' : 'Pick a process'; } },
+      { id: 'run_3_transforms', label: 'Run the Transformation Machine 3 times', icon: '🔄', check: function(d) { return (d.transformsRun || 0) >= 3; }, progress: function(d) { return (d.transformsRun || 0) + '/3 runs'; } }
+    ],
     render: function(ctx) {
       // Aliases: maps ctx properties to original variable names
       var React = ctx.React;
@@ -4231,6 +4236,19 @@ const d = labToolData.rockCycle || {};
 
                 ctx.stroke();
 
+                // Orbiting dashed ring on the selected node — a clear "you are here"
+                if (isSel) {
+                  ctx.save();
+                  ctx.setLineDash([6 * dpr, 5 * dpr]);
+                  ctx.lineDashOffset = -tick * 0.6 * dpr;
+                  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.beginPath();
+                  ctx.arc(n.x * dpr, n.y * dpr, (radius + 8) * dpr, 0, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.restore();
+                }
+
                 // Rock-type-specific internal textures
 
                 ctx.save();
@@ -4417,6 +4435,15 @@ const d = labToolData.rockCycle || {};
 
                   upd('selectedRock', rock.id);
 
+                  // Track families explored (functional update — this listener's
+                  // closure is bound once at canvas init, so `d` here is stale)
+                  setLabToolData(function (prev) {
+                    var rc = prev.rockCycle || {};
+                    var v = Object.assign({}, rc.rcViewed);
+                    v[rock.id] = true;
+                    return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) });
+                  });
+
                 }
 
               });
@@ -4451,7 +4478,7 @@ const d = labToolData.rockCycle || {};
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
+                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); setLabToolData(function (prev) { var rc = prev.rockCycle || {}; var v = Object.assign({}, rc.rcViewed); v[rock.id] = true; return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) }); }); },
 
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
 
@@ -4622,6 +4649,7 @@ const d = labToolData.rockCycle || {};
                       var agent = d.geologicalAgent;
                       upd("transformationAnimActive", true);
                       upd("transformationResult", null);
+                      upd("transformsRun", (d.transformsRun || 0) + 1);
 
                       if (agent === 'melting_cooling') {
                         sfxRockMelt();

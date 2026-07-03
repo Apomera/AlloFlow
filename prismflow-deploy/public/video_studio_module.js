@@ -614,6 +614,271 @@
     return out;
   }
 
+  function vsCaptionStylePreset(key) {
+    var id = String(key || 'clean-card').toLowerCase().replace(/[\s_]+/g, '-');
+    var presets = {
+      'clean-card': {
+        key: 'clean-card',
+        label: 'Clean card',
+        className: 'caption-style-clean-card',
+        box: true,
+        position: 'bottom',
+        align: 'center',
+        textColor: '#ffffff',
+        background: 'rgba(15,23,42,0.78)',
+        border: 'rgba(255,255,255,0.24)',
+        shadow: 'rgba(0,0,0,0.42)',
+        stroke: 'rgba(0,0,0,0.45)',
+        scale: 1,
+        maxLines: 3
+      },
+      'open-subtitle': {
+        key: 'open-subtitle',
+        label: 'Open subtitle',
+        className: 'caption-style-open-subtitle',
+        box: false,
+        position: 'bottom',
+        align: 'center',
+        textColor: '#ffffff',
+        background: 'transparent',
+        border: 'transparent',
+        shadow: 'rgba(0,0,0,0.82)',
+        stroke: 'rgba(0,0,0,0.92)',
+        scale: 1.04,
+        maxLines: 3
+      },
+      'high-contrast': {
+        key: 'high-contrast',
+        label: 'High contrast',
+        className: 'caption-style-high-contrast',
+        box: true,
+        position: 'bottom',
+        align: 'center',
+        textColor: '#ffff00',
+        background: '#000000',
+        border: '#ffffff',
+        shadow: 'rgba(0,0,0,0.72)',
+        stroke: '#000000',
+        scale: 1.02,
+        maxLines: 3
+      },
+      'lower-third': {
+        key: 'lower-third',
+        label: 'Lower third',
+        className: 'caption-style-lower-third',
+        box: true,
+        position: 'lower-left',
+        align: 'left',
+        textColor: '#ffffff',
+        background: 'rgba(30,64,175,0.84)',
+        border: 'rgba(191,219,254,0.65)',
+        shadow: 'rgba(0,0,0,0.38)',
+        stroke: 'rgba(0,0,0,0.42)',
+        scale: 0.94,
+        maxLines: 3
+      }
+    };
+    return Object.assign({}, presets[id] || presets['clean-card']);
+  }
+
+  function vsCaptionDisplayOptions(raw, presetKey) {
+    var src = raw && typeof raw === 'object' ? raw : {};
+    var pick = function (value, allowed, fallback) {
+      var id = String(value == null || value === '' ? fallback : value).toLowerCase().replace(/[\s_]+/g, '-');
+      return Object.prototype.hasOwnProperty.call(allowed, id) ? id : fallback;
+    };
+    return {
+      styleKey: vsCaptionStylePreset(presetKey || src.styleKey || src.style).key,
+      size: pick(src.size || src.captionSize, { small: 1, medium: 1, large: 1 }, 'medium'),
+      font: pick(src.font || src.captionFont, { system: 1, rounded: 1, legible: 1, mono: 1 }, 'system'),
+      position: pick(src.position || src.captionPosition, { preset: 1, bottom: 1, top: 1, 'lower-third': 1 }, 'preset'),
+      background: pick(src.background || src.captionBackground, { preset: 1, soft: 1, solid: 1, none: 1 }, 'preset'),
+      opacity: pick(src.opacity || src.captionOpacity, { preset: 1, subtle: 1, medium: 1, strong: 1 }, 'preset')
+    };
+  }
+
+  function vsResolveCaptionStyle(key, custom) {
+    var preset = vsCaptionStylePreset(key);
+    var opt = vsCaptionDisplayOptions(custom, preset.key);
+    var out = Object.assign({}, preset);
+    var sizeScale = { small: 0.86, medium: 1, large: 1.16 };
+    var fonts = {
+      system: { family: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', weight: 800 },
+      rounded: { family: '"Trebuchet MS", "Segoe UI Rounded", system-ui, sans-serif', weight: 800 },
+      legible: { family: '"Atkinson Hyperlegible", Verdana, Arial, sans-serif', weight: 800 },
+      mono: { family: '"Cascadia Mono", Consolas, "Courier New", monospace', weight: 750 }
+    };
+    var alpha = { subtle: 0.62, medium: 0.78, strong: 0.92 };
+    out.custom = opt;
+    out.scale = (Number(out.scale) || 1) * sizeScale[opt.size];
+    out.fontFamily = fonts[opt.font].family;
+    out.fontWeight = fonts[opt.font].weight;
+    out.previewFontSize = Math.max(15, Math.min(30, Math.round(20 * out.scale)));
+    if (opt.position === 'top') {
+      out.position = 'top';
+      out.align = 'center';
+      out.positionClass = 'caption-position-top';
+    } else if (opt.position === 'bottom') {
+      out.position = 'bottom';
+      out.align = 'center';
+      out.positionClass = 'caption-position-bottom';
+    } else if (opt.position === 'lower-third') {
+      out.position = 'lower-left';
+      out.align = 'left';
+      out.positionClass = 'caption-position-lower-third';
+    } else {
+      out.positionClass = out.position === 'top' ? 'caption-position-top' : (out.position === 'lower-left' ? 'caption-position-lower-third' : 'caption-position-bottom');
+    }
+    if (opt.background === 'none') {
+      out.box = false;
+      out.background = 'transparent';
+      out.border = 'transparent';
+      out.shadow = 'rgba(0,0,0,0.86)';
+      out.stroke = 'rgba(0,0,0,0.96)';
+      out.contrastNote = 'Outline added for readability.';
+    } else if (opt.background === 'solid') {
+      out.box = true;
+      out.background = '#000000';
+      out.border = '#ffffff';
+      out.shadow = 'rgba(0,0,0,0.78)';
+      out.stroke = '#000000';
+      out.contrastNote = out.textColor === '#ffff00' ? 'High-contrast caption style.' : '';
+    } else if (opt.background === 'soft') {
+      var a = alpha[opt.opacity === 'preset' ? 'medium' : opt.opacity];
+      out.box = true;
+      out.background = out.position === 'lower-left' ? ('rgba(30,64,175,' + a + ')') : ('rgba(15,23,42,' + a + ')');
+      out.border = 'rgba(255,255,255,' + Math.min(0.62, Math.max(0.22, a - 0.34)).toFixed(2) + ')';
+      out.shadow = 'rgba(0,0,0,' + Math.min(0.78, Math.max(0.36, a - 0.18)).toFixed(2) + ')';
+    } else if (opt.opacity !== 'preset' && /^rgba\(/.test(String(out.background || ''))) {
+      out.background = String(out.background).replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]+\)/, function (_, r, g, b) {
+        return 'rgba(' + r.trim() + ',' + g.trim() + ',' + b.trim() + ',' + alpha[opt.opacity] + ')';
+      });
+      out.shadow = 'rgba(0,0,0,' + Math.min(0.78, Math.max(0.36, alpha[opt.opacity] - 0.18)).toFixed(2) + ')';
+    }
+    return out;
+  }
+
+  function vsTitleCardPreset(key) {
+    var id = String(key || 'clean-classroom').toLowerCase().replace(/[\s_]+/g, '-');
+    var presets = {
+      'clean-classroom': {
+        key: 'clean-classroom',
+        label: 'Clean classroom',
+        background: '#101827',
+        panel: '#172033',
+        text: '#f8fafc',
+        muted: '#c7d2fe',
+        accent: '#f59e0b',
+        accent2: '#38bdf8',
+        footer: 'Made with AlloFlow Video Studio',
+        align: 'center'
+      },
+      'bold-contrast': {
+        key: 'bold-contrast',
+        label: 'Bold contrast',
+        background: '#000000',
+        panel: '#111827',
+        text: '#ffffff',
+        muted: '#fde047',
+        accent: '#fde047',
+        accent2: '#ffffff',
+        footer: 'AlloFlow Video Studio',
+        align: 'center'
+      },
+      'calm-family': {
+        key: 'calm-family',
+        label: 'Calm family',
+        background: '#0f2f2b',
+        panel: '#164e45',
+        text: '#f8fafc',
+        muted: '#ccfbf1',
+        accent: '#fcd34d',
+        accent2: '#99f6e4',
+        footer: 'Student and family explainer',
+        align: 'left'
+      },
+      'tutorial-step': {
+        key: 'tutorial-step',
+        label: 'Tutorial step',
+        background: '#eef2ff',
+        panel: '#ffffff',
+        text: '#0f172a',
+        muted: '#334155',
+        accent: '#2563eb',
+        accent2: '#14b8a6',
+        footer: 'Step-by-step walkthrough',
+        align: 'left'
+      }
+    };
+    return Object.assign({}, presets[id] || presets['clean-classroom']);
+  }
+
+  function vsPipFramePreset(key) {
+    var id = String(key || 'clean-circle').toLowerCase().replace(/[\s_]+/g, '-');
+    var presets = {
+      'clean-circle': {
+        key: 'clean-circle',
+        label: 'Clean circle',
+        shape: 'circle',
+        widthScale: 0.28,
+        border: '#ffffff',
+        shadow: 'rgba(0,0,0,0.42)',
+        labelText: ''
+      },
+      'rounded-card': {
+        key: 'rounded-card',
+        label: 'Rounded card',
+        shape: 'rounded',
+        widthScale: 0.34,
+        border: '#c7d2fe',
+        shadow: 'rgba(0,0,0,0.46)',
+        labelText: ''
+      },
+      'teacher-label': {
+        key: 'teacher-label',
+        label: 'Teacher label',
+        shape: 'rounded',
+        widthScale: 0.34,
+        border: '#38bdf8',
+        shadow: 'rgba(0,0,0,0.50)',
+        labelText: 'Teacher'
+      },
+      'minimal': {
+        key: 'minimal',
+        label: 'Minimal',
+        shape: 'rounded',
+        widthScale: 0.30,
+        border: 'rgba(255,255,255,0.62)',
+        shadow: 'rgba(0,0,0,0.28)',
+        labelText: ''
+      }
+    };
+    return Object.assign({}, presets[id] || presets['clean-circle']);
+  }
+
+  function vsCaptionPreviewLines(text, maxChars, maxLines) {
+    var words = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+    var limit = Math.max(18, Math.min(72, Math.round(Number(maxChars) || 42)));
+    var lines = [];
+    var line = '';
+    for (var i = 0; i < words.length; i++) {
+      var probe = line ? line + ' ' + words[i] : words[i];
+      if (probe.length > limit && line) { lines.push(line); line = words[i]; }
+      else line = probe;
+    }
+    if (line) lines.push(line);
+    var max = Math.max(1, Math.min(4, Math.round(Number(maxLines) || 3)));
+    if (lines.length > max) {
+      var kept = lines.slice(0, max);
+      var rest = lines.slice(max).join(' ');
+      kept[max - 1] = (kept[max - 1] + ' ' + rest).trim();
+      while (kept[max - 1].length > limit && kept[max - 1].length > 1) kept[max - 1] = kept[max - 1].slice(0, -1).trim();
+      kept[max - 1] = kept[max - 1].replace(/[.,;:!?-]*$/, '') + '...';
+      return kept;
+    }
+    return lines;
+  }
+
   function vsChapterTitleFromText(text) {
     var words = String(text || '').replace(/[\r\n]+/g, ' ').replace(/[^A-Za-z0-9' -]+/g, '').trim().split(/\s+/).filter(Boolean);
     if (!words.length) return 'New section';
@@ -673,6 +938,7 @@
     var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
     var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
     var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
+    var styles = { label: 1, box: 1, spotlight: 1, arrow: 1 };
     var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
     for (var i = 0; i < list.length && out.length < 32; i++) {
       var s = list[i] || {};
@@ -694,6 +960,7 @@
       if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
       if (type === 'image_overlay' && !imageSrc) continue;
       var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
+      var style = String(s.style || s.calloutStyle || '').toLowerCase().replace(/[\s-]+/g, '_');
       var width = Number(s.width != null ? s.width : s.w);
       var scale = Number(s.scale);
       out.push({
@@ -709,6 +976,7 @@
         scale: isFinite(scale) ? Math.max(0.25, Math.min(3, scale)) : 1,
         motion: motions[motion] ? motion : (type === 'image_overlay' ? 'fade' : 'none'),
         theme: themes[String(s.theme || '').toLowerCase()] ? String(s.theme).toLowerCase() : 'blue',
+        style: styles[style] ? style : (type === 'callout' ? 'arrow' : 'label'),
         animation: anims[String(s.animation || '').toLowerCase()] ? String(s.animation).toLowerCase() : (type === 'sticker' ? 'pulse' : 'none'),
         imageSrc: imageSrc,
         source: String(s.source || '').slice(0, 40),
@@ -1054,15 +1322,95 @@
     };
   }
 
+  function vsAnalyzeCaptionQuality(cues, duration) {
+    var dur = Math.max(0, Number(duration) || 0);
+    var list = (Array.isArray(cues) ? cues : []).filter(function (c) { return c && String(c.text || '').trim(); }).map(function (c, idx) {
+      return {
+        sourceIndex: idx,
+        start: Math.max(0, Number(c.start) || 0),
+        end: Math.max(0, Number(c.end) || 0),
+        text: String(c.text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim()
+      };
+    }).sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+    var warnings = [];
+    var issues = [];
+    var add = function (label, detail) {
+      warnings.push({ label: String(label || 'Review'), detail: String(detail || '').slice(0, 220) });
+    };
+    var addIssue = function (kind, label, detail, c) {
+      issues.push({
+        kind: String(kind || 'review').slice(0, 40),
+        label: String(label || 'Review').slice(0, 80),
+        detail: String(detail || '').slice(0, 220),
+        index: c && isFinite(Number(c.sourceIndex)) ? Math.max(0, Math.round(Number(c.sourceIndex))) : -1,
+        start: c ? Math.max(0, Number(c.start) || 0) : 0,
+        end: c ? Math.max(0, Number(c.end) || 0) : 0,
+        text: c ? String(c.text || '').slice(0, 220) : ''
+      });
+    };
+    if (!list.length) {
+      add('Missing captions', 'Add or import captions before sharing.');
+      addIssue('missing', 'Missing captions', 'Add or import captions before sharing.', null);
+      return { ok: false, score: 0, warnings: warnings, issues: issues, captionCount: 0, longLineCount: 0, fastLineCount: 0, gapCount: 0, overlapCount: 0 };
+    }
+    var longLineCount = 0, fastLineCount = 0, gapCount = 0, overlapCount = 0;
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      var span = Math.max(0.25, c.end - c.start);
+      if (c.text.length > 120) {
+        longLineCount++;
+        addIssue('long_line', 'Long caption lines', 'Caption ' + (c.sourceIndex + 1) + ' is ' + c.text.length + ' characters.', c);
+      }
+      if ((c.text.length / span) > 32) {
+        fastLineCount++;
+        addIssue('fast_line', 'Fast captions', 'Caption ' + (c.sourceIndex + 1) + ' may disappear too quickly.', c);
+      }
+      if (i > 0) {
+        var gap = c.start - list[i - 1].end;
+        if (gap > 12 && (!dur || c.start < dur - 2)) {
+          gapCount++;
+          addIssue('gap', 'Caption gaps', 'Long gap before caption ' + (c.sourceIndex + 1) + '.', c);
+        }
+        if (gap < -0.1) {
+          overlapCount++;
+          addIssue('overlap', 'Overlapping captions', 'Caption ' + (c.sourceIndex + 1) + ' overlaps the previous caption.', c);
+        }
+      }
+    }
+    if (longLineCount) add('Long caption lines', longLineCount + ' caption line(s) may be too long to read comfortably.');
+    if (fastLineCount) add('Fast captions', fastLineCount + ' caption line(s) may disappear too quickly.');
+    if (gapCount) add('Caption gaps', gapCount + ' long gap(s) may need captions or intentional silence review.');
+    if (overlapCount) add('Overlapping captions', overlapCount + ' caption overlap(s) need timing cleanup.');
+    var penalty = longLineCount + fastLineCount + gapCount + overlapCount;
+    var score = Math.max(0, Math.min(100, Math.round(100 - (penalty / Math.max(1, list.length)) * 100)));
+    issues.sort(function (a, b) { return a.start - b.start || a.index - b.index; });
+    return { ok: warnings.length === 0, score: score, warnings: warnings, issues: issues, captionCount: list.length, longLineCount: longLineCount, fastLineCount: fastLineCount, gapCount: gapCount, overlapCount: overlapCount };
+  }
+
   function vsBuildFinishChecklist(state) {
     var s = state || {};
     var review = s.review || {};
     var items = [];
-    var add = function (id, label, status, detail) {
-      items.push({ id: id, label: label, status: status, detail: String(detail || '').slice(0, 220) });
+    var targets = {
+      video: { tab: 'tabRecord', focus: 'flowRecord', action: 'Start' },
+      captions: { tab: 'tabEdit', focus: 'autoCapBtn', action: 'Review' },
+      privacy: { tab: 'tabEdit', focus: 'transcriptSearch', action: 'Review' },
+      audio: { tab: 'tabEdit', focus: 'editVideo', action: 'Preview' },
+      localization: { tab: 'tabEdit', focus: 'localizeBtn', action: 'Review' },
+      export: { tab: 'tabExport', focus: 'exportBtn', action: 'Prepare' }
     };
-    add('video', 'Video selected', s.hasVideo ? 'complete' : 'pending', s.hasVideo ? 'A video take is selected.' : 'Record or import a video first.');
-    add('captions', 'Captions reviewed', s.captionCount > 0 ? (review.captions ? 'complete' : 'review') : 'warn', s.captionCount > 0 ? (s.captionCount + ' caption line(s).') : 'Add or import captions for accessibility.');
+    var add = function (id, label, status, detail) {
+      var item = { id: id, label: label, status: status, detail: String(detail || '').slice(0, 220) };
+      if (targets[id]) {
+        item.targetTab = targets[id].tab;
+        item.targetId = targets[id].focus;
+        item.action = targets[id].action;
+      }
+    items.push(item);
+  };
+  add('video', 'Video selected', s.hasVideo ? 'complete' : 'pending', s.hasVideo ? 'A video take is selected.' : 'Record or import a video first.');
+    var capWarn = Math.max(0, Number(s.captionWarningCount) || 0);
+    add('captions', 'Captions reviewed', s.captionCount > 0 ? (capWarn ? 'warn' : (review.captions ? 'complete' : 'review')) : 'warn', s.captionCount > 0 ? (capWarn ? (capWarn + ' caption review item(s) need attention.') : (s.captionCount + ' caption line(s).')) : 'Add or import captions for accessibility.');
     var flagCount = Math.max(0, Number(s.privacyFlagCount) || 0);
     add('privacy', 'Privacy scan reviewed', flagCount ? 'warn' : (review.privacy ? 'complete' : 'review'), flagCount ? (flagCount + ' possible private detail(s) need review.') : 'No obvious private details flagged.');
     add('audio', 'Audio preview checked', review.audio ? 'complete' : 'review', s.hasAudioChanges ? 'Audio edits or added clips are present.' : 'Preview the final sound before sharing.');
@@ -1074,6 +1422,125 @@
     }
     add('export', 'Export ready', s.exported ? 'complete' : 'pending', s.exported ? 'A finished video export is ready.' : 'Prepare export after the checks above.');
     return items;
+  }
+
+  function vsBuildExportReadinessSummary(state) {
+    var s = state || {};
+    var items = [];
+    var add = function (id, label, status, detail) {
+      items.push({ id: id, label: String(label || ''), status: status || 'info', detail: String(detail || '').slice(0, 220) });
+    };
+    add('video', 'Video export', s.hasExport ? 'complete' : 'pending', s.hasExport ? ('Ready at ' + vsFormatTimestamp(s.duration || 0) + '.') : 'Prepare an export before sharing.');
+    var capCount = Math.max(0, Number(s.captionCount) || 0);
+    var capWarn = Math.max(0, Number(s.captionWarningCount) || 0);
+    if (capCount && s.capMode === 'none') add('captions', 'Captions', 'warn', capCount + ' caption line(s) exist, but captions are not attached to this export.');
+    else if (capCount) add('captions', 'Captions', capWarn ? 'warn' : 'complete', (s.capMode === 'burn' ? 'Burned into the video' : 'Separate caption file') + ' with ' + capCount + ' line(s)' + (capWarn ? '; review timing/readability.' : '.'));
+    else add('captions', 'Captions', 'warn', 'No captions are attached to this export.');
+    var flags = Math.max(0, Number(s.privacyFlagCount) || 0);
+    add('privacy', 'Privacy review', flags ? 'warn' : 'complete', flags ? (flags + ' possible private detail(s) were flagged.') : 'No obvious private details flagged.');
+    var supports = Math.max(0, Number(s.visualDescriptionCount) || 0) + Math.max(0, Number(s.chapterCount) || 0) + Math.max(0, Number(s.teachingInsertCount) || 0) + Math.max(0, Number(s.visualOverlayCount) || 0);
+    add('supports', 'Learning supports', supports ? 'complete' : 'info', supports ? (supports + ' support item(s): descriptions, chapters, inserts, or overlays.') : 'No extra learning supports attached.');
+    var loc = Math.max(0, Number(s.localizationCount) || 0);
+    add('localization', 'Localization', loc ? 'complete' : 'info', loc ? (loc + ' localized draft(s) included in the project/accessibility packet.') : 'No localized version attached.');
+    if (s.preset === 'student_family') add('audience', 'Audience preset', 'complete', 'Student/family version: burned captions and title card are intended for simple playback.');
+    return items;
+  }
+
+  function vsPickNextFinishItem(items) {
+    var list = Array.isArray(items) ? items : [];
+    var rank = { warn: 1, review: 2, pending: 3 };
+    var order = { video: 1, captions: 2, privacy: 3, audio: 4, localization: 5, export: 6 };
+    var itemRank = function (item) {
+      if (item && item.id === 'video' && item.status === 'pending') return 0;
+      return rank[item && item.status] || 99;
+    };
+    var best = null;
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i] || {};
+      if (!rank[item.status]) continue;
+      if (!best) { best = item; continue; }
+      var br = itemRank(best), ir = itemRank(item);
+      var bo = order[best.id] || 99, io = order[item.id] || 99;
+      if (ir < br || (ir === br && io < bo)) best = item;
+    }
+    return best;
+  }
+
+  function vsBuildTranscriptResource(payload) {
+    var p = payload || {};
+    var clean = function (v, limit) {
+      return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 120);
+    };
+    var title = clean(p.title || p.sourceTitle || 'Video transcript', 120) || 'Video transcript';
+    var cues = Array.isArray(p.cues) ? p.cues : (typeof p.vtt === 'string' ? vsParseVtt(p.vtt) : []);
+    cues = cues.filter(function (c) { return c && String(c.text || '').trim(); }).map(function (c) {
+      return {
+        start: Math.max(0, Number(c.start) || 0),
+        end: Math.max(0, Number(c.end) || 0),
+        text: String(c.text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600)
+      };
+    }).slice(0, 1000);
+    var transcript = String(p.transcript || '').replace(/\r/g, '').trim();
+    if (!transcript && cues.length) {
+      var lines = [title, 'Transcript generated locally by AlloFlow Video Studio.', ''];
+      cues.forEach(function (c) {
+        lines.push(vsFormatTimestamp(c.start || 0) + ' - ' + vsFormatTimestamp(c.end || 0) + '  ' + String(c.text || '').trim());
+      });
+      transcript = lines.join('\n').trim();
+    }
+    transcript = transcript.slice(0, 60000);
+    var chapters = (Array.isArray(p.chapters) ? p.chapters : []).filter(function (c) {
+      return c && isFinite(Number(c.start)) && String(c.title || '').trim();
+    }).map(function (c) {
+      return { start: Math.max(0, Number(c.start) || 0), title: clean(c.title, 90) };
+    }).slice(0, 80);
+    var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'video';
+    return {
+      id: clean(p.id || ('video-transcript-' + slug), 90),
+      type: 'video-transcript',
+      kind: 'transcript',
+      title: title.replace(/\s+transcript$/i, '') + ' transcript',
+      text: transcript,
+      content: transcript,
+      meta: cues.length ? (cues.length + ' caption line' + (cues.length === 1 ? '' : 's') + ' from Video Studio') : 'Video Studio transcript',
+      data: {
+        title: title,
+        transcript: transcript,
+        cues: cues,
+        chapters: chapters,
+        duration: Math.max(0, Number(p.duration) || 0),
+        source: 'video_studio'
+      },
+      source: 'video_studio',
+      tags: ['video', 'transcript']
+    };
+  }
+
+  function vsBuildStudentFamilyShareNote(state) {
+    var s = state || {};
+    var title = String(s.title || 'Teacher video').replace(/[\r\n]+/g, ' ').trim() || 'Teacher video';
+    var capCount = Math.max(0, Number(s.captionCount) || 0);
+    var chapterCount = Math.max(0, Number(s.chapterCount) || 0);
+    var locCount = Math.max(0, Number(s.localizationCount) || 0);
+    var flags = Math.max(0, Number(s.privacyFlagCount) || 0);
+    var includes = ['the transcript'];
+    if (capCount) includes.push('captions');
+    if (chapterCount) includes.push('chapter markers');
+    if (locCount) includes.push('localized draft files');
+    return [
+      'Student/family video packet',
+      '',
+      'Title: ' + title,
+      'What is included: ' + includes.join(', ') + '.',
+      '',
+      'Suggested use:',
+      '1. Watch the video first.',
+      '2. Use the transcript or captions to review important words and steps.',
+      chapterCount ? '3. Use the chapter markers to jump back to a section.' : '3. Rewatch any part that felt fast or unclear.',
+      '',
+      flags ? ('Teacher review note: ' + flags + ' possible private detail(s) were flagged. Review before sharing.') : 'Teacher review note: no obvious private details were flagged. Please still review before sharing.',
+      locCount ? 'Localization note: translated materials are drafts and should be checked before sharing.' : ''
+    ].filter(Boolean).join('\n');
   }
 
 function vsPcmToWav(pcmBytes, sampleRate) {
@@ -1109,7 +1576,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsBuildFinishChecklist: vsBuildFinishChecklist, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -1469,6 +1936,32 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           if (!hist.length && typeof window !== 'undefined' && Array.isArray(window.__alloflowHistory)) hist = window.__alloflowHistory;
           var cues = vsBuildResourceCues(hist, { limit: 140 });
           cRespond({ cues: cues, count: cues.length });
+        } else if (ev.data.type === 'allostudio-transcript') {
+          var txReq = ev.data;
+          var txReplyTo = studioWinRef.current;
+          var txRespond = function (payload) {
+            try { if (txReplyTo && !txReplyTo.closed) txReplyTo.postMessage(Object.assign({ type: 'allostudio-transcript-ack', id: txReq.id }, payload), '*'); } catch (_) {}
+          };
+          var txResource = vsBuildTranscriptResource(txReq.payload || {});
+          var txFn = props.onSendTranscriptToFlow || props.onAddTranscriptResource || props.onAddResource || props.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
+          if (typeof txFn === 'function') {
+            Promise.resolve().then(function () { return txFn(txResource); }).then(function (res) {
+              addToast(T('video_studio.transcript_sent', 'Transcript sent to AlloFlow Source and saved in history.'), 'success');
+              txRespond({ ok: true, id: (res && res.id) || txResource.id, message: 'Transcript sent to AlloFlow Source and saved in history.' });
+            }).catch(function (e) {
+              addToast(T('video_studio.transcript_send_failed', 'Transcript could not be added automatically.'), 'error');
+              txRespond({ ok: false, message: String((e && e.message) || e || 'Transcript could not be added automatically.').slice(0, 200) });
+            });
+          } else {
+            var txText = txResource.text || txResource.content || '';
+            var txDone = function (copied) {
+              txRespond({ ok: false, copied: !!copied, message: copied ? 'Transcript copied. Paste it into AlloFlow Source to generate supports.' : 'Transcript ready, but AlloFlow has no transcript receiver in this view.' });
+            };
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText && txText) navigator.clipboard.writeText(txText).then(function () { txDone(true); }, function () { txDone(false); });
+              else txDone(false);
+            } catch (_) { txDone(false); }
+          }
         } else if (ev.data.type === 'allostudio-tts-request') {
           // Text → spoken audio through the app's existing Gemini TTS path.
           // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
@@ -1600,7 +2093,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } catch (_) { done(); }
     }, []);
 
-    var downloadAccessPacket = useCallback(function (v) {
+    var downloadAccessPacket = useCallback(function (v, options) {
+      var opts = options || {};
       var base = (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video';
       var cues = v.vtt ? vsParseVtt(v.vtt) : [];
       var descriptions = (v.visualDescriptions || []).filter(function (s) { return s && s.checked && String(s.description || '').trim(); });
@@ -1630,16 +2124,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       });
       var chapterText = [v.title || 'Teacher video', 'Lesson chapters generated by AlloFlow Video Studio.', ''];
       chapters.forEach(function (c) { chapterText.push(vsFormatTimestamp(c.start || 0) + '  ' + String(c.title || '').trim()); });
-      var note = [
-        'AlloFlow Video Studio accessibility packet',
-        '',
-        'Video title: ' + (v.title || 'Teacher video'),
-        'Generated locally: ' + new Date().toISOString(),
-        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
-        'Video bytes are not included in this packet. Download the video file or .allopack bundle separately.',
-        '',
-        'Teacher review: please check the transcript and captions for student names or private details before sharing.'
-      ].join('\n');
       var meta = {
         title: v.title || 'Teacher video',
         duration: v.duration || 0,
@@ -1658,8 +2142,25 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         localizationCount: localizations.length,
         generatedAt: new Date().toISOString()
       };
+      var note = opts.audience === 'student_family' ? vsBuildStudentFamilyShareNote({
+        title: v.title || 'Teacher video',
+        captionCount: cues.length,
+        chapterCount: chapters.length,
+        localizationCount: localizations.length,
+        privacyFlagCount: 0
+      }) : [
+        'AlloFlow Video Studio accessibility packet',
+        '',
+        'Video title: ' + (v.title || 'Teacher video'),
+        'Generated locally: ' + meta.generatedAt,
+        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
+        'Video bytes are not included in this packet. Download the video file or .allopack bundle separately.',
+        '',
+        'Teacher review: please check the transcript and captions for student names or private details before sharing.'
+      ].join('\n');
+      var noteName = opts.audience === 'student_family' ? 'student-family-note.txt' : 'accessibility-note.txt';
       var entries = [
-        { name: 'accessibility-note.txt', data: new TextEncoder().encode(note + '\n') },
+        { name: noteName, data: new TextEncoder().encode(note + '\n') },
         { name: 'transcript.txt', data: new TextEncoder().encode(transcript.join('\n').trim() + '\n') },
         { name: 'metadata.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 2)) }
       ];
@@ -1679,8 +2180,37 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
       }
       if (localizations.length) entries.push({ name: 'localizations.json', data: new TextEncoder().encode(JSON.stringify(localizations, null, 2)) });
-      downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '_accessibility_packet.zip');
-      addToast(T('video_studio.access_packet_done', 'Accessibility packet saved with transcript, captions, and metadata.'), 'success');
+      downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + (opts.audience === 'student_family' ? '_student_family_packet.zip' : '_accessibility_packet.zip'));
+      addToast(opts.audience === 'student_family' ? T('video_studio.student_packet_done', 'Student/family packet saved with transcript, captions, and sharing notes.') : T('video_studio.access_packet_done', 'Accessibility packet saved with transcript, captions, and metadata.'), 'success');
+    }, []);
+
+    var sendTranscriptResource = useCallback(function (v) {
+      var cues = v && v.vtt ? vsParseVtt(v.vtt) : [];
+      if (!v || !cues.length) {
+        addToast(T('video_studio.transcript_missing', 'Add captions before sending a transcript to AlloFlow Source.'), 'error');
+        return;
+      }
+      var resource = vsBuildTranscriptResource({ title: v.title || 'Teacher video', cues: cues, chapters: v.chapters || [], duration: v.duration || 0 });
+      var fn = props.onSendTranscriptToFlow || props.onAddTranscriptResource || props.onAddResource || props.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
+      if (typeof fn === 'function') {
+        Promise.resolve().then(function () { return fn(resource); }).then(function () {
+          addToast(T('video_studio.transcript_sent', 'Transcript sent to AlloFlow Source and saved in history.'), 'success');
+        }).catch(function () {
+          addToast(T('video_studio.transcript_send_failed', 'Transcript could not be added automatically.'), 'error');
+        });
+        return;
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(resource.text || '').then(function () {
+            addToast(T('video_studio.transcript_copied', 'Transcript copied. Paste it into AlloFlow Source to generate supports.'), 'success');
+          }, function () {
+            addToast(T('video_studio.transcript_send_failed', 'Transcript could not be added automatically.'), 'error');
+          });
+          return;
+        }
+      } catch (_) {}
+      addToast(T('video_studio.transcript_send_failed', 'Transcript could not be added automatically.'), 'error');
     }, []);
 
     // One-file share: .allopack = STORE-zip of meta.json + video + captions.
@@ -1788,6 +2318,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                         className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-600',
                         title: T('video_studio.access_packet_title', 'Downloads transcript, captions when available, and metadata for accessibility review.')
                       }, T('video_studio.access_packet', 'Accessibility packet')),
+                      h('button', {
+                        onClick: function () { downloadAccessPacket(v, { audience: 'student_family' }); },
+                        className: 'px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-600',
+                        title: T('video_studio.student_packet_title', 'Downloads a student/family-friendly packet with transcript, captions, chapters, and a plain sharing note.')
+                      }, T('video_studio.student_packet', 'Student/family packet')),
+                      v.vtt && h('button', {
+                        onClick: function () { sendTranscriptResource(v); },
+                        className: 'px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-700 text-xs font-semibold hover:bg-emerald-50',
+                        title: T('video_studio.transcript_to_source_title', 'Loads the video transcript into AlloFlow Source so existing quiz and support tools can use it.')
+                      }, T('video_studio.transcript_to_source', 'Send transcript to Source')),
                       h('button', {
                         onClick: function () { downloadBundle(v); },
                         className: 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700',

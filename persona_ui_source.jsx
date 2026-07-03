@@ -147,22 +147,46 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const getReadableToolLabel = (id) => String(id || '')
+    .split('-')
+    .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '')
+    .join(' ');
+  const getPlanItems = (cfg) => {
+    if (!cfg) return [];
+    const rawPlan = Array.isArray(cfg.resourcePlan) && cfg.resourcePlan.length > 0
+      ? cfg.resourcePlan
+      : (Array.isArray(cfg.recommendedResources) ? cfg.recommendedResources : []);
+    return rawPlan.map((item, idx) => {
+      const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.toolId || item.resourceType || item.id));
+      if (!type) return null;
+      const directive = typeof item === 'string'
+        ? (cfg.toolDirectives?.[type] || "")
+        : (item.directive || item.instructions || item.customInstructions || cfg.toolDirectives?.[type] || "");
+      return {
+        id: (typeof item === 'object' && item.uiId) || `step-${idx}-${type}`,
+        type,
+        directive,
+      };
+    }).filter(Boolean);
+  };
   useEffect(() => {
-    if (config && config.recommendedResources) {
-      const unifiedItems = config.recommendedResources.map((type, idx) => ({
-        id: `step-${idx}-${Date.now()}`,
-        type: type,
-        directive: config.toolDirectives?.[type] || "",
-      }));
-      setItems(unifiedItems);
-    }
+    setItems(getPlanItems(config));
   }, [config]);
   const syncChanges = (newItems) => {
     setItems(newItems);
+    const resourcePlan = newItems.map(i => ({
+      tool: i.type,
+      directive: i.directive || "",
+    }));
+    const toolDirectives = resourcePlan.reduce((acc, curr) => {
+      if (!acc[curr.tool]) acc[curr.tool] = curr.directive || "";
+      return acc;
+    }, {});
     const newConfig = {
       ...config,
-      recommendedResources: newItems.map(i => i.type),
-      toolDirectives: newItems.reduce((acc, curr) => ({ ...acc, [curr.type]: curr.directive }), {})
+      resourcePlan,
+      recommendedResources: resourcePlan.map(i => i.tool),
+      toolDirectives
     };
     onUpdate(newConfig);
   };
@@ -205,21 +229,42 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
     };
     syncChanges([...items, newItem]);
   };
-  const toolOptions = [
-    { value: 'analysis', label: t('sidebar.tool_analysis') || 'Analysis' },
-    { value: 'simplified', label: t('blueprint.tools.simplified') },
-    { value: 'glossary', label: t('blueprint.tools.glossary') },
-    { value: 'quiz', label: t('blueprint.tools.quiz') },
-    { value: 'outline', label: t('blueprint.tools.outline') },
-    { value: 'image', label: t('blueprint.tools.image') },
-    { value: 'timeline', label: t('blueprint.tools.timeline') },
-    { value: 'concept-sort', label: t('blueprint.tools.concept_sort') },
-    { value: 'sentence-frames', label: t('blueprint.tools.scaffolds') },
-    { value: 'brainstorm', label: t('blueprint.tools.brainstorm') },
-    { value: 'adventure', label: t('blueprint.tools.adventure') },
-    { value: 'faq', label: t('blueprint.tools.faq') },
-    { value: 'lesson-plan', label: t('blueprint.tools.lesson_plan') }
-  ];
+  const toolOptions = useMemo(() => {
+    const catalogModule = window.AlloModules?.ToolCatalog;
+    const catalog = (catalogModule && catalogModule.TOOL_CATALOG) || window.TOOL_CATALOG;
+    if (Array.isArray(catalog) && catalog.length > 0) {
+      return catalog.map(entry => {
+        const localized = entry.sidebarKey ? t(entry.sidebarKey) : "";
+        const fallbackLabel = entry.id === 'dbq' ? 'DBQ' : getReadableToolLabel(entry.id);
+        return {
+          value: entry.id,
+          label: (localized && localized !== entry.sidebarKey) ? localized : (entry.label || fallbackLabel)
+        };
+      });
+    }
+    return [
+      { value: 'analysis', label: t('sidebar.tool_analysis') || 'Analysis' },
+      { value: 'simplified', label: t('sidebar.tool_simplified') || 'Simplified Text' },
+      { value: 'glossary', label: t('sidebar.tool_glossary') || 'Glossary' },
+      { value: 'outline', label: t('sidebar.tool_outline') || 'Outline' },
+      { value: 'image', label: t('sidebar.tool_visual') || 'Visual' },
+      { value: 'quiz', label: t('sidebar.tool_quiz') || 'Quiz' },
+      { value: 'sentence-frames', label: t('sidebar.tool_scaffolds') || 'Sentence Frames' },
+      { value: 'brainstorm', label: t('sidebar.tool_brainstorm') || 'Brainstorm' },
+      { value: 'timeline', label: t('sidebar.tool_timeline') || 'Timeline' },
+      { value: 'concept-sort', label: t('sidebar.tool_concept') || 'Concept Sort' },
+      { value: 'adventure', label: t('sidebar.tool_adventure') || 'Adventure' },
+      { value: 'faq', label: t('sidebar.tool_faq') || 'FAQ' },
+      { value: 'persona', label: t('sidebar.tool_persona') || 'Persona Chat' },
+      { value: 'dbq', label: 'DBQ' },
+      { value: 'note-taking', label: t('sidebar.tool_note_taking') || 'Note Taking' },
+      { value: 'anchor-chart', label: t('sidebar.tool_anchor_chart') || 'Anchor Chart' },
+      { value: 'math', label: t('sidebar.tool_math') || 'STEM Lab' },
+      { value: 'lesson-plan', label: t('sidebar.tool_lesson') || 'Lesson Plan' },
+      { value: 'gemini-bridge', label: t('sidebar.tool_bridge') || 'Interactive App' },
+      { value: 'alignment-report', label: t('sidebar.tool_alignment') || 'Alignment Report' },
+    ];
+  }, [t]);
   const getToolLabel = (type) => {
       const opt = toolOptions.find(o => o.value === type);
       return opt ? opt.label : type;

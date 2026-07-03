@@ -53,6 +53,9 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'lateral', selectedRegion: 'cerebellum' });
     expect(html).toMatch(/Motor coordination/);
+    expect(html).toMatch(/Student takeaway/);
+    expect(html).toMatch(/Plain view/);
+    expect(html).toMatch(/Advanced/);
     // the 2026-06-15 accuracy fix: cerebellum holds ~80% (four-fifths) of neurons
     expect(html).toMatch(/~?80%|four-fifths/);
     expect(html).not.toMatch(/50% of brain/);
@@ -124,5 +127,40 @@ describe('brainAtlas render goldens', () => {
     expect(html).toMatch(/NOT a clinical model/i);
     expect(html).toMatch(/chemical imbalance/i);
     expect(html).toMatch(/contested/i);
+  });
+
+  it('refinement UI: groups the view rail and gives the canvas a text equivalent', () => {
+    loadTool(FILE, 'brainAtlas');
+    const html = render({ view: 'lateral' });
+    expect(html).toMatch(/data-brainatlas-mode-groups/);
+    expect(html).toMatch(/data-brainatlas-visible-group="atlas"/);
+    expect(html).toMatch(/data-brainatlas-canvas-summary/);
+    expect(html).toMatch(/Canvas summary/);
+    expect(html).toMatch(/Teacher move/);
+  });
+
+  it('refinement UI: systems group narrows the view rail without removing catalog shortcuts', () => {
+    loadTool(FILE, 'brainAtlas');
+    const html = render({ view: 'neuron', viewGroup: 'systems' });
+    expect(html).toMatch(/data-brainatlas-active-group="systems"/);
+    expect(html).toMatch(/data-brainatlas-visible-group="systems"/);
+    expect(html).toMatch(/Neurotransmitters/);
+    expect(html).toMatch(/Neuron/);
+    expect(html).toMatch(/Synapse/);
+    expect(html).toMatch(/1 through 11 switch views/);
+  });
+
+  it('refinement UI: plain detail hides advanced anatomy until requested', () => {
+    loadTool(FILE, 'brainAtlas');
+    const plain = render({ view: 'lateral', selectedRegion: 'cerebellum' });
+    expect(plain).toMatch(/data-brainatlas-detail-mode="plain"/);
+    expect(plain).toMatch(/Student takeaway/);
+    expect(plain).not.toMatch(/Brodmann Areas/);
+    expect(plain).not.toMatch(/Blood Supply/);
+
+    const advanced = render({ view: 'lateral', selectedRegion: 'cerebellum', detailMode: 'advanced' });
+    expect(advanced).toMatch(/data-brainatlas-detail-mode="advanced"/);
+    expect(advanced).toMatch(/Brodmann Areas/);
+    expect(advanced).toMatch(/Blood Supply/);
   });
 });

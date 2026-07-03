@@ -67,7 +67,7 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
     expect(pipeSrc).not.toMatch(/Math\.round\(\(finalAfterScore \+ deterministicScore\) \/ 2\)/);
   });
   it('the initial/before headline routes through the shared fn too', () => {
-    expect(pipeSrc).toMatch(/const governingInitial = _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)/);
+    expect(pipeSrc).toMatch(/const governingInitial = _noTextLayer \? aiOnlyScore : _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)/);
     expect(pipeSrc).not.toMatch(/Math\.round\(\(aiOnlyScore \+ deterministicBaseline\) \/ 2\)/);
   });
   it('the re-blend after recovery routes through the shared fn', () => {

@@ -1571,14 +1571,22 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         }
 
         // ── FUNCTION EVALUATION ─────────────────────────────────────────
-        var fa = d.a !== undefined ? d.a : 1;
-        var fb = d.b !== undefined ? d.b : 0;
-        var fc = d.c !== undefined ? d.c : 0;
+        var finiteNum = function(value, fallback) {
+          if (value === '' || value === null || value === undefined) return fallback;
+          var n = typeof value === 'number' ? value : parseFloat(value);
+          return isFinite(n) ? n : fallback;
+        };
+        var finiteCoord = function(value) {
+          return typeof value === 'number' && isFinite(value);
+        };
+
+        var fa = finiteNum(d.a, 1);
+        var fb = finiteNum(d.b, 0);
+        var fc = finiteNum(d.c, 0);
 
         var evalF = function(x) { return fa * x * x + fb * x + fc; };
         var evalDeriv = function(x) { return 2 * fa * x + fb; };
         var evalAntiAt = function(a, b, c, x) { return (a / 3) * x * x * x + (b / 2) * x * x + c * x; };
-        var exact = evalAntiAt(fa, fb, fc, d.xMax) - evalAntiAt(fa, fb, fc, d.xMin);
 
         // ── SYMBOLIC STRINGS ────────────────────────────────────────────
         var fmtTerm = function(coeff, power, isFirst) {
@@ -1603,19 +1611,33 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         // ── SVG LAYOUT ──────────────────────────────────────────────────
         var W = 440, H = 300, pad = 40;
-        var xMin = d.xMin !== undefined ? d.xMin : 0;
-        var xMax2 = d.xMax !== undefined ? d.xMax : 3;
-        var nRects = d.n || 20;
+        var rawXMin = finiteNum(d.xMin, 0);
+        var rawXMax = finiteNum(d.xMax, 3);
+        if (Math.abs(rawXMax - rawXMin) < 0.0001) rawXMax = rawXMin + 1;
+        var xMin = Math.min(rawXMin, rawXMax);
+        var xMax2 = Math.max(rawXMin, rawXMax);
+        var nRects = Math.max(1, Math.min(200, Math.round(finiteNum(d.n, 20))));
         var mode = d.mode || 'left';
         var tab = d.tab || 'integral';
-        var x0 = d.x0 !== undefined ? d.x0 : Math.round((xMin + xMax2) / 2 * 10) / 10;
+        var x0 = finiteNum(d.x0, Math.round((xMin + xMax2) / 2 * 10) / 10);
+        var exact = evalAntiAt(fa, fb, fc, xMax2) - evalAntiAt(fa, fb, fc, xMin);
 
-        var sampleY = Array.from({ length: 60 }, function(_, i) { return evalF(xMin + i / 59 * (xMax2 - xMin)); });
+        var sampleY = Array.from({ length: 60 }, function(_, i) { return evalF(xMin + i / 59 * (xMax2 - xMin)); }).filter(finiteCoord);
+        if (!sampleY.length) sampleY = [0, 1];
         var yMax = Math.max.apply(null, sampleY.map(Math.abs).concat([1]));
+        if (!isFinite(yMax) || yMax <= 0) yMax = 1;
         var xR = { min: xMin - 0.5, max: xMax2 + 0.5 };
         var yR = { min: -yMax * 0.3, max: yMax * 1.3 };
-        var toSX = function(x) { return pad + ((x - xR.min) / (xR.max - xR.min)) * (W - 2 * pad); };
-        var toSY = function(y) { return (H - pad) - ((y - yR.min) / (yR.max - yR.min)) * (H - 2 * pad); };
+        var xSpan = xR.max - xR.min;
+        if (!isFinite(xSpan) || Math.abs(xSpan) < 0.0001) xSpan = 1;
+        var ySpan = yR.max - yR.min;
+        if (!isFinite(ySpan) || Math.abs(ySpan) < 0.0001) ySpan = 1;
+        var toSX = function(x) { return pad + ((finiteNum(x, xR.min) - xR.min) / xSpan) * (W - 2 * pad); };
+        var toSY = function(y) { return (H - pad) - ((finiteNum(y, 0) - yR.min) / ySpan) * (H - 2 * pad); };
+        var svgPoint = function(x, y) {
+          var sx = toSX(x), sy = toSY(y);
+          return finiteCoord(sx) && finiteCoord(sy) ? sx + ',' + sy : null;
+        };
 
         // ── RIEMANN SHAPES ──────────────────────────────────────────────
         var dx = (xMax2 - xMin) / nRects;
@@ -1656,27 +1678,33 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           window._calcConvCache = { key: convKey, data: _cd };
         }
         var convData = window._calcConvCache.data;
-        var convMaxErr = Math.max.apply(null, convData.map(function(c) { return c.err; }).concat([0.001]));
+        var convMaxErr = Math.max.apply(null, convData.map(function(c) { return finiteNum(c.err, 0); }).concat([0.001]));
+        if (!isFinite(convMaxErr) || convMaxErr <= 0) convMaxErr = 0.001;
         var convToX = function(n) { return Cpad + ((n - 2) / 48) * (CW - 2 * Cpad); };
-        var convToY = function(e) { return 55 - (e / convMaxErr) * 40; };
+        var convToY = function(e) { return 55 - (finiteNum(e, 0) / convMaxErr) * 40; };
 
         // ── CURVE / TANGENT ─────────────────────────────────────────────
         var curvePts = [];
         for (var cpx = 0; cpx <= W - 2 * pad; cpx += 2) {
           var cx = xR.min + (cpx / (W - 2 * pad)) * (xR.max - xR.min);
-          curvePts.push(toSX(cx) + ',' + toSY(evalF(cx)));
+          var curvePt = svgPoint(cx, evalF(cx));
+          if (curvePt) curvePts.push(curvePt);
         }
         var slope = evalDeriv(x0);
         var fy0 = evalF(x0);
         var tangentPts = (function() {
           var tl = Math.max(xR.min, x0 - 1.5), tr = Math.min(xR.max, x0 + 1.5);
-          return toSX(tl) + ',' + toSY(slope * (tl - x0) + fy0) + ' ' + toSX(tr) + ',' + toSY(slope * (tr - x0) + fy0);
+          var p1 = svgPoint(tl, slope * (tl - x0) + fy0);
+          var p2 = svgPoint(tr, slope * (tr - x0) + fy0);
+          return p1 && p2 ? p1 + ' ' + p2 : '';
         })();
         var dh = d.secantH !== undefined ? d.secantH : 1.0;
         var secantSlope = dh > 0.001 ? (evalF(x0 + dh) - evalF(x0)) / dh : slope;
         var secantPts = (function() {
           var sl = Math.max(xR.min, x0 - 0.5), sr = Math.min(xR.max, x0 + dh + 0.5);
-          return toSX(sl) + ',' + toSY(secantSlope * (sl - x0) + fy0) + ' ' + toSX(sr) + ',' + toSY(secantSlope * (sr - x0) + fy0);
+          var p1 = svgPoint(sl, secantSlope * (sl - x0) + fy0);
+          var p2 = svgPoint(sr, secantSlope * (sr - x0) + fy0);
+          return p1 && p2 ? p1 + ' ' + p2 : '';
         })();
 
         // ── CSS ─────────────────────────────────────────────────────────
@@ -1873,13 +1901,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               if(r.type==='simp'){var sp=[toSX(r.x)+','+toSY(0)];for(var sp2=0;sp2<=10;sp2++){var st=sp2/10,spx=r.x+st*r.w,spy=r.hL*(1-st)*(1-2*st)+4*r.hM*st*(1-st)+r.hR*st*(2*st-1);sp.push(toSX(spx)+','+toSY(spy));}sp.push(toSX(r.x+r.w)+','+toSY(0));return h('polygon',{key:i,points:sp.join(' '),fill:'rgba(168,85,247,0.15)',stroke:'#a855f7',strokeWidth:0.8});}
               return h('rect',{key:i,x:toSX(r.x),y:r.h>=0?toSY(r.h):toSY(0),width:Math.abs(toSX(r.x+r.w)-toSX(r.x)),height:Math.abs(toSY(r.h)-toSY(0)),fill:r.h>=0?'rgba(59,130,246,0.18)':'rgba(249,115,22,0.22)',stroke:r.h>=0?'#3b82f6':'#f97316',strokeWidth:0.8});
             }),
-            showTangent && dh > 0.05 && h('polyline',{points:secantPts,fill:'none',stroke:'#f59e0b',strokeWidth:1.5,strokeDasharray:'5 3'}),
-            showTangent && h('polyline',{points:tangentPts,fill:'none',stroke:'#ef4444',strokeWidth:2,style:{filter:'drop-shadow(0 0 3px rgba(239,68,68,0.45))'}}),
+            showTangent && dh > 0.05 && secantPts && h('polyline',{points:secantPts,fill:'none',stroke:'#f59e0b',strokeWidth:1.5,strokeDasharray:'5 3'}),
+            showTangent && tangentPts && h('polyline',{points:tangentPts,fill:'none',stroke:'#ef4444',strokeWidth:2,style:{filter:'drop-shadow(0 0 3px rgba(239,68,68,0.45))'}}),
             curvePts.length>1 && h('polyline',{points:curvePts.join(' '),fill:'none',stroke:'#1e293b',strokeWidth:2.5}),
             showTangent && h('circle',{cx:toSX(x0),cy:toSY(fy0),r:5,fill:'#ef4444',stroke:'white',strokeWidth:2}),
             showTangent && dh>0.05 && h('circle',{cx:toSX(x0+dh),cy:toSY(evalF(x0+dh)),r:4,fill:'#f59e0b',stroke:'white',strokeWidth:2}),
             h('text',{x:W/2,y:H-6,textAnchor:'middle',fill:'#94a3b8',style:{fontSize:'9px',fontWeight:'bold'}},
-              showTangent ? fStr+'  |  f\u2032('+x0+') = '+slope.toFixed(3) : fStr+'  |  \u222B \u2248 '+area.toFixed(4)+'  (n='+nRects+', '+mode+')')
+              showTangent ? fStr+'  |  f\u2032('+x0+') = '+(finiteCoord(slope) ? slope.toFixed(3) : 'n/a') : fStr+'  |  \u222B \u2248 '+area.toFixed(4)+'  (n='+nRects+', '+mode+')')
           );
         };
 
@@ -2064,7 +2092,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1' }, '\uD83D\uDCC9 Error vs n'),
                 h('svg', { viewBox: '0 0 '+CW+' 60', className: 'w-full' },
                   h('line',{x1:Cpad,y1:55,x2:CW-Cpad,y2:55,stroke:'#e2e8f0',strokeWidth:0.5}),
-                  h('polyline',{points:convData.map(function(cd){return convToX(cd.n)+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
+                  h('polyline',{points:convData.map(function(cd){return convToX(finiteNum(cd.n, 2))+','+convToY(cd.err);}).join(' '),fill:'none',stroke:'#ef4444',strokeWidth:1.5}),
                   h('circle',{cx:convToX(nRects),cy:convToY(err),r:3,fill:'#ef4444',stroke:'white',strokeWidth:1}),
                   h('text',{x:CW/2,y:8,textAnchor:'middle',fill:'#94a3b8',style:{fontSize:'6px'}},'error \u2192 0 as n \u2192 \u221E')
                 )

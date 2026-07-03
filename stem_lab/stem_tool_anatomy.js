@@ -1223,8 +1223,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ══════════════════════════════════════
 
         var canvasRef = function(canvas) {
-          if (!canvas) return;
-          if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
+          if (!canvas) {
+            try { if (window.__alloAnatomyCanvasCleanup) window.__alloAnatomyCanvasCleanup(); } catch (e) {}
+            return;
+          }
+          if (canvas._anatomyCleanup) canvas._anatomyCleanup();
+          else if (canvas._anatomyAnim) { cancelAnimationFrame(canvas._anatomyAnim); canvas._anatomyAnim = null; }
+          try { if (window.__alloAnatomyCanvasCleanup && window.__alloAnatomyCanvasCleanup !== canvas._anatomyCleanup) window.__alloAnatomyCanvasCleanup(); } catch (e) {}
           // ── HiDPI / Retina scaling: render at native pixel density for crisp anatomical lines ──
           var dpr = window.devicePixelRatio || 1;
           var CSS_W = 360, CSS_H = 520;
@@ -1238,8 +1243,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var W = CSS_W, H = CSS_H;
           canvas._dpr = dpr; // store for click/hover coordinate conversion
           var anatTick = 0;
+          var anatomyAlive = true;
+          var anatomyMotionReduced = false;
+          try { anatomyMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+          function isAnatomyHidden() {
+            return typeof document !== 'undefined' && !!document.hidden;
+          }
+
+          function cancelAnatomyFrame() {
+            if (canvas._anatomyAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvas._anatomyAnim);
+            canvas._anatomyAnim = null;
+          }
+
+          function scheduleAnatomyFrame() {
+            if (!anatomyAlive || anatomyMotionReduced || canvas._anatomyAnim || isAnatomyHidden()) return;
+            if (typeof requestAnimationFrame !== 'function') return;
+            canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
+          }
+
+          function cleanupAnatomyCanvas() {
+            anatomyAlive = false;
+            cancelAnatomyFrame();
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onAnatomyVisibilityChange);
+            if (window.__alloAnatomyCanvasCleanup === canvas._anatomyCleanup) window.__alloAnatomyCanvasCleanup = null;
+            canvas._anatomyCleanup = null;
+          }
+
+          function onAnatomyVisibilityChange() {
+            if (!anatomyAlive) return;
+            if (!canvas.isConnected) { cleanupAnatomyCanvas(); return; }
+            if (isAnatomyHidden()) cancelAnatomyFrame();
+            else { cancelAnatomyFrame(); drawAnatomyFrame(); }
+          }
+
+          canvas._anatomyCleanup = cleanupAnatomyCanvas;
+          try { window.__alloAnatomyCanvasCleanup = canvas._anatomyCleanup; } catch (e) {}
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onAnatomyVisibilityChange);
 
           function drawAnatomyFrame() {
+            if (!anatomyAlive) return;
+            canvas._anatomyAnim = null;
             // Stop the rAF chain once the canvas leaves the DOM (the user
             // switched to a different tool, or the SEL/STEM modal closed).
             // Without this check, the loop kept firing forever — drawing to
@@ -1249,10 +1293,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // loops running in parallel. canvas.isConnected returns false
             // once the element is removed from any document.
             if (!canvas.isConnected) {
-              canvas._anatomyAnim = null;
+              cleanupAnatomyCanvas();
               return;
             }
-            anatTick++;
+            if (isAnatomyHidden()) {
+              cancelAnatomyFrame();
+              return;
+            }
+            if (!anatomyMotionReduced) anatTick++;
             cCtx.clearRect(0, 0, W, H);
 
             // ── X-ray mode background (enhanced with film effects) ──
@@ -4175,7 +4223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             cCtx.fillText('AlloFlow Anatomy', W - 6, H - 3);
             cCtx.restore();
 
-            canvas._anatomyAnim = requestAnimationFrame(drawAnatomyFrame);
+            scheduleAnatomyFrame();
           }
 
           drawAnatomyFrame();

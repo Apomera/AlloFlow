@@ -1,7 +1,7 @@
-window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
+﻿window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };
 (function() {
   'use strict';
-  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  // â”€â”€ Reduced motion CSS (WCAG 2.3.3) â€” shared across all STEM Lab tools â”€â”€
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
@@ -24,7 +24,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   })();
 
 
-  // ── Sound effects (badge fanfare only — quiz uses ctx.beep) ──
+  // â”€â”€ Sound effects (badge fanfare only â€” quiz uses ctx.beep) â”€â”€
   var _audioCtx = null;
   function getAudioCtx() {
     if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -46,7 +46,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     } catch (e) { /* audio not available */ }
   }
 
-  // ── Badge definitions ──
+  // â”€â”€ Badge definitions â”€â”€
   var BADGES = [
     { id: 'firstConvert',   icon: '\u2B50',       label: 'First Convert',    desc: 'Make your first unit conversion' },
     { id: 'quizStreak5',    icon: '\uD83D\uDD25', label: 'On Fire',          desc: '5 quiz answers in a row' },
@@ -67,9 +67,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     color: 'cyan',
     category: 'math',
     questHooks: [
-      { id: 'explore_4_categories', label: 'Convert in 4 different unit categories', icon: '🌍', check: function(d) { return Object.keys(d.catsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.catsUsed || {}).length + '/4 categories'; } },
-      { id: 'quiz_10', label: 'Answer 10 quiz questions', icon: '🧠', check: function(d) { return (d.quizTotal || 0) >= 10; }, progress: function(d) { return (d.quizTotal || 0) + '/10 answered'; } },
-      { id: 'streak_5', label: 'Reach a 5-answer streak', icon: '🔥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
+      { id: 'explore_4_categories', label: 'Convert in 4 different unit categories', icon: 'ðŸŒ', check: function(d) { return Object.keys(d.catsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.catsUsed || {}).length + '/4 categories'; } },
+      { id: 'quiz_10', label: 'Answer 10 quiz questions', icon: 'ðŸ§ ', check: function(d) { return (d.quizTotal || 0) >= 10; }, progress: function(d) { return (d.quizTotal || 0) + '/10 answered'; } },
+      { id: 'streak_5', label: 'Reach a 5-answer streak', icon: 'ðŸ”¥', check: function(d) { return (d.bestStreak || 0) >= 5; }, progress: function(d) { return 'best ' + (d.bestStreak || 0) + '/5'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -97,7 +97,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           });
         };
 
-        // ── CATEGORIES ──
+        // â”€â”€ CATEGORIES â”€â”€
         var CATEGORIES = {
           length:      { label: t('stem.unitconvert.length', '\uD83D\uDCCF Length'),   units: { mm: 0.001, cm: 0.01, m: 1, km: 1000, 'in': 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344 } },
           weight:      { label: t('stem.unitconvert.weight', '\u2696\uFE0F Weight'),   units: { mg: 0.001, g: 1, kg: 1000, oz: 28.349523, lb: 453.59237, ton: 907184.74 } },
@@ -112,7 +112,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
         var cat = CATEGORIES[d.category] || CATEGORIES.length;
 
-        // ── CONVERSION ──
+        // â”€â”€ CONVERSION â”€â”€
         var convert = function(val, from, to, catKey) {
           catKey = catKey || d.category;
           if (catKey === 'temperature') {
@@ -138,7 +138,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var result = convert(d.value, d.fromUnit, d.toUnit);
         var fmtResult = fmt(result);
 
-        // ── FORMULA ──
+        // â”€â”€ FORMULA â”€â”€
         var getFormula = function() {
           if (d.category === 'temperature') {
             if (d.fromUnit === '\u00B0C' && d.toUnit === '\u00B0F') return 'F = C \u00D7 9/5 + 32';
@@ -155,7 +155,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           return d.value + ' ' + d.fromUnit + ' \u00D7 ' + fmt(fF / tF) + ' = ' + fmtResult + ' ' + d.toUnit;
         };
 
-        // ── REAL-WORLD REFERENCES ──
+        // â”€â”€ REAL-WORLD REFERENCES â”€â”€
         var REFS = {
           length: function(m) {
             if (m < 0.01) return '\uD83D\uDC1C About ' + (m * 1000).toFixed(1) + ' ant lengths';
@@ -206,7 +206,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           },
         };
 
-        // ── FUN FACTS ──
+        // â”€â”€ FUN FACTS â”€â”€
         var FACTS = {
           length:      ['\uD83C\uDF1F A light-year is 9.46 trillion km', '\uD83E\uDDAB Human DNA stretched out: ~2 m long', '\uD83D\uDE80 ISS orbits at 408 km altitude'],
           weight:      ['\uD83E\uDD8B A blue whale\'s heart weighs ~180 kg', '\uD83C\uDF6B A M&M weighs exactly 1 gram', '\uD83C\uDF0D Earth\'s atmosphere weighs 5.15 \u00D7 10\u00B9\u2078 kg'],
@@ -219,7 +219,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           energy:      ['\uD83C\uDF31 A tree absorbs ~22 kg CO\u2082/year via photosynthesis', '\uD83E\uDDB4 The human brain uses ~20 W', '\u26A1 Lightning heats air to ~30,000 K'],
         };
 
-        // ── QUIZ QUESTIONS ──
+        // â”€â”€ QUIZ QUESTIONS â”€â”€
         var QUIZ_QS = [
           { q: 'How many centimeters in 1 meter?',              a: 100,    unit: 'cm'  },
           { q: 'How many grams in 1 kilogram?',                 a: 1000,   unit: 'g'   },
@@ -252,7 +252,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var baseValue = d.category === 'temperature' ? d.value : d.value * (cat.units[d.fromUnit] || 1);
         var refText = REFS[d.category] ? REFS[d.category](baseValue) : null;
 
-        // ── Badge state ──
+        // â”€â”€ Badge state â”€â”€
         var badges = d.badges || {};
         var showBadges = d.showBadges || false;
         var showTutor = d.showTutor || false;
@@ -263,7 +263,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var quizTotal = d.quizTotal || 0;
         var historySaveCount = d.historySaveCount || 0;
 
-        // ── Badge checker ──
+        // â”€â”€ Badge checker â”€â”€
         function checkBadges(updates) {
           var changed = {};
           var newBadges = Object.assign({}, badges);
@@ -294,7 +294,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (Object.keys(newCats).length >= 9) checkBadges({ allCategories: true });
         }
 
-        // ── AI Tutor ──
+        // â”€â”€ AI Tutor â”€â”€
         function askTutor() {
           if (tutorLoading) return;
           upd({ showTutor: true, tutorLoading: true, tutorResponse: '' });
@@ -314,7 +314,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           });
         }
 
-        // ── Keyboard shortcuts (no hooks — plain render function) ──
+        // â”€â”€ Keyboard shortcuts (no hooks â€” plain render function) â”€â”€
         function handleKey(e) {
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
           var key = e.key;
@@ -332,18 +332,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           if (key.toLowerCase() === 'b') { e.preventDefault(); upd('showBadges', !showBadges); }
         }
 
-        // ── Earned badges count ──
+        // â”€â”€ Earned badges count â”€â”€
         var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
         var earnedCount = earnedBadges.length;
 
-        // ── CSS ANIMATIONS ──
+        // â”€â”€ CSS ANIMATIONS â”€â”€
         var css = '@keyframes ucResultPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}' +
           '@keyframes ucCorrect{0%{background:#dcfce7}50%{background:#86efac}100%{background:#dcfce7}}' +
           '@keyframes ucWrong{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:translateX(0)}}' +
           '@keyframes ucFactSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}' +
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
-        // ── RENDER ──
+        // â”€â”€ RENDER â”€â”€
         return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
 
           h('style', null, css),
@@ -369,7 +369,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
           ),
 
-          // ── Badge panel ──
+          // â”€â”€ Badge panel â”€â”€
           showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC5 Badges (' + earnedCount + '/' + BADGES.length + ')'),
@@ -391,7 +391,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             )
           ),
 
-          // ── AI Tutor panel ──
+          // â”€â”€ AI Tutor panel â”€â”€
           showTutor && h('div', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-sm font-bold text-purple-800' }, t('stem.unitconvert.ai_unit_tutor', '\uD83E\uDDE0 AI Unit Tutor')),
@@ -439,7 +439,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             })
           ),
 
-          // ── Topic-accent hero band per tab ──
+          // â”€â”€ Topic-accent hero band per tab â”€â”€
           (function() {
             var TAB_META = {
               convert:     { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDD04', title: t('stem.unitconvert.convert_the_math_behind_units', 'Convert \u2014 the math behind units'),  hint: t('stem.unitconvert.conversion_factor_ratio_equal_to_1_e_g', 'Conversion factor = ratio equal to 1 (e.g., 1 ft = 12 in \u2192 12 in / 1 ft). Multiplying by it changes the unit without changing the value. SI prefixes (kilo, milli) are powers of 10 \u2014 just shift the decimal.') },
@@ -468,7 +468,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             );
           })(),
 
-          // ═══ TAB: CONVERT ═══
+          // â•â•â• TAB: CONVERT â•â•â•
           tab === 'convert' && h('div', { key: 'convert' },
 
             h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-6 shadow-sm' },
@@ -744,7 +744,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           ),
 
-          // ═══ TAB: ALL UNITS TABLE ═══
+          // â•â•â• TAB: ALL UNITS TABLE â•â•â•
           tab === 'table' && h('div', { key: 'table' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
               h('div', { className: 'bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between' },
@@ -800,7 +800,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             )
           ),
 
-          // ═══ TAB: QUIZ ═══
+          // â•â•â• TAB: QUIZ â•â•â•
           tab === 'quiz' && h('div', { key: 'quiz' },
 
             h('div', { className: 'flex items-center justify-between mb-3' },
@@ -842,7 +842,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         var ans = parseFloat(e.target.value);
                         var tol = d.quiz.tol || 0.01;
                         var correct = Math.abs(ans - d.quiz.a) <= Math.max(tol, Math.abs(d.quiz.a) * tol);
-                        // ── Misconception diagnosis: name the specific conversion error ──
+                        // â”€â”€ Misconception diagnosis: name the specific conversion error â”€â”€
                         // Every quiz question is "how many X in 1 Y", so an inverted ratio
                         // and decimal-place slips are detectable from the number alone.
                         var fb = '';
@@ -851,18 +851,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                           if (isNaN(ans)) {
                             fb = 'Type a number first, then press Enter.';
                           } else if (ans !== 0 && Math.abs(ans * aVal - 1) <= Math.max(0.02, tol * 2)) {
-                            fb = 'You converted in the WRONG DIRECTION — ' + ans.toFixed(3) + ' is how many go the other way. Flip the ratio: the question asks how many ' + d.quiz.unit + ' fit in ONE of the bigger unit, so the answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                            fb = 'You converted in the WRONG DIRECTION â€” ' + ans.toFixed(3) + ' is how many go the other way. Flip the ratio: the question asks how many ' + d.quiz.unit + ' fit in ONE of the bigger unit, so the answer is ' + aVal + ' ' + d.quiz.unit + '.';
                           } else {
                             var slip = null;
                             [10, 100, 1000, 0.1, 0.01, 0.001].forEach(function(f) {
                               if (slip === null && aVal !== 0 && Math.abs(ans / aVal - f) <= f * 0.02) slip = f;
                             });
                             if (slip !== null) {
-                              fb = 'You are off by exactly ×' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ' — a decimal-place slip. Check the prefix: kilo = 1000, centi = 1/100, milli = 1/1000. The answer is ' + aVal + ' ' + d.quiz.unit + '.';
-                            } else if (d.quiz.unit === '°F' || d.quiz.unit === '°C') {
-                              fb = 'Temperature is the one conversion that is NOT a simple ratio: °F = °C × 9/5 + 32 (multiply FIRST, then add 32). The answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                              fb = 'You are off by exactly Ã—' + (slip >= 1 ? slip : '1/' + Math.round(1 / slip)) + ' â€” a decimal-place slip. Check the prefix: kilo = 1000, centi = 1/100, milli = 1/1000. The answer is ' + aVal + ' ' + d.quiz.unit + '.';
+                            } else if (d.quiz.unit === 'Â°F' || d.quiz.unit === 'Â°C') {
+                              fb = 'Temperature is the one conversion that is NOT a simple ratio: Â°F = Â°C Ã— 9/5 + 32 (multiply FIRST, then add 32). The answer is ' + aVal + ' ' + d.quiz.unit + '.';
                             } else {
-                              fb = 'Set it up so the old unit cancels: value × (new unit / old unit). Done that way, the answer comes out to ' + aVal + ' ' + d.quiz.unit + '.';
+                              fb = 'Set it up so the old unit cancels: value Ã— (new unit / old unit). Done that way, the answer comes out to ' + aVal + ' ' + d.quiz.unit + '.';
                             }
                           }
                         }
@@ -933,7 +933,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           ),
 
-          // ═══ TAB: WORD PROBLEM ═══
+          // â•â•â• TAB: WORD PROBLEM â•â•â•
           tab === 'wordproblem' && h('div', { key: 'wp' },
 
             h('div', { className: 'flex items-center justify-between mb-3' },
@@ -1028,20 +1028,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             else if (diff < 13) mag = 'large';
             else mag = 'massive';
             var mm = {
-              tiny:    { label: t('stem.unitconvert.tiny_scale_change', '🐜 Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.2_orders_of_magnitude_close_cousins_cm', '<2 orders of magnitude — close cousins (cm→m).') },
-              small:   { label: t('stem.unitconvert.small_scale_change', '🟢 Small scale change'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.unitconvert.2_4_oom_same_domain_g_kg', '2-4 OOM — same domain (g→kg).') },
-              medium:  { label: t('stem.unitconvert.medium_scale_change', '🟡 Medium scale change'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.unitconvert.5_8_oom_biology_to_geology_scales', '5-8 OOM — biology to geology scales.') },
-              large:   { label: t('stem.unitconvert.large_scale_change', '🔴 Large scale change'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.unitconvert.9_12_oom_micro_to_macro_span', '9-12 OOM — micro to macro span.') },
-              massive: { label: t('stem.unitconvert.massive_scale_change', '🌌 Massive scale change'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.unitconvert.13_oom_atomic_to_cosmic', '13+ OOM — atomic to cosmic.') }
+              tiny:    { label: t('stem.unitconvert.tiny_scale_change', 'ðŸœ Tiny scale change'), color: '#475569', bg: '#f1f5f9', border: '#cbd5e1', desc: t('stem.unitconvert.2_orders_of_magnitude_close_cousins_cm', '<2 orders of magnitude â€” close cousins (cmâ†’m).') },
+              small:   { label: t('stem.unitconvert.small_scale_change', 'ðŸŸ¢ Small scale change'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.unitconvert.2_4_oom_same_domain_g_kg', '2-4 OOM â€” same domain (gâ†’kg).') },
+              medium:  { label: t('stem.unitconvert.medium_scale_change', 'ðŸŸ¡ Medium scale change'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.unitconvert.5_8_oom_biology_to_geology_scales', '5-8 OOM â€” biology to geology scales.') },
+              large:   { label: t('stem.unitconvert.large_scale_change', 'ðŸ”´ Large scale change'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.unitconvert.9_12_oom_micro_to_macro_span', '9-12 OOM â€” micro to macro span.') },
+              massive: { label: t('stem.unitconvert.massive_scale_change', 'ðŸŒŒ Massive scale change'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.unitconvert.13_oom_atomic_to_cosmic', '13+ OOM â€” atomic to cosmic.') }
             }[mag];
             return h('div', { key: 'mh', className: 'p-3' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.unitconvert.magnitude_discovery', '⚙️ Magnitude discovery')),
+                h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.unitconvert.magnitude_discovery', 'âš™ï¸ Magnitude discovery')),
                 h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.unitconvert.adjust_source_and_target_exponents_10_', 'Adjust source and target exponents (10^N). Widget classifies magnitude change into 5 discrete bands. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: mm.bg, border: '2px solid ' + mm.border } },
                   h('div', { className: 'text-base font-black', style: { color: mm.color } }, mm.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, mm.desc),
-                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' → 10^' + iq.targetExp + ' (Δ ' + diff + ' OOM)')
+                  h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, '10^' + iq.sourceExp + ' â†’ 10^' + iq.targetExp + ' (Î” ' + diff + ' OOM)')
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                   [{ k: 'sourceExp', l: 'source 10^' }, { k: 'targetExp', l: 'target 10^' }].map(function(s) {
@@ -1053,27 +1053,27 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', '↺ Reset'))
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ s: iq.sourceExp, t: iq.targetExp, m: mag }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.unitconvert.log', 'ðŸ“‹ Log')),
+                  h('button', { onClick: function() { setIQ({ sourceExp: 0, targetExp: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.unitconvert.reset', 'â†º Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.unitconvert.hypothesis_what_real_world_examples_sp', 'Hypothesis: What real-world examples span each magnitude band?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.unitconvert.stuck_show_open_prompts', 'ðŸ¤” Stuck â€” show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, t('stem.unitconvert.compare_cm_km_mm_light_year_how_many_o', 'Compare cm→km, mm→light-year. How many OOM each?')),
+                    h('li', null, t('stem.unitconvert.compare_cm_km_mm_light_year_how_many_o', 'Compare cmâ†’km, mmâ†’light-year. How many OOM each?')),
                     h('li', null, t('stem.unitconvert.why_are_scientists_trained_in_orders_o', 'Why are scientists trained in orders of magnitude?')))),
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand — explain in own words')),
+                  t('stem.unitconvert.i_understand_explain_in_own_words', 'I understand â€” explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.unitconvert.explain_why_dimensional_reasoning_acro', 'Explain why dimensional reasoning across many OOM is hard.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal — by design.'))
+                h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.unitconvert.design_note_discrete_5_state_magnitude', 'Design note: discrete 5-state magnitude marker; no error score; no reveal â€” by design.'))
               )
             );
           })(),
 
-          // ── Keyboard shortcuts legend ──
+          // â”€â”€ Keyboard shortcuts legend â”€â”€
           h('div', { className: 'text-[11px] text-slate-600 text-center mt-3 space-x-3' },
             h('span', null, t('stem.unitconvert.1_4_tabs', '1-4 Tabs')),
             h('span', null, t('stem.unitconvert.n_next_quiz', 'N Next Quiz')),
@@ -1081,24 +1081,72 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             h('span', null, t('stem.unitconvert.ai_tutor_2', '? AI Tutor'))
           ),
 
-          // ═══ METRIC PREFIXES ═══
+          // â•â•â• METRIC PREFIXES â•â•â•
           h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
-            h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.unitconvert.metric_prefixes_powers_of_10_from_atom', '🔬 Metric Prefixes — Powers of 10 from atoms to galaxies')),
+            h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.unitconvert.metric_prefixes_powers_of_10_from_atom', 'ðŸ”¬ Metric Prefixes â€” Powers of 10 from atoms to galaxies')),
             h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0c1a2e', aspectRatio: '16/5' } },
               h('canvas', {
                 ref: function(cvEl) {
-                  if (!cvEl) return;
-                  if (cvEl._mpAnim) return;
+                  if (!cvEl) {
+                    try { if (window.__alloMetricPrefixCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
+                    return;
+                  }
+                  if (cvEl._mpCleanup) cvEl._mpCleanup();
+                  else if (cvEl._mpAnim) { cancelAnimationFrame(cvEl._mpAnim); cvEl._mpAnim = null; }
+                  try { if (window.__alloMetricPrefixCleanup && window.__alloMetricPrefixCleanup !== cvEl._mpCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
                   var c2 = cvEl.getContext('2d');
+                  if (!c2) return;
                   var W = cvEl.offsetWidth || 600;
                   var H = cvEl.offsetHeight || 180;
                   cvEl.width = W * 2; cvEl.height = H * 2;
-                  c2.scale(2, 2);
+                  if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+                  else c2.scale(2, 2);
                   var start = performance.now();
+                  var alive = true;
+                  var reducedMotion = false;
+                  var ro = null;
+                  try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+                  function isMetricPrefixHidden() { return typeof document !== 'undefined' && !!document.hidden; }
+                  function cancelMetricPrefixFrame() {
+                    if (cvEl._mpAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._mpAnim);
+                    cvEl._mpAnim = null;
+                  }
+                  function scheduleMetricPrefixFrame() {
+                    if (!alive || reducedMotion || cvEl._mpAnim || isMetricPrefixHidden()) return;
+                    if (typeof requestAnimationFrame !== 'function') return;
+                    cvEl._mpAnim = requestAnimationFrame(drawMp);
+                  }
+                  function cleanupMetricPrefixCanvas() {
+                    alive = false;
+                    cancelMetricPrefixFrame();
+                    if (ro) ro.disconnect();
+                    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onMetricPrefixVisibilityChange);
+                    if (window.__alloMetricPrefixCleanup === cvEl._mpCleanup) window.__alloMetricPrefixCleanup = null;
+                    cvEl._mpCleanup = null;
+                    cvEl._mpRO = null;
+                  }
+                  function onMetricPrefixVisibilityChange() {
+                    if (!alive) return;
+                    if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+                    if (isMetricPrefixHidden()) cancelMetricPrefixFrame();
+                    else { cancelMetricPrefixFrame(); drawMp(); }
+                  }
+                  function resizeMetricPrefixCanvas() {
+                    if (!alive || !cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+                    cancelMetricPrefixFrame();
+                    W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
+                    cvEl.width = W * 2; cvEl.height = H * 2;
+                    if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+                    else c2.scale(2, 2);
+                    drawMp();
+                  }
+                  cvEl._mpCleanup = cleanupMetricPrefixCanvas;
+                  try { window.__alloMetricPrefixCleanup = cvEl._mpCleanup; } catch (e) {}
+                  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMetricPrefixVisibilityChange);
                   var prefixes = [
                     { sym: 'p', name: 'pico', exp: -12, color: '#a855f7' },
                     { sym: 'n', name: 'nano', exp: -9, color: '#3b82f6' },
-                    { sym: 'µ', name: 'micro', exp: -6, color: '#22d3ee' },
+                    { sym: 'Âµ', name: 'micro', exp: -6, color: '#22d3ee' },
                     { sym: 'm', name: 'milli', exp: -3, color: '#86efac' },
                     { sym: '', name: 'base', exp: 0, color: '#fff' },
                     { sym: 'k', name: 'kilo', exp: 3, color: '#fde047' },
@@ -1107,8 +1155,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
                   ];
                   function drawMp() {
-                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._mpAnim); if (cvEl._mpRO) cvEl._mpRO.disconnect(); return; }
-                    var t = (performance.now() - start) / 1000;
+                    if (!alive) return;
+                    cvEl._mpAnim = null;
+                    if (!cvEl.isConnected) { cleanupMetricPrefixCanvas(); return; }
+                    if (isMetricPrefixHidden()) { cancelMetricPrefixFrame(); return; }
+                    var t = reducedMotion ? 8 : (performance.now() - start) / 1000;
                     c2.fillStyle = '#0c1a2e';
                     c2.fillRect(0, 0, W, H);
                     var cellW = (W - 30) / prefixes.length;
@@ -1126,7 +1177,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.7)');
                       c2.font = 'bold 14px serif';
                       c2.textAlign = 'center';
-                      c2.fillText(p.sym || '—', x + cellW / 2, y + 22);
+                      c2.fillText(p.sym || 'â€”', x + cellW / 2, y + 22);
                       c2.font = 'bold 9px sans-serif';
                       c2.fillText(p.name, x + cellW / 2, y + 38);
                       c2.font = 'bold 10px monospace';
@@ -1140,7 +1191,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     var examples = {
                       'pico': 'pm = bond lengths',
                       'nano': 'nm = wavelengths',
-                      'micro': 'µm = bacteria',
+                      'micro': 'Âµm = bacteria',
                       'milli': 'mm = grains of sand',
                       'base': 'meter, second, gram, ampere',
                       'kilo': 'km = walking distance',
@@ -1152,17 +1203,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     c2.fillStyle = 'rgba(0,0,0,0.85)';
                     c2.fillRect(8, H - 14, W - 16, 12);
                     c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
-                    c2.fillText('SI metric system — every prefix steps by 1000. Used everywhere except weird corners of US measurement.', W / 2, H - 5);
-                    cvEl._mpAnim = requestAnimationFrame(drawMp);
+                    c2.fillText('SI metric system â€” every prefix steps by 1000. Used everywhere except weird corners of US measurement.', W / 2, H - 5);
+                    scheduleMetricPrefixFrame();
                   }
                   drawMp();
-                  var ro = new ResizeObserver(function() {
-                    W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                    cvEl.width = W * 2; cvEl.height = H * 2;
-                    c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative
-                  });
-                  cvEl._mpRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
-                  ro.observe(cvEl);
+                  if (typeof ResizeObserver === 'function') {
+                    ro = new ResizeObserver(resizeMetricPrefixCanvas);
+                    cvEl._mpRO = ro;
+                    ro.observe(cvEl);
+                  }
                 },
                 style: { width: '100%', height: '100%', display: 'block' }
               })

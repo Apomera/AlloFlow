@@ -1624,21 +1624,58 @@ const d = labToolData.wave;
 
           // Quiz bank
 
+          // Quiz bank \u2014 each distractor carries corrective feedback that names the
+          // specific mix-up and, where possible, points at the sim mode that shows it.
           var WAVE_QUIZ = [
 
-            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'] },
+            { q: 'What happens to pitch when frequency increases?', a: 'Goes up', opts: ['Goes up', 'Goes down', 'Stays same', 'Disappears'],
+              wrongFeedback: {
+                'Goes down': 'Backwards \u2014 MORE vibrations per second means HIGHER pitch. Slide frequency up with Play Sound on and listen to it climb.',
+                'Stays same': 'Pitch IS your ear\u2019s perception of frequency \u2014 change one and you have changed the other.',
+                'Disappears': 'Sound only disappears when AMPLITUDE reaches zero. Frequency changes the pitch, not whether it exists.'
+              } },
 
-            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'] },
+            { q: 'What does amplitude control?', a: 'Loudness / height', opts: ['Speed', 'Loudness / height', 'Color', 'Direction'],
+              wrongFeedback: {
+                'Speed': 'Wave speed is set by the MEDIUM (air, water, string tension) \u2014 a louder shout does not arrive any sooner.',
+                'Color': 'For light, FREQUENCY sets the color. Amplitude sets brightness \u2014 and for sound, loudness.',
+                'Direction': 'Direction comes from the source and reflections. Amplitude is the wave\u2019s height \u2014 how much energy it carries.'
+              } },
 
-            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'] },
+            { q: 'What is superposition?', a: 'Waves combining', opts: ['Waves combining', 'Waves canceling', 'Waves reflecting', 'Waves stopping'],
+              wrongFeedback: {
+                'Waves canceling': 'Canceling is only ONE special case (destructive). Superposition is the general rule: overlapping waves ADD their displacements \u2014 sometimes bigger, sometimes smaller.',
+                'Waves reflecting': 'Reflection is a wave bouncing off a boundary. Superposition is what happens when two waves OVERLAP \u2014 try the Ripple Tank.',
+                'Waves stopping': 'Waves pass straight through each other and continue unchanged \u2014 they never stop each other.'
+              } },
 
-            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'] },
+            { q: 'Destructive interference occurs when...', a: 'Peaks meet troughs', opts: ['Peaks meet peaks', 'Peaks meet troughs', 'Waves stop', 'Amplitude doubles'],
+              wrongFeedback: {
+                'Peaks meet peaks': 'Peak-on-peak is CONSTRUCTIVE interference \u2014 the wave gets bigger. Destruction needs opposites: peak + trough = flat.',
+                'Waves stop': 'The waves keep traveling \u2014 they only cancel at the spots where they overlap out of phase. Watch the dark bands in the Ripple Tank.',
+                'Amplitude doubles': 'Doubling is constructive interference. Destructive SUBTRACTS \u2014 a peak fills a trough.'
+              } },
 
-            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'] },
+            { q: 'Sound is what type of wave?', a: 'Longitudinal', opts: ['Transverse', 'Longitudinal', 'Circular', 'Standing'],
+              wrongFeedback: {
+                'Transverse': 'Transverse waves wiggle PERPENDICULAR to travel (light, a guitar string). Air molecules push and pull ALONG the direction of travel \u2014 switch to Longitudinal mode and watch the compressions.',
+                'Circular': 'Water ripples spread in circles, but that describes the pattern on the surface, not the wave type.',
+                'Standing': 'Standing waves are trapped between boundaries. Traveling sound is free \u2014 it only forms standing waves inside pipes and rooms.'
+              } },
 
-            { q: 'At a node of a standing wave, the displacement is:', a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'] },
+            { q: 'At a node of a standing wave, the displacement is:', a: 'Always zero', opts: ['Maximum', 'Always zero', 'Half maximum', 'Random'],
+              wrongFeedback: {
+                'Maximum': 'Maximum displacement is the ANTInode. Nodes are the still points \u2014 in Standing mode, watch the spots where the string never moves.',
+                'Half maximum': 'Nodes are perfectly still \u2014 zero, not half. Points BETWEEN node and antinode oscillate at partial amplitude.',
+                'Random': 'Standing waves are perfectly ordered \u2014 the nodes stay locked in place. That is exactly why they are called STANDING.'
+              } },
 
-            { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'] },
+            { q: 'The speed of a wave equals:', a: 'Frequency \u00D7 Wavelength', opts: ['Amplitude \u00D7 Frequency', 'Frequency \u00D7 Wavelength', 'Period \u00D7 Amplitude', 'None of these'],
+              wrongFeedback: {
+                'Amplitude \u00D7 Frequency': 'Amplitude carries ENERGY, not speed. v = f \u00D7 \u03BB: waves per second \u00D7 length of each wave = distance per second.',
+                'Period \u00D7 Amplitude': 'Period is just 1/frequency and amplitude is height \u2014 multiplying them gives nothing physical. v = f \u00D7 \u03BB.',
+                'None of these': 'One of them IS right: v = f \u00D7 \u03BB \u2014 how many waves pass per second times how long each one is.'
+              } },
 
           ];
 
@@ -2193,7 +2230,7 @@ const d = labToolData.wave;
 
                   var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
 
-                  upd('quiz', { q: q.q, a: q.a, opts: q.opts, answered: false, score: (d.quiz && d.quiz.score) || 0 });
+                  upd('quiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, answered: false, score: (d.quiz && d.quiz.score) || 0 });
 
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-cyan-100 text-cyan-700' : 'bg-cyan-700 text-white') + " transition-all"
 
@@ -2271,11 +2308,15 @@ const d = labToolData.wave;
 
                       var correct = opt === d.quiz.a;
 
-                      upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, score: d.quiz.score + (correct ? 1 : 0) }));
+                      var fb = correct ? '' : ((d.quiz.wrongFeedback && d.quiz.wrongFeedback[opt]) || ('The answer is ' + d.quiz.a + '.'));
+
+                      upd('quiz', Object.assign({}, d.quiz, { answered: true, chosen: opt, fb: fb, score: d.quiz.score + (correct ? 1 : 0) }));
 
                       if (correct) { awardStemXP('wave-quiz', 5, 'Wave quiz: ' + d.quiz.q); }
 
-                      addToast(correct ? '\u2705 Correct!' : '\u274C The answer is ' + d.quiz.a, correct ? 'success' : 'error');
+                      if (!correct && typeof announceToSR === 'function') announceToSR('Not quite. ' + fb);
+
+                      addToast(correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 see why below', correct ? 'success' : 'error');
 
                     }, className: "px-3 py-2 rounded-lg text-sm font-bold border-2 transition-all " + cls
 
@@ -2283,6 +2324,16 @@ const d = labToolData.wave;
 
                 })
 
+              ),
+
+              // Corrective feedback \u2014 names the specific mix-up instead of just the answer
+              d.quiz.answered && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg text-xs leading-relaxed " + (d.quiz.chosen === d.quiz.a ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'), role: "status" },
+                d.quiz.chosen === d.quiz.a
+                  ? '\u2705 Correct!'
+                  : React.createElement(React.Fragment, null,
+                      React.createElement("span", { className: "font-bold" }, '\u274C Not quite \u2014 the answer is \u201C' + d.quiz.a + '\u201D. '),
+                      d.quiz.fb
+                    )
               )
 
             ),

@@ -158,8 +158,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'initial_choice':
                      const localizedPackKeyword = t('chat_guide.flow.keyword_pack').toLowerCase();
                      if (lowerInput.includes('pack') || lowerInput.includes('auto') || lowerInput.includes('full') || (localizedPackKeyword && lowerInput.includes(localizedPackKeyword))) {
+                         const pendingBlueprintContext = textToSend.trim();
                          sendBotMsg(t('chat_guide.pack.count_selection'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                          setIsChatProcessing(false);
                          return;
                      }
@@ -177,21 +178,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  history.map(h => h.type),
                                  countPreference
                              );
-                             const initialSelection = {};
-                             if (config.recommendedResources) {
-                                 config.recommendedResources.forEach(r => initialSelection[r] = true);
-                             }
-                             setActiveBlueprint(config);
+                            setActiveBlueprint(config);
                              setUdlMessages(prev => [...prev, {
                                  role: 'model',
                                  type: 'blueprint',
                                  text: t('chat_guide.blueprint.presented')
                              }]);
-                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review' }));
+                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                          } catch (e) {
                              warnLog("Unhandled error:", e);
                              setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.blueprint.error') }]);
-                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis' }));
+                             setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis', pendingBlueprintContext: null }));
                          } finally {
                              setIsChatProcessing(false);
                          }
@@ -215,6 +212,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          }
                      }
                      const countDisplay = targetCount === 'All' ? t('chat_guide.pack.comprehensive') : targetCount;
+                     const countOnlyPattern = /^\s*(auto|all|everything|\d+)(\s+(resources?|steps?|items?))?\s*$/i;
+                     const countStepContext = countOnlyPattern.test(textToSend) ? "" : textToSend.trim();
+                     const blueprintContext = [guidedFlowState.pendingBlueprintContext, countStepContext]
+                         .map(v => (v || "").trim())
+                         .filter(Boolean)
+                         .join("\n");
                      sendBotMsg(t('chat_guide.pack.designing', { count: countDisplay }));
                      setIsChatProcessing(true);
                      try {
@@ -223,45 +226,43 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              gradeLevel,
                              standardsInput,
                              leveledTextLanguage,
-                             "",
+                             blueprintContext,
                              history.map(h => h.type),
                              targetCount
-                         );
-                         setActiveBlueprint(config);
-                         const initialSelection = {};
-                         if (config.recommendedResources) {
-                             config.recommendedResources.forEach(r => initialSelection[r] = true);
-                         }
-                         setUdlMessages(prev => [...prev, {
+                        );
+                        setActiveBlueprint(config);
+                        setUdlMessages(prev => [...prev, {
                              role: 'model',
                              type: 'blueprint',
                              text: t('chat_guide.blueprint.presented')
                          }]);
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                      } catch (e) {
                          warnLog("Unhandled error:", e);
                          sendBotMsg(t('chat_guide.pack.error'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'analysis', pendingBlueprintContext: null }));
                      } finally {
                          setIsChatProcessing(false);
                      }
                      return;
                  case 'blueprint_review':
-                     const isExecutionCommand = /go|start|run|execute|confirm|yes|proceed/i.test(textToSend);
+                     const reviewInput = textToSend.trim().toLowerCase();
+                     const hasBlueprintEditRequest = /\b(add|remove|change|edit|modify|revise|instead|but|except|focus|include|exclude|replace|make)\b/i.test(textToSend);
+                     const isExecutionCommand = /^(please\s+)?(go|go ahead|start|start it|run|run it|execute|execute it|confirm|yes|yes please|y|proceed|generate|generate it|looks good|do it|let'?s go)(\s+(now|please))?[.!]?$/i.test(reviewInput) && !hasBlueprintEditRequest;
                      if (isExecutionCommand) {
-                         handleExecuteBlueprint();
-                         setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                         try {
+                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                             await Promise.resolve(handleExecuteBlueprint());
+                         } finally {
+                             setIsChatProcessing(false);
+                         }
                      } else {
                          setIsChatProcessing(true);
                          sendBotMsg(t('common.adjusting') + "...");
                          try {
-                             const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
-                             setActiveBlueprint(updatedConfig);
-                             const newSelection = {};
-                             if (updatedConfig.recommendedResources) {
-                                 updatedConfig.recommendedResources.forEach(r => newSelection[r] = true);
-                             }
-                             sendBotMsg(t('chat_guide.blueprint.updated'));
+                            const updatedConfig = await modifyBlueprintWithAI(activeBlueprint, textToSend);
+                            setActiveBlueprint(updatedConfig);
+                            sendBotMsg(t('chat_guide.blueprint.updated'));
                          } catch (e) {
                              sendBotMsg(t('chat_guide.blueprint.change_fail'));
                          } finally {
@@ -303,8 +304,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      break;
                  case 'post_analysis_route':
                      if (lowerInput.includes('pack') || lowerInput.includes('full') || lowerInput.includes('auto')) {
+                         const pendingBlueprintContext = textToSend.trim();
                          sendBotMsg(t('chat_guide.pack.count_selection'));
-                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection' }));
+                         setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                      }
                      else {
                          const context = getWorkflowContext();

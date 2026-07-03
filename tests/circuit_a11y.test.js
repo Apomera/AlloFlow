@@ -10,6 +10,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 function ohm(iq) {
   return renderTool('circuit', {
     circuit: {
+      workspaceTab: 'reference',
       expSection: 'ohmInquiry',
       ohmInquiry: Object.assign({ voltage: 9, resistance: 100, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, iq),
     },

@@ -54,6 +54,7 @@
     "verify:module-render": "node dev-tools/check_module_render.cjs",
     "verify:aria-handler": "node dev-tools/check_aria_handler.cjs",
     "verify:lang-json": "node dev-tools/check_lang_json.cjs",
+    "verify:docsuite-theme": "node dev-tools/gen_docsuite_theme.cjs --check",
     "verify:cmd-i18n": "node dev-tools/check_cmd_i18n.cjs",
     "verify:spanglish": "node dev-tools/i18n/check_safety_string_spanglish.cjs",
     "verify:stale": "node dev-tools/i18n/check_lang_staleness.cjs",

@@ -67,8 +67,13 @@ describe('toolbar formats + icon registry', () => {
     expect(eh).toContain("case 'numlist':");
   });
   it('window.AlloIcons finally includes Bold/Italic/Highlighter (both registry copies)', () => {
-    const hits = anti.match(/Bold, Italic, Highlighter\n\s*\};/g) || [];
-    expect(hits.length).toBe(2);
+    const blocks = anti.match(/window\.AlloIcons = \{[\s\S]*?\n\s*\};/g) || [];
+    expect(blocks.length).toBe(2);
+    for (const block of blocks) {
+      expect(block).toContain('Bold');
+      expect(block).toContain('Italic');
+      expect(block).toContain('Highlighter');
+    }
   });
   it('both editors expose H3 + numbered-list buttons in source and module', () => {
     for (const f of ['view_analysis_source.jsx', 'view_simplified_source.jsx', 'view_analysis_module.js', 'view_simplified_module.js']) {

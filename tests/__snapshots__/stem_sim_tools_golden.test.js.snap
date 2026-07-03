@@ -8,7 +8,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for a11yA
   "lengthBucket": 35,
   "paths": 0,
   "selects": 0,
-  "sha": "f1cd7d599c6ed50d",
+  "sha": "7c9fbd625a31af58",
   "svgs": 0,
 }
 `;
@@ -67,26 +67,26 @@ exports[`science-sim + studio render goldens > renders + pins a digest for astro
 
 exports[`science-sim + studio render goldens > renders + pins a digest for bakingScience [ssr] 1`] = `
 {
-  "buttons": 12,
+  "buttons": 16,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 39,
+  "lengthBucket": 55,
   "paths": 0,
   "selects": 0,
-  "sha": "bd984f05b1b59d71",
+  "sha": "00fe29c54672b741",
   "svgs": 0,
 }
 `;
 
 exports[`science-sim + studio render goldens > renders + pins a digest for bridgeLab [mount] 1`] = `
 {
-  "buttons": 22,
+  "buttons": 24,
   "canvases": 0,
   "inputs": 7,
-  "lengthBucket": 185,
+  "lengthBucket": 205,
   "paths": 3,
   "selects": 0,
-  "sha": "a26fabe4d84a6fbe",
+  "sha": "6052a777984e06f5",
   "svgs": 1,
 }
 `;
@@ -125,7 +125,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cyber
   "lengthBucket": 53,
   "paths": 0,
   "selects": 0,
-  "sha": "fabd26e5ff38781f",
+  "sha": "e8499663e095e00f",
   "svgs": 0,
 }
 `;
@@ -158,13 +158,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for echol
 
 exports[`science-sim + studio render goldens > renders + pins a digest for epidemicSim [ssr] 1`] = `
 {
-  "buttons": 22,
+  "buttons": 21,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 432,
+  "lengthBucket": 445,
   "paths": 6,
   "selects": 0,
-  "sha": "74bc98cbbb03dd96",
+  "sha": "72855760fcfcdfa1",
   "svgs": 1,
 }
 `;
@@ -236,13 +236,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for kitch
 
 exports[`science-sim + studio render goldens > renders + pins a digest for microbiology [mount] 1`] = `
 {
-  "buttons": 18,
+  "buttons": 14,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 192,
+  "lengthBucket": 210,
   "paths": 0,
   "selects": 0,
-  "sha": "9c8fc20524924c40",
+  "sha": "83f030f0185bb15a",
   "svgs": 0,
 }
 `;
@@ -265,10 +265,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
   "buttons": 8,
   "canvases": 0,
   "inputs": 4,
-  "lengthBucket": 46,
+  "lengthBucket": 66,
   "paths": 0,
   "selects": 0,
-  "sha": "723b26205b12fba2",
+  "sha": "37cfb04c3ba5b072",
   "svgs": 0,
 }
 `;
@@ -392,13 +392,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for titra
 
 exports[`science-sim + studio render goldens > renders + pins a digest for waterCycle [ssr] 1`] = `
 {
-  "buttons": 17,
+  "buttons": 18,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 85,
+  "lengthBucket": 89,
   "paths": 0,
   "selects": 0,
-  "sha": "42556035d838a4b1",
+  "sha": "ddb473ad380f64f7",
   "svgs": 0,
 }
 `;

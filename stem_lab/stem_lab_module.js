@@ -436,7 +436,14 @@
       React.useEffect(function() {
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Stem') return;
-          _setPluginProgressTick(function(t) { return t + 1; });
+          // Defer out of any in-progress React render. dispatchEvent runs its
+          // listeners synchronously, so if 'allo-plugins-changed' is ever
+          // dispatched while React is rendering AlloFlowContent, a direct
+          // setState here updates StemLabModal mid-render → "Cannot update a
+          // component while rendering a different component". This tick only
+          // refreshes the tool-tile grid as plugins stream in, so a microtask
+          // defer is imperceptible and render-safe.
+          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };

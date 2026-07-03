@@ -517,6 +517,45 @@ describe('caption polish, chapters, and teaching inserts', () => {
     expect(out[0]).toMatchObject({ start: 0, end: 2, text: 'I notice the denominator.' });
     expect(out[1].text).toBe('Next idea?');
   });
+  it('normalizes caption style presets and preview line wrapping', () => {
+    expect(VS.vsCaptionStylePreset('lower third')).toMatchObject({
+      key: 'lower-third',
+      className: 'caption-style-lower-third',
+      position: 'lower-left',
+    });
+    expect(VS.vsCaptionStylePreset('unknown')).toMatchObject({ key: 'clean-card' });
+    const lines = VS.vsCaptionPreviewLines('This is a longer caption that should wrap cleanly without overflowing the preview overlay.', 28, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toMatch(/\.\.\.$/);
+    expect(lines.every(line => line.length <= 31)).toBe(true);
+    expect(VS.vsCaptionDisplayOptions({ size: 'giant', position: 'side' }, 'high contrast')).toMatchObject({
+      styleKey: 'high-contrast',
+      size: 'medium',
+      position: 'preset',
+    });
+    expect(VS.vsResolveCaptionStyle('clean-card', { size: 'large', font: 'legible', position: 'top', background: 'none' })).toMatchObject({
+      position: 'top',
+      box: false,
+      fontWeight: 800,
+      contrastNote: 'Outline added for readability.',
+    });
+    expect(VS.vsResolveCaptionStyle('lower third', { background: 'soft', opacity: 'strong' })).toMatchObject({
+      position: 'lower-left',
+      background: 'rgba(30,64,175,0.92)',
+    });
+    expect(VS.vsTitleCardPreset('calm family')).toMatchObject({
+      key: 'calm-family',
+      footer: 'Student and family explainer',
+      align: 'left',
+    });
+    expect(VS.vsTitleCardPreset('unknown')).toMatchObject({ key: 'clean-classroom' });
+    expect(VS.vsPipFramePreset('teacher label')).toMatchObject({
+      key: 'teacher-label',
+      shape: 'rounded',
+      labelText: 'Teacher',
+    });
+    expect(VS.vsPipFramePreset('unknown')).toMatchObject({ key: 'clean-circle', shape: 'circle' });
+  });
   it('builds lesson chapters from caption gaps and transition language', () => {
     const chapters = VS.vsBuildChapters([
       { start: 0, end: 4, text: 'welcome to equivalent fractions' },
@@ -532,14 +571,16 @@ describe('caption polish, chapters, and teaching inserts', () => {
     const inserts = VS.vsSanitizeTeachingInserts([
       { type: 'pause', start: -5, duration: 999, text: 'try it', theme: 'amber' },
       { type: 'gif', t: 10, text: '', x: 9, y: -2, animation: 'bounce' },
+      { type: 'callout', start: 12, duration: 3, text: 'focus here', style: 'spotlight' },
       { type: 'generated_image', start: 20, imageSrc: 'javascript:bad', text: 'visual' },
       { type: 'run_script', start: 1, text: 'bad' },
     ], 30);
-    expect(inserts.map(i => i.type)).toEqual(['pause_prompt', 'sticker', 'visual_card']);
+    expect(inserts.map(i => i.type)).toEqual(['pause_prompt', 'sticker', 'callout', 'visual_card']);
     expect(inserts[0]).toMatchObject({ start: 0, end: 15, theme: 'amber' });
     expect(inserts[1].x).toBe(1);
     expect(inserts[1].y).toBe(0);
-    expect(inserts[2].imageSrc).toBe('');
+    expect(inserts[2]).toMatchObject({ type: 'callout', style: 'spotlight' });
+    expect(inserts[3].imageSrc).toBe('');
   });
   it('accepts safe generated image data URIs for visual cards', () => {
     const inserts = VS.vsSanitizeTeachingInserts({ inserts: [{ type: 'visual_card', start: 4, duration: 3, text: 'Fraction wall', imageSrc: 'data:image/png;base64,abc' }] }, 20);
@@ -549,10 +590,12 @@ describe('caption polish, chapters, and teaching inserts', () => {
   it('sanitizes timed image overlays with motion controls', () => {
     const inserts = VS.vsSanitizeTeachingInserts([
       { type: 'image_overlay', start: 6, duration: 8, text: 'Cell diagram', imageSrc: 'data:image/png;base64,abc', x: 2, y: -1, width: 2, motion: 'slide-left', source: 'resource', resourceId: 'gloss-1' },
+      { type: 'image_overlay', start: 9, duration: 5, text: 'Frame capture', imageSrc: 'data:image/png;base64,frame', source: 'frame-capture', width: 0.36 },
       { type: 'image_overlay', start: 2, imageSrc: 'https://example.com/unsafe.png' },
     ], 30);
-    expect(inserts).toHaveLength(1);
+    expect(inserts).toHaveLength(2);
     expect(inserts[0]).toMatchObject({ type: 'image_overlay', x: 1, y: 0, width: 0.9, motion: 'slide_left', source: 'resource', resourceId: 'gloss-1' });
+    expect(inserts[1]).toMatchObject({ type: 'image_overlay', source: 'frame-capture', width: 0.36 });
   });
   it('computes overlay motion state for scripted movement', () => {
     const start = VS.vsOverlayFrameState({ start: 10, end: 20, x: 0.5, y: 0.5, width: 0.25, motion: 'slide_left' }, 10.5);
@@ -602,6 +645,232 @@ describe('caption polish, chapters, and teaching inserts', () => {
     expect(out[0].style).toBe('spotlight');
     expect(VS.vsSanitizeLessonPlan('garbage', 60)).toEqual([]);
   });
+  it('sanitizes localized video drafts for translated versions and interpreter audio', () => {
+    const draft = VS.vsSanitizeLocalizedDraft({
+      targetLanguage: 'Spanish',
+      style: 'Interpreter',
+      localizedTitle: 'Fracciones equivalentes',
+      speakerMap: { Teacher: 'Maestra' },
+      captions: [
+        { start: 3, end: 5, speaker: 'Teacher', originalText: 'Watch the denominator.', translation: 'Miren el denominador.' },
+        { start: -4, end: 1, text: 'Hola.' },
+        { start: 8, text: '' },
+      ],
+      chapters: [{ start: 3, title: 'Modelo visual' }],
+      inserts: [{ type: 'pause_prompt', start: 6, duration: 4, text: 'Pausa y prueba.', theme: 'amber' }],
+      visualDescriptions: [{ start: 2, end: 4, description: 'Aparece un modelo de fracciones.', checked: true }],
+      interpreterScript: [
+        { start: 3, end: 6, speaker: 'Interpreter', text: 'Miren cómo cambia el denominador.' },
+        { start: 3.1, end: 6, speaker: 'Student', text: 'Yo veo dos partes.' },
+      ],
+      reviewNotes: ['Teacher should verify math vocabulary.'],
+    }, 20);
+    expect(draft).toMatchObject({ targetLanguage: 'Spanish', style: 'interpreter', title: 'Fracciones equivalentes' });
+    expect(draft.captions.map(c => c.text)).toEqual(['Hola.', 'Miren el denominador.']);
+    expect(draft.captions[1]).toMatchObject({ speaker: 'Teacher', originalText: 'Watch the denominator.' });
+    expect(draft.inserts[0]).toMatchObject({ type: 'pause_prompt', text: 'Pausa y prueba.', source: 'localization' });
+    expect(draft.visualDescriptions[0]).toMatchObject({ checked: true });
+    expect(draft.narration[1].start).toBeGreaterThan(draft.narration[0].start);
+    expect(draft.speakerMap[0]).toMatchObject({ speaker: 'Teacher', translatedLabel: 'Maestra' });
+    expect(draft.reviewNotes[0]).toMatch(/vocabulary/);
+  });
+  it('caps localized drafts and drops unsafe empty localization output', () => {
+    const many = Array.from({ length: 340 }, (_, i) => ({ start: i, end: i + 1, text: 'caption ' + i }));
+    const draft = VS.vsSanitizeLocalizedDraft({
+      language: 'Haitian Creole',
+      style: 'unknown',
+      captions: many,
+      overlays: [{ type: 'image_overlay', start: 2, imageSrc: 'https://example.com/not-safe.png', text: 'bad' }],
+      narration: Array.from({ length: 50 }, (_, i) => ({ start: i * 0.1, text: 'line ' + i })),
+      warnings: Array.from({ length: 20 }, (_, i) => 'note ' + i),
+    }, 60);
+    expect(draft.style).toBe('natural');
+    expect(draft.captions).toHaveLength(300);
+    expect(draft.inserts).toEqual([]);
+    expect(draft.narration).toHaveLength(40);
+    expect(draft.reviewNotes).toHaveLength(12);
+    expect(VS.vsSanitizeLocalizedDraft('garbage', 10).captions).toEqual([]);
+  });
+  it('analyzes localized drafts for review risks before sharing', () => {
+    const qa = VS.vsAnalyzeLocalizationDraft({
+      targetLanguage: 'Spanish',
+      captions: [
+        { start: 8, end: 11, text: 'Una linea traducida muy larga '.repeat(12), speaker: 'Teacher' },
+        { start: 10, end: 12, text: 'Otra linea traducida.', speaker: 'Teacher' },
+        { start: 12, end: 14, text: 'Tercera linea traducida.', speaker: 'Teacher' },
+        { start: 14, end: 16, text: 'Cuarta linea traducida.', speaker: 'Teacher' },
+      ],
+      narration: [{ start: 2, end: 3, text: 'Esta interpretacion tiene demasiadas palabras para caber comodamente en un segundo.' }],
+    }, [
+      { start: 0, end: 2, text: 'First source caption.' },
+      { start: 3, end: 5, text: 'Second source caption.' },
+      { start: 6, end: 8, text: 'Third source caption.' },
+      { start: 9, end: 11, text: 'denominator example.' },
+      { start: 12, end: 13, text: 'Fifth source caption.' },
+      { start: 14, end: 15, text: 'Sixth source caption.' },
+      { start: 16, end: 17, text: 'Seventh source caption.' },
+    ], { duration: 20, glossary: 'denominator' });
+    expect(qa.ok).toBe(false);
+    expect(qa.warnings.map(w => w.label)).toEqual(expect.arrayContaining([
+      'Caption count changed',
+      'Caption timing drift',
+      'Long subtitle lines',
+      'Speaker labels need review',
+      'Glossary locks',
+      'Interpreter pacing',
+      'Teacher review',
+    ]));
+  });
+  it('clears the teacher-review localization warning once reviewed', () => {
+    const qa = VS.vsAnalyzeLocalizationDraft({
+      targetLanguage: 'Spanish',
+      reviewed: true,
+      captions: [{ start: 0, end: 2, text: 'Fracciones equivalentes', originalText: 'Equivalent fractions' }],
+    }, [
+      { start: 0, end: 2, text: 'Equivalent fractions' },
+    ], { duration: 8 });
+    expect(qa.ok).toBe(true);
+    expect(qa.reviewed).toBe(true);
+    expect(qa.warnings.map(w => w.label)).not.toContain('Teacher review');
+  });
+  it('flags caption readability and timing issues for final review', () => {
+    const qa = VS.vsAnalyzeCaptionQuality([
+      { start: 0, end: 1, text: 'This caption is far too dense and long to read comfortably in one second '.repeat(3) },
+      { start: 0.8, end: 2, text: 'Overlaps the previous caption.' },
+      { start: 20, end: 22, text: 'Returns after a long gap.' },
+    ], 30);
+    expect(qa.ok).toBe(false);
+    expect(qa.captionCount).toBe(3);
+    expect(qa.warnings.map(w => w.label)).toEqual(expect.arrayContaining([
+      'Long caption lines',
+      'Fast captions',
+      'Caption gaps',
+      'Overlapping captions',
+    ]));
+    expect(qa.issues.map(i => i.kind)).toEqual(expect.arrayContaining([
+      'long_line',
+      'fast_line',
+      'gap',
+      'overlap',
+    ]));
+    expect(qa.issues.find(i => i.kind === 'overlap')).toMatchObject({ index: 1, start: 0.8 });
+  });
+  it('builds a calm finish checklist from video review state', () => {
+    const items = VS.vsBuildFinishChecklist({
+      hasVideo: true,
+      captionCount: 8,
+      privacyFlagCount: 0,
+      hasAudioChanges: true,
+      localizationCount: 1,
+      localizationWarningCount: 0,
+      exported: false,
+      review: { captions: true, privacy: true, audio: false, localization: true },
+    });
+    expect(items.find(i => i.id === 'captions')).toMatchObject({ status: 'complete' });
+    expect(items.find(i => i.id === 'audio')).toMatchObject({ status: 'review' });
+    expect(items.find(i => i.id === 'localization')).toMatchObject({ status: 'complete' });
+    expect(items.find(i => i.id === 'privacy')).toMatchObject({ targetTab: 'tabEdit', targetId: 'transcriptSearch', action: 'Review' });
+    expect(items.find(i => i.id === 'export')).toMatchObject({ status: 'pending', targetTab: 'tabExport', targetId: 'exportBtn', action: 'Prepare' });
+  });
+  it('elevates caption checklist status when caption QA finds issues', () => {
+    const items = VS.vsBuildFinishChecklist({
+      hasVideo: true,
+      captionCount: 6,
+      captionWarningCount: 2,
+      privacyFlagCount: 0,
+      hasAudioChanges: false,
+      localizationCount: 0,
+      exported: false,
+      review: { captions: true, privacy: true, audio: true },
+    });
+    expect(items.find(i => i.id === 'captions')).toMatchObject({ status: 'warn' });
+  });
+  it('chooses the next actionable finish item by severity and workflow order', () => {
+    const next = VS.vsPickNextFinishItem([
+      { id: 'audio', status: 'review' },
+      { id: 'export', status: 'pending' },
+      { id: 'captions', status: 'warn' },
+      { id: 'privacy', status: 'warn' },
+    ]);
+    expect(next).toMatchObject({ id: 'captions', status: 'warn' });
+    expect(VS.vsPickNextFinishItem([
+      { id: 'audio', status: 'review' },
+      { id: 'export', status: 'pending' },
+    ])).toMatchObject({ id: 'audio' });
+    expect(VS.vsPickNextFinishItem([
+      { id: 'video', status: 'pending' },
+      { id: 'captions', status: 'warn' },
+    ])).toMatchObject({ id: 'video' });
+    expect(VS.vsPickNextFinishItem([{ id: 'video', status: 'complete' }])).toBeNull();
+  });
+  it('keeps localization in review until teacher review is marked complete', () => {
+    const items = VS.vsBuildFinishChecklist({
+      hasVideo: true,
+      captionCount: 3,
+      privacyFlagCount: 0,
+      hasAudioChanges: false,
+      localizationCount: 1,
+      localizationWarningCount: 0,
+      exported: true,
+      review: { captions: true, privacy: true, audio: true, localization: false },
+    });
+    expect(items.find(i => i.id === 'localization')).toMatchObject({ status: 'review' });
+    expect(items.find(i => i.id === 'export')).toMatchObject({ status: 'complete' });
+  });
+  it('summarizes finished exports for sharing readiness', () => {
+    const items = VS.vsBuildExportReadinessSummary({
+      hasExport: true,
+      duration: 92,
+      capMode: 'burn',
+      captionCount: 14,
+      captionWarningCount: 0,
+      privacyFlagCount: 1,
+      visualDescriptionCount: 2,
+      chapterCount: 3,
+      teachingInsertCount: 4,
+      visualOverlayCount: 1,
+      localizationCount: 1,
+      preset: 'student_family',
+    });
+    expect(items.find(i => i.id === 'video')).toMatchObject({ status: 'complete' });
+    expect(items.find(i => i.id === 'captions').detail).toMatch(/Burned/);
+    expect(items.find(i => i.id === 'privacy')).toMatchObject({ status: 'warn' });
+    expect(items.find(i => i.id === 'audience')).toMatchObject({ status: 'complete' });
+  });
+  it('builds a transcript resource that can feed the main AlloFlow source flow', () => {
+    const resource = VS.vsBuildTranscriptResource({
+      title: 'Fractions demo',
+      cues: [
+        { start: 0, end: 2, text: 'One half equals two fourths.' },
+        { start: 2, end: 4, text: 'Watch the denominator.' },
+      ],
+      chapters: [{ start: 0, title: 'Equivalent fractions' }],
+      duration: 4,
+    });
+    expect(resource).toMatchObject({
+      type: 'video-transcript',
+      kind: 'transcript',
+      title: 'Fractions demo transcript',
+      source: 'video_studio',
+    });
+    expect(resource.text).toMatch(/One half equals two fourths/);
+    expect(resource.data.cues).toHaveLength(2);
+    expect(resource.data.chapters[0]).toMatchObject({ title: 'Equivalent fractions' });
+  });
+  it('creates plain student and family packet notes', () => {
+    const note = VS.vsBuildStudentFamilyShareNote({
+      title: 'Fractions demo',
+      captionCount: 12,
+      chapterCount: 2,
+      localizationCount: 1,
+      privacyFlagCount: 1,
+    });
+    expect(note).toMatch(/Student\/family video packet/);
+    expect(note).toMatch(/captions/);
+    expect(note).toMatch(/chapter markers/);
+    expect(note).toMatch(/translated materials are drafts/);
+    expect(note).toMatch(/possible private detail/);
+  });
 });
 
 describe('vsPcmToWav', () => {
@@ -631,7 +900,7 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasVisualOverlays: true, hasMusicBed: true, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
@@ -639,6 +908,8 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.hasCaptions).toBe(true);
     expect(ref.hasVisualDescriptions).toBe(true);
     expect(ref.hasVisualPrompts).toBe(true);
+    expect(ref.hasLocalizations).toBe(true);
+    expect(ref.localizationCount).toBe(2);
     expect(ref.hasVisualOverlays).toBe(true);
     expect(ref.hasMusicBed).toBe(true);
     expect(ref.resourceCueCount).toBe(3);

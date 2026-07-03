@@ -1017,7 +1017,12 @@
       React.useEffect(function() {
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Sel') return;
-          _setPluginProgressTick(function(t) { return t + 1; });
+          // Defer out of any in-progress React render (dispatchEvent runs
+          // listeners synchronously): a direct setState here during a host
+          // render trips "Cannot update a component while rendering". The tick
+          // only refreshes the tile grid as plugins stream in — a microtask
+          // defer is imperceptible and render-safe. Mirrors the StemLab fix.
+          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
@@ -4140,6 +4145,11 @@
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': 'SEL Hub',
+        // allo-docsuite = the generated theme-remap scope (gen_docsuite_theme.cjs).
+        // It themes the 4 Tailwind-className tools (civicaction/cultureexplorer/
+        // ethicalreasoning/selfadvocacy); the 66 inline-hex tools carry their own
+        // _xxC remaps and are untouched by class-based CSS.
+        className: 'allo-docsuite',
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
           background: _t.bg, color: _t.text,

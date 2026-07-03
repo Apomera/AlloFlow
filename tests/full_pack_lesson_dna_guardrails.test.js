@@ -41,7 +41,7 @@ describe('full-pack and blueprint lesson DNA guardrails', () => {
     const src = read('AlloFlowANTI.txt');
 
     expect(src).toContain('Preserve "lessonDNA" exactly unless');
-    expect(src).toContain('prefer updating "toolDirectives" and resource choices');
+    expect(src).toContain('prefer updating resourcePlan directives and resource choices');
     expect(src).toContain('Never remove "lessonDNA" from the blueprint');
   });
 });

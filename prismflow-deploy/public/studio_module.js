@@ -81,8 +81,21 @@
     'letter-landscape': { w: 1056, h: 816 },
     'square': { w: 900, h: 900 },
   };
+  var ST_RECENT_PROJECTS_KEY = 'allostudio_recent_projects';
+  var ST_RECENT_PROJECT_LIMIT = 8;
 
   function stClone(v) { return JSON.parse(JSON.stringify(v)); }
+  function stCleanText(v, n) {
+    var text = String(v == null ? '' : v).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    return n ? text.slice(0, n) : text;
+  }
+  function stSlug(v, fallback) {
+    return (stCleanText(v, 80).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || fallback || 'item');
+  }
+  function stSafeDataImage(v, maxLen) {
+    var s = String(v || '').trim();
+    return (s.indexOf('data:image/') === 0 && s.length <= (maxLen || 1200000)) ? s : '';
+  }
   function stFiniteNumber(v, fallback) {
     if (v === null || v === undefined || v === '') return fallback;
     var n = Number(v);
@@ -543,6 +556,383 @@
     return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(data.title) + '</title>\n<style>\n  body { font-family: system-ui, sans-serif; color: #111827; max-width: 720px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }\n  h1 { font-size: 28px; }\n  .st-ws-instructions { background: #fef9c3; padding: 10px 12px; border-radius: 8px; }\n  .st-ws-questions { padding-left: 28px; }\n  .st-ws-questions > li { margin: 18px 0; }\n  .st-ws-prompt { font-weight: 600; margin: 0 0 6px; }\n  .st-ws-support { color: #374151; margin: 0 0 8px; }\n  .st-ws-answer { min-height: 96px; border: 1px solid #cbd5e1; border-radius: 8px; }\n  @media print { .st-ws-answer { min-height: 120px; } }\n</style>\n</head>\n<body>\n<main>\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
   }
 
+  function stBuildResourceCues(history, options) {
+    var list = Array.isArray(history) ? history : [];
+    var opts = options || {};
+    var out = [];
+    var max = Math.max(1, Math.min(200, Number(opts.limit) || 120));
+    var push = function (cue) {
+      if (!cue || out.length >= max) return;
+      var label = stCleanText(cue.label || cue.title || cue.term || cue.question || cue.text, 140);
+      var text = stCleanText(cue.text || cue.definition || cue.question || cue.prompt || label, 620);
+      var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
+      if (!label && !text && !imageSrc) return;
+      out.push({
+        id: stCleanText(cue.id || ('cue' + (out.length + 1)), 90),
+        kind: stCleanText(cue.kind || 'resource', 40),
+        label: label || 'Resource',
+        text: text,
+        imageSrc: imageSrc,
+        prompt: stCleanText(cue.prompt || text || label, 700),
+        sourceType: stCleanText(cue.sourceType || cue.type || 'resource', 50),
+        sourceTitle: stCleanText(cue.sourceTitle || '', 140),
+        sourceIndex: Math.max(0, Math.round(Number(cue.sourceIndex) || 0))
+      });
+    };
+    list.forEach(function (item, idx) {
+      if (!item) return;
+      var type = stCleanText(item.type || item.kind || '', 50).toLowerCase();
+      var title = stCleanText(item.title || item.name || item.label || type || 'Resource', 140);
+      var data = item.data != null ? item.data : item.content;
+      var baseId = stCleanText(item.id || item.resourceId || ('history-' + idx), 60);
+      if (type === 'glossary' && Array.isArray(data)) {
+        data.slice(0, 80).forEach(function (g, gi) {
+          var term = stCleanText(g && (g.term || g.word || g.label), 120);
+          var def = stCleanText(g && (g.definition || g.def || g.description || g.meaning), 620);
+          push({
+            id: baseId + '-term-' + gi,
+            kind: 'glossary',
+            label: term || ('Term ' + (gi + 1)),
+            text: def,
+            imageSrc: g && (g.image || g.imageUrl || g.imageSrc || g.src),
+            prompt: term ? ('Create a clear visual support for the glossary term "' + term + '". Definition: ' + def) : def,
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else if (type === 'image' || type === 'visual' || type === 'visuals') {
+        var img = data && (data.imageUrl || data.image || data.src || data.dataUrl);
+        push({
+          id: baseId + '-image',
+          kind: 'image',
+          label: title,
+          text: stCleanText((data && (data.alt || data.altText || data.caption || data.prompt)) || item.prompt || title, 620),
+          imageSrc: img,
+          prompt: stCleanText((data && data.prompt) || item.prompt || title, 700),
+          sourceType: type,
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      } else if (type === 'quiz' || type === 'assessment') {
+        var qs = Array.isArray(data) ? data : (data && (data.questions || data.items));
+        (Array.isArray(qs) ? qs : []).slice(0, 30).forEach(function (q, qi) {
+          push({
+            id: baseId + '-q-' + qi,
+            kind: 'question',
+            label: stCleanText(q && (q.question || q.prompt || q.text), 140) || ('Question ' + (qi + 1)),
+            text: stCleanText(q && (q.question || q.prompt || q.text), 620),
+            prompt: stCleanText(q && (q.question || q.prompt || q.text), 700),
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else if (type === 'outline' || type === 'lesson-plan' || type === 'lesson_plan') {
+        var sections = Array.isArray(data) ? data : (data && (data.sections || data.items || data.outline));
+        (Array.isArray(sections) ? sections : []).slice(0, 30).forEach(function (s, si) {
+          push({
+            id: baseId + '-section-' + si,
+            kind: 'section',
+            label: stCleanText(s && (s.title || s.heading || s.topic || s.text), 140) || ('Section ' + (si + 1)),
+            text: stCleanText(s && (s.summary || s.text || s.description || s.details), 620),
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else {
+        var txt = stCleanText(typeof data === 'string' ? data : (data && (data.text || data.summary || data.markdown || data.html)) || item.text || item.summary, 620);
+        if (txt || title) {
+          push({
+            id: baseId + '-resource',
+            kind: type || 'resource',
+            label: title,
+            text: txt,
+            sourceType: type || 'resource',
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        }
+      }
+    });
+    return out;
+  }
+
+  function stObjectsFromResourceCue(cue, options) {
+    cue = cue || {};
+    options = options || {};
+    var canvas = options.canvas || ST_CANVAS_PRESETS['letter-portrait'];
+    var x = Math.max(24, Math.min(stFiniteNumber(options.x, 56), Math.max(24, canvas.w - 200)));
+    var y = Math.max(24, Math.min(stFiniteNumber(options.y, 72), Math.max(24, canvas.h - 120)));
+    var w = Math.max(180, Math.min(stFiniteNumber(options.w, canvas.w - x - 56), canvas.w - x - 24));
+    var label = stCleanText(cue.label || cue.title || 'Resource', 160);
+    var text = stCleanText(cue.text || cue.definition || cue.prompt, 900);
+    var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
+    var source = {
+      origin: 'resource-history',
+      resourceId: stCleanText(cue.id, 90),
+      sourceTitle: stCleanText(cue.sourceTitle, 140),
+      sourceType: stCleanText(cue.sourceType || cue.kind, 50)
+    };
+    var objects = [];
+    if (label) {
+      var heading = stMakeText('heading2', label, { x: x, y: y, w: w, h: 44 }, { size: cue.kind === 'question' ? 20 : 24 });
+      heading.provenance = source;
+      objects.push(heading);
+      y += 52;
+    }
+    if (imageSrc) {
+      var imgW = Math.min(260, Math.max(180, Math.round(w * 0.36)));
+      var imgH = Math.min(220, Math.max(140, Math.round(imgW * 0.72)));
+      var image = stMakeImage(imageSrc, label || text || 'Resource image', { x: x + w - imgW, y: y, w: imgW, h: imgH }, 'resource-history');
+      image.provenance = source;
+      objects.push(image);
+      if (text && text !== label) {
+        var bodyW = Math.max(160, w - imgW - 20);
+        var body = stMakeText('body', text, { x: x, y: y, w: bodyW, h: Math.min(170, Math.max(80, imgH)) }, { size: 16 });
+        body.provenance = source;
+        objects.push(body);
+      }
+    } else if (text && text !== label) {
+      var bodyOnly = stMakeText('body', text, { x: x, y: y, w: w, h: cue.kind === 'question' ? 72 : 110 }, { size: 16 });
+      bodyOnly.provenance = source;
+      objects.push(bodyOnly);
+    }
+    if (cue.kind === 'question') {
+      var answerY = y + (text && text !== label ? 86 : 12);
+      var answer = stMakeShape('rect', { x: x, y: answerY, w: w, h: 96 }, '#f8fafc');
+      answer.provenance = source;
+      objects.push(answer);
+    }
+    return objects;
+  }
+
+  function stSuggestTextColor(doc, textObj) {
+    if (!doc || !textObj || textObj.type !== 'text') return null;
+    var run = (textObj.runs && textObj.runs[0]) || { style: {} };
+    var style = run.style || {};
+    var size = Math.max(8, Math.min(160, stFiniteNumber(style.size, 16)));
+    var large = size >= 24 || (style.bold && size >= 18);
+    var required = large ? 3 : 4.5;
+    var backgrounds = stTextBackgroundsFor(doc, textObj);
+    var candidates = ['#111827', '#000000', '#ffffff', '#1e293b'];
+    var best = null;
+    candidates.forEach(function (color) {
+      var ratio = backgrounds.reduce(function (worst, bg) { return Math.min(worst, stContrastRatio(color, bg)); }, Infinity);
+      if (!best || ratio > best.ratio) best = { color: color, ratio: ratio, passes: ratio >= required };
+    });
+    return best;
+  }
+
+  function stBuildReadyActions(doc) {
+    var analysis = stAnalyzeDoc(doc);
+    var status = analysis.counts.error ? 'blocked' : ((analysis.counts.warning || analysis.counts.review) ? 'review' : 'ready');
+    var actions = [];
+    analysis.issues.forEach(function (issue) {
+      if (actions.length >= 10) return;
+      var action = { type: 'select', targetId: issue.id || null, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message };
+      if (issue.type === 'alt') action.type = 'add-alt';
+      else if (issue.type === 'small-text') action.type = 'fix-small-text';
+      else if (issue.type === 'contrast') action.type = 'fix-contrast';
+      else if (issue.type === 'heading-order') action.type = 'review-heading';
+      else if (issue.type === 'reading-order') action.type = 'review-reading-order';
+      else if (issue.type === 'empty-image') action.type = 'select-image';
+      if (action.type === 'fix-contrast' && issue.id && doc && Array.isArray(doc.objects)) {
+        var o = doc.objects.filter(function (obj) { return obj && obj.id === issue.id; })[0];
+        var suggestion = stSuggestTextColor(doc, o);
+        if (suggestion) action.suggestedColor = suggestion.color;
+      }
+      actions.push(action);
+    });
+    return {
+      status: status,
+      counts: analysis.counts,
+      actions: actions,
+      title: status === 'ready' ? 'Ready to share' : status === 'blocked' ? 'Exports need attention' : 'Review before sharing',
+      message: status === 'ready' ? 'No accessibility issues found.' : status === 'blocked' ? 'Fix required items before accessible export.' : 'A few quality checks could improve this artifact.'
+    };
+  }
+
+  function stStyleKits() {
+    return [
+      { key: 'print', name: 'Print clean', background: '#ffffff', heading: '#111827', body: '#1f2937', shape: '#f8fafc' },
+      { key: 'calm', name: 'Calm focus', background: '#f8fafc', heading: '#0f766e', body: '#134e4a', shape: '#ccfbf1' },
+      { key: 'bold', name: 'Clear color', background: '#ffffff', heading: '#1d4ed8', body: '#111827', shape: '#dbeafe' },
+      { key: 'contrast', name: 'High contrast', background: '#ffffff', heading: '#000000', body: '#000000', shape: '#f3f4f6' }
+    ];
+  }
+
+  function stStyleKitPatch(doc, key) {
+    var kits = stStyleKits();
+    var kit = kits.filter(function (k) { return k.key === key; })[0] || kits[0];
+    var patches = [];
+    ((doc && doc.objects) || []).forEach(function (o) {
+      if (!o || !o.id) return;
+      if (o.type === 'text') {
+        var runs = stClone(o.runs || [{ text: '', style: {} }]);
+        if (!runs[0]) runs[0] = { text: '', style: {} };
+        runs[0].style = Object.assign({}, runs[0].style, { color: /^heading/.test(o.role || '') ? kit.heading : kit.body });
+        patches.push({ id: o.id, patch: { runs: runs } });
+      } else if (o.type === 'shape') {
+        patches.push({ id: o.id, patch: { fill: kit.shape } });
+      }
+    });
+    return { key: kit.key, name: kit.name, canvasFill: kit.background, patches: patches };
+  }
+
+  function stSelectionObjects(objects, ids) {
+    var wanted = {};
+    (Array.isArray(ids) ? ids : []).forEach(function (id) { if (id != null) wanted[String(id)] = true; });
+    return (Array.isArray(objects) ? objects : []).filter(function (o) { return o && o.id != null && wanted[String(o.id)]; });
+  }
+
+  function stSelectionBounds(objects, ids) {
+    var items = stSelectionObjects(objects, ids).filter(function (o) { return o.frame; });
+    if (!items.length) return null;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    items.forEach(function (o) {
+      var f = o.frame || {};
+      var x = stFiniteNumber(f.x, 0), y = stFiniteNumber(f.y, 0), w = Math.max(1, stFiniteNumber(f.w, 1)), h = Math.max(1, stFiniteNumber(f.h, 1));
+      minX = Math.min(minX, x); minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
+    });
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  }
+
+  function stAlignFramesAsGroup(objects, ids, mode) {
+    var bounds = stSelectionBounds(objects, ids);
+    if (!bounds) return [];
+    return stSelectionObjects(objects, ids).map(function (o) {
+      var f = stClone(o.frame || { x: 0, y: 0, w: 1, h: 1 });
+      if (mode === 'left') f.x = bounds.x;
+      else if (mode === 'hcenter') f.x = bounds.x + (bounds.w - f.w) / 2;
+      else if (mode === 'right') f.x = bounds.x + bounds.w - f.w;
+      else if (mode === 'top') f.y = bounds.y;
+      else if (mode === 'vcenter') f.y = bounds.y + (bounds.h - f.h) / 2;
+      else if (mode === 'bottom') f.y = bounds.y + bounds.h - f.h;
+      return { id: o.id, frame: f };
+    });
+  }
+
+  function stDistributeFramesAsGroup(objects, ids, axis) {
+    var key = axis === 'y' ? 'y' : 'x';
+    var sizeKey = key === 'x' ? 'w' : 'h';
+    var items = stSelectionObjects(objects, ids).filter(function (o) { return o.frame; }).sort(function (a, b) {
+      return stFiniteNumber(a.frame[key], 0) - stFiniteNumber(b.frame[key], 0);
+    });
+    if (items.length < 3) return [];
+    var first = items[0].frame;
+    var last = items[items.length - 1].frame;
+    var start = stFiniteNumber(first[key], 0);
+    var end = stFiniteNumber(last[key], 0) + Math.max(1, stFiniteNumber(last[sizeKey], 1));
+    var total = items.reduce(function (sum, o) { return sum + Math.max(1, stFiniteNumber(o.frame[sizeKey], 1)); }, 0);
+    var gap = (end - start - total) / (items.length - 1);
+    if (!isFinite(gap)) return [];
+    var cursor = start;
+    return items.map(function (o) {
+      var f = stClone(o.frame);
+      f[key] = cursor;
+      cursor += Math.max(1, stFiniteNumber(f[sizeKey], 1)) + gap;
+      return { id: o.id, frame: f };
+    });
+  }
+
+  function stMoveFramesAsGroup(objects, ids, dx, dy, canvas) {
+    var deltaX = stFiniteNumber(dx, 0);
+    var deltaY = stFiniteNumber(dy, 0);
+    return stSelectionObjects(objects, ids).filter(function (o) { return o.frame; }).map(function (o) {
+      var f = stClone(o.frame);
+      f.x = stFiniteNumber(f.x, 0) + deltaX;
+      f.y = stFiniteNumber(f.y, 0) + deltaY;
+      return { id: o.id, frame: canvas ? stClampFrame(f, canvas) : f };
+    });
+  }
+
+  function stBuildPortfolioArtifact(doc, opts) {
+    opts = opts || {};
+    var now = opts.now || new Date().toISOString();
+    var analysis = stAnalyzeDoc(doc);
+    var lifecycle = analysis.counts.error ? 'draft' : ((analysis.counts.warning || analysis.counts.review) ? 'review' : 'ready');
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var texts = objects.filter(function (o) { return o && o.type === 'text'; });
+    var images = objects.filter(function (o) { return o && o.type === 'image' && o.src; });
+    var worksheet = stExportWorksheetData(doc);
+    var items = [];
+    items.push({
+      id: 'overview',
+      title: 'Studio product overview',
+      toolLabel: 'AlloStudio',
+      privacy: 'summary',
+      text: 'Objects: ' + objects.length + '. Text blocks: ' + texts.length + '. Images: ' + images.length + '. Accessibility status: ' + lifecycle + '.'
+    });
+    if (worksheet.questions && worksheet.questions.length) {
+      items.push({
+        id: 'worksheet-questions',
+        title: 'Worksheet questions',
+        toolLabel: 'AlloStudio',
+        privacy: 'summary',
+        text: worksheet.questions.slice(0, 8).map(function (q, i) { return (i + 1) + '. ' + q.prompt; }).join('\n')
+      });
+    }
+    texts.slice(0, 6).forEach(function (o, i) {
+      var text = stCleanText(o.runs && o.runs[0] && o.runs[0].text, 900);
+      if (!text) return;
+      items.push({
+        id: o.id || ('text-' + i),
+        title: o.role === 'heading1' ? 'Main heading' : o.role === 'heading2' ? 'Section heading' : 'Text block ' + (i + 1),
+        toolLabel: 'AlloStudio',
+        privacy: 'summary',
+        text: text
+      });
+    });
+    images.slice(0, 4).forEach(function (o, i) {
+      items.push({
+        id: o.id || ('image-' + i),
+        title: 'Image ' + (i + 1),
+        toolLabel: 'AlloStudio',
+        privacy: o.decorative ? 'summary' : 'full',
+        text: o.decorative ? 'Decorative image.' : (stCleanText(o.alt, 500) || 'Image has no alt text yet.')
+      });
+    });
+    return {
+      id: 'allostudio-' + ((doc && doc.createdAt) || now) + '-' + stSlug(doc && doc.title, 'document'),
+      type: 'allostudio-document',
+      source: 'allostudio',
+      sourceLabel: 'AlloStudio',
+      kindLabel: worksheet.questions && worksheet.questions.length ? 'Accessible Worksheet' : 'Accessible Studio Product',
+      title: (doc && doc.title) || 'AlloStudio document',
+      summary: 'Born-accessible Studio product with ' + objects.length + ' object' + (objects.length === 1 ? '' : 's') + '. Status: ' + lifecycle + '.',
+      privacy: 'student-controlled',
+      lifecycleStatus: lifecycle,
+      version: 1,
+      createdAt: doc && doc.createdAt ? new Date(doc.createdAt).toISOString() : now,
+      updatedAt: now,
+      itemCount: objects.length,
+      items: items
+    };
+  }
+
+  function stRecentProjectSummary(doc, now) {
+    now = now || Date.now();
+    var at = typeof now === 'number' ? new Date(now).toISOString() : String(now);
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var analysis = stAnalyzeDoc(doc);
+    var textCount = objects.filter(function (o) { return o && o.type === 'text'; }).length;
+    var imageCount = objects.filter(function (o) { return o && o.type === 'image'; }).length;
+    return {
+      id: 'allostudio-' + ((doc && doc.createdAt) || 0) + '-' + stSlug(doc && doc.title, 'document'),
+      title: (doc && doc.title) || 'AlloStudio document',
+      updatedAt: at,
+      createdAt: doc && doc.createdAt ? new Date(doc.createdAt).toISOString() : at,
+      objectCount: objects.length,
+      textCount: textCount,
+      imageCount: imageCount,
+      issueCount: analysis.counts.error + analysis.counts.warning + analysis.counts.review,
+      blocked: !!analysis.counts.error
+    };
+  }
+
   // Convert a normalized selection rect (fractions 0..1 of the image) into an
   // integer pixel crop box clamped to the image, at least 1px each side.
   function stCropBox(imgW, imgH, rect) {
@@ -801,6 +1191,105 @@
 
   // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
 
+  function stReadRecentProjects() {
+    try {
+      var raw = localStorage.getItem(ST_RECENT_PROJECTS_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function stSaveRecentProject(doc, options) {
+    options = options || {};
+    var summary = stRecentProjectSummary(doc, options.now || Date.now());
+    var entry = Object.assign({}, summary, { doc: stClone(doc) });
+    var existing = stReadRecentProjects().filter(function (candidate) {
+      return candidate && candidate.id !== summary.id;
+    });
+    var next = [entry].concat(existing).slice(0, ST_RECENT_PROJECT_LIMIT);
+    try {
+      localStorage.setItem(ST_RECENT_PROJECTS_KEY, JSON.stringify(next));
+      return { ok: true, entry: entry, projects: next };
+    } catch (e) {
+      return { ok: false, entry: entry, projects: existing, error: e && e.message || 'localStorage unavailable' };
+    }
+  }
+
+  function stEnsureStudentArtifactStore() {
+    if (typeof window === 'undefined') return null;
+    window.AlloModules = window.AlloModules || {};
+    if (window.AlloModules.StudentArtifactStore && typeof window.AlloModules.StudentArtifactStore.save === 'function') return window.AlloModules.StudentArtifactStore;
+    var KEY = 'alloflow_student_artifacts';
+    var LIMIT = 80;
+    function read() {
+      try {
+        if (Array.isArray(window.__alloflowStudentArtifacts)) return window.__alloflowStudentArtifacts;
+        var raw = localStorage.getItem(KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) { return []; }
+    }
+    function normalize(artifact) {
+      artifact = (artifact && typeof artifact === 'object') ? Object.assign({}, artifact) : {};
+      var now = new Date().toISOString();
+      artifact.type = artifact.type || artifact.kind || 'student-product';
+      artifact.source = artifact.source || 'student-work';
+      artifact.sourceLabel = artifact.sourceLabel || (artifact.source === 'allostudio' ? 'AlloStudio' : 'Student work');
+      artifact.kindLabel = artifact.kindLabel || 'Student Product';
+      artifact.title = artifact.title || artifact.kindLabel;
+      artifact.summary = artifact.summary || 'Saved product';
+      artifact.privacy = artifact.privacy || 'student-controlled';
+      artifact.createdAt = artifact.createdAt || now;
+      artifact.updatedAt = artifact.updatedAt || artifact.createdAt;
+      artifact.itemCount = Number(artifact.itemCount || (Array.isArray(artifact.items) ? artifact.items.length : 0));
+      artifact.id = artifact.id || (String(artifact.type).replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() + '-' + Date.now());
+      return artifact;
+    }
+    function save(artifact, options) {
+      options = options || {};
+      var normalized = normalize(artifact);
+      var existing = read().slice();
+      var matchId = options.matchId || normalized.id;
+      var replaced = false;
+      var next = existing.map(function (candidate) {
+        if (options.replaceExisting !== false && matchId && candidate && candidate.id === matchId) {
+          replaced = true;
+          return normalized;
+        }
+        return candidate;
+      });
+      if (!replaced) next.unshift(normalized);
+      next = next.filter(Boolean).sort(function (a, b) {
+        return Date.parse((b && (b.updatedAt || b.createdAt)) || 0) - Date.parse((a && (a.updatedAt || a.createdAt)) || 0);
+      }).slice(0, options.limit || LIMIT);
+      try { window.__alloflowStudentArtifacts = next; } catch (_) {}
+      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (_) {}
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow-student-artifacts-changed', {
+          detail: { source: normalized.source, sourceLabel: normalized.sourceLabel, kindLabel: normalized.kindLabel, privacy: normalized.privacy, title: normalized.title, action: replaced ? 'updated' : 'saved', artifact: normalized, count: next.length }
+        }));
+      } catch (_) {}
+      return next;
+    }
+    return { read: read, save: save, normalize: normalize };
+  }
+
+  function stSavePortfolioArtifact(doc, options) {
+    var artifact = stBuildPortfolioArtifact(doc, options || {});
+    var store = stEnsureStudentArtifactStore();
+    if (!store || typeof store.save !== 'function') return { ok: false, artifact: artifact };
+    try {
+      var list = store.save(artifact, { source: 'allostudio', matchId: artifact.id });
+      return { ok: true, artifact: artifact, artifacts: list };
+    } catch (e) {
+      return { ok: false, artifact: artifact, error: e && e.message || 'save failed' };
+    }
+  }
+
   // ── Image crop (DOM canvas) — draw the crop box to a new canvas and return a
   // data URL. JPEG in → JPEG out (no alpha); everything else → PNG (alpha-safe).
   function stCropImageToDataUrl(src, box) {
@@ -921,11 +1410,17 @@
     var bump = function () { setTick(function (n) { return n + 1; }); };
     var _view = React.useState('templates'); var view = _view[0], setView = _view[1];
     var _sel = React.useState(null); var selectedId = _sel[0], setSelectedId = _sel[1];
+    var _multiSel = React.useState([]); var selectedIds = _multiSel[0], setSelectedIds = _multiSel[1];
     var _role = React.useState(props.initialRole === 'student' ? 'student' : 'teacher'); var role = _role[0], setRole = _role[1];
     var _scrub = React.useState(null); var scrubSeq = _scrub[0], setScrubSeq = _scrub[1];
     var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
     var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
+    var _templateFilter = React.useState('all'); var templateFilter = _templateFilter[0], setTemplateFilter = _templateFilter[1];
+    var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
+    var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
+    var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
     var _drag = React.useRef(null); // {id, mode:'move'|'resize', startX, startY, frame0}
+    var _skipFocusSelect = React.useRef(false);
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
     var fileRef = React.useRef(null);
     var loadRef = React.useRef(null);
@@ -992,18 +1487,44 @@
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'op failed'), 'error'); }
       return null;
     };
+    var clearSelection = function () { setSelectedId(null); setSelectedIds([]); };
+    var selectOnly = function (id) { setSelectedId(id || null); setSelectedIds(id ? [id] : []); };
+    var toggleSelection = function (id) {
+      if (!id) return;
+      var list = Array.isArray(selectedIds) ? selectedIds.slice() : [];
+      var at = list.indexOf(id);
+      if (at >= 0) list.splice(at, 1);
+      else list.push(id);
+      setSelectedIds(list);
+      setSelectedId(list.length ? (at >= 0 ? list[list.length - 1] : id) : null);
+    };
     var selected = doc && selectedId ? doc.objects.filter(function (o) { return o.id === selectedId; })[0] : null;
+    var selectionIds = (Array.isArray(selectedIds) ? selectedIds : []).filter(function (id) {
+      return doc && doc.objects.some(function (o) { return o && o.id === id; });
+    });
+    if (!selectionIds.length && selected) selectionIds = [selected.id];
+    var selectedGroup = doc ? stSelectionObjects(doc.objects, selectionIds) : [];
     var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
     var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
+    var ready = doc ? stBuildReadyActions(doc) : null;
+    var historyItems = [];
+    try {
+      historyItems = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : (Array.isArray(window.__alloflowHistory) ? window.__alloflowHistory : []));
+    } catch (_) { historyItems = []; }
+    var resourceCues = stBuildResourceCues(historyItems, { limit: 120 });
+    var resourceQuery = stCleanText(resourceSearch, 80).toLowerCase();
+    var visibleResourceCues = resourceQuery
+      ? resourceCues.filter(function (cue) { return [cue.label, cue.text, cue.kind, cue.sourceTitle, cue.sourceType].join(' ').toLowerCase().indexOf(resourceQuery) >= 0; })
+      : resourceCues;
 
     var startFromTemplate = function (tpl, preset) {
       _docRef.current = tpl.make(Date.now(), preset);
-      setView('edit'); setSelectedId(null);
+      setView('edit'); clearSelection();
       stAnnounce(TT('studio.a11y_started', 'Started a new document from template') + ': ' + tpl.name);
     };
 
     // ── object insertion ──
-    var selectFromOp = function (op) { if (op && op.object && op.object.id) setSelectedId(op.object.id); return op; };
+    var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
     var insertText = function (roleKind) {
       var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
       selectFromOp(dispatch({ type: 'object.add', object: obj }, 'user'));
@@ -1023,6 +1544,54 @@
         addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
       };
       r.readAsDataURL(f);
+    };
+    var insertResourceCue = function (cue) {
+      if (!doc || !cue) return;
+      var y = 72 + (doc.objects.length % 7) * 28;
+      var objects = stObjectsFromResourceCue(cue, { canvas: doc.canvas, x: 56, y: y, w: Math.max(220, doc.canvas.w - 112) });
+      var last = null;
+      objects.forEach(function (obj) {
+        last = dispatch({ type: 'object.add', object: obj }, 'import') || last;
+      });
+      if (last && last.object && last.object.id) selectOnly(last.object.id);
+      stAnnounce(TT('studio.resource_inserted_a11y', 'Resource inserted into Studio'));
+      addToast(TT('studio.resource_inserted', 'Resource added as editable Studio objects.'), 'success');
+    };
+    var applyReadyAction = function (action) {
+      if (!action) return;
+      if (action.targetId) selectOnly(action.targetId);
+      if (action.type === 'fix-small-text' && action.targetId) {
+        var small = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (small && small.type === 'text') {
+          var runs = stClone(small.runs || [{ text: '', style: {} }]);
+          if (!runs[0]) runs[0] = { text: '', style: {} };
+          runs[0].style = Object.assign({}, runs[0].style, { size: Math.max(12, stFiniteNumber(runs[0].style && runs[0].style.size, 16)) });
+          dispatch({ type: 'object.update', target: small.id, patch: { runs: runs } }, 'user');
+          stAnnounce(TT('studio.a11y_text_enlarged', 'Text size increased'));
+          return;
+        }
+      }
+      if (action.type === 'fix-contrast' && action.targetId && action.suggestedColor) {
+        var contrast = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (contrast && contrast.type === 'text') {
+          var cruns = stClone(contrast.runs || [{ text: '', style: {} }]);
+          if (!cruns[0]) cruns[0] = { text: '', style: {} };
+          cruns[0].style = Object.assign({}, cruns[0].style, { color: action.suggestedColor });
+          dispatch({ type: 'object.update', target: contrast.id, patch: { runs: cruns } }, 'user');
+          stAnnounce(TT('studio.a11y_contrast_fixed', 'Text contrast adjusted'));
+          return;
+        }
+      }
+      if (action.type === 'review-reading-order') {
+        stAnnounce(TT('studio.a11y_review_reading_order', 'Review the reading order list on the right'));
+        addToast(TT('studio.review_reading_order', 'Use the reading-order list on the right to match the screen-reader order.'), 'info');
+        return;
+      }
+      if (action.type === 'add-alt') {
+        stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'));
+      } else {
+        stAnnounce(action.title || TT('studio.a11y_ready_action', 'Ready to share action selected'));
+      }
     };
 
     // ── AI (Milestone B): generate image + suggest alt text ──
@@ -1109,7 +1678,12 @@
     var onObjectPointerDown = function (o, mode) {
       return function (ev) {
         ev.preventDefault(); ev.stopPropagation();
-        setSelectedId(o.id);
+        if (mode === 'move' && (ev.shiftKey || ev.ctrlKey || ev.metaKey)) {
+          _skipFocusSelect.current = true;
+          toggleSelection(o.id);
+          return;
+        }
+        selectOnly(o.id);
         _drag.current = { id: o.id, mode: mode, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame) };
         try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
       };
@@ -1142,16 +1716,22 @@
         if (moves[ev.key]) {
           ev.preventDefault(); ev.stopPropagation();
           var d = moves[ev.key];
-          if (ev.shiftKey) dispatch({ type: 'object.resize', target: o.id, w: f.w + d[0], h: f.h + d[1] }, 'user');
+          if (!ev.shiftKey && selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0) {
+            stMoveFramesAsGroup(doc.objects, selectionIds, d[0], d[1], doc.canvas).forEach(function (p) {
+              dispatch({ type: 'object.update', target: p.id, patch: { frame: p.frame } }, 'user');
+            });
+            stAnnounce(TT('studio.a11y_group_moved', 'Selected objects moved'));
+          } else if (ev.shiftKey) dispatch({ type: 'object.resize', target: o.id, w: f.w + d[0], h: f.h + d[1] }, 'user');
           else dispatch({ type: 'object.move', target: o.id, x: f.x + d[0], y: f.y + d[1] }, 'user');
         } else if (ev.key === 'Delete' || ev.key === 'Backspace') {
           ev.preventDefault(); ev.stopPropagation();
-          dispatch({ type: 'object.remove', target: o.id }, 'user');
-          setSelectedId(null);
+          var removeIds = selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0 ? selectionIds : [o.id];
+          removeIds.forEach(function (id) { dispatch({ type: 'object.remove', target: id }, 'user'); });
+          clearSelection();
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
           ev.stopPropagation(); // handled here — don't let the shell close the modal
-          setSelectedId(null);
+          clearSelection();
         }
       };
     };
@@ -1178,7 +1758,34 @@
       copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
       copy.z = stFiniteNumber(copy.z, 1) + 1;
       var op = dispatch({ type: 'object.add', object: copy }, 'user');
-      if (op && op.object && op.object.id) setSelectedId(op.object.id);
+      if (op && op.object && op.object.id) selectOnly(op.object.id);
+    };
+    var alignSelectedGroup = function (mode) {
+      if (selectedGroup.length < 2) return;
+      stAlignFramesAsGroup(doc.objects, selectionIds, mode).forEach(function (p) {
+        dispatch({ type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } }, 'user');
+      });
+      stAnnounce(TT('studio.a11y_group_aligned', 'Selected objects aligned'));
+    };
+    var distributeSelectedGroup = function (axis) {
+      if (selectedGroup.length < 3) return;
+      stDistributeFramesAsGroup(doc.objects, selectionIds, axis).forEach(function (p) {
+        dispatch({ type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } }, 'user');
+      });
+      stAnnounce(TT('studio.a11y_group_distributed', 'Selected objects distributed'));
+    };
+    var duplicateSelectedGroup = function () {
+      if (selectedGroup.length < 2) return;
+      var newIds = [];
+      selectedGroup.forEach(function (o, idx) {
+        var copy = stClone(o);
+        delete copy.id;
+        copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
+        copy.z = stFiniteNumber(copy.z, 1) + 1 + idx;
+        var op = dispatch({ type: 'object.add', object: copy }, 'user');
+        if (op && op.object && op.object.id) newIds.push(op.object.id);
+      });
+      if (newIds.length) { setSelectedIds(newIds); setSelectedId(newIds[newIds.length - 1]); }
     };
     var altFailures = doc ? stAltGate(doc.objects) : [];
     var download = function (blob, name) {
@@ -1237,7 +1844,25 @@
     };
     var saveDoc = function () {
       download(new Blob([JSON.stringify(doc, null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
+      var recent = stSaveRecentProject(doc);
+      setRecentTick(function (n) { return n + 1; });
       addToast(TT('studio.saved', '💾 Saved. The file includes your full process history — it stays on this device.'), 'success');
+      if (!recent.ok) addToast(TT('studio.recent_save_failed', 'Recent-project shelf could not update, but your file downloaded.'), 'info');
+    };
+    var saveToPortfolio = function () {
+      var result = stSavePortfolioArtifact(doc, { now: new Date().toISOString() });
+      if (result.ok) {
+        stAnnounce(TT('studio.portfolio_saved_a11y', 'AlloStudio product saved to portfolio'));
+        addToast(TT('studio.portfolio_saved', 'Saved a read-only product card to AlloHaven Portfolio.'), 'success');
+      } else {
+        addToast(TT('studio.portfolio_unavailable', 'Portfolio save was not available in this browser.'), 'error');
+      }
+    };
+    var applyStyleKit = function (key) {
+      var plan = stStyleKitPatch(doc, key);
+      dispatch({ type: 'canvas.background', fill: plan.canvasFill }, 'user');
+      plan.patches.forEach(function (p) { dispatch({ type: 'object.update', target: p.id, patch: p.patch }, 'user'); });
+      addToast(TT('studio.style_applied', 'Style kit applied') + ': ' + plan.name, 'success');
     };
     var onLoadFile = function (ev) {
       var f = ev.target.files && ev.target.files[0];
@@ -1251,7 +1876,7 @@
           if (errs.length) { addToast(TT('studio.load_failed', 'Could not open: ') + errs[0], 'error'); return; }
           if (!parsed._redo) parsed._redo = [];
           _docRef.current = parsed;
-          setView('edit'); setSelectedId(null); bump();
+          setView('edit'); clearSelection(); bump();
           addToast(TT('studio.loaded', '📂 Opened — process history intact.'), 'success');
         } catch (_) { addToast(TT('studio.load_failed', 'Could not open: ') + 'not valid JSON', 'error'); }
       };
@@ -1272,8 +1897,52 @@
       input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid ' + C.border, borderRadius: '6px', fontSize: '12px', background: C.inputBg, color: C.inputText },
     };
 
+    var templateCategoryFor = function (tpl) {
+      if (!tpl) return 'all';
+      if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport') return 'poster';
+      if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist') return 'worksheet';
+      if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast') return 'organizer';
+      if (tpl.key === 'blank') return 'blank';
+      return 'poster';
+    };
+    var templateFilters = [
+      ['all', TT('studio.templates_all', 'All')],
+      ['poster', TT('studio.templates_posters', 'Flyers & posters')],
+      ['worksheet', TT('studio.templates_worksheets', 'Worksheets')],
+      ['organizer', TT('studio.templates_organizers', 'Organizers')],
+      ['blank', TT('studio.templates_blank', 'Blank')]
+    ];
+    var renderTemplatePreview = function (tpl, preset) {
+      var previewDoc = null;
+      try { previewDoc = tpl.make(0, preset || 'letter-portrait'); } catch (_) { previewDoc = null; }
+      if (!previewDoc || !previewDoc.canvas) return h('div', { 'aria-hidden': true, style: { height: '88px', borderRadius: '8px', border: '1px dashed ' + C.border, background: C.panelAlt } });
+      var scale = Math.min(124 / previewDoc.canvas.w, 92 / previewDoc.canvas.h);
+      return h('div', { 'aria-hidden': true, style: { height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.panelAlt, border: '1px solid ' + C.border, borderRadius: '8px', overflow: 'hidden' } },
+        h('div', { style: { position: 'relative', width: previewDoc.canvas.w * scale + 'px', height: previewDoc.canvas.h * scale + 'px', background: (previewDoc.canvas.background && previewDoc.canvas.background.fill) || '#fff', boxShadow: '0 1px 6px rgba(15,23,42,0.22)', overflow: 'hidden' } },
+          stOrderedObjects(previewDoc.objects).slice(0, 18).map(function (o) {
+            var f = stClampFrame(o.frame, previewDoc.canvas);
+            var base = { position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px', width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1, boxSizing: 'border-box' };
+            if (o.type === 'shape') return h('div', { key: o.id, style: Object.assign({}, base, { background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '2px' }) });
+            if (o.type === 'image') return h('div', { key: o.id, style: Object.assign({}, base, { border: '1px dashed #94a3b8', background: '#f8fafc' }) });
+            var run = (o.runs && o.runs[0]) || { text: '', style: {} };
+            return h('div', { key: o.id, style: Object.assign({}, base, { color: (run.style && run.style.color) || '#111827', fontWeight: run.style && run.style.bold ? 800 : 500, fontSize: Math.max(2, ((run.style && run.style.size) || 16) * scale) + 'px', lineHeight: 1.1, overflow: 'hidden', textAlign: (run.style && run.style.align) || 'left' }) }, run.text);
+          })));
+    };
+    var openRecentProject = function (entry) {
+      if (!entry || !entry.doc) return;
+      var errs = stValidateDoc(entry.doc);
+      if (errs.length) { addToast(TT('studio.recent_invalid', 'That recent project could not be reopened.'), 'error'); return; }
+      _docRef.current = stClone(entry.doc);
+      if (!_docRef.current._redo) _docRef.current._redo = [];
+      setView('edit'); clearSelection(); bump();
+      addToast(TT('studio.recent_opened', 'Recent project opened.'), 'success');
+    };
+
     if (!doc || view === 'templates') {
       // ── template picker ──
+      var recentProjects = recentTick >= 0 ? stReadRecentProjects() : [];
+      var allTemplates = stTemplates();
+      var shownTemplates = templateFilter === 'all' ? allTemplates : allTemplates.filter(function (tpl) { return templateCategoryFor(tpl) === templateFilter; });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
         h('div', { ref: _shellRef, style: Object.assign({}, S.shell, { width: 'min(860px, 96vw)', height: 'auto', maxHeight: '92vh' }) },
@@ -1283,27 +1952,48 @@
             h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
-          h('div', { style: { padding: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
-            stTemplates().map(function (tpl) {
+          recentProjects.length ? h('div', { style: { padding: '12px 18px 0', borderBottom: '1px solid ' + C.border } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', marginBottom: '8px' } },
+              h('strong', { style: { fontSize: '12px', color: C.text } }, TT('studio.recent_projects', 'Recent projects')),
+              h('span', { style: { fontSize: '10px', color: C.muted } }, TT('studio.recent_local', 'Stored on this device'))),
+            h('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px' } },
+              recentProjects.slice(0, 6).map(function (entry) {
+                return h('button', { key: entry.id, onClick: function () { openRecentProject(entry); }, style: { minWidth: '160px', textAlign: 'left', padding: '9px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panelAlt, color: C.text, cursor: 'pointer' }, title: entry.title },
+                  h('strong', { style: { display: 'block', fontSize: '12px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, entry.title || 'AlloStudio document'),
+                  h('span', { style: { display: 'block', fontSize: '10px', color: C.muted, marginTop: '3px' } }, (entry.objectCount || 0) + ' objects - ' + (entry.blocked ? 'needs fixes' : 'ready/review')));
+              }))) : null,
+          h('div', { style: { padding: '12px 18px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': TT('studio.template_filters', 'Template filters') },
+            templateFilters.map(function (opt) {
+              var active = templateFilter === opt[0];
+              return h('button', { key: opt[0], onClick: function () { setTemplateFilter(opt[0]); }, 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '6px 10px', textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null) }, opt[1]);
+            })),
+          h('div', { style: { padding: '14px 18px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
+            shownTemplates.map(function (tpl) {
+              var category = templateFilters.filter(function (opt) { return opt[0] === templateCategoryFor(tpl); })[0];
               // Cards with an orientation choice render a fieldset of buttons
               // (a card can't be one <button> and also hold nested buttons).
               if (tpl.orientations) {
                 return h('div', { key: tpl.key, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '10px' } },
+                  renderTemplatePreview(tpl, 'letter-portrait'),
                   h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                     h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
                     h('span', null,
                       h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
+                      h('span', { style: { display: 'inline-block', margin: '4px 0', padding: '2px 7px', borderRadius: '999px', border: '1px solid ' + C.border, fontSize: '9px', color: C.muted, fontWeight: 800 } }, category ? category[1] : TT('studio.templates_blank', 'Blank')),
                       h('span', { style: { fontSize: '11px', color: C.muted } }, tpl.desc))),
                   h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
                     [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
                       return h('button', { key: opt[0], onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
                     })));
               }
-              return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'flex-start' } },
-                h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
-                h('span', null,
-                  h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
-                  h('span', { style: { fontSize: '11px', color: C.muted } }, tpl.desc)));
+              return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '10px' } },
+                renderTemplatePreview(tpl),
+                h('span', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
+                  h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
+                  h('span', null,
+                    h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
+                    h('span', { style: { display: 'inline-block', margin: '4px 0', padding: '2px 7px', borderRadius: '999px', border: '1px solid ' + C.border, fontSize: '9px', color: C.muted, fontWeight: 800 } }, category ? category[1] : TT('studio.templates_posters', 'Flyers & posters')),
+                    h('span', { style: { display: 'block', fontSize: '11px', color: C.muted, lineHeight: 1.35 } }, tpl.desc))));
             })),
           h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
             TT('studio.privacy_note', 'Everything stays on this device. Your document — including its full process history — lives in a local save file.')),
@@ -1355,7 +2045,7 @@
 
     function renderObject(o, scale, interactivity, extra, hh) {
       var f = interactivity ? liveFrameFor(o) : o.frame;
-      var isSel = interactivity && selectedId === o.id;
+      var isSel = interactivity && (selectedId === o.id || selectionIds.indexOf(o.id) >= 0);
       var base = {
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
@@ -1378,14 +2068,17 @@
       var labelText = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || 'text').slice(0, 40) : o.type === 'image' ? (o.alt || TT('studio.image_no_alt', 'image without alt text')) : (o.shape || 'shape');
       return hh('div', Object.assign({
         key: o.id, tabIndex: 0, role: 'group',
-        'aria-label': o.type + ': ' + labelText,
+        'aria-label': (isSel ? TT('studio.selected', 'Selected') + ' ' : '') + o.type + ': ' + labelText,
         style: base,
         onPointerDown: onObjectPointerDown(o, 'move'),
         onPointerMove: onCanvasPointerMove,
         onPointerUp: onCanvasPointerUp,
         onKeyDown: onObjectKeyDown(o),
         onDoubleClick: o.type === 'text' ? function () { setEditingText({ id: o.id, value: (o.runs && o.runs[0] && o.runs[0].text) || '' }); } : undefined,
-        onFocus: function () { setSelectedId(o.id); },
+        onFocus: function () {
+          if (_skipFocusSelect.current) { _skipFocusSelect.current = false; return; }
+          selectOnly(o.id);
+        },
       }, extra),
         inner,
         isSel ? hh('div', {
@@ -1408,18 +2101,68 @@
         }) : null);
     }
 
+    var objectSummary = function (o, n) {
+      var max = n || 34;
+      if (!o) return TT('studio.object', 'Object');
+      if (o.type === 'text') {
+        var txt = stCleanText(o.runs && o.runs[0] && o.runs[0].text, max);
+        return txt || TT('studio.text_block', 'Text block');
+      }
+      if (o.type === 'image') {
+        if (o.decorative) return TT('studio.decorative_image', 'Decorative image');
+        var alt = stCleanText(o.alt, max);
+        return alt ? TT('studio.image', 'Image') + ': ' + alt : TT('studio.image_no_alt_short', 'Image without alt');
+      }
+      return o.shape === 'ellipse' ? TT('studio.ellipse', 'Ellipse') : TT('studio.rectangle', 'Rectangle');
+    };
+    var layoutButton = function (label, aria, fn, disabled) {
+      return h('button', {
+        style: Object.assign({}, S.tool, { textAlign: 'center', padding: '7px 4px', fontSize: '11px' }, disabled ? { opacity: 0.45, cursor: 'default' } : null),
+        disabled: !!disabled,
+        onClick: fn,
+        title: aria,
+        'aria-label': aria
+      }, label);
+    };
     var orderList = doc.objects.map(function (o, i) {
-      var text = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || '').slice(0, 26) : o.type === 'image' ? (o.alt ? o.alt.slice(0, 26) : TT('studio.image_no_alt_short', '(no alt yet)')) : (o.shape || 'shape');
+      var text = objectSummary(o, 28);
       var icon = o.type === 'text' ? (o.role === 'body' ? '¶' : 'H') : o.type === 'image' ? '🖼️' : '⬛';
-      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectedId === o.id ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
-        h('button', { onClick: function () { setSelectedId(o.id); }, style: { flex: 1, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
+      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectionIds.indexOf(o.id) >= 0 ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
+        h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
         h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
         h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
 
     var propPanel = null;
-    if (selected) {
+    if (selectedGroup.length > 1) {
+      propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+        h('div', { style: S.label }, TT('studio.group_selection', 'Selection') + ' - ' + selectedGroup.length + ' objects'),
+        h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } },
+          TT('studio.group_hint', 'Use Shift/Ctrl-click on the canvas to add or remove objects from this group.')),
+        h('div', { style: S.label }, 'Align group'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
+          layoutButton('Left', 'Align selected objects left', function () { alignSelectedGroup('left'); }),
+          layoutButton('Center', 'Center selected objects horizontally', function () { alignSelectedGroup('hcenter'); }),
+          layoutButton('Right', 'Align selected objects right', function () { alignSelectedGroup('right'); }),
+          layoutButton('Top', 'Align selected objects top', function () { alignSelectedGroup('top'); }),
+          layoutButton('Middle', 'Center selected objects vertically', function () { alignSelectedGroup('vcenter'); }),
+          layoutButton('Bottom', 'Align selected objects bottom', function () { alignSelectedGroup('bottom'); })),
+        h('div', { style: S.label }, 'Distribute'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
+          layoutButton('Horizontal', 'Distribute selected objects horizontally', function () { distributeSelectedGroup('x'); }, selectedGroup.length < 3),
+          layoutButton('Vertical', 'Distribute selected objects vertically', function () { distributeSelectedGroup('y'); }, selectedGroup.length < 3)),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
+          h('button', { style: S.tool, onClick: duplicateSelectedGroup }, 'Duplicate'),
+          h('button', { style: S.tool, onClick: clearSelection }, 'Clear')),
+        h('div', { style: S.label }, 'Objects'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: '110px', overflowY: 'auto' } },
+          selectedGroup.map(function (o) {
+            var label = objectSummary(o, 38);
+            return h('button', { key: o.id, style: Object.assign({}, S.tool, { padding: '5px 7px', fontSize: '10.5px' }), onClick: function () { selectOnly(o.id); }, title: label, 'aria-label': TT('studio.edit_single_object', 'Edit single object') + ': ' + label },
+              label);
+          })));
+    } else if (selected) {
       var frameInput = function (key, label) {
         return h('label', { style: { fontSize: '10px', color: C.muted, display: 'flex', flexDirection: 'column', gap: '2px' } }, label,
           h('input', { type: 'number', value: selected.frame[key], style: S.input, 'aria-label': label,
@@ -1429,17 +2172,24 @@
               else dispatch({ type: 'object.resize', target: selected.id, w: key === 'w' ? v : selected.frame.w, h: key === 'h' ? v : selected.frame.h }, 'user');
             } }));
       };
+      var textRunsFor = function (o) {
+        var runs = stClone((o && o.runs) || [{ text: '', style: {} }]);
+        if (!runs[0]) runs[0] = { text: '', style: {} };
+        runs[0].style = Object.assign({}, runs[0].style);
+        return runs;
+      };
+      var selectedTextStyle = (selected.runs && selected.runs[0] && selected.runs[0].style) || {};
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' — ' + selected.type),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } }, frameInput('x', 'X'), frameInput('y', 'Y'), frameInput('w', TT('studio.width', 'Width')), frameInput('h', TT('studio.height', 'Height'))),
         h('div', { style: S.label }, 'Layout'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
-          h('button', { style: S.tool, onClick: function () { alignSelected('left'); }, title: 'Align left' }, 'L'),
-          h('button', { style: S.tool, onClick: function () { alignSelected('hcenter'); }, title: 'Center horizontally' }, 'C'),
-          h('button', { style: S.tool, onClick: function () { alignSelected('right'); }, title: 'Align right' }, 'R'),
-          h('button', { style: S.tool, onClick: function () { alignSelected('top'); }, title: 'Align top' }, 'T'),
-          h('button', { style: S.tool, onClick: function () { alignSelected('vcenter'); }, title: 'Center vertically' }, 'M'),
-          h('button', { style: S.tool, onClick: function () { alignSelected('bottom'); }, title: 'Align bottom' }, 'B')),
+          layoutButton('Left', 'Align selected object left', function () { alignSelected('left'); }),
+          layoutButton('Center', 'Center selected object horizontally', function () { alignSelected('hcenter'); }),
+          layoutButton('Right', 'Align selected object right', function () { alignSelected('right'); }),
+          layoutButton('Top', 'Align selected object top', function () { alignSelected('top'); }),
+          layoutButton('Middle', 'Center selected object vertically', function () { alignSelected('vcenter'); }),
+          layoutButton('Bottom', 'Align selected object bottom', function () { alignSelected('bottom'); })),
         h('div', { style: { display: 'flex', gap: '4px' } },
           h('button', { style: S.tool, onClick: duplicateSelected }, 'Duplicate'),
           h('button', { style: S.tool, onClick: function () { alignSelected('page-width'); } }, 'Page width')),
@@ -1451,26 +2201,26 @@
             onKeyDown: function (e) { e.stopPropagation(); },
             onBlur: function (e) { commitTextEdit(selected, e.target.value); } })) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.font_size', 'Font size'),
-          h('input', { type: 'number', min: 8, max: 120, value: (selected.runs[0].style && selected.runs[0].style.size) || 16, style: S.input, onChange: function (e) { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; var runs = stClone(selected.runs); runs[0].style.size = Math.max(8, Math.min(120, v)); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
+          h('input', { type: 'number', min: 8, max: 120, value: selectedTextStyle.size || 16, style: S.input, onChange: function (e) { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; var runs = textRunsFor(selected); runs[0].style.size = Math.max(8, Math.min(120, v)); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
         selected.type === 'text' ? h('div', null,
           h('div', { style: S.label }, TT('studio.text_align', 'Text alignment & weight')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
             ['left', 'center', 'right'].map(function (al) {
-              var curAlign = (selected.runs[0].style && selected.runs[0].style.align) || 'left';
+              var curAlign = selectedTextStyle.align || 'left';
               var active = curAlign === al;
               return h('button', { key: al, style: Object.assign({}, S.tool, { textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null),
                 'aria-pressed': active, 'aria-label': TT('studio.align_text', 'Align text') + ' ' + al, title: TT('studio.align_text', 'Align text') + ' ' + al,
-                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { align: al }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } },
+                onClick: function () { var runs = textRunsFor(selected); runs[0].style = Object.assign({}, runs[0].style, { align: al }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } },
                 al === 'left' ? 'L' : al === 'center' ? 'C' : 'R');
             }),
             (function () {
-              var bold = !!(selected.runs[0].style && selected.runs[0].style.bold);
+              var bold = !!selectedTextStyle.bold;
               return h('button', { key: 'bold', style: Object.assign({}, S.tool, { textAlign: 'center', fontWeight: 900 }, bold ? { borderColor: C.accent, background: C.selectedBg } : null),
                 'aria-pressed': bold, 'aria-label': TT('studio.bold', 'Bold'), title: TT('studio.bold', 'Bold'),
-                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
+                onClick: function () { var runs = textRunsFor(selected); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
             })())) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_color', 'Text color'),
-          h('input', { type: 'color', value: (selected.runs[0].style && selected.runs[0].style.color) || '#111827', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { var runs = stClone(selected.runs); runs[0].style.color = e.target.value; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
+          h('input', { type: 'color', value: selectedTextStyle.color || '#111827', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { var runs = textRunsFor(selected); runs[0].style.color = e.target.value; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
         selected.type === 'shape' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.fill', 'Fill'),
           h('input', { type: 'color', value: selected.fill || '#dbeafe', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: e.target.value } }, 'user'); } })) : null,
         selected.type === 'image' ? h('div', null,
@@ -1494,7 +2244,7 @@
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only — reading order is the list)') }, '⬆ z'),
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, (selected.z || 1) - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '⬇ z'),
-          h('button', { style: Object.assign({}, S.tool, { color: '#b91c1c', borderColor: '#fca5a5' }), onClick: function () { dispatch({ type: 'object.remove', target: selected.id }, 'user'); setSelectedId(null); } }, '🗑')));
+          h('button', { style: Object.assign({}, S.tool, { color: '#b91c1c', borderColor: '#fca5a5' }), onClick: function () { dispatch({ type: 'object.remove', target: selected.id }, 'user'); clearSelection(); } }, '🗑')));
     }
 
     // Ctrl+Z / Ctrl+Y (and Ctrl+Shift+Z) — skipped while typing in a field so
@@ -1508,7 +2258,7 @@
       if (ev.key === 'Escape') {
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
         ev.preventDefault();
-        if (selectedId) { setSelectedId(null); return; }
+        if (selectedId || selectionIds.length) { clearSelection(); return; }
         if (typeof props.onClose === 'function') props.onClose();
         return;
       }
@@ -1535,19 +2285,26 @@
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
           h('span', { style: { marginLeft: 'auto' } }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
+          h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
           h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
         preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
-          h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '150px' } }, 'Accessibility Preflight',
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors · ' + preflight.counts.warning + ' warnings · ' + preflight.counts.review + ' review')),
+          h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
+            h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : '')),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: 1 } },
-            preflight.issues.length ? preflight.issues.slice(0, 8).map(function (issue, idx) {
-              var bg = issue.severity === 'error' ? '#fee2e2' : issue.severity === 'warning' ? '#fef3c7' : C.panel;
-              var fg = issue.severity === 'error' ? '#7f1d1d' : issue.severity === 'warning' ? '#78350f' : C.text;
-              return h('button', { key: idx, style: { border: '1px solid ' + (issue.severity === 'review' ? C.border : 'transparent'), background: bg, color: fg, borderRadius: '8px', padding: '5px 8px', cursor: issue.id ? 'pointer' : 'default', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
-                onClick: function () { if (issue.id) { setSelectedId(issue.id); stAnnounce(issue.title); } },
-                title: issue.message }, issue.title)
-            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, 'No accessibility issues found.'))) : null,
+            ready && ready.actions.length ? ready.actions.slice(0, 8).map(function (action, idx) {
+              var bg = action.severity === 'error' ? '#fee2e2' : action.severity === 'warning' ? '#fef3c7' : C.panel;
+              var fg = action.severity === 'error' ? '#7f1d1d' : action.severity === 'warning' ? '#78350f' : C.text;
+              var label = action.type === 'fix-small-text' ? TT('studio.fix_small_text', 'Make text readable')
+                : action.type === 'fix-contrast' ? TT('studio.fix_contrast', 'Improve contrast')
+                  : action.type === 'add-alt' ? TT('studio.add_alt', 'Add alt text')
+                    : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
+                      : action.title;
+              return h('button', { key: idx, style: { border: '1px solid ' + (action.severity === 'review' ? C.border : 'transparent'), background: bg, color: fg, borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
+                onClick: function () { applyReadyAction(action); },
+                title: action.message }, label);
+            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, TT('studio.no_a11y_issues', 'No accessibility issues found.')))) : null,
         // export panel
         exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
@@ -1557,11 +2314,12 @@
           h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')),
           h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
           h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
+          h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.save_portfolio', 'Save to Portfolio')),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: '#b91c1c', fontWeight: 700 } },
             '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
             altFailures.map(function (m) {
               return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
-                onClick: function () { setSelectedId(m.id); stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.')); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
+                onClick: function () { selectOnly(m.id); stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.')); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
             })) : h('span', { style: { fontSize: '11px', color: '#166534', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
         // body
         h('div', { style: S.body },
@@ -1580,6 +2338,33 @@
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAiGenPrompt(e.target.value); } }),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? '… ' + TT('studio.ai_generating', 'Generating…') : '✨ ' + TT('studio.ai_generate', 'Generate')),
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_gen_note', 'Logged as AI in your process. You still add alt text.'))) : null,
+            h('button', { style: Object.assign({}, S.tool, resourceOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
+              TT('studio.resource_shelf', 'Source shelf') + ' ' + resourceCues.length),
+            resourceOpen ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
+              h('input', { type: 'search', value: resourceSearch, placeholder: TT('studio.resource_search', 'Search source history'), 'aria-label': TT('studio.resource_search', 'Search source history'), style: S.input,
+                onKeyDown: function (e) { e.stopPropagation(); },
+                onChange: function (e) { setResourceSearch(e.target.value); } }),
+              visibleResourceCues.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '230px', overflowY: 'auto' } },
+                visibleResourceCues.slice(0, 18).map(function (cue) {
+                  return h('div', { key: cue.id, style: { border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '7px', color: C.text } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
+                      h('strong', { style: { fontSize: '11px', overflowWrap: 'anywhere' } }, cue.label),
+                      h('span', { style: { flexShrink: 0, color: C.muted, fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' } }, cue.kind || 'resource')),
+                    cue.sourceTitle ? h('div', { style: { color: C.soft, fontSize: '9.5px', marginTop: '2px' } }, cue.sourceTitle) : null,
+                    cue.text ? h('p', { style: { margin: '4px 0 6px', color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, cue.text.slice(0, 150) + (cue.text.length > 150 ? '...' : '')) : null,
+                    h('button', { style: Object.assign({}, S.tool, { width: '100%', textAlign: 'center', padding: '6px 8px' }), onClick: function () { insertResourceCue(cue); } }, TT('studio.insert_resource', 'Insert')));
+                })) : h('p', { style: { color: C.muted, fontSize: '10.5px', lineHeight: 1.35, margin: 0 } },
+                resourceCues.length ? TT('studio.no_resource_matches', 'No matching resources found.') : TT('studio.no_resources', 'No source history resources are available yet.'))) : null,
+            h('div', { style: S.label }, TT('studio.style_kits', 'Style kits')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }, role: 'group', 'aria-label': TT('studio.style_kits', 'Style kits') },
+              stStyleKits().map(function (kit) {
+                return h('button', { key: kit.key, style: Object.assign({}, S.tool, { padding: '6px', minHeight: '54px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '4px' }), onClick: function () { applyStyleKit(kit.key); }, title: kit.name },
+                  h('span', { style: { display: 'flex', gap: '3px', alignItems: 'center' }, 'aria-hidden': true },
+                    h('span', { style: { width: '16px', height: '14px', borderRadius: '3px', border: '1px solid ' + C.border, background: kit.background } }),
+                    h('span', { style: { width: '16px', height: '14px', borderRadius: '3px', border: '1px solid ' + C.border, background: kit.heading } }),
+                    h('span', { style: { width: '16px', height: '14px', borderRadius: '3px', border: '1px solid ' + C.border, background: kit.shape } })),
+                  h('span', { style: { fontSize: '10.5px', lineHeight: 1.15, color: C.text } }, kit.name));
+              })),
             h('div', { style: S.label }, TT('studio.page', 'Page')),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.canvas_size', 'Page size'),
               h('select', { value: ST_CANVAS_PRESETS[doc.canvas.preset] ? doc.canvas.preset : 'custom', style: S.input, 'aria-label': TT('studio.canvas_size', 'Page size'),
@@ -1590,11 +2375,11 @@
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.background', 'Background'),
               h('input', { type: 'color', value: (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'canvas.background', fill: e.target.value }, 'user'); } })),
-            h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Tab focuses objects; arrows move, Shift+arrows resize, Delete removes. The panel on the right is the reading order.'))),
+            h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
-          h('div', { style: { flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px' }, onPointerDown: function () { setSelectedId(null); } },
+          h('div', { style: { flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px' }, onPointerDown: clearSelection },
             h('div', { style: { position: 'relative', width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
-              onPointerDown: function (e) { e.stopPropagation(); setSelectedId(null); },
+              onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
               onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp },
               doc.objects.map(function (o) { return renderObject(o, SCALE, true, {}, h); }))),
           // right: reading order + properties
@@ -1656,6 +2441,21 @@
   AlloStudio.stCropBox = stCropBox;
   AlloStudio.stScrubObjectSrc = stScrubObjectSrc;
   AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;
+  AlloStudio.stBuildResourceCues = stBuildResourceCues;
+  AlloStudio.stObjectsFromResourceCue = stObjectsFromResourceCue;
+  AlloStudio.stSuggestTextColor = stSuggestTextColor;
+  AlloStudio.stBuildReadyActions = stBuildReadyActions;
+  AlloStudio.stStyleKits = stStyleKits;
+  AlloStudio.stStyleKitPatch = stStyleKitPatch;
+  AlloStudio.stSelectionBounds = stSelectionBounds;
+  AlloStudio.stAlignFramesAsGroup = stAlignFramesAsGroup;
+  AlloStudio.stDistributeFramesAsGroup = stDistributeFramesAsGroup;
+  AlloStudio.stMoveFramesAsGroup = stMoveFramesAsGroup;
+  AlloStudio.stBuildPortfolioArtifact = stBuildPortfolioArtifact;
+  AlloStudio.stRecentProjectSummary = stRecentProjectSummary;
+  AlloStudio.stReadRecentProjects = stReadRecentProjects;
+  AlloStudio.stSaveRecentProject = stSaveRecentProject;
+  AlloStudio.stSavePortfolioArtifact = stSavePortfolioArtifact;
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
   AlloStudio.ST_CHECKPOINT_EVERY = ST_CHECKPOINT_EVERY;

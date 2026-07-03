@@ -23,8 +23,9 @@ export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'lear
   await waitLoader();
 
   // Mode picker is divs with role="button" + aria-label starting with "Full Platform"/"Learning Tools"/etc
-  const target = mode === 'learning' ? /Learning Tools/i : /Full Platform/i;
-  const card = page.getByRole('button', { name: target }).first();
+  const card = mode === 'learning'
+    ? page.locator('[role="button"][aria-label^="Learning Tools."]').first()
+    : page.locator('[role="button"][aria-label^="Full Platform."]').first();
 
   console.log('Waiting for mode picker card to be visible...');
   await card.waitFor({ state: 'visible', timeout: 30000 });

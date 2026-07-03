@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T20:42:08.284Z",
+  "generatedAt": "2026-07-03T00:28:18.091Z",
   "harness": "public module visual fixture",
   "screenshotDir": "a11y-audit\\sel_visual_qa",
   "summary": {
@@ -366,7 +366,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 111912
+            "bytes": 114277
           }
         },
         {
@@ -422,7 +422,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 104266
+            "bytes": 108934
           }
         },
         {
@@ -479,7 +479,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 103595
+            "bytes": 109300
           }
         },
         {
@@ -535,7 +535,7 @@
           "id": "nonblank-screenshot",
           "pass": true,
           "details": {
-            "bytes": 39515
+            "bytes": 39606
           }
         },
         {

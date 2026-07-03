@@ -2973,17 +2973,67 @@ return React.createElement("div", {
         React.createElement("canvas", {
           'data-titration-anim': 'true',
           ref: function(cvEl) {
-            if (!cvEl) return;
-            if (cvEl._ttAnim) return;
+            if (!cvEl) {
+              try { if (window.__alloTitrationAnimCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
+              return;
+            }
+            if (cvEl._ttCleanup) cvEl._ttCleanup();
+            else if (cvEl._ttAnim) { cancelAnimationFrame(cvEl._ttAnim); cvEl._ttAnim = null; }
+            try { if (window.__alloTitrationAnimCleanup && window.__alloTitrationAnimCleanup !== cvEl._ttCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
             var c2 = cvEl.getContext('2d');
+            if (!c2) return;
             var W = cvEl.offsetWidth || 600;
             var H = cvEl.offsetHeight || 220;
             cvEl.width = W * 2; cvEl.height = H * 2;
-            c2.scale(2, 2);
+            if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+            else c2.scale(2, 2);
             var start = performance.now();
+            var alive = true;
+            var reducedMotion = false;
+            var ro = null;
+            try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            function isTitrationHidden() { return typeof document !== 'undefined' && !!document.hidden; }
+            function cancelTitrationFrame() {
+              if (cvEl._ttAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._ttAnim);
+              cvEl._ttAnim = null;
+            }
+            function scheduleTitrationFrame() {
+              if (!alive || reducedMotion || cvEl._ttAnim || isTitrationHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              cvEl._ttAnim = requestAnimationFrame(drawTt);
+            }
+            function cleanupTitrationAnim() {
+              alive = false;
+              cancelTitrationFrame();
+              if (ro) ro.disconnect();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onTitrationVisibilityChange);
+              if (window.__alloTitrationAnimCleanup === cvEl._ttCleanup) window.__alloTitrationAnimCleanup = null;
+              cvEl._ttCleanup = null;
+            }
+            function onTitrationVisibilityChange() {
+              if (!alive) return;
+              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              if (isTitrationHidden()) cancelTitrationFrame();
+              else { cancelTitrationFrame(); drawTt(); }
+            }
+            function resizeTitrationCanvas() {
+              if (!alive || !cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              cancelTitrationFrame();
+              W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 220;
+              cvEl.width = W * 2; cvEl.height = H * 2;
+              if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+              else c2.scale(2, 2);
+              drawTt();
+            }
+            cvEl._ttCleanup = cleanupTitrationAnim;
+            try { window.__alloTitrationAnimCleanup = cvEl._ttCleanup; } catch (e) {}
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onTitrationVisibilityChange);
             function drawTt() {
-              if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ttAnim); return; }
-              var t = (performance.now() - start) / 1000;
+              if (!alive) return;
+              cvEl._ttAnim = null;
+              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              if (isTitrationHidden()) { cancelTitrationFrame(); return; }
+              var t = reducedMotion ? 5 : (performance.now() - start) / 1000;
               var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
               // pH at this point: classic S-curve
               var pH;
@@ -3089,15 +3139,13 @@ return React.createElement("div", {
               c2.fillRect(8, H - 18, W - 16, 16);
               c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
               c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
-              cvEl._ttAnim = requestAnimationFrame(drawTt);
+              scheduleTitrationFrame();
             }
             drawTt();
-            var ro = new ResizeObserver(function() {
-              if (!cvEl.isConnected) { ro.disconnect(); return; }
-              W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-              cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
-            });
-            ro.observe(cvEl);
+            if (typeof ResizeObserver === 'function') {
+              ro = new ResizeObserver(resizeTitrationCanvas);
+              ro.observe(cvEl);
+            }
           },
           style: { width: '100%', height: '100%', display: 'block' }
         })

@@ -375,6 +375,115 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(md).toContain('#1 Added text');
     expect(md).toContain('#2 Edited text');
   });
+  it('builds ready-to-share actions with safe fix affordances', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Ready', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#ffffff', decorative: true, frame: { x: 0, y: 0, w: 816, h: 1056 }, z: 1 } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny pale text', style: { size: 10, color: '#fefefe' } }] } }, 'user', T0);
+    addImage(d, 'data:image/png;base64,x', '');
+    const ready = ST.stBuildReadyActions(d);
+    expect(ready.status).toBe('blocked');
+    expect(ready.actions.map(a => a.type)).toEqual(expect.arrayContaining(['add-alt', 'fix-small-text', 'fix-contrast']));
+    const contrast = ready.actions.find(a => a.type === 'fix-contrast');
+    expect(contrast.suggestedColor).toMatch(/^#/);
+  });
+});
+
+describe('resource shelf + portfolio continuity helpers', () => {
+  it('normalizes mixed resource history into insertable cues', () => {
+    const history = [
+      { id: 'g1', type: 'glossary', title: 'Water cycle terms', data: [{ term: 'Evaporation', definition: 'Liquid water becomes vapor.' }] },
+      { id: 'q1', type: 'quiz', title: 'Check', data: { questions: [{ question: 'Why does condensation happen?' }] } },
+      { id: 'i1', type: 'image', title: 'Cloud diagram', data: { src: 'data:image/png;base64,abc', alt: 'Cloud diagram' } },
+      { id: 'bad', type: 'image', title: 'Remote image', data: { src: 'https://example.com/x.png' } }
+    ];
+    const cues = ST.stBuildResourceCues(history, { limit: 10 });
+    expect(cues.map(c => c.kind)).toEqual(expect.arrayContaining(['glossary', 'question', 'image']));
+    expect(cues.find(c => c.label === 'Cloud diagram').imageSrc).toMatch(/^data:image/);
+    expect(cues.find(c => c.label === 'Remote image').imageSrc).toBe('');
+  });
+  it('turns a resource cue into editable Studio objects with import provenance', () => {
+    const objects = ST.stObjectsFromResourceCue({
+      id: 'term-1',
+      kind: 'glossary',
+      label: 'Habitat',
+      text: 'The place where a living thing gets what it needs.',
+      imageSrc: 'data:image/png;base64,abc',
+      sourceTitle: 'Science pack'
+    }, { canvas: ST.ST_CANVAS_PRESETS['letter-portrait'], x: 40, y: 50, w: 500 });
+    expect(objects.map(o => o.type)).toEqual(expect.arrayContaining(['text', 'image']));
+    expect(objects.every(o => o.provenance && o.provenance.origin === 'resource-history')).toBe(true);
+    expect(objects.find(o => o.type === 'image').alt).toBe('Habitat');
+  });
+  it('builds a compact AlloStudio portfolio artifact without embedding image bytes', () => {
+    const d = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,ORIGINAL', alt: 'Diagram', decorative: false, frame: { x: 0, y: 0, w: 100, h: 80 }, z: 5 } }, 'import', T0);
+    const artifact = ST.stBuildPortfolioArtifact(d, { now: '2026-07-03T12:00:00.000Z' });
+    expect(artifact.sourceLabel).toBe('AlloStudio');
+    expect(artifact.kindLabel).toBe('Accessible Worksheet');
+    expect(artifact.lifecycleStatus).toBe('review');
+    expect(artifact.items.some(item => /Question 1/.test(item.text))).toBe(true);
+    expect(JSON.stringify(artifact)).not.toMatch(/ORIGINAL/);
+  });
+  it('summarizes recent projects without copying the full document', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Recent One', T0);
+    addText(d, 'hello');
+    const summary = ST.stRecentProjectSummary(d, '2026-07-03T12:00:00.000Z');
+    expect(summary.id).toContain('recent-one');
+    expect(summary.objectCount).toBe(1);
+    expect(summary.updatedAt).toBe('2026-07-03T12:00:00.000Z');
+    expect(summary).not.toHaveProperty('doc');
+  });
+});
+
+describe('Studio visual ergonomics helpers', () => {
+  it('builds a style-kit patch for page, text, and shapes without touching images', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Style Kit', T0);
+    const heading = addText(d, 'Water Cycle', 'heading1').object.id;
+    const body = addText(d, 'Evaporation and condensation.', 'body').object.id;
+    const shape = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#ffffff', frame: { x: 20, y: 80, w: 160, h: 80 }, z: 2 } }, 'user', T0).object.id;
+    const image = addImage(d, 'data:image/png;base64,x', 'Diagram').object.id;
+    const plan = ST.stStyleKitPatch(d, 'calm');
+    expect(plan.canvasFill).toBe('#f8fafc');
+    expect(plan.patches.find(p => p.id === heading).patch.runs[0].style.color).toBe('#0f766e');
+    expect(plan.patches.find(p => p.id === body).patch.runs[0].style.color).toBe('#134e4a');
+    expect(plan.patches.find(p => p.id === shape).patch.fill).toBe('#ccfbf1');
+    expect(plan.patches.some(p => p.id === image)).toBe(false);
+  });
+  it('computes selection bounds and group alignment patches', () => {
+    const objects = [
+      { id: 'a', frame: { x: 10, y: 20, w: 100, h: 40 } },
+      { id: 'b', frame: { x: 180, y: 80, w: 60, h: 30 } }
+    ];
+    expect(ST.stSelectionBounds(objects, ['a', 'b'])).toEqual({ x: 10, y: 20, w: 230, h: 90 });
+    const right = ST.stAlignFramesAsGroup(objects, ['a', 'b'], 'right');
+    expect(right.find(p => p.id === 'a').frame.x).toBe(140);
+    expect(right.find(p => p.id === 'b').frame.x).toBe(180);
+    const middle = ST.stAlignFramesAsGroup(objects, ['a', 'b'], 'vcenter');
+    expect(middle.find(p => p.id === 'a').frame.y).toBe(45);
+    expect(middle.find(p => p.id === 'b').frame.y).toBe(50);
+  });
+  it('distributes three selected frames along either axis', () => {
+    const objects = [
+      { id: 'a', frame: { x: 0, y: 0, w: 50, h: 20 } },
+      { id: 'b', frame: { x: 80, y: 40, w: 50, h: 20 } },
+      { id: 'c', frame: { x: 200, y: 100, w: 50, h: 20 } }
+    ];
+    const horizontal = ST.stDistributeFramesAsGroup(objects, ['a', 'b', 'c'], 'x');
+    expect(horizontal.map(p => Math.round(p.frame.x))).toEqual([0, 100, 200]);
+    const vertical = ST.stDistributeFramesAsGroup(objects, ['a', 'b', 'c'], 'y');
+    expect(vertical.map(p => Math.round(p.frame.y))).toEqual([0, 50, 100]);
+    expect(ST.stDistributeFramesAsGroup(objects, ['a', 'b'], 'x')).toEqual([]);
+  });
+  it('moves selected frames as a group and clamps them to the canvas', () => {
+    const canvas = { w: 220, h: 120 };
+    const objects = [
+      { id: 'a', frame: { x: 0, y: 0, w: 50, h: 20 } },
+      { id: 'b', frame: { x: 190, y: 100, w: 50, h: 30 } }
+    ];
+    const moved = ST.stMoveFramesAsGroup(objects, ['a', 'b'], 20, 10, canvas);
+    expect(moved.find(p => p.id === 'a').frame).toEqual({ x: 20, y: 10, w: 50, h: 20, rotation: 0 });
+    expect(moved.find(p => p.id === 'b').frame).toEqual({ x: 170, y: 90, w: 50, h: 30, rotation: 0 });
+  });
 });
 
 describe('in-editor crop (math + privacy: removed pixels do not persist)', () => {

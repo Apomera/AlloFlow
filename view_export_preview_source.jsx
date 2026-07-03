@@ -47,7 +47,7 @@ function ExportPreviewView(props) {
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
     setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt,
     setExportTheme, setIsAgentRunning, setShowBrandProfileEditor, setShowExportPreview, showExportPreview,
-    t,
+    t, theme,
     toggleA11yInspect, updateExportPreview,
     exportPreviewSource,
   } = props;
@@ -78,7 +78,7 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label={t("a11y.doc_builder")}
+          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label={t("a11y.doc_builder")}
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
             onKeyDown={(e) => { if (e.key === 'Escape') setShowExportPreview(false); }}
             ref={(el) => {
@@ -105,6 +105,7 @@ function ExportPreviewView(props) {
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
+                    <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
                   </div>

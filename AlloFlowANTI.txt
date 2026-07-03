@@ -1227,45 +1227,51 @@ window.QUANTITY_DISCRIMINATION_PROBES = null;
 window.NWF_PROBE_BANKS = null;
 window.LNF_PROBE_BANKS = null;
 window.RAN_PROBE_BANKS = null;
+const fetchProbeJson = async (localPath, remoteUrl) => {
+    const sources = [localPath, remoteUrl].filter(Boolean);
+    let lastError = null;
+    for (const source of sources) {
+        try {
+            const response = await fetch(source);
+            if (!response.ok) throw new Error('Network response was not ok');
+            return await response.json();
+        } catch (err) {
+            lastError = err;
+        }
+    }
+    throw lastError || new Error('Probe data could not be loaded');
+};
 const loadProbeBanks = async () => {
     loadWordAudioBank(); // Background fetch word audio when probes launch
     if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES && window.MATH_PROBE_BANKS && window.MISSING_NUMBER_PROBES && window.QUANTITY_DISCRIMINATION_PROBES && window.NWF_PROBE_BANKS && window.LNF_PROBE_BANKS && window.RAN_PROBE_BANKS) return;
     try {
-        const response = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const probeData = await response.json();
+        const probeData = await fetchProbeJson('psychometric_probes.json', 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_probes.json');
         if (probeData.BENCHMARK_PROBE_BANKS) window.BENCHMARK_PROBE_BANKS = probeData.BENCHMARK_PROBE_BANKS;
         if (probeData.ORF_SCREENING_PASSAGES) window.ORF_SCREENING_PASSAGES = probeData.ORF_SCREENING_PASSAGES;
         console.log('[Probes] Psychometric probes loaded via JSON');
     } catch (err) {
-        console.error('Failed to load psychometric probes:', err);
+        console.warn('Failed to load psychometric probes:', err);
     }
     if (!window.MATH_PROBE_BANKS) {
         try {
-            const mathResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json');
-            if (mathResp.ok) {
-                const mathData = await mathResp.json();
-                if (mathData.MATH_PROBE_BANKS) window.MATH_PROBE_BANKS = mathData.MATH_PROBE_BANKS;
-                if (mathData.MISSING_NUMBER_PROBES) window.MISSING_NUMBER_PROBES = mathData.MISSING_NUMBER_PROBES;
-                if (mathData.QUANTITY_DISCRIMINATION_PROBES) window.QUANTITY_DISCRIMINATION_PROBES = mathData.QUANTITY_DISCRIMINATION_PROBES;
-                console.log('[Probes] Math probes loaded via JSON');
-            }
+            const mathData = await fetchProbeJson('psychometric_math_probes.json', 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_math_probes.json');
+            if (mathData.MATH_PROBE_BANKS) window.MATH_PROBE_BANKS = mathData.MATH_PROBE_BANKS;
+            if (mathData.MISSING_NUMBER_PROBES) window.MISSING_NUMBER_PROBES = mathData.MISSING_NUMBER_PROBES;
+            if (mathData.QUANTITY_DISCRIMINATION_PROBES) window.QUANTITY_DISCRIMINATION_PROBES = mathData.QUANTITY_DISCRIMINATION_PROBES;
+            console.log('[Probes] Math probes loaded via JSON');
         } catch (err) {
-            console.error('Failed to load math probes:', err);
+            console.warn('Failed to load math probes:', err);
         }
     }
     if (!window.NWF_PROBE_BANKS) {
         try {
-            const litResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json');
-            if (litResp.ok) {
-                const litData = await litResp.json();
-                if (litData.NWF_PROBE_BANKS) window.NWF_PROBE_BANKS = litData.NWF_PROBE_BANKS;
-                if (litData.LNF_PROBE_BANKS) window.LNF_PROBE_BANKS = litData.LNF_PROBE_BANKS;
-                if (litData.RAN_PROBE_BANKS) window.RAN_PROBE_BANKS = litData.RAN_PROBE_BANKS;
-                console.log('[Probes] Literacy probes loaded via JSON');
-            }
+            const litData = await fetchProbeJson('psychometric_literacy_probes.json', 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/psychometric_literacy_probes.json');
+            if (litData.NWF_PROBE_BANKS) window.NWF_PROBE_BANKS = litData.NWF_PROBE_BANKS;
+            if (litData.LNF_PROBE_BANKS) window.LNF_PROBE_BANKS = litData.LNF_PROBE_BANKS;
+            if (litData.RAN_PROBE_BANKS) window.RAN_PROBE_BANKS = litData.RAN_PROBE_BANKS;
+            console.log('[Probes] Literacy probes loaded via JSON');
         } catch (err) {
-            console.error('Failed to load literacy probes:', err);
+            console.warn('Failed to load literacy probes:', err);
         }
     }
 };
@@ -2083,6 +2089,7 @@ const getIconForType = (type) => {
         case 'simplified': return <BookOpen size={16} />;
         case 'glossary': return <Globe size={16} />;
         case 'quiz': return <CheckSquare size={16} />;
+        case 'video-transcript': return <FileText size={16} />;
         case 'image': return <ImageIcon size={16} />;
         case 'outline': return <Layout size={16} />;
         case 'analysis': return <Search size={16} />;
@@ -18600,6 +18607,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           return; // do NOT fall through to the default activeView swap
       }
+      if (item && item.type === 'video-transcript') {
+          const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
+          if (transcript) setInputText(transcript);
+          setSourceTopic(String(item.data?.title || item.title || 'Video transcript').replace(/\s+transcript$/i, '').slice(0, 120));
+          setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id });
+          setActiveSidebarTab('create');
+          setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+          setActiveView('input');
+          addToast('Video transcript loaded into Source. Use the existing quiz and support tools from there.', 'success');
+          return;
+      }
       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
       setActiveView(item.type === 'word-sounds' ? 'word-sounds-generator' : item.type);
       setIsMapLocked(false);
@@ -18739,6 +18757,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'simplified': return t('simplified.title');
           case 'outline': return t('outline.title');
           case 'image': return t('visuals.title');
+          case 'video-transcript': return 'Video Transcript';
           case 'quiz': return t('quiz.title');
           case 'analysis': return t('analysis.title');
           case 'udl-advice': return t('sidebar.ai_guide');
@@ -22727,6 +22746,93 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       });
     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
   };
+  const videoTranscriptSourceContext = useMemo(() => {
+    if (!generatedContent || generatedContent.type !== 'video-transcript') return null;
+    const data = generatedContent.data || {};
+    const transcript = String(generatedContent.text || generatedContent.content || data.transcript || inputText || '').trim();
+    if (!transcript) return null;
+    const title = String(data.title || generatedContent.title || sourceTopic || 'Video transcript')
+      .replace(/\s+transcript$/i, '')
+      .trim() || 'Video transcript';
+    const cueCount = Array.isArray(data.cues) ? data.cues.length : 0;
+    const chapterCount = Array.isArray(data.chapters) ? data.chapters.length : 0;
+    const durationSeconds = Number(data.duration) || 0;
+    const durationLabel = durationSeconds > 0
+      ? `${Math.floor(durationSeconds / 60)}:${String(Math.round(durationSeconds % 60)).padStart(2, '0')}`
+      : '';
+    return {
+      title,
+      transcript,
+      cueCount,
+      chapterCount,
+      durationLabel,
+      wordCount: transcript.split(/\s+/).filter(Boolean).length
+    };
+  }, [generatedContent, inputText, sourceTopic]);
+  const handleTranscriptSourceAction = useCallback((action) => {
+    const context = videoTranscriptSourceContext;
+    if (!context) {
+      addToast('No video transcript is loaded in Source yet.', 'info');
+      return;
+    }
+
+    if (action === 'dismiss') {
+      setGeneratedContent(null);
+      setActiveView('input');
+      addToast('Transcript shortcuts hidden. The source text is still available.', 'info');
+      return;
+    }
+
+    const actionToolMap = {
+      quiz: 'quiz',
+      glossary: 'glossary',
+      'note-taking': 'note-taking',
+      'anchor-chart': 'anchor-chart',
+      simplified: 'simplified'
+    };
+    const toolId = actionToolMap[action];
+    setInputText(context.transcript);
+    setSourceTopic(context.title);
+    setActiveSidebarTab('create');
+    setExpandedTools(prev => {
+      const needed = ['source-input', ...(toolId ? [toolId] : [])];
+      return Array.from(new Set([...needed, ...prev]));
+    });
+
+    const transcriptGuidance = 'Use this as a video lesson transcript. Focus on the taught ideas, examples, vocabulary, teacher explanations, and likely misconceptions. Do not ask students to recall timestamps unless the timing matters.';
+    const actions = {
+      quiz: () => {
+        setQuizMode('exit-ticket');
+        handleGenerate('quiz', null, false, context.transcript, {
+          quizMode: 'exit-ticket',
+          quizMcqCount: 4,
+          customInstructions: `${transcriptGuidance} Create a concise exit ticket from the transcript.`
+        });
+      },
+      glossary: () => handleGenerate('glossary', null, false, context.transcript, {
+        customInstructions: `${transcriptGuidance} Prioritize academic and domain vocabulary from the transcript.`
+      }),
+      'note-taking': () => {
+        setNoteTakingTemplateType('guided-notes');
+        handleGenerate('note-taking', null, false, context.transcript, {
+          templateType: 'guided-notes',
+          customInstructions: `${transcriptGuidance} Turn the transcript into guided notes with clear blanks and checkpoints.`
+        });
+      },
+      'anchor-chart': () => {
+        setAnchorChartType('concept-map');
+        handleGenerate('anchor-chart', null, false, context.transcript, {
+          chartType: 'concept-map',
+          customInstructions: `${transcriptGuidance} Create an anchor chart that distills the lesson into the most important ideas.`
+        });
+      },
+      simplified: () => handleGenerate('simplified', null, false, context.transcript, {
+        customInstructions: `${transcriptGuidance} Rewrite the transcript as a clear, student-facing summary.`
+      })
+    };
+
+    if (actions[action]) actions[action]();
+  }, [videoTranscriptSourceContext, addToast, handleGenerate, setActiveSidebarTab, setActiveView, setAnchorChartType, setExpandedTools, setGeneratedContent, setInputText, setNoteTakingTemplateType, setQuizMode, setSourceTopic]);
   const handleGenerateFullPack = async (chatContextOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     if (_m && typeof _m.handleGenerateFullPack === "function") return _m.handleGenerateFullPack(chatContextOverride, {
@@ -26565,6 +26671,57 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               </div>
             </div>
             {/* ── SourceInputPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+            {expandedTools.includes('source-input') && videoTranscriptSourceContext && (
+              <div className="mx-3 mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-emerald-800">
+                      <FileText size={13} />
+                      Video transcript loaded
+                    </div>
+                    <div className="mt-1 truncate text-sm font-bold text-slate-800">
+                      {videoTranscriptSourceContext.title}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-600">
+                      <span>{videoTranscriptSourceContext.wordCount.toLocaleString()} words</span>
+                      {videoTranscriptSourceContext.cueCount > 0 && <span>{videoTranscriptSourceContext.cueCount.toLocaleString()} caption lines</span>}
+                      {videoTranscriptSourceContext.chapterCount > 0 && <span>{videoTranscriptSourceContext.chapterCount} chapters</span>}
+                      {videoTranscriptSourceContext.durationLabel && <span>{videoTranscriptSourceContext.durationLabel}</span>}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleTranscriptSourceAction('dismiss')}
+                    className="shrink-0 rounded-full border border-emerald-200 bg-white p-1.5 text-slate-600 hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    aria-label="Hide transcript shortcuts"
+                    title="Hide transcript shortcuts"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {[
+                    { action: 'quiz', label: 'Exit ticket', icon: <CheckSquare size={13} /> },
+                    { action: 'glossary', label: 'Glossary', icon: <Globe size={13} /> },
+                    { action: 'note-taking', label: 'Guided notes', icon: <ClipboardList size={13} /> },
+                    { action: 'anchor-chart', label: 'Anchor chart', icon: <Layout size={13} /> },
+                    { action: 'simplified', label: 'Summary', icon: <BookOpen size={13} /> }
+                  ].map(item => (
+                    <button
+                      key={item.action}
+                      type="button"
+                      onClick={() => handleTranscriptSourceAction(item.action)}
+                      disabled={isProcessing}
+                      className="flex min-h-[34px] items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 transition-colors hover:bg-emerald-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {item.icon}
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* SourceInputPanel extracted to view_sidebar_panels_module.js (CDN). */}
             {expandedTools.includes('source-input') && window.AlloModules && window.AlloModules.SourceInputPanel && React.createElement(window.AlloModules.SourceInputPanel, {
           expandedTools, addToast, aiStandardQuery, aiStandardRegion, callGeminiVision,
           generationStep, gradeLevel, handleAddStandard, handleAiUrlSearch, handleFindStandards,
@@ -29764,6 +29921,38 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 callGemini: callGemini,
                 history: history,
                 sourceTopic: sourceTopic,
+                onSendTranscriptToFlow: (resource) => {
+                    const transcript = String(resource?.text || resource?.content || resource?.data?.transcript || '').trim();
+                    if (!transcript) throw new Error('Transcript is empty.');
+                    const titleBase = String(resource?.data?.title || resource?.title || 'Video transcript').replace(/\s+transcript$/i, '').trim().slice(0, 120) || 'Video transcript';
+                    const captionCount = Array.isArray(resource?.data?.cues) ? resource.data.cues.length : 0;
+                    const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                    const item = {
+                        id: newId,
+                        type: 'video-transcript',
+                        title: `${titleBase} transcript`,
+                        text: transcript,
+                        content: transcript,
+                        data: {
+                            ...(resource?.data || {}),
+                            title: titleBase,
+                            transcript
+                        },
+                        meta: captionCount ? `${captionCount} caption line${captionCount === 1 ? '' : 's'} from Video Studio` : 'Video Studio transcript',
+                        timestamp: new Date(),
+                        config: {},
+                        source: 'video_studio'
+                    };
+                    setHistory(prev => [...prev, item]);
+                    setInputText(transcript);
+                    setSourceTopic(titleBase);
+                    setGeneratedContent(item);
+                    setActiveSidebarTab('create');
+                    setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+                    setActiveView('input');
+                    addToast('Transcript sent to Source. Use the existing quiz and support tools from there.', 'success');
+                    return { id: newId };
+                },
                 onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
         </CDNModuleGate>
@@ -29774,6 +29963,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 addToast,
                 t,
                 initialRole: 'teacher',
+                history: history,
+                resourceHistory: history,
                 // Born-accessible tagged PDF (docs/studio_design.md §6): the studio's
                 // reading-order HTML rides the SAME typeset tagged-PDF path the
                 // remediation pipeline uses. Returns false on failure so the studio
