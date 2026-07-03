@@ -19852,8 +19852,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               style: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }
             }, __alloT('stem.flightsim.stem_lab', '\u2190 STEM Lab'))
           ),
+          // Cockpit briefing
+          (function() {
+            var depWp = WAYPOINTS.find(function(w) { return w.id === (d.planDep || 'kpwm'); }) || WAYPOINTS[0];
+            var destWp = WAYPOINTS.find(function(w) { return w.id === (d.planDest || 'kjfk'); }) || WAYPOINTS[1];
+            var dist = depWp && destWp ? Math.round(haversineNm(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) : 0;
+            var hdg = depWp && destWp ? Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) : 0;
+            var cruiseKts = Math.max(1, Math.round(currentAC.maxSpeed * 0.59 * 0.75));
+            var estMin = dist ? Math.max(1, Math.round(dist / cruiseKts * 60)) : 0;
+            var flightMinutes = Math.floor((d.totalFlightTime || 0) / 60);
+            var discoveryCount = Object.keys(d.geoDiscovered || {}).length;
+            var badgeCount = Object.keys(earnedBadges).length;
+            var launchStyle = { padding: '11px 12px', borderRadius: '8px', border: '1px solid rgba(125,211,252,0.35)', background: 'linear-gradient(135deg, #0369a1, #0ea5e9)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', textAlign: 'center', boxShadow: '0 10px 24px rgba(14,165,233,0.22)' };
+            var secondaryStyle = { padding: '11px 12px', borderRadius: '8px', border: '1px solid rgba(148,163,184,0.24)', background: 'rgba(15,23,42,0.72)', color: '#dbeafe', fontSize: '12px', fontWeight: 800, cursor: 'pointer', textAlign: 'center' };
+            return h('section', {
+              'data-flightsim-briefing': 'true',
+              'aria-labelledby': 'skyschool-briefing-title',
+              style: { margin: '12px 24px 14px', padding: '16px', borderRadius: '8px', background: 'linear-gradient(135deg, rgba(7,22,43,0.96), rgba(12,74,110,0.72) 54%, rgba(20,83,45,0.42))', border: '1px solid rgba(125,211,252,0.24)', boxShadow: '0 18px 40px rgba(2,6,23,0.32)', color: '#fff' }
+            },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px', alignItems: 'stretch' } },
+                h('div', null,
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
+                    h('div', { style: { width: '42px', height: '42px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,165,233,0.16)', border: '1px solid rgba(125,211,252,0.24)', fontSize: '24px' } }, '\u2708\uFE0F'),
+                    h('div', null,
+                      h('h2', { id: 'skyschool-briefing-title', style: { margin: 0, fontSize: '24px', lineHeight: 1.05, fontWeight: 900, color: '#f8fafc' } }, __alloT('stem.flightsim.skyschool_cockpit_briefing', 'SkySchool Cockpit Briefing')),
+                      h('div', { style: { fontSize: '12px', color: '#bae6fd', marginTop: '4px' } }, __alloT('stem.flightsim.learn_to_fly_learn_the_world', 'Learn to fly. Learn the world.'))
+                    )
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '6px', marginBottom: '10px' } },
+                    [
+                      ['Aircraft', currentAC.name.split(' ')[0], currentAC.category, '#7dd3fc'],
+                      ['Route', depWp.code + ' to ' + destWp.code, dist + ' nm', '#fbbf24'],
+                      ['Progress', flightMinutes + ' min', (visitedAirports.length || 0) + ' airports', '#86efac'],
+                      ['Badges', badgeCount + '/' + ACHIEVEMENTS.length, discoveryCount + ' finds', '#c4b5fd']
+                    ].map(function(stat) {
+                      return h('div', { key: stat[0], style: { minHeight: '62px', padding: '8px', borderRadius: '8px', background: 'rgba(2,6,23,0.48)', border: '1px solid rgba(148,163,184,0.18)' } },
+                        h('div', { style: { fontSize: '9px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 800 } }, stat[0]),
+                        h('div', { style: { fontSize: '13px', color: stat[3], fontWeight: 900, marginTop: '3px', lineHeight: 1.15 } }, stat[1]),
+                        h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '3px', lineHeight: 1.2 } }, stat[2])
+                      );
+                    })
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '8px' } },
+                    h('button', {
+                      onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
+                      style: launchStyle,
+                      'aria-label': __alloT('stem.flightsim.free_flight_from_portland_me', 'Free Flight from Portland, ME')
+                    }, __alloT('stem.flightsim.free_flight', 'Free Flight')),
+                    h('button', {
+                      onClick: function() { createFlightPlan(d.planDep || 'kpwm', d.planDest || 'kjfk'); startFlying(d.planDep || 'kpwm'); },
+                      style: secondaryStyle,
+                      'aria-label': __alloT('stem.flightsim.file_flight_plan_depart', 'File Flight Plan and Depart')
+                    }, __alloT('stem.flightsim.file_route', 'File Route')),
+                    h('button', {
+                      onClick: function() { upd('view', 'learn'); },
+                      style: secondaryStyle,
+                      'aria-label': __alloT('stem.flightsim.open_learn_mode', 'Open Learn mode')
+                    }, __alloT('stem.flightsim.learn', 'Learn')),
+                    h('button', {
+                      onClick: function() { upd('view', 'preflight'); },
+                      style: secondaryStyle,
+                      'aria-label': __alloT('stem.flightsim.open_pre_flight_checklist', 'Open pre-flight checklist')
+                    }, __alloT('stem.flightsim.pre_flight', 'Pre-Flight'))
+                  )
+                ),
+                h('div', { style: { borderRadius: '8px', background: 'rgba(2,6,23,0.42)', border: '1px solid rgba(125,211,252,0.18)', padding: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' } },
+                  h('svg', { viewBox: '0 0 360 158', preserveAspectRatio: 'xMidYMid meet', style: { width: '100%', height: 'auto', display: 'block' }, 'aria-hidden': 'true' },
+                    h('defs', null,
+                      h('linearGradient', { id: 'skyschoolRouteGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                        h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                        h('stop', { offset: '65%', stopColor: '#fbbf24' }),
+                        h('stop', { offset: '100%', stopColor: '#4ade80' })
+                      )
+                    ),
+                    h('rect', { x: '8', y: '8', width: '344', height: '142', rx: '8', fill: '#020617', opacity: '0.75' }),
+                    h('path', { d: 'M40 114 C96 58 151 46 192 74 C230 100 274 103 322 42', fill: 'none', stroke: 'url(#skyschoolRouteGrad)', strokeWidth: '5', strokeLinecap: 'round' }),
+                    h('path', { d: 'M189 64 l24 12 -25 11 6 -12 z', fill: '#f8fafc', opacity: '0.92' }),
+                    h('circle', { cx: '40', cy: '114', r: '8', fill: '#38bdf8' }),
+                    h('circle', { cx: '322', cy: '42', r: '8', fill: '#4ade80' }),
+                    h('text', { x: '40', y: '136', textAnchor: 'middle', fontSize: '12', fill: '#e0f2fe', fontWeight: '700' }, depWp.code),
+                    h('text', { x: '322', y: '30', textAnchor: 'middle', fontSize: '12', fill: '#dcfce7', fontWeight: '700' }, destWp.code),
+                    h('text', { x: '180', y: '134', textAnchor: 'middle', fontSize: '11', fill: '#fef3c7', fontWeight: '700' }, String(hdg).padStart(3, '0') + ' deg / ' + estMin + ' min')
+                  ),
+                  h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#cbd5e1', lineHeight: 1.45 } },
+                    __alloT('stem.flightsim.cockpit_briefing_summary', 'Default mission: depart Portland, build airspeed, rotate near 60 knots, then follow the route or explore landmarks.')
+                  )
+                )
+              )
+            );
+          })(),
           // Header
-          h('div', { style: { textAlign: 'center', padding: '16px 24px 8px' } },
+          false && h('div', { style: { textAlign: 'center', padding: '16px 24px 8px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, '\u2708\uFE0F'),
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
             h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, __alloT('stem.flightsim.learn_to_fly_learn_the_world', 'Learn to fly. Learn the world.')),
@@ -19865,7 +19954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Welcome guide for new users (shows when no flight time)
-          !(d.totalFlightTime > 0) && h('div', { style: { margin: '0 24px 12px', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1))', border: '1px solid rgba(99,102,241,0.25)' } },
+          false && !(d.totalFlightTime > 0) && h('div', { style: { margin: '0 24px 12px', padding: '12px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(59,130,246,0.1))', border: '1px solid rgba(99,102,241,0.25)' } },
             h('div', { style: { fontSize: '12px', fontWeight: 800, color: '#a5b4fc', marginBottom: '6px' } }, __alloT('stem.flightsim.first_time_here_s_how_to_get_airborne', '\uD83C\uDFAE First Time? Here\u2019s How to Get Airborne:')),
             h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: 1.6 } },
               __alloT('stem.flightsim.1_click_free_flight_below_to_start_on_', '1. Click "Free Flight" below to start on a runway'), h('br'),
@@ -19876,7 +19965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             )
           ),
           // Quick Fly — more prominent with description
-          h('div', { style: { padding: '0 24px 12px' } },
+          false && h('div', { style: { padding: '0 24px 12px' } },
             h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
               style: { width: '100%', padding: '16px', borderRadius: '14px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
             }, __alloT('stem.flightsim.free_flight_from_portland_me', '\uD83D\uDEEB Free Flight from Portland, ME')),

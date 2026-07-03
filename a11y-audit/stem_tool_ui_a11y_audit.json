@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T00:25:32.475Z",
+  "generatedAt": "2026-07-03T00:53:34.374Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 174,
+    "issueCount": 173,
     "errorCount": 0,
-    "warningCount": 157,
+    "warningCount": 156,
     "noticeCount": 17,
-    "toolsWithIssues": 72,
+    "toolsWithIssues": 71,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 66,
+    "toolsWithWarnings": 65,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -79,7 +79,7 @@
       "applied": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 18,
+        "warningCount": 17,
         "noticeCount": 0
       },
       "life-skills": {
@@ -233,27 +233,6 @@
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
-      "code": "heading",
-      "severity": "warning",
-      "count": 16,
-      "toolCount": 16,
-      "exampleTools": [
-        "archStudio",
-        "astronomy",
-        "bridgeLab",
-        "cellularLab",
-        "cephalopodLab",
-        "flightSim",
-        "funcGrapher",
-        "geoSandbox",
-        "geometryWorld",
-        "graphCalc",
-        "kitchenLab",
-        "lumen"
-      ],
-      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
-    },
-    {
       "code": "canvas-name",
       "severity": "warning",
       "count": 18,
@@ -273,6 +252,27 @@
         "skatelab"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
+    },
+    {
+      "code": "heading",
+      "severity": "warning",
+      "count": 15,
+      "toolCount": 15,
+      "exampleTools": [
+        "archStudio",
+        "astronomy",
+        "bridgeLab",
+        "cellularLab",
+        "cephalopodLab",
+        "funcGrapher",
+        "geoSandbox",
+        "geometryWorld",
+        "graphCalc",
+        "kitchenLab",
+        "lumen",
+        "microbiology"
+      ],
+      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
       "code": "svg-name",
@@ -2328,7 +2328,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22804,
+      "renderedBytes": 22793,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2437,32 +2437,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports.",
-      "renderedBytes": 38110,
+      "renderedBytes": 41565,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 45,
+        "buttons": 48,
         "roleButtons": 0,
         "fields": 2,
         "canvases": 0,
-        "svgs": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "flightSim",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "forge",
@@ -2784,7 +2777,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1597,
+      "renderedBytes": 1578,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3342,7 +3335,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13343,
+      "renderedBytes": 13326,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3807,7 +3800,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17347,
+      "renderedBytes": 17340,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
