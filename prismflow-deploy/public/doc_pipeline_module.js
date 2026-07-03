@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -14650,6 +14650,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             break;
           }
 
+          // ── minimal-A (throttle resilience 2026-07-03): storm-aware early stop ──
+          // Under an ACTIVE Canvas rate-limit storm, grinding more passes only makes it worse. axe==0
+          // means the deterministic layer that GOVERNS the headline is already satisfied; _rePartial
+          // means the AI re-audit is non-authoritative (the stop gates above already refuse to trust it);
+          // and under a storm the next passes mostly FAIL (throttled) while DEEPENING the storm — the
+          // direct cause of the final audit losing a section AND of the ~70-min grind the user hit. Ship
+          // the axe-clean best now; the final audit + its deferred re-audit (fix B) complete the AI
+          // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
+          // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
+          const _stormActive = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
+            || (_geminiCap === _GEMINI_STORM_MIN);
+          if (_stormActive && newAxeViolations === 0 && _rePartial) {
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: Canvas rate-limit storm active + axe clean + AI audit partial — the deterministic layer already governs the headline and more passes would only deepen the storm; stopping early (AI coverage completes in the final audit once the rate-limit eases).`);
+            break;
+          }
+
           // Plateau detection — compare against the PREVIOUS best (captured before the best*
           // update above), not the just-updated value. Policy: axe gain always counts; AI gain
           // must clear the minimum-detectable floor (S3 golden-tested; reSEM is 0 since $1, so
@@ -18067,6 +18083,41 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       } catch(finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
       }
+      // ── B (throttle resilience 2026-07-03): cooldown-aware deferred final re-audit ──
+      // The final audit can come back PARTIAL when a Canvas rate-limit storm is active — its 3-round
+      // self-heal gives up while the GeminiGate cooldown is still counting down, leaving one section
+      // un-audited ("2/3 sections"). A rate-limit eases over TIME, so when the partial was THROTTLE-
+      // caused, WAIT (bounded) for the cooldown to clear, then re-audit ONCE. The temp-0 chunk memo
+      // (_auditChunkMemo) re-serves the already-succeeded sections for free, so this costs ~1 real
+      // Gemini call (only the still-failed section). Mirrors the aiFixChunked defer-and-revisit drain
+      // and the gated recovery re-audit below. No-op unless the audit is PARTIAL and a throttle signal
+      // is present; a true outage exits on the deadline with ZERO extra failing calls (falls to D's
+      // honest reframe). accessibleHtml is unmutated until the image restore later, so the memo keys
+      // match byte-for-byte.
+      if (verification && verification._partialAudit) {
+        const _throttleCaused = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
+          || (_geminiCap === _GEMINI_STORM_MIN);
+        if (_throttleCaused) {
+          const _reauditDeadline = Date.now() + 45000; // bounded — never wait out a true outage
+          while (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now() && Date.now() < _reauditDeadline) {
+            try { _pulsePipelineWatchdog(); } catch (_) {} // a deliberate cooldown wait is activity, not a stall
+            await new Promise(function (r) { setTimeout(r, Math.min(3000, Math.max(500, _geminiCooldownUntil - Date.now()))); });
+          }
+          // Only re-audit if the window actually eased — re-calling under an active cooldown just re-fails.
+          if (!(typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())) {
+            try {
+              const _reFinalAudit = await auditOutputAccessibility(accessibleHtml);
+              if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) > (verification.chunksAudited || 0)) {
+                warnLog('[PDF Fix] Deferred final re-audit after throttle eased: coverage '
+                  + verification.chunksAudited + '/' + verification.chunksRequested + ' → '
+                  + _reFinalAudit.chunksAudited + '/' + _reFinalAudit.chunksRequested
+                  + (_reFinalAudit._partialAudit ? ' (still partial)' : ' (full coverage restored)'));
+                verification = _reFinalAudit;
+              }
+            } catch (_reErr) { /* fail-soft: keep the partial result */ }
+          }
+        }
+      }
       // Last-resort fallback: when the loop's verify AND the final audit both
       // return null (Gemini timeout / quota on both), verification ends up
       // undefined and the UI verification panel has nothing to render.
@@ -18201,6 +18252,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           }
         }
         finalAfterScore = governingFinal;
+        // ── D (throttle resilience 2026-07-03): honest reframe of a residual throttled partial ──
+        // If B could not fully close a throttle-caused partial, the coverage summary still reads as an
+        // alarming "score covers audited sections only". But the automated engines (axe + Equal Access)
+        // DID audit the FULL document and GOVERN this headline — only the AI SEMANTIC re-check was
+        // throttled on the failed section(s). Reframe the summary so the disclosure is honest and
+        // non-alarming. Messaging ONLY — the min-blend score above is untouched (do NOT null/re-weight).
+        if (verification && verification._partialAudit) {
+          verification._aiReCheckThrottled = true;
+          const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
+          verification.summary = String(verification.summary || '')
+            .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
+            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — the rest were throttled by a temporary Canvas rate-limit. The full document was still verified by the automated engines (axe-core + IBM Equal Access), and this headline reflects that complete structural coverage.)`;
+        }
       } else if (_aiDegraded && deterministicScore !== null) {
         // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
         // structural score (min of axe/EA, or whichever ran), flagged so the UI labels it honestly.
@@ -30914,11 +30978,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
