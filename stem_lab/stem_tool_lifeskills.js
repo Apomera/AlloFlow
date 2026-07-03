@@ -428,10 +428,12 @@ window.StemLab = window.StemLab || {
   ];
 
   var LAUNDRY_STAINS = [
-    { stain: 'Pizza grease on a hoodie', icon: '\uD83C\uDF55', type: 'Oil/fat', answer: 0, choices: ['Pretreat with liquid detergent, then wash warm if the label allows', 'Rinse only with cold water and dry on high heat', 'Rub hard with a dry towel', 'Add extra fabric softener'], science: 'Surfactants have oil-loving and water-loving parts, so they can surround grease and help rinse it away.' },
+    { stain: 'Pizza grease on a hoodie', icon: '\uD83C\uDF55', type: 'Oil/fat', answer: 0, choices: ['Blot, pretreat with liquid detergent, then wash warm if the label allows', 'Rinse only with cold water and dry on high heat', 'Rub hard with a dry towel', 'Add extra fabric softener'], science: 'Surfactants have oil-loving and water-loving parts, so they can surround grease and help rinse it away.' },
     { stain: 'Grass on socks', icon: '\uD83C\uDF31', type: 'Pigment + protein', answer: 1, choices: ['Use chlorine bleach on every fabric', 'Pretreat with enzyme detergent and wait before washing', 'Dry first so the stain is easier to see', 'Only use fabric softener'], science: 'Enzymes can help break down proteins and starches; waiting gives the chemistry time to work.' },
     { stain: 'Coffee on a white shirt', icon: '\u2615', type: 'Tannin', answer: 2, choices: ['Use dryer heat immediately', 'Scrub with bar soap before rinsing', 'Flush with cool water and pretreat before washing', 'Wash with new dark jeans'], science: 'Tannin stains spread through water-soluble compounds; early rinsing moves them out before they bind deeper.' },
-    { stain: 'Muddy knees on pants', icon: '\uD83E\uDD4C', type: 'Clay/soil', answer: 3, choices: ['Put straight into the dryer', 'Use lots of detergent without rinsing', 'Wash with delicates', 'Let mud dry, brush off solids, then wash'], science: 'Removing loose particles first keeps mineral soil from grinding into the fibers.' }
+    { stain: 'Muddy knees on pants', icon: '\uD83E\uDD4C', type: 'Clay/soil', answer: 3, choices: ['Put straight into the dryer', 'Use lots of detergent without rinsing', 'Wash with delicates', 'Let mud dry, brush off solids, then wash'], science: 'Removing loose particles first keeps mineral soil from grinding into the fibers.' },
+    { stain: 'Sweat odor in athletic gear', icon: '\uD83C\uDFC3', type: 'Body oil + bacteria', answer: 0, choices: ['Wash soon with detergent and skip fabric softener', 'Seal wet gear in a bag for a week', 'Use dryer sheets only', 'Always use hot water on stretch fabric'], science: 'Odor often comes from body oils and microbes trapped in synthetic fibers. Softener coatings can make odor harder to remove.' },
+    { stain: 'Ink mark on a pocket', icon: '\uD83D\uDD8A\uFE0F', type: 'Dye/ink', answer: 2, choices: ['Wash with white towels', 'Put in the dryer to dry the ink', 'Isolate, test a safe remover on a hidden spot, then rinse and wash', 'Add extra detergent and hope'], science: 'Ink is a dye mixture. Isolating and testing first prevents spreading color or damaging the fabric.' }
   ];
 
   var LAUNDRY_MYTHS = [
@@ -439,7 +441,9 @@ window.StemLab = window.StemLab || {
     { statement: 'Hot water is the best choice for every load.', answer: false, truth: 'Water temperature depends on fabric, color, soil, and care labels.', why: 'Hot water can shrink, fade, or set some stains. Cold water works for many everyday loads with modern detergent.' },
     { statement: 'Fabric softener is good for every fabric.', answer: false, truth: 'Some fabrics should skip softener.', why: 'Softener can coat towels, flame-resistant clothes, and performance fabrics, reducing absorbency or odor control.' },
     { statement: 'A stuffed washer saves time and cleans just as well.', answer: false, truth: 'Clothes need room to move.', why: 'Agitation and rinsing only work when water and detergent can circulate through the load.' },
-    { statement: 'The lint trap is only about drying speed.', answer: false, truth: 'The lint trap is a safety step.', why: 'Lint restricts airflow; blocked airflow can overheat a dryer and raises fire risk.' }
+    { statement: 'The lint trap is only about drying speed.', answer: false, truth: 'The lint trap is a safety step.', why: 'Lint restricts airflow; blocked airflow can overheat a dryer and raises fire risk.' },
+    { statement: 'Mixing bleach with ammonia makes a stronger cleaner.', answer: false, truth: 'Never mix cleaning products.', why: 'Some mixtures can create dangerous fumes. Use one product as directed and rinse surfaces/fabrics safely.' },
+    { statement: 'Dryer heat is fine if a stain is still visible.', answer: false, truth: 'Check stains before drying.', why: 'Heat can make oil, dye, and protein stains harder to remove later.' }
   ];
 
   var LAUNDRY_SCIENCE = [
@@ -449,6 +453,26 @@ window.StemLab = window.StemLab || {
     { title: 'Temperature is a tradeoff', icon: '\uD83C\uDF21\uFE0F', explain: 'Warmer water can speed chemistry, but it can also fade colors, shrink fibers, or set some stains.' },
     { title: 'Rinsing removes residue', icon: '\uD83D\uDCA7', explain: 'The rinse stage carries away loosened soil and detergent. Too much detergent is harder to rinse out.' },
     { title: 'Drying is airflow + heat', icon: '\uD83C\uDF2C\uFE0F', explain: 'A dryer removes water by evaporation and moving air. Lint blocks airflow, so cleaning the trap matters.' }
+  ];
+
+  var LAUNDRY_CARE_LABELS = [
+    { cue: 'Wash 30C', icon: '\uD83E\uDDF4', title: 'Machine wash cool', plain: 'Use a cool or cold wash setting.', why: 'Lower temperature protects color and reduces shrink risk.', mistake: 'Using hot water because "hot means cleaner."', action: 'Choose cold/cool, normal or gentle depending on fabric.' },
+    { cue: 'Wash 40C', icon: '\uD83C\uDF21\uFE0F', title: 'Machine wash warm', plain: 'Warm water is allowed if the fabric needs it.', why: 'Warm water can help with body oils and heavy soil while staying gentler than hot.', mistake: 'Using warm for delicate or dye-heavy items without checking the full label.', action: 'Use warm for sturdy items when soil level justifies it.' },
+    { cue: 'Hand', icon: '\u270B', title: 'Hand wash', plain: 'Wash gently by hand or use a true hand-wash cycle if available.', why: 'Delicate fibers can stretch, felt, or snag in normal agitation.', mistake: 'Putting it in a heavy-duty load with towels.', action: 'Use cool water, gentle detergent, and avoid wringing.' },
+    { cue: 'No wash', icon: '\uD83D\uDEAB', title: 'Do not wash', plain: 'Do not put this item in water unless the full label says it is safe.', why: 'Some dyes, finishes, linings, or fibers can be damaged by water.', mistake: 'Trying to "just rinse it quickly."', action: 'Spot clean cautiously or use the recommended professional care.' },
+    { cue: 'No bleach', icon: '\u25B3', title: 'Do not bleach', plain: 'Skip chlorine and oxygen bleach unless the label allows it.', why: 'Bleach can weaken fibers, change color, or damage finishes.', mistake: 'Bleaching every white item automatically.', action: 'Use detergent and stain pretreatment first.' },
+    { cue: 'Tumble low', icon: '\u25EF', title: 'Tumble dry low', plain: 'Dry with low heat.', why: 'Low heat reduces shrink, elastic damage, and fabric stress.', mistake: 'Using high heat to finish faster.', action: 'Use low heat or remove while slightly damp.' },
+    { cue: 'No tumble', icon: '\u25A1', title: 'Do not tumble dry', plain: 'Keep this item out of the dryer.', why: 'Heat and tumbling can shrink wool, damage elastic, or distort shape.', mistake: 'Drying it for "just ten minutes."', action: 'Air dry flat or hang as the label recommends.' },
+    { cue: 'Iron low', icon: '\uD83D\uDD25', title: 'Iron low', plain: 'Use a low iron temperature.', why: 'Synthetics, silk, and finishes can scorch, shine, or melt.', mistake: 'Pressing directly on prints or stretch fabric.', action: 'Use low heat, a pressing cloth, and test a hidden spot.' }
+  ];
+
+  var LAUNDRY_STAIN_FAMILIES = [
+    { name: 'Oil and grease', icon: '\uD83E\uDDC8', first: 'Blot, then pretreat with liquid detergent.', avoid: 'Do not use dryer heat while a greasy mark remains.', science: 'Surfactants surround oily molecules so water can carry them away.', examples: 'Pizza, butter, salad dressing, bike chain grease' },
+    { name: 'Protein', icon: '\uD83E\uDD5A', first: 'Use cool water first and an enzyme detergent if the fabric allows.', avoid: 'Avoid hot water at the start; heat can set protein.', science: 'Protease enzymes break large protein molecules into smaller pieces.', examples: 'Blood, egg, dairy, some sweat marks' },
+    { name: 'Tannin', icon: '\u2615', first: 'Flush with cool water and pretreat before washing.', avoid: 'Avoid bar soap before rinsing; it can make some tannins harder to remove.', science: 'Tannins are plant compounds that can bind deeper as they dry.', examples: 'Coffee, tea, berries, juice' },
+    { name: 'Dye and ink', icon: '\uD83C\uDFA8', first: 'Isolate the item and test any remover on a hidden spot.', avoid: 'Do not wash with other clothes until the dye is controlled.', science: 'Dyes are designed to color fibers, so spreading is the main risk.', examples: 'Pen ink, marker, dye bleed' },
+    { name: 'Mud and clay', icon: '\uD83E\uDDF1', first: 'Let mud dry, brush off solids, then wash.', avoid: 'Do not grind wet mud into fibers.', science: 'Clay particles are tiny minerals; removing loose solids first reduces abrasion.', examples: 'Mud, garden soil, playground dirt' },
+    { name: 'Odor and sweat', icon: '\uD83C\uDFC3', first: 'Wash promptly and skip fabric softener on performance fabrics.', avoid: 'Do not seal damp gear in a bag.', science: 'Body oils and microbes cling to synthetic fibers and can be trapped by coatings.', examples: 'Gym clothes, socks, uniforms' }
   ];
 
   // ── Helper Functions ──
@@ -782,8 +806,15 @@ window.StemLab = window.StemLab || {
       var laundryMythAnswer = d.laundryMythAnswer;
       var laundryMythFb = d.laundryMythFb || '';
       var laundryMythScore = d.laundryMythScore || 0;
+      var laundryCareIdx = d.laundryCareIdx || 0;
+      var laundryStainFamilyIdx = d.laundryStainFamilyIdx || 0;
+      var laundryLoadsWeek = d.laundryLoadsWeek != null ? d.laundryLoadsWeek : 3;
+      var laundryColdShare = d.laundryColdShare != null ? d.laundryColdShare : 70;
+      var laundryDryerShare = d.laundryDryerShare != null ? d.laundryDryerShare : 75;
       var laundryCurrentStain = LAUNDRY_STAINS[laundryStainIdx % LAUNDRY_STAINS.length];
       var laundryCurrentMyth = LAUNDRY_MYTHS[laundryMythIdx % LAUNDRY_MYTHS.length];
+      var laundryCurrentCare = LAUNDRY_CARE_LABELS[laundryCareIdx % LAUNDRY_CARE_LABELS.length];
+      var laundryCurrentFamily = LAUNDRY_STAIN_FAMILIES[laundryStainFamilyIdx % LAUNDRY_STAIN_FAMILIES.length];
       var laundrySelectedItems = LAUNDRY_ITEMS.filter(function(item) { return laundryLoadItems.indexOf(item.name) >= 0; });
       var laundryFlags = { light: false, dark: false, red: false, delicate: false, heavy: false, heavySoil: false, newDark: false, sweaty: false };
       laundrySelectedItems.forEach(function(item) {
@@ -808,6 +839,12 @@ window.StemLab = window.StemLab || {
       var laundryDoseStatus = laundryDetergent < 0.65 ? 'Too little' : laundryDetergent > 1.3 ? 'Too much' : 'Measured';
       var laundryDoseColor = laundryDetergent < 0.65 ? '#f59e0b' : laundryDetergent > 1.3 ? '#ef4444' : '#059669';
       var laundryReadiness = Math.max(0, 100 - laundryIssues.length * 16 - (laundryLoadItems.length === 0 ? 35 : 0));
+      var laundryMonthlyLoads = laundryLoadsWeek * 4.33;
+      var laundryColdLoads = laundryMonthlyLoads * laundryColdShare / 100;
+      var laundryDryerLoads = laundryMonthlyLoads * laundryDryerShare / 100;
+      var laundryBaselineCost = laundryMonthlyLoads * (0.25 + 0.12 + 0.55);
+      var laundryEstimatedCost = laundryMonthlyLoads * 0.25 + (laundryMonthlyLoads - laundryColdLoads) * 0.12 + laundryDryerLoads * 0.55;
+      var laundryEstimatedSavings = Math.max(0, laundryBaselineCost - laundryEstimatedCost);
 
       function toggleLaundryItem(name) {
         var next = laundryLoadItems.slice();
@@ -823,6 +860,11 @@ window.StemLab = window.StemLab || {
         next[id] = checked;
         upd('laundryChecklist', next);
         if (LAUNDRY_STEPS.every(function(s) { return next[s.id]; })) checkBadge('laundryPro');
+      }
+
+      function selectLaundryCare(idx) {
+        upd('laundryCareIdx', idx);
+        if (idx >= 3) checkBadge('laundryPro');
       }
 
       function checkLaundryStain(choice) {
@@ -1900,8 +1942,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-2', role: 'tablist', 'aria-label': 'Laundry lab sections' },
             [
               { id: 'load', label: 'Do a Load', icon: '\u2699\uFE0F' },
+              { id: 'labels', label: 'Care Labels', icon: '\uD83C\uDFF7\uFE0F' },
               { id: 'stains', label: 'Stain Rescue', icon: '\uD83E\uDDEA' },
               { id: 'myths', label: 'Myths', icon: '\uD83D\uDCA1' },
+              { id: 'cost', label: 'Cost + Safety', icon: '\uD83D\uDCB8' },
               { id: 'science', label: 'Why It Works', icon: '\uD83D\uDD2C' },
               { id: 'checklist', label: 'Checklist', icon: '\u2705' }
             ].map(function(mode) {
@@ -1970,7 +2014,64 @@ window.StemLab = window.StemLab || {
               )
             )
           ),
+          laundryMode === 'labels' && h('div', { className: 'grid lg:grid-cols-[1fr_1.1fr] gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Care label decoder'),
+                h('span', { className: 'text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-full' }, 'Tap a symbol cue')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                LAUNDRY_CARE_LABELS.map(function(label, i) {
+                  var active = laundryCareIdx % LAUNDRY_CARE_LABELS.length === i;
+                  return h('button', { key: label.title, onClick: function() { selectLaundryCare(i); }, className: 'text-left p-3 rounded-xl border transition-all ' + (active ? 'bg-cyan-50 border-cyan-400 shadow-sm' : 'bg-white border-slate-300 hover:border-cyan-300') },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-xl', 'aria-hidden': 'true' }, label.icon),
+                      h('div', { className: 'min-w-0' },
+                        h('p', { className: 'text-[11px] font-black text-slate-800' }, label.cue),
+                        h('p', { className: 'text-[11px] text-slate-600' }, label.title)
+                      )
+                    )
+                  );
+                })
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white p-4' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-cyan-200' }, 'Selected label'),
+                h('div', { className: 'flex items-center gap-3 mt-2' },
+                  h('div', { className: 'w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl' }, laundryCurrentCare.icon),
+                  h('div', null,
+                    h('h5', { className: 'text-base font-black' }, laundryCurrentCare.title),
+                    h('p', { className: 'text-xs text-cyan-100' }, laundryCurrentCare.plain)
+                  )
+                )
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2' },
+                h('div', { className: 'p-3 rounded-xl bg-emerald-50 border border-emerald-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-700' }, 'Why'), h('p', { className: 'text-[11px] text-emerald-800' }, laundryCurrentCare.why)),
+                h('div', { className: 'p-3 rounded-xl bg-red-50 border border-red-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-700' }, 'Avoid'), h('p', { className: 'text-[11px] text-red-800' }, laundryCurrentCare.mistake)),
+                h('div', { className: 'p-3 rounded-xl bg-blue-50 border border-blue-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Do'), h('p', { className: 'text-[11px] text-blue-800' }, laundryCurrentCare.action))
+              ),
+              h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Care labels are decision shortcuts. They do not replace judgment, but they warn you when heat, water, bleach, agitation, or tumbling could damage the item.')
+            )
+          ),
           laundryMode === 'stains' && h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'rounded-2xl bg-violet-50 border border-violet-100 p-3 space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-violet-700' }, 'Stain family guide'),
+                h('span', { className: 'text-[11px] font-bold text-violet-700' }, laundryCurrentFamily.examples)
+              ),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                LAUNDRY_STAIN_FAMILIES.map(function(family, i) {
+                  var active = laundryStainFamilyIdx % LAUNDRY_STAIN_FAMILIES.length === i;
+                  return h('button', { key: family.name, onClick: function() { upd('laundryStainFamilyIdx', i); }, className: 'px-2 py-1 rounded-full text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-700 border-violet-200') }, family.icon + ' ' + family.name);
+                })
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2' },
+                h('div', { className: 'rounded-xl bg-white p-2 border border-violet-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-violet-600' }, 'First move'), h('p', { className: 'text-[11px] text-slate-700' }, laundryCurrentFamily.first)),
+                h('div', { className: 'rounded-xl bg-white p-2 border border-violet-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-600' }, 'Avoid'), h('p', { className: 'text-[11px] text-slate-700' }, laundryCurrentFamily.avoid)),
+                h('div', { className: 'rounded-xl bg-white p-2 border border-violet-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-teal-600' }, 'Science'), h('p', { className: 'text-[11px] text-slate-700' }, laundryCurrentFamily.science))
+              )
+            ),
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('div', null,
                 h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Stain rescue'),
@@ -2005,6 +2106,35 @@ window.StemLab = window.StemLab || {
             ),
             laundryMythFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (laundryMythFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, laundryMythFb),
             h('button', { onClick: function() { updMulti({ laundryMythIdx: laundryMythIdx + 1, laundryMythAnswer: null, laundryMythFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-amber-100 text-amber-700' }, 'Next myth')
+          ),
+          laundryMode === 'cost' && h('div', { className: 'grid lg:grid-cols-[1fr_1fr] gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Cost + sustainability model'),
+              slider('Loads per week', laundryLoadsWeek, 1, 8, 1, 'laundryLoadsWeek', function(v) { return v + ' loads'; }),
+              slider('Cold-water loads', laundryColdShare, 0, 100, 5, 'laundryColdShare', function(v) { return v + '%'; }),
+              slider('Loads using dryer', laundryDryerShare, 0, 100, 5, 'laundryDryerShare', function(v) { return v + '%'; }),
+              h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' }, 'Estimates use simple classroom assumptions: detergent cost, warm-water energy, and dryer energy. Actual utility or laundromat costs vary.')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                h('div', { className: 'text-center rounded-xl bg-emerald-50 border border-emerald-100 p-2' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-700' }, 'Monthly'), h('p', { className: 'text-lg font-black text-emerald-700' }, fmtMoney(laundryEstimatedCost))),
+                h('div', { className: 'text-center rounded-xl bg-blue-50 border border-blue-100 p-2' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Loads'), h('p', { className: 'text-lg font-black text-blue-700' }, Math.round(laundryMonthlyLoads))),
+                h('div', { className: 'text-center rounded-xl bg-amber-50 border border-amber-100 p-2' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-700' }, 'Saved'), h('p', { className: 'text-lg font-black text-amber-700' }, fmtMoney(laundryEstimatedSavings)))
+              ),
+              h('div', { className: 'rounded-2xl bg-slate-900 text-white p-3 space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-cyan-200' }, 'Safety habits with the biggest payoff'),
+                h('ul', { className: 'space-y-1 text-[11px] text-slate-100 leading-relaxed' },
+                  h('li', null, 'Clean the lint trap before every dryer run and keep airflow clear.'),
+                  h('li', null, 'Never mix bleach with ammonia, vinegar, or other cleaners.'),
+                  h('li', null, 'Keep pods/detergents sealed and away from younger children or pets.'),
+                  h('li', null, 'Stop and check labels before using bleach, high heat, or a stain remover.')
+                )
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3' },
+                h('p', { className: 'text-xs font-bold text-slate-700' }, 'Smart routine'),
+                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Full-but-not-stuffed loads, measured detergent, cold water for everyday items, and air drying delicate/stretch fabrics usually reduce cost while protecting clothing life.')
+              )
+            )
           ),
           laundryMode === 'science' && h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3' },
             LAUNDRY_SCIENCE.map(function(concept) {
