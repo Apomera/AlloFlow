@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T02:00:48.761Z",
+  "generatedAt": "2026-07-03T02:25:50.626Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 159,
+    "issueCount": 154,
     "errorCount": 0,
-    "warningCount": 141,
+    "warningCount": 136,
     "noticeCount": 18,
-    "toolsWithIssues": 70,
+    "toolsWithIssues": 69,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 63,
+    "toolsWithWarnings": 62,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 30,
+        "warningCount": 25,
         "noticeCount": 0
       },
       "Games": {
@@ -193,8 +193,8 @@
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 22,
-      "toolCount": 22,
+      "count": 21,
+      "toolCount": 21,
       "exampleTools": [
         "areamodel",
         "birdLab",
@@ -256,8 +256,8 @@
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 52,
-      "toolCount": 15,
+      "count": 48,
+      "toolCount": 14,
       "exampleTools": [
         "algebraCAS",
         "appLab",
@@ -269,8 +269,8 @@
         "fireEcology",
         "kitchenLab",
         "llmLiteracy",
-        "probability",
-        "skatelab"
+        "skatelab",
+        "throwlab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
@@ -1865,7 +1865,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16026,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2181,7 +2181,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22821,
+      "renderedBytes": 22808,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3188,7 +3188,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13343,
+      "renderedBytes": 13326,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3653,7 +3653,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17335,
+      "renderedBytes": 17331,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3732,84 +3732,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coin flips, dice, spinners, real sports stats & custom experiments.",
-      "renderedBytes": 13992,
+      "renderedBytes": 20164,
       "standardShell": true,
-      "issueCount": 5,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 5,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 31,
+        "buttons": 37,
         "roleButtons": 0,
         "fields": 5,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 6,
-          "selector": "div > div.max-w-3xl.mx-auto > div.flex.flex-wrap:nth-of-type(2) > button.px-4.py-2:nth-of-type(1)",
-          "ratio": 4.23,
-          "color": "#fff",
-          "background": "#8b5cf6",
-          "text": "🪙 Coin"
-        },
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 27,
-          "selector": "div > div.max-w-3xl.mx-auto > div.flex.flex-wrap:nth-of-type(5) > button.flex.items-center:nth-of-type(1)",
-          "ratio": 4.23,
-          "color": "#fff",
-          "background": "#8b5cf6",
-          "text": "▶ Auto-Run"
-        },
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 29,
-          "selector": "div > div.max-w-3xl.mx-auto > div.flex.flex-wrap:nth-of-type(5) > button.px-2.5.py-1:nth-of-type(3)",
-          "ratio": 4.23,
-          "color": "#fff",
-          "background": "#8b5cf6",
-          "text": "Normal"
-        },
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 74,
-          "selector": "div.max-w-3xl.mx-auto > div.mt-4.pt-4:nth-of-type(8) > div.rounded-xl.border:nth-of-type(2) > div.flex.gap-2:nth-of-type(3) > button.px-2.py-0.5:nth-of-type(1)",
-          "ratio": 3.29,
-          "color": "#0891b2",
-          "background": "#cffafe",
-          "text": "📋 Log"
-        },
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "protractor",
@@ -4452,7 +4393,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46580,
+      "renderedBytes": 46579,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

@@ -845,7 +845,7 @@ var d = (labToolData.probability) || {};
 
           var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
 
-          var _btnBg = isDark || isContrast ? '#7c3aed' : '#8b5cf6';
+          var _btnBg = isDark || isContrast ? '#7c3aed' : '#6d28d9';
 
           var _btnText = '#fff';
 
@@ -864,7 +864,111 @@ var d = (labToolData.probability) || {};
           };
           var modeAccent = MODE_ACCENT[d.mode] || MODE_ACCENT.coin;
           var outerBg = (isDark || isContrast) ? undefined :
-            'radial-gradient(ellipse 1100px 480px at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
+            'radial-gradient(ellipse 80% 45% at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
+
+          var selectMode = function(m) {
+            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
+            if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; }
+            upd('mode', m);
+            upd('results', []);
+            upd('trials', 0);
+            upd('convergenceHistory', []);
+            upd('lastResult', null);
+            upd('_mbRemaining', null);
+            upd('_piPoints', null);
+            upd('_autoRunning', false);
+            upd('galtonFalling', []);
+          };
+
+          var renderCommandDeck = function() {
+            var completedChallenges = (d._completedChallenges || []).length;
+            var usedTypes = Object.keys(d.experimentsUsed || {}).length;
+            var resultCount = (d.results || []).length;
+            var trialReadyModes = ['coin', 'dice', 'dice2', 'spinner', 'sports', 'marbleBag', 'custom', 'pi'];
+            var canRunQuickTrials = trialReadyModes.indexOf(d.mode) >= 0;
+            var routeMeta = {
+              coin: { label: 'Coin', icon: '\uD83E\uDE99', color: '#475569', desc: 'Begin with a clean 50/50 event.' },
+              dice: { label: 'Dice', icon: '\uD83C\uDFB2', color: '#b91c1c', desc: 'Compare faces, denominators, and fairness.' },
+              dice2: { label: 'Two-Dice Sum', icon: '\uD83C\uDFB2', color: '#991b1b', desc: 'See why middle sums happen more often.' },
+              spinner: { label: 'Spinner', icon: '\uD83C\uDFA1', color: '#7e22ce', desc: 'See equal-area outcomes.' },
+              sports: { label: 'Sports', icon: '\uD83C\uDFC6', color: '#0e7490', desc: 'Model weighted real-world chances.' },
+              marbleBag: { label: 'Marble Bag', icon: '\uD83C\uDFB1', color: '#0369a1', desc: 'Explore replacement and changing odds.' },
+              custom: { label: 'Custom', icon: '\u2699', color: '#b45309', desc: 'Design your own distribution.' },
+              tree: { label: 'Tree', icon: '\uD83C\uDF33', color: '#15803d', desc: 'Multiply branches for compound probability.' },
+              pi: { label: 'Monte Carlo', icon: '\uD83E\uDD67', color: '#c2410c', desc: 'Estimate pi through random sampling.' },
+              birthday: { label: 'Birthday', icon: '\uD83C\uDF82', color: '#be185d', desc: 'Track how pair counts change intuition.' },
+              monty: { label: 'Monty Hall', icon: '\uD83D\uDEAA', color: '#4338ca', desc: 'Test a famous counterintuitive strategy.' },
+              galton: { label: 'Galton Board', icon: '\u2699', color: '#0f766e', desc: 'Watch randomness settle into a curve.' }
+            };
+            var currentRoute = routeMeta[d.mode] || routeMeta.coin;
+            var stats = [
+              { label: t('stem.probability.dashboard_trials', 'Trials'), value: String(d.trials || 0), hint: t('stem.probability.dashboard_trials_hint', 'current run') },
+              { label: t('stem.probability.dashboard_modes', 'Modes tried'), value: usedTypes + '/3', hint: t('stem.probability.dashboard_modes_hint', 'quest progress') },
+              { label: t('stem.probability.dashboard_challenges', 'Challenges'), value: completedChallenges + '/5', hint: t('stem.probability.dashboard_challenges_hint', 'claimed') },
+              { label: t('stem.probability.dashboard_result', 'Latest'), value: d.lastResult != null ? String(d.lastResult) : '-', hint: t('stem.probability.dashboard_result_hint', 'last result') }
+            ];
+            var routes = [
+              { title: t('stem.probability.route_foundations', 'Foundations'), modes: ['coin', 'dice', 'dice2', 'spinner'], action: 'coin', note: t('stem.probability.route_foundations_note', 'Equally likely outcomes and sample spaces.') },
+              { title: t('stem.probability.route_weighted', 'Weighted Odds'), modes: ['sports', 'marbleBag', 'custom'], action: 'sports', note: t('stem.probability.route_weighted_note', 'Uneven chances, bags, and real-world rates.') },
+              { title: t('stem.probability.route_surprises', 'Probability Surprises'), modes: ['monty', 'birthday', 'galton'], action: 'monty', note: t('stem.probability.route_surprises_note', 'Simulations that challenge intuition.') },
+              { title: t('stem.probability.route_monte_carlo', 'Monte Carlo'), modes: ['pi', 'tree'], action: 'pi', note: t('stem.probability.route_monte_carlo_note', 'Random sampling and compound events.') }
+            ];
+            return React.createElement("section", {
+              'data-probability-command': 'true',
+              'aria-labelledby': 'probability-command-title',
+              className: "mb-4",
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: 14, border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.34)' : '#ddd6fe'), background: isDark || isContrast ? 'linear-gradient(135deg, #1e1b4b 0%, #111827 54%, #164e63 100%)' : 'linear-gradient(135deg, #f5f3ff 0%, #ffffff 54%, #ecfeff 100%)', boxShadow: isDark || isContrast ? 'inset 0 0 34px rgba(139,92,246,0.10)' : '0 12px 28px rgba(88,28,135,0.08)' }
+            },
+              React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' } },
+                React.createElement("div", { style: { color: isDark || isContrast ? '#c4b5fd' : '#5b21b6', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' } }, t('stem.probability.command_eyebrow', 'Chance Lab')),
+                React.createElement("h2", { id: 'probability-command-title', style: { margin: 0, color: isDark || isContrast ? '#f8fafc' : '#111827', fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, t('stem.probability.command_title', 'Run experiments, then compare the pattern')),
+                React.createElement("p", { style: { margin: 0, color: isDark || isContrast ? '#ddd6fe' : '#334155', fontSize: 13, lineHeight: 1.55, maxWidth: '62ch' } }, t('stem.probability.command_copy', 'Pick a probability model, run trials, and watch the observed results move toward the expected distribution.')),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(102px, 1fr))', gap: 8 } }, stats.map(function(stat) {
+                  return React.createElement("div", { key: stat.label, style: { padding: '9px 10px', borderRadius: 10, background: isDark || isContrast ? 'rgba(15,23,42,0.68)' : 'rgba(255,255,255,0.78)', border: '1px solid ' + (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e9d5ff') } },
+                    React.createElement("div", { style: { color: isDark || isContrast ? '#e9d5ff' : '#5b21b6', fontSize: 17, fontWeight: 900 } }, stat.value),
+                    React.createElement("div", { style: { marginTop: 2, color: isDark || isContrast ? '#cbd5e1' : '#475569', fontSize: 11, fontWeight: 800 } }, stat.label),
+                    React.createElement("div", { style: { marginTop: 1, color: isDark || isContrast ? '#94a3b8' : '#64748b', fontSize: 10 } }, stat.hint)
+                  );
+                })),
+                React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  React.createElement("button", { onClick: canRunQuickTrials ? function() { runTrial(10); } : function() { selectMode('coin'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: '#5b21b6', color: '#fff', border: '1px solid #4c1d95', boxShadow: '0 8px 18px rgba(91,33,182,0.22)' } }, canRunQuickTrials ? t('stem.probability.run_10_trials', 'Run 10 Trials') : t('stem.probability.start_with_coin', 'Start With Coin')),
+                  React.createElement("button", { onClick: function() { selectMode('monty'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.82)', color: isDark || isContrast ? '#e0e7ff' : '#4338ca', border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.28)' : '#c7d2fe') } }, t('stem.probability.try_a_paradox', 'Try a Paradox'))
+                )
+              ),
+              React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
+                React.createElement("div", { style: { padding: 12, borderRadius: 12, background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.82)', border: '1px solid ' + (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#dbeafe') } },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                    React.createElement("span", { style: { fontSize: 26 }, 'aria-hidden': 'true' }, currentRoute.icon),
+                    React.createElement("div", null,
+                      React.createElement("div", { style: { color: currentRoute.color, fontSize: 12, fontWeight: 900 } }, currentRoute.label),
+                      React.createElement("div", { style: { color: isDark || isContrast ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.35 } }, currentRoute.desc)
+                    )
+                  ),
+                  React.createElement("svg", { viewBox: "0 0 320 150", width: "100%", height: "auto", role: "img", 'aria-label': t('stem.probability.command_visual_label', 'Probability bars showing observed results settling toward expected values'), style: { display: 'block', maxHeight: 170 } },
+                    React.createElement("rect", { x: 0, y: 0, width: 320, height: 150, rx: 18, fill: isDark || isContrast ? '#172554' : '#eef2ff' }),
+                    [48, 96, 144, 192, 240].map(function(x, idx) {
+                      var hgt = resultCount > 0 ? [72, 98, 58, 84, 66][idx] : [46, 68, 92, 62, 78][idx];
+                      return React.createElement("g", { key: 'prob-bar-' + idx },
+                        React.createElement("rect", { x: x, y: 118 - hgt, width: 26, height: hgt, rx: 8, fill: idx % 2 ? '#14b8a6' : '#7c3aed', opacity: 0.88 }),
+                        React.createElement("circle", { cx: x + 13, cy: 118 - hgt, r: 4, fill: '#fbbf24' })
+                      );
+                    }),
+                    React.createElement("line", { x1: 32, y1: 118, x2: 288, y2: 118, stroke: isDark || isContrast ? "rgba(255,255,255,0.42)" : "rgba(15,23,42,0.22)", strokeWidth: 2 }),
+                    React.createElement("path", { d: "M44 82 C88 42, 132 96, 176 64 S250 52, 282 82", fill: "none", stroke: "#fbbf24", strokeWidth: 4, strokeLinecap: "round", strokeDasharray: "8 8" }),
+                    React.createElement("text", { x: 28, y: 28, fill: isDark || isContrast ? "#f8fafc" : "#1e1b4b", fontSize: 13, fontWeight: 900 }, t('stem.probability.observed_vs_expected', 'Observed vs. expected'))
+                  )
+                ),
+                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } }, routes.map(function(route) {
+                  var active = route.modes.indexOf(d.mode) >= 0;
+                  return React.createElement("button", { key: route.title, onClick: function() { selectMode(route.action); }, className: "text-left rounded-lg transition-all", style: { padding: 10, border: '1px solid ' + (active ? '#7c3aed' : (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e2e8f0')), background: active ? (isDark || isContrast ? 'rgba(124,58,237,0.24)' : '#f5f3ff') : (isDark || isContrast ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.72)'), color: isDark || isContrast ? '#f8fafc' : '#1e293b' } },
+                    React.createElement("div", { style: { fontSize: 12, fontWeight: 900, color: active ? (isDark || isContrast ? '#ddd6fe' : '#5b21b6') : (isDark || isContrast ? '#e2e8f0' : '#334155') } }, route.title),
+                    React.createElement("div", { style: { marginTop: 3, fontSize: 10, lineHeight: 1.35, color: isDark || isContrast ? '#cbd5e1' : '#64748b' } }, route.note)
+                  );
+                }))
+              )
+            );
+          };
 
           return React.createElement("div", {
             className: "max-w-3xl mx-auto animate-in fade-in duration-200",
@@ -908,13 +1012,15 @@ var d = (labToolData.probability) || {};
 
             React.createElement("p", { className: "text-xs italic -mt-1 mb-3", style: { color: _muted } }, t('stem.probability.explore_probability_through_experiment', "Explore probability through experiments. Run trials and watch observed frequencies converge to expected values.")),
 
+            renderCommandDeck(),
+
             // Mode selector
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -1537,7 +1643,7 @@ var d = (labToolData.probability) || {};
                         )
                       )
                     ),
-                    ((strip.stay || []).length > 0 || (strip.switch || []).length > 0) && React.createElement('div', { className: 'text-[9px] text-center mt-2 italic text-indigo-200' },
+                    ((strip.stay || []).length > 0 || (strip.switch || []).length > 0) && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-200' },
                       t('stem.probability.outcome_strips_show_your_last_20_manua', 'Outcome strips show your last 20 manual plays — green = win, red = loss. Visible streaks tell you what randomness actually feels like.')
                     ),
                     (ms.stayN + ms.switchN) >= 30 && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-100' },
@@ -2286,7 +2392,7 @@ var d = (labToolData.probability) || {};
                       }, labelText(r));
                     })
                   ),
-                  React.createElement('span', { className: 'text-[9px] italic ml-auto', style: { color: isDark || isContrast ? '#a78bfa' : '#9333ea' } }, t('stem.probability.streaks_are_normal_random_texture', 'streaks are normal random texture'))
+                  React.createElement('span', { className: 'text-[10px] italic ml-auto', style: { color: isDark || isContrast ? '#a78bfa' : '#9333ea' } }, t('stem.probability.streaks_are_normal_random_texture', 'streaks are normal random texture'))
                 )
               );
             })(),
@@ -3010,7 +3116,7 @@ var d = (labToolData.probability) || {};
                     })
                   ),
                   h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                    h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[10px] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#0891b2' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
+                    h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[10px] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
                     h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                       className: 'px-2 py-0.5 rounded text-[10px] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#64748b', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, t('stem.probability.reset_3', '\u21BA Reset')),
                     (iq.log || []).length > 0 && h('span', { className: 'text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } }, (iq.log || []).length + ' logged')
@@ -3043,7 +3149,7 @@ var d = (labToolData.probability) || {};
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                       placeholder: t('stem.probability.explain_how_relative_weights_produce_s', 'Explain how relative weights produce shape.'),
                       className: 'w-full text-[11px] rounded p-1 font-mono leading-snug mt-1', style: { background: isDark||isContrast?'rgba(15,23,42,0.6)':'#ffffff', color: isDark||isContrast?'#e2e8f0':'#1e293b', border: '1px solid ' + (isDark||isContrast?'rgba(16,185,129,0.3)':'#a7f3d0') }, rows: 3 })),
-                  h('div', { className: 'mt-2 text-[9px] italic', style: { color: isDark||isContrast?'#64748b':'#94a3b8' } },
+                  h('div', { className: 'mt-2 text-[10px] italic', style: { color: isDark||isContrast?'#94a3b8':'#64748b' } },
                     t('stem.probability.design_note_discrete_4_shape_classific', 'Design note: discrete 4-shape classification; no goodness-of-fit score; no reveal \u2014 by design.'))
                 );
               })()

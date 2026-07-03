@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T02:00:58.750Z",
+  "generatedAt": "2026-07-03T02:25:49.929Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 40
+    "monitoredMarkerCount": 41
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 40,
+    "markerPassCount": 41,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17207,
+      "htmlBytes": 17206,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17207
+        "htmlBytes": 17206
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13365,
+      "htmlBytes": 13353,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13365
+        "htmlBytes": 13353
       }
     },
     {
@@ -902,7 +902,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46580,
+      "htmlBytes": 46578,
       "issues": [
         {
           "toolId": "throwlab",
@@ -931,7 +931,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46580
+        "htmlBytes": 46578
       }
     },
     {
@@ -1024,6 +1024,22 @@
         "canvases": 1,
         "headings": 3,
         "htmlBytes": 68804
+      }
+    },
+    {
+      "id": "probability",
+      "file": "stem_tool_probability.js",
+      "marker": "data-probability-command",
+      "label": "Probability Lab command deck",
+      "ok": true,
+      "htmlBytes": 20164,
+      "issues": [],
+      "metrics": {
+        "buttons": 37,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 20164
       }
     },
     {
