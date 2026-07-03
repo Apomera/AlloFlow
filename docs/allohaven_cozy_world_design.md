@@ -146,6 +146,31 @@ Sequencing: this is a Ring-2.5/3 feature and should ride the live-session tree, 
 its own deploy gate (?v= bumps pending) and NEVER-bare-stash rules — build it as its own
 project with the live-session owner's hat on, not as a haven side quest.
 
+## 4.7 Crafting vs collecting vs landmarks (Aaron, 2026-07-02 — Prim3D shipped)
+
+Three complementary asset lanes for "users generate characters or objects":
+
+- **Crafting (SHIPPED @prim3d_module.js)**: Gemini designs a primitive-assembly recipe
+  (box/sphere/cylinder/cone/torus, ≤24 parts, validated + clamped by a pure normalizer);
+  deterministic JS assembles the three.js group. In-Canvas, zero downloads, tiny cacheable
+  JSON, remixable. Live today as 🗿 "Sculpt 3D objects" in the Memory Palace (one figure per
+  locus, designed from its mnemonic, on a pedestal beside the frame) and plumbed through the
+  haven walk (`decoration.recipe3d`). Economy fit: crafting costs tokens; the recipe is the
+  student's OWN design to keep/remix/gift.
+- **Collecting (CC0 library — Aaron curates)**: Kenney/Quaternius low-poly `.glb` sets are
+  CC0 (no license friction), tiny, and cohesive. They slot into the economy as the **shop**:
+  tokens buy catalog items (collect), while Prim3D/Imagen are the **craft** lane — a classic
+  cozy-game dual economy. Needs: one lazy GLTFLoader addon (same pattern as the bloom
+  chain), a curated manifest JSON on the CDN, and Aaron's starter-set pick (~50-100 assets,
+  themed packs). No code risk; the open decision is curation ownership (doc §6 Q4).
+- **Landmarks (Aaron's "world built of very large versions"): yes, and it's nearly free.**
+  A Prim3D recipe is unit-scaled data — the same JSON renders at `unit: 70` as a desk
+  trinket and `unit: 900` as a building. Class palaces could grow landmark sculptures of
+  their biggest ideas ("the water-cycle kettle towers over the garden"); a room's "signature
+  landmark" could be the class-voted best sculpture of the unit. Low-poly primitives at huge
+  scale are also the CHEAPEST possible skyline (few hundred triangles). Design rule: a
+  landmark is earned/curated (class ritual), not spammed — one per room/unit.
+
 ## 5. Sequencing recommendation
 
 Ring 0 first (1–2 sessions; mostly palace-engine reuse + artifact renderers) — it alone

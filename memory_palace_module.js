@@ -427,6 +427,29 @@
       frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l };
     });
 
+    // Sculpted 3D objects at loci (Prim3D recipes from the 🗿 Sculpt flow, or a
+    // haven decoration's recipe3d) — a pedestal + primitive-assembly figure
+    // beside each furnished frame. Prim3D is loaded by the host; a missing
+    // module or an unrenderable recipe degrades to nothing, never an error.
+    var objects = (opts && opts.objects) || {};
+    var P3D = window.AlloModules && window.AlloModules.Prim3D;
+    if (P3D && objects) {
+      palace.loci.forEach(function (l) {
+        if (l.id === '__entry' || !objects[l.id]) return;
+        try {
+          var fig = P3D.buildObject(THREE, objects[l.id], { unit: 70 });
+          if (!fig) return;
+          var px = l.framePos.x + 90;
+          var pz = l.framePos.z + l.faceDir * 90;
+          var ped = new THREE.Mesh(new THREE.CylinderGeometry(30, 36, 44, 18),
+            new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
+          ped.position.set(px, 22, pz); group.add(ped);
+          fig.position.set(px, 44, pz);
+          group.add(fig);
+        } catch (e) {}
+      });
+    }
+
     // ── Recall API on the handle: earn a label back / flash placement status ──
     state.revealLocus = function (id) {
       var ref = frameRefs[id];

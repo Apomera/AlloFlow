@@ -486,6 +486,13 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Gemini primitive-assembly sculptures (p3d/1) — lazy sidecar of the
+        // Memory Palace / AlloHaven 3D walks.
+        name: 'Prim3D',
+        filename: 'prim3d_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'VisualPanelModule',
         filename: 'visual_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'

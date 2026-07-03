@@ -39,7 +39,7 @@ function havenState() {
       // floor item listed FIRST to prove wall-before-floor ordering
       { template: 'plants', templateLabel: 'Fern', placement: { roomId: 'main', surface: 'floor', cellIndex: 2 }, imageBase64: 'data:image/png;base64,FERN', studentReflection: 'My first plant!' },
       { template: 'poster', templateLabel: 'Star Poster', placement: { roomId: 'main', surface: 'wall', cellIndex: 0 }, imageBase64: 'data:image/png;base64,POSTER' },
-      { template: 'lamp', placement: { roomId: 'garden', surface: 'floor', cellIndex: 1 }, aiRationale: 'Earned after five pomodoros' },
+      { template: 'lamp', placement: { roomId: 'garden', surface: 'floor', cellIndex: 1 }, aiRationale: 'Earned after five pomodoros', recipe3d: { name: 'Lamp', parts: [{ shape: 'cylinder', size: [0.1, 1], position: [0, 0.5, 0], color: '#f59e0b' }] } },
       { template: 'ghost', placement: null },                             // unplaced ⇒ excluded
       { template: 'lib-shelf', placement: { roomId: 'library', surface: 'wall', cellIndex: 0 } },   // locked room ⇒ excluded
     ],
@@ -62,12 +62,14 @@ describe('buildHavenPalaceData (pure haven → palace mapper)', () => {
     expect(out.data.branches[1].mnemonics).toEqual(['Earned after five pomodoros']);
   });
 
-  it('keys decoration images by the palace locus ids', () => {
+  it('keys decoration images AND recipe3d sculptures by the palace locus ids', () => {
     const out = H.buildHavenPalaceData(havenState(), []);
     expect(out.images).toEqual({
       b0_i0: 'data:image/png;base64,POSTER',   // Star Poster (wall, first)
       b0_i1: 'data:image/png;base64,FERN',     // Fern (floor, second)
     });
+    expect(Object.keys(out.objects)).toEqual(['b1_i0']);   // the garden lamp's Prim3D recipe
+    expect(out.objects.b1_i0.name).toBe('Lamp');
   });
 
   it('appends a Gallery room from portfolio artifacts (capped at 12)', () => {

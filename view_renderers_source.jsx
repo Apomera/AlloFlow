@@ -1893,6 +1893,13 @@ function _voPalaceEnsure() {
     .then(function () { return !!(window.AlloModules && window.AlloModules.MemoryPalace); })
     .catch(function () { return false; });
 }
+function _voPrim3dEnsure() {
+  if (window.AlloModules && window.AlloModules.Prim3D) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'prim3d_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.Prim3D); })
+    .catch(function () { return false; });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -2397,7 +2404,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     React.useEffect(() => {
         let alive = true;
-        _voPalaceEnsure().then((ok) => { if (alive) { if (ok) setReady(true); else setFailed(true); } });
+        // Prim3D is a best-effort sidecar (sculptures render only if it loads).
+        _voPalaceEnsure().then((ok) => {
+            if (!alive) return;
+            if (!ok) { setFailed(true); return; }
+            _voPrim3dEnsure().then(() => { if (alive) setReady(true); });
+        });
         return () => { alive = false; };
     }, []);
 
@@ -2409,6 +2421,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         handleRef.current = MP.render(hostRef.current, data, {
             t,
             images: data?.memoryPalace?.images || {},
+            objects: data?.memoryPalace?.objects || {},
             recall: !!recall,
             startAt: recall ? recall.startAt : undefined,
             onLocusChange: (locus, idx, total) => {
@@ -2581,6 +2594,50 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // Furnish: one Imagen illustration per locus, driven by the MNEMONIC (the
     // vivid image is the mnemonic made visible). Sequential to respect quota;
     // per-item failures skipped; results persisted once at the end.
+    // 🗿 Sculpt: one Prim3D recipe per locus — Gemini designs a primitive-
+    // assembly figure from the mnemonic, the palace renders it on a pedestal
+    // beside the frame. Recipes are tiny JSON (cache-friendly, remixable) and
+    // persist alongside the images in data.memoryPalace.
+    const objects3d = data?.memoryPalace?.objects || {};
+    const objectCount = Object.keys(objects3d).length;
+    const [sculpting, setSculpting] = React.useState(null);   // {done, total} | null
+    const handleSculpt = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!MP || !P3D || !persist || sculpting || typeof window.callGemini !== 'function') return;
+        const palace = MP.buildPalace(data || {});
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]).slice(0, 12);
+        if (!targets.length) { if (addToast) addToast(t('memory_palace.sculpt_done_already') || 'Every locus already has a sculpture.', 'info'); return; }
+        setSculpting({ done: 0, total: targets.length });
+        const out = {};
+        let failures = 0;
+        const step = (i) => {
+            if (i >= targets.length) {
+                setSculpting(null);
+                if (Object.keys(out).length) {
+                    persist({ ...(data?.memoryPalace || {}), objects: { ...objects3d, ...out }, generatedAt: Date.now() }, 'memoryPalace');
+                    setNonce((n) => n + 1);
+                }
+                if (addToast) {
+                    if (failures) addToast((t('memory_palace.sculpt_partial') || 'Sculpted {ok} loci; {fail} could not be designed.').replace('{ok}', String(Object.keys(out).length)).replace('{fail}', String(failures)), 'info');
+                    else addToast(t('memory_palace.sculpt_done') || '🗿 Sculptures placed! Walk the route to meet them.', 'success');
+                }
+                return;
+            }
+            const l = targets[i];
+            const subject = l.mnemonic || l.label;
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+                .then((res) => {
+                    const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                    const recipe = P3D.parseRecipe(text);
+                    if (recipe) out[l.id] = recipe; else failures += 1;
+                })
+                .catch(() => { failures += 1; })
+                .then(() => { setSculpting({ done: i + 1, total: targets.length }); step(i + 1); });
+        };
+        step(0);
+    };
+
     const handleFurnish = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !canImagen || !persist || furnishing) return;
@@ -2594,7 +2651,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             if (i >= targets.length) {
                 setFurnishing(null);
                 if (Object.keys(out).length) {
-                    persist({ images: { ...images, ...out }, generatedAt: Date.now() }, 'memoryPalace');
+                    // Merge-with-existing so images never clobber sculpted objects (or vice versa).
+                    persist({ ...(data?.memoryPalace || {}), images: { ...images, ...out }, generatedAt: Date.now() }, 'memoryPalace');
                     setNonce((n) => n + 1);
                 }
                 if (addToast) {
@@ -2675,13 +2733,25 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         : (t('memory_palace.furnish') || 'Furnish with AI images')}
                                 </button>
                             )}
-                            {hasContent && !failed && persist && imageCount > 0 && !furnishing && (
+                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={handleSculpt}
+                                    disabled={!!sculpting || !!furnishing}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.sculpt_tooltip') || 'AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)'}
+                                >
+                                    🗿 {sculpting
+                                        ? (t('memory_palace.sculpting') || 'Sculpting {done}/{total}…').replace('{done}', String(sculpting.done)).replace('{total}', String(sculpting.total))
+                                        : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
                                 <button
                                     onClick={() => { persist(null, 'memoryPalace'); setNonce((n) => n + 1); }}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
-                                    title={t('memory_palace.clear_tooltip') || 'Remove the generated images from this palace'}
+                                    title={t('memory_palace.clear_generated_tooltip') || 'Remove the generated images and sculptures from this palace'}
                                 >
-                                    ↺ {t('memory_palace.clear_images') || 'Clear images'}
+                                    ↺ {t('memory_palace.clear_generated') || 'Clear generated art'}
                                 </button>
                             )}
                         </>

@@ -10453,6 +10453,7 @@
     var decs = Array.isArray(state.decorations) ? state.decorations : [];
     var branches = [];
     var images = {};
+    var objects = {};
     rooms.forEach(function(room) {
       var placed = decs.filter(function(d) {
         return d && d.placement && (d.placement.roomId || 'main') === room.id;
@@ -10468,6 +10469,7 @@
         items.push(d.templateLabel || d.template || 'Decoration');
         mnemonics.push(d.studentReflection || d.aiRationale || '');
         if (d.imageBase64) images['b' + bi + '_i' + ii] = d.imageBase64;
+        if (d.recipe3d) objects['b' + bi + '_i' + ii] = d.recipe3d;   // Prim3D sculpture (v2+ decorations)
       });
       branches.push({ title: (room.icon ? room.icon + ' ' : '') + (room.label || room.id), items: items, mnemonics: mnemonics });
     });
@@ -10483,7 +10485,7 @@
         })
       });
     }
-    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images };
+    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images, objects: objects };
   }
 
   // Lazy-load memory_palace_module.js from wherever this module was served
@@ -10506,7 +10508,22 @@
         var s = document.createElement('script');
         s.src = base + 'memory_palace_module.js' + query;
         s.async = true;
-        s.onload = function() { resolve(!!(window.AlloModules && window.AlloModules.MemoryPalace)); };
+        s.onload = function() {
+          var ok = !!(window.AlloModules && window.AlloModules.MemoryPalace);
+          // Best-effort sculpture support: load Prim3D too, but never block on it.
+          try {
+            if (ok && !(window.AlloModules && window.AlloModules.Prim3D)) {
+              var s2 = document.createElement('script');
+              s2.src = base + 'prim3d_module.js' + query;
+              s2.async = true;
+              s2.onload = function() { resolve(ok); };
+              s2.onerror = function() { resolve(ok); };
+              document.head.appendChild(s2);
+              return;
+            }
+          } catch (e3) {}
+          resolve(ok);
+        };
         s.onerror = function() { resolve(false); };
         document.head.appendChild(s);
       } catch (e2) { resolve(false); }
@@ -10566,6 +10583,7 @@
       if (status.parentNode) status.parentNode.removeChild(status);
       handle = MP.render(body, built.data, {
         images: built.images,
+        objects: built.objects,
         onLocusChange: function(locus) {
           if (!locus) return;
           footer.textContent = locus.id === '__entry'

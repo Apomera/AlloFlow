@@ -1251,6 +1251,15 @@ function _voPalaceEnsure() {
     return false;
   });
 }
+function _voPrim3dEnsure() {
+  if (window.AlloModules && window.AlloModules.Prim3D) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + "prim3d_module.js" + loc.query).then(function() {
+    return !!(window.AlloModules && window.AlloModules.Prim3D);
+  }).catch(function() {
+    return false;
+  });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -1771,10 +1780,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   React.useEffect(() => {
     let alive = true;
     _voPalaceEnsure().then((ok) => {
-      if (alive) {
-        if (ok) setReady(true);
-        else setFailed(true);
+      if (!alive) return;
+      if (!ok) {
+        setFailed(true);
+        return;
       }
+      _voPrim3dEnsure().then(() => {
+        if (alive) setReady(true);
+      });
     });
     return () => {
       alive = false;
@@ -1791,6 +1804,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     handleRef.current = MP.render(hostRef.current, data, {
       t,
       images: data?.memoryPalace?.images || {},
+      objects: data?.memoryPalace?.objects || {},
       recall: !!recall,
       startAt: recall ? recall.startAt : void 0,
       onLocusChange: (locus, idx, total) => {
@@ -2014,6 +2028,51 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     setAnswered((n) => n + 1);
     setTimeout(() => advanceRecall(), 700);
   };
+  const objects3d = data?.memoryPalace?.objects || {};
+  const objectCount = Object.keys(objects3d).length;
+  const [sculpting, setSculpting] = React.useState(null);
+  const handleSculpt = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    const P3D = window.AlloModules && window.AlloModules.Prim3D;
+    if (!MP || !P3D || !persist || sculpting || typeof window.callGemini !== "function") return;
+    const palace = MP.buildPalace(data || {});
+    const targets = palace.loci.filter((l) => l.id !== "__entry" && !objects3d[l.id]).slice(0, 12);
+    if (!targets.length) {
+      if (addToast) addToast(t("memory_palace.sculpt_done_already") || "Every locus already has a sculpture.", "info");
+      return;
+    }
+    setSculpting({ done: 0, total: targets.length });
+    const out = {};
+    let failures = 0;
+    const step = (i) => {
+      if (i >= targets.length) {
+        setSculpting(null);
+        if (Object.keys(out).length) {
+          persist({ ...data?.memoryPalace || {}, objects: { ...objects3d, ...out }, generatedAt: Date.now() }, "memoryPalace");
+          setNonce((n) => n + 1);
+        }
+        if (addToast) {
+          if (failures) addToast((t("memory_palace.sculpt_partial") || "Sculpted {ok} loci; {fail} could not be designed.").replace("{ok}", String(Object.keys(out).length)).replace("{fail}", String(failures)), "info");
+          else addToast(t("memory_palace.sculpt_done") || "\u{1F5FF} Sculptures placed! Walk the route to meet them.", "success");
+        }
+        return;
+      }
+      const l = targets[i];
+      const subject = l.mnemonic || l.label;
+      Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true)).then((res) => {
+        const text = typeof res === "string" ? res : res && (res.text || res.output || res.response) || "";
+        const recipe = P3D.parseRecipe(text);
+        if (recipe) out[l.id] = recipe;
+        else failures += 1;
+      }).catch(() => {
+        failures += 1;
+      }).then(() => {
+        setSculpting({ done: i + 1, total: targets.length });
+        step(i + 1);
+      });
+    };
+    step(0);
+  };
   const handleFurnish = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !canImagen || !persist || furnishing) return;
@@ -2030,7 +2089,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       if (i >= targets.length) {
         setFurnishing(null);
         if (Object.keys(out).length) {
-          persist({ images: { ...images, ...out }, generatedAt: Date.now() }, "memoryPalace");
+          persist({ ...data?.memoryPalace || {}, images: { ...images, ...out }, generatedAt: Date.now() }, "memoryPalace");
           setNonce((n) => n + 1);
         }
         if (addToast) {
@@ -2095,7 +2154,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5BC} ",
     furnishing ? (t("memory_palace.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("memory_palace.furnish") || "Furnish with AI images"
-  ), hasContent && !failed && persist && imageCount > 0 && !furnishing && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleSculpt,
+      disabled: !!sculpting || !!furnishing,
+      className: "flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("memory_palace.sculpt_tooltip") || "AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)"
+    },
+    "\u{1F5FF} ",
+    sculpting ? (t("memory_palace.sculpting") || "Sculpting {done}/{total}\u2026").replace("{done}", String(sculpting.done)).replace("{total}", String(sculpting.total)) : t("memory_palace.sculpt") || "Sculpt 3D objects"
+  ), hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2103,10 +2172,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setNonce((n) => n + 1);
       },
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
-      title: t("memory_palace.clear_tooltip") || "Remove the generated images from this palace"
+      title: t("memory_palace.clear_generated_tooltip") || "Remove the generated images and sculptures from this palace"
     },
     "\u21BA ",
-    t("memory_palace.clear_images") || "Clear images"
+    t("memory_palace.clear_generated") || "Clear generated art"
   )))), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), !recall && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
     "button",
     {
