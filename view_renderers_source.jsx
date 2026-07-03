@@ -2375,6 +2375,24 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [nonce, setNonce] = React.useState(0);
     const [current, setCurrent] = React.useState(null);         // {id, label, mnemonic, idx, total}
     const currentRef = React.useRef(null);
+    // Freshest memoryPalace store — sequential async gens (furnish/sculpt) and the
+    // recall finish read THIS at persist time, so a late write merges into the CURRENT
+    // data, never a stale render snapshot (which would clobber other art or mastery).
+    const mpRef = React.useRef(null);
+    mpRef.current = data?.memoryPalace || {};
+    const aliveRef = React.useRef(true);           // false after unmount → skip late persists
+    const finishedRef = React.useRef(false);       // synchronous double-finish guard for recall
+    const recallTimersRef = React.useRef([]);      // pending auto-advance timers, cleared on exit/unmount
+    React.useEffect(() => () => {
+        aliveRef.current = false;
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
+        recallTimersRef.current = [];
+    }, []);
+    const _laterRecall = (fn) => {
+        const id = setTimeout(() => { recallTimersRef.current = recallTimersRef.current.filter((x) => x !== id); fn(); }, 700);
+        recallTimersRef.current.push(id);
+        return id;
+    };
     const persist = typeof onPersist === 'function' ? onPersist : null;
     const canImagen = typeof callImagen === 'function';
     const images = data?.memoryPalace?.images || {};
@@ -2404,12 +2422,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // Spaced review: which loci are due (dueAt <= now) vs never-walked. Stable
     // mount-time `now` so the banner doesn't flicker across renders.
     const nowISO = React.useMemo(() => new Date().toISOString(), []);
+    // masteryKey in the deps so the banner refreshes after a review walk updates
+    // mastery (which does NOT change dataKey) — otherwise it keeps counting the loci
+    // the student just reviewed as still-due.
+    const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
     const dueInfo = React.useMemo(() => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !MP.dueLoci || !hasContent) return null;
         try { return MP.dueLoci(MP.buildPalace(data || {}), data?.memoryPalace?.mastery || {}, nowISO); } catch (e) { return null; }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataKey, nowISO]);
+    }, [dataKey, nowISO, masteryKey]);
 
     React.useEffect(() => {
         let alive = true;
@@ -2461,6 +2483,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     const _resetRecallRun = () => {
         recallResultsRef.current = {}; attemptsTotalRef.current = 0;
+        finishedRef.current = false;
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
+        recallTimersRef.current = [];
         elapsedRef.current = 0; setElapsed(0);
         setAnswered(0); setFinished(null); setRecallHint(null); setCanReveal(false); setTypedAnswer(''); setWrongFlash(false);
     };
@@ -2481,6 +2506,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (isTeacherMode && viaArm !== true && typeof onRecallArm === 'function') { try { onRecallArm(); } catch (e) {} }
     };
     const exitRecall = () => {
+        recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });   // no advance fires into study mode
+        recallTimersRef.current = [];
         setRecall(null); _resetRecallRun(); setRecallBank([]);
         startedByArmRef.current = false;
         if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
@@ -2502,7 +2529,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (armed && !isTeacherMode && !recall && ready && !failed && hasContent) startRecall('bank', true);
         else if (!armed && !isTeacherMode && recall && startedByArmRef.current) { startedByArmRef.current = false; exitRecall(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [armed, isTeacherMode, ready, failed, recall]);
+    }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
 
     const advanceRecall = () => {
         if (!palaceRef.current || !handleRef.current) return;
@@ -2511,7 +2538,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const curId = currentRef.current ? currentRef.current.id : route[0];
         const curIdx = Math.max(0, route.indexOf(curId));
         let nextIdx = -1;
-        for (let s = 1; s <= route.length; s++) {
+        // Start at s=0 so the CURRENT locus is re-checked first: if the user manually
+        // walked to a still-unanswered locus while an advance was pending, we stay on
+        // it rather than skipping past it.
+        for (let s = 0; s <= route.length; s++) {
             const i = (curIdx + s) % route.length;
             const id = route[i];
             if (id === '__entry') continue;
@@ -2524,7 +2554,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     const finishRecall = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
-        if (!MP || !palaceRef.current || finished) return;
+        // Synchronous ref guard: two auto-advance timers scheduled while finished===null
+        // could both reach here and double-award points/telemetry. The `finished` STATE
+        // is captured per-render and can't dedupe them; finishedRef can.
+        if (!MP || !palaceRef.current || finishedRef.current) return;
+        finishedRef.current = true;
         const targets = palaceRef.current.route.filter((id) => id !== '__entry');
         const res = recallResultsRef.current;
         targets.forEach((id) => { if (!res[id]) res[id] = { attempts: 0, correct: false, revealed: true }; });
@@ -2550,9 +2584,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             timeSeconds: elapsedRef.current, incorrectPlacements: misses,
         });
         // Fold this walk's per-locus results into the spaced-repetition schedule.
-        // No generatedAt bump → the scene does not remount over the finished summary.
-        if (persist && MP.updateMastery) {
-            try { persist({ ...(data?.memoryPalace || {}), mastery: MP.updateMastery(data?.memoryPalace?.mastery || {}, res, new Date().toISOString()) }, 'memoryPalace'); } catch (e) {}
+        // Merge into the LIVE store (mpRef) so mastery can't clobber freshly-generated
+        // images/objects; no generatedAt bump → no remount over the finished summary.
+        if (persist && MP.updateMastery && aliveRef.current) {
+            try { persist({ ...(mpRef.current || {}), mastery: MP.updateMastery((mpRef.current && mpRef.current.mastery) || {}, res, new Date().toISOString()) }, 'memoryPalace'); } catch (e) {}
         }
     };
 
@@ -2577,7 +2612,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             });
             setRecallHint(null); setCanReveal(false); setTypedAnswer('');
             setAnswered((n) => n + 1);
-            setTimeout(() => advanceRecall(), 700);
+            _laterRecall(() => advanceRecall());
         } else {
             if (playSound) playSound('reveal');
             if (handleRef.current) handleRef.current.setLocusStatus(cur.id, 'incorrect');
@@ -2629,8 +2664,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const step = (i) => {
             if (i >= targets.length) {
                 setSculpting(null);
-                if (Object.keys(out).length) {
-                    persist({ ...(data?.memoryPalace || {}), objects: { ...objects3d, ...out }, generatedAt: Date.now() }, 'memoryPalace');
+                if (Object.keys(out).length && aliveRef.current) {
+                    persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), ...out }, generatedAt: Date.now() }, 'memoryPalace');
                     setNonce((n) => n + 1);
                 }
                 if (addToast) {
@@ -2665,9 +2700,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const step = (i) => {
             if (i >= targets.length) {
                 setFurnishing(null);
-                if (Object.keys(out).length) {
-                    // Merge-with-existing so images never clobber sculpted objects (or vice versa).
-                    persist({ ...(data?.memoryPalace || {}), images: { ...images, ...out }, generatedAt: Date.now() }, 'memoryPalace');
+                if (Object.keys(out).length && aliveRef.current) {
+                    // Merge into the LIVE store (mpRef) so images never clobber sculptures or mastery.
+                    persist({ ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), ...out }, generatedAt: Date.now() }, 'memoryPalace');
                     setNonce((n) => n + 1);
                 }
                 if (addToast) {
@@ -2721,7 +2756,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && recallEligible && (
                                 <button
                                     onClick={() => startRecall('bank', false)}
-                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                    disabled={!!furnishing || !!sculpting}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                     title={t('memory_palace.recall_tooltip') || 'Practice: the labels are covered — walk the palace and recall what lives at each locus'}
                                 >
                                     🧠 {t('memory_palace.recall_play') || 'Recall walk'}
@@ -2730,7 +2766,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && recallEligible && isTeacherMode && (
                                 <button
                                     onClick={() => startRecall('type', false)}
-                                    className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors"
+                                    disabled={!!furnishing || !!sculpting}
+                                    className="flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.recall_expert_tooltip') || 'Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)'}
                                 >
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
@@ -2739,7 +2776,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             {hasContent && !failed && canImagen && persist && (
                                 <button
                                     onClick={handleFurnish}
-                                    disabled={!!furnishing}
+                                    disabled={!!furnishing || !!sculpting}
                                     className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                     title={t('memory_palace.furnish_tooltip') || 'Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)'}
                                 >
@@ -2762,7 +2799,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             )}
                             {hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
                                 <button
-                                    onClick={() => { persist(null, 'memoryPalace'); setNonce((n) => n + 1); }}
+                                    onClick={() => {
+                                        // Drop ONLY the generated art — keep the spaced-repetition mastery
+                                        // (which also lives in this store), so clearing images doesn't wipe review progress.
+                                        const keep = { ...(mpRef.current || {}) };
+                                        delete keep.images; delete keep.objects; delete keep.generatedAt;
+                                        persist(Object.keys(keep).length ? keep : null, 'memoryPalace');
+                                        setNonce((n) => n + 1);
+                                    }}
                                     className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
                                     title={t('memory_palace.clear_generated_tooltip') || 'Remove the generated images and sculptures from this palace'}
                                 >

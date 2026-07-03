@@ -102,7 +102,10 @@
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
   function buildObject(THREE, recipe, opts) {
     opts = opts || {};
-    var r = (recipe && recipe.version === VERSION && Array.isArray(recipe.parts)) ? recipe : normalizeRecipe(recipe);
+    // Always normalize — even a version-stamped recipe may carry malformed parts
+    // (missing/short size|position|rotation arrays) that would throw at .set() or
+    // produce NaN transforms. normalizeRecipe is idempotent on already-clean input.
+    var r = normalizeRecipe(recipe);
     if (!THREE || !r) return null;
     var unit = isNum(opts.unit) ? opts.unit : 1;
     var group = new THREE.Group();

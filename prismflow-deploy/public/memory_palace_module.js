@@ -236,8 +236,12 @@
       var prev = m[id] || { reps: 0 };
       var prevReps = isNum(prev.reps) ? prev.reps : 0;
       var reps = (s >= 0.6) ? (prevReps + 1) : Math.max(0, prevReps - 1);
-      var idx = Math.max(0, Math.min(_REVIEW_LADDER.length - 1, reps));
-      var intervalDays = (s === 0) ? 1 : _REVIEW_LADDER[idx];   // a full miss → see it tomorrow
+      // Success indexes the ladder at reps-1, so the FIRST correct recall spaces at
+      // 1 day (ladder[0]), not 3. ANY failure to recall — a wrong guess (s=0) OR a
+      // give-up reveal (s=0.2) — reschedules for tomorrow; giving up must never push
+      // an item weeks out (which the old `s === 0` gate did to revealed items).
+      var idx = Math.max(0, Math.min(_REVIEW_LADDER.length - 1, reps - 1));
+      var intervalDays = (s < 0.6) ? 1 : _REVIEW_LADDER[idx];
       var lastResult = (results[id] && results[id].revealed) ? 'revealed' : (s >= 1 ? 'first-try' : (s >= 0.6 ? 'eventual' : 'missed'));
       m[id] = { reps: reps, strength: s, lastResult: lastResult, lastReviewedAt: nowISO, dueAt: _addDays(nowISO, intervalDays) };
     });
@@ -386,6 +390,7 @@
     state.renderer = renderer;
 
     var root = new THREE.Scene();
+    state.scene = root;   // exposed so destroy() can traverse + dispose the whole graph
     root.background = new THREE.Color(BG);
     try { root.fog = new THREE.FogExp2(BG, 0.00042); } catch (e) {}
     var camera = new THREE.PerspectiveCamera(58, w / hgt, 1, 60000);
@@ -467,7 +472,13 @@
       var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       var img = images[l.id];
       if (img) {
-        try { var tx = texLoader.load(img); if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding; mat.map = tx; } catch (e) { mat.map = makeCardTexture(THREE, li, color); }
+        // TextureLoader decodes asynchronously — a corrupt data-URL surfaces via the
+        // onError callback, NOT a synchronous throw — so fall back to the numbered card
+        // there too, or a bad image would render as a blank frame.
+        try {
+          var tx = texLoader.load(img, undefined, undefined, function () { try { mat.map = makeCardTexture(THREE, li, color); mat.needsUpdate = true; } catch (e2) {} });
+          if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding; mat.map = tx;
+        } catch (e) { mat.map = makeCardTexture(THREE, li, color); }
       } else {
         mat.map = makeCardTexture(THREE, li, color);
       }
@@ -544,6 +555,9 @@
       if (!ref) return;
       try {
         ref.group.remove(ref.label);
+        // Free the old '?' sprite's texture+material — otherwise every reveal during
+        // a recall game leaks a CanvasTexture before destroy() ever runs.
+        try { if (ref.label.material) { if (ref.label.material.map) ref.label.material.map.dispose(); ref.label.material.dispose(); } } catch (e2) {}
         ref.label = makeLabelSprite(THREE, ref.locus.label, ref.baseColor, 24);
         ref.label.position.set(0, -(FRAME_H / 2 + 34), 10);
         ref.group.add(ref.label);
@@ -738,14 +752,32 @@
     var routeEl = buildRouteDom(palace, t, false, !!opts.recall);   // sr-only while 3D is live
     container.appendChild(routeEl);
 
-    var state = { raf: 0, renderer: null, disposed: false, onResize: null, cleanup: [], goTo: null, revealLocus: null, setLocusStatus: null };
+    var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, revealLocus: null, setLocusStatus: null };
     function destroy() {
       state.disposed = true;
       if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
       if (state.onResize) { try { window.removeEventListener('resize', state.onResize); } catch (e) {} state.onResize = null; }
       state.cleanup.forEach(function (fn) { try { fn(); } catch (e) {} });
       state.cleanup = [];
+      // Dispose every geometry/material/texture in the scene graph — renderer.dispose()
+      // alone does NOT free these, and the frame images are large base64 textures, so
+      // repeated open/close would climb GPU memory until the context is lost.
+      if (state.scene) {
+        try {
+          state.scene.traverse(function (o) {
+            if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+            var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+            mats.forEach(function (mx) {
+              if (!mx) return;
+              if (mx.map && mx.map.dispose) { try { mx.map.dispose(); } catch (e) {} }
+              if (mx.dispose) { try { mx.dispose(); } catch (e) {} }
+            });
+          });
+        } catch (e) {}
+        state.scene = null;
+      }
       if (state.renderer) {
+        try { if (state.renderer.forceContextLoss) state.renderer.forceContextLoss(); } catch (e) {}
         try { state.renderer.dispose(); } catch (e) {}
         try { var dom = state.renderer.domElement; if (dom && dom.parentNode) dom.parentNode.removeChild(dom); } catch (e) {}
         state.renderer = null;
@@ -775,7 +807,12 @@
     loadThree(opts).then(function (THREE) {
       if (!THREE || state.disposed) return;
       try { mountGL(holder, THREE, palace, opts, state); }
-      catch (e) { console.warn('[MemoryPalace] GL mount failed:', e && e.message); showFallback(_tr(t, 'memory_palace.gl_error', 'The 3D palace could not start. Showing the walking route instead.')); }
+      catch (e) {
+        console.warn('[MemoryPalace] GL mount failed:', e && e.message);
+        try { destroy(); } catch (e2) {}                                   // dispose whatever was built before the throw
+        try { if (holder.parentNode) holder.parentNode.removeChild(holder); } catch (e3) {}
+        showFallback(_tr(t, 'memory_palace.gl_error', 'The 3D palace could not start. Showing the walking route instead.'));
+      }
     }).catch(function (e) {
       if (state.disposed) return;
       console.warn('[MemoryPalace] three.js load failed:', e && e.message);

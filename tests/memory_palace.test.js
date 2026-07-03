@@ -163,22 +163,31 @@ describe('MemoryPalace — spaced-repetition mastery (pure scheduling)', () => {
   const daysFromNow = (iso) => Math.round((Date.parse(iso) - Date.parse(NOW)) / dayMs);
 
   it('updateMastery advances the interval on strong recall, drops back on a slip', () => {
-    // first-try correct → reps 1 → ladder[1] = 3 days
+    // first correct → reps 1 → ladder[reps-1]=ladder[0] = 1 day (SM-2 first interval)
     let m = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, NOW);
     expect(m.a.strength).toBe(1);
     expect(m.a.reps).toBe(1);
-    expect(daysFromNow(m.a.dueAt)).toBe(3);
+    expect(daysFromNow(m.a.dueAt)).toBe(1);
     expect(m.a.lastResult).toBe('first-try');
-    // another strong recall → reps 2 → ladder[2] = 7 days
+    // another strong recall → reps 2 → ladder[1] = 3 days
     m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, NOW);
     expect(m.a.reps).toBe(2);
-    expect(daysFromNow(m.a.dueAt)).toBe(7);
+    expect(daysFromNow(m.a.dueAt)).toBe(3);
     // a miss → reps drops to 1, and due tomorrow (strength 0 ⇒ 1 day)
     m = MP.updateMastery(m, { a: { attempts: 3, correct: false } }, NOW);
     expect(m.a.reps).toBe(1);
     expect(m.a.strength).toBe(0);
     expect(daysFromNow(m.a.dueAt)).toBe(1);
     expect(m.a.lastResult).toBe('missed');
+  });
+
+  it('a give-up REVEAL reschedules for tomorrow, not weeks out (regression)', () => {
+    // a well-learned item (reps 5) that the student reveals must come back SOON —
+    // the old code only special-cased s===0 and pushed revealed items to ladder[4]=35d.
+    const m = MP.updateMastery({ x: { reps: 5, strength: 1 } }, { x: { attempts: 1, revealed: true } }, NOW);
+    expect(m.x.strength).toBe(0.2);
+    expect(m.x.lastResult).toBe('revealed');
+    expect(daysFromNow(m.x.dueAt)).toBe(1);
   });
 
   it('eventual (multi-attempt) and revealed recalls score partial strength', () => {

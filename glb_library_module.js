@@ -129,23 +129,40 @@
     if (THREE.GLTFLoader) return Promise.resolve(true);
     if (window.__glbLoaderPromise) return window.__glbLoaderPromise;
     window.__glbLoaderPromise = new Promise(function (resolve, reject) {
+      // Clear the cached promise on failure so a later call can RE-ATTEMPT the load —
+      // otherwise one transient network/CSP hiccup permanently degrades every .glb
+      // item to its Prim3D fallback for the whole page session.
+      function fail(err) { try { window.__glbLoaderPromise = null; } catch (e) {} reject(err); }
       try {
         var s = document.createElement('script');
         s.src = opts.gltfUrl || GLTF_URL;
         s.async = true;
-        s.onload = function () { THREE.GLTFLoader ? resolve(true) : reject(new Error('GLTFLoader loaded but THREE.GLTFLoader missing')); };
-        s.onerror = function () { reject(new Error('failed to load GLTFLoader')); };
+        s.onload = function () { THREE.GLTFLoader ? resolve(true) : fail(new Error('GLTFLoader loaded but THREE.GLTFLoader missing')); };
+        s.onerror = function () { fail(new Error('failed to load GLTFLoader')); };
         document.head.appendChild(s);
-      } catch (e) { reject(e); }
+      } catch (e) { fail(e); }
     });
     return window.__glbLoaderPromise;
   }
 
+  // Multiplicatively tint an object's materials toward item.tint (colorway variants).
+  // Keeps relative shading; no-op when tint is unset.
+  function _applyTint(THREE, obj, tint) {
+    if (!obj || !tint) return obj;
+    try {
+      var c = new THREE.Color(tint);
+      obj.traverse(function (o) {
+        var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+        mats.forEach(function (m) { if (m && m.color && m.color.multiply) { try { m.color.multiply(c); } catch (e) {} } });
+      });
+    } catch (e) {}
+    return obj;
+  }
   function _primFallback(THREE, item, opts) {
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     if (P3D && item && item.recipe) {
       var g = P3D.buildObject(THREE, item.recipe, { unit: num(opts.unit, 1) });
-      if (g) return g;
+      if (g) return _applyTint(THREE, g, item.tint);
     }
     return null;
   }
@@ -170,6 +187,7 @@
                 var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
                 if (!obj) { reject(new Error('empty gltf')); return; }
                 if (isNum(opts.unit)) obj.scale.setScalar(opts.unit);
+                _applyTint(THREE, obj, item.tint);
                 obj.userData.glbItemId = item.id;
                 resolve(obj);
               } catch (e) { reject(e); }

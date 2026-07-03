@@ -1752,6 +1752,29 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [nonce, setNonce] = React.useState(0);
   const [current, setCurrent] = React.useState(null);
   const currentRef = React.useRef(null);
+  const mpRef = React.useRef(null);
+  mpRef.current = data?.memoryPalace || {};
+  const aliveRef = React.useRef(true);
+  const finishedRef = React.useRef(false);
+  const recallTimersRef = React.useRef([]);
+  React.useEffect(() => () => {
+    aliveRef.current = false;
+    recallTimersRef.current.forEach((id) => {
+      try {
+        clearTimeout(id);
+      } catch (e) {
+      }
+    });
+    recallTimersRef.current = [];
+  }, []);
+  const _laterRecall = (fn) => {
+    const id = setTimeout(() => {
+      recallTimersRef.current = recallTimersRef.current.filter((x) => x !== id);
+      fn();
+    }, 700);
+    recallTimersRef.current.push(id);
+    return id;
+  };
   const persist = typeof onPersist === "function" ? onPersist : null;
   const canImagen = typeof callImagen === "function";
   const images = data?.memoryPalace?.images || {};
@@ -1778,6 +1801,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     img: data?.memoryPalace?.generatedAt || 0
   });
   const nowISO = React.useMemo(() => (/* @__PURE__ */ new Date()).toISOString(), []);
+  const masteryKey = JSON.stringify(data?.memoryPalace?.mastery || {});
   const dueInfo = React.useMemo(() => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !MP.dueLoci || !hasContent) return null;
@@ -1786,7 +1810,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     } catch (e) {
       return null;
     }
-  }, [dataKey, nowISO]);
+  }, [dataKey, nowISO, masteryKey]);
   React.useEffect(() => {
     let alive = true;
     _voPalaceEnsure().then((ok) => {
@@ -1848,6 +1872,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const _resetRecallRun = () => {
     recallResultsRef.current = {};
     attemptsTotalRef.current = 0;
+    finishedRef.current = false;
+    recallTimersRef.current.forEach((id) => {
+      try {
+        clearTimeout(id);
+      } catch (e) {
+      }
+    });
+    recallTimersRef.current = [];
     elapsedRef.current = 0;
     setElapsed(0);
     setAnswered(0);
@@ -1880,6 +1912,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }
   };
   const exitRecall = () => {
+    recallTimersRef.current.forEach((id) => {
+      try {
+        clearTimeout(id);
+      } catch (e) {
+      }
+    });
+    recallTimersRef.current = [];
     setRecall(null);
     _resetRecallRun();
     setRecallBank([]);
@@ -1908,7 +1947,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       startedByArmRef.current = false;
       exitRecall();
     }
-  }, [armed, isTeacherMode, ready, failed, recall]);
+  }, [armed, isTeacherMode, ready, failed, recall, hasContent]);
   const advanceRecall = () => {
     if (!palaceRef.current || !handleRef.current) return;
     const route = palaceRef.current.route;
@@ -1916,7 +1955,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const curId = currentRef.current ? currentRef.current.id : route[0];
     const curIdx = Math.max(0, route.indexOf(curId));
     let nextIdx = -1;
-    for (let s = 1; s <= route.length; s++) {
+    for (let s = 0; s <= route.length; s++) {
       const i = (curIdx + s) % route.length;
       const id = route[i];
       if (id === "__entry") continue;
@@ -1934,7 +1973,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   };
   const finishRecall = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
-    if (!MP || !palaceRef.current || finished) return;
+    if (!MP || !palaceRef.current || finishedRef.current) return;
+    finishedRef.current = true;
     const targets = palaceRef.current.route.filter((id) => id !== "__entry");
     const res = recallResultsRef.current;
     targets.forEach((id) => {
@@ -1972,9 +2012,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       timeSeconds: elapsedRef.current,
       incorrectPlacements: misses
     });
-    if (persist && MP.updateMastery) {
+    if (persist && MP.updateMastery && aliveRef.current) {
       try {
-        persist({ ...data?.memoryPalace || {}, mastery: MP.updateMastery(data?.memoryPalace?.mastery || {}, res, (/* @__PURE__ */ new Date()).toISOString()) }, "memoryPalace");
+        persist({ ...mpRef.current || {}, mastery: MP.updateMastery(mpRef.current && mpRef.current.mastery || {}, res, (/* @__PURE__ */ new Date()).toISOString()) }, "memoryPalace");
       } catch (e) {
       }
     }
@@ -2008,7 +2048,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       setCanReveal(false);
       setTypedAnswer("");
       setAnswered((n) => n + 1);
-      setTimeout(() => advanceRecall(), 700);
+      _laterRecall(() => advanceRecall());
     } else {
       if (playSound) playSound("reveal");
       if (handleRef.current) handleRef.current.setLocusStatus(cur.id, "incorrect");
@@ -2065,8 +2105,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const step = (i) => {
       if (i >= targets.length) {
         setSculpting(null);
-        if (Object.keys(out).length) {
-          persist({ ...data?.memoryPalace || {}, objects: { ...objects3d, ...out }, generatedAt: Date.now() }, "memoryPalace");
+        if (Object.keys(out).length && aliveRef.current) {
+          persist({ ...mpRef.current || {}, objects: { ...mpRef.current && mpRef.current.objects || {}, ...out }, generatedAt: Date.now() }, "memoryPalace");
           setNonce((n) => n + 1);
         }
         if (addToast) {
@@ -2106,8 +2146,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const step = (i) => {
       if (i >= targets.length) {
         setFurnishing(null);
-        if (Object.keys(out).length) {
-          persist({ ...data?.memoryPalace || {}, images: { ...images, ...out }, generatedAt: Date.now() }, "memoryPalace");
+        if (Object.keys(out).length && aliveRef.current) {
+          persist({ ...mpRef.current || {}, images: { ...mpRef.current && mpRef.current.images || {}, ...out }, generatedAt: Date.now() }, "memoryPalace");
           setNonce((n) => n + 1);
         }
         if (addToast) {
@@ -2148,7 +2188,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("bank", false),
-      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+      disabled: !!furnishing || !!sculpting,
+      className: "flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
       title: t("memory_palace.recall_tooltip") || "Practice: the labels are covered \u2014 walk the palace and recall what lives at each locus"
     },
     "\u{1F9E0} ",
@@ -2157,7 +2198,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => startRecall("type", false),
-      className: "flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors",
+      disabled: !!furnishing || !!sculpting,
+      className: "flex items-center gap-1 bg-white text-amber-700 border border-amber-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
       title: t("memory_palace.recall_expert_tooltip") || "Expert mode: type each answer instead of picking from the bank (stronger retrieval practice; forgiving spelling)"
     },
     "\u2328 ",
@@ -2166,7 +2208,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: handleFurnish,
-      disabled: !!furnishing,
+      disabled: !!furnishing || !!sculpting,
       className: "flex items-center gap-1 bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
       title: t("memory_palace.furnish_tooltip") || "Generate one AI illustration per locus from its mnemonic (uses image credits; saved with the resource)"
     },
@@ -2186,7 +2228,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     "button",
     {
       onClick: () => {
-        persist(null, "memoryPalace");
+        const keep = { ...mpRef.current || {} };
+        delete keep.images;
+        delete keep.objects;
+        delete keep.generatedAt;
+        persist(Object.keys(keep).length ? keep : null, "memoryPalace");
         setNonce((n) => n + 1);
       },
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",

@@ -104,4 +104,13 @@ describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
     expect(P.buildObject(threeStub(), { parts: [{ shape: 'nope' }] })).toBe(null);
     expect(P.buildObject(null, { parts: [{ shape: 'box' }] })).toBe(null);
   });
+  it('normalizes even a version-stamped recipe so malformed parts cannot throw (regression)', () => {
+    // a p3d/1 recipe whose part has no size/position/rotation arrays — the old code
+    // trusted the version and threw at position[0]; now it re-normalizes and fills defaults.
+    const THREE = threeStub();
+    let g;
+    expect(() => { g = P.buildObject(THREE, { version: 'p3d/1', parts: [{ shape: 'box' }] }); }).not.toThrow();
+    expect(g).toBeTruthy();
+    expect(g.children.length).toBe(1);
+  });
 });
