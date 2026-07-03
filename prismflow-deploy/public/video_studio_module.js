@@ -236,6 +236,9 @@
       hasChapters: !!m.hasChapters,
       hasTeachingInserts: !!m.hasTeachingInserts,
       hasVisualPrompts: !!m.hasVisualPrompts,
+      hasVisualOverlays: !!m.hasVisualOverlays,
+      hasMusicBed: !!m.hasMusicBed,
+      resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
       thumb: thumb,
       createdAt: m.createdAt || null
     };
@@ -365,6 +368,71 @@
       if (isFinite(a) && isFinite(b) && t >= Math.min(a, b) && t < Math.max(a, b)) return 0;
     }
     return vol;
+  }
+
+  function vsSanitizeMusicBed(raw, duration) {
+    if (!raw) return null;
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var start = Number(raw.start);
+    if (!isFinite(start)) start = 0;
+    start = Math.max(0, Math.min(dur, start));
+    var end = Number(raw.end);
+    if (!isFinite(end) || end <= start) end = dur;
+    end = Math.max(start + 0.2, Math.min(dur, end));
+    var clean = function (v, max) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); };
+    var volume = Number(raw.volume);
+    if (!isFinite(volume)) volume = 0.28;
+    var fadeIn = Number(raw.fadeIn), fadeOut = Number(raw.fadeOut);
+    return {
+      id: clean(raw.id || 'music', 40) || 'music',
+      name: clean(raw.name || raw.fileName || 'Background music', 90),
+      start: start,
+      end: end,
+      volume: Math.max(0, Math.min(1.5, volume)),
+      loop: raw.loop !== false,
+      fadeIn: Math.max(0, Math.min(20, isFinite(fadeIn) ? fadeIn : 1.5)),
+      fadeOut: Math.max(0, Math.min(20, isFinite(fadeOut) ? fadeOut : 2)),
+      duck: raw.duck !== false,
+      fileName: clean(raw.fileName || raw.name || 'music', 120),
+      mimeType: clean(raw.mimeType || raw.type || 'audio/webm', 80),
+      blob: raw.blob || null
+    };
+  }
+
+  function vsMusicGainAt(music, tSec, speechActive) {
+    var m = vsSanitizeMusicBed(music, Math.max(Number(music && music.end) || 0, Number(tSec) || 0, 0.1));
+    if (!m) return 0;
+    var t = Number(tSec) || 0;
+    if (t < m.start || t > m.end) return 0;
+    var g = m.volume;
+    if (m.fadeIn > 0) g *= Math.min(1, Math.max(0, (t - m.start) / m.fadeIn));
+    if (m.fadeOut > 0) g *= Math.min(1, Math.max(0, (m.end - t) / m.fadeOut));
+    if (m.duck && speechActive) g *= 0.38;
+    return Math.max(0, Math.min(1.5, g));
+  }
+
+  function vsOverlayFrameState(overlay, tSec) {
+    var o = overlay || {};
+    var start = Number(o.start) || 0;
+    var end = Number(o.end);
+    if (!isFinite(end) || end <= start) end = start + 4;
+    var span = Math.max(0.1, end - start);
+    var p = Math.max(0, Math.min(1, ((Number(tSec) || 0) - start) / span));
+    var fade = Math.min(1, p / 0.16, (1 - p) / 0.16);
+    var x = Number(o.x), y = Number(o.y), width = Number(o.width), scale = Number(o.scale);
+    x = isFinite(x) ? Math.max(0, Math.min(1, x)) : 0.72;
+    y = isFinite(y) ? Math.max(0, Math.min(1, y)) : 0.42;
+    width = isFinite(width) ? Math.max(0.08, Math.min(0.9, width)) : 0.28;
+    scale = isFinite(scale) ? Math.max(0.25, Math.min(3, scale)) : 1;
+    var motion = String(o.motion || 'fade').toLowerCase().replace(/[\s-]+/g, '_');
+    if (motion === 'slide_left') x += (1 - p) * 0.18;
+    else if (motion === 'slide_right') x -= (1 - p) * 0.18;
+    else if (motion === 'slide_up') y += (1 - p) * 0.18;
+    else if (motion === 'slide_down') y -= (1 - p) * 0.18;
+    else if (motion === 'drift_right') x += (p - 0.5) * 0.20;
+    else if (motion === 'drift_left') x -= (p - 0.5) * 0.20;
+    else if (motion === 'zoom_in') scale *= 0.86 + p * 0.22;
+    return { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), width: width, scale: scale, alpha: Math.max(0, fade), progress: p };
   }
 
   // Filler-word scan → proposed mute spans. words: [{word, start, end}] from a
@@ -594,10 +662,15 @@
       animated_sticker: 'sticker',
       image: 'visual_card',
       generated_image: 'visual_card',
-      visual_card: 'visual_card'
+      visual_card: 'visual_card',
+      image_overlay: 'image_overlay',
+      overlay: 'image_overlay',
+      uploaded_image: 'image_overlay',
+      resource_image: 'image_overlay'
     };
     var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
     var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
+    var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
     var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
     for (var i = 0; i < list.length && out.length < 32; i++) {
       var s = list[i] || {};
@@ -608,15 +681,19 @@
       if (!isFinite(start)) continue;
       start = Math.max(0, Math.min(dur, start));
       var end = Number(s.end);
-      var dflt = type === 'title_card' || type === 'pause_prompt' || type === 'visual_card' ? 4 : 3;
+      var dflt = type === 'title_card' || type === 'pause_prompt' || type === 'visual_card' ? 4 : (type === 'image_overlay' ? 5 : 3);
       var span = isFinite(end) ? (end - start) : Number(s.duration != null ? s.duration : s.dur);
       if (!isFinite(span) || span <= 0) span = dflt;
-      span = Math.max(0.6, Math.min(type === 'callout' || type === 'sticker' ? 20 : 15, span));
+      span = Math.max(0.6, Math.min(type === 'callout' || type === 'sticker' || type === 'image_overlay' ? 20 : 15, span));
       var text = String(s.text || s.title || s.label || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 180);
-      if (!text && type !== 'sticker' && type !== 'visual_card') continue;
+      if (!text && type !== 'sticker' && type !== 'visual_card' && type !== 'image_overlay') continue;
       var note = String(s.note || s.subtext || s.prompt || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 240);
       var imageSrc = String(s.imageSrc || s.image || s.src || '').trim();
       if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
+      if (type === 'image_overlay' && !imageSrc) continue;
+      var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
+      var width = Number(s.width != null ? s.width : s.w);
+      var scale = Number(s.scale);
       out.push({
         id: String(s.id || ('ins' + (i + 1))).slice(0, 40),
         type: type,
@@ -624,15 +701,127 @@
         end: Math.min(dur, start + span),
         text: text || (type === 'sticker' ? 'Key idea' : ''),
         note: note,
-        x: clamp01(s.x, type === 'callout' || type === 'sticker' ? 0.68 : 0.5),
-        y: clamp01(s.y, type === 'callout' || type === 'sticker' ? 0.34 : 0.5),
+        x: clamp01(s.x, type === 'callout' || type === 'sticker' ? 0.68 : (type === 'image_overlay' ? 0.72 : 0.5)),
+        y: clamp01(s.y, type === 'callout' || type === 'sticker' ? 0.34 : (type === 'image_overlay' ? 0.42 : 0.5)),
+        width: isFinite(width) ? Math.max(0.08, Math.min(0.9, width)) : (type === 'image_overlay' ? 0.28 : 0.46),
+        scale: isFinite(scale) ? Math.max(0.25, Math.min(3, scale)) : 1,
+        motion: motions[motion] ? motion : (type === 'image_overlay' ? 'fade' : 'none'),
         theme: themes[String(s.theme || '').toLowerCase()] ? String(s.theme).toLowerCase() : 'blue',
         animation: anims[String(s.animation || '').toLowerCase()] ? String(s.animation).toLowerCase() : (type === 'sticker' ? 'pulse' : 'none'),
         imageSrc: imageSrc,
-        source: String(s.source || '').slice(0, 40)
+        source: String(s.source || '').slice(0, 40),
+        resourceId: String(s.resourceId || '').slice(0, 80),
+        resourceTitle: String(s.resourceTitle || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120)
       });
     }
     out.sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+    return out;
+  }
+
+  function vsBuildResourceCues(history, options) {
+    var list = Array.isArray(history) ? history : [];
+    var opts = options || {};
+    var out = [];
+    var max = Math.max(1, Math.min(200, Number(opts.limit) || 120));
+    var clean = function (v, n) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n); };
+    var safeImg = function (v) {
+      v = String(v || '').trim();
+      return (v.indexOf('data:image/') === 0 && v.length <= 1200000) ? v : '';
+    };
+    var push = function (cue) {
+      if (!cue || out.length >= max) return;
+      var label = clean(cue.label || cue.title || cue.term || cue.question || cue.text, 140);
+      var text = clean(cue.text || cue.definition || cue.question || cue.prompt || label, 520);
+      if (!label && !text && !cue.imageSrc) return;
+      out.push({
+        id: clean(cue.id || ('cue' + (out.length + 1)), 90),
+        kind: clean(cue.kind || 'resource', 40),
+        label: label || 'Resource cue',
+        text: text,
+        imageSrc: safeImg(cue.imageSrc),
+        prompt: clean(cue.prompt || text || label, 600),
+        sourceType: clean(cue.sourceType || cue.type || 'resource', 50),
+        sourceTitle: clean(cue.sourceTitle || '', 140),
+        sourceIndex: Math.max(0, Math.round(Number(cue.sourceIndex) || 0))
+      });
+    };
+    list.forEach(function (item, idx) {
+      if (!item) return;
+      var type = clean(item.type || item.kind || '', 50).toLowerCase();
+      var title = clean(item.title || item.name || item.label || type || 'Resource', 140);
+      var data = item.data != null ? item.data : item.content;
+      var baseId = clean(item.id || item.resourceId || ('history-' + idx), 60);
+      if (type === 'glossary' && Array.isArray(data)) {
+        data.slice(0, 80).forEach(function (g, gi) {
+          var term = clean(g && (g.term || g.word || g.label), 120);
+          var def = clean(g && (g.definition || g.def || g.description || g.meaning), 520);
+          push({
+            id: baseId + '-term-' + gi,
+            kind: 'glossary',
+            label: term || ('Term ' + (gi + 1)),
+            text: def,
+            imageSrc: g && (g.image || g.imageUrl || g.imageSrc),
+            prompt: term ? ('Create a clear visual support for the glossary term "' + term + '". Definition: ' + def) : def,
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else if (type === 'image' || type === 'visual' || type === 'visuals') {
+        var img = data && (data.imageUrl || data.image || data.src || data.dataUrl);
+        push({
+          id: baseId + '-image',
+          kind: 'image',
+          label: title,
+          text: clean((data && (data.alt || data.altText || data.caption || data.prompt)) || item.prompt || title, 520),
+          imageSrc: img,
+          prompt: clean((data && data.prompt) || item.prompt || title, 600),
+          sourceType: type,
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      } else if (type === 'quiz' || type === 'assessment') {
+        var qs = Array.isArray(data) ? data : (data && (data.questions || data.items));
+        (Array.isArray(qs) ? qs : []).slice(0, 24).forEach(function (q, qi) {
+          push({
+            id: baseId + '-q-' + qi,
+            kind: 'question',
+            label: clean(q && (q.question || q.prompt || q.text), 120) || ('Question ' + (qi + 1)),
+            text: clean(q && (q.question || q.prompt || q.text), 520),
+            prompt: clean(q && (q.question || q.prompt || q.text), 600),
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else if (type === 'outline' || type === 'lesson-plan' || type === 'lesson_plan') {
+        var rawSections = Array.isArray(data) ? data : (data && (data.sections || data.items || data.outline));
+        (Array.isArray(rawSections) ? rawSections : []).slice(0, 24).forEach(function (s, si) {
+          push({
+            id: baseId + '-section-' + si,
+            kind: 'section',
+            label: clean(s && (s.title || s.heading || s.topic || s.text), 120) || ('Section ' + (si + 1)),
+            text: clean(s && (s.summary || s.text || s.description || s.details), 520),
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        });
+      } else {
+        var txt = clean(typeof data === 'string' ? data : (data && (data.text || data.summary || data.markdown || data.html)) || item.text || item.summary, 520);
+        if (txt || title) {
+          push({
+            id: baseId + '-resource',
+            kind: type || 'resource',
+            label: title,
+            text: txt,
+            sourceType: type || 'resource',
+            sourceTitle: title,
+            sourceIndex: idx
+          });
+        }
+      }
+    });
     return out;
   }
 
@@ -756,7 +945,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -1065,6 +1254,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           } else {
             fRespond({ error: 'image-edit-unavailable' });
           }
+        } else if (ev.data.type === 'allostudio-resource-cues-request') {
+          var creq = ev.data;
+          var cReplyTo = studioWinRef.current;
+          var cRespond = function (payload) {
+            try { if (cReplyTo && !cReplyTo.closed) cReplyTo.postMessage(Object.assign({ type: 'allostudio-resource-cues-response', id: creq.id }, payload), '*'); } catch (_) {}
+          };
+          var hist = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : []);
+          if (!hist.length && typeof window !== 'undefined' && Array.isArray(window.__alloflowHistory)) hist = window.__alloflowHistory;
+          var cues = vsBuildResourceCues(hist, { limit: 140 });
+          cRespond({ cues: cues, count: cues.length });
         } else if (ev.data.type === 'allostudio-tts-request') {
           // Text → spoken audio through the app's existing Gemini TTS path.
           // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
@@ -1105,6 +1304,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var visualPrompts = (Array.isArray(p.visualPrompts) ? p.visualPrompts : []).filter(function (vp) { return vp && String(vp.prompt || '').trim(); }).map(function (vp) {
             return { id: String(vp.id || '').slice(0, 40), start: Math.max(0, Number(vp.start) || 0), type: String(vp.type || 'image_prompt').slice(0, 40), label: String(vp.label || 'Visual support').slice(0, 90), prompt: String(vp.prompt || '').slice(0, 600), source: String(vp.source || '').slice(0, 40) };
           });
+          var musicBed = p.musicBed ? vsSanitizeMusicBed(p.musicBed, Number(p.duration) || 0) : null;
+          if (musicBed) musicBed.blob = null;
           var vid = {
             id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             blob: p.blob,
@@ -1114,6 +1315,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             chapters: chapters,
             inserts: inserts,
             visualPrompts: visualPrompts,
+            musicBed: musicBed,
             title: String(p.title || 'Teacher video'),
             duration: Number(p.duration) || 0,
             size: p.blob.size,
@@ -1177,7 +1379,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var ref = vsMakePackReference({
         title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
         fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type),
-        hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!(v.inserts && v.inserts.length), hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), thumb: v.thumb, createdAt: v.createdAt
+        hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!(v.inserts && v.inserts.length), hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), hasVisualOverlays: !!((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length), hasMusicBed: !!v.musicBed, resourceCueCount: (v.inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length, thumb: v.thumb, createdAt: v.createdAt
       });
       var text = JSON.stringify(ref, null, 2);
       var done = function () { addToast(T('video_studio.ref_copied', 'Pack reference copied — paste it wherever the resource lives. The video bytes stay in the downloaded file.'), 'success'); };
@@ -1194,6 +1396,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var chapters = (v.chapters || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); });
       var inserts = vsSanitizeTeachingInserts(v.inserts || [], v.duration || 0);
       var visualPrompts = (v.visualPrompts || []).filter(function (p) { return p && String(p.prompt || '').trim(); });
+      var overlayCount = inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
+      var resourceCueCount = inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length;
+      var musicBed = v.musicBed ? vsSanitizeMusicBed(v.musicBed, v.duration || 0) : null;
       var transcript = [
         v.title || 'Teacher video',
         'Transcript generated locally by AlloFlow Video Studio.',
@@ -1218,7 +1423,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         '',
         'Video title: ' + (v.title || 'Teacher video'),
         'Generated locally: ' + new Date().toISOString(),
-        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (visualPrompts.length ? ', visual prompts' : '') + ', and metadata.',
+        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + ', and metadata.',
         'Video bytes are not included in this packet. Download the video file or .allopack bundle separately.',
         '',
         'Teacher review: please check the transcript and captions for student names or private details before sharing.'
@@ -1234,6 +1439,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         visualDescriptionCount: descriptions.length,
         chapterCount: chapters.length,
         teachingInsertCount: inserts.length,
+        visualOverlayCount: overlayCount,
+        hasMusicBed: !!musicBed,
+        resourceCueCount: resourceCueCount,
         visualPromptCount: visualPrompts.length,
         generatedAt: new Date().toISOString()
       };
@@ -1252,6 +1460,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
       }
       if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
+      if (musicBed) entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, musicBed, { blob: undefined }), null, 2)) });
       if (visualPrompts.length) {
         entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
         entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
@@ -1266,9 +1475,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var downloadBundle = useCallback(function (v) {
       var base = (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video';
       v.blob.arrayBuffer().then(function (buf) {
+        var inserts = vsSanitizeTeachingInserts(v.inserts || [], v.duration || 0);
+        var musicBed = v.musicBed ? vsSanitizeMusicBed(v.musicBed, v.duration || 0) : null;
         var ref = vsMakePackReference({
           title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
-          fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!(v.inserts && v.inserts.length), hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), thumb: v.thumb, createdAt: v.createdAt
+          fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!inserts.length, hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), hasVisualOverlays: !!inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length, hasMusicBed: !!musicBed, resourceCueCount: inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length, thumb: v.thumb, createdAt: v.createdAt
         });
         var entries = [
           { name: 'meta.json', data: new TextEncoder().encode(JSON.stringify(ref, null, 2)) },
@@ -1277,7 +1488,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         if (v.vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(v.vtt) });
         if (v.visualDescriptions && v.visualDescriptions.length) entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(v.visualDescriptions, null, 2)) });
         if (v.chapters && v.chapters.length) entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(v.chapters, null, 2)) });
-        if (v.inserts && v.inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(v.inserts, null, 2)) });
+        if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
+        if (musicBed) entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, musicBed, { blob: undefined }), null, 2)) });
         if (v.visualPrompts && v.visualPrompts.length) entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(v.visualPrompts, null, 2)) });
         downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '.allopack');
         addToast(T('video_studio.bundle_done', 'Bundle saved — one file with the video, captions, and metadata. Drop it back into the Studio any time to re-edit.'), 'success');
@@ -1345,7 +1557,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                   h('div', { className: 'flex-1 min-w-0' },
                     h('p', { className: 'font-semibold text-slate-800 text-sm truncate' }, v.title),
                     h('p', { className: 'text-xs text-slate-500 mb-2' },
-                      fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '') + (v.chapters && v.chapters.length ? ' · chapters' : '') + (v.inserts && v.inserts.length ? ' · inserts' : '') + (v.visualPrompts && v.visualPrompts.length ? ' · visual prompts' : '')),
+                      fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '') + (v.chapters && v.chapters.length ? ' · chapters' : '') + (v.inserts && v.inserts.length ? ' · inserts' : '') + ((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length ? ' · overlays' : '') + (v.musicBed ? ' · music' : '') + (v.visualPrompts && v.visualPrompts.length ? ' · visual prompts' : '')),
                     h('div', { className: 'flex flex-wrap gap-2' },
                       h('button', {
                         onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type)); },

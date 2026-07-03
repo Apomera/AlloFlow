@@ -546,6 +546,38 @@ describe('caption polish, chapters, and teaching inserts', () => {
     expect(inserts).toHaveLength(1);
     expect(inserts[0]).toMatchObject({ type: 'visual_card', imageSrc: 'data:image/png;base64,abc' });
   });
+  it('sanitizes timed image overlays with motion controls', () => {
+    const inserts = VS.vsSanitizeTeachingInserts([
+      { type: 'image_overlay', start: 6, duration: 8, text: 'Cell diagram', imageSrc: 'data:image/png;base64,abc', x: 2, y: -1, width: 2, motion: 'slide-left', source: 'resource', resourceId: 'gloss-1' },
+      { type: 'image_overlay', start: 2, imageSrc: 'https://example.com/unsafe.png' },
+    ], 30);
+    expect(inserts).toHaveLength(1);
+    expect(inserts[0]).toMatchObject({ type: 'image_overlay', x: 1, y: 0, width: 0.9, motion: 'slide_left', source: 'resource', resourceId: 'gloss-1' });
+  });
+  it('computes overlay motion state for scripted movement', () => {
+    const start = VS.vsOverlayFrameState({ start: 10, end: 20, x: 0.5, y: 0.5, width: 0.25, motion: 'slide_left' }, 10.5);
+    const later = VS.vsOverlayFrameState({ start: 10, end: 20, x: 0.5, y: 0.5, width: 0.25, motion: 'slide_left' }, 18);
+    expect(start.x).toBeGreaterThan(later.x);
+    expect(start.width).toBe(0.25);
+    expect(start.alpha).toBeGreaterThan(0);
+  });
+  it('sanitizes and applies music bed fades plus ducking', () => {
+    const music = VS.vsSanitizeMusicBed({ start: -5, end: 500, volume: 9, fadeIn: 2, fadeOut: 4, duck: true, name: '  Calm loop  ' }, 60);
+    expect(music).toMatchObject({ start: 0, end: 60, volume: 1.5, fadeIn: 2, fadeOut: 4, duck: true, name: 'Calm loop' });
+    expect(VS.vsMusicGainAt(music, 0.5, false)).toBeCloseTo(0.375, 3);
+    expect(VS.vsMusicGainAt(music, 30, true)).toBeCloseTo(0.57, 3);
+    expect(VS.vsMusicGainAt(music, 61, false)).toBe(0);
+  });
+  it('builds searchable resource cues from pack history', () => {
+    const cues = VS.vsBuildResourceCues([
+      { id: 'g1', type: 'glossary', title: 'Photosynthesis terms', data: [{ term: 'Chlorophyll', definition: 'Green pigment', image: 'data:image/png;base64,abc' }] },
+      { id: 'img1', type: 'image', title: 'Leaf cross-section', data: { imageUrl: 'data:image/png;base64,def', prompt: 'leaf diagram' } },
+      { id: 'q1', type: 'quiz', title: 'Exit ticket', data: { questions: [{ question: 'What enters the leaf?' }] } },
+    ]);
+    expect(cues.map(c => c.kind)).toEqual(['glossary', 'image', 'question']);
+    expect(cues[0]).toMatchObject({ label: 'Chlorophyll', imageSrc: 'data:image/png;base64,abc', sourceTitle: 'Photosynthesis terms' });
+    expect(cues[2].text).toMatch(/leaf/);
+  });
   it('sanitizes frame-aware lesson assistant plans into safe editable primitives', () => {
     const plan = VS.vsSanitizeLessonPlan({
       plan: [
@@ -599,7 +631,7 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasVisualOverlays: true, hasMusicBed: true, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
@@ -607,6 +639,9 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.hasCaptions).toBe(true);
     expect(ref.hasVisualDescriptions).toBe(true);
     expect(ref.hasVisualPrompts).toBe(true);
+    expect(ref.hasVisualOverlays).toBe(true);
+    expect(ref.hasMusicBed).toBe(true);
+    expect(ref.resourceCueCount).toBe(3);
     expect(Object.keys(ref)).not.toContain('blob');
     expect(Object.keys(ref)).not.toContain('bytes');
     // Whole reference stays tiny (pack-JSON safe)

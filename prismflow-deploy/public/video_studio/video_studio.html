@@ -250,13 +250,27 @@
             <button class="quiet" id="addStickerBtn">Animated sticker</button>
             <button class="quiet" id="aiInsertsBtn" title="Sends transcript text, not video bytes, to Gemini for editable insert suggestions.">Gemini suggestions</button>
             <button class="quiet" id="lessonAssistBtn" title="Samples frames plus captions so Gemini can suggest chapters, pause prompts, callouts, zooms, and visual prompts.">Lesson assistant</button>
+            <button class="quiet" id="addImageOverlayBtn">Image overlay...</button>
+            <input type="file" id="imageOverlayInput" accept="image/*,.png,.jpg,.jpeg,.webp,.gif" hidden>
           </div>
           <div class="row" style="margin-bottom:8px">
             <input type="text" id="visualPromptInput" placeholder="Imagen card prompt, e.g. simple fraction wall diagram" style="min-width:240px;flex:1">
             <button class="quiet" id="genVisualCardBtn">Generate visual card</button>
             <button class="quiet" id="frameVisualCardBtn" title="Uses the current video frame as the source for a cleaner still visual card.">From current frame</button>
           </div>
+          <div class="row" style="margin-bottom:8px">
+            <input type="search" id="resourceCueSearch" placeholder="Search resource pack history..." style="min-width:220px;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+            <select id="resourceCueFilter" aria-label="Resource cue type" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+              <option value="">All pack cues</option>
+              <option value="glossary">Glossary</option>
+              <option value="image">Images</option>
+              <option value="question">Questions</option>
+              <option value="section">Sections</option>
+            </select>
+            <button class="quiet" id="refreshResourceCuesBtn">Refresh pack cues</button>
+          </div>
           <div class="status" id="insertStatus">Inserts render into the exported video as editable overlays. Use them for section breaks, pause-and-think moments, labels, and tiny GIF-style emphasis.</div>
+          <div id="resourceCueList" style="margin-top:8px"></div>
           <div id="insertList" style="margin-top:8px"></div>
           <div id="visualPromptList" style="margin-top:8px"></div>
         </div>
@@ -273,6 +287,12 @@
             <span class="status" style="margin-top:0">Silences a stretch without cutting the video — a name said aloud, a cough, an interruption. The preview honors it; export makes it permanent. Above 100% can distort.</span>
           </div>
           <div id="muteList"></div>
+          <div class="row" style="margin:12px 0 8px">
+            <button class="quiet" id="addMusicBtn">Add background music...</button>
+            <input type="file" id="musicFileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.webm" hidden>
+            <span class="status" id="musicStatus" style="margin-top:0">Optional music bed exports with fade and speech ducking.</span>
+          </div>
+          <div id="musicBedBox"></div>
         </div>
         <div class="card" style="margin-top:12px">
           <h2>Narration &amp; sound clips</h2>
@@ -652,6 +672,9 @@ function vsMakePackReference(meta) {
     hasChapters: !!m.hasChapters,
     hasTeachingInserts: !!m.hasTeachingInserts,
     hasVisualPrompts: !!m.hasVisualPrompts,
+    hasVisualOverlays: !!m.hasVisualOverlays,
+    hasMusicBed: !!m.hasMusicBed,
+    resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
     thumb: thumb,
     createdAt: m.createdAt || null
   };
@@ -781,6 +804,71 @@ function vsGainAt(muteSpans, volume, tSec) {
     if (isFinite(a) && isFinite(b) && t >= Math.min(a, b) && t < Math.max(a, b)) return 0;
   }
   return vol;
+}
+
+function vsSanitizeMusicBed(raw, duration) {
+  if (!raw) return null;
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var start = Number(raw.start);
+  if (!isFinite(start)) start = 0;
+  start = Math.max(0, Math.min(dur, start));
+  var end = Number(raw.end);
+  if (!isFinite(end) || end <= start) end = dur;
+  end = Math.max(start + 0.2, Math.min(dur, end));
+  var clean = function (v, max) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); };
+  var volume = Number(raw.volume);
+  if (!isFinite(volume)) volume = 0.28;
+  var fadeIn = Number(raw.fadeIn), fadeOut = Number(raw.fadeOut);
+  return {
+    id: clean(raw.id || 'music', 40) || 'music',
+    name: clean(raw.name || raw.fileName || 'Background music', 90),
+    start: start,
+    end: end,
+    volume: Math.max(0, Math.min(1.5, volume)),
+    loop: raw.loop !== false,
+    fadeIn: Math.max(0, Math.min(20, isFinite(fadeIn) ? fadeIn : 1.5)),
+    fadeOut: Math.max(0, Math.min(20, isFinite(fadeOut) ? fadeOut : 2)),
+    duck: raw.duck !== false,
+    fileName: clean(raw.fileName || raw.name || 'music', 120),
+    mimeType: clean(raw.mimeType || raw.type || 'audio/webm', 80),
+    blob: raw.blob || null
+  };
+}
+
+function vsMusicGainAt(music, tSec, speechActive) {
+  var m = vsSanitizeMusicBed(music, Math.max(Number(music && music.end) || 0, Number(tSec) || 0, 0.1));
+  if (!m) return 0;
+  var t = Number(tSec) || 0;
+  if (t < m.start || t > m.end) return 0;
+  var g = m.volume;
+  if (m.fadeIn > 0) g *= Math.min(1, Math.max(0, (t - m.start) / m.fadeIn));
+  if (m.fadeOut > 0) g *= Math.min(1, Math.max(0, (m.end - t) / m.fadeOut));
+  if (m.duck && speechActive) g *= 0.38;
+  return Math.max(0, Math.min(1.5, g));
+}
+
+function vsOverlayFrameState(overlay, tSec) {
+  var o = overlay || {};
+  var start = Number(o.start) || 0;
+  var end = Number(o.end);
+  if (!isFinite(end) || end <= start) end = start + 4;
+  var span = Math.max(0.1, end - start);
+  var p = Math.max(0, Math.min(1, ((Number(tSec) || 0) - start) / span));
+  var fade = Math.min(1, p / 0.16, (1 - p) / 0.16);
+  var x = Number(o.x), y = Number(o.y), width = Number(o.width), scale = Number(o.scale);
+  x = isFinite(x) ? Math.max(0, Math.min(1, x)) : 0.72;
+  y = isFinite(y) ? Math.max(0, Math.min(1, y)) : 0.42;
+  width = isFinite(width) ? Math.max(0.08, Math.min(0.9, width)) : 0.28;
+  scale = isFinite(scale) ? Math.max(0.25, Math.min(3, scale)) : 1;
+  var motion = String(o.motion || 'fade').toLowerCase().replace(/[\s-]+/g, '_');
+  if (motion === 'slide_left') x += (1 - p) * 0.18;
+  else if (motion === 'slide_right') x -= (1 - p) * 0.18;
+  else if (motion === 'slide_up') y += (1 - p) * 0.18;
+  else if (motion === 'slide_down') y -= (1 - p) * 0.18;
+  else if (motion === 'drift_right') x += (p - 0.5) * 0.20;
+  else if (motion === 'drift_left') x -= (p - 0.5) * 0.20;
+  else if (motion === 'zoom_in') scale *= 0.86 + p * 0.22;
+  return { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), width: width, scale: scale, alpha: Math.max(0, fade), progress: p };
 }
 
 // Filler-word scan → proposed mute spans. words: [{word, start, end}] from a
@@ -1010,10 +1098,15 @@ function vsSanitizeTeachingInserts(raw, duration) {
     animated_sticker: 'sticker',
     image: 'visual_card',
     generated_image: 'visual_card',
-    visual_card: 'visual_card'
+    visual_card: 'visual_card',
+    image_overlay: 'image_overlay',
+    overlay: 'image_overlay',
+    uploaded_image: 'image_overlay',
+    resource_image: 'image_overlay'
   };
   var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
   var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
+  var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
   var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
   for (var i = 0; i < list.length && out.length < 32; i++) {
     var s = list[i] || {};
@@ -1024,15 +1117,19 @@ function vsSanitizeTeachingInserts(raw, duration) {
     if (!isFinite(start)) continue;
     start = Math.max(0, Math.min(dur, start));
     var end = Number(s.end);
-    var dflt = type === 'title_card' || type === 'pause_prompt' || type === 'visual_card' ? 4 : 3;
+    var dflt = type === 'title_card' || type === 'pause_prompt' || type === 'visual_card' ? 4 : (type === 'image_overlay' ? 5 : 3);
     var span = isFinite(end) ? (end - start) : Number(s.duration != null ? s.duration : s.dur);
     if (!isFinite(span) || span <= 0) span = dflt;
-    span = Math.max(0.6, Math.min(type === 'callout' || type === 'sticker' ? 20 : 15, span));
+    span = Math.max(0.6, Math.min(type === 'callout' || type === 'sticker' || type === 'image_overlay' ? 20 : 15, span));
     var text = String(s.text || s.title || s.label || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 180);
-    if (!text && type !== 'sticker' && type !== 'visual_card') continue;
+    if (!text && type !== 'sticker' && type !== 'visual_card' && type !== 'image_overlay') continue;
     var note = String(s.note || s.subtext || s.prompt || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 240);
     var imageSrc = String(s.imageSrc || s.image || s.src || '').trim();
     if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
+    if (type === 'image_overlay' && !imageSrc) continue;
+    var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
+    var width = Number(s.width != null ? s.width : s.w);
+    var scale = Number(s.scale);
     out.push({
       id: String(s.id || ('ins' + (i + 1))).slice(0, 40),
       type: type,
@@ -1040,15 +1137,127 @@ function vsSanitizeTeachingInserts(raw, duration) {
       end: Math.min(dur, start + span),
       text: text || (type === 'sticker' ? 'Key idea' : ''),
       note: note,
-      x: clamp01(s.x, type === 'callout' || type === 'sticker' ? 0.68 : 0.5),
-      y: clamp01(s.y, type === 'callout' || type === 'sticker' ? 0.34 : 0.5),
+      x: clamp01(s.x, type === 'callout' || type === 'sticker' ? 0.68 : (type === 'image_overlay' ? 0.72 : 0.5)),
+      y: clamp01(s.y, type === 'callout' || type === 'sticker' ? 0.34 : (type === 'image_overlay' ? 0.42 : 0.5)),
+      width: isFinite(width) ? Math.max(0.08, Math.min(0.9, width)) : (type === 'image_overlay' ? 0.28 : 0.46),
+      scale: isFinite(scale) ? Math.max(0.25, Math.min(3, scale)) : 1,
+      motion: motions[motion] ? motion : (type === 'image_overlay' ? 'fade' : 'none'),
       theme: themes[String(s.theme || '').toLowerCase()] ? String(s.theme).toLowerCase() : 'blue',
       animation: anims[String(s.animation || '').toLowerCase()] ? String(s.animation).toLowerCase() : (type === 'sticker' ? 'pulse' : 'none'),
       imageSrc: imageSrc,
-      source: String(s.source || '').slice(0, 40)
+      source: String(s.source || '').slice(0, 40),
+      resourceId: String(s.resourceId || '').slice(0, 80),
+      resourceTitle: String(s.resourceTitle || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 120)
     });
   }
   out.sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+  return out;
+}
+
+function vsBuildResourceCues(history, options) {
+  var list = Array.isArray(history) ? history : [];
+  var opts = options || {};
+  var out = [];
+  var max = Math.max(1, Math.min(200, Number(opts.limit) || 120));
+  var clean = function (v, n) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n); };
+  var safeImg = function (v) {
+    v = String(v || '').trim();
+    return (v.indexOf('data:image/') === 0 && v.length <= 1200000) ? v : '';
+  };
+  var push = function (cue) {
+    if (!cue || out.length >= max) return;
+    var label = clean(cue.label || cue.title || cue.term || cue.question || cue.text, 140);
+    var text = clean(cue.text || cue.definition || cue.question || cue.prompt || label, 520);
+    if (!label && !text && !cue.imageSrc) return;
+    out.push({
+      id: clean(cue.id || ('cue' + (out.length + 1)), 90),
+      kind: clean(cue.kind || 'resource', 40),
+      label: label || 'Resource cue',
+      text: text,
+      imageSrc: safeImg(cue.imageSrc),
+      prompt: clean(cue.prompt || text || label, 600),
+      sourceType: clean(cue.sourceType || cue.type || 'resource', 50),
+      sourceTitle: clean(cue.sourceTitle || '', 140),
+      sourceIndex: Math.max(0, Math.round(Number(cue.sourceIndex) || 0))
+    });
+  };
+  list.forEach(function (item, idx) {
+    if (!item) return;
+    var type = clean(item.type || item.kind || '', 50).toLowerCase();
+    var title = clean(item.title || item.name || item.label || type || 'Resource', 140);
+    var data = item.data != null ? item.data : item.content;
+    var baseId = clean(item.id || item.resourceId || ('history-' + idx), 60);
+    if (type === 'glossary' && Array.isArray(data)) {
+      data.slice(0, 80).forEach(function (g, gi) {
+        var term = clean(g && (g.term || g.word || g.label), 120);
+        var def = clean(g && (g.definition || g.def || g.description || g.meaning), 520);
+        push({
+          id: baseId + '-term-' + gi,
+          kind: 'glossary',
+          label: term || ('Term ' + (gi + 1)),
+          text: def,
+          imageSrc: g && (g.image || g.imageUrl || g.imageSrc),
+          prompt: term ? ('Create a clear visual support for the glossary term "' + term + '". Definition: ' + def) : def,
+          sourceType: type,
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      });
+    } else if (type === 'image' || type === 'visual' || type === 'visuals') {
+      var img = data && (data.imageUrl || data.image || data.src || data.dataUrl);
+      push({
+        id: baseId + '-image',
+        kind: 'image',
+        label: title,
+        text: clean((data && (data.alt || data.altText || data.caption || data.prompt)) || item.prompt || title, 520),
+        imageSrc: img,
+        prompt: clean((data && data.prompt) || item.prompt || title, 600),
+        sourceType: type,
+        sourceTitle: title,
+        sourceIndex: idx
+      });
+    } else if (type === 'quiz' || type === 'assessment') {
+      var qs = Array.isArray(data) ? data : (data && (data.questions || data.items));
+      (Array.isArray(qs) ? qs : []).slice(0, 24).forEach(function (q, qi) {
+        push({
+          id: baseId + '-q-' + qi,
+          kind: 'question',
+          label: clean(q && (q.question || q.prompt || q.text), 120) || ('Question ' + (qi + 1)),
+          text: clean(q && (q.question || q.prompt || q.text), 520),
+          prompt: clean(q && (q.question || q.prompt || q.text), 600),
+          sourceType: type,
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      });
+    } else if (type === 'outline' || type === 'lesson-plan' || type === 'lesson_plan') {
+      var rawSections = Array.isArray(data) ? data : (data && (data.sections || data.items || data.outline));
+      (Array.isArray(rawSections) ? rawSections : []).slice(0, 24).forEach(function (s, si) {
+        push({
+          id: baseId + '-section-' + si,
+          kind: 'section',
+          label: clean(s && (s.title || s.heading || s.topic || s.text), 120) || ('Section ' + (si + 1)),
+          text: clean(s && (s.summary || s.text || s.description || s.details), 520),
+          sourceType: type,
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      });
+    } else {
+      var txt = clean(typeof data === 'string' ? data : (data && (data.text || data.summary || data.markdown || data.html)) || item.text || item.summary, 520);
+      if (txt || title) {
+        push({
+          id: baseId + '-resource',
+          kind: type || 'resource',
+          label: title,
+          text: txt,
+          sourceType: type || 'resource',
+          sourceTitle: title,
+          sourceIndex: idx
+        });
+      }
+    }
+  });
   return out;
 }
 
@@ -1505,7 +1714,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
-        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], zooms: [], createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], zooms: [], musicBed: null, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1544,7 +1753,7 @@ function vsComputePeaks(samples, buckets) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts) {
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed) {
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
@@ -1557,7 +1766,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], zooms: [], imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1583,7 +1792,7 @@ function vsComputePeaks(samples, buckets) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null;
+      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null, musicText = null, musicData = null, musicName = '';
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
@@ -1591,6 +1800,8 @@ function vsComputePeaks(samples, buckets) {
         else if (/(^|\/)chapters\.json$/i.test(e.name)) { chapterText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)teaching_inserts\.json$/i.test(e.name)) { insertText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)visual_prompts\.json$/i.test(e.name)) { promptText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)music_bed\.json$/i.test(e.name)) { musicText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)music_bed\./i.test(e.name) && /\.(mp3|wav|ogg|m4a|webm)$/i.test(e.name)) { musicData = e.data; musicName = e.name; }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
       });
       if (!video) { setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
@@ -1604,7 +1815,18 @@ function vsComputePeaks(samples, buckets) {
       if (insertText) { try { inserts = vsSanitizeTeachingInserts(JSON.parse(insertText), (meta && meta.duration) || 0); } catch (_) {} }
       var visualPrompts = [];
       if (promptText) { try { visualPrompts = (JSON.parse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts);
+      var musicBed = null;
+      if (musicText && musicData) {
+        try {
+          var rawMusic = JSON.parse(musicText) || {};
+          var audioType = rawMusic.mimeType || (/\.mp3$/i.test(musicName) ? 'audio/mpeg' : /\.wav$/i.test(musicName) ? 'audio/wav' : /\.ogg$/i.test(musicName) ? 'audio/ogg' : /\.m4a$/i.test(musicName) ? 'audio/mp4' : 'audio/webm');
+          rawMusic.blob = new Blob([musicData], { type: audioType });
+          rawMusic.mimeType = audioType;
+          rawMusic.fileName = rawMusic.fileName || musicName.replace(/^.*\//, '');
+          musicBed = rawMusic;
+        } catch (_) {}
+      }
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -1627,9 +1849,12 @@ function vsComputePeaks(samples, buckets) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts) {
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
+    var safeMusic = musicBed ? vsSanitizeMusicBed(musicBed, duration || 0) : null;
+    var overlayCount = (inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
+    var resourceCueCount = (inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var ref = vsMakePackReference({
       title: title || 'Teacher video',
       duration: duration || 0,
@@ -1640,6 +1865,9 @@ function vsComputePeaks(samples, buckets) {
       hasChapters: !!(chapters && chapters.length),
       hasTeachingInserts: !!(inserts && inserts.length),
       hasVisualPrompts: !!(visualPrompts && visualPrompts.length),
+      hasVisualOverlays: overlayCount > 0,
+      hasMusicBed: !!(safeMusic && safeMusic.blob),
+      resourceCueCount: resourceCueCount,
       thumb: thumb || null,
       createdAt: new Date().toISOString()
     });
@@ -1652,13 +1880,21 @@ function vsComputePeaks(samples, buckets) {
     if (chapters && chapters.length) entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
     if (inserts && inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
     if (visualPrompts && visualPrompts.length) entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
+    if (safeMusic && safeMusic.blob) {
+      var musicExt = /\.mp3$/i.test(safeMusic.fileName) ? '.mp3' : /\.wav$/i.test(safeMusic.fileName) ? '.wav' : /\.ogg$/i.test(safeMusic.fileName) ? '.ogg' : /\.m4a$/i.test(safeMusic.fileName) ? '.m4a' : '.webm';
+      entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, safeMusic, { blob: undefined }), null, 2)) });
+      entries.push({ name: 'music_bed' + musicExt, data: null, _blob: safeMusic.blob });
+    }
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts);
-    return blob.arrayBuffer().then(function (buf) {
-      built.entries[1].data = new Uint8Array(buf);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed);
+    return Promise.all(built.entries.map(function (entry, idx) {
+      if (idx === 1) return blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); });
+      if (entry._blob) return entry._blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); delete entry._blob; });
+      return Promise.resolve();
+    })).then(function () {
       downloadBlobFile(new Blob([vsBuildZip(built.entries)], { type: 'application/zip' }), built.base + '.allopack');
       return true;
     });
@@ -1667,12 +1903,12 @@ function vsComputePeaks(samples, buckets) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
-    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || []).then(function () {
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null).then(function () {
       setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -1712,7 +1948,7 @@ function vsComputePeaks(samples, buckets) {
             actions.className = 'row';
             actions.style.justifyContent = 'flex-end';
             var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
-            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || []); });
+            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null); });
             var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
             actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
             row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
@@ -1896,11 +2132,12 @@ function vsComputePeaks(samples, buckets) {
   var insertReqSeq = 0;
   function defaultInsert(type) {
     var at = $('editVideo').currentTime || 0;
-    var base = { id: 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: type, start: at, end: at + (type === 'callout' || type === 'sticker' ? 3 : 4), x: type === 'callout' || type === 'sticker' ? 0.68 : 0.5, y: type === 'callout' || type === 'sticker' ? 0.34 : 0.5, theme: 'blue', animation: type === 'sticker' ? 'pulse' : 'none' };
+    var base = { id: 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: type, start: at, end: at + (type === 'callout' || type === 'sticker' ? 3 : (type === 'image_overlay' ? 5 : 4)), x: type === 'callout' || type === 'sticker' ? 0.68 : (type === 'image_overlay' ? 0.72 : 0.5), y: type === 'callout' || type === 'sticker' ? 0.34 : (type === 'image_overlay' ? 0.42 : 0.5), width: type === 'image_overlay' ? 0.28 : 0.46, scale: 1, motion: type === 'image_overlay' ? 'fade' : 'none', theme: 'blue', animation: type === 'sticker' ? 'pulse' : 'none' };
     if (type === 'title_card') { base.text = 'Part ' + (((currentTake() && currentTake().inserts || []).filter(function (i) { return i.type === 'title_card'; }).length) + 1); base.note = 'What learners will see next'; }
     else if (type === 'pause_prompt') { base.text = 'Pause and try it'; base.note = 'What do you notice?'; base.theme = 'amber'; }
     else if (type === 'callout') { base.text = 'Look here'; base.theme = 'green'; }
     else if (type === 'sticker') { base.text = 'Key idea'; base.theme = 'pink'; }
+    else if (type === 'image_overlay') { base.text = 'Image overlay'; base.note = ''; base.theme = 'slate'; }
     else { base.text = 'Visual example'; base.note = ''; base.theme = 'slate'; }
     return base;
   }
@@ -2038,7 +2275,7 @@ function vsComputePeaks(samples, buckets) {
       row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
       var type = document.createElement('select');
       type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
-      [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual']].forEach(function (pair) {
+      [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual'], ['image_overlay', 'Image overlay']].forEach(function (pair) {
         var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if (ins.type === pair[0]) o.selected = true; type.appendChild(o);
       });
       type.addEventListener('change', function () { ins.type = type.value; saveInsertList(t); });
@@ -2056,9 +2293,19 @@ function vsComputePeaks(samples, buckets) {
       txt.type = 'text'; txt.value = ins.text || ''; txt.placeholder = 'Text'; txt.style.minWidth = '150px'; txt.style.flex = '1';
       txt.addEventListener('change', function () { ins.text = txt.value; saveInsertList(t); });
       row.appendChild(txt);
-      if (ins.type === 'callout' || ins.type === 'sticker') {
+      if (ins.type === 'callout' || ins.type === 'sticker' || ins.type === 'image_overlay') {
         row.appendChild(mkNum('X%', Math.round((ins.x || 0.5) * 100), function (v) { ins.x = Math.max(0, Math.min(1, v / 100)); }, 100));
         row.appendChild(mkNum('Y%', Math.round((ins.y || 0.5) * 100), function (v) { ins.y = Math.max(0, Math.min(1, v / 100)); }, 100));
+      }
+      if (ins.type === 'image_overlay') {
+        row.appendChild(mkNum('Size%', Math.round((ins.width || 0.28) * 100), function (v) { ins.width = Math.max(0.08, Math.min(0.9, v / 100)); }, 100));
+        var motion = document.createElement('select');
+        motion.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+        [['fade', 'fade'], ['slide_left', 'slide left'], ['slide_right', 'slide right'], ['slide_up', 'slide up'], ['slide_down', 'slide down'], ['drift_right', 'drift right'], ['drift_left', 'drift left'], ['zoom_in', 'zoom in'], ['none', 'none']].forEach(function (pair) {
+          var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if ((ins.motion || 'fade') === pair[0]) o.selected = true; motion.appendChild(o);
+        });
+        motion.addEventListener('change', function () { ins.motion = motion.value; saveInsertList(t); });
+        row.appendChild(motion);
       }
       var theme = document.createElement('select');
       theme.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
@@ -2091,6 +2338,120 @@ function vsComputePeaks(samples, buckets) {
   $('addPausePromptBtn').addEventListener('click', function () { addTeachingInsert('pause_prompt'); });
   $('addCalloutBtn').addEventListener('click', function () { addTeachingInsert('callout'); });
   $('addStickerBtn').addEventListener('click', function () { addTeachingInsert('sticker'); });
+  $('addImageOverlayBtn').addEventListener('click', function () { $('imageOverlayInput').click(); });
+  $('imageOverlayInput').addEventListener('change', function () {
+    var t = currentTake(); var f = $('imageOverlayInput').files[0];
+    $('imageOverlayInput').value = '';
+    if (!t || !f) return;
+    if (!/^image\//.test(f.type || '')) { setStatus($('insertStatus'), 'Choose an image file for the overlay.', 'warn'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      addTeachingInsert('image_overlay', { imageSrc: String(reader.result || ''), text: f.name.replace(/\.[^.]+$/, '').slice(0, 80) || 'Image overlay', source: 'upload' });
+      setStatus($('insertStatus'), 'Image overlay added. Set its time, duration, position, size, and motion in the insert list.', 'ok');
+    };
+    reader.onerror = function () { setStatus($('insertStatus'), 'Could not read that image file.', 'bad'); };
+    reader.readAsDataURL(f);
+  });
+
+  var resourceCues = [];
+  var resourceCuesLoaded = false;
+  function cueSearchText(cue) {
+    return [cue.label, cue.text, cue.prompt, cue.kind, cue.sourceTitle, cue.sourceType].join(' ').toLowerCase();
+  }
+  function addResourceCueToTake(cue, mode) {
+    var t = currentTake();
+    if (!t || !cue) { setStatus($('insertStatus'), 'Select a take before adding a resource cue.', 'warn'); return; }
+    var at = $('editVideo').currentTime || 0;
+    if (mode === 'prompt') {
+      $('visualPromptInput').value = cue.prompt || cue.text || cue.label || '';
+      addVisualPrompt(t, { start: at, type: 'image_prompt', label: cue.label, prompt: cue.prompt || cue.text || cue.label, source: 'resource' });
+      saveDraft(t); renderVisualPromptList();
+      setStatus($('insertStatus'), 'Resource cue copied into visual prompts. Generate a visual card when ready.', 'ok');
+      return;
+    }
+    if (mode === 'pause') {
+      addTeachingInsert('pause_prompt', { start: at, end: at + 4, text: cue.kind === 'question' ? (cue.text || cue.label) : ('Pause: ' + (cue.label || 'What do you notice?')), note: cue.kind === 'glossary' ? cue.text : (cue.sourceTitle || 'From resource pack'), source: 'resource', resourceId: cue.id, resourceTitle: cue.sourceTitle });
+      return;
+    }
+    if (cue.imageSrc) {
+      addTeachingInsert('image_overlay', { start: at, end: at + 5, imageSrc: cue.imageSrc, text: cue.label || 'Resource image', note: cue.text || '', source: 'resource', resourceId: cue.id, resourceTitle: cue.sourceTitle });
+    } else {
+      addTeachingInsert('visual_card', { start: at, end: at + 5, text: cue.label || 'Resource cue', note: cue.text || cue.sourceTitle || '', source: 'resource', resourceId: cue.id, resourceTitle: cue.sourceTitle });
+    }
+  }
+  function renderResourceCueList() {
+    var host = $('resourceCueList'); if (!host) return;
+    host.innerHTML = '';
+    var q = String($('resourceCueSearch').value || '').toLowerCase().trim();
+    var kind = $('resourceCueFilter').value;
+    var filtered = resourceCues.filter(function (c) {
+      return (!kind || c.kind === kind) && (!q || cueSearchText(c).indexOf(q) >= 0);
+    }).slice(0, 12);
+    if (!resourceCuesLoaded) {
+      host.innerHTML = '<p class="status">Open Video Studio from AlloFlow and refresh pack cues to summon glossary terms, resource images, quiz questions, or outline sections.</p>';
+      return;
+    }
+    if (!filtered.length) {
+      host.innerHTML = '<p class="status">No matching pack cues. Try a different search or refresh after creating resources.</p>';
+      return;
+    }
+    filtered.forEach(function (cue, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:6px;align-items:flex-start';
+      if (cue.imageSrc) {
+        var img = document.createElement('img');
+        img.src = cue.imageSrc; img.alt = ''; img.style.cssText = 'width:54px;height:40px;object-fit:cover;border-radius:7px;border:1px solid var(--line)';
+        row.appendChild(img);
+      }
+      var info = document.createElement('div');
+      info.style.cssText = 'flex:1;min-width:180px';
+      var title = document.createElement('div');
+      title.style.cssText = 'font-weight:700;font-size:13px;color:var(--text)';
+      title.textContent = cue.label || 'Resource cue';
+      var meta = document.createElement('div');
+      meta.className = 'status'; meta.style.marginTop = '2px';
+      meta.textContent = (cue.kind || 'resource') + (cue.sourceTitle ? ' · ' + cue.sourceTitle : '') + (cue.text ? ' · ' + cue.text.slice(0, 120) : '');
+      info.appendChild(title); info.appendChild(meta); row.appendChild(info);
+      var overlay = document.createElement('button');
+      overlay.className = 'quiet'; overlay.textContent = cue.imageSrc ? 'Overlay' : 'Card';
+      overlay.setAttribute('aria-label', 'Add resource cue ' + (idx + 1) + ' as video overlay');
+      overlay.addEventListener('click', function () { addResourceCueToTake(cue, 'overlay'); });
+      var pause = document.createElement('button');
+      pause.className = 'quiet'; pause.textContent = 'Pause';
+      pause.setAttribute('aria-label', 'Add resource cue ' + (idx + 1) + ' as pause card');
+      pause.addEventListener('click', function () { addResourceCueToTake(cue, 'pause'); });
+      var prompt = document.createElement('button');
+      prompt.className = 'quiet'; prompt.textContent = 'Prompt';
+      prompt.setAttribute('aria-label', 'Use resource cue ' + (idx + 1) + ' as visual prompt');
+      prompt.addEventListener('click', function () { addResourceCueToTake(cue, 'prompt'); });
+      row.appendChild(overlay); row.appendChild(pause); row.appendChild(prompt);
+      host.appendChild(row);
+    });
+  }
+  async function refreshResourceCues() {
+    if (!opener || opener.closed) {
+      resourceCuesLoaded = true; resourceCues = [];
+      renderResourceCueList();
+      setStatus($('insertStatus'), 'Pack cues need the AlloFlow window so the Studio can read resource history.', 'warn');
+      return;
+    }
+    try {
+      setStatus($('insertStatus'), 'Reading resource pack cues...');
+      var resp = await bridgeRequest('allostudio-resource-cues-request', {}, 12000);
+      resourceCues = (resp && Array.isArray(resp.cues)) ? resp.cues : [];
+      resourceCuesLoaded = true;
+      renderResourceCueList();
+      setStatus($('insertStatus'), resourceCues.length ? ('Loaded ' + resourceCues.length + ' pack cue(s). Search and add one at the playhead.') : 'No pack cues found yet. Create glossary, image, quiz, or outline resources first.', resourceCues.length ? 'ok' : 'warn');
+    } catch (e) {
+      resourceCuesLoaded = true; resourceCues = [];
+      renderResourceCueList();
+      setStatus($('insertStatus'), 'Could not read pack cues: ' + String((e && e.message) || e).slice(0, 120), 'bad');
+    }
+  }
+  $('refreshResourceCuesBtn').addEventListener('click', refreshResourceCues);
+  $('resourceCueSearch').addEventListener('input', renderResourceCueList);
+  $('resourceCueFilter').addEventListener('change', renderResourceCueList);
   $('aiInsertsBtn').addEventListener('click', function () {
     var t = currentTake();
     if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
@@ -2264,6 +2625,72 @@ function vsComputePeaks(samples, buckets) {
     saveDraft(t);
     renderAudio();
     announce('Silence added — adjust its end time or press End-at-playhead');
+  });
+  function renderMusicBed() {
+    var t = currentTake();
+    var host = $('musicBedBox'); if (!host) return;
+    host.innerHTML = '';
+    var m = t && t.musicBed ? vsSanitizeMusicBed(t.musicBed, t.duration || 0) : null;
+    if (t && m) t.musicBed = Object.assign({}, t.musicBed, m, { blob: t.musicBed.blob || m.blob });
+    if (!m) {
+      setStatus($('musicStatus'), 'Optional music bed exports with fade and speech ducking.');
+      drawWave();
+      return;
+    }
+    setStatus($('musicStatus'), 'Music bed ready: ' + (m.name || 'background music') + '.', 'ok');
+    var row = document.createElement('div');
+    row.className = 'row';
+    row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:6px;align-items:flex-start';
+    var name = document.createElement('span');
+    name.style.cssText = 'font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    name.textContent = m.name || 'Background music';
+    row.appendChild(name);
+    var mk = function (label, field, step, max) {
+      var l = document.createElement('label'); l.textContent = label + ' ';
+      var inp = document.createElement('input'); inp.type = 'number'; inp.step = step || '0.1'; inp.min = '0'; if (max != null) inp.max = String(max); inp.style.width = '68px';
+      inp.value = (Math.round((m[field] || 0) * 10) / 10).toFixed(1);
+      inp.setAttribute('aria-label', label + ' for background music');
+      inp.addEventListener('change', function () { if (!t || !t.musicBed) return; t.musicBed[field] = Number(inp.value) || 0; saveDraft(t); resetPreviewAudio(); renderMusicBed(); });
+      l.appendChild(inp); return l;
+    };
+    row.appendChild(mk('Start', 'start', '0.1', Math.ceil(t.duration || 0)));
+    row.appendChild(mk('End', 'end', '0.1', Math.ceil(t.duration || 0)));
+    row.appendChild(mk('Fade in', 'fadeIn', '0.1', 20));
+    row.appendChild(mk('Fade out', 'fadeOut', '0.1', 20));
+    var vol = document.createElement('input'); vol.type = 'range'; vol.min = '0'; vol.max = '1.5'; vol.step = '0.02'; vol.style.width = '90px';
+    vol.value = String(m.volume);
+    vol.setAttribute('aria-label', 'Volume for background music');
+    var volLabel = document.createElement('span'); volLabel.className = 'status'; volLabel.style.marginTop = '0'; volLabel.textContent = Math.round(m.volume * 100) + '%';
+    vol.addEventListener('input', function () { if (!t || !t.musicBed) return; t.musicBed.volume = Number(vol.value); volLabel.textContent = Math.round(t.musicBed.volume * 100) + '%'; saveDraft(t); });
+    row.appendChild(vol); row.appendChild(volLabel);
+    var loop = document.createElement('label');
+    var loopChk = document.createElement('input'); loopChk.type = 'checkbox'; loopChk.checked = m.loop !== false;
+    loopChk.addEventListener('change', function () { t.musicBed.loop = loopChk.checked; saveDraft(t); resetPreviewAudio(); });
+    loop.appendChild(loopChk); loop.appendChild(document.createTextNode(' Loop'));
+    row.appendChild(loop);
+    var duck = document.createElement('label');
+    var duckChk = document.createElement('input'); duckChk.type = 'checkbox'; duckChk.checked = m.duck !== false;
+    duckChk.addEventListener('change', function () { t.musicBed.duck = duckChk.checked; saveDraft(t); });
+    duck.appendChild(duckChk); duck.appendChild(document.createTextNode(' Duck under speech'));
+    row.appendChild(duck);
+    var jump = document.createElement('button'); jump.className = 'quiet'; jump.textContent = 'Jump';
+    jump.addEventListener('click', function () { $('editVideo').currentTime = m.start || 0; });
+    row.appendChild(jump);
+    var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove background music');
+    del.addEventListener('click', function () { if (!t) return; t.musicBed = null; saveDraft(t); resetPreviewAudio(); renderMusicBed(); });
+    row.appendChild(del);
+    host.appendChild(row);
+    drawWave();
+  }
+  $('addMusicBtn').addEventListener('click', function () { $('musicFileInput').click(); });
+  $('musicFileInput').addEventListener('change', function () {
+    var t = currentTake(); var f = $('musicFileInput').files[0];
+    $('musicFileInput').value = '';
+    if (!t || !f) return;
+    if (!/^audio\//.test(f.type || '') && !/\.(mp3|wav|ogg|m4a|webm)$/i.test(f.name || '')) { setStatus($('musicStatus'), 'Choose an audio file for background music.', 'warn'); return; }
+    t.musicBed = vsSanitizeMusicBed({ id: 'music' + Date.now().toString(36), name: f.name, fileName: f.name, mimeType: f.type || 'audio/webm', blob: f, start: 0, end: t.duration || 0, volume: 0.28, loop: true, fadeIn: 1.5, fadeOut: 2, duck: true }, t.duration || 0);
+    saveDraft(t); resetPreviewAudio(); renderMusicBed();
+    setStatus($('musicStatus'), 'Background music added. Adjust volume, fades, looping, and ducking before export.', 'ok');
   });
   // Preview approximates the audio edits (element volume caps at 100%; the
   // export GainNode is exact and can boost past it).
@@ -2868,24 +3295,35 @@ function vsComputePeaks(samples, buckets) {
     });
     previewAudios = {};
   }
+  function speechActiveAt(t, time) {
+    return !!((t && t.captions) || []).some(function (c) {
+      return c && time >= Number(c.start || 0) && time <= Number(c.end || 0);
+    });
+  }
   function syncPreviewAudio() {
     var t = currentTake(); if (!t) return;
     var v = $('editVideo');
     var items = [];
     if (t.narration && t.narration.blob && !narrRec) items.push({ key: 'narr', blob: t.narration.blob, at: 0, vol: t.narration.volume });
     (t.audioClips || []).forEach(function (c) { items.push({ key: c.id, blob: c.blob, at: c.t, vol: c.volume }); });
+    if (t.musicBed && t.musicBed.blob) {
+      var music = vsSanitizeMusicBed(t.musicBed, t.duration || 0);
+      if (music) items.push(Object.assign({ key: 'music', kind: 'music', blob: t.musicBed.blob, at: music.start, vol: music.volume }, music));
+    }
     items.forEach(function (it) {
       var pa = previewAudios[it.key];
       if (!pa || pa.blob !== it.blob) {
         if (pa) { try { pa.el.pause(); URL.revokeObjectURL(pa.el.src); } catch (_) {} }
         pa = previewAudios[it.key] = { el: new Audio(URL.createObjectURL(it.blob)), blob: it.blob };
       }
-      pa.el.volume = Math.min(1, Math.max(0, Number(it.vol != null ? it.vol : 1)));
+      pa.el.volume = Math.min(1, Math.max(0, it.kind === 'music' ? vsMusicGainAt(it, v.currentTime, speechActiveAt(t, v.currentTime)) : Number(it.vol != null ? it.vol : 1)));
       var rel = v.currentTime - (it.at || 0);
-      var within = rel >= 0 && rel < (pa.el.duration || Infinity);
+      var dur = pa.el.duration || Infinity;
+      var within = it.kind === 'music' ? (v.currentTime >= it.start && v.currentTime <= it.end && (it.loop || rel < dur)) : (rel >= 0 && rel < dur);
       if (!v.paused && within) {
-        if (pa.el.paused) { try { pa.el.currentTime = Math.max(0, rel); pa.el.play(); } catch (_) {} }
-        else if (Math.abs(pa.el.currentTime - rel) > 0.35) { try { pa.el.currentTime = rel; } catch (_) {} }
+        var want = it.kind === 'music' && it.loop && isFinite(dur) && dur > 0.1 ? (Math.max(0, rel) % dur) : Math.max(0, rel);
+        if (pa.el.paused) { try { pa.el.currentTime = want; pa.el.play(); } catch (_) {} }
+        else if (Math.abs(pa.el.currentTime - want) > 0.35) { try { pa.el.currentTime = want; } catch (_) {} }
       } else if (!pa.el.paused) { pa.el.pause(); }
     });
   }
@@ -2968,6 +3406,14 @@ function vsComputePeaks(samples, buckets) {
       ctx.fillStyle = '#4ade80';
       ctx.fillRect(xOf(c.t), 11 * dpr, 3 * dpr, 6 * dpr);
     });
+    // Music bed (emerald band)
+    if (t.musicBed) {
+      var mb = vsSanitizeMusicBed(t.musicBed, dur);
+      if (mb) {
+        ctx.fillStyle = 'rgba(16,185,129,0.34)';
+        ctx.fillRect(xOf(mb.start), 11 * dpr, Math.max(2, xOf(mb.end) - xOf(mb.start)), 5 * dpr);
+      }
+    }
     // Teaching inserts (cyan bands)
     (t.inserts || []).forEach(function (ins) {
       ctx.fillStyle = 'rgba(20,184,166,0.34)';
@@ -3072,7 +3518,7 @@ function vsComputePeaks(samples, buckets) {
             $('editVideo').src = '';
             aiNarrSegments = [];
             resetPreviewAudio();
-            renderCues(); renderZooms(); renderAudio(); renderNarration(); renderClips(); renderAiNarr(); renderVisualDescriptions(); drawWave();
+            renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); drawWave();
           }
         }
         renderTakes();
@@ -3098,12 +3544,14 @@ function vsComputePeaks(samples, buckets) {
     renderCues();
     renderZooms();
     renderAudio();
+    renderMusicBed();
     renderNarration();
     renderClips();
     renderTeachingInserts();
     renderChapters();
     renderAiNarr();
     renderVisualDescriptions();
+    if (!resourceCuesLoaded) refreshResourceCues(); else renderResourceCueList();
     drawWave();
     ensurePeaks(t).then(drawWave);
   }
@@ -3376,7 +3824,8 @@ function vsComputePeaks(samples, buckets) {
     var zooms = (t.zooms || []).filter(function (z) { return z && Number(z.scale) > 1; });
     var inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0);
     var audioCfg = t.audio || null;
-    var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length);
+    var musicBed = t.musicBed ? vsSanitizeMusicBed(t.musicBed, t.duration || 0) : null;
+    var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length) || !!(musicBed && musicBed.blob);
     var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     $('exportBtn').disabled = true;
     try {
@@ -3395,7 +3844,7 @@ function vsComputePeaks(samples, buckets) {
         setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts);
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed);
         outBlob = res.blob; outDur = res.duration;
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
@@ -3481,6 +3930,28 @@ function vsComputePeaks(samples, buckets) {
         ctx.fillStyle = theme.accent; ctx.textAlign = 'left';
         ctx.font = 'bold ' + Math.round(hgt * 0.045) + 'px system-ui, sans-serif';
         wrapCanvasText(ctx, ins.text || 'Visual example', w * 0.58, hgt * 0.39, w * 0.30, Math.round(hgt * 0.055), 3);
+      } else if (ins.type === 'image_overlay') {
+        var st = vsOverlayFrameState(ins, tSec);
+        ctx.globalAlpha = Math.max(0, fade * st.alpha);
+        var iw = Math.max(20, w * st.width * st.scale);
+        var ih = iw * 0.62;
+        if (ins._img && ins._img.naturalWidth && ins._img.naturalHeight) ih = iw * (ins._img.naturalHeight / ins._img.naturalWidth);
+        var ix = st.x * w - iw / 2;
+        var iy = st.y * hgt - ih / 2;
+        ctx.fillStyle = 'rgba(2,6,23,0.28)';
+        drawRoundRect(ctx, ix - 7, iy - 7, iw + 14, ih + 14, 16); ctx.fill();
+        ctx.fillStyle = '#f8fafc';
+        drawRoundRect(ctx, ix - 3, iy - 3, iw + 6, ih + 6, 14); ctx.fill();
+        if (ins._img) {
+          try { ctx.drawImage(ins._img, ix, iy, iw, ih); } catch (_) {}
+        }
+        if (ins.text) {
+          ctx.fillStyle = 'rgba(15,23,42,0.84)';
+          var lh = Math.round(hgt * 0.048);
+          drawRoundRect(ctx, ix, iy + ih + 8, Math.min(w * 0.34, Math.max(iw, w * 0.16)), lh * 1.45, 10); ctx.fill();
+          ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.font = 'bold ' + Math.round(hgt * 0.026) + 'px system-ui, sans-serif';
+          ctx.fillText(ins.text, ix + Math.min(w * 0.34, Math.max(iw, w * 0.16)) / 2, iy + ih + 8 + lh, Math.min(w * 0.32, Math.max(iw - 10, w * 0.14)));
+        }
       } else if (ins.type === 'callout') {
         var x = (ins.x || 0.5) * w, y = (ins.y || 0.5) * hgt;
         ctx.strokeStyle = theme.accent; ctx.lineWidth = Math.max(4, w * 0.004);
@@ -3504,7 +3975,7 @@ function vsComputePeaks(samples, buckets) {
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
-  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts) {
+  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts, musicBed) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
@@ -3529,8 +4000,10 @@ function vsComputePeaks(samples, buckets) {
         // against take-absolute video time — they play even when the original
         // track is removed (the "replace my audio" workflow).
         var mixItems = [];
-        if (take.narration && take.narration.blob) mixItems.push({ blob: take.narration.blob, at: 0, vol: take.narration.volume });
-        (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
+        if (take.narration && take.narration.blob) mixItems.push({ kind: 'speech', blob: take.narration.blob, at: 0, vol: take.narration.volume });
+        (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ kind: 'speech', blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
+        var safeMusic = musicBed && musicBed.blob ? vsSanitizeMusicBed(musicBed, take.duration || 0) : null;
+        if (safeMusic && safeMusic.blob) mixItems.push(Object.assign({ kind: 'music', blob: safeMusic.blob, at: safeMusic.start, vol: safeMusic.volume }, safeMusic));
         mixItems.forEach(function (m) {
           try {
             var el = document.createElement('audio');
@@ -3540,7 +4013,7 @@ function vsComputePeaks(samples, buckets) {
             g.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
             ac.createMediaElementSource(el).connect(g);
             g.connect(dest);
-            m._el = el; m._started = false;
+            m._el = el; m._gain = g; m._started = false;
           } catch (_) { m._el = null; }
         });
         var stream = cv.captureStream(30);
@@ -3608,11 +4081,26 @@ function vsComputePeaks(samples, buckets) {
               try { gainNode.gain.setTargetAtTime(tgtGain, ac.currentTime, 0.015); } catch (_) { gainNode.gain.value = tgtGain; }
             }
             // Start narration/clips as the playhead crosses their start times.
+            var speechNow = speechActiveAt(take, v.currentTime);
             for (var mi = 0; mi < mixItems.length; mi++) {
               var m2 = mixItems[mi];
-              if (m2._el && !m2._started && v.currentTime >= m2.at) {
+              if (m2.kind === 'music' && m2._gain) {
+                var musicGain = vsMusicGainAt(m2, v.currentTime, speechNow);
+                try { m2._gain.gain.setTargetAtTime(musicGain, ac.currentTime, 0.03); } catch (_) { m2._gain.gain.value = musicGain; }
+              }
+              if (m2._el && !m2._started && v.currentTime >= m2.at && (m2.kind !== 'music' || v.currentTime <= m2.end)) {
                 m2._started = true;
-                try { m2._el.currentTime = Math.max(0, v.currentTime - m2.at); m2._el.play(); } catch (_) {}
+                try {
+                  var rel = Math.max(0, v.currentTime - m2.at);
+                  if (m2.kind === 'music' && m2.loop && isFinite(m2._el.duration) && m2._el.duration > 0.1) rel = rel % m2._el.duration;
+                  m2._el.currentTime = rel; m2._el.play();
+                } catch (_) {}
+              } else if (m2._el && m2.kind === 'music' && m2._started) {
+                if (v.currentTime > m2.end || v.currentTime < m2.start) { try { m2._el.pause(); } catch (_) {} }
+                else if (m2.loop && isFinite(m2._el.duration) && m2._el.duration > 0.1) {
+                  var wantMusic = Math.max(0, v.currentTime - m2.start) % m2._el.duration;
+                  if (Math.abs(m2._el.currentTime - wantMusic) > 0.35) { try { m2._el.currentTime = wantMusic; } catch (_) {} }
+                }
               }
             }
             // Zoom keyframes use take-absolute time (v.currentTime), so a
@@ -3698,13 +4186,16 @@ function vsComputePeaks(samples, buckets) {
     var chapters = (take && take.chapters) || [];
     var inserts = vsSanitizeTeachingInserts((take && take.inserts) || [], (take && take.duration) || 0);
     var visualPrompts = ((take && take.visualPrompts) || []).filter(function (p) { return p && String(p.prompt || '').trim(); });
+    var musicBed = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, (take && take.duration) || 0) : null;
+    var overlayCount = inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
+    var resourceCueCount = inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var flags = privacyFlagsForCues(cues);
     var note = [
       'AlloFlow Video Studio accessibility packet',
       '',
       'Video title: ' + title,
       'Generated locally: ' + new Date().toISOString(),
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (visualPrompts.length ? ', visual prompts' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -3718,6 +4209,9 @@ function vsComputePeaks(samples, buckets) {
       visualDescriptionCount: descriptions.length,
       chapterCount: chapters.length,
       teachingInsertCount: inserts.length,
+      visualOverlayCount: overlayCount,
+      hasMusicBed: !!musicBed,
+      resourceCueCount: resourceCueCount,
       visualPromptCount: visualPrompts.length,
       privacyFlags: flags.map(function (f) { return { label: f.label, time: f.start, line: f.index + 1 }; }),
       generatedAt: new Date().toISOString()
@@ -3737,6 +4231,7 @@ function vsComputePeaks(samples, buckets) {
       entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
     }
     if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
+    if (musicBed) entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, musicBed, { blob: undefined }), null, 2)) });
     if (visualPrompts.length) {
       entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
       entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
@@ -3761,7 +4256,7 @@ function vsComputePeaks(samples, buckets) {
   $('downloadProjectResultBtn').addEventListener('click', function () {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
     var take = currentTake();
-      downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : []).then(function () {
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null).then(function () {
       setStatus($('resultStatus'), 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
@@ -3784,7 +4279,8 @@ function vsComputePeaks(samples, buckets) {
       };
       window.addEventListener('message', onAck);
       var take = currentTake();
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [] } });
+      var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);
@@ -3828,7 +4324,7 @@ function vsComputePeaks(samples, buckets) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });
