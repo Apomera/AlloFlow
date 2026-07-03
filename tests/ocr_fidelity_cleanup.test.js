@@ -28,8 +28,18 @@ describe('P2-a: cleanScannedOcrText (folio strip + hyphen rejoin) — LIVE', () 
     expect(clean('family history of learning, developmen-\ntal, or psychiatric'))
       .toBe('family history of learning, developmental, or psychiatric');
   });
-  it('drops a standalone folio line', () => {
-    expect(clean('end of this page.\n91\nStart of the next page')).toBe('end of this page.\nStart of the next page');
+  it('drops an ISOLATED folio line (blank-surrounded) but leaves the surrounding prose', () => {
+    const r = clean('end of this page.\n\n91\n\nStart of the next page');
+    expect(r).not.toContain('91');
+    expect(r).toContain('end of this page.');
+    expect(r).toContain('Start of the next page');
+  });
+  it('R4: KEEPS a standalone number between two content lines (protects a WISC/WIAT score column)', () => {
+    // A score table OCR'd one value per line must NOT lose its scores to the folio strip.
+    const r = clean('Verbal Comprehension\n105\nWorking Memory\n98\nProcessing Speed\n112');
+    expect(r).toContain('105');
+    expect(r).toContain('98');
+    expect(r).toContain('112');
   });
   it('removes a folio interposed between the two halves of a page-split word (the reevalu- case)', () => {
     expect(clean('is reevalu-\n92\nated in fact')).toBe('is reevaluated in fact');
@@ -101,14 +111,52 @@ describe('P2-c: restored-sentence insert direction — source-pins + mirror', ()
   });
 });
 
-describe('P2-d: integrity placement-awareness — source-pins', () => {
-  it('excludes the un-anchored "Preserved source content" sink from the coverage numerator', () => {
+describe('P2-d + R1/R2: integrity placement-awareness (present != missing; orphans only) — source-pins + mirrors', () => {
+  it('still excludes the un-anchored "Preserved source content" sink from the DISPLAYED coverage numerator', () => {
     expect(pipe).toMatch(/_stripRecoveryAppendix = \(h\) =>[\s\S]*?data-content-recovery[\s\S]*?data-source-preserved-block/);
   });
-  it('warns explicitly when restore passages exist (present != correctly placed)', () => {
-    expect(pipe).toMatch(/const _restoredN = \(accessibleHtml\.match\(\/data-source-restored/);
-    expect(pipe).toContain('could not be confidently placed in');
-    expect(pipe).toContain('the reading order may be wrong');
+  it('R1: gates the "missing" ERROR on chars present with the preserved box counted back (not the box-stripped number)', () => {
+    expect(pipe).toContain('const _presentHtml = String(accessibleHtml).replace(');
+    expect(pipe).toContain('const _presentChars = _srcRaw ? _normIntegrity(htmlToPlainText(_presentHtml)).length : textCharCount(_presentHtml);');
+    expect(pipe).toContain('if (_presentChars < groundTruth * 0.97) {');
+  });
+  it('R1 mirror: sub-97% in-order coverage is NOT "missing" when the box holds the shortfall; genuine loss still is', () => {
+    const groundTruth = 1000;
+    expect(995 < groundTruth * 0.97).toBe(false); // box counted back → present → not missing (placement, not loss)
+    expect(900 < groundTruth * 0.97).toBe(true);  // short even with the box → genuine loss
+  });
+  it('R2: the placement warning counts ONLY data-source-restored inside the preserved-block sink', () => {
+    expect(pipe).toContain('const _sinkMatch = accessibleHtml.match(/<section');
+    expect(pipe).toContain('const _orphanN = _sinkMatch ? (_sinkMatch[1].match(/data-source-restored');
+    expect(pipe).toContain('could not be placed in');
+    expect(pipe).toContain('its reading order needs review');
     expect(pipe).toContain("integrityWarning = integrityWarning ? (integrityWarning + ' ' + _placeWarn) : _placeWarn;");
+  });
+  it('R2 mirror: a confident inline insert (outside the box) is NOT counted; box orphans ARE', () => {
+    const html = '<main><p data-source-restored="true">confident inline</p>'
+      + '<section data-source-preserved-block="true"><p data-source-restored="true">orphan one</p><p data-source-restored="true">orphan two</p></section></main>';
+    const sinkMatch = html.match(/<section\b[^>]*\bdata-source-preserved-block\s*=\s*["']true["'][^>]*>([\s\S]*?)<\/section>/i);
+    const orphanN = sinkMatch ? (sinkMatch[1].match(/data-source-restored\s*=/gi) || []).length : 0;
+    expect(orphanN).toBe(2);
+  });
+});
+
+describe('R3: D-reframe names only engines that ran + honest throttle attribution — source-pins + mirrors', () => {
+  it('builds the engine list from availability and the reason from the throttle flag', () => {
+    expect(pipe).toContain("const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);");
+    expect(pipe).toContain('const _reason = _finalAuditThrottled');
+    expect(pipe).toContain('the rest could not be re-checked (the response was empty or malformed)');
+    expect(pipe).toContain('let _finalAuditThrottled = false;');
+  });
+  it('mirror: an axe-only run does NOT claim IBM Equal Access', () => {
+    const axeScoreAvailable = true, eaScoreAvailable = false;
+    const enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
+    expect(enginesRan.join(' + ')).toBe('axe-core');
+  });
+  it('mirror: a non-throttle partial says "could not be re-checked", not "throttled"', () => {
+    const _finalAuditThrottled = false;
+    const reason = _finalAuditThrottled ? 'the rest were throttled by a temporary Canvas rate-limit' : 'the rest could not be re-checked (the response was empty or malformed)';
+    expect(reason).toContain('could not be re-checked');
+    expect(reason).not.toContain('throttled');
   });
 });

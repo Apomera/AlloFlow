@@ -19,7 +19,7 @@ const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8
 describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
   // Slice the B block so the pins are scoped (the block is right after the final-audit try/catch).
   const bIdx = dp.indexOf('cooldown-aware deferred final re-audit');
-  const bBlock = dp.slice(bIdx, bIdx + 2800);
+  const bBlock = dp.slice(bIdx, bIdx + 3200); // R3 added the _finalAuditThrottled flag inside B (~+300 chars)
   it('gates on a PARTIAL final audit AND a throttle signal (confirmed GeminiGate vars)', () => {
     expect(bIdx).toBeGreaterThan(-1);
     expect(bBlock).toContain('verification._partialAudit');
@@ -42,12 +42,13 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
 
 describe('source-pins: D — honest reframe of a residual throttled partial', () => {
   const dIdx = dp.indexOf('honest reframe of a residual throttled partial');
-  const dBlock = dp.slice(dIdx, dIdx + 1300);
-  it('sets _aiReCheckThrottled and rewrites the summary to honest wording', () => {
+  const dBlock = dp.slice(dIdx, dIdx + 2050); // contains all of D; stops before the next branch's finalAfterScore=
+  it('sets _aiReCheckThrottled from the throttle flag and rewrites the summary honestly (R3)', () => {
     expect(dIdx).toBeGreaterThan(-1);
-    expect(dBlock).toContain('verification._aiReCheckThrottled = true');
+    expect(dBlock).toContain('verification._aiReCheckThrottled = _finalAuditThrottled');
     expect(dBlock).toContain('The AI semantic re-check reached');
-    expect(dBlock).toContain('axe-core + IBM Equal Access');
+    expect(dBlock).toContain("eaScoreAvailable ? 'IBM Equal Access' : null"); // R3: EA named only if it actually ran
+    expect(dBlock).toContain('const _reason = _finalAuditThrottled'); // R3: rate-limit attribution gated on the flag
   });
   it('is MESSAGING ONLY — never nulls or re-weights the score', () => {
     // D lives inside the governing (min-blend) branch; it must not touch finalAfterScore / score.

@@ -751,8 +751,22 @@ var _alloLatexToSpeakable = function (raw) {
 // a separate, riskier sub-problem left for a body-level pass. Pure + unit-tested via the static.
 var _cleanScannedOcrText = function (s) {
   if (!s || typeof s !== 'string') return s || '';
-  // 1. drop standalone folio lines (whole line = only a 1-4 digit number)
-  var out = s.split('\n').filter(function (line) { return !/^\s*\d{1,4}\s*$/.test(line); }).join('\n');
+  // 1. Drop standalone folio lines (a line whose entire content is a 1-4 digit number) — but ONLY a TRUE
+  // running-folio, never a data value. R4 (2026-07-03): the old blanket strip of EVERY standalone number
+  // deleted one-value-per-line SCORES (a WISC/WIAT table OCR'd a value per line: 100, 85, 115) from the
+  // ground truth, blinding the numeric-fidelity net exactly where assessment reports need it. A real folio
+  // is either (a) interposed in a word hyphenated across the page break — prev line ends letter-hyphen,
+  // next starts a letter (the "reevalu- / 92 / ated" case), or (b) isolated by blank lines / at the very
+  // top or bottom of the page text. A bare number sitting between two CONTENT lines is treated as data and KEPT.
+  var _lines = s.split('\n');
+  var out = _lines.filter(function (line, i) {
+    if (!/^\s*\d{1,4}\s*$/.test(line)) return true; // not a bare number → always keep
+    var prev = i > 0 ? _lines[i - 1] : '';
+    var next = i < _lines.length - 1 ? _lines[i + 1] : '';
+    var interposedInHyphenSplit = /\p{L}-\s*$/u.test(prev) && /^\s*\p{L}/u.test(next);
+    var isolatedFolio = (i === 0 || prev.trim() === '') && (i === _lines.length - 1 || next.trim() === '');
+    return !(interposedInHyphenSplit || isolatedFolio); // strip only a true folio; keep data values between content
+  }).join('\n');
   // 2. rejoin end-of-line/page hyphenation: letter + regular hyphen + whitespace + letter → one word.
   // (Regular hyphen only — OCR emits a normal '-' at line breaks; no invisible soft-hyphen char in the
   // regex, per the noncharacter-in-regex lesson.)
@@ -18135,10 +18149,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // is present; a true outage exits on the deadline with ZERO extra failing calls (falls to D's
       // honest reframe). accessibleHtml is unmutated until the image restore later, so the memo keys
       // match byte-for-byte.
+      // R3 (2026-07-03): remember whether the final partial was THROTTLE-caused, so D's reframe below
+      // attributes the shortfall to a rate-limit ONLY when that was true (not for a malformed-JSON partial).
+      let _finalAuditThrottled = false;
       if (verification && verification._partialAudit) {
         const _throttleCaused = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
           || (_geminiCap === _GEMINI_STORM_MIN);
         if (_throttleCaused) {
+          _finalAuditThrottled = true;
           const _reauditDeadline = Date.now() + 45000; // bounded — never wait out a true outage
           while (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now() && Date.now() < _reauditDeadline) {
             try { _pulsePipelineWatchdog(); } catch (_) {} // a deliberate cooldown wait is activity, not a stall
@@ -18300,11 +18318,20 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // throttled on the failed section(s). Reframe the summary so the disclosure is honest and
         // non-alarming. Messaging ONLY — the min-blend score above is untouched (do NOT null/re-weight).
         if (verification && verification._partialAudit) {
-          verification._aiReCheckThrottled = true;
+          verification._aiReCheckThrottled = _finalAuditThrottled;
           const _didSec = verification.chunksAudited, _reqSec = verification.chunksRequested;
+          // R3: name only the engine(s) that ACTUALLY ran (EA is optional — axe alone satisfies this
+          // branch, so claiming "IBM Equal Access" verified it when eaResults was null is an overclaim),
+          // and attribute the shortfall to a rate-limit ONLY when the partial was throttle-caused.
+          const _enginesRan = [axeScoreAvailable ? 'axe-core' : null, eaScoreAvailable ? 'IBM Equal Access' : null].filter(Boolean);
+          const _engineList = _enginesRan.join(' + ') || 'an automated engine';
+          const _engineNoun = _enginesRan.length > 1 ? 'engines' : 'engine';
+          const _reason = _finalAuditThrottled
+            ? 'the rest were throttled by a temporary Canvas rate-limit'
+            : 'the rest could not be re-checked (the response was empty or malformed)';
           verification.summary = String(verification.summary || '')
             .replace(/\s*\(\s*\d+\s*\/\s*\d+\s+sections audited[^)]*\)\s*$/i, '')
-            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — the rest were throttled by a temporary Canvas rate-limit. The full document was still verified by the automated engines (axe-core + IBM Equal Access), and this headline reflects that complete structural coverage.)`;
+            + ` (The AI semantic re-check reached ${_didSec} of ${_reqSec} section${_reqSec === 1 ? '' : 's'} — ${_reason}. The full document was still verified by the automated ${_engineNoun} (${_engineList}), and this headline reflects that complete structural coverage.)`;
         }
       } else if (_aiDegraded && deterministicScore !== null) {
         // AI semantic audit incomplete but a deterministic engine DID run → headline = the reliable
@@ -18487,21 +18514,35 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           integrityCoverage = Math.min(100, Math.round((finalText / groundTruth) * 100));
           warnLog(`[Integrity] Final text: ${finalText} chars / source: ${groundTruth} chars (${integrityCoverage}% coverage, method=${groundTruthMethod})`);
           if (finalText < groundTruth * 0.97) {
-            integrityWarning = `Output preserves ${finalText.toLocaleString()} of ${groundTruth.toLocaleString()} source characters (${integrityCoverage}% coverage) after de-hyphenation and whitespace normalization. Some source content may be missing — review the Diff to confirm.`;
-            if (!_silentMode) addToast(t('toasts.integrity') + integrityWarning, 'error');
-            warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
+            // R1 (2026-07-03): finalText excludes BOTH out-of-order sinks (recovery appendix + the
+            // "Preserved source content" box) so a MIS-ORDERED section can't inflate the coverage %. But
+            // content in the preserved box is PRESENT (out of order), disclosed by the placement note
+            // below — NOT missing. The earlier P2-d strip made a doc that merely ROUTED content to that
+            // box read as sub-97% and fire a false "missing" ERROR + needsExpertReview. Only claim
+            // "missing" when the shortfall persists with the preserved box counted back in. (The
+            // recovery-appendix strip predates P2-d and is left unchanged — its words are word-level orphans.)
+            const _presentHtml = String(accessibleHtml).replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
+            const _presentChars = _srcRaw ? _normIntegrity(htmlToPlainText(_presentHtml)).length : textCharCount(_presentHtml);
+            if (_presentChars < groundTruth * 0.97) {
+              integrityWarning = `Output preserves ${finalText.toLocaleString()} of ${groundTruth.toLocaleString()} source characters (${integrityCoverage}% coverage) after de-hyphenation and whitespace normalization. Some source content may be missing — review the Diff to confirm.`;
+              if (!_silentMode) addToast(t('toasts.integrity') + integrityWarning, 'error');
+              warnLog('[Integrity] COVERAGE SHORT — ' + integrityWarning);
+            } else {
+              warnLog(`[Integrity] In-order coverage ${integrityCoverage}% is below 97%, but the source content is PRESENT (routed to the "Preserved source content" box) — placement, not loss; the placement note below covers it.`);
+            }
           } else if (!_silentMode && integrityCoverage >= 98) {
             addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
           }
-          // P2-d: coverage counts characters PRESENT, not correctly PLACED — a whole section whose body
-          // was mis-anchored (grafted after the wrong heading) still reads ~100%. Count the restore
-          // passages and warn EXPLICITLY, so a high coverage number can't imply the document is
-          // distribution-ready when the reading order for some passages may be wrong.
+          // R2 (2026-07-03): flag ONLY passages that genuinely could NOT be placed — the orphans gathered
+          // in the "Preserved source content" box. The earlier P2-d counted EVERY data-source-restored,
+          // including confident anchored inserts placed next to a matching neighbor, and falsely told the
+          // user those "could not be confidently placed." Confident in-context inserts are placed in reading
+          // order and need no such warning; only the preserved-box orphans do.
           try {
-            const _restoredN = (accessibleHtml.match(/data-source-restored\s*=\s*["']true["']/gi) || []).length;
-            if (_restoredN > 0) {
-              const _hasSink = /data-source-preserved-block\s*=\s*["']true["']/i.test(accessibleHtml);
-              const _placeWarn = `${_restoredN} source passage${_restoredN === 1 ? '' : 's'} could not be confidently placed in ${_restoredN === 1 ? 'its' : 'their'} original location during remediation${_hasSink ? ' (some gathered in the "Preserved source content" box)' : ''} — the text is present but the reading order may be wrong for ${_restoredN === 1 ? 'it' : 'them'}. Review before distributing.`;
+            const _sinkMatch = accessibleHtml.match(/<section\b[^>]*\bdata-source-preserved-block\s*=\s*["']true["'][^>]*>([\s\S]*?)<\/section>/i);
+            const _orphanN = _sinkMatch ? (_sinkMatch[1].match(/data-source-restored\s*=/gi) || []).length : 0;
+            if (_orphanN > 0) {
+              const _placeWarn = `${_orphanN} source passage${_orphanN === 1 ? '' : 's'} could not be placed in ${_orphanN === 1 ? 'its' : 'their'} original location and ${_orphanN === 1 ? 'is' : 'are'} gathered in the "Preserved source content" box at the end — the text is present but its reading order needs review. Review before distributing.`;
               integrityWarning = integrityWarning ? (integrityWarning + ' ' + _placeWarn) : _placeWarn;
               if (!_silentMode) addToast('⚠ ' + _placeWarn, 'warning');
               warnLog('[Integrity] PLACEMENT — ' + _placeWarn);
