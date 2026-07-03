@@ -50,6 +50,13 @@ describe('P2-a: cleanScannedOcrText (folio strip + hyphen rejoin) — LIVE', () 
     expect(clean('the African-\nAmerican student')).toContain('African-American');
     expect(clean('developmen-\ntal delay')).toContain('developmental'); // a genuine mid-word split still fuses
   });
+  it('R6: fuses a word that line-splits at an AMBIGUOUS prefix (not a real compound)', () => {
+    // Regression guard: ex/pre/post/co/inter/high/low are common word-STARTS, not just compound prefixes.
+    expect(clean('for ex-\nample here')).toContain('example');
+    expect(clean('to pre-\nvent harm')).toContain('prevent');
+    expect(clean('the co-\nordinate plane')).toContain('coordinate');
+    expect(clean('a bit low-\ner score')).toContain('lower');
+  });
   it('NEVER strips a number that sits inline with other words (safe)', () => {
     expect(clean('he scored 42 points on the test')).toBe('he scored 42 points on the test');
     expect(clean('page 90 of the manual')).toBe('page 90 of the manual');

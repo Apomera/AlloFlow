@@ -776,11 +776,14 @@ var _cleanScannedOcrText = function (s) {
   // (Regular hyphen only — OCR emits a normal '-' at line breaks; no invisible soft-hyphen char in the
   // regex, per the noncharacter-in-regex lesson.)
   out = out.replace(/(\p{L}+)-\s+(\p{L}+)/gu, function (m, a, b) {
-    // R6 (2026-07-03): rejoin a word split across a line/page break (developmen-\ntal → developmental),
-    // but KEEP the hyphen for a genuine compound so clinical terms aren't fused — when the 2nd fragment
-    // is capitalized (African-American) or the 1st is a common hyphenated prefix (well-being, self-esteem,
-    // non-verbal, high-functioning, pre-/post-test, co-occurring, cross-cultural).
-    var keepHyphen = /^\p{Lu}/u.test(b) || /^(self|well|non|high|low|pre|post|co|cross|inter|ex|half|anti|semi|multi)$/i.test(a);
+    // R6 (2026-07-03; NARROWED after adversarial review): rejoin a word split across a line/page break
+    // (developmen-\ntal → developmental), but KEEP the hyphen for a genuine compound — when the 2nd fragment
+    // is capitalized (African-American) or the 1st is one of a FEW LOW-AMBIGUITY clinical prefixes
+    // (self-esteem, well-being, non-verbal, cross-cultural). The broader list (ex/pre/post/co/inter/high/low/
+    // multi/anti/semi/half) was REMOVED because those are ALSO common word-starts, so it corrupted
+    // "ex-\nample"→"ex-ample", "pre-\nvent"→"pre-vent", "co-\nordinate"→"co-ordinate", "low-\ner"→"low-er".
+    // Re-fusing an occasional "high-functioning"→"highfunctioning" is far less harmful than mangling frequent words.
+    var keepHyphen = /^\p{Lu}/u.test(b) || /^(self|well|non|cross)$/i.test(a);
     return keepHyphen ? a + '-' + b : a + b;
   });
   // collapse any blank-line runs a dropped folio left behind
