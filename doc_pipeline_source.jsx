@@ -274,7 +274,10 @@ var _alloNormTokenForDiff = function (t) {
 // once per violation") on the single-chunk path; the chunked path's realPage-derived counts get exactly
 // the count-weighting they already had. Either way the FORMULA is now identical across paths.
 var _alloWeightedDeductions = function (issues) {
-  return (issues || []).reduce(function (s, i) { return s + ((i && i.deduction) || 0) * _alloIssueWeight(i && i.count); }, 0);
+  // M1 (2026-07-03): COERCE the deduction — a model that returns "deduction":"moderate" or "5 pts" would
+  // otherwise poison the sum with NaN, which escapes the chunked path as a NaN headline (the short path
+  // guards it, the chunked one did not). Number(non-numeric) → NaN → || 0.
+  return (issues || []).reduce(function (s, i) { return s + (Number(i && i.deduction) || 0) * _alloIssueWeight(i && i.count); }, 0);
 };
 // ── Headline score: the SINGLE source of truth for "weakest-layer-governs" (2026-06-21) ──
 // The headline = the LOWER of the content (AI-rubric) and automated (axe/EqualAccess) layers — the
@@ -9656,7 +9659,7 @@ Return ONLY valid JSON:
       });
 
       // ── Adaptive audit: check for score divergence or low confidence → add more audits ──
-      const initialScores = parsedAudits.map(a => a.score).filter(s => typeof s === 'number');
+      const initialScores = parsedAudits.map(a => a.score).filter(s => Number.isFinite(s)); // M1-adjacent: typeof NaN==='number' let a NaN score poison the mean; Number.isFinite rejects NaN/Infinity too
       const lowConfidence = parsedAudits.some(a => a.confidence === 'low');
       const initialRange = initialScores.length > 1 ? Math.max(...initialScores) - Math.min(...initialScores) : 0;
 
@@ -9686,7 +9689,7 @@ Return ONLY valid JSON:
       }
 
       // ── Triangulate: average scores, compute reliability statistics ──
-      const scores = parsedAudits.map(a => a.score).filter(s => typeof s === 'number');
+      const scores = parsedAudits.map(a => a.score).filter(s => Number.isFinite(s)); // M1-adjacent: reject NaN/Infinity from the multi-pass mean (typeof number let NaN through)
       const n = scores.length;
       if (n === 0) throw new Error('All audit attempts returned no score');
       const rawMean = scores.reduce((a, b) => a + b, 0) / n;
@@ -10765,8 +10768,12 @@ Return ONLY JSON:
         // isn't a silent rewrite of the AI auditor's self-reported number. Done AFTER the
         // tone-check above, which can fully replace summary.
         if (parsed._scoreAdjusted) {
+          // L1 (2026-07-03): _scoreAdjusted fires on ANY divergence, so the hardcoded "more than 12 points"
+          // was often false; state the ACTUAL difference, direction-neutral ("stricter" is wrong when the
+          // recalculation is higher than the self-report).
+          const _sDiv = Math.abs((parsed._aiReportedScore || 0) - (parsed.score || 0));
           parsed.summary = (parsed.summary ? parsed.summary + ' ' : '') +
-            `(Score note: the AI auditor self-reported ${parsed._aiReportedScore}/100; the displayed ${parsed.score}/100 is the stricter deduction-grounded recalculation — they diverged by more than 12 points.)`;
+            `(Score note: the AI auditor self-reported ${parsed._aiReportedScore}/100; the displayed ${parsed.score}/100 is the deduction-grounded recalculation${_sDiv > 0 ? ` — a ${_sDiv}-point difference` : ''}.)`;
         }
         _auditMemoPut(_shortKey, parsed); // $2: cache the post-processed result for identical re-audits
         return parsed;
@@ -10783,6 +10790,11 @@ Return ONLY JSON:
         }
         chunks.push(htmlContent.substring(i, end));
       }
+      // M3 (2026-07-03): a small remainder can emit a final chunk that lies ENTIRELY within the previous
+      // chunk's OVERLAP tail (e.g. a 1-char chunk) — it adds no new content but counts as a "requested
+      // section", so if it throttles the audit falsely reads "N-1/N sections" (or NULLs the score via
+      // _coverageTooLow) and the fix loop's coverage ratio drops below 0.8. Drop a fully-redundant tail.
+      if (chunks.length > 1 && chunks[chunks.length - 1].length <= OVERLAP) chunks.pop();
       // Always include the <head> section in chunk 0 for global checks (lang, title)
       // Audit chunks in parallel. Match batchSize to the global Gemini concurrency gate
       // (_GEMINI_MAX_CONCURRENT = 3) so a batch never enqueues MORE calls than the gate can run — the
@@ -10810,7 +10822,15 @@ HTML section ${chunkNum}/${chunks.length}:
         const _hit = _auditMemoGet(_memoKey);
         if (_hit) { _memoHits++; return Promise.resolve(_hit); }
         return callGemini(prompt, true, false, 0 /* temperature=0: deterministic, reproducible scoring */).then(r => {
-          try { const p = parseAuditJson(r); if (p) _auditMemoPut(_memoKey, p); return p; } catch { return null; }
+          try {
+            const p = parseAuditJson(r);
+            // M2 (2026-07-03): a reply with no issues[] array (empty {} / {"passes":[]}) is a FAILED parse,
+            // not a clean chunk — counting it as audited undercounts _failedChunks and can leave
+            // _partialAudit false, shipping an artificially-high UNDISCLOSED score. Route it to self-heal.
+            if (!p || !Array.isArray(p.issues)) return null;
+            _auditMemoPut(_memoKey, p);
+            return p;
+          } catch { return null; }
         }).catch(() => null);
       };
       for (let b = 0; b < chunks.length; b += batchSize) {
@@ -10948,7 +10968,10 @@ HTML section ${chunkNum}/${chunks.length}:
       const passRatio = passCount > 0 ? passCount / (passCount + issueCount) : 0; // informational only
       const passFactor = 1; // D: unverified passes no longer buy back deductions (was 1 - passRatio*0.4)
       const adjustedDeductions = Math.round(rawDeductions * passFactor);
-      const mergedScore = Math.max(0, 100 - adjustedDeductions);
+      // M1/L7 (2026-07-03): mirror the short-path guard (~10745) on the chunked path — a non-finite
+      // deduction must NOT escape as a NaN headline (→ null/degraded instead), and the clamp needs an
+      // UPPER bound too (a stray negative deduction would otherwise yield a score >100).
+      const mergedScore = Number.isFinite(adjustedDeductions) ? Math.max(0, Math.min(100, 100 - adjustedDeductions)) : null;
       // Summary from first chunk (has the global perspective)
       let summary = chunkResults[0]?.summary || `Audited ${chunks.length} sections of ${htmlContent.length.toLocaleString()} chars.`;
       // Tone parity with the single-doc branch: don't let harsh wording ride on a high merged
