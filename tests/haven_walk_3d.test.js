@@ -72,6 +72,12 @@ describe('buildHavenPalaceData (pure haven → palace mapper)', () => {
     expect(out.objects.b1_i0.name).toBe('Lamp');
   });
 
+  it('emits a signature-landmark seed per room, keyed by the palace room key', () => {
+    const out = H.buildHavenPalaceData(havenState(), []);
+    // two unlocked rooms → b0 (main) and b1 (garden); seeds are the room ids
+    expect(out.landmarks).toEqual({ b0: 'main', b1: 'garden' });
+  });
+
   it('appends a Gallery room from portfolio artifacts (capped at 12)', () => {
     const out = H.buildHavenPalaceData(havenState(), ARTIFACTS);
     const gallery = out.data.branches[out.data.branches.length - 1];

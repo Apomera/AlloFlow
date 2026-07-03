@@ -10454,6 +10454,7 @@
     var branches = [];
     var images = {};
     var objects = {};
+    var landmarks = {};
     rooms.forEach(function(room) {
       var placed = decs.filter(function(d) {
         return d && d.placement && (d.placement.roomId || 'main') === room.id;
@@ -10463,6 +10464,7 @@
         return (sa - sb) || ((a.placement.cellIndex || 0) - (b.placement.cellIndex || 0));
       });
       var bi = branches.length;
+      landmarks['b' + bi] = room.id || ('room' + bi);   // deterministic signature landmark per room (docs §4.7)
       var items = [];
       var mnemonics = [];
       placed.forEach(function(d, ii) {
@@ -10485,16 +10487,14 @@
         })
       });
     }
-    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images, objects: objects };
+    return { data: { main: 'My AlloHaven', branches: branches, structureType: 'Memory Palace' }, images: images, objects: objects, landmarks: landmarks };
   }
 
   // Lazy-load memory_palace_module.js from wherever this module was served
   // (CDN fallback); shares the walk renderer with the Memory Palace organizer,
   // so at most one download of the module AND of three.js.
-  function _havenPalaceEnsure() {
-    if (window.AlloModules && window.AlloModules.MemoryPalace) return Promise.resolve(true);
-    var base = 'https://alloflow-cdn.pages.dev/';
-    var query = '';
+  function _havenScriptBase() {
+    var base = 'https://alloflow-cdn.pages.dev/', query = '';
     try {
       var scripts = document.querySelectorAll('script[src]');
       for (var i = 0; i < scripts.length; i++) {
@@ -10503,30 +10503,34 @@
         if (m) { base = m[1]; query = m[2] || ''; break; }
       }
     } catch (e) {}
+    return { base: base, query: query };
+  }
+  function _havenLoadScript(url) {
     return new Promise(function(resolve) {
       try {
         var s = document.createElement('script');
-        s.src = base + 'memory_palace_module.js' + query;
-        s.async = true;
-        s.onload = function() {
-          var ok = !!(window.AlloModules && window.AlloModules.MemoryPalace);
-          // Best-effort sculpture support: load Prim3D too, but never block on it.
-          try {
-            if (ok && !(window.AlloModules && window.AlloModules.Prim3D)) {
-              var s2 = document.createElement('script');
-              s2.src = base + 'prim3d_module.js' + query;
-              s2.async = true;
-              s2.onload = function() { resolve(ok); };
-              s2.onerror = function() { resolve(ok); };
-              document.head.appendChild(s2);
-              return;
-            }
-          } catch (e3) {}
-          resolve(ok);
-        };
+        s.src = url; s.async = true;
+        s.onload = function() { resolve(true); };
         s.onerror = function() { resolve(false); };
         document.head.appendChild(s);
-      } catch (e2) { resolve(false); }
+      } catch (e) { resolve(false); }
+    });
+  }
+  // Loads the memory-palace walk renderer plus its best-effort sidecars: Prim3D
+  // (locus sculptures) and Landmark (giant per-room structures). Resolves true
+  // iff the palace itself is available; sidecars degrade to nothing.
+  function _havenPalaceEnsure() {
+    var loc = _havenScriptBase();
+    function sidecars() {
+      var jobs = [];
+      if (!(window.AlloModules && window.AlloModules.Prim3D)) jobs.push(_havenLoadScript(loc.base + 'prim3d_module.js' + loc.query));
+      if (!(window.AlloModules && window.AlloModules.Landmark)) jobs.push(_havenLoadScript(loc.base + 'landmark_module.js' + loc.query));
+      return Promise.all(jobs).then(function() { return true; });
+    }
+    if (window.AlloModules && window.AlloModules.MemoryPalace) return sidecars();
+    return _havenLoadScript(loc.base + 'memory_palace_module.js' + loc.query).then(function() {
+      if (!(window.AlloModules && window.AlloModules.MemoryPalace)) return false;
+      return sidecars();
     });
   }
 
@@ -10581,9 +10585,19 @@
       var MP = window.AlloModules && window.AlloModules.MemoryPalace;
       if (!ok || !MP) { status.textContent = '⚠️ The 3D walk could not load here — your haven is unchanged. Try again from the latest Canvas link.'; return; }
       if (status.parentNode) status.parentNode.removeChild(status);
+      var LM = window.AlloModules && window.AlloModules.Landmark;
+      var resolvedLandmarks = {};
+      if (LM && built.landmarks) {
+        Object.keys(built.landmarks).forEach(function(roomKey) {
+          var key = LM.pickLandmark(built.landmarks[roomKey]);
+          var recipe = key && LM.getLandmark(key);
+          if (recipe) resolvedLandmarks[roomKey] = recipe;
+        });
+      }
       handle = MP.render(body, built.data, {
         images: built.images,
         objects: built.objects,
+        landmarks: resolvedLandmarks,
         onLocusChange: function(locus) {
           if (!locus) return;
           footer.textContent = locus.id === '__entry'

@@ -493,6 +493,20 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Giant primitive landmarks (landmark/1) — one per room in the 3D worlds;
+        // renders via Prim3D at building scale. Lazy sidecar of the haven walk.
+        name: 'Landmark',
+        filename: 'landmark_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        // CC0 collectibles catalog + GLTFLoader (glblib/1) — the shop lane, with
+        // a Prim3D fallback so items render before any .glb asset exists.
+        name: 'GlbLibrary',
+        filename: 'glb_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'VisualPanelModule',
         filename: 'visual_panel_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'

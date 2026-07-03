@@ -450,6 +450,24 @@
       });
     }
 
+    // Landmarks: one giant primitive structure per room (opts.landmarks =
+    // { roomKey: Prim3D recipe }) rendered at building scale against the back
+    // wall — "the world built of very large versions" (docs §4.7). Same graceful
+    // degradation: no Prim3D or no recipe ⇒ nothing, never an error.
+    var landmarks = (opts && opts.landmarks) || {};
+    if (P3D && landmarks) {
+      (palace.rooms || []).forEach(function (room) {
+        var rec = landmarks[room.key];
+        if (!rec || room.key === '__entry') return;
+        try {
+          var big = P3D.buildObject(THREE, rec, { unit: 150 });
+          if (!big) return;
+          big.position.set(room.center.x, 0, -ROOM_D / 2 + 115);   // stands against the back wall
+          group.add(big);
+        } catch (e) {}
+      });
+    }
+
     // ── Recall API on the handle: earn a label back / flash placement status ──
     state.revealLocus = function (id) {
       var ref = frameRefs[id];
