@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T20:08:47.024Z",
+  "generatedAt": "2026-07-03T20:21:12.879Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 121,
+    "issueCount": 120,
     "errorCount": 0,
-    "warningCount": 105,
+    "warningCount": 104,
     "noticeCount": 16,
-    "toolsWithIssues": 58,
+    "toolsWithIssues": 57,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 51,
-    "toolsWithCanvas": 34,
+    "toolsWithWarnings": 50,
+    "toolsWithCanvas": 35,
     "shellCoverage": {
       "standardShellTools": 114,
       "lightBackgroundTools": [],
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 46,
+        "warningCount": 45,
         "noticeCount": 4
       },
       "technology": {
@@ -212,27 +212,6 @@
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
-      "code": "heading",
-      "severity": "warning",
-      "count": 13,
-      "toolCount": 13,
-      "exampleTools": [
-        "archStudio",
-        "astronomy",
-        "cellularLab",
-        "cephalopodLab",
-        "funcGrapher",
-        "geoSandbox",
-        "geometryWorld",
-        "graphCalc",
-        "kitchenLab",
-        "lumen",
-        "physics",
-        "semiconductor"
-      ],
-      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
-    },
-    {
       "code": "canvas-name",
       "severity": "warning",
       "count": 15,
@@ -252,6 +231,27 @@
         "waterCycle"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
+    },
+    {
+      "code": "heading",
+      "severity": "warning",
+      "count": 12,
+      "toolCount": 12,
+      "exampleTools": [
+        "archStudio",
+        "astronomy",
+        "cellularLab",
+        "cephalopodLab",
+        "funcGrapher",
+        "geoSandbox",
+        "geometryWorld",
+        "graphCalc",
+        "kitchenLab",
+        "lumen",
+        "physics",
+        "wave"
+      ],
+      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
       "code": "inline-contrast",
@@ -1800,7 +1800,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16026,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2116,7 +2116,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22809,
+      "renderedBytes": 22778,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2565,7 +2565,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1578,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3098,7 +3098,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13326,
+      "renderedBytes": 13356,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3554,7 +3554,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17337,
+      "renderedBytes": 17335,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3952,32 +3952,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore band gaps, doping, junctions, transistors, gates, I-V curves, wafer fab, LEDs, solar cells, quantum wells, memory & amplifiers.",
-      "renderedBytes": 262,
+      "renderedBytes": 16753,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
-        "roleButtons": 0,
-        "fields": 0,
-        "canvases": 0,
+        "buttons": 37,
+        "roleButtons": 30,
+        "fields": 2,
+        "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "semiconductor",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "singing",
@@ -4239,7 +4232,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47697,
+      "renderedBytes": 47688,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

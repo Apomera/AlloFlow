@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T20:08:47.024Z
+Generated: 2026-07-03T20:21:12.879Z
 
 ## Scope
 
@@ -13,13 +13,13 @@ Generated: 2026-07-03T20:08:47.024Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 121 |
+| Total findings | 120 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 105 |
+| Tool-level warnings | 104 |
 | Review notices | 16 |
-| Tools with any finding | 58 |
+| Tools with any finding | 57 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 34 |
+| Tools with canvas surfaces | 35 |
 
 ## Top Findings
 
@@ -27,8 +27,8 @@ Generated: 2026-07-03T20:08:47.024Z
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 26 | 18 | anatomy, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, musicSynth, oratory, plateTectonics, rockCycle | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 16 | 16 | birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle, solarSystem | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `heading` | 13 | 13 | archStudio, astronomy, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, physics, semiconductor | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `canvas-name` | 15 | 12 | anatomy, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume, waterCycle | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
+| warning | `heading` | 12 | 12 | archStudio, astronomy, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, physics, wave | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 32 | 12 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, typingPractice, waterCycle | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 3 | 3 | birdLab, molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 13 | 13 | accessLens, archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
@@ -141,7 +141,7 @@ Generated: 2026-07-03T20:08:47.024Z
 | `rockCycle` rockCycle | science | standard | 13 | 1 | 1 | 0 | 3 | 1 | canvas-focus x1, canvas-name x1, metadata x1, tiny-text x1 |
 | `rocks` rocks | science | standard | 9 | 0 | 1 | 0 | 2 | 1 | canvas-focus x1, canvas-name x1, metadata x1 |
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
-| `semiconductor` Semiconductor Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
+| `semiconductor` Semiconductor Lab | science | standard | 37 | 2 | 1 | 0 | 0 | 0 |  |
 | `singing` Singing Lab | art | standard | 29 | 0 | 2 | 0 | 2 | 0 | canvas-focus x2 |
 | `skatelab` SkateLab | science | standard | 58 | 10 | 1 | 0 | 0 | 0 |  |
 | `solarSystem` Solar System Explorer | science | standard | 25 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |

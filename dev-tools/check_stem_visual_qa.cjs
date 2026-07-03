@@ -93,6 +93,7 @@ const EXPECTED_MARKERS = [
   { id: 'logicLab', file: 'stem_tool_logiclab.js', marker: 'data-logiclab-focus', label: 'Logic Lab reasoning studio' },
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
+  { id: 'semiconductor', file: 'stem_tool_semiconductor.js', marker: 'data-semiconductor-command', label: 'Semiconductor command bench' },
   { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }
 ];
 

@@ -242,7 +242,7 @@ window.StemLab = window.StemLab || {
           }});
         });
         // Don't early-return — hooks below must always execute (Rules of Hooks).
-        // Render a loading placeholder at the end instead.
+        // Default values below render the real lab on the first pass.
       }
 
       var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { semiconductor: Object.assign({}, prev.semiconductor, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))}); }); };
@@ -617,7 +617,8 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-bandgap-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K'
+            tabIndex: 0,
+            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K. Use the material buttons and temperature slider to change this visualization.'
           }),
           sliderRow('Temperature', tempK, 50, 800, 10, function(v) { upd('temperature', v); }, ' K'),
           h('div', { className: 'flex flex-wrap items-center gap-3 mt-2' },
@@ -3755,8 +3756,89 @@ window.StemLab = window.StemLab || {
         className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full hover:from-cyan-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all'
       }, t('stem.semiconductor.snapshot', '\uD83D\uDCF8 Snapshot'));
 
-      // Show loading placeholder while state initializes (hooks already called above)
-      if (!_semiInitialized) return h('div', { className: 'p-8 text-center text-slate-600' }, t('stem.semiconductor.loading_semiconductor_lab', 'Loading Semiconductor Lab\u2026'));
+      var currentSubtool = SUBTOOLS.find(function(st) { return st.id === subtool; }) || SUBTOOLS[0];
+      var activeMaterial = MATERIALS[d.material] || MATERIALS.silicon;
+      var activeTemp = d.temperature || 300;
+      var activeBandGap = Math.max(0, activeMaterial.bandGap + activeMaterial.tempCoeff * (activeTemp - 300));
+      var chipRoutes = [
+        { label: t('stem.semiconductor.route_band_structure', 'Band structure'), value: activeBandGap.toFixed(2) + ' eV', note: activeMaterial.name, accent: '#38bdf8', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'bandgap', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_doping', 'Doping'), value: (DOPANTS[d.dopant] || DOPANTS.none).name, note: (d.dopantCount || 3) + ' dopants on the lattice', accent: '#f59e0b', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'doping', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_junctions', 'Junctions'), value: ((d.pnBias || 0).toFixed(1)) + ' V', note: t('stem.semiconductor.route_junctions_note', 'Bias a diode or LED'), accent: '#a78bfa', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'pnjunction', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_chip_logic', 'Chip logic'), value: d.gateType || 'NOT', note: t('stem.semiconductor.route_chip_logic_note', 'Build gates and CMOS flow'), accent: '#34d399', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'gates', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_solar_led', 'Solar + LED'), value: (d.ledCurrent || 20) + ' mA', note: t('stem.semiconductor.route_solar_led_note', 'Turn photons into power and color'), accent: '#fb7185', onClick: function() { setStemLabTab('explore'); updMulti({ subtool: 'ledspec', aiExplain: null }); } },
+        { label: t('stem.semiconductor.route_practice', 'Practice'), value: tab === 'challenge' ? t('stem.semiconductor.active', 'Active') : t('stem.semiconductor.ready', 'Ready'), note: t('stem.semiconductor.route_practice_note', 'Challenge or Chip Defense'), accent: '#22d3ee', onClick: function() { setStemLabTab('challenge'); } }
+      ];
+      var commandPanel = h('section', {
+        'data-semiconductor-command': 'true',
+        'aria-labelledby': 'semiconductor-command-title',
+        style: {
+          margin: '0 0 12px',
+          padding: 14,
+          borderRadius: 12,
+          border: '1px solid rgba(56,189,248,0.30)',
+          background: 'radial-gradient(circle at 78% 14%, rgba(56,189,248,0.18), transparent 28%), linear-gradient(135deg, rgba(8,47,73,0.72), rgba(15,23,42,0.96))',
+          boxShadow: '0 18px 40px rgba(2,8,23,0.28)'
+        }
+      },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.15fr) minmax(260px, 0.85fr)', gap: 12, alignItems: 'stretch' } },
+          h('div', null,
+            h('div', { style: { fontSize: 10, fontWeight: 900, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 0, marginBottom: 4 } }, t('stem.semiconductor.command_kicker', 'Chip lab bench')),
+            h('h3', { id: 'semiconductor-command-title', style: { margin: 0, color: '#f8fafc', fontSize: 20, lineHeight: 1.15, fontWeight: 900 } }, currentSubtool.label),
+            h('p', { style: { margin: '6px 0 12px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, maxWidth: '68ch' } }, t('stem.semiconductor.command_copy', 'Start with a physical idea, then jump into the exact simulation: energy bands, dopants, P-N junctions, logic gates, LEDs, solar cells, or a practice challenge.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } },
+              chipRoutes.map(function(route) {
+                return h('button', {
+                  key: route.label,
+                  type: 'button',
+                  onClick: route.onClick,
+                  style: {
+                    minHeight: 82,
+                    padding: '9px 10px',
+                    textAlign: 'left',
+                    borderRadius: 8,
+                    border: '1px solid rgba(148,163,184,0.22)',
+                    borderLeft: '4px solid ' + route.accent,
+                    background: 'rgba(15,23,42,0.62)',
+                    color: '#f8fafc',
+                    cursor: 'pointer'
+                  }
+                },
+                  h('span', { style: { display: 'block', fontSize: 10, color: route.accent, fontWeight: 900, textTransform: 'uppercase', marginBottom: 4 } }, route.label),
+                  h('span', { style: { display: 'block', fontSize: 13, fontWeight: 900, lineHeight: 1.2 } }, route.value),
+                  h('span', { style: { display: 'block', fontSize: 10, color: '#bae6fd', lineHeight: 1.35, marginTop: 4 } }, route.note)
+                );
+              })
+            )
+          ),
+          h('div', { style: { borderRadius: 10, border: '1px solid rgba(125,211,252,0.24)', background: 'rgba(2,6,23,0.36)', padding: 10, minHeight: 190 } },
+            h('div', { style: { height: 112, borderRadius: 8, border: '1px solid rgba(56,189,248,0.24)', background: 'linear-gradient(135deg, rgba(14,165,233,0.12), rgba(15,23,42,0.84))', position: 'relative', overflow: 'hidden', marginBottom: 9 }, 'aria-hidden': 'true' },
+              [18, 32, 46, 60, 74].map(function(x) {
+                return h('span', { key: 'v' + x, style: { position: 'absolute', left: x + '%', top: 12, bottom: 12, width: 1, background: 'rgba(125,211,252,0.22)' } });
+              }),
+              [24, 50, 76].map(function(y) {
+                return h('span', { key: 'h' + y, style: { position: 'absolute', left: 18, right: 18, top: y + '%', height: 1, background: 'rgba(125,211,252,0.18)' } });
+              }),
+              h('span', { style: { position: 'absolute', left: '16%', top: '42%', width: 11, height: 11, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 14px rgba(56,189,248,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: '49%', top: '23%', width: 12, height: 12, borderRadius: '50%', background: '#f59e0b', boxShadow: '0 0 14px rgba(245,158,11,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: '71%', top: '61%', width: 11, height: 11, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 14px rgba(52,211,153,0.55)' } }),
+              h('span', { style: { position: 'absolute', left: 24, right: 24, top: '50%', height: 2, background: 'linear-gradient(90deg, #38bdf8, #f59e0b, #34d399)', opacity: 0.75 } })
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 } },
+              [
+                { label: t('stem.semiconductor.status_material', 'Material'), value: activeMaterial.name },
+                { label: t('stem.semiconductor.status_temperature', 'Temperature'), value: activeTemp + ' K' },
+                { label: t('stem.semiconductor.status_workspace', 'Workspace'), value: currentSubtool.short },
+                { label: t('stem.semiconductor.status_xp', 'XP'), value: String(getStemXP ? getStemXP() : 0) }
+              ].map(function(card) {
+                return h('div', { key: card.label, style: { padding: 8, borderRadius: 8, border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(15,23,42,0.58)' } },
+                  h('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 900, textTransform: 'uppercase' } }, card.label),
+                  h('div', { style: { marginTop: 3, fontSize: 12, color: '#f8fafc', fontWeight: 900, lineHeight: 1.2 } }, card.value)
+                );
+              })
+            )
+          )
+        )
+      );
 
       return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
         backBtn,
@@ -3767,6 +3849,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
         ),
         tabBar,
+        commandPanel,
         tabHero,
         subtoolNav,
         h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content),
