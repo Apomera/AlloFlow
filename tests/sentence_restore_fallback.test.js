@@ -21,9 +21,20 @@ const extract = (startMarker, endMarker, name) => {
 const applyWordRestoration = extract(
   'const applyWordRestoration = (html, missingList, sourceText) => {',
   '\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', 'applyWordRestoration');
-const restoreSentencesDeterministic = extract(
-  'const restoreSentencesDeterministic = (html, missingList, sourceText) => {',
-  '\n  // ── Stage D: Duplicate detection', 'restoreSentencesDeterministic');
+// restoreSentencesDeterministic now calls the module-level _stripRestoreMarkdown helper (P2-b,
+// 2026-07-03) to keep raw markdown out of restored text. The slice-eval harness must inject it the
+// same way it injects warnLog (it lives outside the sliced function body).
+const _stripRestoreMarkdown = (() => {
+  const s = src.indexOf('var _stripRestoreMarkdown = function');
+  const e = src.indexOf('\n};', s) + 3;
+  return new Function(src.slice(s, e) + '\n; return _stripRestoreMarkdown;')();
+})();
+const restoreSentencesDeterministic = (() => {
+  const s = src.indexOf('const restoreSentencesDeterministic = (html, missingList, sourceText) => {');
+  const e = src.indexOf('\n  // ── Stage D: Duplicate detection', s);
+  if (s === -1 || e === -1) throw new Error('extraction markers for restoreSentencesDeterministic missing');
+  return new Function('warnLog', '_stripRestoreMarkdown', src.slice(s, e) + '\n; return restoreSentencesDeterministic;')(() => {}, _stripRestoreMarkdown);
+})();
 
 // Mirror of the call-site 3-pass integration (the doc_pipeline Auto-restore block).
 const restoreWithSentenceFallback = (html, missing, source) => {
