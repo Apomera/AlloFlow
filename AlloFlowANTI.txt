@@ -5072,6 +5072,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
         // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
         'stem_lab/stem_tool_lumen.js',
+        // Jul 2026 catch-up: cellular had registerTool + tile + PLUGIN_FILES
+        // but was never added here, so it hit exactly the failure class this
+        // comment block documents (never registers in production).
+        'stem_lab/stem_tool_cellular.js',
+        // Jul 2026: Access Lens — learner accessibility camera kit
+        // (describe / read / translate / Socratic investigate).
+        'stem_lab/stem_tool_accesslens.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer

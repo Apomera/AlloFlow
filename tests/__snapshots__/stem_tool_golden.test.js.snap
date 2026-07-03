@@ -1,5 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`STEM tool render goldens (default state) > renders + pins a digest for accessLens 1`] = `
+{
+  "buttons": 8,
+  "inputs": 1,
+  "lengthBucket": 25,
+  "sha": "bf03cdc1005db76b",
+  "svgs": 0,
+}
+`;
+
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquacultureLab 1`] = `
 {
   "buttons": 144,

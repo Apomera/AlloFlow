@@ -22,6 +22,8 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const TOOLS = [
   // new tool (2026-06-08)
   { file: 'stem_lab/stem_tool_cellular.js', id: 'cellularLab' },
+  // new tool (2026-07-02): learner accessibility camera kit
+  { file: 'stem_lab/stem_tool_accesslens.js', id: 'accessLens' },
   // changed in the 2026-06-08 refinement pass
   { file: 'stem_lab/stem_tool_music.js', id: 'musicSynth' },
   { file: 'stem_lab/stem_tool_worldbuilder.js', id: 'worldBuilder' },
