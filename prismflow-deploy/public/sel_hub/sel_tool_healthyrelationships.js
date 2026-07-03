@@ -203,9 +203,95 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
       // ═══════════════════════════════════════════════════════════
       // HOME — the spectrum
       // ═══════════════════════════════════════════════════════════
+      function hrRouteCard(label, detail, target, color) {
+        var active = view === target;
+        return h('button', {
+          key: target,
+          onClick: function() { goto(target); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 10,
+            borderTop: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderRight: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderBottom: '1px solid ' + (active ? color : _hreBd('#334155')),
+            borderLeft: '4px solid ' + color,
+            background: active ? color + '18' : _hreBg('#0f172a'),
+            color: _hreFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _hreFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function hrStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 10,
+            background: _hreBg('#0f172a'),
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _hreFg('#94a3b8'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      function renderRelationshipLaunch() {
+        var check = d.check || {};
+        var rated = Object.keys(check).length;
+        var concernCount = Object.keys(check).filter(function(k) { return check[k] === 'unhealthy' || check[k] === 'abusive'; }).length;
+        return h('section', {
+          role: 'region',
+          'aria-label': 'Healthy relationships launch panel',
+          style: {
+            marginBottom: 14,
+            padding: 16,
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(14,165,233,0.07)), ' + _hreBg('#0f172a'),
+            border: '1px solid rgba(236,72,153,0.35)'
+          }
+        },
+          h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { flex: '1 1 260px' } },
+              h('div', { style: { fontSize: 11, color: _hreFg('#f9a8d4'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Relationship safety map'),
+              h('h3', { style: { margin: 0, color: _hreFg('#fbcfe8'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Start with clarity, not a verdict.'),
+              h('p', { style: { margin: '6px 0 0', color: _hreFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+                'Review the spectrum, privately check one relationship, learn consent basics, or jump straight to safety resources.'
+              )
+            ),
+            h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+              hrStat('dimensions rated', rated + '/' + DIMENSIONS.length, '#0ea5e9'),
+              hrStat('concern flags', concernCount, concernCount ? '#ef4444' : '#22c55e'),
+              hrStat('consent principles', CONSENT_PRINCIPLES.length, '#ec4899'),
+              hrStat('private notes', d.notes ? 'yes' : 'empty', '#a855f7')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+            hrRouteCard('See the spectrum', 'Compare healthy, unhealthy, and abusive patterns.', 'home', '#ec4899'),
+            hrRouteCard('Check one relationship', 'Rate the 8 dimensions privately.', 'check', '#0ea5e9'),
+            hrRouteCard('Review consent', 'Use the 7 specific consent principles.', 'consent', '#f97316'),
+            hrRouteCard('Find safety help', 'Open resources and safer next steps.', 'safety', '#ef4444'),
+            hrRouteCard('Make a private packet', 'Print or save the check artifact for yourself.', 'print', '#14b8a6')
+          )
+        );
+      }
+
       function renderHome() {
         return h('div', null,
           safetyBanner(),
+          renderRelationshipLaunch(),
 
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(236,72,153,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(236,72,153,0.4)', marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _hreFg('#fbcfe8'), marginBottom: 4 } }, 'Relationships exist on a spectrum.'),

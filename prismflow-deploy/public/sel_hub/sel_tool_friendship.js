@@ -311,9 +311,89 @@ window.SelHub = window.SelHub || {
       })();
 
       // ── My Style (Friendship Compass) ──
+      function friendRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 86,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : _frC('#e5e7eb')),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : _frC('#fff'),
+            color: _frC('#374151'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _frC('#64748b'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function friendStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: _frC('#fff'),
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 17, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _frC('#64748b'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var stylePicked = myStyle ? (FRIEND_STYLES.find(function(s) { return s.id === myStyle; }) || {}).label || 'chosen' : 'not yet';
+      var friendshipLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Friendship launch panel',
+        style: {
+          marginBottom: 18,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(217,119,6,0.12), rgba(16,185,129,0.08)), ' + _frC('#fffbeb'),
+          border: '1px solid ' + _frC('#fde68a')
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: AMBER, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
+            h('h3', { style: { margin: 0, color: AMBER_DARK, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Choose the friendship skill you need today.'),
+            h('p', { style: { margin: '6px 0 0', color: _frC('#475569'), fontSize: 12, lineHeight: 1.55 } },
+              'Start with your style, then practice a specific move: open, maintain, repair, digital choices, or a hard conversation.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+            friendStat('style picked', stylePicked, AMBER),
+            friendStat('sections explored', exploredCount + '/' + TABS.length, '#10b981'),
+            friendStat('private notes', friendNotes.length, '#0ea5e9'),
+            friendStat('digital practices', Object.keys(digitalDone).length, '#a855f7')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          friendRouteCard('Start a friendship', 'Pick an opener and follow-up that feels natural.', 'start', '#10b981'),
+          friendRouteCard('Keep it warm', 'Try small maintenance moves before drift sets in.', 'keep', '#d97706'),
+          friendRouteCard('Handle digital moments', 'Practice screenshots, tone, privacy, and group chats.', 'digital', '#0ea5e9'),
+          friendRouteCard('Repair a rupture', 'Use an apology or boundary when something went sideways.', 'repair', '#a855f7'),
+          friendRouteCard('Rehearse a talk', 'Practice the conversation before doing it live.', 'rehearse', '#f59e0b')
+        )
+      );
+
       var compassContent = null;
       if (activeTab === 'compass') {
-        compassContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
+        compassContent = h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
+          friendshipLaunchPanel,
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDDED'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'What Kind of Friend Am I?'),

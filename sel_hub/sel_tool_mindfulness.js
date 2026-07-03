@@ -22297,6 +22297,89 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
+      function mindfulnessRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() {
+            stopBreathTimer(); stopScanTimer();
+            upd({ activeTab: target, breathActive: false, breathPhase: null, scanActive: false });
+            if (soundEnabled) sfxClick();
+          },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : _minBg('#334155')),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : _minBg('#1e293b'),
+            color: _minFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _minFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function mindfulnessStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: _minBg('#0f172a'),
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _minFg('#94a3b8'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var mindfulnessLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Mindfulness launch panel',
+        style: {
+          marginBottom: 18,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(14,165,233,0.08)), ' + _minBg('#1e293b'),
+          border: '1px solid ' + _minBg('#334155')
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: _minFg('#a78bfa'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Mindfulness launch mat'),
+            h('h3', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Pick a practice that matches your body right now.'),
+            h('p', { style: { margin: '6px 0 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+              'Start with breath, body, senses, a small microbreak, a timed sit, or safety guidance if practice feels too intense.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+            mindfulnessStat('breath sessions', breathSessions, '#0ea5e9'),
+            mindfulnessStat('body scans', scanSessions, '#ec4899'),
+            mindfulnessStat('grounding rounds', groundCompleted, '#22c55e'),
+            mindfulnessStat('practice log', practiceLog.length, '#a855f7')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          mindfulnessRouteCard('Breathe', 'Use the simplest pacer when you need quick regulation.', 'breathe', '#0ea5e9'),
+          mindfulnessRouteCard('Body scan', 'Sweep attention through the body with a timer.', 'scan', '#ec4899'),
+          mindfulnessRouteCard('Ground senses', 'Use 5-4-3-2-1 to return to the room.', 'ground', '#22c55e'),
+          mindfulnessRouteCard('Take a microbreak', 'Find a 30 second to 3 minute reset.', 'microbreak', '#84cc16'),
+          mindfulnessRouteCard('Set a bell timer', 'Use a quiet timed practice with intervals.', 'bell_timer', '#f97316'),
+          mindfulnessRouteCard('Check safety', 'Adapt or stop practice when it is not helping.', 'safety', '#ea580c')
+        )
+      );
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -22352,7 +22435,8 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'breathe') {
         var bp = BREATH_PATTERNS[breathPatternIdx];
 
-        breatheContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+        breatheContent = h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+          mindfulnessLaunchPanel,
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _minFg('#f1f5f9'), fontSize: 18 } },
             band === 'elementary' ? '\uD83C\uDF2C\uFE0F Let\'s Breathe Together!' : '\uD83C\uDF2C\uFE0F Guided Breathing'
           ),

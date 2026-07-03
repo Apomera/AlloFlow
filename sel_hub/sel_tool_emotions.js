@@ -18155,6 +18155,86 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
+      function emotionRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : P.border),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : P.card,
+            color: P.text,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: P.textMuted, lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function emotionStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: P.bg,
+            border: '1px solid ' + color + '44',
+            minHeight: 62
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: P.textMuted, lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var selectedFamilyLabel = selectedFamily ? ((EMOTION_FAMILIES.find(function(f) { return f.id === selectedFamily; }) || {}).label || 'selected') : 'none yet';
+      var emotionsLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Emotions explorer launch panel',
+        style: {
+          margin: '0 auto 18px',
+          maxWidth: 760,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(20,184,166,0.07)), ' + P.card,
+          border: '1px solid ' + P.border
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: ST('#5eead4'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Emotion map'),
+            h('h3', { style: { margin: 0, color: P.text, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Find the right entry point for the feeling.'),
+            h('p', { style: { margin: '6px 0 0', color: P.text2, fontSize: 12, lineHeight: 1.55 } },
+              'Explore words, do a quick check-in, read expression cues, journal, or jump to a coping strategy.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
+            emotionStat('current family', selectedFamilyLabel, '#3b82f6'),
+            emotionStat('families explored', Object.keys(exploredFamilies).length + '/' + EMOTION_FAMILIES.length, '#14b8a6'),
+            emotionStat('words learned', Object.keys(learnedWords).length, '#8b5cf6'),
+            emotionStat('check-ins saved', checkinHistory.length, '#10b981')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          emotionRouteCard('Name the feeling', 'Use the wheel or quiz for precise words.', 'wheel', '#3b82f6'),
+          emotionRouteCard('Do a check-in', 'Save family, feeling, intensity, and context.', 'checkin', '#10b981'),
+          emotionRouteCard('Read expression cues', 'Practice face and body-language signals.', 'faces', '#f59e0b'),
+          emotionRouteCard('Write it out', 'Turn a feeling into a short private narrative.', 'journal', '#0891b2'),
+          emotionRouteCard('Find a strategy', 'Match emotion and intensity to a next step.', 'strategies', '#f97316')
+        )
+      );
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -18302,6 +18382,7 @@ window.SelHub = window.SelHub || {
         }
 
         wheelContent = h('div', { style: { padding: 20 } },
+          emotionsLaunchPanel,
           wheelToggle,
           quizContent,
 

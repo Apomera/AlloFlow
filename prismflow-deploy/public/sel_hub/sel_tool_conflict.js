@@ -1106,6 +1106,84 @@ window.SelHub = window.SelHub || {
       })();
 
       // ── Badge Popup ──
+      function conflictRouteCard(label, detail, target, color) {
+        var isHere = activeTab === target;
+        return h('button', {
+          key: target,
+          onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
+          'aria-label': label + ': ' + detail,
+          style: {
+            minHeight: 88,
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px solid ' + (isHere ? color : _cflBg('#334155')),
+            borderLeft: '4px solid ' + color,
+            background: isHere ? color + '18' : _cflBg('#1e293b'),
+            color: _cflFg('#e2e8f0'),
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 8
+          }
+        },
+          h('span', { style: { fontSize: 12, fontWeight: 900, color: color } }, label),
+          h('span', { style: { fontSize: 11, color: _cflFg('#94a3b8'), lineHeight: 1.45 } }, detail)
+        );
+      }
+
+      function conflictStat(label, value, color) {
+        return h('div', {
+          key: label,
+          style: {
+            padding: '10px 12px',
+            borderRadius: 12,
+            background: _cflBg('#0f172a'),
+            border: '1px solid ' + color + '44',
+            minHeight: 64
+          }
+        },
+          h('div', { style: { fontSize: 18, fontWeight: 900, color: color, lineHeight: 1 } }, value),
+          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _cflFg('#94a3b8'), lineHeight: 1.35 } }, label)
+        );
+      }
+
+      var conflictLaunchPanel = h('section', {
+        role: 'region',
+        'aria-label': 'Conflict practice launch panel',
+        style: {
+          marginBottom: 18,
+          padding: 16,
+          borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.07)), ' + _cflBg('#0f172a'),
+          border: '1px solid ' + ACCENT_MED
+        }
+      },
+        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 260px' } },
+            h('div', { style: { fontSize: 11, color: ACCENT, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Conflict map'),
+            h('h3', { style: { margin: 0, color: _cflFg('#f1f5f9'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Pick the part of the hard conversation to rehearse.'),
+            h('p', { style: { margin: '6px 0 0', color: _cflFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
+              'Use a low-stakes scenario first, then build words, cool down, repair, or role-play the conversation.'
+            )
+          ),
+          h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 8 } },
+            conflictStat('scenarios completed', cfCompleted, '#22c55e'),
+            conflictStat('I-statements built', isCompleted, '#3b82f6'),
+            conflictStat('repair reflections', rpCompleted, '#a855f7'),
+            conflictStat('assertive streak', cfAssertive, '#f59e0b')
+          )
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+          conflictRouteCard('Start with a scenario', 'Watch choices play out before trying real words.', 'theater', '#dc2626'),
+          conflictRouteCard('Build the words', 'Turn blame into an I-statement.', 'istate', '#3b82f6'),
+          conflictRouteCard('Lower the heat', 'Use a reset before solving anything.', 'cooldown', '#0ea5e9'),
+          conflictRouteCard('Repair after harm', 'Name impact and make a concrete next step.', 'repair', '#a855f7'),
+          conflictRouteCard('Rehearse live', 'Practice a hard talk in role-play mode.', 'roleplay', '#f59e0b')
+        )
+      );
+
       var badgePopup = null;
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
@@ -1150,7 +1228,8 @@ window.SelHub = window.SelHub || {
         var styleColors = { aggressive: _cflFg('#ef4444'), passive: _cflFg('#f59e0b'), assertive: _cflFg('#22c55e') };
         var styleLabels = { aggressive: 'Aggressive', passive: 'Passive', assertive: 'Assertive' };
 
-        cfContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
+        cfContent = h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
+          conflictLaunchPanel,
           h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _cflFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFAD Conflict Theater'),
           h('p', { style: { textAlign: 'center', color: _cflFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Read the scenario, choose a response, and see what happens.'),
           h('div', { style: { textAlign: 'center', color: _cflFg('#94a3b8'), fontSize: 11, marginBottom: 12 } },
