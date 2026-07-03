@@ -158,6 +158,51 @@ describe('checkpoints + replay', () => {
   });
 });
 
+describe('canvas.resize (page size as an op, _baseCanvas anchor)', () => {
+  it('changes canvas dims + preset and re-clamps objects into the new page', () => {
+    const d = ST.stCreateDoc('letter-landscape', 'Resize', T0); // 1056 x 816
+    // object valid in landscape but off the right edge of portrait (816 wide)
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 900, y: 40, w: 120, h: 80 }, z: 1, fill: '#dbeafe', decorative: true } }, 'user', T0);
+    expect(d.objects[0].frame.x).toBe(900);
+    ST.stAppend(d, { type: 'canvas.resize', preset: 'letter-portrait' }, 'user', T0 + 1000);
+    expect([d.canvas.preset, d.canvas.w, d.canvas.h]).toEqual(['letter-portrait', 816, 1056]);
+    expect(d.objects[0].frame.x).toBe(816 - 120); // re-clamped onto the page
+  });
+  it('resize preserves the page background', () => {
+    const d = ST.stCreateDoc('square', 'BG', T0);
+    ST.stAppend(d, { type: 'canvas.background', fill: '#123456' }, 'user', T0);
+    ST.stAppend(d, { type: 'canvas.resize', preset: 'letter-portrait' }, 'user', T0);
+    expect(d.canvas.background.fill).toBe('#123456');
+  });
+  it('scrubbing BEFORE a resize shows the original size; live scene === replay(last)', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Anchor', T0); // 816 x 1056
+    addText(d, 'hi');                                            // seq 1
+    ST.stAppend(d, { type: 'canvas.resize', preset: 'square' }, 'user', T0 + 1000); // seq 2 → 900x900
+    // before the resize op → original portrait dims (base canvas anchor)
+    expect([ST.stReplay(d, 1).canvas.w, ST.stReplay(d, 1).canvas.h]).toEqual([816, 1056]);
+    // at/after the resize → new dims
+    expect([ST.stReplay(d, 2).canvas.w, ST.stReplay(d, 2).canvas.h]).toEqual([900, 900]);
+    // core invariant still holds for canvas, not just objects
+    const live = ST.stReplay(d, d.ledger.ops[d.ledger.ops.length - 1].seq);
+    expect([live.canvas.w, live.canvas.h]).toEqual([d.canvas.w, d.canvas.h]);
+  });
+  it('undo of a resize restores the previous page size', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Undo', T0);
+    ST.stAppend(d, { type: 'canvas.resize', preset: 'letter-landscape' }, 'user', T0);
+    expect(d.canvas.w).toBe(1056);
+    ST.stUndo(d);
+    expect([d.canvas.preset, d.canvas.w, d.canvas.h]).toEqual(['letter-portrait', 816, 1056]);
+  });
+  it('older saves without _baseCanvas still replay (fallback to current canvas)', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Legacy', T0);
+    addText(d, 'x');
+    delete d._baseCanvas;                    // simulate a pre-feature save
+    const scene = ST.stReplay(d, d.ledger.ops[d.ledger.ops.length - 1].seq);
+    expect([scene.canvas.w, scene.canvas.h]).toEqual([816, 1056]);
+    expect(ST.stValidateDoc(d)).toEqual([]);
+  });
+});
+
 describe('undo / redo = ledger navigation', () => {
   it('undo pops the op and recomputes; redo restores the identical scene (same seq/ts)', () => {
     const d = ST.stCreateDoc('letter-portrait', 'UR', T0);

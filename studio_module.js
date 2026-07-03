@@ -162,6 +162,10 @@
       version: ST_DOC_VERSION,
       title: title || 'Untitled',
       _baseTitle: title || 'Untitled', // replay-to-seq-0 anchor (title changes are ops; creation is not)
+      // replay-to-seq-0 canvas-size anchor (a canvas.resize is an op; creation is
+      // not). Older saves without this fall back to doc.canvas in stReplay — they
+      // have no resize ops, so base == current == correct.
+      _baseCanvas: { preset: ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', w: p.w, h: p.h },
       createdAt: now || 0,
       canvas: { preset: ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', w: p.w, h: p.h, background: { fill: '#ffffff' } },
       objects: [],            // current scene cache — array order IS the reading order
@@ -228,6 +232,15 @@
     } else if (t === 'canvas.background') {
       var c = stClone(scene.canvas); c.background = { fill: stSafeCssColor(op.fill, '#ffffff') };
       return { title: scene.title, canvas: c, objects: objects };
+    } else if (t === 'canvas.resize') {
+      // A known preset drives both dims + label; otherwise take explicit w/h.
+      // Background is preserved (stClone). Objects re-clamp into the new page so
+      // nothing is stranded off-canvas — undo restores originals via replay.
+      var rc = stClone(scene.canvas);
+      if (ST_CANVAS_PRESETS[op.preset]) { rc.preset = op.preset; rc.w = ST_CANVAS_PRESETS[op.preset].w; rc.h = ST_CANVAS_PRESETS[op.preset].h; }
+      else { rc.w = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.w, rc.w))); rc.h = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.h, rc.h))); rc.preset = 'custom'; }
+      var reclamped = objects.map(function (ob) { var c2 = stClone(ob); c2.frame = stClampFrame(c2.frame, rc); return c2; });
+      return { title: scene.title, canvas: rc, objects: reclamped };
     } else if (t === 'doc.template') {
       // marker op (records which template seeded the doc) — no scene change
     }
@@ -284,7 +297,11 @@
   // Reconstruct the scene at seq ≤ toSeq: seek the nearest checkpoint, then apply
   // the ops after it. stReplay(doc, lastSeq) === the live scene — pinned by tests.
   function stReplay(doc, toSeq) {
-    var base = { title: doc.title, canvas: { preset: doc.canvas.preset, w: doc.canvas.w, h: doc.canvas.h, background: { fill: '#ffffff' } }, objects: [] };
+    // Canvas SIZE at creation is the base; canvas.resize ops re-establish it
+    // during replay (mirrors _baseTitle). Older saves without _baseCanvas fall
+    // back to the current canvas — they carry no resize ops, so it is exact.
+    var bc = doc._baseCanvas && stIsFiniteNumber(doc._baseCanvas.w) && stIsFiniteNumber(doc._baseCanvas.h) ? doc._baseCanvas : doc.canvas;
+    var base = { title: doc.title, canvas: { preset: bc.preset, w: bc.w, h: bc.h, background: { fill: '#ffffff' } }, objects: [] };
     // The doc's ORIGINAL title/background are recoverable only via ops, so start
     // neutral: retitle/background ops re-establish them during replay. Title at
     // creation is not an op — carry it as the base.
@@ -382,6 +399,7 @@
     if (op.type === 'doc.template') return op.template ? 'Started from the ' + op.template + ' template' : 'Started from a template';
     if (op.type === 'doc.retitle') return 'Renamed the document';
     if (op.type === 'canvas.background') return 'Changed the page background';
+    if (op.type === 'canvas.resize') return 'Changed the page size';
     if (op.type === 'object.add') {
       var kind = op.object && op.object.type;
       if (kind === 'text') return 'Added text';
@@ -798,6 +816,28 @@
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
     var fileRef = React.useRef(null);
     var loadRef = React.useRef(null);
+    // Focus management (WCAG 2.4.3): move focus into the dialog on open, restore
+    // it to the opener on close, and keep Tab inside the modal while it is up.
+    var _shellRef = React.useRef(null);
+    var _prevFocusRef = React.useRef(null);
+    React.useEffect(function () {
+      try { _prevFocusRef.current = document.activeElement; } catch (_) {}
+      try {
+        var root = _shellRef.current;
+        if (root) { var first = root.querySelector('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'); (first || root).focus(); }
+      } catch (_) {}
+      return function () { try { var p = _prevFocusRef.current; if (p && typeof p.focus === 'function') p.focus(); } catch (_) {} };
+    }, []);
+    var trapTab = function (ev) {
+      if (ev.key !== 'Tab') return;
+      var root = _shellRef.current; if (!root) return;
+      var nodes = root.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      var list = Array.prototype.filter.call(nodes, function (n) { return n.offsetParent !== null || n === document.activeElement; });
+      if (!list.length) return;
+      var first = list[0], last = list[list.length - 1], active = document.activeElement;
+      if (ev.shiftKey) { if (active === first || !root.contains(active)) { ev.preventDefault(); try { last.focus(); } catch (_) {} } }
+      else { if (active === last || !root.contains(active)) { ev.preventDefault(); try { first.focus(); } catch (_) {} } }
+    };
     var student = role === 'student';
     var propTheme = ['light', 'dark', 'contrast'].indexOf(props.theme) >= 0 ? props.theme : null;
     var themeName = propTheme || (function () {
@@ -1015,8 +1055,9 @@
 
     if (!doc || view === 'templates') {
       // ── template picker ──
-      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio') },
-        h('div', { style: Object.assign({}, S.shell, { width: 'min(860px, 96vw)', height: 'auto', maxHeight: '92vh' }) },
+      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
+        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
+        h('div', { ref: _shellRef, style: Object.assign({}, S.shell, { width: 'min(860px, 96vw)', height: 'auto', maxHeight: '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
@@ -1059,8 +1100,9 @@
       var scene = stReplay(doc, at);
       var summary = stActorSummary(ops);
       var mins = Math.max(1, Math.round(summary.activeMs / 60000));
-      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline') },
-        h('div', { style: S.shell },
+      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline'),
+        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); setScrubSeq(null); setView('edit'); } } },
+        h('div', { ref: _shellRef, style: S.shell },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎞️'),
             h('strong', null, student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline')),
@@ -1253,8 +1295,8 @@
       if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
       else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); if (stRedo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_redone', 'Redone')); } }
     };
-    return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: onShellKeyDown },
-      h('div', { style: S.shell },
+    return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
+      h('div', { ref: _shellRef, style: S.shell },
         // header
         h('div', { style: S.header },
           h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
@@ -1308,6 +1350,13 @@
             h('button', { style: S.tool, onClick: function () { insertShape('ellipse'); } }, '◯ ' + TT('studio.insert_ellipse', 'Ellipse')),
             h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.removeAttribute('data-st-replace'); fileRef.current.click(); } } }, '🖼️ ' + TT('studio.insert_image', 'Image…')),
             h('div', { style: S.label }, TT('studio.page', 'Page')),
+            h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.canvas_size', 'Page size'),
+              h('select', { value: ST_CANVAS_PRESETS[doc.canvas.preset] ? doc.canvas.preset : 'custom', style: S.input, 'aria-label': TT('studio.canvas_size', 'Page size'),
+                onChange: function (e) { var pk = e.target.value; if (!ST_CANVAS_PRESETS[pk]) return; dispatch({ type: 'canvas.resize', preset: pk }, 'user'); stAnnounce(TT('studio.a11y_resized', 'Page size changed — objects re-fit to the page')); } },
+                h('option', { value: 'letter-portrait' }, TT('studio.orient_portrait', 'Portrait') + ' (8.5×11)'),
+                h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11×8.5)'),
+                h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
+                ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.background', 'Background'),
               h('input', { type: 'color', value: (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'canvas.background', fill: e.target.value }, 'user'); } })),
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Tab focuses objects; arrows move, Shift+arrows resize, Delete removes. The panel on the right is the reading order.'))),
