@@ -157,6 +157,65 @@ describe('MemoryPalace — recall game (pure logic)', () => {
   });
 });
 
+describe('MemoryPalace — spaced-repetition mastery (pure scheduling)', () => {
+  const NOW = '2026-07-03T12:00:00.000Z';
+  const dayMs = 86400000;
+  const daysFromNow = (iso) => Math.round((Date.parse(iso) - Date.parse(NOW)) / dayMs);
+
+  it('updateMastery advances the interval on strong recall, drops back on a slip', () => {
+    // first-try correct → reps 1 → ladder[1] = 3 days
+    let m = MP.updateMastery({}, { a: { attempts: 1, correct: true } }, NOW);
+    expect(m.a.strength).toBe(1);
+    expect(m.a.reps).toBe(1);
+    expect(daysFromNow(m.a.dueAt)).toBe(3);
+    expect(m.a.lastResult).toBe('first-try');
+    // another strong recall → reps 2 → ladder[2] = 7 days
+    m = MP.updateMastery(m, { a: { attempts: 1, correct: true } }, NOW);
+    expect(m.a.reps).toBe(2);
+    expect(daysFromNow(m.a.dueAt)).toBe(7);
+    // a miss → reps drops to 1, and due tomorrow (strength 0 ⇒ 1 day)
+    m = MP.updateMastery(m, { a: { attempts: 3, correct: false } }, NOW);
+    expect(m.a.reps).toBe(1);
+    expect(m.a.strength).toBe(0);
+    expect(daysFromNow(m.a.dueAt)).toBe(1);
+    expect(m.a.lastResult).toBe('missed');
+  });
+
+  it('eventual (multi-attempt) and revealed recalls score partial strength', () => {
+    const m = MP.updateMastery({}, {
+      b: { attempts: 3, correct: true },   // eventual → 0.6
+      c: { attempts: 4, revealed: true },  // revealed → 0.2
+    }, NOW);
+    expect(m.b.strength).toBe(0.6);
+    expect(m.b.lastResult).toBe('eventual');
+    expect(m.c.strength).toBe(0.2);
+    expect(m.c.lastResult).toBe('revealed');
+    expect(m.c.reps).toBe(0);   // revealed does not advance reps
+  });
+
+  it('dueLoci splits never-reviewed (new) from scheduled-and-due, ignores future', () => {
+    const palace = MP.buildPalace(sampleData());   // loci: b0_i0, b0_i1, b1_i0, b1_i1
+    const mastery = {
+      b0_i0: { strength: 1, dueAt: '2026-07-01T00:00:00.000Z' },   // past → due
+      b0_i1: { strength: 0.6, dueAt: '2026-07-20T00:00:00.000Z' }, // future → not due
+      // b1_i0, b1_i1 never reviewed → new
+    };
+    const info = MP.dueLoci(palace, mastery, NOW);
+    expect(info.due).toEqual(['b0_i0']);
+    expect(info.newIds.sort()).toEqual(['b1_i0', 'b1_i1']);
+    expect(info.dueCount).toBe(1);
+    expect(info.newCount).toBe(2);
+    expect(info.reviewedCount).toBe(2);
+    expect(info.total).toBe(4);
+  });
+
+  it('masteryStrength returns the value or null for unseen loci', () => {
+    expect(MP.masteryStrength({ x: { strength: 0.6 } }, 'x')).toBe(0.6);
+    expect(MP.masteryStrength({ x: { strength: 0.6 } }, 'y')).toBe(null);
+    expect(MP.masteryStrength(null, 'x')).toBe(null);
+  });
+});
+
 describe('MemoryPalace — graceful degradation (no WebGL in jsdom)', () => {
   it('isWebGLAvailable() is false under jsdom', () => {
     expect(MP.isWebGLAvailable()).toBe(false);

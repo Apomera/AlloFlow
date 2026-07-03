@@ -5134,7 +5134,10 @@
     "recall_perfect": "🏛✨ ¡Recorrido perfecto! Cada locus recordado al primer intento.",
     "recall_summary": "Recordaste {ok} de {total} ({first} al primer intento).",
     "recall_points": "{points} puntos",
-    "recall_empty": "Aún no hay suficientes loci para jugar."
+    "recall_empty": "Aún no hay suficientes loci para jugar.",
+    "review_due": "{count} loci están listos para repasar",
+    "review_due_why": "— recorre el palacio de nuevo para reforzar los que se están olvidando.",
+    "review_now": "Repasar ahora"
   },
   "cg3d": {
     "outline_title": "Orden de lectura",

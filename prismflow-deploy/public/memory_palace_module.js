@@ -208,6 +208,63 @@
     };
   }
 
+  // ── Spaced-repetition mastery (P2.5) — the recall walk MEASURES; this SCHEDULES ──
+  // Per-locus record: { reps, strength, lastResult, lastReviewedAt, dueAt }. Spaced
+  // retrieval is the single best-evidenced memory technique, and the recall walk
+  // already yields per-locus performance — so this is nearly free. PURE: `nowISO`
+  // is injected (tests pin time; the module never reads the clock). Spacing is an
+  // SM-2-lite doubling ladder that advances on strong recall and drops back on a
+  // slip, so review focus tracks the student's OWN measured memory.
+  var _REVIEW_LADDER = [1, 3, 7, 16, 35, 75];   // days between successful reviews
+
+  function _strengthOf(r) {
+    if (!r) return 0;
+    if (r.revealed) return 0.2;
+    if (r.correct && (r.attempts || 1) <= 1) return 1.0;   // first try
+    if (r.correct) return 0.6;                             // got it, eventually
+    return 0;                                              // missed
+  }
+  function _parseDay(iso) { var t = Date.parse(iso); return isNaN(t) ? 0 : t; }
+  function _addDays(iso, days) { return new Date(_parseDay(iso) + days * 86400000).toISOString(); }
+
+  // prevMastery + a recall walk's per-locus results (+ now) → updated mastery map.
+  function updateMastery(prevMastery, resultsMap, nowISO) {
+    var m = Object.assign({}, prevMastery || {});
+    var results = resultsMap || {};
+    Object.keys(results).forEach(function (id) {
+      var s = _strengthOf(results[id]);
+      var prev = m[id] || { reps: 0 };
+      var prevReps = isNum(prev.reps) ? prev.reps : 0;
+      var reps = (s >= 0.6) ? (prevReps + 1) : Math.max(0, prevReps - 1);
+      var idx = Math.max(0, Math.min(_REVIEW_LADDER.length - 1, reps));
+      var intervalDays = (s === 0) ? 1 : _REVIEW_LADDER[idx];   // a full miss → see it tomorrow
+      var lastResult = (results[id] && results[id].revealed) ? 'revealed' : (s >= 1 ? 'first-try' : (s >= 0.6 ? 'eventual' : 'missed'));
+      m[id] = { reps: reps, strength: s, lastResult: lastResult, lastReviewedAt: nowISO, dueAt: _addDays(nowISO, intervalDays) };
+    });
+    return m;
+  }
+
+  // Which loci are due for review (dueAt <= now) vs never-reviewed ("new").
+  function dueLoci(palace, mastery, nowISO) {
+    var now = _parseDay(nowISO);
+    var ids = (palace && Array.isArray(palace.route)) ? palace.route.filter(function (id) { return id !== '__entry'; }) : [];
+    mastery = mastery || {};
+    var due = [], newIds = [];
+    ids.forEach(function (id) {
+      var rec = mastery[id];
+      if (!rec) { newIds.push(id); return; }
+      if (_parseDay(rec.dueAt) <= now) due.push(id);
+    });
+    return { due: due, newIds: newIds, dueCount: due.length, newCount: newIds.length,
+             total: ids.length, reviewedCount: ids.length - newIds.length };
+  }
+
+  // 0..1 recall strength for a locus (null = never reviewed) — powers dimming.
+  function masteryStrength(mastery, id) {
+    var rec = mastery && mastery[id];
+    return (rec && typeof rec.strength === 'number') ? rec.strength : null;
+  }
+
   // Recall-safe announcement: room + position + the QUESTION — never the answer
   // or the mnemonic (both would leak through the live region / route list).
   function describeLocusForRecall(palace, id, t) {
@@ -422,6 +479,19 @@
       var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
+      // Recall-driven dimming (study/review mode only — NEVER during a recall quiz,
+      // which would leak "you struggled here"): loci the student recalled weakly in
+      // past walks render dimmer, so re-study focuses where their OWN measured
+      // memory is fragile (docs §4.5). Re-walking correctly brightens them.
+      if (!recall && opts.mastery) {
+        var _st = masteryStrength(opts.mastery, l.id);
+        if (_st != null) {
+          var _op = 0.32 + Math.max(0, Math.min(1, _st)) * 0.68;
+          borderMat.transparent = true; borderMat.opacity = _op;
+          mat.transparent = true; mat.opacity = _op;
+          if (lab.material) { lab.material.opacity = _op; }
+        }
+      }
       group.add(g2);
       frameMeshes.push(canvasMesh);
       frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l };
@@ -726,6 +796,9 @@
     buildRecallBank: buildRecallBank,
     matchAnswer: matchAnswer,
     scoreRecall: scoreRecall,
+    updateMastery: updateMastery,
+    dueLoci: dueLoci,
+    masteryStrength: masteryStrength,
     isWebGLAvailable: isWebGLAvailable,
     loadThree: loadThree,
     render: render

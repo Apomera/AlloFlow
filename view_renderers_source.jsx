@@ -2401,6 +2401,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         b: (Array.isArray(data?.branches) ? data.branches : []).map((b) => ({ t: b.title, i: b.items, mn: b.mnemonics })),
         img: data?.memoryPalace?.generatedAt || 0,
     });
+    // Spaced review: which loci are due (dueAt <= now) vs never-walked. Stable
+    // mount-time `now` so the banner doesn't flicker across renders.
+    const nowISO = React.useMemo(() => new Date().toISOString(), []);
+    const dueInfo = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.dueLoci || !hasContent) return null;
+        try { return MP.dueLoci(MP.buildPalace(data || {}), data?.memoryPalace?.mastery || {}, nowISO); } catch (e) { return null; }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataKey, nowISO]);
 
     React.useEffect(() => {
         let alive = true;
@@ -2422,6 +2431,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             t,
             images: data?.memoryPalace?.images || {},
             objects: data?.memoryPalace?.objects || {},
+            mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
             recall: !!recall,
             startAt: recall ? recall.startAt : undefined,
             onLocusChange: (locus, idx, total) => {
@@ -2539,6 +2549,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             isPerfect: score.perfect, attempts: attemptsTotalRef.current, bestScore: score.points,
             timeSeconds: elapsedRef.current, incorrectPlacements: misses,
         });
+        // Fold this walk's per-locus results into the spaced-repetition schedule.
+        // No generatedAt bump → the scene does not remount over the finished summary.
+        if (persist && MP.updateMastery) {
+            try { persist({ ...(data?.memoryPalace || {}), mastery: MP.updateMastery(data?.memoryPalace?.mastery || {}, res, new Date().toISOString()) }, 'memoryPalace'); } catch (e) {}
+        }
     };
 
     const submitRecallAnswer = (given, chipId) => {
@@ -2758,6 +2773,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     )}
                 </div>
             </div>
+            {!recall && dueInfo && dueInfo.dueCount > 0 && (
+                <div className="mb-3 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5" role="status">
+                    <div className="text-sm text-amber-900">
+                        <span className="font-bold">🔁 {(t('memory_palace.review_due') || '{count} loci are ready for review').replace('{count}', String(dueInfo.dueCount))}</span>
+                        {' '}<span className="text-amber-800">{t('memory_palace.review_due_why') || '— walk the palace again to strengthen the ones fading from memory.'}</span>
+                    </div>
+                    {recallEligible && (
+                        <button
+                            onClick={() => startRecall('bank', false)}
+                            className="flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
+                        >
+                            🔁 {t('memory_palace.review_now') || 'Review now'}
+                        </button>
+                    )}
+                </div>
+            )}
             <div className="relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl" style={{ background: '#0b1020', height: 'min(64vh, 560px)', minHeight: '380px' }}>
                 {!hasContent ? (
                     <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-8" role="status">
