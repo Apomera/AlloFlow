@@ -395,8 +395,11 @@
     try { root.fog = new THREE.FogExp2(BG, 0.00042); } catch (e) {}
     var camera = new THREE.PerspectiveCamera(58, w / hgt, 1, 60000);
 
-    root.add(new THREE.AmbientLight(0xffffff, 0.5));
-    try { root.add(new THREE.HemisphereLight(0xbfd4ff, 0x0b1020, 0.55)); } catch (e) {}
+    root.add(new THREE.AmbientLight(0xffffff, 0.62));
+    try { root.add(new THREE.HemisphereLight(0xcfe0ff, 0x1a2740, 0.72)); } catch (e) {}
+    // Overhead "sun" so floors and rooms read from above in the overview (🗺) — the
+    // per-room point lights sit near the ceiling, leaving the overhead view dim.
+    try { var _sun = new THREE.DirectionalLight(0xffffff, 0.6); _sun.position.set(0.3, 1, 0.25); root.add(_sun); } catch (e) {}
 
     // Starfield above the open-roofed palace (a dream-space, not a building sim).
     try {
@@ -424,7 +427,7 @@
       var cx = room.center.x;
       // Floor: dark room-accent tint.
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.22), roughness: 0.9 }));
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.4), roughness: 0.9 }));
       floor.rotation.x = -Math.PI / 2; floor.position.set(cx, 0, 0); group.add(floor);
       // Long walls (top/bottom in plan = ±z).
       addWall(cx, -ROOM_D / 2, ROOM_W, 10);
@@ -579,6 +582,21 @@
     var look = new THREE.Vector3(), lookT = new THREE.Vector3();
     var yawOff = 0, pitchOff = 0;   // drag look-around at a stop
     var overview = false;
+    // ── Free-roam (WASD) layered over the guided route ──
+    // WASD walks; drag looks around; the ◀▶ buttons / arrow keys / clicking a frame
+    // are the GUIDED tour (ease to a locus). Pressing a movement key enters free mode;
+    // any guided nav returns to the rails.
+    var freeMode = false, freeYaw = 0, freePitch = 0, moveF = 0, moveR = 0;
+    var MOVE_SPEED = 14;
+    function _cl(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function enterFree() {
+      if (freeMode) return;
+      var dx = look.x - camPos.x, dy = look.y - camPos.y, dz = look.z - camPos.z;
+      var len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+      freeYaw = Math.atan2(dx, dz);
+      freePitch = _cl(dy / len, -0.99, 0.99); freePitch = Math.asin(freePitch);
+      overview = false; freeMode = true;
+    }
 
     function stopTargets(idx) {
       var id = palace.route[idx];
@@ -608,7 +626,7 @@
     }
     function goTo(idx, skipAnnounce) {
       curIdx = Math.max(0, Math.min(palace.route.length - 1, idx));
-      overview = false; yawOff = 0; pitchOff = 0;
+      overview = false; freeMode = false; moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;   // guided nav returns to the rails
       stopTargets(curIdx);
       if (reduce) { camPos.copy(camPosT); look.copy(lookT); }
       updateHud();
@@ -648,31 +666,57 @@
     el.setAttribute('aria-label', _tr(t, 'memory_palace.canvas_label', 'Memory palace. Use the left and right arrow keys to walk the route in order.'));
     var instrId = 'palace-instr-' + (window.__palaceSeq = (window.__palaceSeq || 0) + 1);
     var instr = document.createElement('p'); instr.id = instrId; instr.style.cssText = SR_ONLY;
-    instr.textContent = _tr(t, 'memory_palace.canvas_instructions', 'Right arrow walks to the next locus, left arrow goes back. Home returns to the entrance, End jumps to the last locus. O toggles the overview map. Each stop announces the room, the item, and its mnemonic image.');
+    instr.textContent = _tr(t, 'memory_palace.canvas_instructions', 'W A S D keys walk you around the palace and dragging looks around. The right and left arrow keys jump to the next or previous locus in order; Home returns to the entrance and End jumps to the last locus. O toggles the overview map. Each stop announces the room, the item, and its mnemonic image.');
     holder.appendChild(instr);
     el.setAttribute('aria-describedby', instrId);
+    // Visible control hint (fades after a few seconds) — WASD isn't discoverable otherwise.
+    var ctrlHint = document.createElement('div');
+    ctrlHint.setAttribute('aria-hidden', 'true');
+    ctrlHint.style.cssText = 'position:absolute;left:12px;top:12px;z-index:6;background:rgba(2,6,23,0.72);color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:11px;pointer-events:none;transition:opacity 0.8s;';
+    ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'WASD to walk · drag to look · ◀ ▶ for the guided tour');
+    holder.appendChild(ctrlHint);
+    (window.setTimeout || function () {})(function () { try { ctrlHint.style.opacity = '0'; } catch (e) {} }, 6000);
     [hud].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true'); } catch (e) {} });
 
     function onKeyDown(e) {
       var k = e.key;
+      var lk = (k && k.length === 1) ? k.toLowerCase() : k;
+      if (lk === 'w' || lk === 'a' || lk === 's' || lk === 'd') {   // free walk
+        e.preventDefault();
+        if (lk === 'w') moveF = 1; else if (lk === 's') moveF = -1;
+        else if (lk === 'a') moveR = -1; else if (lk === 'd') moveR = 1;
+        enterFree();
+        return;
+      }
       if (k === 'ArrowRight' || k === 'ArrowDown') { e.preventDefault(); goTo(curIdx + 1); }
       else if (k === 'ArrowLeft' || k === 'ArrowUp') { e.preventDefault(); goTo(curIdx - 1); }
       else if (k === 'Home') { e.preventDefault(); goTo(0); }
       else if (k === 'End') { e.preventDefault(); goTo(palace.route.length - 1); }
       else if (k === 'o' || k === 'O') { e.preventDefault(); ovBtn.onclick(); }
     }
+    function onKeyUp(e) {
+      var lk = (e.key && e.key.length === 1) ? e.key.toLowerCase() : e.key;
+      if (lk === 'w' || lk === 's') moveF = 0;
+      else if (lk === 'a' || lk === 'd') moveR = 0;
+    }
     el.addEventListener('keydown', onKeyDown);
+    el.addEventListener('keyup', onKeyUp);
 
     var dragging = false, moved = false, lx = 0, ly = 0;
     var raycaster = new THREE.Raycaster(); var ndc = new THREE.Vector2();
-    function onDown(e) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; }
+    function onDown(e) { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; el.style.cursor = 'grabbing'; try { el.focus(); } catch (er) {} }   // focus so WASD/arrows work after a click
     function onMove(e) {
       if (!dragging) return;
       var dx = e.clientX - lx, dy = e.clientY - ly;
       if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
-      yawOff -= dx * 0.0035; pitchOff -= dy * 0.0025;
-      yawOff = Math.max(-1.1, Math.min(1.1, yawOff));
-      pitchOff = Math.max(-0.5, Math.min(0.5, pitchOff));
+      if (freeMode) {                          // free look: turn the head fully
+        freeYaw -= dx * 0.005; freePitch -= dy * 0.004;
+        freePitch = Math.max(-1.2, Math.min(1.2, freePitch));
+      } else {                                 // guided: peek around the current locus
+        yawOff -= dx * 0.0035; pitchOff -= dy * 0.0025;
+        yawOff = Math.max(-1.1, Math.min(1.1, yawOff));
+        pitchOff = Math.max(-0.5, Math.min(0.5, pitchOff));
+      }
       lx = e.clientX; ly = e.clientY;
     }
     function onUp(e) {
@@ -699,33 +743,52 @@
 
     state.cleanup.push(function () {
       el.removeEventListener('keydown', onKeyDown);
+      el.removeEventListener('keyup', onKeyUp);
       el.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      [hud, live, instr].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
+      [hud, live, instr, ctrlHint].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
     });
 
     // ── tick: ease camera along the rails; apply drag look-around ──
     var lookBase = new THREE.Vector3();
     function tick() {
       if (state.disposed) return;
-      var ease = reduce ? 1 : 0.07;
-      camPos.lerp(camPosT, ease);
-      look.lerp(lookT, reduce ? 1 : 0.09);
-      camera.position.copy(camPos);
-      lookBase.copy(look);
-      if (!overview && (yawOff || pitchOff)) {
-        var dir = lookBase.clone().sub(camPos);
-        var len = dir.length() || 1;
-        var yaw = Math.atan2(dir.x, dir.z) + yawOff;
-        var pitch = Math.asin(Math.max(-0.99, Math.min(0.99, dir.y / len))) + pitchOff;
-        lookBase.set(
-          camPos.x + Math.sin(yaw) * Math.cos(pitch) * len,
-          camPos.y + Math.sin(pitch) * len,
-          camPos.z + Math.cos(yaw) * Math.cos(pitch) * len
-        );
+      if (freeMode) {
+        // WASD free walk on the floor plane; free-look via freeYaw/freePitch.
+        if (moveF || moveR) {
+          var sinY = Math.sin(freeYaw), cosY = Math.cos(freeYaw);
+          camPos.x += (moveF * sinY + moveR * cosY) * MOVE_SPEED;
+          camPos.z += (moveF * cosY - moveR * sinY) * MOVE_SPEED;
+          var b = palace.bounds;
+          camPos.x = _cl(camPos.x, b.minX + 40, b.maxX - 40);   // stay inside the palace footprint
+          camPos.z = _cl(camPos.z, b.minZ + 40, b.maxZ - 40);
+        }
+        camPos.y = EYE;
+        var cp = Math.cos(freePitch);
+        lookBase.set(camPos.x + Math.sin(freeYaw) * cp, camPos.y + Math.sin(freePitch), camPos.z + Math.cos(freeYaw) * cp);
+        camPosT.copy(camPos); lookT.copy(lookBase); look.copy(lookBase);   // sync rails so a later ◀▶ eases from here
+        camera.position.copy(camPos);
+        camera.lookAt(lookBase);
+      } else {
+        var ease = reduce ? 1 : 0.07;
+        camPos.lerp(camPosT, ease);
+        look.lerp(lookT, reduce ? 1 : 0.09);
+        camera.position.copy(camPos);
+        lookBase.copy(look);
+        if (!overview && (yawOff || pitchOff)) {
+          var dir = lookBase.clone().sub(camPos);
+          var len = dir.length() || 1;
+          var yaw = Math.atan2(dir.x, dir.z) + yawOff;
+          var pitch = Math.asin(Math.max(-0.99, Math.min(0.99, dir.y / len))) + pitchOff;
+          lookBase.set(
+            camPos.x + Math.sin(yaw) * Math.cos(pitch) * len,
+            camPos.y + Math.sin(pitch) * len,
+            camPos.z + Math.cos(yaw) * Math.cos(pitch) * len
+          );
+        }
+        camera.lookAt(lookBase);
       }
-      camera.lookAt(lookBase);
       renderer.render(root, camera);
       state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
     }
@@ -734,9 +797,22 @@
 
     state.onResize = function () {
       var W = holder.clientWidth || w, H = holder.clientHeight || hgt;
+      if (!W || !H) return;
       camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);
     };
     window.addEventListener('resize', state.onResize);
+    // The container frequently reaches its final width AFTER mount (panel expand /
+    // reflow) with NO window 'resize' — which left the canvas frozen at its narrow
+    // mount-time width (the "half the area" bug). Observe the holder directly and
+    // refit on any size change, plus one refit next frame once layout has settled.
+    try {
+      if (window.ResizeObserver) {
+        var _ro = new ResizeObserver(function () { if (!state.disposed && state.onResize) state.onResize(); });
+        _ro.observe(holder);
+        state.cleanup.push(function () { try { _ro.disconnect(); } catch (e) {} });
+      }
+    } catch (e) {}
+    (window.requestAnimationFrame || function (f) { return f(); })(function () { if (!state.disposed && state.onResize) state.onResize(); });
 
     state.goTo = function (idx) { goTo(idx); };
   }
