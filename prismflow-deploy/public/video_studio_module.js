@@ -662,6 +662,13 @@
           }).catch(function (e) {
             tRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
+        } else if (ev.data.type === 'allostudio-open-cinematic') {
+          if (props.onOpenCinematicStudio) {
+            try { props.onOpenCinematicStudio(); } catch (_) {}
+            addToast(T('video_studio.cinematic_opened', 'Cinematic Studio opened from Video Studio.'), 'success');
+          } else {
+            addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
+          }
         } else if (ev.data.type === 'allostudio-closed') {
           setStudioState('closed');
         } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {
@@ -742,6 +749,47 @@
         if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, done); }
         else { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); }
       } catch (_) { done(); }
+    }, []);
+
+    var downloadAccessPacket = useCallback(function (v) {
+      var base = (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video';
+      var cues = v.vtt ? vsParseVtt(v.vtt) : [];
+      var transcript = [
+        v.title || 'Teacher video',
+        'Transcript generated locally by AlloFlow Video Studio.',
+        ''
+      ];
+      cues.forEach(function (c) {
+        transcript.push(vsFormatTimestamp(c.start || 0) + ' - ' + vsFormatTimestamp(c.end || 0) + '  ' + String(c.text || '').trim());
+      });
+      if (!cues.length) transcript.push('No captions or transcript were included with this video.');
+      var note = [
+        'AlloFlow Video Studio accessibility packet',
+        '',
+        'Video title: ' + (v.title || 'Teacher video'),
+        'Generated locally: ' + new Date().toISOString(),
+        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + ', and metadata.',
+        'Video bytes are not included in this packet. Download the video file or .allopack bundle separately.',
+        '',
+        'Teacher review: please check the transcript and captions for student names or private details before sharing.'
+      ].join('\n');
+      var meta = {
+        title: v.title || 'Teacher video',
+        duration: v.duration || 0,
+        size: v.size || 0,
+        sha256: v.sha256 || null,
+        hasCaptions: !!v.vtt,
+        captionCount: cues.length,
+        generatedAt: new Date().toISOString()
+      };
+      var entries = [
+        { name: 'accessibility-note.txt', data: new TextEncoder().encode(note + '\n') },
+        { name: 'transcript.txt', data: new TextEncoder().encode(transcript.join('\n').trim() + '\n') },
+        { name: 'metadata.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 2)) }
+      ];
+      if (v.vtt) entries.push({ name: 'captions.vtt', data: new TextEncoder().encode(v.vtt) });
+      downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '_accessibility_packet.zip');
+      addToast(T('video_studio.access_packet_done', 'Accessibility packet saved with transcript, captions, and metadata.'), 'success');
     }, []);
 
     // One-file share: .allopack = STORE-zip of meta.json + video + captions.
@@ -835,6 +883,11 @@
                         onClick: function () { downloadBlob(new Blob([v.vtt], { type: 'text/vtt' }), (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.vtt'); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold hover:bg-slate-500'
                       }, T('video_studio.download_vtt', '⬇ Captions (.vtt)')),
+                      h('button', {
+                        onClick: function () { downloadAccessPacket(v); },
+                        className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-600',
+                        title: T('video_studio.access_packet_title', 'Downloads transcript, captions when available, and metadata for accessibility review.')
+                      }, T('video_studio.access_packet', 'Accessibility packet')),
                       h('button', {
                         onClick: function () { downloadBundle(v); },
                         className: 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700',

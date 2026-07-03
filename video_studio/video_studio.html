@@ -74,8 +74,22 @@
   .status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.warn { color: var(--warn); }
   progress { width: 100%; height: 10px; accent-color: var(--accent); }
   .banner { background: rgba(99,102,241,0.12); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .choice-card { min-height: 104px; text-align: left; background: #172033; color: var(--text); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+  .choice-card:hover { border-color: var(--accent2); }
+  .choice-card strong { display: block; color: #fff; font-size: 13px; }
+  .choice-card span { color: var(--dim); font-size: 12px; line-height: 1.45; }
+  .mini-pill { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; font-size: 11px; color: var(--dim); background: rgba(15,23,42,0.48); }
+  .project-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .project-row { display: grid; grid-template-columns: minmax(180px, 1fr) auto; gap: 10px; align-items: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+  .project-row[aria-current="true"] { border-color: var(--accent2); }
+  .transcript-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow: auto; margin-top: 10px; }
+  .transcript-line { width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel2); color: var(--text); cursor: pointer; }
+  .transcript-line mark { background: rgba(251,191,36,0.35); color: #fff; border-radius: 3px; padding: 0 2px; }
+  .privacy-flag { display: inline-block; margin: 3px 4px 3px 0; border: 1px solid rgba(251,191,36,0.45); background: rgba(251,191,36,0.12); color: #fde68a; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
   button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+  @media (max-width: 640px) { .project-row { grid-template-columns: 1fr; } .project-row .row { justify-content: flex-start !important; } }
   @media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
 </style>
 </head>
@@ -106,6 +120,46 @@
   <!-- ─── RECORD ─── -->
   <section id="panelRecord" role="tabpanel" aria-labelledby="tabRecord">
     <div class="ferpa">⚠️ <strong>Before you record:</strong> screen capture shows everything visible. Close gradebooks, rosters, email, and other student data — safest is sharing <em>one tab</em> in the picker. Your recording never leaves this computer.</div>
+    <div class="card">
+      <h2>Start here</h2>
+      <div class="choice-grid" aria-label="Video Studio workflows">
+        <button class="choice-card" id="flowRecord" style="border-left-color:#6366f1">
+          <strong>Record a lesson</strong>
+          <span>Screen, tab, camera, or camera bubble with a quick privacy check.</span>
+          <span class="mini-pill">Best for new teacher videos</span>
+        </button>
+        <button class="choice-card" id="flowImport" style="border-left-color:#0ea5e9">
+          <strong>Edit an existing video</strong>
+          <span>Bring in MP4/WebM/MOV or a saved project bundle.</span>
+          <span class="mini-pill">Load video or .allopack</span>
+        </button>
+        <button class="choice-card" id="flowCaption" style="border-left-color:#22c55e">
+          <strong>Caption only</strong>
+          <span>Import a video, run local captions, then export VTT or burn captions.</span>
+          <span class="mini-pill">Accessibility-first</span>
+        </button>
+        <button class="choice-card" id="flowNarrate" style="border-left-color:#f59e0b">
+          <strong>Add narration</strong>
+          <span>Record your voice or let AI draft narration from a contact sheet.</span>
+          <span class="mini-pill">No raw video sent to AI</span>
+        </button>
+        <button class="choice-card" id="flowCinematic" style="border-left-color:#f43f5e">
+          <strong>AI-video prompt tools</strong>
+          <span>Open Cinematic Studio in AlloFlow for NotebookLM or AI-video prompts.</span>
+          <span class="mini-pill">Prompt, then caption here</span>
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Projects</h2>
+      <div class="row">
+        <button class="quiet" id="saveProjectBtn">Save selected project (.allopack)</button>
+        <button class="quiet" id="loadProjectBtn">Load project / video...</button>
+        <button class="quiet" id="refreshProjectsBtn">Refresh saved drafts</button>
+        <span class="status" id="projectStatus" style="margin-top:0">Local drafts autosave in this browser. .allopack files are portable project bundles.</span>
+      </div>
+      <div id="projectShelf" class="project-list" aria-live="polite"></div>
+    </div>
     <div class="card">
       <h2>Sources</h2>
       <div class="row" role="group" aria-label="What to record">
@@ -262,6 +316,19 @@
           <p class="status">Captions come from live speech recognition while you record (fix any errors here) — they export as a .vtt subtitle file or can be burned into the video.</p>
         </div>
         <div class="card" style="margin-top:12px">
+          <h2>Transcript workspace</h2>
+          <div class="row" style="margin-bottom:8px">
+            <label for="transcriptSearch">Search transcript</label>
+            <input type="text" id="transcriptSearch" placeholder="word, phrase, or possible name" style="min-width:220px;flex:1">
+            <button class="quiet" id="flagPrivacyBtn">Flag possible private details</button>
+            <button class="quiet" id="mergeCuesBtn">Merge tight caption splits</button>
+            <button class="quiet" id="downloadTranscriptBtn">Download transcript (.txt)</button>
+          </div>
+          <div class="status" id="transcriptStatus">Search captions, click a line to jump the video, or scan for possible names and private details before export.</div>
+          <div id="privacyFlags" style="margin-top:6px"></div>
+          <div id="transcriptList" class="transcript-list"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <h2>AI edit review</h2>
           <div class="row" style="margin-bottom:8px">
             <button class="quiet" id="fillerScanBtn" title="Runs entirely on this computer using the same local engine as Auto-caption.">🔎 Find filler words (on-device)</button>
@@ -286,8 +353,26 @@
       <div class="row" style="margin-bottom:10px">
         <label for="titleInput">Title</label>
         <input type="text" id="titleInput" size="34" placeholder="e.g. Fractions demo — equivalent fractions" maxlength="120">
+        <label for="templateSelect">Template</label>
+        <select id="templateSelect" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+          <option value="">choose...</option>
+          <option value="mini_lesson">Mini lesson</option>
+          <option value="feedback">Student feedback</option>
+          <option value="family">Family explainer</option>
+          <option value="sub_plan">Sub-plan walkthrough</option>
+          <option value="caption_only">Caption cleanup</option>
+        </select>
+        <button class="quiet" id="applyTemplateBtn">Apply</button>
       </div>
       <div class="row" style="margin-bottom:10px">
+        <label for="exportPreset">Export preset</label>
+        <select id="exportPreset" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+          <option value="lms">LMS-ready: video + separate captions</option>
+          <option value="small">Small web upload</option>
+          <option value="burned">Burned captions</option>
+          <option value="archive">Archive-quality project</option>
+          <option value="accessibility">Accessibility packet</option>
+        </select>
         <label><input type="checkbox" id="titleCardChk"> 2.5s title card at the start</label>
         <label>Captions:
           <select id="capMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
@@ -309,6 +394,9 @@
       <div class="row" style="margin-top:10px">
         <button class="action" id="downloadBtn">⬇ Download video</button>
         <button class="quiet" id="downloadVttBtn" hidden>⬇ Download captions (.vtt)</button>
+        <button class="quiet" id="downloadTranscriptResultBtn">Download transcript</button>
+        <button class="quiet" id="downloadAccessPacketBtn">Accessibility packet (.zip)</button>
+        <button class="quiet" id="downloadProjectResultBtn">Project bundle (.allopack)</button>
         <button class="action" id="sendBtn" style="background:#059669">📤 Send to AlloFlow</button>
         <span class="status" id="resultStatus"></span>
       </div>
@@ -804,6 +892,41 @@ function vsComputePeaks(samples, buckets) {
   }
   tabs.forEach(function (t) { $(t[0]).addEventListener('click', function () { showTab(t[0]); }); });
 
+  // ── Workflow presets: make the dense editor feel like a few clear jobs ──
+  var VIDEO_TEMPLATES = {
+    mini_lesson: { title: 'Mini lesson - ', titleCard: true, capMode: 'vtt', preset: 'lms', note: 'Mini lesson template: title card on, captions separate.' },
+    feedback: { title: 'Feedback for ', titleCard: false, capMode: 'vtt', preset: 'small', note: 'Feedback template: lightweight export with separate captions.' },
+    family: { title: 'Family explainer - ', titleCard: true, capMode: 'burn', preset: 'burned', note: 'Family explainer template: title card and burned captions for easy playback.' },
+    sub_plan: { title: 'Sub-plan walkthrough - ', titleCard: true, capMode: 'vtt', preset: 'lms', note: 'Sub-plan template: clear title and separate captions.' },
+    caption_only: { title: 'Captioned video - ', titleCard: false, capMode: 'vtt', preset: 'accessibility', note: 'Caption cleanup template: separate captions and transcript packet.' }
+  };
+  function applyTemplate(key) {
+    var tpl = VIDEO_TEMPLATES[key]; if (!tpl) return;
+    if (!$('titleInput').value.trim()) $('titleInput').value = tpl.title;
+    $('titleCardChk').checked = !!tpl.titleCard;
+    $('capMode').value = tpl.capMode || 'vtt';
+    $('exportPreset').value = tpl.preset || 'lms';
+    setStatus($('exportStatus'), tpl.note || 'Template applied.', 'ok');
+    announce('Video template applied');
+  }
+  function applyExportPreset(key) {
+    if (key === 'small') { $('titleCardChk').checked = false; $('capMode').value = 'vtt'; setStatus($('exportStatus'), 'Small upload preset: keeps captions separate and avoids forced title-card re-encode.', 'ok'); }
+    else if (key === 'burned') { $('titleCardChk').checked = false; $('capMode').value = 'burn'; setStatus($('exportStatus'), 'Burned captions preset: captions become part of the video.', 'ok'); }
+    else if (key === 'archive') { $('titleCardChk').checked = true; $('capMode').value = 'vtt'; setStatus($('exportStatus'), 'Archive preset: title card plus separate captions; use Project bundle after export for a re-openable file.', 'ok'); }
+    else if (key === 'accessibility') { $('titleCardChk').checked = false; $('capMode').value = 'vtt'; setStatus($('exportStatus'), 'Accessibility preset: separate captions and transcript packet after export.', 'ok'); }
+    else { $('titleCardChk').checked = true; $('capMode').value = 'vtt'; setStatus($('exportStatus'), 'LMS-ready preset: title card plus separate captions.', 'ok'); }
+  }
+  $('applyTemplateBtn').addEventListener('click', function () { applyTemplate($('templateSelect').value); });
+  $('exportPreset').addEventListener('change', function () { applyExportPreset($('exportPreset').value); });
+  $('flowRecord').addEventListener('click', function () { applyTemplate('mini_lesson'); srcMode = 'screen'; syncSrcButtons(); showTab('tabRecord'); $('startBtn').focus(); });
+  $('flowImport').addEventListener('click', function () { $('importInput').click(); });
+  $('flowCaption').addEventListener('click', function () { applyTemplate('caption_only'); $('importInput').click(); });
+  $('flowNarrate').addEventListener('click', function () { applyTemplate('mini_lesson'); if (currentTake()) { showTab('tabEdit'); $('aiNarrateBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Narration & sound clips in the editor.', 'warn'); $('importInput').click(); } });
+  $('flowCinematic').addEventListener('click', function () {
+    if (opener && !opener.closed) { postToOpener({ type: 'allostudio-open-cinematic' }); setStatus($('projectStatus'), 'Asked AlloFlow to open Cinematic Studio.', 'ok'); }
+    else setStatus($('projectStatus'), 'Open this Studio from AlloFlow to jump to Cinematic Studio.', 'warn');
+  });
+
   // ── Record settings ──
   var srcMode = 'screen'; // screen | pip | cam
   var micOn = true, capOn = true;
@@ -1169,6 +1292,109 @@ function vsComputePeaks(samples, buckets) {
     if (/\.(vtt|srt)$/i.test(f.name || '')) importCaptionFile(f);
     else importVideoFile(f); // routes .allopack bundles too
   });
+
+  // ── Visible project shelf: drafts are autosaved, .allopack is portable ──
+  var projectShelfTimer = 0;
+  function downloadBlobFile(blob, name) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
+  }
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb) {
+    var base = safeName(title || 'teacher_video');
+    var ext = extFor(blob && blob.type);
+    var ref = vsMakePackReference({
+      title: title || 'Teacher video',
+      duration: duration || 0,
+      size: blob ? blob.size : 0,
+      fileName: base + ext,
+      hasCaptions: !!vtt,
+      thumb: thumb || null,
+      createdAt: new Date().toISOString()
+    });
+    var entries = [
+      { name: 'meta.json', data: new TextEncoder().encode(JSON.stringify(ref, null, 2)) },
+      { name: base + ext, data: null }
+    ];
+    if (vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(vtt) });
+    return { base: base, entries: entries };
+  }
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb) {
+    if (!blob) return Promise.resolve(false);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb);
+    return blob.arrayBuffer().then(function (buf) {
+      built.entries[1].data = new Uint8Array(buf);
+      downloadBlobFile(new Blob([vsBuildZip(built.entries)], { type: 'application/zip' }), built.base + '.allopack');
+      return true;
+    });
+  }
+  function downloadProjectFromTake(t) {
+    if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
+    var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
+    var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null).then(function () {
+      setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
+    });
+  }
+  function inflateDraft(r) {
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+  }
+  function openDraftRow(r) {
+    var existing = takes.find(function (t) { return t.id === r.id; });
+    if (!existing) { existing = inflateDraft(r); takes.push(existing); renderTakes(); }
+    selectTake(existing.id); renderTakes(); showTab('tabEdit');
+    setStatus($('projectStatus'), 'Opened saved draft: ' + existing.name, 'ok');
+  }
+  function refreshProjectShelf() {
+    var shelf = $('projectShelf'); if (!shelf) return;
+    withDb(function (db) {
+      try {
+        var q = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+        q.onsuccess = function () {
+          var rows = (q.result || []).filter(function (r) { return r && r.blob; }).sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+          shelf.innerHTML = '';
+          if (!rows.length) {
+            var empty = document.createElement('div');
+            empty.className = 'status';
+            empty.textContent = 'No saved local drafts yet. Record or import a take and Video Studio will autosave it here.';
+            shelf.appendChild(empty);
+            return;
+          }
+          rows.forEach(function (r) {
+            var row = document.createElement('div');
+            row.className = 'project-row';
+            row.setAttribute('aria-current', String(r.id === selectedTakeId));
+            var info = document.createElement('div');
+            var title = document.createElement('div');
+            title.style.cssText = 'font-weight:700;font-size:13px;color:var(--text)';
+            title.textContent = r.name || 'Saved project';
+            var meta = document.createElement('div');
+            meta.className = 'status';
+            meta.style.marginTop = '2px';
+            meta.textContent = fmtClock(r.duration || 0) + ' · ' + fmtBytes(r.blob.size || 0) + ' · ' + ((r.captions || []).length) + ' captions' + (r.createdAt ? ' · saved ' + new Date(r.createdAt).toLocaleString() : '');
+            info.appendChild(title); info.appendChild(meta);
+            var actions = document.createElement('div');
+            actions.className = 'row';
+            actions.style.justifyContent = 'flex-end';
+            var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
+            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null); });
+            var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
+            actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
+            row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
+          });
+        };
+      } catch (_) {}
+    });
+  }
+  function refreshProjectShelfSoon() {
+    clearTimeout(projectShelfTimer);
+    projectShelfTimer = setTimeout(refreshProjectShelf, 120);
+  }
+  $('saveProjectBtn').addEventListener('click', function () { downloadProjectFromTake(currentTake()); });
+  $('loadProjectBtn').addEventListener('click', function () { $('importInput').click(); });
+  $('refreshProjectsBtn').addEventListener('click', refreshProjectShelf);
 
   // ── Local Whisper auto-captioning (transformers.js) ──
   // The popup is OUR page in a top-level window, so unlike the Canvas iframe
@@ -2139,6 +2365,119 @@ function vsComputePeaks(samples, buckets) {
       body.appendChild(tr);
     });
     drawWave();
+    renderTranscript();
+  }
+  function transcriptTextFromCues(cues, title) {
+    var lines = [];
+    lines.push(title || 'Teacher video');
+    lines.push('Transcript generated locally by AlloFlow Video Studio.');
+    lines.push('');
+    (Array.isArray(cues) ? cues : []).forEach(function (c) {
+      if (!c || !String(c.text || '').trim()) return;
+      lines.push(vsFormatTimestamp(c.start || 0) + ' - ' + vsFormatTimestamp(c.end || 0) + '  ' + String(c.text || '').trim());
+    });
+    return lines.join('\n').trim() + '\n';
+  }
+  function currentTranscriptCues() {
+    if (lastExport && lastExport.vtt) return vsParseVtt(lastExport.vtt);
+    var t = currentTake();
+    return t ? (t.captions || []) : [];
+  }
+  function privacyFlagsForCues(cues) {
+    var tests = [
+      { label: 'Email address', re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i },
+      { label: 'Phone number', re: /\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}\b/ },
+      { label: 'Street address', re: /\b\d{1,5}\s+[A-Za-z0-9.\s]+(?:Street|St\.?|Road|Rd\.?|Avenue|Ave\.?|Drive|Dr\.?|Lane|Ln\.?|Boulevard|Blvd\.?)\b/i },
+      { label: 'Student record term', re: /\b(student\s*id|sis|iep|504|diagnosis|medication|behavior plan|accommodation|counselor)\b/i },
+      { label: 'Login or password', re: /\b(password|passcode|login|username|account number)\b/i },
+      { label: 'Possible full name', re: /\b[A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}\b/ }
+    ];
+    var flags = [];
+    (Array.isArray(cues) ? cues : []).forEach(function (c, idx) {
+      var txt = String(c && c.text || '');
+      tests.forEach(function (tst) {
+        if (tst.re.test(txt)) flags.push({ index: idx, label: tst.label, start: c.start || 0, text: txt });
+      });
+    });
+    return flags;
+  }
+  function appendHighlighted(parent, text, query) {
+    text = String(text || '');
+    query = String(query || '').trim();
+    if (!query) { parent.appendChild(document.createTextNode(text)); return; }
+    var low = text.toLowerCase(), q = query.toLowerCase(), pos = 0, hit;
+    while ((hit = low.indexOf(q, pos)) !== -1) {
+      if (hit > pos) parent.appendChild(document.createTextNode(text.slice(pos, hit)));
+      var mark = document.createElement('mark');
+      mark.textContent = text.slice(hit, hit + query.length);
+      parent.appendChild(mark);
+      pos = hit + query.length;
+    }
+    if (pos < text.length) parent.appendChild(document.createTextNode(text.slice(pos)));
+  }
+  function renderTranscript() {
+    var list = $('transcriptList'); if (!list) return;
+    var t = currentTake();
+    var cues = t ? (t.captions || []) : [];
+    var q = ($('transcriptSearch').value || '').trim().toLowerCase();
+    var flags = privacyFlagsForCues(cues);
+    list.innerHTML = '';
+    $('privacyFlags').innerHTML = '';
+    if (flags.length) {
+      flags.slice(0, 6).forEach(function (f) {
+        var pill = document.createElement('span');
+        pill.className = 'privacy-flag';
+        pill.textContent = f.label + ' near ' + fmtClock(f.start);
+        $('privacyFlags').appendChild(pill);
+      });
+    }
+    var shown = 0;
+    cues.forEach(function (c, idx) {
+      var txt = String(c.text || '');
+      var hay = (txt + ' ' + vsFormatTimestamp(c.start || 0)).toLowerCase();
+      if (q && hay.indexOf(q) === -1) return;
+      shown++;
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'transcript-line';
+      row.setAttribute('aria-label', 'Jump to caption ' + (idx + 1) + ' at ' + fmtClock(c.start || 0));
+      var time = document.createElement('strong');
+      time.textContent = fmtClock(c.start || 0);
+      var span = document.createElement('span');
+      appendHighlighted(span, txt, q);
+      row.appendChild(time);
+      row.appendChild(span);
+      row.addEventListener('click', function () {
+        try { $('editVideo').currentTime = Math.max(0, Number(c.start) || 0); $('editVideo').focus(); } catch (_) {}
+      });
+      list.appendChild(row);
+    });
+    if (!cues.length) {
+      list.innerHTML = '<p class="status">No captions yet. Import captions, run auto-caption, or add lines manually.</p>';
+    } else if (!shown) {
+      list.innerHTML = '<p class="status">No transcript lines match that search.</p>';
+    }
+    setStatus($('transcriptStatus'), cues.length ? (shown + ' line' + (shown === 1 ? '' : 's') + ' shown' + (flags.length ? ' - ' + flags.length + ' possible privacy flag' + (flags.length === 1 ? '' : 's') : '')) : 'Transcript appears after captions are added.', flags.length ? 'warn' : '');
+  }
+  function mergeTightCues() {
+    var t = currentTake(); if (!t || !t.captions.length) return;
+    var src = t.captions.slice().sort(function (a, b) { return a.start - b.start; });
+    var out = [];
+    src.forEach(function (c) {
+      var last = out[out.length - 1];
+      var gap = last ? (Number(c.start) - Number(last.end)) : 99;
+      var mergedText = last ? (String(last.text || '').trim() + ' ' + String(c.text || '').trim()).trim() : '';
+      if (last && gap >= 0 && gap <= 0.35 && mergedText.length <= 150) {
+        last.end = Math.max(Number(last.end) || 0, Number(c.end) || 0);
+        last.text = mergedText;
+      } else {
+        out.push({ start: Number(c.start) || 0, end: Number(c.end) || 0, text: String(c.text || '').trim() });
+      }
+    });
+    t.captions = out;
+    saveDraft(t);
+    renderCues();
+    setStatus($('transcriptStatus'), 'Merged ' + (src.length - out.length) + ' tight caption pair' + ((src.length - out.length) === 1 ? '' : 's') + '.', 'ok');
   }
   $('addCueBtn').addEventListener('click', function () {
     var t = currentTake(); if (!t) return;
@@ -2146,6 +2485,20 @@ function vsComputePeaks(samples, buckets) {
     t.captions.push({ start: at, end: at + 2, text: 'New caption' });
     t.captions.sort(function (a, b) { return a.start - b.start; });
     saveDraft(t); renderCues();
+  });
+  $('transcriptSearch').addEventListener('input', renderTranscript);
+  $('flagPrivacyBtn').addEventListener('click', function () {
+    renderTranscript();
+    var flags = privacyFlagsForCues(currentTranscriptCues());
+    setStatus($('transcriptStatus'), flags.length ? (flags.length + ' possible private detail' + (flags.length === 1 ? '' : 's') + ' flagged for teacher review.') : 'No obvious private details found. Please still review before sharing.', flags.length ? 'warn' : 'ok');
+  });
+  $('mergeCuesBtn').addEventListener('click', mergeTightCues);
+  $('downloadTranscriptBtn').addEventListener('click', function () {
+    var t = currentTake();
+    if (!t || !t.captions.length) { setStatus($('transcriptStatus'), 'Add captions before downloading a transcript.', 'warn'); return; }
+    var title = ($('titleInput').value.trim() || t.name || 'Teacher video');
+    downloadBlobFile(new Blob([transcriptTextFromCues(t.captions, title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_transcript.txt');
+    setStatus($('transcriptStatus'), 'Transcript downloaded.', 'ok');
   });
 
   // ── Export ──
@@ -2380,6 +2733,58 @@ function vsComputePeaks(samples, buckets) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 3000);
   });
+  function buildAccessibilityPacket(exported, take) {
+    var title = (exported && exported.title) || ($('titleInput').value.trim()) || (take && take.name) || 'Teacher video';
+    var cues = exported && exported.vtt ? vsParseVtt(exported.vtt) : (take && take.captions || []);
+    var vtt = exported && exported.vtt ? exported.vtt : (cues.length ? vsBuildVtt(cues) : '');
+    var flags = privacyFlagsForCues(cues);
+    var note = [
+      'AlloFlow Video Studio accessibility packet',
+      '',
+      'Video title: ' + title,
+      'Generated locally: ' + new Date().toISOString(),
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + ', and metadata.',
+      'Video bytes are not included in this packet. Download the video file or project bundle separately.',
+      '',
+      flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
+    ].join('\n');
+    var meta = {
+      title: title,
+      duration: (exported && exported.duration) || (take && take.duration) || 0,
+      hasCaptions: !!vtt,
+      captionCount: cues.length,
+      privacyFlags: flags.map(function (f) { return { label: f.label, time: f.start, line: f.index + 1 }; }),
+      generatedAt: new Date().toISOString()
+    };
+    var entries = [
+      { name: 'accessibility-note.txt', data: new TextEncoder().encode(note + '\n') },
+      { name: 'transcript.txt', data: new TextEncoder().encode(transcriptTextFromCues(cues, title)) },
+      { name: 'metadata.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 2)) }
+    ];
+    if (vtt) entries.push({ name: 'captions.vtt', data: new TextEncoder().encode(vtt) });
+    return { base: safeName(title), blob: new Blob([vsBuildZip(entries)], { type: 'application/zip' }), flags: flags.length };
+  }
+  $('downloadTranscriptResultBtn').addEventListener('click', function () {
+    var take = currentTake();
+    var cues = currentTranscriptCues();
+    if (!cues.length) { setStatus($('resultStatus'), 'No captions are available for a transcript yet.', 'warn'); return; }
+    var title = (lastExport && lastExport.title) || (take && take.name) || 'Teacher video';
+    downloadBlobFile(new Blob([transcriptTextFromCues(cues, title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_transcript.txt');
+    setStatus($('resultStatus'), 'Transcript downloaded.', 'ok');
+  });
+  $('downloadAccessPacketBtn').addEventListener('click', function () {
+    var take = currentTake();
+    if (!lastExport && (!take || !(take.captions || []).length)) { setStatus($('resultStatus'), 'Export or caption a video before building an accessibility packet.', 'warn'); return; }
+    var packet = buildAccessibilityPacket(lastExport, take);
+    downloadBlobFile(packet.blob, packet.base + '_accessibility_packet.zip');
+    setStatus($('resultStatus'), 'Accessibility packet downloaded' + (packet.flags ? ' with privacy flags to review.' : '.'), packet.flags ? 'warn' : 'ok');
+  });
+  $('downloadProjectResultBtn').addEventListener('click', function () {
+    if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null).then(function () {
+      setStatus($('resultStatus'), 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
+    });
+  });
   $('sendBtn').addEventListener('click', function () {
     if (!lastExport) return;
     if (!opener || opener.closed) { setStatus($('resultStatus'), 'AlloFlow window not found — download the file instead.', 'warn'); return; }
@@ -2440,10 +2845,22 @@ function vsComputePeaks(samples, buckets) {
   }
   function saveDraft(take) {
     withDb(function (db) {
-      try { db.transaction(STORE, 'readwrite').objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt }); } catch (_) {}
+      try {
+        var tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.oncomplete = refreshProjectShelfSoon;
+      } catch (_) {}
     });
   }
-  function deleteDraft(id) { withDb(function (db) { try { db.transaction(STORE, 'readwrite').objectStore(STORE).delete(id); } catch (_) {} }); }
+  function deleteDraft(id) {
+    withDb(function (db) {
+      try {
+        var tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).delete(id);
+        tx.oncomplete = refreshProjectShelfSoon;
+      } catch (_) {}
+    });
+  }
   function loadDrafts() {
     withDb(function (db) {
       try {
@@ -2455,7 +2872,7 @@ function vsComputePeaks(samples, buckets) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push({ id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt });
+              takes.push(inflateDraft(r));
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }
@@ -2471,6 +2888,7 @@ function vsComputePeaks(samples, buckets) {
   }
   loadDrafts();
   renderTakes();
+  refreshProjectShelf();
 })();
 </script>
 </body>
