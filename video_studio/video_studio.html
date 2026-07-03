@@ -143,6 +143,11 @@
           <span>Record your voice or let AI draft narration from a contact sheet.</span>
           <span class="mini-pill">No raw video sent to AI</span>
         </button>
+        <button class="choice-card" id="flowDescribe" style="border-left-color:#14b8a6">
+          <strong>Describe what is on screen</strong>
+          <span>Sample timestamped frames so AI can draft visual descriptions for silent or image-heavy footage.</span>
+          <span class="mini-pill">Separate from spoken captions</span>
+        </button>
         <button class="choice-card" id="flowCinematic" style="border-left-color:#f43f5e">
           <strong>AI-video prompt tools</strong>
           <span>Open Cinematic Studio in AlloFlow for NotebookLM or AI-video prompts.</span>
@@ -286,6 +291,29 @@
             <button class="quiet" id="narrDismissBtn">Dismiss</button>
           </div>
           <p class="status">Narration records from your mic while the video plays silently, lined up from 0:00 — press the button again to stop. Or let AI draft it: review and edit the script, then generate spoken audio (each line becomes a sound clip at its timestamp) and/or add it as captions. To REPLACE the original sound, also tick “Remove audio entirely” above. Everything mixes together permanently on export.</p>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Visual description</h2>
+          <label for="visualNotes" style="display:block;margin-bottom:6px">Gist, source notes, or accuracy anchors</label>
+          <textarea id="visualNotes" rows="4" placeholder="Optional: what this video shows, key names to use, source facts to verify against, or what learners should notice." style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical"></textarea>
+          <div class="row" style="margin:8px 0">
+            <button class="quiet" id="visualDescribeBtn" title="Samples timestamped frames into one contact sheet and asks Gemini Vision for editable visual-description segments.">Describe sampled frames</button>
+            <label for="visualFrameCount">Frames</label>
+            <select id="visualFrameCount" aria-label="Number of frames to sample for visual description" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+              <option value="8">8</option>
+              <option value="12" selected>12</option>
+              <option value="16">16</option>
+            </select>
+          </div>
+          <div class="status" id="visualStatus">Use this for silent footage, demonstrations, nature-documentary style narration, or visual accessibility. It describes what is visible; spoken captions stay in the Captions panel.</div>
+          <div id="visualList" style="margin-top:8px"></div>
+          <div class="row" id="visualActions" hidden style="margin-top:8px">
+            <button class="action" id="visualAsNarrBtn" style="background:#0f766e">Use approved as narration script</button>
+            <button class="quiet" id="visualAsCapsBtn">Add approved as description cues</button>
+            <button class="quiet" id="visualDownloadBtn">Download descriptions</button>
+            <button class="quiet" id="visualDismissBtn">Dismiss</button>
+          </div>
+          <p class="status">Each AI line starts unchecked. Mark only the descriptions you approve. Labels show whether a line is observed, inferred, source-supported, or needs review.</p>
         </div>
       </div>
       <div>
@@ -825,6 +853,45 @@ function vsSanitizeNarrationCues(raw, duration) {
   return out;
 }
 
+// AI visual descriptions are separate from spoken captions: they describe what
+// is visible on screen, with labels that make observation vs inference explicit.
+function vsSanitizeVisualDescriptions(raw, duration) {
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.descriptions) ? raw.descriptions : (raw && Array.isArray(raw.segments) ? raw.segments : []));
+  var out = [];
+  var basisMap = {
+    observed: 'observed',
+    inference: 'inferred',
+    inferred: 'inferred',
+    source: 'source-supported',
+    supported: 'source-supported',
+    'source-supported': 'source-supported',
+    'needs-review': 'needs-review',
+    review: 'needs-review',
+    uncertain: 'needs-review'
+  };
+  function confidence(v) {
+    var n = Number(v);
+    if (isFinite(n)) return n >= 0.75 ? 'high' : (n >= 0.45 ? 'medium' : 'low');
+    v = String(v || 'medium').toLowerCase();
+    return /high|medium|low/.test(v) ? v.match(/high|medium|low/)[0] : 'medium';
+  }
+  for (var i = 0; i < list.length && out.length < 24; i++) {
+    var s = list[i] || {};
+    var text = String(s.description || s.text || s.visual || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 280);
+    var a = Number(s.start != null ? s.start : s.t), b = Number(s.end);
+    if (!text || !isFinite(a)) continue;
+    a = Math.max(0, Math.min(dur, a));
+    b = isFinite(b) ? b : a + 4;
+    b = Math.min(dur, Math.max(a + 0.8, b));
+    if (b <= a) continue;
+    var basis = String(s.basis || s.source || 'needs-review').toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-');
+    out.push({ start: a, end: b, description: text, basis: basisMap[basis] || 'needs-review', confidence: confidence(s.confidence) });
+  }
+  out.sort(function (x, y) { return x.start - y.start; });
+  return out;
+}
+
 // 16-bit mono PCM bytes → WAV container (24kHz default — Gemini TTS output).
 // Mirrors the app's tts_module pcmToWav; pure byte assembly.
 function vsPcmToWav(pcmBytes, sampleRate) {
@@ -922,6 +989,7 @@ function vsComputePeaks(samples, buckets) {
   $('flowImport').addEventListener('click', function () { $('importInput').click(); });
   $('flowCaption').addEventListener('click', function () { applyTemplate('caption_only'); $('importInput').click(); });
   $('flowNarrate').addEventListener('click', function () { applyTemplate('mini_lesson'); if (currentTake()) { showTab('tabEdit'); $('aiNarrateBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Narration & sound clips in the editor.', 'warn'); $('importInput').click(); } });
+  $('flowDescribe').addEventListener('click', function () { applyTemplate('mini_lesson'); if (currentTake()) { showTab('tabEdit'); $('visualDescribeBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Visual description in the editor.', 'warn'); $('importInput').click(); } });
   $('flowCinematic').addEventListener('click', function () {
     if (opener && !opener.closed) { postToOpener({ type: 'allostudio-open-cinematic' }); setStatus($('projectStatus'), 'Asked AlloFlow to open Cinematic Studio.', 'ok'); }
     else setStatus($('projectStatus'), 'Open this Studio from AlloFlow to jump to Cinematic Studio.', 'warn');
@@ -1192,7 +1260,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
-        duration: dur, captions: cuesLive.slice(), zooms: [], createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], zooms: [], createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1231,7 +1299,7 @@ function vsComputePeaks(samples, buckets) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions) {
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions) {
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
@@ -1244,7 +1312,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], zooms: [], imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], zooms: [], imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1270,16 +1338,19 @@ function vsComputePeaks(samples, buckets) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null;
+      var meta = null, video = null, videoName = '', vttText = null, visualText = null;
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)visual_descriptions\.json$/i.test(e.name)) { visualText = new TextDecoder().decode(e.data); }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
       });
       if (!video) { setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
       var type = /\.mp4$|\.m4v$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : /\.mkv$/i.test(videoName) ? 'video/x-matroska' : 'video/webm';
       var captions = vttText ? vsParseVtt(vttText) : [];
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions);
+      var visualDescriptions = [];
+      if (visualText) { try { var rawVisual = JSON.parse(visualText); visualDescriptions = vsSanitizeVisualDescriptions(rawVisual, (meta && meta.duration) || 0).map(function (s, idx) { s.checked = !!((Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx] && (Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx].checked); return s; }); } catch (_) {} }
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -1302,7 +1373,7 @@ function vsComputePeaks(samples, buckets) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb) {
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
     var ref = vsMakePackReference({
@@ -1311,6 +1382,7 @@ function vsComputePeaks(samples, buckets) {
       size: blob ? blob.size : 0,
       fileName: base + ext,
       hasCaptions: !!vtt,
+      hasVisualDescriptions: !!(visualDescriptions && visualDescriptions.length),
       thumb: thumb || null,
       createdAt: new Date().toISOString()
     });
@@ -1319,11 +1391,12 @@ function vsComputePeaks(samples, buckets) {
       { name: base + ext, data: null }
     ];
     if (vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(vtt) });
+    if (visualDescriptions && visualDescriptions.length) entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(visualDescriptions, null, 2)) });
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions);
     return blob.arrayBuffer().then(function (buf) {
       built.entries[1].data = new Uint8Array(buf);
       downloadBlobFile(new Blob([vsBuildZip(built.entries)], { type: 'application/zip' }), built.base + '.allopack');
@@ -1334,12 +1407,12 @@ function vsComputePeaks(samples, buckets) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
-    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null).then(function () {
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || []).then(function () {
       setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -1918,10 +1991,10 @@ function vsComputePeaks(samples, buckets) {
       v.addEventListener('error', function () { clearTimeout(died); reject(new Error('could not decode the video')); });
       v.addEventListener('loadedmetadata', function () {
         var dur = t.duration || v.duration || 1;
-        var n = Math.max(4, Math.min(12, count || 12));
+        var n = Math.max(4, Math.min(16, count || 12));
         var times = [];
         for (var i = 0; i < n; i++) times.push(dur * (i + 0.5) / n);
-        var cols = 3, rows = Math.ceil(n / cols);
+        var cols = n > 12 ? 4 : 3, rows = Math.ceil(n / cols);
         var cellW = 320;
         var cellH = Math.max(60, Math.round(cellW * (v.videoHeight || 720) / (v.videoWidth || 1280)));
         var cv = document.createElement('canvas');
@@ -1981,6 +2054,82 @@ function vsComputePeaks(samples, buckets) {
     });
   }
 
+  function approvedVisualDescriptions(t) {
+    return ((t && t.visualDescriptions) || []).filter(function (s) { return s && s.checked && String(s.description || '').trim(); });
+  }
+  function visualDescriptionsText(list, title) {
+    var lines = [title || 'Teacher video', 'Visual description transcript generated locally by AlloFlow Video Studio.', ''];
+    (Array.isArray(list) ? list : []).forEach(function (s) {
+      if (!s || !String(s.description || '').trim()) return;
+      lines.push(vsFormatTimestamp(s.start || 0) + ' - ' + vsFormatTimestamp(s.end || 0) + '  [' + (s.basis || 'needs-review') + ', ' + (s.confidence || 'medium') + '] ' + String(s.description || '').trim());
+    });
+    return lines.join('\n').trim() + '\n';
+  }
+  function renderVisualDescriptions() {
+    var host = $('visualList'); if (!host) return;
+    var t = currentTake();
+    var segs = (t && t.visualDescriptions) || [];
+    host.innerHTML = '';
+    $('visualActions').hidden = !segs.length;
+    if (!t) {
+      setStatus($('visualStatus'), 'Import or record a video first, then sample frames for visual description.');
+      return;
+    }
+    if (!segs.length) {
+      host.innerHTML = '<p class="status">No visual descriptions yet. Add notes if helpful, then sample frames.</p>';
+      return;
+    }
+    segs.forEach(function (s, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:8px;margin-bottom:7px;align-items:flex-start';
+      var chk = document.createElement('input');
+      chk.type = 'checkbox'; chk.checked = !!s.checked;
+      chk.setAttribute('aria-label', 'Approve visual description ' + (idx + 1));
+      chk.addEventListener('change', function () { s.checked = chk.checked; saveDraft(t); });
+      var at = document.createElement('input');
+      at.type = 'number'; at.min = '0'; at.step = '0.1'; at.style.width = '64px';
+      at.value = (Math.round((Number(s.start) || 0) * 10) / 10).toFixed(1);
+      at.setAttribute('aria-label', 'Start time of visual description ' + (idx + 1));
+      at.addEventListener('change', function () { s.start = Math.max(0, Number(at.value) || 0); saveDraft(t); });
+      var end = document.createElement('input');
+      end.type = 'number'; end.min = '0'; end.step = '0.1'; end.style.width = '64px';
+      end.value = (Math.round((Number(s.end) || 0) * 10) / 10).toFixed(1);
+      end.setAttribute('aria-label', 'End time of visual description ' + (idx + 1));
+      end.addEventListener('change', function () { s.end = Math.max(s.start + 0.5, Number(end.value) || (s.start + 4)); saveDraft(t); });
+      var txt = document.createElement('textarea');
+      txt.rows = 2; txt.value = s.description || ''; txt.style.cssText = 'flex:1;min-width:180px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px;resize:vertical';
+      txt.setAttribute('aria-label', 'Visual description text ' + (idx + 1));
+      txt.addEventListener('change', function () { s.description = txt.value.replace(/[\r\n]+/g, ' ').trim(); saveDraft(t); });
+      var basis = document.createElement('select');
+      basis.setAttribute('aria-label', 'Basis for visual description ' + (idx + 1));
+      basis.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px';
+      ['observed', 'inferred', 'source-supported', 'needs-review'].forEach(function (v) {
+        var opt = document.createElement('option'); opt.value = v; opt.textContent = v; basis.appendChild(opt);
+      });
+      basis.value = s.basis || 'needs-review';
+      basis.addEventListener('change', function () { s.basis = basis.value; saveDraft(t); });
+      var conf = document.createElement('select');
+      conf.setAttribute('aria-label', 'Confidence for visual description ' + (idx + 1));
+      conf.style.cssText = basis.style.cssText;
+      ['high', 'medium', 'low'].forEach(function (v) {
+        var opt = document.createElement('option'); opt.value = v; opt.textContent = v; conf.appendChild(opt);
+      });
+      conf.value = s.confidence || 'medium';
+      conf.addEventListener('change', function () { s.confidence = conf.value; saveDraft(t); });
+      var jump = document.createElement('button');
+      jump.className = 'quiet'; jump.textContent = 'Jump';
+      jump.addEventListener('click', function () { try { $('editVideo').currentTime = Math.max(0, Number(s.start) || 0); $('editVideo').focus(); } catch (_) {} });
+      var del = document.createElement('button');
+      del.className = 'danger'; del.textContent = 'X';
+      del.setAttribute('aria-label', 'Delete visual description ' + (idx + 1));
+      del.addEventListener('click', function () { t.visualDescriptions.splice(idx, 1); saveDraft(t); renderVisualDescriptions(); });
+      row.appendChild(chk); row.appendChild(at); row.appendChild(end); row.appendChild(txt); row.appendChild(basis); row.appendChild(conf); row.appendChild(jump); row.appendChild(del);
+      host.appendChild(row);
+    });
+    setStatus($('visualStatus'), segs.length + ' visual description line' + (segs.length === 1 ? '' : 's') + ' drafted; ' + approvedVisualDescriptions(t).length + ' approved.', approvedVisualDescriptions(t).length ? 'ok' : 'warn');
+  }
+
   function bridgeRequest(type, payload, timeoutMs) {
     return new Promise(function (resolve) {
       if (!opener || opener.closed) { resolve({ error: 'needs the AlloFlow window' }); return; }
@@ -1995,9 +2144,78 @@ function vsComputePeaks(samples, buckets) {
         }
       }
       window.addEventListener('message', onMsg);
-      postToOpener(Object.assign({ type: type, id: id }, payload));
+    postToOpener(Object.assign({ type: type, id: id }, payload));
     });
   }
+
+  $('visualDescribeBtn').addEventListener('click', async function () {
+    var t = currentTake();
+    if (!t) { setStatus($('visualStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('visualStatus'), 'Visual description needs the AlloFlow window (it uses the app AI connection).', 'warn'); return; }
+    var btn = $('visualDescribeBtn');
+    btn.disabled = true;
+    try {
+      var count = Number($('visualFrameCount').value) || 12;
+      setStatus($('visualStatus'), 'Sampling ' + count + ' timestamped frames into a contact sheet...');
+      var sheet = await buildContactSheet(t, count);
+      var captions = t.captions.length ? t.captions.map(function (c) { return '[' + (Math.round(c.start * 10) / 10) + 's] ' + c.text; }).join('\n') : '';
+      setStatus($('visualStatus'), 'Asking Gemini Vision for visual descriptions (one contact sheet plus your notes; never raw video)...');
+      var resp = await bridgeRequest('allostudio-describe-request', {
+        imageBase64: sheet.dataUrl.split(',')[1],
+        mimeType: 'image/jpeg',
+        timestamps: sheet.times,
+        duration: t.duration,
+        notes: $('visualNotes').value || '',
+        captions: captions,
+        title: $('titleInput').value || t.name || ''
+      }, 90000);
+      if (resp.error) {
+        setStatus($('visualStatus'), 'Visual description unavailable: ' + resp.error + '.', 'bad');
+      } else {
+        t.visualDescriptions = vsSanitizeVisualDescriptions(resp.descriptions, t.duration).map(function (s) { s.checked = false; return s; });
+        saveDraft(t);
+        renderVisualDescriptions();
+        setStatus($('visualStatus'), t.visualDescriptions.length
+          ? t.visualDescriptions.length + ' visual description lines drafted. Review, edit, and check only the lines you approve.'
+          : 'Gemini returned no usable visual descriptions. Add more notes or sample more frames.', t.visualDescriptions.length ? 'ok' : 'warn');
+      }
+    } catch (e) {
+      setStatus($('visualStatus'), 'Visual description failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    }
+    btn.disabled = false;
+  });
+  $('visualAsNarrBtn').addEventListener('click', function () {
+    var t = currentTake(); var approved = approvedVisualDescriptions(t);
+    if (!approved.length) { setStatus($('visualStatus'), 'Check at least one description first.', 'warn'); return; }
+    aiNarrSegments = approved.map(function (s) { return { start: s.start, end: s.end, text: s.description }; });
+    renderAiNarr();
+    setStatus($('aiNarrStatus'), approved.length + ' approved visual description line' + (approved.length === 1 ? '' : 's') + ' copied into the narration script. Edit or generate spoken narration next.', 'ok');
+    setStatus($('visualStatus'), 'Approved descriptions copied to narration script.', 'ok');
+  });
+  $('visualAsCapsBtn').addEventListener('click', function () {
+    var t = currentTake(); var approved = approvedVisualDescriptions(t);
+    if (!t || !approved.length) { setStatus($('visualStatus'), 'Check at least one description first.', 'warn'); return; }
+    var cues = approved.map(function (s) { return { start: s.start, end: s.end, text: '[Visual description] ' + s.description }; });
+    t.captions = (t.captions || []).concat(cues).sort(function (a, b) { return a.start - b.start; });
+    saveDraft(t); renderCues();
+    setStatus($('visualStatus'), approved.length + ' approved description cue' + (approved.length === 1 ? '' : 's') + ' added to captions with a visual-description label.', 'ok');
+  });
+  $('visualDownloadBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    var approved = approvedVisualDescriptions(t);
+    var list = approved.length ? approved : (t.visualDescriptions || []);
+    if (!list.length) { setStatus($('visualStatus'), 'No visual descriptions to download yet.', 'warn'); return; }
+    var title = ($('titleInput').value.trim() || t.name || 'Teacher video');
+    downloadBlobFile(new Blob([visualDescriptionsText(list, title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_visual_descriptions.txt');
+    setStatus($('visualStatus'), 'Visual descriptions downloaded.', 'ok');
+  });
+  $('visualDismissBtn').addEventListener('click', function () {
+    var t = currentTake(); if (!t) return;
+    t.visualDescriptions = [];
+    saveDraft(t);
+    renderVisualDescriptions();
+    setStatus($('visualStatus'), 'Visual descriptions dismissed.');
+  });
 
   $('aiNarrateBtn').addEventListener('click', async function () {
     var t = currentTake();
@@ -2276,7 +2494,7 @@ function vsComputePeaks(samples, buckets) {
             $('editVideo').src = '';
             aiNarrSegments = [];
             resetPreviewAudio();
-            renderCues(); renderZooms(); renderAudio(); renderNarration(); renderClips(); renderAiNarr(); drawWave();
+            renderCues(); renderZooms(); renderAudio(); renderNarration(); renderClips(); renderAiNarr(); renderVisualDescriptions(); drawWave();
           }
         }
         renderTakes();
@@ -2305,6 +2523,7 @@ function vsComputePeaks(samples, buckets) {
     renderNarration();
     renderClips();
     renderAiNarr();
+    renderVisualDescriptions();
     drawWave();
     ensurePeaks(t).then(drawWave);
   }
@@ -2737,13 +2956,14 @@ function vsComputePeaks(samples, buckets) {
     var title = (exported && exported.title) || ($('titleInput').value.trim()) || (take && take.name) || 'Teacher video';
     var cues = exported && exported.vtt ? vsParseVtt(exported.vtt) : (take && take.captions || []);
     var vtt = exported && exported.vtt ? exported.vtt : (cues.length ? vsBuildVtt(cues) : '');
+    var descriptions = approvedVisualDescriptions(take);
     var flags = privacyFlagsForCues(cues);
     var note = [
       'AlloFlow Video Studio accessibility packet',
       '',
       'Video title: ' + title,
       'Generated locally: ' + new Date().toISOString(),
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -2753,6 +2973,8 @@ function vsComputePeaks(samples, buckets) {
       duration: (exported && exported.duration) || (take && take.duration) || 0,
       hasCaptions: !!vtt,
       captionCount: cues.length,
+      hasVisualDescriptions: !!descriptions.length,
+      visualDescriptionCount: descriptions.length,
       privacyFlags: flags.map(function (f) { return { label: f.label, time: f.start, line: f.index + 1 }; }),
       generatedAt: new Date().toISOString()
     };
@@ -2762,6 +2984,10 @@ function vsComputePeaks(samples, buckets) {
       { name: 'metadata.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 2)) }
     ];
     if (vtt) entries.push({ name: 'captions.vtt', data: new TextEncoder().encode(vtt) });
+    if (descriptions.length) {
+      entries.push({ name: 'visual_descriptions.txt', data: new TextEncoder().encode(visualDescriptionsText(descriptions, title)) });
+      entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(descriptions, null, 2)) });
+    }
     return { base: safeName(title), blob: new Blob([vsBuildZip(entries)], { type: 'application/zip' }), flags: flags.length };
   }
   $('downloadTranscriptResultBtn').addEventListener('click', function () {
@@ -2774,14 +3000,15 @@ function vsComputePeaks(samples, buckets) {
   });
   $('downloadAccessPacketBtn').addEventListener('click', function () {
     var take = currentTake();
-    if (!lastExport && (!take || !(take.captions || []).length)) { setStatus($('resultStatus'), 'Export or caption a video before building an accessibility packet.', 'warn'); return; }
+    if (!lastExport && (!take || (!(take.captions || []).length && !approvedVisualDescriptions(take).length))) { setStatus($('resultStatus'), 'Export, caption, or approve visual descriptions before building an accessibility packet.', 'warn'); return; }
     var packet = buildAccessibilityPacket(lastExport, take);
     downloadBlobFile(packet.blob, packet.base + '_accessibility_packet.zip');
     setStatus($('resultStatus'), 'Accessibility packet downloaded' + (packet.flags ? ' with privacy flags to review.' : '.'), packet.flags ? 'warn' : 'ok');
   });
   $('downloadProjectResultBtn').addEventListener('click', function () {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
-    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null).then(function () {
+    var take = currentTake();
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null, take ? (take.visualDescriptions || []) : []).then(function () {
       setStatus($('resultStatus'), 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
@@ -2803,7 +3030,8 @@ function vsComputePeaks(samples, buckets) {
         }
       };
       window.addEventListener('message', onAck);
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb } });
+      var take = currentTake();
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [] } });
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);
@@ -2847,7 +3075,7 @@ function vsComputePeaks(samples, buckets) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

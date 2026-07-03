@@ -466,6 +466,45 @@
     return out;
   }
 
+  // AI visual descriptions are separate from spoken captions: they describe what
+  // is visible on screen, with labels that make observation vs inference explicit.
+  function vsSanitizeVisualDescriptions(raw, duration) {
+    var dur = Math.max(0.1, Number(duration) || 0.1);
+    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.descriptions) ? raw.descriptions : (raw && Array.isArray(raw.segments) ? raw.segments : []));
+    var out = [];
+    var basisMap = {
+      observed: 'observed',
+      inference: 'inferred',
+      inferred: 'inferred',
+      source: 'source-supported',
+      supported: 'source-supported',
+      'source-supported': 'source-supported',
+      'needs-review': 'needs-review',
+      review: 'needs-review',
+      uncertain: 'needs-review'
+    };
+    function confidence(v) {
+      var n = Number(v);
+      if (isFinite(n)) return n >= 0.75 ? 'high' : (n >= 0.45 ? 'medium' : 'low');
+      v = String(v || 'medium').toLowerCase();
+      return /high|medium|low/.test(v) ? v.match(/high|medium|low/)[0] : 'medium';
+    }
+    for (var i = 0; i < list.length && out.length < 24; i++) {
+      var s = list[i] || {};
+      var text = String(s.description || s.text || s.visual || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 280);
+      var a = Number(s.start != null ? s.start : s.t), b = Number(s.end);
+      if (!text || !isFinite(a)) continue;
+      a = Math.max(0, Math.min(dur, a));
+      b = isFinite(b) ? b : a + 4;
+      b = Math.min(dur, Math.max(a + 0.8, b));
+      if (b <= a) continue;
+      var basis = String(s.basis || s.source || 'needs-review').toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-');
+      out.push({ start: a, end: b, description: text, basis: basisMap[basis] || 'needs-review', confidence: confidence(s.confidence) });
+    }
+    out.sort(function (x, y) { return x.start - y.start; });
+    return out;
+  }
+
   // 16-bit mono PCM bytes → WAV container (24kHz default — Gemini TTS output).
   // Mirrors the app's tts_module pcmToWav; pure byte assembly.
   function vsPcmToWav(pcmBytes, sampleRate) {
@@ -501,7 +540,7 @@
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsPcmToWav: vsPcmToWav };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -646,6 +685,36 @@
           }).catch(function (e) {
             nRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
+        } else if (ev.data.type === 'allostudio-describe-request') {
+          // Visual description: popup sends one timestamped contact sheet plus
+          // optional teacher notes. This is separate from spoken captions.
+          var dreq = ev.data;
+          var dReplyTo = studioWinRef.current;
+          var dRespond = function (payload) {
+            try { if (dReplyTo && !dReplyTo.closed) dReplyTo.postMessage(Object.assign({ type: 'allostudio-describe-response', id: dreq.id }, payload), '*'); } catch (_) {}
+          };
+          var describeVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
+          if (typeof describeVisionFn !== 'function') { dRespond({ error: 'vision-unavailable' }); return; }
+          var dDur = Math.max(1, Math.round(Number(dreq.duration) || 0));
+          var dStamps = Array.isArray(dreq.timestamps) ? dreq.timestamps.map(function (x) { return Math.round(Number(x) || 0); }).join('s, ') + 's' : '';
+          var dPrompt = 'You are helping a teacher create VISUAL DESCRIPTION segments for an instructional video.\n' +
+            'The image is a contact sheet of sampled frames from the video, in reading order; each cell has its timestamp burned in. Frame timestamps: ' + dStamps + '. Total video length: ' + dDur + ' seconds.\n' +
+            'This is NOT spoken captioning. Describe important visible action, objects, changes, gestures, demonstrations, text on screen, or scene transitions that a learner may need if they cannot see the video well.\n' +
+            (dreq.notes ? ('Teacher gist/source notes/accuracy anchors:\n' + String(dreq.notes).slice(0, 5000) + '\n') : '') +
+            (dreq.captions ? ('Existing spoken captions/transcript for context only:\n' + String(dreq.captions).slice(0, 6000) + '\n') : '') +
+            'Rules: do not identify exact species, people, tools, places, or scientific facts unless they are plainly visible text or supported by teacher notes. Mark each segment basis as "observed", "inferred", "source-supported", or "needs-review". Use "needs-review" for uncertain details. Keep descriptions concise and useful for narration or accessibility.\n' +
+            'Respond with ONLY a JSON array (no prose, no markdown): [{"start": seconds, "end": seconds, "description": "one concise visual description", "basis": "observed|inferred|source-supported|needs-review", "confidence": "high|medium|low"}]. Return 4-12 segments in time order within 0-' + dDur + 's.';
+          Promise.resolve().then(function () { return describeVisionFn(dPrompt, dreq.imageBase64, dreq.mimeType || 'image/jpeg'); }).then(function (res) {
+            var dText = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
+            var dParsed = null;
+            try { dParsed = JSON.parse(dText); } catch (_) {
+              var dm = /\[[\s\S]*\]/.exec(String(dText || ''));
+              if (dm) { try { dParsed = JSON.parse(dm[0]); } catch (_2) {} }
+            }
+            dRespond({ descriptions: dParsed || [] });
+          }).catch(function (e) {
+            dRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
         } else if (ev.data.type === 'allostudio-tts-request') {
           // Text → spoken audio through the app's existing Gemini TTS path.
           // Returns raw 24kHz PCM bytes; the popup wraps them into WAV clips.
@@ -673,11 +742,17 @@
           setStudioState('closed');
         } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {
           var p = ev.data.payload;
+          var rawVisualDescriptions = Array.isArray(p.visualDescriptions) ? p.visualDescriptions : [];
+          var visualDescriptions = vsSanitizeVisualDescriptions({ descriptions: rawVisualDescriptions }, Number(p.duration) || 0).map(function (s, idx) {
+            s.checked = !!(rawVisualDescriptions[idx] && rawVisualDescriptions[idx].checked);
+            return s;
+          });
           var vid = {
             id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
             blob: p.blob,
             url: URL.createObjectURL(p.blob),
             vtt: (typeof p.vtt === 'string' && p.vtt) ? p.vtt : null,
+            visualDescriptions: visualDescriptions,
             title: String(p.title || 'Teacher video'),
             duration: Number(p.duration) || 0,
             size: p.blob.size,
@@ -741,7 +816,7 @@
       var ref = vsMakePackReference({
         title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
         fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type),
-        hasCaptions: !!v.vtt, thumb: v.thumb, createdAt: v.createdAt
+        hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), thumb: v.thumb, createdAt: v.createdAt
       });
       var text = JSON.stringify(ref, null, 2);
       var done = function () { addToast(T('video_studio.ref_copied', 'Pack reference copied — paste it wherever the resource lives. The video bytes stay in the downloaded file.'), 'success'); };
@@ -754,6 +829,7 @@
     var downloadAccessPacket = useCallback(function (v) {
       var base = (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'teacher_video';
       var cues = v.vtt ? vsParseVtt(v.vtt) : [];
+      var descriptions = (v.visualDescriptions || []).filter(function (s) { return s && s.checked && String(s.description || '').trim(); });
       var transcript = [
         v.title || 'Teacher video',
         'Transcript generated locally by AlloFlow Video Studio.',
@@ -763,12 +839,20 @@
         transcript.push(vsFormatTimestamp(c.start || 0) + ' - ' + vsFormatTimestamp(c.end || 0) + '  ' + String(c.text || '').trim());
       });
       if (!cues.length) transcript.push('No captions or transcript were included with this video.');
+      var visualTranscript = [
+        v.title || 'Teacher video',
+        'Visual description transcript generated locally by AlloFlow Video Studio.',
+        ''
+      ];
+      descriptions.forEach(function (s) {
+        visualTranscript.push(vsFormatTimestamp(s.start || 0) + ' - ' + vsFormatTimestamp(s.end || 0) + '  [' + (s.basis || 'needs-review') + ', ' + (s.confidence || 'medium') + '] ' + String(s.description || '').trim());
+      });
       var note = [
         'AlloFlow Video Studio accessibility packet',
         '',
         'Video title: ' + (v.title || 'Teacher video'),
         'Generated locally: ' + new Date().toISOString(),
-        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + ', and metadata.',
+        'Includes transcript' + (v.vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + ', and metadata.',
         'Video bytes are not included in this packet. Download the video file or .allopack bundle separately.',
         '',
         'Teacher review: please check the transcript and captions for student names or private details before sharing.'
@@ -780,6 +864,8 @@
         sha256: v.sha256 || null,
         hasCaptions: !!v.vtt,
         captionCount: cues.length,
+        hasVisualDescriptions: !!descriptions.length,
+        visualDescriptionCount: descriptions.length,
         generatedAt: new Date().toISOString()
       };
       var entries = [
@@ -788,6 +874,10 @@
         { name: 'metadata.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 2)) }
       ];
       if (v.vtt) entries.push({ name: 'captions.vtt', data: new TextEncoder().encode(v.vtt) });
+      if (descriptions.length) {
+        entries.push({ name: 'visual_descriptions.txt', data: new TextEncoder().encode(visualTranscript.join('\n').trim() + '\n') });
+        entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(descriptions, null, 2)) });
+      }
       downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '_accessibility_packet.zip');
       addToast(T('video_studio.access_packet_done', 'Accessibility packet saved with transcript, captions, and metadata.'), 'success');
     }, []);
@@ -800,13 +890,14 @@
       v.blob.arrayBuffer().then(function (buf) {
         var ref = vsMakePackReference({
           title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
-          fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, thumb: v.thumb, createdAt: v.createdAt
+          fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), thumb: v.thumb, createdAt: v.createdAt
         });
         var entries = [
           { name: 'meta.json', data: new TextEncoder().encode(JSON.stringify(ref, null, 2)) },
           { name: base + extFor(v.blob.type), data: new Uint8Array(buf) }
         ];
         if (v.vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(v.vtt) });
+        if (v.visualDescriptions && v.visualDescriptions.length) entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(v.visualDescriptions, null, 2)) });
         downloadBlob(new Blob([vsBuildZip(entries)], { type: 'application/zip' }), base + '.allopack');
         addToast(T('video_studio.bundle_done', 'Bundle saved — one file with the video, captions, and metadata. Drop it back into the Studio any time to re-edit.'), 'success');
       });

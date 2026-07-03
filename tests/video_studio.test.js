@@ -470,6 +470,41 @@ describe('vsSanitizeNarrationCues', () => {
   });
 });
 
+// ─── vsSanitizeVisualDescriptions (AI visual-description scripts) ───────────
+describe('vsSanitizeVisualDescriptions', () => {
+  it('passes well-formed descriptions, sorts them, and normalizes labels', () => {
+    const out = VS.vsSanitizeVisualDescriptions([
+      { start: 12, end: 16, description: 'The seedling bends toward the light.', basis: 'observed', confidence: 'high' },
+      { start: 2, end: 5, text: 'A title card introduces plant growth.', basis: 'source', confidence: 0.5 },
+    ], 60);
+    expect(out.map((s) => s.description)).toEqual([
+      'A title card introduces plant growth.',
+      'The seedling bends toward the light.',
+    ]);
+    expect(out[0]).toMatchObject({ basis: 'source-supported', confidence: 'medium' });
+    expect(out[1]).toMatchObject({ basis: 'observed', confidence: 'high' });
+  });
+  it('clamps times, repairs missing ends, and marks unknown basis for review', () => {
+    const out = VS.vsSanitizeVisualDescriptions({ descriptions: [
+      { start: -3, description: 'The camera pans across the pond.', basis: 'maybe', confidence: 0.2 },
+      { start: 58, end: 999, description: 'A close-up shows ripples.' },
+      { start: NaN, end: 4, description: 'bad start' },
+      { start: 6, end: 8 },
+    ] }, 60);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ start: 0, basis: 'needs-review', confidence: 'low' });
+    expect(out[1].end).toBe(60);
+  });
+  it('caps count and text, strips newlines, and rejects garbage', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ start: i, end: i + 1, description: 'x'.repeat(400) + '\nline' }));
+    const out = VS.vsSanitizeVisualDescriptions({ segments: many }, 120);
+    expect(out).toHaveLength(24);
+    expect(out[0].description.length).toBeLessThanOrEqual(280);
+    expect(out[0].description).not.toContain('\n');
+    expect(VS.vsSanitizeVisualDescriptions('garbage', 60)).toEqual([]);
+  });
+});
+
 // ─── vsPcmToWav ──────────────────────────────────────────────────────────────
 describe('vsPcmToWav', () => {
   it('produces a valid 44-byte-header mono 16-bit WAV', () => {
