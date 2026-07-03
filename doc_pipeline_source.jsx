@@ -8435,7 +8435,20 @@ var createDocPipeline = function(deps) {
         disagreements.push({ pageNum: _pn, tesseractChars: tLen, visionChars: vLen, tesseractText: tText, visionText: vText });
       }
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: merged.map(p => p.text).filter(Boolean).join('\n\n') };
+    // #1 (2026-07-03): the <=2-page single-pass Vision extract returns ONE page covering the whole range,
+    // while Tesseract OCRs per physical page — so the per-page merge above holds the Vision blob (all pages)
+    // on page _rangeStart PLUS each Tesseract-only page, and a naive join DUPLICATES every page after the
+    // first in fullText. That inflated the integrity denominator ~1.5x on EVERY 2-page scan -> a false
+    // "content may be missing" error + false numeric-fidelity alarms on every page-2 score/date. When Vision
+    // collapsed to one page AND its blob won a page (it already contains all the pages), fullText is that
+    // blob ONCE. The per-page `merged` array (word boxes for the searchable layer) is left untouched.
+    let _fullText;
+    if ((visionPages || []).length === 1 && (tessPages || []).length > 1 && merged.some(p => p.source === 'vision')) {
+      _fullText = (visionPages[0] && visionPages[0].text) || merged.map(p => p.text).filter(Boolean).join('\n\n');
+    } else {
+      _fullText = merged.map(p => p.text).filter(Boolean).join('\n\n');
+    }
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
