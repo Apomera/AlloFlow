@@ -720,15 +720,15 @@
       wallpaper: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255,0,168,0.04) 3px, rgba(255,0,168,0.04) 4px), linear-gradient(180deg, #1a0f2a 0%, #0a0514 100%)',
       floor: 'linear-gradient(180deg, #2a1f3a 0%, #1a0f2a 100%)',
       accent: '#ff00a8', accentDim: '#c00080', text: '#e0d8ff', textDim: '#c0b0e8',
-      textMute: '#8070a0', surface: '#1a0f2a', border: '#3d2a5a', success: '#00ffc8',
+      textMute: '#9280b8', surface: '#1a0f2a', border: '#3d2a5a', success: '#00ffc8',
       warn: '#ffd700', onAccent: '#0a0514', bg: '#0a0514'
     },
     'kawaii': {
       wallpaper: 'radial-gradient(circle at 20% 30%, rgba(232,90,138,0.08) 8px, transparent 9px), radial-gradient(circle at 70% 60%, rgba(232,90,138,0.06) 6px, transparent 7px), linear-gradient(180deg, #ffe8f2 0%, #fff5fa 100%)',
       floor: 'linear-gradient(180deg, #ffd6e5 0%, #ffe8f2 100%)',
-      accent: '#e85a8a', accentDim: '#c03868', text: '#4a2838', textDim: '#6a4858',
-      textMute: '#8a7080', surface: '#ffe8f2', border: '#f5c2d7', success: '#4a9a6a',
-      warn: '#d4740a', onAccent: '#ffffff', bg: '#fff5fa'
+      accent: '#c03868', accentDim: '#a02f59', text: '#4a2838', textDim: '#6a4858',
+      textMute: '#725364', surface: '#ffe8f2', border: '#f5c2d7', success: '#047857',
+      warn: '#92400e', onAccent: '#ffffff', bg: '#fff5fa'
     },
     'neutral': {
       wallpaper: 'linear-gradient(180deg, #262626 0%, #1a1a1a 100%)',
@@ -772,7 +772,7 @@
         var sum = 0;
         for (var i = 0; i < s.earnings.length; i++) {
             var e = s.earnings[i];
-            if (e && e.date && e.date.slice(0, 10) === todayStr && e.tokens > 0) sum += e.tokens;
+            if (e && e.date && localDateKey(e.date) === todayStr && e.tokens > 0) sum += e.tokens;
         }
         return sum >= 5;
     } }
@@ -949,9 +949,9 @@
     }
 
     // 6. First Pomodoro of today
-    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayStr = localDateKey();
     var todayPoms = (state.earnings || []).filter(function(e) {
-      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && e.date.slice(0, 10) === todayStr;
+      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && localDateKey(e.date) === todayStr;
     });
     if (todayPoms.length === 1) {
       return {
@@ -1510,6 +1510,24 @@
   // neutral and the tint only appears morning/evening/night. Strong
   // enough to signal time-of-day, soft enough not to compete with
   // decoration colors. Suppressed in high-contrast mode by the caller.
+  function localDateKey(value) {
+    var d = value instanceof Date ? value : (value ? new Date(value) : new Date());
+    if (!d || isNaN(d.getTime())) d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1);
+    var day = String(d.getDate());
+    if (m.length < 2) m = '0' + m;
+    if (day.length < 2) day = '0' + day;
+    return y + '-' + m + '-' + day;
+  }
+
+  function localDateKeyOffset(days) {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + (days || 0));
+    return localDateKey(d);
+  }
+
   function getTimeOfDayTint() {
     var hour = new Date().getHours();
     if (hour >= 5 && hour < 9)   return { color: 'rgba(255,180,170,0.10)', label: 'dawn' };
@@ -1535,12 +1553,12 @@
     visits.forEach(function(v) { if (v) unique[v] = true; });
     var dates = Object.keys(unique).sort();
     var msPerDay = 24 * 60 * 60 * 1000;
-    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayStr = localDateKey();
     var current = 0;
     if (unique[todayStr]) {
       current = 1;
       for (var i = 1; i < 365; i++) {
-        var prev = new Date(Date.now() - i * msPerDay).toISOString().slice(0, 10);
+        var prev = localDateKeyOffset(-i);
         if (unique[prev]) current++;
         else break;
       }
@@ -1573,7 +1591,7 @@
     var now = new Date();
     var dow = now.getDay();
     var sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
-    return sunday.toISOString().slice(0, 10);
+    return localDateKey(sunday);
   }
 
   function aggregateWeekData(state) {
@@ -1593,8 +1611,8 @@
     });
     // Days active this week (deduped)
     var dayMap = {};
-    earnings.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
-    refls.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    earnings.forEach(function(e) { if (e.date) dayMap[localDateKey(e.date)] = true; });
+    refls.forEach(function(e) { if (e.date) dayMap[localDateKey(e.date)] = true; });
     var daysActive = Object.keys(dayMap).length;
     // Mood + subject patterns
     var moodCounts = {}, subjCounts = {};
@@ -3162,6 +3180,289 @@
   function isMemoryDueSoon(decoration) {
     var days = daysUntilDue(decoration);
     return days !== null && days > 0 && days <= 2;
+  }
+
+  function isDecorationMemoryDue(decoration) {
+    if (!decoration || !decoration.linkedContent) return false;
+    var lc = decoration.linkedContent;
+    if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
+    if (!lc.lastReviewedAt) return true;
+    return daysUntilDue(decoration) === 0;
+  }
+
+  function normalizeIdeaText(value) {
+    return String(value == null ? '' : value)
+      .replace(/\{([^{}]+)\}/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function trimIdeaText(value, maxLen) {
+    var clean = normalizeIdeaText(value);
+    if (!clean) return '';
+    if (clean.length <= maxLen) return clean;
+    return clean.slice(0, Math.max(0, maxLen - 3)).trim() + '...';
+  }
+
+  function getLinkedContentIdeaText(linkedContent) {
+    var lc = linkedContent || {};
+    var data = lc.data || {};
+    if (lc.type === 'flashcards') {
+      var cards = data.cards || lc.cards || [];
+      var firstCard = cards.filter(function(card) {
+        return card && (normalizeIdeaText(card.front) || normalizeIdeaText(card.back));
+      })[0] || null;
+      if (firstCard) {
+        return normalizeIdeaText([firstCard.front, firstCard.back].filter(Boolean).join(' - '));
+      }
+      return '';
+    }
+    if (lc.type === 'acronym') {
+      return normalizeIdeaText([
+        data.letters || lc.letters || '',
+        (data.meanings || lc.meanings || []).join(' '),
+        data.context || lc.context || ''
+      ].join(' '));
+    }
+    if (lc.type === 'image-link') {
+      return normalizeIdeaText(data.association || lc.association || '');
+    }
+    if (lc.type === 'notes') {
+      return normalizeIdeaText(data.text || lc.text || '');
+    }
+    return normalizeIdeaText(data.text || lc.text || lc.title || '');
+  }
+
+  function buildIdeaSeedTitle(linkedContent, fallbackLabel) {
+    var lc = linkedContent || {};
+    var data = lc.data || {};
+    var raw = '';
+    if (lc.type === 'flashcards') {
+      var cards = data.cards || lc.cards || [];
+      var firstCard = cards.filter(function(card) {
+        return card && (normalizeIdeaText(card.front) || normalizeIdeaText(card.back));
+      })[0] || null;
+      raw = firstCard ? (firstCard.front || firstCard.back || '') : '';
+    } else if (lc.type === 'acronym') {
+      raw = data.context || (data.letters || lc.letters || '');
+    } else if (lc.type === 'image-link') {
+      raw = data.association || lc.association || '';
+    } else if (lc.type === 'notes') {
+      raw = data.text || lc.text || '';
+    }
+    raw = normalizeIdeaText(raw) || getLinkedContentIdeaText(lc) || fallbackLabel || 'memory idea';
+    var words = raw.split(' ').filter(Boolean);
+    var title = words.length > 7 ? words.slice(0, 7).join(' ') + '...' : raw;
+    return trimIdeaText(title, 54) || 'memory idea';
+  }
+
+  function buildIdeaSeedFromMemory(decorationOrContent, nowIso) {
+    var input = decorationOrContent || {};
+    var linkedContent = input.linkedContent || input;
+    var fallbackLabel = input.templateLabel || input.template || linkedContent.type || 'memory idea';
+    var title = buildIdeaSeedTitle(linkedContent, fallbackLabel);
+    return {
+      schemaVersion: 1,
+      title: title,
+      question: 'How does "' + title + '" connect to what I already know?',
+      sourceType: linkedContent.type || 'memory',
+      plantedAt: nowIso || new Date().toISOString(),
+      lastWateredAt: null,
+      waterCount: 0,
+      generatedBy: 'local-memory'
+    };
+  }
+
+  function ensureIdeaSeedForContent(linkedContent, decoration, nowIso) {
+    if (!linkedContent) return linkedContent;
+    if (linkedContent.ideaSeed && linkedContent.ideaSeed.title) return linkedContent;
+    return Object.assign({}, linkedContent, {
+      ideaSeed: buildIdeaSeedFromMemory(Object.assign({}, decoration || {}, {
+        linkedContent: linkedContent
+      }), nowIso)
+    });
+  }
+
+  function waterIdeaSeed(linkedContent, decoration, nowIso) {
+    if (!linkedContent) return linkedContent;
+    var contentWithSeed = ensureIdeaSeedForContent(linkedContent, decoration, nowIso);
+    var seed = contentWithSeed.ideaSeed || buildIdeaSeedFromMemory(linkedContent, nowIso);
+    return Object.assign({}, contentWithSeed, {
+      ideaSeed: Object.assign({}, seed, {
+        lastWateredAt: nowIso || new Date().toISOString(),
+        waterCount: (Number(seed.waterCount) || 0) + 1
+      })
+    });
+  }
+
+  function getIdeaGrowthStage(decorationOrContent) {
+    var input = decorationOrContent || {};
+    var linkedContent = input.linkedContent || input;
+    if (!linkedContent || !linkedContent.ideaSeed) return null;
+    var seed = linkedContent.ideaSeed;
+    var reviews = Math.max(Number(linkedContent.reviewCount) || 0, Number(seed.waterCount) || 0);
+    var best = Number(linkedContent.bestQuizScore) || 0;
+    if (reviews >= 3 && best >= 80) {
+      return { id: 'bloom', label: 'Bloom', pct: 100, hint: 'Strong recall has helped this idea bloom.' };
+    }
+    if (reviews >= 2 && best >= 60) {
+      return { id: 'leaf', label: 'Leafing out', pct: 70, hint: 'This idea is growing steadier.' };
+    }
+    if (reviews >= 1) {
+      return { id: 'sprout', label: 'Sprout', pct: 40, hint: 'A first review helped this idea sprout.' };
+    }
+    return { id: 'seed', label: 'Seed', pct: 15, hint: 'Review this memory to water the idea.' };
+  }
+
+  function getIdeaSeedStatus(decoration) {
+    if (!decoration || !decoration.linkedContent || !decoration.linkedContent.ideaSeed) return null;
+    var stage = getIdeaGrowthStage(decoration);
+    if (!stage) return null;
+    return {
+      seed: decoration.linkedContent.ideaSeed,
+      stage: stage,
+      needsWater: isDecorationMemoryDue(decoration)
+    };
+  }
+
+  function getAlloHavenDailySnapshot(state, todayStr) {
+    state = state || {};
+    var ds = state.dailyState || {};
+    var today = todayStr || localDateKey();
+    var earnings = Array.isArray(state.earnings) ? state.earnings : [];
+    var decorations = Array.isArray(state.decorations) ? state.decorations : [];
+    var rooms = Array.isArray(state.rooms) ? state.rooms : [];
+    var activeRoomId = state.activeRoomId || 'main';
+    var activeRoom = rooms.filter(function(r) { return r.id === activeRoomId; })[0]
+      || rooms.filter(function(r) { return r.id === 'main'; })[0]
+      || { id: activeRoomId, wallSlots: 8, floorSlots: 12, unlocked: true };
+
+    var earnedToday = 0;
+    var spentToday = 0;
+    earnings.forEach(function(e) {
+      if (!e || !e.date || localDateKey(e.date) !== today) return;
+      var n = Number(e.tokens) || 0;
+      if (n > 0) earnedToday += n;
+      else if (n < 0) spentToday += Math.abs(n);
+    });
+
+    var decorationsToday = decorations.filter(function(d) {
+      if (!d || d.isStarter || !d.earnedAt) return false;
+      return localDateKey(d.earnedAt) === today;
+    }).length;
+
+    var filledWall = {};
+    var filledFloor = {};
+    decorations.forEach(function(d) {
+      if (!d || !d.placement) return;
+      var roomId = d.placement.roomId || 'main';
+      if (roomId !== activeRoom.id) return;
+      if (d.placement.surface === 'wall') filledWall[d.placement.cellIndex] = true;
+      if (d.placement.surface === 'floor') filledFloor[d.placement.cellIndex] = true;
+    });
+    var wallSlots = activeRoom.wallSlots || 8;
+    var floorSlots = activeRoom.floorSlots || 12;
+    var openSlots = Math.max(0, wallSlots - Object.keys(filledWall).length)
+      + Math.max(0, floorSlots - Object.keys(filledFloor).length);
+
+    var dueDeckCount = decorations.filter(isDecorationMemoryDue).length;
+    var nowMs = Date.now();
+    var activeGoals = (Array.isArray(state.goals) ? state.goals : []).filter(function(g) {
+      if (!g || g.completedAt) return false;
+      var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+      return isNaN(endMs) || endMs >= nowMs;
+    });
+    activeGoals.sort(function(a, b) {
+      var aMs = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+      var bMs = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+      return aMs - bMs;
+    });
+
+    return {
+      today: today,
+      tokensEarnedToday: earnedToday,
+      tokensSpentToday: spentToday,
+      tokensNetToday: earnedToday - spentToday,
+      tokensAvailable: Number(state.tokens) || 0,
+      decorationsToday: decorationsToday,
+      pomodoros: ds.pomodorosCompleted || 0,
+      reflections: ds.reflectionsSubmitted || 0,
+      quizTokens: ds.quizTokensEarnedToday || 0,
+      walkTokens: ds.storyWalkTokensEarnedToday || 0,
+      dueDeckCount: dueDeckCount,
+      openSlots: openSlots,
+      activeGoalCount: activeGoals.length,
+      topGoal: activeGoals[0] || null,
+      pomodoroActive: !!(state.pomodoroState && state.pomodoroState.active)
+    };
+  }
+
+  function getAlloHavenDailyPlan(state, todayStr) {
+    var s = getAlloHavenDailySnapshot(state, todayStr);
+    var steps = [
+      { id: 'review', label: 'Review', status: s.dueDeckCount === 0 ? 'clear' : (s.quizTokens > 0 ? 'done' : 'todo'), count: s.dueDeckCount },
+      { id: 'focus', label: 'Focus', status: s.pomodoroActive ? 'active' : (s.pomodoros > 0 ? 'done' : 'todo'), count: s.pomodoros },
+      { id: 'reflect', label: 'Reflect', status: s.reflections > 0 ? 'done' : 'todo', count: s.reflections },
+      { id: 'decorate', label: 'Decorate', status: s.decorationsToday > 0 ? 'done' : ((s.tokensAvailable >= DECORATION_COST && s.openSlots > 0) ? 'todo' : 'locked'), count: s.decorationsToday }
+    ];
+
+    var next;
+    if (s.pomodoroActive) {
+      next = { id: 'focus-active', action: null, title: 'Focus timer running', cta: null };
+    } else if (s.dueDeckCount > 0 && s.quizTokens === 0) {
+      next = { id: 'review', action: 'review', title: 'Daily reps', cta: 'Start reps' };
+    } else if (s.pomodoros === 0) {
+      next = { id: 'focus', action: 'pomodoro', title: 'Focus sprint', cta: 'Start' };
+    } else if (s.reflections === 0) {
+      next = { id: 'reflect', action: 'reflection', title: 'Reflection', cta: 'Write' };
+    } else if (s.tokensAvailable >= DECORATION_COST && s.openSlots > 0 && s.decorationsToday === 0) {
+      next = { id: 'decorate', action: 'decorate', title: 'Decorate', cta: 'Place item' };
+    } else if (s.activeGoalCount === 0) {
+      next = { id: 'goal', action: 'goals', title: 'Goal', cta: 'Open goals' };
+    } else {
+      next = { id: 'settle', action: 'breathe', title: 'Reset', cta: 'Breathe' };
+    }
+
+    return { snapshot: s, steps: steps, next: next };
+  }
+
+  function spendAlloHavenTokens(prev, amount, source, metadata, dateIso) {
+    var cost = Math.max(0, Number(amount) || 0);
+    if (cost <= 0) return { ok: true, state: prev, entry: null };
+    if (!prev || (Number(prev.tokens) || 0) < cost) return { ok: false, state: prev, entry: null };
+    var entry = {
+      source: source || 'spend',
+      tokens: -cost,
+      date: dateIso || new Date().toISOString(),
+      metadata: metadata || {}
+    };
+    return {
+      ok: true,
+      entry: entry,
+      state: Object.assign({}, prev, {
+        tokens: (Number(prev.tokens) || 0) - cost,
+        earnings: (prev.earnings || []).concat([entry])
+      })
+    };
+  }
+
+  function refundAlloHavenTokens(prev, amount, reason, metadata, dateIso) {
+    var refund = Math.max(0, Number(amount) || 0);
+    if (refund <= 0) return { ok: true, state: prev, entry: null };
+    var entry = {
+      source: 'refund',
+      tokens: refund,
+      date: dateIso || new Date().toISOString(),
+      metadata: Object.assign({ reason: reason || 'refund' }, metadata || {})
+    };
+    return {
+      ok: true,
+      entry: entry,
+      state: Object.assign({}, prev || {}, {
+        tokens: (Number(prev && prev.tokens) || 0) + refund,
+        earnings: ((prev && prev.earnings) || []).concat([entry])
+      })
+    };
   }
 
   // Surprise me — returns a fully populated slots object for the given
@@ -8316,6 +8617,112 @@
       );
     }
 
+    function renderIdeaSeedPanel() {
+      if (!hasContent || !existing) return null;
+      var status = getIdeaSeedStatus(decoration);
+      if (!status) return null;
+      var seed = status.seed;
+      var stage = status.stage;
+      var quizAvailable = existing.type !== 'notes' || hasClozeMarkers(existing);
+      var accent = status.needsWater ? (palette.warn || palette.accent) : palette.accent;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Idea seed: ' + seed.title + ', ' + stage.label + (status.needsWater ? ', needs water' : ''),
+        style: {
+          padding: '11px 13px',
+          marginBottom: '12px',
+          background: palette.surface,
+          border: '1px solid ' + accent,
+          borderLeft: '3px solid ' + accent,
+          borderRadius: '10px'
+        }
+      },
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            gap: '8px',
+            marginBottom: '6px'
+          }
+        },
+          h('span', {
+            style: {
+              fontSize: '11px',
+              color: palette.textMute,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em'
+            }
+          }, 'Idea Garden'),
+          h('span', {
+            style: {
+              fontSize: '11px',
+              color: accent,
+              fontWeight: 800
+            }
+          }, stage.label)
+        ),
+        h('div', { style: { fontSize: '13px', color: palette.text, fontWeight: 800, lineHeight: '1.35', marginBottom: '4px' } },
+          seed.title),
+        h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginBottom: '8px' } },
+          seed.question),
+        h('div', {
+          'aria-hidden': 'true',
+          style: {
+            height: '7px',
+            borderRadius: '999px',
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            overflow: 'hidden',
+            marginBottom: '8px'
+          }
+        },
+          h('div', {
+            style: {
+              width: stage.pct + '%',
+              height: '100%',
+              background: accent,
+              borderRadius: '999px'
+            }
+          })
+        ),
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap'
+          }
+        },
+          h('span', {
+            style: {
+              fontSize: '10px',
+              color: status.needsWater ? accent : palette.textMute,
+              fontWeight: status.needsWater ? 800 : 600
+            }
+          }, status.needsWater ? 'Needs water' : 'Watered'),
+          quizAvailable && mode !== 'quiz' ? h('button', {
+            onClick: startQuiz,
+            style: {
+              background: status.needsWater ? accent : 'transparent',
+              color: status.needsWater ? palette.onAccent : palette.accent,
+              border: '1px solid ' + accent,
+              borderRadius: '8px',
+              padding: '5px 10px',
+              fontSize: '11px',
+              fontWeight: 800,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Water with review') : (!quizAvailable ? h('span', {
+            style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' }
+          }, existing.type === 'notes' ? 'Add {braces} to water this note with review.' : stage.hint) : null)
+        )
+      );
+    }
+
     function renderVoiceNotePanel() {
       var savedNote = decoration.voiceNote;
       var hasNote = !!(savedNote && savedNote.base64);
@@ -8739,6 +9146,7 @@
         ) : null,
         renderVoiceNotePanel(),
         renderCardHistory(),
+        renderIdeaSeedPanel(),
         renderTabs(),
         // Wrap body in a tabpanel when the tabs are visible (modes
         // view/edit/quiz). For 'pick-type' there are no tabs so render
@@ -10860,7 +11268,7 @@
     // streak helpers compute current/longest from this list.
     // Phase L1: also bumps companion.ageInDays once per calendar day.
     useEffect(function() {
-      var todayStr = new Date().toISOString().slice(0, 10);
+      var todayStr = localDateKey();
       var isNewDay = !Array.isArray(state.visits) || state.visits.indexOf(todayStr) === -1;
       if (!Array.isArray(state.visits)) {
         setStateField('visits', [todayStr]);
@@ -10968,7 +11376,7 @@
 
     // ── Daily-state rollover ──
     useEffect(function() {
-      var todayStr = new Date().toISOString().slice(0, 10);
+      var todayStr = localDateKey();
       if (state.dailyState.date !== todayStr) {
         setStateField('dailyState', {
           date: todayStr,
@@ -12175,6 +12583,7 @@
         newContent.reviewCount = 0;
         newContent.bestQuizScore = 0;
       }
+      newContent = ensureIdeaSeedForContent(newContent, decoration, nowIso);
       var newDecorations = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { linkedContent: newContent });
@@ -12261,7 +12670,7 @@
         // Phase P: award a one-per-day +2 token bonus for completing a
         // queue of ≥3 decks. Gentle marker, no streaks. Per-deck quiz
         // tokens already accrue inside recordQuizSession independently.
-        var todayStr = new Date().toISOString().slice(0, 10);
+        var todayStr = localDateKey();
         var bonusAlreadyEarned = (state.dailyState && state.dailyState.queueBonusEarnedDate) === todayStr;
         var bonusEligible = newResults.length >= 3 && !bonusAlreadyEarned;
         var bonusAmount = bonusEligible ? 2 : 0;
@@ -12317,6 +12726,7 @@
         reviewCount: (decoration.linkedContent.reviewCount || 0) + 1,
         bestQuizScore: Math.max(decoration.linkedContent.bestQuizScore || 0, scorePct)
       });
+      newContent = waterIdeaSeed(newContent, decoration, nowIso);
       var newDecorations = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { linkedContent: newContent });
@@ -12388,8 +12798,8 @@
         title: template.title,
         metric: template.metric,
         targetCount: template.targetCount,
-        startDate: startDate.toISOString().slice(0, 10),
-        endDate: endDate.toISOString().slice(0, 10),
+        startDate: localDateKey(startDate),
+        endDate: localDateKey(endDate),
         completedAt: null,
         notes: '',
         templateId: template.id
@@ -12927,7 +13337,7 @@
     // + recent feedings + season. Cached in state.companionVignettes
     // keyed by YYYY-MM-DD. claimed=false until the player opens the
     // card and accepts the 2-token career income.
-    function todayKey() { return new Date().toISOString().slice(0, 10); }
+    function todayKey() { return localDateKey(); }
     function currentSeasonLabel() {
       var m = new Date().getMonth();
       if (m === 11 || m <= 1) return 'winter';
@@ -13179,7 +13589,7 @@
       var today = todayKey();
       var newPeers = c.peers.map(function(p) {
         if (p.id !== peerId) return p;
-        var alreadyVisitedToday = (p.lastVisitedAt || '').slice(0, 10) === today;
+        var alreadyVisitedToday = p.lastVisitedAt && localDateKey(p.lastVisitedAt) === today;
         return Object.assign({}, p, {
           lastVisitedAt: new Date().toISOString(),
           relationship: alreadyVisitedToday ? (p.relationship || 0) : (p.relationship || 0) + 1,
@@ -13536,8 +13946,8 @@
       var c = state.companion;
       if (!c || !c.species) return false;
       if (state.roomMode === 'live') return false;
-      var todayStr = new Date().toISOString().slice(0, 10);
-      var lastStr = c.lastTreatAt ? c.lastTreatAt.slice(0, 10) : null;
+      var todayStr = localDateKey();
+      var lastStr = c.lastTreatAt ? localDateKey(c.lastTreatAt) : null;
       return lastStr !== todayStr;
     }
     function giveCompanionTreat() {
@@ -13717,11 +14127,11 @@
         var byDay = {};
         entries.forEach(function(e) {
           if (!e.date) return;
-          byDay[e.date.slice(0, 10)] = true;
+          byDay[localDateKey(e.date)] = true;
         });
         var streakDays = 0;
         for (var i = 0; i < 14; i++) {
-          var dayStr = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          var dayStr = localDateKeyOffset(-i);
           if (byDay[dayStr]) streakDays++; else break;
         }
         if (streakDays >= 3) {
@@ -13847,10 +14257,10 @@
         ];
         milestones.forEach(function(m) {
           var target = new Date(now.getFullYear(), now.getMonth() - m.months, now.getDate());
-          var targetIso = target.toISOString().slice(0, 10);
+          var targetIso = localDateKey(target);
           var match = (state.decorations || []).filter(function(d) {
             if (d.isStarter || !d.earnedAt) return false;
-            return d.earnedAt.slice(0, 10) === targetIso;
+            return localDateKey(d.earnedAt) === targetIso;
           })[0];
           if (match) {
             var ml = match.templateLabel || match.template || 'decoration';
@@ -15235,16 +15645,13 @@
     }
 
     // Custom upload (Phase 2p.19) — student-uploaded image becomes a
-    // decoration. Charges DECORATION_COST tokens up front (matches AI
-    // path); on success returns true, otherwise false. Placement is
-    // separate so the student can still see + confirm the upload before
-    // it commits to the room.
+    // decoration. Validates affordability during preview, then charges
+    // atomically at final placement so backing out never eats tokens.
     function chargeForCustomUpload() {
       if (state.tokens < DECORATION_COST) {
         addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
         return false;
       }
-      setStateField('tokens', state.tokens - DECORATION_COST);
       return true;
     }
 
@@ -15253,8 +15660,13 @@
     // Phase 2p.26: isDrawing flag distinguishes student-drawn from
     // student-uploaded so the badge + achievement differ.
     function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
+      if (state.tokens < DECORATION_COST) {
+        addToast('Need ' + DECORATION_COST + ' ðŸª™ tokens. Currently you have ' + state.tokens + '.');
+        return;
+      }
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       var rotation = (Math.random() * 6) - 3;
+      var nowIso = new Date().toISOString();
       var entry = {
         id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         template: isDrawing ? 'custom-drawing' : 'custom-upload',
@@ -15267,7 +15679,7 @@
         isCustomDrawing: !!isDrawing, // distinguishes drawn from uploaded
         placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
-        earnedAt: new Date().toISOString(),
+        earnedAt: nowIso,
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
         mood: moodTag || null,
@@ -15276,10 +15688,20 @@
         sourceTool: null,
         aiRationale: null
       };
-      setStateMulti({
-        decorations: state.decorations.concat([entry]),
-        activeModal: null,
-        generateContext: null
+      var spendEntry = {
+        source: isDrawing ? 'custom-drawing' : 'custom-upload',
+        tokens: -DECORATION_COST,
+        date: nowIso,
+        metadata: { template: entry.template }
+      };
+      setState(function(prev) {
+        var spent = spendAlloHavenTokens(prev, DECORATION_COST, spendEntry.source, spendEntry.metadata, spendEntry.date);
+        if (!spent.ok) return prev;
+        return Object.assign({}, spent.state, {
+          decorations: (prev.decorations || []).concat([entry]),
+          activeModal: null,
+          generateContext: null
+        });
       });
       addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
     }
@@ -15425,7 +15847,7 @@
           var a = document.createElement('a');
           var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'decoration';
           a.href = dataUrl;
-          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? d.earnedAt.slice(0, 10) : 'card') + '.png';
+          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? localDateKey(d.earnedAt) : 'card') + '.png';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -15517,7 +15939,7 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'deck';
-        var stamp = new Date().toISOString().slice(0, 10);
+        var stamp = localDateKey();
         a.href = url;
         a.download = 'allohaven-' + safeLabel + '-' + stamp + '.' + ext;
         document.body.appendChild(a);
@@ -15535,7 +15957,6 @@
     // generation fails, the token IS refunded (separate path from
     // delete-decoration which keeps the token cost).
     function generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, onResult) {
-      // Charge tokens
       var cost = 0;
       if (!isRegenerate) cost = DECORATION_COST;
       else if (!isFreeRegenerate) cost = 1;
@@ -15543,28 +15964,32 @@
         if (typeof onResult === 'function') onResult({ error: 'insufficient' });
         return;
       }
-      if (cost > 0) {
-        var earningsEntry = {
-          source: isRegenerate ? 'regenerate' : 'decoration',
-          tokens: -cost,
-          date: new Date().toISOString(),
-          metadata: { template: template.id, isRegenerate: !!isRegenerate }
-        };
-        setStateMulti({
-          tokens: state.tokens - cost,
-          earnings: state.earnings.concat([earningsEntry])
-        });
-      }
-
       var prompt = buildAIPrompt(template, slots, artStyleId);
 
       if (!props.callImagen) {
-        // Refund (this path is only hit if the host didn't wire callImagen)
-        if (cost > 0) {
-          setStateMulti({ tokens: state.tokens, earnings: state.earnings });
-        }
         if (typeof onResult === 'function') onResult({ error: 'callImagen unavailable. Image generation requires the host\'s AI plumbing.' });
         return;
+      }
+
+      var refunded = false;
+      function refundGeneration(reason) {
+        if (cost <= 0 || refunded) return;
+        refunded = true;
+        setState(function(prev) {
+          return refundAlloHavenTokens(prev, cost, reason || 'generation failed', {
+            template: template.id,
+            isRegenerate: !!isRegenerate
+          }).state;
+        });
+      }
+
+      if (cost > 0) {
+        var spendSource = isRegenerate ? 'regenerate' : 'decoration';
+        var spendMetadata = { template: template.id, isRegenerate: !!isRegenerate };
+        var spendDate = new Date().toISOString();
+        setState(function(prev) {
+          return spendAlloHavenTokens(prev, cost, spendSource, spendMetadata, spendDate).state;
+        });
       }
 
       try {
@@ -15580,11 +16005,7 @@
             b64 = result.base64 || result.image || result.data || '';
           }
           if (!b64) {
-            // Refund on empty result
-            setStateMulti({
-              tokens: state.tokens + cost,
-              earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'empty result' } }])
-            });
+            refundGeneration('empty result');
             if (typeof onResult === 'function') onResult({ error: 'AI returned an empty image. Tokens refunded.' });
             return;
           }
@@ -15593,17 +16014,11 @@
             : ('data:image/png;base64,' + b64);
           if (typeof onResult === 'function') onResult({ imageBase64: dataUrl });
         }).catch(function(err) {
-          // Refund on failure
-          setStateMulti({
-            tokens: state.tokens + cost,
-            earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'callImagen error' } }])
-          });
+          refundGeneration('callImagen error');
           if (typeof onResult === 'function') onResult({ error: 'AI generation failed. Tokens refunded. (' + (err && err.message ? err.message : 'unknown error') + ')' });
         });
       } catch (err) {
-        if (cost > 0) {
-          setStateMulti({ tokens: state.tokens + cost });
-        }
+        refundGeneration('callImagen start error');
         if (typeof onResult === 'function') onResult({ error: 'Could not start AI generation: ' + (err.message || err) });
       }
     }
@@ -17706,36 +18121,18 @@
       );
     }
 
-    // Today summary card (Phase 2o) — daily-arc complement to the
-    // quest panel. Quests = "what to try today"; today card = "what
-    // you've done + how close to your daily caps". Keeps daily-arc
-    // visibility without forcing students to compute it themselves.
-    // Hidden on first visit of a fresh day (no activity yet) so it
-    // doesn't add visual noise to a clean slate.
+    // Today card (Phase 2o) — daily-arc complement to the quest panel.
+    // Quests = optional bonus; today card = next step + progress through
+    // the core loop. Visible on a fresh day so students always have a
+    // gentle starting point.
     function renderTodayCard() {
-      var ds = state.dailyState || {};
-      var todayStr = new Date().toISOString().slice(0, 10);
-      var tokensToday = (state.earnings || []).reduce(function(sum, e) {
-        if (!e.date) return sum;
-        if (e.date.slice(0, 10) !== todayStr) return sum;
-        return sum + (e.tokens || 0);
-      }, 0);
-      var decorationsToday = (state.decorations || []).filter(function(d) {
-        if (d.isStarter) return false;
-        if (!d.earnedAt) return false;
-        return d.earnedAt.slice(0, 10) === todayStr;
-      }).length;
+      var plan = getAlloHavenDailyPlan(state);
+      var snap = plan.snapshot;
+      var anyActivity = snap.tokensEarnedToday > 0 || snap.tokensSpentToday > 0
+        || snap.pomodoros > 0 || snap.reflections > 0 || snap.quizTokens > 0
+        || snap.walkTokens > 0 || snap.decorationsToday > 0;
 
-      var pomodoros = ds.pomodorosCompleted || 0;
-      var reflections = ds.reflectionsSubmitted || 0;
-      var quizTokens = ds.quizTokensEarnedToday || 0;
-      var walkTokens = ds.storyWalkTokensEarnedToday || 0;
-
-      var anyActivity = tokensToday > 0 || pomodoros > 0 || reflections > 0
-        || quizTokens > 0 || walkTokens > 0 || decorationsToday > 0;
-      if (!anyActivity) return null;
-
-      function chip(emoji, label, current, cap, color) {
+      function chip(marker, label, current, cap, color) {
         var capLabel = cap ? (current + '/' + cap) : current;
         var atCap = cap && current >= cap;
         return h('span', {
@@ -17749,38 +18146,90 @@
             border: '1px solid ' + (atCap ? (color || palette.success || palette.accent) : palette.border),
             borderRadius: '999px',
             fontSize: '11px',
-            color: atCap ? (color || palette.success || palette.accent) : palette.textDim,
+            color: atCap ? (color || palette.success || palette.accent) : (color || palette.textDim),
             fontWeight: 700,
             fontVariantNumeric: 'tabular-nums'
           }
         },
-          h('span', { 'aria-hidden': 'true' }, emoji),
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '9px', letterSpacing: 0 } }, marker),
           h('span', null, capLabel)
         );
       }
 
-      var activeGoals = (state.goals || []).filter(function(g) {
-        if (g.completedAt) return false;
-        var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
-        return endMs >= Date.now();
-      });
-      var topGoal = null;
-      if (activeGoals.length > 0) {
-        activeGoals.sort(function(a, b) {
-          return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
-        });
-        topGoal = activeGoals[0];
+      function stepPill(step) {
+        var active = plan.next && plan.next.id === step.id;
+        var status = step.status;
+        var color = status === 'done' || status === 'clear' ? (palette.success || palette.accent)
+          : status === 'active' ? palette.accent
+          : status === 'locked' ? palette.textMute
+          : palette.textDim;
+        var border = active ? palette.accent
+          : (status === 'done' || status === 'clear') ? (palette.success || palette.accent)
+          : palette.border;
+        var statusLabel = status === 'done' ? 'done'
+          : status === 'clear' ? 'clear'
+          : status === 'active' ? 'running'
+          : status === 'locked' ? 'waiting'
+          : 'next';
+        var countLabel = step.count ? ' - ' + step.count : '';
+        var marker = status === 'done' || status === 'clear' ? 'OK'
+          : status === 'active' ? 'RUN'
+          : status === 'locked' ? '--'
+          : 'GO';
+        return h('span', {
+          key: 'daily-step-' + step.id,
+          'aria-label': step.label + ': ' + statusLabel + (step.count ? ', ' + step.count : ''),
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '5px 10px',
+            background: active ? (palette.accent + '18') : palette.surface,
+            border: '1px solid ' + border,
+            borderRadius: '999px',
+            color: color,
+            fontSize: '11px',
+            fontWeight: active ? 800 : 700,
+            fontVariantNumeric: 'tabular-nums'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '9px', letterSpacing: 0 } }, marker),
+          h('span', null, step.label + countLabel)
+        );
       }
 
+      function openDecorationStep() {
+        var floorIdx = findFreeSlot('floor');
+        if (floorIdx >= 0) {
+          handleEmptyCellClick('floor', floorIdx);
+          return;
+        }
+        var wallIdx = findFreeSlot('wall');
+        if (wallIdx >= 0) {
+          handleEmptyCellClick('wall', wallIdx);
+          return;
+        }
+        addToast('No open room spots right now.');
+      }
+
+      function runDailyAction(action) {
+        if (action === 'pomodoro') startPomodoro();
+        else if (action === 'reflection') openReflectionModal();
+        else if (action === 'review') startReviewQueue();
+        else if (action === 'decorate') openDecorationStep();
+        else if (action === 'goals') setStateField('activeModal', 'goals');
+        else if (action === 'breathe') setStateField('activeModal', 'breathe');
+      }
+
+      var topGoal = snap.topGoal;
       return h('div', {
         role: 'region',
-        'aria-label': 'Today summary',
+        'aria-label': 'Today plan',
         style: {
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 10px',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '10px 12px',
           background: palette.surface,
           border: '1px solid ' + palette.border,
           borderRadius: '10px',
@@ -17788,46 +18237,48 @@
           marginBottom: '8px'
         }
       },
-        h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
-          'Today'),
-        tokensToday > 0 ? h('span', {
-          'aria-label': 'Tokens earned today: ' + tokensToday,
+        h('div', {
           style: {
-            display: 'inline-flex', alignItems: 'center', gap: '4px',
-            padding: '4px 10px',
-            background: palette.surface,
-            border: '1px solid ' + palette.accent,
-            borderRadius: '999px',
-            fontSize: '11px', color: palette.accent, fontWeight: 700,
-            fontVariantNumeric: 'tabular-nums'
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px'
           }
-        }, h('span', { 'aria-hidden': 'true' }, '🪙'), '+' + tokensToday) : null,
-        pomodoros > 0 ? chip('🍅', 'Pomodoros', pomodoros, 4) : null,
-        reflections > 0 ? chip('📝', 'Reflections', reflections, 1) : null,
-        quizTokens > 0 ? chip('✓', 'Quizzes passed', quizTokens, 2) : null,
-        walkTokens > 0 ? chip('📜', 'Walks', walkTokens, 1) : null,
-        decorationsToday > 0 ? chip('🌿', 'Decorations placed', decorationsToday) : null,
-        // Visit streak (Phase 2p.11) — only shown when ≥3 days. No
-        // counter when below threshold, no broken-streak shame.
-        (function() {
-          var streak = computeStreak(state.visits);
-          if (streak.current < 3) return null;
-          return h('span', {
-            'aria-label': 'Visit streak: ' + streak.current + ' days in a row',
-            title: 'Quietly proud of you for showing up.',
-            style: {
-              display: 'inline-flex', alignItems: 'center', gap: '4px',
-              padding: '4px 10px',
-              background: palette.surface,
-              border: '1px solid ' + (palette.success || palette.accent),
+        },
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px' } },
+            h('span', { style: { fontSize: '11px', fontWeight: 800, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase' } },
+              'Today'),
+            h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.text } },
+              plan.next.title)
+          ),
+          plan.next && plan.next.cta ? h('button', {
+            onClick: function() { runDailyAction(plan.next.action); },
+            'aria-label': plan.next.cta + ': ' + plan.next.title,
+            style: Object.assign({}, primaryBtnStyle(palette), {
+              padding: '6px 14px',
               borderRadius: '999px',
-              fontSize: '11px',
-              color: palette.success || palette.accent,
-              fontWeight: 700,
-              fontVariantNumeric: 'tabular-nums'
-            }
-          }, h('span', { 'aria-hidden': 'true' }, '🔥'), streak.current + '-day streak');
-        })(),
+              fontSize: '12px'
+            })
+          }, plan.next.cta) : null
+        ),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' } },
+          plan.steps.map(stepPill)
+        ),
+        anyActivity ? h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' } },
+          snap.tokensEarnedToday > 0 ? chip('+', 'Tokens earned today', '+' + snap.tokensEarnedToday, null, palette.accent) : null,
+          snap.tokensSpentToday > 0 ? chip('-', 'Tokens spent today', '-' + snap.tokensSpentToday, null, palette.textDim) : null,
+          snap.pomodoros > 0 ? chip('Focus', 'Pomodoros', snap.pomodoros, 4) : null,
+          snap.reflections > 0 ? chip('Write', 'Reflections', snap.reflections, 1) : null,
+          snap.quizTokens > 0 ? chip('Quiz', 'Quizzes passed', snap.quizTokens, 2) : null,
+          snap.walkTokens > 0 ? chip('Walk', 'Walks', snap.walkTokens, 1) : null,
+          snap.decorationsToday > 0 ? chip('Room', 'Decorations placed', snap.decorationsToday) : null,
+          (function() {
+            var streak = computeStreak(state.visits);
+            if (streak.current < 3) return null;
+            return chip('Streak', 'Visit streak', streak.current + ' days');
+          })()
+        ) : null,
         topGoal ? (function() {
           var prog = computeGoalProgress(topGoal, state);
           var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
@@ -17835,21 +18286,25 @@
           return h('button', {
             onClick: function() { setStateField('activeModal', 'goals'); },
             'aria-label': 'Active goal: ' + topGoal.title + ', ' + prog.current + ' of ' + prog.target + ', ' + daysLeft + ' days left',
-            title: topGoal.title + ' · ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
+            title: topGoal.title + ' - ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
             style: {
-              marginLeft: 'auto',
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              alignSelf: 'flex-start',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
               padding: '4px 10px',
               background: 'transparent',
               border: '1px solid ' + palette.border,
               borderRadius: '999px',
-              fontSize: '11px', color: palette.textDim, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit'
+              fontSize: '11px',
+              color: palette.textDim,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
             }
           },
-            h('span', { 'aria-hidden': 'true' }, '🎯'),
             h('span', { style: { fontWeight: 700, color: palette.text } }, prog.current + '/' + prog.target),
-            h('span', null, '· ' + (daysLeft === 0 ? 'today' : daysLeft + 'd'))
+            h('span', null, '- ' + (daysLeft === 0 ? 'today' : daysLeft + 'd'))
           );
         })() : null
       );
@@ -21067,7 +21522,7 @@
         if (isNaN(t)) return null;
         if (t < startMs || t > endDay.getTime() + msPerDay) return null;
         var dayKey = new Date(t); dayKey.setHours(0, 0, 0, 0);
-        var iso = dayKey.toISOString().slice(0, 10);
+        var iso = localDateKey(dayKey);
         if (!perDay[iso]) perDay[iso] = { tokens: 0, pomodoros: 0, reflections: 0, decorations: 0, quizzes: 0 };
         return perDay[iso];
       }
@@ -21136,7 +21591,7 @@
         for (var col = 0; col < 13; col++) {
           var dayMs = startMs + (col * 7 + dow) * msPerDay;
           var cellDate = new Date(dayMs);
-          var iso = cellDate.toISOString().slice(0, 10);
+          var iso = localDateKey(cellDate);
           var b = perDay[iso] || null;
           var isFuture = dayMs > todayMs;
           var label = cellDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -22466,6 +22921,7 @@
         else if (daysAgo === 1) reviewedLabel = 'Reviewed yesterday';
         else reviewedLabel = 'Reviewed ' + daysAgo + ' days ago';
       }
+      var ideaStatus = getIdeaSeedStatus(decoration);
 
       var borderColor = isDue
         ? (palette.warn || palette.accent)
@@ -22492,6 +22948,7 @@
         className: 'ah-deck-row',
         'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
           + (isSoon ? ', due soon' : '')
+          + (ideaStatus ? ', idea seed ' + ideaStatus.stage.label + (ideaStatus.needsWater ? ', needs water' : '') : '')
           + (hasVoiceNote ? ', voice note attached' : ''),
         style: {
           display: 'flex',
@@ -22569,6 +23026,21 @@
             }
           },
             isSoon ? (reviewedLabel + ' · due soon') : reviewedLabel)
+          ,
+          ideaStatus ? h('div', {
+            style: {
+              fontSize: '10px',
+              color: ideaStatus.needsWater ? (palette.warn || palette.accent) : palette.textMute,
+              fontWeight: ideaStatus.needsWater ? 700 : 500,
+              marginTop: '2px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }
+          },
+            'Idea: ' + ideaStatus.seed.title + ' - ' + ideaStatus.stage.label
+            + (ideaStatus.needsWater ? ' - needs water' : '')
+          ) : null
         ),
         // Voice-note inline play toggle (Phase R) — sits between center
         // and Review so the row's primary action stays on the right.
@@ -25695,7 +26167,7 @@
                   var blob = new Blob([raw], { type: 'application/json' });
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
-                  var stamp = new Date().toISOString().slice(0, 10);
+                  var stamp = localDateKey();
                   a.href = url;
                   a.download = (_hasVoice ? 'allohaven_CONFIDENTIAL-backup-' : 'allohaven-backup-') + stamp + '.json';
                   document.body.appendChild(a);
@@ -25845,12 +26317,12 @@
       var daysActive = {};
       earningsThisWeek.forEach(function(e) {
         if (!e.date) return;
-        daysActive[e.date.slice(0, 10)] = true;
+        daysActive[localDateKey(e.date)] = true;
       });
       (state.journalEntries || []).forEach(function(j) {
         if (!j.date) return;
         var t = new Date(j.date).getTime();
-        if (t >= weekAgo) daysActive[j.date.slice(0, 10)] = true;
+        if (t >= weekAgo) daysActive[localDateKey(j.date)] = true;
       });
       var daysActiveCount = Object.keys(daysActive).length;
 
@@ -27203,7 +27675,7 @@
           var perDay = {};
           function dayKey(d) {
             var dk = new Date(d); dk.setHours(0, 0, 0, 0);
-            return dk.toISOString().slice(0, 10);
+            return localDateKey(dk);
           }
           earnings.forEach(function(e) {
             if (!e.date) return;
@@ -27226,7 +27698,7 @@
             var cells = [];
             for (var col = 0; col < 13; col++) {
               var dayMs = startMs + (col * 7 + dow) * msPerDay;
-              var iso = new Date(dayMs).toISOString().slice(0, 10);
+              var iso = localDateKey(dayMs);
               var v = perDay[iso] || 0;
               var isFuture = dayMs > nowMs;
               var fill;
@@ -27579,7 +28051,7 @@
 
             // Today's vignette (if present)
             (function() {
-              var todayK = new Date().toISOString().slice(0, 10);
+              var todayK = localDateKey();
               var tv = (state.companionVignettes || {})[todayK];
               if (!tv || !tv.text) return null;
               return h('div', {
@@ -28796,6 +29268,19 @@
     computeTenureStats: computeTenureStats, computeSkillLevel: computeSkillLevel,
     computeStreak: computeStreak, cardMasteryBucket: cardMasteryBucket, daysUntilDue: daysUntilDue,
     buildHavenPalaceData: buildHavenPalaceData,
+    getThemeBase: getThemeBase, localDateKey: localDateKey, localDateKeyOffset: localDateKeyOffset,
+    getAlloHavenDailySnapshot: getAlloHavenDailySnapshot,
+    getAlloHavenDailyPlan: getAlloHavenDailyPlan,
+    spendAlloHavenTokens: spendAlloHavenTokens,
+    refundAlloHavenTokens: refundAlloHavenTokens,
+    normalizeIdeaText: normalizeIdeaText,
+    getLinkedContentIdeaText: getLinkedContentIdeaText,
+    buildIdeaSeedFromMemory: buildIdeaSeedFromMemory,
+    ensureIdeaSeedForContent: ensureIdeaSeedForContent,
+    waterIdeaSeed: waterIdeaSeed,
+    getIdeaGrowthStage: getIdeaGrowthStage,
+    getIdeaSeedStatus: getIdeaSeedStatus,
+    DECORATION_COST: DECORATION_COST
   };
   console.log('[CDN] AlloHaven loaded');
 

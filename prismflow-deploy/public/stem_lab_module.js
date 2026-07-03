@@ -3832,7 +3832,12 @@
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
               { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
-              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true }
+              { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
+              {
+                id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
+                desc: 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
+                color: 'sky', ready: true
+              }
             ];
             // ── Tool search filter ──
             var _searchAliasMap = {
@@ -3842,7 +3847,8 @@
               base10: 'base ten base-10 manipulatives place value math blocks abacus slide rule',
               titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
               anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
-              solarSystem: 'solar system explorer planets astronomy space orbit orrery'
+              solarSystem: 'solar system explorer planets astronomy space orbit orrery',
+              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility'
             };
             function _normalizeToolSearchText(value) {
               return String(value || '')
@@ -5265,7 +5271,14 @@
             bakingScience: true,
             alloBotSage: true,
             // Jun 2026: Lumen go-live — provenance-bound reactive research canvas.
-            lumen: true
+            lumen: true,
+            // Jun 2026: Cellular Automaton Lab — was registered + tiled but
+            // missing from this map (and from the stemToolModules loader), so
+            // the tile rendered a blank content area. Both fixed 2026-07-02.
+            cellularLab: true,
+            // Jul 2026: Access Lens — learner accessibility camera kit
+            // (describe / read / translate / Socratic investigate).
+            accessLens: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
