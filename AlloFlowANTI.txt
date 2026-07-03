@@ -29791,6 +29791,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         addToast((t('toasts.tagged_pdf_failed') || 'Tagged PDF failed: ') + (err?.message || 'unknown error'), 'error');
                         return false;
                     }
+                },
+                // Milestone B AI (optional): Imagen for generation, Gemini Vision
+                // for alt-text drafting. The studio only renders these buttons
+                // when the callbacks are wired, and logs every result honestly in
+                // its process ledger as actor 'ai'. callImagen already exists
+                // app-wide (imagen-4.0) and returns an optimized data: URL.
+                onGenerateImage: async (prompt) => {
+                    return await callImagen(prompt, 512, 0.82);
+                },
+                onSuggestAlt: async (dataUrl) => {
+                    const _m = /^data:([^;,]+)[;,]/.exec(String(dataUrl || ''));
+                    const _mime = _m ? _m[1] : 'image/png';
+                    const _base64 = String(dataUrl || '').replace(/^data:[^,]*,/, '');
+                    if (!_base64) return '';
+                    const _prompt = 'Write concise, factual alt text (one sentence, do not start with "image of" or "picture of") describing this picture for a screen-reader user in a classroom document.';
+                    const _txt = await callGeminiVision(_prompt, _base64, _mime);
+                    return String(_txt || '').replace(/\s+/g, ' ').trim().slice(0, 300);
                 }
             })}
         </CDNModuleGate>

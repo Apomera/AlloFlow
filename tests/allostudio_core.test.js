@@ -252,6 +252,22 @@ describe('actor summary (Process tab)', () => {
     expect(s.total).toBe(4);
     expect(s.activeMs).toBe(120000);
   });
+  it('Milestone B AI actions are recorded honestly as actor "ai" (provenance by construction)', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'AI', T0);
+    // AI-generated image enters as actor 'ai' with the prompt in provenance
+    ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,z', alt: '', decorative: false, frame: { x: 10, y: 10, w: 100, h: 80 }, z: 5, fit: 'cover', provenance: { origin: 'ai-generated', prompt: 'a water droplet' } } }, 'ai', T0);
+    // AI-drafted alt lands as actor 'ai'; a later human edit would be 'user'
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { alt: 'A cartoon water droplet smiling.' } }, 'ai', T0 + 1000);
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { alt: 'A friendly cartoon water droplet.' } }, 'user', T0 + 2000);
+    const s = ST.stActorSummary(d.ledger.ops);
+    expect(s.ai).toBe(2);
+    expect(s.user).toBe(1);
+    expect(ST.stValidateDoc(d)).toEqual([]);
+    expect(d.objects[0].provenance).toEqual({ origin: 'ai-generated', prompt: 'a water droplet' });
+    // the human's revision is the live alt; the AI draft remains in the ledger
+    expect(d.objects[0].alt).toBe('A friendly cartoon water droplet.');
+    expect(d.ledger.ops.filter(o => o.actor === 'ai' && o.type === 'object.update').length).toBe(1);
+  });
   it('describes raw event names in student-friendly language', () => {
     expect(ST.stDescribeOp({ type: 'object.update', patch: { alt: 'diagram' } })).toBe('Updated alt text');
     expect(ST.stDescribeOp({ type: 'object.reorder' })).toBe('Changed the reading order');

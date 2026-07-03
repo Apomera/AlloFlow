@@ -26,7 +26,11 @@
 //
 // Public API: window.AlloModules.AlloStudio (React component for CDNModuleGate)
 //   Props: { onClose, t, addToast, onExportTaggedPdf(html, title) -> Promise<bool>,
-//            initialRole: 'teacher' | 'student' }
+//            initialRole: 'teacher' | 'student',
+//            onGenerateImage(prompt) -> Promise<dataUrl>,   // optional (Milestone B AI)
+//            onSuggestAlt(dataUrl) -> Promise<string> }      // optional (Milestone B AI)
+//   The two AI props are optional: their buttons only render when wired, and
+//   every AI result enters the ledger as actor 'ai' (provenance by construction).
 //   Pure helpers attached for tests (the [ST_PURE_BEGIN]…[ST_PURE_END] block):
 //   stCreateDoc, stApplyOp, stAppend, stUndo, stRedo, stReplay, stActorSummary,
 //   stAltGate, stValidateDoc, stTemplates, stExportHtml, stEscapeHtml,
@@ -868,6 +872,15 @@
       if (ev.shiftKey) { if (active === first || !root.contains(active)) { ev.preventDefault(); try { last.focus(); } catch (_) {} } }
       else { if (active === last || !root.contains(active)) { ev.preventDefault(); try { first.focus(); } catch (_) {} } }
     };
+    // AI (Milestone B) — optional capabilities. The buttons only appear when the
+    // host app wires the callbacks, so older wiring degrades cleanly. Every AI
+    // result enters the ledger as actor 'ai' (provenance by construction).
+    var canGenerateImage = typeof props.onGenerateImage === 'function';
+    var canSuggestAlt = typeof props.onSuggestAlt === 'function';
+    var _aiGenOpen = React.useState(false); var aiGenOpen = _aiGenOpen[0], setAiGenOpen = _aiGenOpen[1];
+    var _aiGenPrompt = React.useState(''); var aiGenPrompt = _aiGenPrompt[0], setAiGenPrompt = _aiGenPrompt[1];
+    var _aiBusy = React.useState(null); var aiBusy = _aiBusy[0], setAiBusy = _aiBusy[1];
+    var _altNonce = React.useState(0); var altNonce = _altNonce[0], setAltNonce = _altNonce[1];
     var student = role === 'student';
     var propTheme = ['light', 'dark', 'contrast'].indexOf(props.theme) >= 0 ? props.theme : null;
     var themeName = propTheme || (function () {
@@ -925,6 +938,44 @@
         addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
       };
       r.readAsDataURL(f);
+    };
+
+    // ── AI (Milestone B): generate image + suggest alt text ──
+    var runGenerateImage = function () {
+      var prompt = String(aiGenPrompt || '').trim();
+      if (!prompt) { addToast(TT('studio.ai_need_prompt', 'Describe the image you want first.'), 'info'); return; }
+      if (!canGenerateImage || aiBusy) return;
+      setAiBusy('generate');
+      Promise.resolve(props.onGenerateImage(prompt)).then(function (dataUrl) {
+        setAiBusy(null);
+        if (!dataUrl || String(dataUrl).indexOf('data:') !== 0) { addToast(TT('studio.ai_gen_failed', 'Could not generate an image.'), 'error'); return; }
+        // actor 'ai': the pixels came from a model through our own API seam. The
+        // prompt lives in provenance. Alt stays EMPTY — a generation prompt is
+        // not screen-reader alt text, so the gate still makes the teacher (or
+        // "Suggest alt text") describe it honestly.
+        var obj = stMakeImage(dataUrl, '', { x: 120, y: 120, w: 360, h: 270 }, 'ai-generated');
+        obj.provenance = { origin: 'ai-generated', prompt: prompt };
+        selectFromOp(dispatch({ type: 'object.add', object: obj }, 'ai'));
+        setAiGenOpen(false); setAiGenPrompt('');
+        stAnnounce(TT('studio.a11y_ai_generated', 'AI image added — remember to add alt text'));
+        addToast(TT('studio.ai_gen_ok', '✨ Image generated (logged as AI in your process). Add alt text before exporting.'), 'success');
+      }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_gen_failed', 'Could not generate an image.') + ' ' + (err && err.message || ''), 'error'); });
+    };
+    var runSuggestAlt = function () {
+      if (!selected || selected.type !== 'image' || !selected.src || !canSuggestAlt || aiBusy) return;
+      var id = selected.id;
+      setAiBusy('alt');
+      Promise.resolve(props.onSuggestAlt(selected.src)).then(function (text) {
+        setAiBusy(null);
+        var alt = String(text || '').replace(/\s+/g, ' ').trim();
+        if (!alt) { addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.'), 'error'); return; }
+        // actor 'ai': recorded honestly as an AI DRAFT. The teacher reviews and
+        // any edit lands as a 'user' op, so the ledger stays truthful.
+        dispatch({ type: 'object.update', target: id, patch: { alt: alt } }, 'ai');
+        setAltNonce(function (n) { return n + 1; }); // remount the alt field to show the draft
+        stAnnounce(TT('studio.a11y_ai_alt', 'Draft alt text added — review it'));
+        addToast(TT('studio.ai_alt_ok', '✨ Draft alt text added (logged as AI). Please review and edit it.'), 'info');
+      }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.') + ' ' + (err && err.message || ''), 'error'); });
     };
 
     // ── selection + drag ──
@@ -1286,11 +1337,13 @@
           h('input', { type: 'color', value: selected.fill || '#dbeafe', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: e.target.value } }, 'user'); } })) : null,
         selected.type === 'image' ? h('div', null,
           h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.alt_text', 'Alt text (what a screen reader hears)'),
-            // key by object id: switching selection remounts with the right
-            // defaultValue; commit-on-blur = ONE object.update op per edit.
-            h('textarea', { key: 'alt-' + selected.id, defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
+            // key by object id AND altNonce: switching selection OR an AI draft
+            // remounts with the right defaultValue; commit-on-blur = ONE
+            // object.update op per edit.
+            h('textarea', { key: 'alt-' + selected.id + '-' + altNonce, defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
               onKeyDown: function (e) { e.stopPropagation(); },
               onBlur: function (e) { if (e.target.value !== (selected.alt || '')) dispatch({ type: 'object.update', target: selected.id, patch: { alt: e.target.value } }, 'user'); } })),
+          (canSuggestAlt && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px', opacity: aiBusy === 'alt' ? 0.6 : 1 }), disabled: aiBusy === 'alt', onClick: runSuggestAlt, title: TT('studio.ai_suggest_alt_hint', 'Draft alt text with AI, then review it — logged as AI in your process') }, aiBusy === 'alt' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_suggest_alt', 'Suggest alt text')) : null,
           h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' } },
             h('input', { type: 'checkbox', checked: !!selected.decorative, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { decorative: e.target.checked } }, 'user'); } }),
             TT('studio.decorative', 'Decorative (skip in screen readers)')),
@@ -1379,6 +1432,12 @@
             h('button', { style: S.tool, onClick: function () { insertShape('rect'); } }, '▭ ' + TT('studio.insert_rect', 'Rectangle')),
             h('button', { style: S.tool, onClick: function () { insertShape('ellipse'); } }, '◯ ' + TT('studio.insert_ellipse', 'Ellipse')),
             h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.removeAttribute('data-st-replace'); fileRef.current.click(); } } }, '🖼️ ' + TT('studio.insert_image', 'Image…')),
+            canGenerateImage ? h('button', { style: Object.assign({}, S.tool, aiGenOpen ? { borderColor: C.accent } : null), 'aria-expanded': aiGenOpen, onClick: function () { setAiGenOpen(!aiGenOpen); } }, '✨ ' + TT('studio.ai_generate_image', 'Generate image…')) : null,
+            (canGenerateImage && aiGenOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
+              h('textarea', { value: aiGenPrompt, rows: 2, placeholder: TT('studio.ai_prompt_placeholder', 'e.g. a friendly cartoon water droplet'), 'aria-label': TT('studio.ai_prompt_label', 'Describe the image to generate'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'generate',
+                onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAiGenPrompt(e.target.value); } }),
+              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? '… ' + TT('studio.ai_generating', 'Generating…') : '✨ ' + TT('studio.ai_generate', 'Generate')),
+              h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_gen_note', 'Logged as AI in your process. You still add alt text.'))) : null,
             h('div', { style: S.label }, TT('studio.page', 'Page')),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.canvas_size', 'Page size'),
               h('select', { value: ST_CANVAS_PRESETS[doc.canvas.preset] ? doc.canvas.preset : 'custom', style: S.input, 'aria-label': TT('studio.canvas_size', 'Page size'),
