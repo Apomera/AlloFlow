@@ -468,8 +468,7 @@ tree (never bare-stash); junction must be rmdir'd before `git worktree remove`.
   filename sanitizer used a RAW U+FFFF noncharacter as a regex range end
   (`[^ backslash-w U+00C0 - U+FFFF space - ]`); some layer in browser delivery strips
   noncharacters, collapsing the range to "U+00C0 through space" — start > end → the whole
-  module throws at parse. Fix: the equivalent backslash-u escape form (`À-￿` as
-  ASCII text) in all 5 copies (studio_module root+public mirror, ANTI root+mirror, App.jsx).
+  module throws at parse. Fix: the equivalent backslash-u escape form (backslash-u00C0 dash backslash-uFFFF, pure ASCII text) in all 5 copies (studio_module root+public mirror, ANTI root+mirror, App.jsx).
   Live CDN copy content-verified (escape form present, no raw noncharacter, md5 == HEAD).
 - LESSONS: never ship raw noncharacters in source — and note the agent Edit/Write tool layer
   JSON-decodes typed backslash-u escapes back into raw characters, so this class of fix must
