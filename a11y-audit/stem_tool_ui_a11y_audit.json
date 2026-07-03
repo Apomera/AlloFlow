@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-07-03T00:53:34.374Z",
+  "generatedAt": "2026-07-03T01:43:45.852Z",
   "source": {
-    "stemToolFileCount": 110,
-    "registeredToolCount": 113
+    "stemToolFileCount": 111,
+    "registeredToolCount": 114
   },
-  "toolCount": 113,
+  "toolCount": 114,
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 173,
+    "issueCount": 165,
     "errorCount": 0,
-    "warningCount": 156,
-    "noticeCount": 17,
+    "warningCount": 147,
+    "noticeCount": 18,
     "toolsWithIssues": 71,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 65,
+    "toolsWithWarnings": 64,
     "toolsWithCanvas": 38,
     "shellCoverage": {
-      "standardShellTools": 113,
+      "standardShellTools": 114,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -27,6 +27,12 @@
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
+      },
+      "general": {
+        "toolCount": 5,
+        "errorCount": 0,
+        "warningCount": 2,
+        "noticeCount": 6
       },
       "math": {
         "toolCount": 22,
@@ -79,7 +85,7 @@
       "applied": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 17,
+        "warningCount": 8,
         "noticeCount": 0
       },
       "life-skills": {
@@ -87,12 +93,6 @@
         "errorCount": 0,
         "warningCount": 5,
         "noticeCount": 0
-      },
-      "general": {
-        "toolCount": 4,
-        "errorCount": 0,
-        "warningCount": 2,
-        "noticeCount": 5
       },
       "tech": {
         "toolCount": 1,
@@ -214,12 +214,11 @@
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 67,
-      "toolCount": 17,
+      "count": 58,
+      "toolCount": 16,
       "exampleTools": [
         "algebraCAS",
         "appLab",
-        "atcTower",
         "cell",
         "cellularLab",
         "companionPlanting",
@@ -228,7 +227,8 @@
         "echoTrainer",
         "fireEcology",
         "kitchenLab",
-        "llmLiteracy"
+        "llmLiteracy",
+        "probability"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
@@ -288,9 +288,10 @@
     {
       "code": "metadata",
       "severity": "notice",
-      "count": 12,
-      "toolCount": 12,
+      "count": 13,
+      "toolCount": 13,
       "exampleTools": [
+        "accessLens",
         "archStudio",
         "birdLab",
         "codingPlayground",
@@ -301,8 +302,7 @@
         "geometryWorld",
         "nutritionLab",
         "rockCycle",
-        "rocks",
-        "weldLab"
+        "rocks"
       ],
       "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
     },
@@ -376,6 +376,41 @@
         "fixedWidthRiskCount": 0
       },
       "issues": []
+    },
+    {
+      "id": "accessLens",
+      "label": "Access Lens",
+      "category": "general",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.",
+      "renderedBytes": 5262,
+      "standardShell": true,
+      "issueCount": 1,
+      "errorCount": 0,
+      "warningCount": 0,
+      "noticeCount": 1,
+      "metrics": {
+        "buttons": 8,
+        "roleButtons": 0,
+        "fields": 1,
+        "canvases": 0,
+        "svgs": 0,
+        "images": 0,
+        "headings": 1,
+        "links": 0,
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": [
+        {
+          "toolId": "accessLens",
+          "severity": "notice",
+          "code": "metadata",
+          "message": "Tool registry category is missing or generic."
+        }
+      ]
     },
     {
       "id": "algebraCAS",
@@ -844,134 +879,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.",
-      "renderedBytes": 17637,
+      "renderedBytes": 16103,
       "standardShell": true,
-      "issueCount": 9,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 9,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 12,
+        "buttons": 10,
         "roleButtons": 0,
-        "fields": 7,
+        "fields": 0,
         "canvases": 0,
-        "svgs": 5,
+        "svgs": 1,
         "images": 0,
         "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 44,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "🛬 ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 45,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "🔥 ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 46,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(3)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "⭐ ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 47,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(4)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "📋 ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 48,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(5)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "🗼 ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 49,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(6)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "🧮 ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 50,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(7)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "🛡️ ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 51,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(8)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "✈️ ???"
-        },
-        {
-          "toolId": "atcTower",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 52,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(9)",
-          "ratio": 1.44,
-          "color": "#1a3a2a",
-          "background": "#0a1a0a",
-          "text": "📊 ???"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "autoRepair",
@@ -1939,7 +1865,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2777,7 +2703,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1578,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3335,7 +3261,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13326,
+      "renderedBytes": 13350,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3800,7 +3726,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17340,
+      "renderedBytes": 17347,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,

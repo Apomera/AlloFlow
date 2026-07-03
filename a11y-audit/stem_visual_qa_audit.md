@@ -1,24 +1,24 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T00:53:35.965Z
+Generated: 2026-07-03T01:43:33.292Z
 
 ## Scope
 
-- Registered STEM tools: 113
-- STEM tool files: 110
-- Monitored student-facing visual markers: 38
+- Registered STEM tools: 114
+- STEM tool files: 111
+- Monitored student-facing visual markers: 39
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 38 |
+| Marker passes | 39 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 37 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 0 |
+| Any source/public/build drift | 1 |
 | Monitored file drift | 0 |
 
 ## Visual Marker Coverage
@@ -47,6 +47,7 @@ Generated: 2026-07-03T00:53:35.965Z
 | pass | `fisherLab` | `data-fisherlab-command` | Rendered |
 | pass | `raptorHunt` | `data-raptorhunt-command` | Rendered |
 | pass | `flightSim` | `data-flightsim-briefing` | Rendered |
+| pass | `atcTower` | `data-atctower-command` | Rendered |
 | pass | `brainAtlas` | `data-brainatlas-mission` | Rendered |
 | pass | `anatomy` | `data-anatomy-mission` | Rendered |
 | pass | `birdLab` | `data-birdlab-field-station` | Rendered |
@@ -75,7 +76,9 @@ Generated: 2026-07-03T00:53:35.965Z
 
 ## Sync Drift
 
-All source, public, and local build STEM tool copies match.
+| Status | File | Monitored | Hashes |
+| --- | --- | --- | --- |
+| build-drift | `stem_tool_accesslens.js` | no | source `54B47F15360E`, public `54B47F15360E`, build `null` |
 
 ## Gate Policy
 
