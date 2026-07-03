@@ -33,6 +33,8 @@
         '.og-root, .og-root * { box-sizing: border-box; }',
         '@media (prefers-reduced-motion: reduce) { .og-root *, .og-root *::before, .og-root *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }',
         '.og-root button:focus-visible, .og-root input:focus-visible, .og-root select:focus-visible, .og-root [tabindex]:focus-visible { outline: 2px solid #0f766e !important; outline-offset: 2px !important; }',
+        '.og-root[data-og-theme="dark"] button:focus-visible, .og-root[data-og-theme="dark"] input:focus-visible, .og-root[data-og-theme="dark"] select:focus-visible, .og-root[data-og-theme="dark"] [tabindex]:focus-visible { outline-color: #facc15 !important; }',
+        '.og-root[data-og-theme="contrast"] button:focus-visible, .og-root[data-og-theme="contrast"] input:focus-visible, .og-root[data-og-theme="contrast"] select:focus-visible, .og-root[data-og-theme="contrast"] [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }',
         '.og-root :focus:not(:focus-visible) { outline: none !important; }'
       ].join('\n');
       document.head.appendChild(css);
@@ -52,6 +54,16 @@
     var S = Scheduler || root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler;
     var A = Audio || root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio;
     var addToast = props.addToast || function () {};
+    var themePair = React.useState('light');
+    var themeMode = themePair[0];
+    var setThemeMode = themePair[1];
+    var styles = getOpenGrooveStyles(themeMode);
+    var loopPair = React.useState(false);
+    var loopEnabled = loopPair[0];
+    var setLoopEnabled = loopPair[1];
+    var transportViewPair = React.useState({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: false });
+    var transportView = transportViewPair[0];
+    var setTransportView = transportViewPair[1];
     var dependencyTick = React.useState(0);
     var setDependencyTick = dependencyTick[1];
 
@@ -90,12 +102,45 @@
     var selectedBarPair = React.useState(0);
     var selectedBar = selectedBarPair[0];
     var setSelectedBar = selectedBarPair[1];
+    var effectTrackPair = React.useState(initialProjectRef.current.tracks[1] && initialProjectRef.current.tracks[1].id || initialProjectRef.current.tracks[0] && initialProjectRef.current.tracks[0].id || '');
+    var selectedEffectTrackId = effectTrackPair[0];
+    var setSelectedEffectTrackId = effectTrackPair[1];
+    var automationTargetPair = React.useState('effect.filter.cutoff');
+    var selectedAutomationTarget = automationTargetPair[0];
+    var setSelectedAutomationTarget = automationTargetPair[1];
+    var automationCurvePair = React.useState('linear');
+    var automationCurveMode = automationCurvePair[0];
+    var setAutomationCurveMode = automationCurvePair[1];
+    var automationValuePair = React.useState(12000);
+    var automationValue = automationValuePair[0];
+    var setAutomationValue = automationValuePair[1];
+    var automationStepPair = React.useState(0);
+    var automationStep = automationStepPair[0];
+    var setAutomationStep = automationStepPair[1];
     var grooveStylePair = React.useState('boomBap');
     var selectedGrooveStyle = grooveStylePair[0];
     var setSelectedGrooveStyle = grooveStylePair[1];
     var melodyStylePair = React.useState('balanced');
     var selectedMelodyStyle = melodyStylePair[0];
     var setSelectedMelodyStyle = melodyStylePair[1];
+    var stemModePair = React.useState('four');
+    var selectedStemMode = stemModePair[0];
+    var setSelectedStemMode = stemModePair[1];
+    var stemEnginePair = React.useState('manual-import');
+    var selectedStemEngine = stemEnginePair[0];
+    var setSelectedStemEngine = stemEnginePair[1];
+    var notationEntryPair = React.useState('C4:q D4:q Eb4:h | G4:h R:q Bb4:q');
+    var notationEntry = notationEntryPair[0];
+    var setNotationEntry = notationEntryPair[1];
+    var staffPitchPair = React.useState('C5');
+    var staffPitch = staffPitchPair[0];
+    var setStaffPitch = staffPitchPair[1];
+    var staffDurationPair = React.useState('q');
+    var staffDuration = staffDurationPair[0];
+    var setStaffDuration = staffDurationPair[1];
+    var staffToolPair = React.useState('note');
+    var staffTool = staffToolPair[0];
+    var setStaffTool = staffToolPair[1];
     var selectedPatternPair = React.useState(initialProjectRef.current.patterns[0] && initialProjectRef.current.patterns[0].id);
     var selectedPatternId = selectedPatternPair[0];
     var setSelectedPatternId = selectedPatternPair[1];
@@ -109,6 +154,7 @@
     var dialogRef = React.useRef(null);
     var previousFocusRef = React.useRef(null);
     var engineRef = React.useRef(null);
+    var transportRef = React.useRef({ token: 0, timers: [], interval: null });
     var recorderRef = React.useRef(null);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
@@ -119,6 +165,7 @@
     var selectedAsset = selectedPad && selectedPad.assetId && C.ogFindAsset ? C.ogFindAsset(project, selectedPad.assetId) : null;
     var stepsPerBar = 16;
     var synthPitches = ['C4', 'Bb3', 'G3', 'Eb3', 'C3', 'Bb2', 'G2', 'C2'];
+    var staffPitches = ['C6', 'B5', 'Bb5', 'A5', 'G5', 'F5', 'E5', 'Eb5', 'D5', 'C5', 'B4', 'Bb4', 'A4', 'G4', 'F4', 'E4', 'Eb4', 'D4', 'C4'];
     var visibleSteps = [];
     for (var i = 0; i < stepsPerBar; i++) visibleSteps.push(selectedBar * stepsPerBar + i);
     var barIndexes = [];
@@ -135,6 +182,12 @@
       };
     }, []);
 
+    React.useEffect(function () {
+      return function () {
+        clearTransportSchedule(false);
+      };
+    }, []);
+
     function mutate(fn) {
       var next = clone(project);
       fn(next);
@@ -143,6 +196,61 @@
 
     function currentPatternIn(proj) {
       return C.ogFindPattern && C.ogFindPattern(proj, selectedPatternId) || proj.patterns[0];
+    }
+
+    function clearTransportSchedule(resetView) {
+      var ref = transportRef.current;
+      (ref.timers || []).forEach(function (timerId) { root.clearTimeout(timerId); });
+      ref.timers = [];
+      if (ref.interval) root.clearInterval(ref.interval);
+      ref.interval = null;
+      if (resetView) setTransportView({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: loopEnabled });
+    }
+
+    function addTransportTimer(fn, delayMs) {
+      var id = root.setTimeout(fn, Math.max(0, delayMs || 0));
+      transportRef.current.timers.push(id);
+      return id;
+    }
+
+    function secondsForTicks(ticks) {
+      return S && S.ogTicksToSeconds
+        ? S.ogTicksToSeconds(ticks, project.bpm, project.ppq)
+        : (Number(ticks) || 0) * 60 / ((Number(project.bpm) || 120) * (Number(project.ppq) || 960));
+    }
+
+    function formatTransportLabel(mode, progress, totalTicks, loop) {
+      var safeTicks = Math.max(1, totalTicks || 1);
+      var tick = Math.min(safeTicks - 1, Math.max(0, Math.floor(progress * safeTicks)));
+      var position = C.ogTickToPosition ? C.ogTickToPosition(project, tick) : { bar: 1, beat: 1, tick: 0 };
+      return (mode === 'song' ? 'Song' : 'Pattern') + (loop ? ' loop' : '') + ' - Bar ' + position.bar + ', beat ' + position.beat + ' - ' + Math.round(progress * 100) + '%';
+    }
+
+    function startTransportView(mode, durationSec, totalTicks, loop, startTime, token) {
+      if (transportRef.current.interval) root.clearInterval(transportRef.current.interval);
+      transportRef.current.mode = mode;
+      transportRef.current.startTime = startTime;
+      transportRef.current.durationSec = durationSec;
+      transportRef.current.totalTicks = totalTicks;
+      function update() {
+        if (transportRef.current.token !== token) return;
+        var activeLoop = !!transportRef.current.loop;
+        var engine = engineRef.current;
+        var now = engine && engine.ctx ? engine.ctx.currentTime : Date.now() / 1000;
+        var elapsed = Math.max(0, now - startTime);
+        var safeDuration = Math.max(0.001, durationSec || 0.001);
+        var cycleElapsed = activeLoop ? elapsed % safeDuration : Math.min(elapsed, safeDuration);
+        var progress = Math.max(0, Math.min(1, cycleElapsed / safeDuration));
+        var label = formatTransportLabel(mode, progress, totalTicks, activeLoop);
+        setTransportView({ active: true, mode: mode, progress: progress, label: label, loop: activeLoop });
+        if (!activeLoop && elapsed >= safeDuration) {
+          clearTransportSchedule(false);
+          setPlaying(false);
+          setTransportView({ active: false, mode: mode, progress: 1, label: formatTransportLabel(mode, 1, totalTicks, false), loop: false });
+        }
+      }
+      transportRef.current.interval = root.setInterval(update, 100);
+      update();
     }
 
     function handleDialogKeyDown(ev) {
@@ -194,12 +302,12 @@
       var parts = [];
       if (measure.chords && measure.chords.length) {
         parts.push('Chords: ' + measure.chords.map(function (chord) {
-          return chord.symbol + '@' + chord.startBeat;
+          return chord.symbol + (chord.roman ? ' ' + chord.roman : '') + '@' + chord.startBeat;
         }).join(', '));
       }
       if (measure.notes && measure.notes.length) {
         parts.push('Notes: ' + measure.notes.map(function (note) {
-          return note.pitch + '@' + note.startBeat;
+          return note.pitch + (note.solfege ? ' ' + note.solfege : '') + '@' + note.startBeat;
         }).join(', '));
       }
       if (!parts.length) parts.push('Drums: ' + ((measure.drumHits && measure.drumHits.length) || 0));
@@ -308,6 +416,141 @@
         update[key] = !channel[key];
         C.ogSetMixerChannel(next, channelId, update);
       });
+    }
+
+    function automationStepSize(spec) {
+      if (!spec) return 0.01;
+      if (spec.unit === 'Hz') return 10;
+      if (spec.unit === 's') return 0.01;
+      if (spec.unit === 'Q') return 0.1;
+      return 0.01;
+    }
+
+    function formatAutomationValue(spec, value) {
+      var number = Number(value);
+      if (!spec || !isFinite(number)) return String(value);
+      if (spec.unit === '%') return Math.round(number * 100) + '%';
+      if (spec.unit === 'Hz') return Math.round(number) + ' Hz';
+      if (spec.unit === 's') return Math.round(number * 100) / 100 + ' s';
+      if (spec.unit === 'Q') return Math.round(number * 10) / 10 + ' Q';
+      return String(Math.round(number * 100) / 100);
+    }
+
+    function effectParamSpec(effectType, param, targets) {
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i].effect === effectType && targets[i].param === param) return targets[i];
+      }
+      return null;
+    }
+
+    function setEffectParam(effectType, param, value) {
+      if (!C.ogSetTrackEffect || !selectedEffectTrackId) return;
+      mutate(function (next) {
+        var targetTrack = C.ogFindTrack(next, selectedEffectTrackId) || next.tracks[0];
+        if (!targetTrack) return;
+        var params = {};
+        params[param] = value;
+        C.ogSetTrackEffect(next, targetTrack.id, effectType, { enabled: true, params: params });
+      });
+    }
+
+    function toggleTrackEffect(effectType, enabled) {
+      if (!C.ogSetTrackEffect || !selectedEffectTrackId) return;
+      mutate(function (next) {
+        var targetTrack = C.ogFindTrack(next, selectedEffectTrackId) || next.tracks[0];
+        if (targetTrack) C.ogSetTrackEffect(next, targetTrack.id, effectType, { enabled: enabled });
+      });
+    }
+
+    function changeAutomationTarget(targetId) {
+      setSelectedAutomationTarget(targetId);
+      var targets = C.ogListAutomationTargets ? C.ogListAutomationTargets() : [];
+      var spec = targets.filter(function (target) { return target.id === targetId; })[0];
+      setAutomationValue(spec ? spec.defaultValue : 0);
+    }
+
+    function writeAutomationPoint() {
+      if (!C.ogSetAutomationPoint || !pattern || !selectedEffectTrackId) return;
+      var trackName = 'track';
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var targetTrack = C.ogFindTrack(next, selectedEffectTrackId) || next.tracks[0];
+        if (!nextPattern || !targetTrack) return;
+        trackName = targetTrack.name;
+        C.ogSetAutomationPoint(next, nextPattern.id, targetTrack.id, selectedAutomationTarget, selectedBar * stepsPerBar + automationStep, stepsPerBar, Number(automationValue), { source: 'effectsPanel', curve: automationCurveMode });
+      });
+      addToast('Automation point written for ' + trackName + '.', 'success');
+      ogAnnounce('Automation point written');
+    }
+
+    function writeAutomationPointAt(localStep, value, source) {
+      if (!C.ogSetAutomationPoint || !pattern || !selectedEffectTrackId) return;
+      var step = Math.max(0, Math.min(stepsPerBar - 1, Math.round(Number(localStep) || 0)));
+      var nextValue = C.ogNormalizeAutomationValue ? C.ogNormalizeAutomationValue(automationSpec, value) : value;
+      setAutomationStep(step);
+      setAutomationValue(nextValue);
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var targetTrack = C.ogFindTrack(next, selectedEffectTrackId) || next.tracks[0];
+        if (nextPattern && targetTrack) {
+          C.ogSetAutomationPoint(next, nextPattern.id, targetTrack.id, selectedAutomationTarget, selectedBar * stepsPerBar + step, stepsPerBar, nextValue, {
+            source: source || 'curveEditor',
+            curve: automationCurveMode
+          });
+        }
+      });
+    }
+
+    function automationPointFromPointer(ev) {
+      var rect = ev.currentTarget && ev.currentTarget.getBoundingClientRect ? ev.currentTarget.getBoundingClientRect() : null;
+      if (!rect || !rect.width || !rect.height) return null;
+      var x = Math.max(0, Math.min(1, ((ev.clientX || 0) - rect.left) / rect.width));
+      var y = Math.max(0, Math.min(1, ((ev.clientY || 0) - rect.top) / rect.height));
+      var step = Math.round(x * (stepsPerBar - 1));
+      var value = automationSpec.max - y * (automationSpec.max - automationSpec.min);
+      return { step: step, value: value };
+    }
+
+    function handleAutomationCurvePointer(ev) {
+      if (ev.type === 'pointermove' && ev.buttons !== 1) return;
+      if (ev.preventDefault) ev.preventDefault();
+      if (ev.currentTarget && ev.currentTarget.setPointerCapture && ev.pointerId != null) {
+        try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
+      }
+      var point = automationPointFromPointer(ev);
+      if (point) writeAutomationPointAt(point.step, point.value, 'curveEditor');
+    }
+
+    function clearAutomationPoint() {
+      if (!C.ogSetAutomationPoint || !pattern || !selectedEffectTrackId) return;
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var targetTrack = C.ogFindTrack(next, selectedEffectTrackId) || next.tracks[0];
+        if (nextPattern && targetTrack) C.ogSetAutomationPoint(next, nextPattern.id, targetTrack.id, selectedAutomationTarget, selectedBar * stepsPerBar + automationStep, stepsPerBar, null, { clear: true });
+      });
+      addToast('Automation point cleared.', 'info');
+      ogAnnounce('Automation point cleared');
+    }
+
+    function previewEffectRack() {
+      if (!A || !selectedEffectTrackId) return;
+      var engine = ensureAudioEngine(false);
+      if (!engine) return;
+      var targetTrack = C.ogFindTrack(project, selectedEffectTrackId) || synthTrack || drumTrack;
+      if (!targetTrack) return;
+      var stepTicks = Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+      var tick = selectedBar * C.ogTicksPerMeasure(project) + automationStep * stepTicks;
+      var effects = C.ogResolveTrackEffectsAtTick ? C.ogResolveTrackEffectsAtTick(project, pattern && pattern.id, targetTrack.id, tick) : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, targetTrack.id) : [];
+      var when = engine.ctx.currentTime + 0.01;
+      if (targetTrack.type === 'drumRack') A.ogPlayDrum(engine, 'kick', when, 0.85, effects);
+      else A.ogPlayNote(engine, {
+        pitch: 'C4',
+        midi: C.ogNoteNameToMidi ? C.ogNoteNameToMidi('C4') : 60,
+        velocity: 0.78,
+        instrument: targetTrack.instrument || synthTrack && synthTrack.instrument,
+        effects: effects
+      }, when, 0.36);
+      ogAnnounce('Effects preview');
     }
 
     function setSynthPatch(area, key, value) {
@@ -582,6 +825,154 @@
       ogAnnounce('Melody phrase written');
     }
 
+    function writeNotationEntry() {
+      if (!pattern || !synthTrack || !C.ogWriteNotationInput) return;
+      var summary = { noteCount: 0, warnings: [] };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        summary = C.ogWriteNotationInput(next, nextPattern.id, nextSynth.id, notationEntry, {
+          startBar: selectedBar,
+          defaultDuration: 'q',
+          octave: 4,
+          replace: true
+        });
+      });
+      var skipped = summary.warnings && summary.warnings.length ? ' ' + summary.warnings.length + ' skipped.' : '';
+      addToast((summary.noteCount || 0) + ' notation notes written.' + skipped, summary.noteCount ? 'success' : 'info');
+      ogAnnounce('Notation input written');
+    }
+
+    function writeStaffSlot(barIndex, startBeat) {
+      if (!pattern || !synthTrack || !C.ogSetStaffNote) return;
+      var result = null;
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        result = C.ogSetStaffNote(next, nextPattern.id, nextSynth.id, {
+          startBar: barIndex,
+          startBeat: startBeat,
+          pitch: staffPitch,
+          duration: staffDuration,
+          tool: staffTool,
+          rest: staffTool === 'rest',
+          replaceSlot: true
+        });
+      });
+      if (staffTool === 'rest') {
+        addToast('Staff slot cleared.', 'success');
+        ogAnnounce('Staff slot cleared');
+      } else {
+        triggerNote(staffPitch, 0.72);
+        addToast(staffPitch + ' written on the staff.', 'success');
+        ogAnnounce(staffPitch + ' written');
+      }
+      return result;
+    }
+
+    function staffSlotKey(ev, barIndex, startBeat) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        writeStaffSlot(barIndex, startBeat);
+      }
+    }
+
+    function renderEngravedStaff() {
+      if (!staffEngraving || !staffEngraving.measures || !staffEngraving.measures.length) {
+        return h('div', { style: styles.sampleRegion }, 'Staff editor unavailable for this pattern.');
+      }
+      var g = staffEngraving.geometry;
+      var ink = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#f8fafc' : '#111827';
+      var paper = themeMode === 'contrast' ? '#000000' : themeMode === 'dark' ? '#020617' : '#ffffff';
+      var accent = themeMode === 'contrast' ? '#ffff00' : themeMode === 'dark' ? '#5eead4' : '#0f766e';
+      var muted = themeMode === 'contrast' ? '#ffffff' : themeMode === 'dark' ? '#94a3b8' : '#94a3b8';
+      var children = [
+        h('rect', { key: 'paper', x: 0, y: 0, width: staffEngraving.width, height: staffEngraving.height, fill: paper }),
+        h('text', { key: 'clef', x: 14, y: g.staffTop + g.lineSpacing * 3.1, fill: ink, fontSize: 34, fontFamily: 'Georgia, serif', fontWeight: 700 }, 'G'),
+        h('text', { key: 'time', x: 32, y: g.staffTop + g.lineSpacing * 1.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[0])),
+        h('text', { key: 'time2', x: 32, y: g.staffTop + g.lineSpacing * 3.1, fill: ink, fontSize: 12, fontWeight: 900 }, String(staffEngraving.timeSignature[1]))
+      ];
+      for (var line = 0; line < 5; line++) {
+        var y = g.staffTop + line * g.lineSpacing;
+        children.push(h('line', { key: 'line-' + line, x1: g.left, y1: y, x2: staffEngraving.width - g.right, y2: y, stroke: ink, strokeWidth: 1 }));
+      }
+      staffEngraving.measures.forEach(function (measure, measureIndex) {
+        var barX = measure.x;
+        var endX = measure.x + measure.width;
+        if (measure.selected) {
+          children.push(h('rect', { key: 'sel-' + measure.bar, x: barX + 1, y: g.staffTop - 26, width: measure.width - 2, height: g.lineSpacing * 7.4, fill: accent, opacity: 0.1 }));
+        }
+        children.push(h('line', { key: 'bar-' + measure.bar, x1: barX, y1: g.staffTop, x2: barX, y2: g.bottomY, stroke: ink, strokeWidth: measureIndex === 0 ? 1.5 : 1 }));
+        children.push(h('line', { key: 'bar-end-' + measure.bar, x1: endX, y1: g.staffTop, x2: endX, y2: g.bottomY, stroke: ink, strokeWidth: measure.bar === staffEngraving.measures.length ? 2 : 1 }));
+        children.push(h('text', { key: 'bar-label-' + measure.bar, x: barX + 4, y: g.staffTop - 12, fill: muted, fontSize: 10, fontWeight: 800 }, String(measure.bar)));
+        (measure.slots || []).forEach(function (slot) {
+          children.push(h('rect', {
+            key: 'slot-' + measure.bar + '-' + slot.index,
+            x: slot.x - 7,
+            y: g.staffTop - 24,
+            width: 14,
+            height: g.lineSpacing * 8,
+            fill: accent,
+            opacity: 0.001,
+            role: 'button',
+            tabIndex: 0,
+            focusable: 'true',
+            'aria-label': 'Write ' + (staffTool === 'rest' ? 'rest' : staffPitch) + ' in bar ' + measure.bar + ' beat ' + slot.startBeat,
+            onClick: function () { writeStaffSlot(measure.bar - 1, slot.startBeat); },
+            onKeyDown: function (ev) { staffSlotKey(ev, measure.bar - 1, slot.startBeat); }
+          }));
+          if (slot.index % 2 === 0) {
+            children.push(h('line', { key: 'slot-line-' + measure.bar + '-' + slot.index, x1: slot.x, y1: g.staffTop + g.lineSpacing * 4.7, x2: slot.x, y2: g.staffTop + g.lineSpacing * 5.45, stroke: muted, strokeWidth: 0.8, opacity: 0.65 }));
+          }
+        });
+        (measure.chords || []).forEach(function (chord, chordIndex) {
+          children.push(h('text', { key: 'chord-' + measure.bar + '-' + chordIndex, x: chord.x - 8, y: chord.y, fill: accent, fontSize: 12, fontWeight: 900 }, chord.symbol || chord.roman || ''));
+        });
+        (measure.notes || []).forEach(function (note, noteIndex) {
+          var key = 'note-' + measure.bar + '-' + noteIndex + '-' + note.pitch;
+          (note.ledgerLines || []).forEach(function (ly, ledgerIndex) {
+            children.push(h('line', { key: key + '-ledger-' + ledgerIndex, x1: note.x - 11, y1: ly, x2: note.x + 11, y2: ly, stroke: ink, strokeWidth: 1 }));
+          });
+          if (note.accidental) {
+            children.push(h('text', { key: key + '-acc', x: note.x - 21, y: note.y + 4, fill: ink, fontSize: 13, fontWeight: 900 }, note.accidental));
+          }
+          children.push(h('ellipse', {
+            key: key + '-head',
+            cx: note.x,
+            cy: note.y,
+            rx: g.noteHeadWidth / 2,
+            ry: g.noteHeadHeight / 2,
+            transform: 'rotate(-18 ' + note.x + ' ' + note.y + ')',
+            fill: note.openHead ? paper : ink,
+            stroke: ink,
+            strokeWidth: 1.3
+          }));
+          if (note.stem) {
+            var stemX = note.stemUp ? note.x + 5 : note.x - 5;
+            var stemEnd = note.stemUp ? note.y - 32 : note.y + 32;
+            children.push(h('line', { key: key + '-stem', x1: stemX, y1: note.y, x2: stemX, y2: stemEnd, stroke: ink, strokeWidth: 1.4 }));
+            if (note.durationName === 'eighth' || note.durationName === 'sixteenth') {
+              children.push(h('path', {
+                key: key + '-flag',
+                d: note.stemUp
+                  ? 'M ' + stemX + ' ' + stemEnd + ' C ' + (stemX + 16) + ' ' + (stemEnd + 4) + ' ' + (stemX + 14) + ' ' + (stemEnd + 16) + ' ' + (stemX + 4) + ' ' + (stemEnd + 18)
+                  : 'M ' + stemX + ' ' + stemEnd + ' C ' + (stemX - 16) + ' ' + (stemEnd - 4) + ' ' + (stemX - 14) + ' ' + (stemEnd - 16) + ' ' + (stemX - 4) + ' ' + (stemEnd - 18),
+                fill: 'none',
+                stroke: ink,
+                strokeWidth: 1.4
+              }));
+            }
+          }
+        });
+      });
+      return h('svg', {
+        style: styles.staffSvg,
+        viewBox: '0 0 ' + staffEngraving.width + ' ' + staffEngraving.height,
+        role: 'img',
+        'aria-label': 'Editable engraved treble staff'
+      }, children);
+    }
+
     function decodeSampleForSession(asset, blob, dataUrl) {
       if (!asset || !A) return;
       var engine = ensureAudioEngine(false);
@@ -637,6 +1028,27 @@
       var cleanName = String(file.name || 'Imported Sample').replace(/\.[^.]+$/, '') || 'Imported Sample';
       createOwnedSampleSlot(file, { name: cleanName, source: 'User import' });
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+
+    function prepareStemSlots() {
+      if (!C.ogPrepareStemSlots) {
+        addToast('Stem preparation is not available in this build yet.', 'info');
+        return;
+      }
+      var prepared = null;
+      mutate(function (next) {
+        prepared = C.ogPrepareStemSlots(next, {
+          mode: selectedStemMode,
+          engineId: selectedStemEngine,
+          sourceAssetId: selectedAsset && selectedAsset.id,
+          sourceName: selectedAsset && selectedAsset.name || project.title || 'Source mix',
+          userConfirmedRights: true,
+          createdAt: Date.now()
+        });
+      });
+      var count = prepared && prepared.assets ? prepared.assets.length : 0;
+      addToast(count + ' stem slot' + (count === 1 ? '' : 's') + ' prepared for import or separation.', 'success');
+      ogAnnounce('Stem slots prepared');
     }
 
     function openImportPicker() {
@@ -726,23 +1138,84 @@
       else setRecording(false);
     }
 
+    function toggleLoopMode() {
+      var next = !loopEnabled;
+      setLoopEnabled(next);
+      transportRef.current.loop = next;
+      if (!next) {
+        (transportRef.current.timers || []).forEach(function (timerId) { root.clearTimeout(timerId); });
+        transportRef.current.timers = [];
+      }
+      if (next && playing && engineRef.current && transportRef.current.durationSec) {
+        var ref = transportRef.current;
+        var elapsed = Math.max(0, engineRef.current.ctx.currentTime - (ref.startTime || engineRef.current.ctx.currentTime));
+        var nextIndex = Math.max(1, Math.floor(elapsed / ref.durationSec) + 1);
+        var nextStart = (ref.startTime || engineRef.current.ctx.currentTime) + nextIndex * ref.durationSec;
+        if (ref.mode === 'song') {
+          addTransportTimer(function () { scheduleSongCycle(engineRef.current, nextStart, ref.token, ref.durationSec); }, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000);
+        } else {
+          addTransportTimer(function () { schedulePatternCycle(engineRef.current, nextStart, ref.token, nextIndex, ref.durationSec, ref.totalTicks); }, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000);
+        }
+      }
+      addToast('Loop ' + (next ? 'on' : 'off') + '.', 'info');
+      ogAnnounce('Loop ' + (next ? 'on' : 'off'));
+    }
+
+    function schedulePatternCycle(engine, startTime, token, loopIndex, durationSec, lengthTicks) {
+      if (!S || !A || !pattern || transportRef.current.token !== token) return;
+      if (loopIndex > 0 && !transportRef.current.loop) return;
+      var plan = S.ogBuildLoopPlaybackPlan
+        ? S.ogBuildLoopPlaybackPlan(project, {
+          patternId: pattern.id,
+          transportTick: loopIndex * lengthTicks,
+          lookaheadTicks: lengthTicks,
+          originTime: startTime
+        })
+        : S.ogBuildPlaybackPlan(project, { patternId: pattern.id, originTime: startTime });
+      A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      if (!transportRef.current.loop) return;
+      addTransportTimer(function () {
+        schedulePatternCycle(engine, startTime + durationSec, token, loopIndex + 1, durationSec, lengthTicks);
+      }, (startTime + durationSec - engine.ctx.currentTime - 0.14) * 1000);
+    }
+
+    function scheduleSongCycle(engine, startTime, token, durationSec) {
+      if (!S || !A || !S.ogBuildArrangementPlaybackPlan || transportRef.current.token !== token) return;
+      if (!transportRef.current.loop) return;
+      var plan = S.ogBuildArrangementPlaybackPlan(project, { originTime: startTime });
+      A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      if (!transportRef.current.loop) return;
+      addTransportTimer(function () {
+        scheduleSongCycle(engine, startTime + durationSec, token, durationSec);
+      }, (startTime + durationSec - engine.ctx.currentTime - 0.14) * 1000);
+    }
+
     function playLoop() {
       if (!A || !S || !pattern) return;
       var engine = ensureAudioEngine(true);
       if (!engine) return;
+      clearTransportSchedule(false);
+      var token = transportRef.current.token + 1;
+      transportRef.current.token = token;
+      transportRef.current.loop = loopEnabled;
       restoreEmbeddedSamplesFor(project, true);
       var now = engine.ctx.currentTime + 0.05;
-      var plan = S.ogBuildPlaybackPlan(project, { patternId: pattern.id, originTime: now });
-      A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      var lengthTicks = Math.max(1, C.ogBarsToTicks(project, pattern.bars));
+      var durationSec = Math.max(0.05, secondsForTicks(lengthTicks));
+      schedulePatternCycle(engine, now, token, 0, durationSec, lengthTicks);
       setPlaying(true);
-      ogAnnounce('Playing pattern');
-      root.setTimeout(function () { setPlaying(false); }, Math.max(300, C.ogBarsToTicks(project, pattern.bars) * 60 / (project.bpm * project.ppq) * 1000));
+      startTransportView('pattern', durationSec, lengthTicks, loopEnabled, now, token);
+      ogAnnounce(loopEnabled ? 'Playing pattern loop' : 'Playing pattern');
     }
 
     function playSong() {
       if (!A || !S || !S.ogBuildArrangementPlaybackPlan) return;
       var engine = ensureAudioEngine(true);
       if (!engine) return;
+      clearTransportSchedule(false);
+      var token = transportRef.current.token + 1;
+      transportRef.current.token = token;
+      transportRef.current.loop = loopEnabled;
       restoreEmbeddedSamplesFor(project, true);
       var now = engine.ctx.currentTime + 0.05;
       var plan = S.ogBuildArrangementPlaybackPlan(project, { originTime: now });
@@ -753,12 +1226,21 @@
       A.ogSchedulePlan(engine, plan, { baseTime: 0 });
       var timeline = C.ogBuildArrangementTimeline ? C.ogBuildArrangementTimeline(project) : [];
       var endTick = timeline.reduce(function (max, section) { return Math.max(max, section.endTick || 0); }, 0);
+      var durationSec = Math.max(0.05, secondsForTicks(endTick));
+      if (loopEnabled) {
+        addTransportTimer(function () {
+          scheduleSongCycle(engine, now + durationSec, token, durationSec);
+        }, (now + durationSec - engine.ctx.currentTime - 0.14) * 1000);
+      }
       setPlaying(true);
-      ogAnnounce('Playing song arrangement');
-      root.setTimeout(function () { setPlaying(false); }, Math.max(300, endTick * 60 / (project.bpm * project.ppq) * 1000));
+      startTransportView('song', durationSec, endTick, loopEnabled, now, token);
+      ogAnnounce(loopEnabled ? 'Playing song loop' : 'Playing song arrangement');
     }
 
     function stopLoop() {
+      transportRef.current.token += 1;
+      transportRef.current.loop = false;
+      clearTransportSchedule(true);
       setPlaying(false);
       ogAnnounce('Stopped');
     }
@@ -863,8 +1345,54 @@
     var validation = C.ogValidateProject(project);
     var notation = C.ogBuildNotationPreview(project, pattern.id);
     var currentMeasure = notation.measures[selectedBar] || { notes: [], drumHits: [] };
-    var scaleNotes = C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
+    var compositionNames = C.ogBuildCompositionNomenclature ? C.ogBuildCompositionNomenclature(project, pattern.id) : {
+      keyName: (project.key && project.key.tonic || 'C') + ' ' + (project.key && project.key.mode || 'minor'),
+      scaleDegrees: [],
+      measures: notation.measures || []
+    };
+    var namedMeasure = compositionNames.measures[selectedBar] || currentMeasure;
+    var staffEngraving = C.ogBuildStaffEngraving ? C.ogBuildStaffEngraving(project, pattern.id, {
+      trackId: synthTrack && synthTrack.id,
+      selectedBar: selectedBar,
+      width: 680,
+      height: 158,
+      slotsPerMeasure: 8
+    }) : null;
+    var scaleNotes = compositionNames.scaleDegrees && compositionNames.scaleDegrees.length
+      ? compositionNames.scaleDegrees.map(function (degree) { return degree.note; })
+      : C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
     var sampleAssets = (project.assets || []).filter(function (asset) { return asset.type === 'recording' || asset.type === 'sample' || asset.type === 'loop'; });
+    var nav = root.navigator || {};
+    var stemCapabilities = {
+      cpuCores: nav.hardwareConcurrency || 0,
+      memoryGb: nav.deviceMemory || 0,
+      webgpu: !!nav.gpu,
+      localWorkerInstalled: !!(root.OpenGrooveStemWorker || root.OpenGrooveStemBridge)
+    };
+    var stemPlan = C.ogBuildStemSeparationPlan ? C.ogBuildStemSeparationPlan(project, {
+      mode: selectedStemMode,
+      engineId: selectedStemEngine,
+      sourceAssetId: selectedAsset && selectedAsset.id,
+      sourceName: selectedAsset && selectedAsset.name || project.title || 'Source mix',
+      userConfirmedRights: true,
+      capabilities: stemCapabilities
+    }) : { label: '4-stem', targets: ['vocals', 'drums', 'bass', 'other'], warnings: [], recommendedEngineId: selectedStemEngine, engines: [] };
+    var stemEngines = stemPlan.engines && stemPlan.engines.length ? stemPlan.engines : [
+      { id: 'manual-import', name: 'Manual stem import' },
+      { id: 'external-demucs', name: 'External Demucs' },
+      { id: 'external-spleeter', name: 'External Spleeter' },
+      { id: 'browser-onnx', name: 'Browser ONNX/WebGPU' }
+    ];
+    var stemReadiness = stemPlan.readiness || (C.ogBuildStemEngineReadiness ? C.ogBuildStemEngineReadiness({
+      engineId: selectedStemEngine,
+      mode: selectedStemMode,
+      capabilities: stemCapabilities,
+      durationSec: selectedAsset && selectedAsset.durationSec || 0
+    }) : { tier: 'ready', tierLabel: 'Ready', engineName: 'Manual stem import', summary: 'Ready to prepare stem lanes.', requirements: [] });
+    var readinessStyle = Object.assign({},
+      styles.readinessBadge,
+      stemReadiness.tier === 'blocked' ? styles.readinessBlocked : stemReadiness.tier === 'warning' ? styles.readinessWarning : styles.readinessReady);
+    var stemGroups = C.ogBuildStemAssetSummary ? C.ogBuildStemAssetSummary(project) : [];
     var chordChoices = chordProgressionFor(project).map(function (chord) {
       return C.ogBuildChord ? C.ogBuildChord(chord.root, chord.quality, 3) : { symbol: chord.root, root: chord.root, quality: chord.quality };
     });
@@ -898,25 +1426,191 @@
       completed: 0,
       total: 6
     };
+    var starterGuidance = C.ogBuildOnboardingGuidance ? C.ogBuildOnboardingGuidance(project, pattern && pattern.id) : {
+      stepId: starterStatus.beatReady ? 'harmony' : 'beat',
+      title: starterStatus.beatReady ? 'Harmony' : 'Beat',
+      description: starterStatus.beatReady ? 'Add a chord bed or melodic notes.' : 'Build a rhythmic foundation.',
+      actionId: starterStatus.beatReady ? 'harmony' : 'beat',
+      actionLabel: starterStatus.beatReady ? 'Add Harmony' : 'Make Beat',
+      completed: false,
+      completedCount: starterStatus.completed,
+      total: starterStatus.total
+    };
     var starterSteps = [
-      ['Beat', starterStatus.beatReady],
-      ['Harmony', starterStatus.harmonyReady],
-      ['Variation', starterStatus.variationReady],
-      ['Song', starterStatus.songReady],
-      ['Sample', starterStatus.sampleReady],
-      ['Export', starterStatus.exportReady]
+      { id: 'beat', label: 'Beat', ready: starterStatus.beatReady },
+      { id: 'harmony', label: 'Harmony', ready: starterStatus.harmonyReady },
+      { id: 'variation', label: 'Variation', ready: starterStatus.variationReady },
+      { id: 'song', label: 'Song', ready: starterStatus.songReady },
+      { id: 'sample', label: 'Sample', ready: starterStatus.sampleReady },
+      { id: 'export', label: 'Export', ready: starterStatus.exportReady }
     ];
     var mixerSnapshot = C.ogBuildMixerSnapshot ? C.ogBuildMixerSnapshot(project) : {
       master: project.mixer && project.mixer.master || { gain: 0.9 },
       channels: []
     };
+    var effectTracks = (project.tracks || []).filter(function (track) { return track.type !== 'automation'; });
+    var selectedEffectTrack = effectTracks.filter(function (track) { return track.id === selectedEffectTrackId; })[0] || synthTrack || drumTrack || effectTracks[0] || null;
+    var selectedEffectTrackSafeId = selectedEffectTrack && selectedEffectTrack.id || '';
+    var effectRack = C.ogBuildEffectRack && selectedEffectTrack ? C.ogBuildEffectRack(project, selectedEffectTrack.id) : [];
+    var automationTargets = C.ogListAutomationTargets ? C.ogListAutomationTargets() : [];
+    var automationSpec = automationTargets.filter(function (target) { return target.id === selectedAutomationTarget; })[0] || automationTargets[0] || { id: 'effect.filter.cutoff', label: 'Filter Cutoff', min: 80, max: 18000, defaultValue: 12000, unit: 'Hz' };
+    var automationSnapshot = C.ogBuildAutomationSnapshot && pattern && selectedEffectTrack ? C.ogBuildAutomationSnapshot(project, pattern.id, selectedEffectTrack.id) : { lanes: [], pointCount: 0 };
+    var automationLane = (automationSnapshot.lanes || []).filter(function (lane) { return lane.target === automationSpec.id; })[0] || { points: [] };
+    var automationStepMap = {};
+    var automationStepTicks = Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+    (automationLane.points || []).forEach(function (point) {
+      var absoluteStep = Math.round((point.startTick || 0) / automationStepTicks);
+      if (Math.floor(absoluteStep / stepsPerBar) === selectedBar) automationStepMap[absoluteStep % stepsPerBar] = point;
+    });
     var synthPatch = C.ogNormalizeSynthInstrument ? C.ogNormalizeSynthInstrument(synthTrack && synthTrack.instrument) : (synthTrack && synthTrack.instrument || { oscillator: 'sawtooth', filter: { type: 'lowpass', cutoff: 6000, q: 0.7 }, envelope: { attack: 0.01, decay: 0.12, sustain: 0.65, release: 0.25 } });
     var synthPatchSummary = C.ogBuildSynthPatchSummary ? C.ogBuildSynthPatchSummary(project, synthTrack && synthTrack.id) : { label: synthPatch.oscillator };
     var synthPatchPresets = C.ogListSynthPatchPresets ? C.ogListSynthPatchPresets() : [];
+    var starterGuidanceAction = function () {
+      var actionId = starterGuidance && starterGuidance.actionId;
+      if (actionId === 'harmony') applyProgression();
+      else if (actionId === 'variation') createPatternVariation();
+      else if (actionId === 'song') appendCurrentSection();
+      else if (actionId === 'sample') createOwnedSampleSlot(null);
+      else if (actionId === 'export') saveProject();
+      else seedStarterBeat();
+    };
+
+    function effectParamLabel(param) {
+      if (param === 'q') return 'Q';
+      return String(param || '').replace(/^\w/, function (ch) { return ch.toUpperCase(); });
+    }
+
+    function renderEffectParamControl(effect, param) {
+      if (effect.type === 'filter' && param === 'type') {
+        return h('label', { key: effect.type + '-' + param, style: styles.fieldLabel }, 'Type',
+          h('select', {
+            style: styles.select,
+            value: effect.params.type,
+            onChange: function (ev) { setEffectParam(effect.type, param, ev.target.value); },
+            'aria-label': effect.name + ' type'
+          },
+            ['lowpass', 'highpass', 'bandpass', 'notch'].map(function (type) {
+              return h('option', { key: type, value: type }, type);
+            })));
+      }
+      var spec = effectParamSpec(effect.type, param, automationTargets) || { min: 0, max: 1, unit: '', defaultValue: effect.params[param] || 0 };
+      var value = effect.params[param] == null ? spec.defaultValue : effect.params[param];
+      return h('label', { key: effect.type + '-' + param, style: styles.fieldLabel }, effectParamLabel(param),
+        h('input', {
+          style: styles.mixerSlider,
+          type: 'range',
+          min: spec.min,
+          max: spec.max,
+          step: automationStepSize(spec),
+          value: value,
+          onChange: function (ev) { setEffectParam(effect.type, param, Number(ev.target.value)); },
+          'aria-label': effect.name + ' ' + effectParamLabel(param)
+        }),
+        h('span', { style: styles.mixerValue }, formatAutomationValue(spec, value)));
+    }
+
+    function renderAutomationCurveEditor() {
+      var width = 360;
+      var height = 132;
+      var padX = 18;
+      var padY = 14;
+      var usableW = width - padX * 2;
+      var usableH = height - padY * 2;
+      var measureTicks = C.ogTicksPerMeasure ? C.ogTicksPerMeasure(project) : 3840;
+      function xForStep(step) {
+        return padX + (stepsPerBar <= 1 ? 0 : (step / (stepsPerBar - 1)) * usableW);
+      }
+      function yForValue(value) {
+        var min = Number(automationSpec.min);
+        var max = Number(automationSpec.max);
+        var range = Math.max(0.0001, max - min);
+        var unit = Math.max(0, Math.min(1, (Number(value) - min) / range));
+        return padY + (1 - unit) * usableH;
+      }
+      var preview = [];
+      for (var s = 0; s < stepsPerBar; s++) {
+        var tick = selectedBar * measureTicks + s * automationStepTicks;
+        var value = C.ogResolveAutomationValueAtTick
+          ? C.ogResolveAutomationValueAtTick(project, pattern && pattern.id, selectedEffectTrackSafeId, automationSpec.id, tick, automationSpec.defaultValue)
+          : automationStepMap[s] ? automationStepMap[s].value : automationSpec.defaultValue;
+        preview.push({ step: s, value: value == null ? automationSpec.defaultValue : value });
+      }
+      var path = preview.map(function (point, index) {
+        return (index ? 'L ' : 'M ') + Math.round(xForStep(point.step) * 10) / 10 + ' ' + Math.round(yForValue(point.value) * 10) / 10;
+      }).join(' ');
+      var barPoints = (automationLane.points || []).filter(function (point) {
+        var absoluteStep = Math.round((point.startTick || 0) / automationStepTicks);
+        return Math.floor(absoluteStep / stepsPerBar) === selectedBar;
+      });
+      return h('svg', {
+        style: styles.automationCurveSvg,
+        viewBox: '0 0 ' + width + ' ' + height,
+        role: 'img',
+        'aria-label': automationSpec.label + ' automation curve for bar ' + (selectedBar + 1),
+        onPointerDown: handleAutomationCurvePointer,
+        onPointerMove: handleAutomationCurvePointer
+      },
+        [0, 0.5, 1].map(function (line) {
+          var y = padY + line * usableH;
+          return h('line', {
+            key: 'grid-' + line,
+            x1: padX,
+            x2: width - padX,
+            y1: y,
+            y2: y,
+            stroke: styles.automationCurveGrid.stroke,
+            strokeWidth: line === 0.5 ? 1.2 : 1
+          });
+        }),
+        visibleSteps.map(function (step) {
+          var localStep = step % stepsPerBar;
+          return h('line', {
+            key: 'tick-' + localStep,
+            x1: xForStep(localStep),
+            x2: xForStep(localStep),
+            y1: height - padY - 5,
+            y2: height - padY + 5,
+            stroke: localStep % 4 === 0 ? styles.automationCurveBeat.stroke : styles.automationCurveGrid.stroke,
+            strokeWidth: localStep % 4 === 0 ? 1.4 : 1
+          });
+        }),
+        h('path', {
+          d: path,
+          fill: 'none',
+          stroke: styles.automationCurvePath.stroke,
+          strokeWidth: 3,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        }),
+        barPoints.map(function (point) {
+          var absoluteStep = Math.round((point.startTick || 0) / automationStepTicks);
+          var localStep = absoluteStep % stepsPerBar;
+          var selected = automationStep === localStep;
+          return h('circle', {
+            key: point.id,
+            cx: xForStep(localStep),
+            cy: yForValue(point.value),
+            r: selected ? 6 : 5,
+            fill: selected ? styles.automationCurvePointSelected.fill : styles.automationCurvePoint.fill,
+            stroke: styles.automationCurvePoint.stroke,
+            strokeWidth: selected ? 2.5 : 2,
+            tabIndex: 0,
+            role: 'button',
+            'aria-label': automationSpec.label + ' point at step ' + (localStep + 1) + ', ' + formatAutomationValue(automationSpec, point.value),
+            onClick: function (ev) {
+              if (ev && ev.stopPropagation) ev.stopPropagation();
+              setAutomationStep(localStep);
+              setAutomationValue(point.value);
+              setAutomationCurveMode(point.curve === 'hold' ? 'hold' : 'linear');
+            }
+          });
+        }));
+    }
 
     return h('div', {
       ref: dialogRef,
       className: 'og-root',
+      'data-og-theme': themeMode,
       role: 'dialog',
       'aria-modal': true,
       'aria-labelledby': 'og-dialog-title',
@@ -934,13 +1628,43 @@
           h('div', { style: styles.transport, role: 'toolbar', 'aria-label': 'Transport' },
             h('button', { style: styles.transportButton, onClick: playLoop, disabled: playing, 'aria-label': 'Play pattern' }, 'Play'),
             h('button', { style: styles.transportButton, onClick: stopLoop, 'aria-label': 'Stop pattern' }, 'Stop'),
+            h('button', {
+              style: Object.assign({}, styles.transportButton, loopEnabled ? styles.loopButtonOn : null),
+              onClick: toggleLoopMode,
+              'aria-pressed': loopEnabled,
+              'aria-label': loopEnabled ? 'Turn loop mode off' : 'Turn loop mode on'
+            }, loopEnabled ? 'Loop On' : 'Loop Off'),
             h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset demo pattern' }, 'Reset'),
             h('label', { style: styles.tempoLabel }, 'BPM',
               h('input', { style: styles.tempoInput, type: 'number', min: 40, max: 240, value: project.bpm, onChange: function (ev) { setTempo(ev.target.value); }, 'aria-label': 'Tempo in beats per minute' })),
             h('label', { style: styles.swingLabel }, 'Swing',
               h('input', { style: styles.swingSlider, type: 'range', min: 0, max: 75, value: Math.round((project.swing || 0) * 100), onChange: function (ev) { setSwing(ev.target.value); }, 'aria-label': 'Swing amount' }),
               h('span', { style: styles.swingValue }, Math.round((project.swing || 0) * 100) + '%')),
+            h('label', { style: styles.themeLabel }, 'Theme',
+              h('select', {
+                style: styles.themeSelect,
+                value: themeMode,
+                onChange: function (ev) { setThemeMode(ev.target.value); },
+                'aria-label': 'Open Groove color theme'
+              },
+                h('option', { value: 'light' }, 'Light'),
+                h('option', { value: 'dark' }, 'Dark'),
+                h('option', { value: 'contrast' }, 'High Contrast'))),
             h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X'))),
+
+        h('div', { style: styles.playheadPanel, role: 'group', 'aria-label': 'Playback position' },
+          h('div', {
+            style: styles.playheadTrack,
+            role: 'progressbar',
+            'aria-label': 'Playback position in the current ' + (transportView.mode === 'song' ? 'song' : 'pattern'),
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round((transportView.progress || 0) * 100)
+          },
+            h('div', { style: Object.assign({}, styles.playheadFill, { width: Math.round((transportView.progress || 0) * 1000) / 10 + '%' }) }),
+            h('span', { style: Object.assign({}, styles.playheadLine, { left: Math.round((transportView.progress || 0) * 1000) / 10 + '%' }) })),
+          h('div', { style: styles.playheadStatus, role: 'status', 'aria-live': 'polite' },
+            transportView.label + (transportView.loop ? ' - loop enabled' : ''))),
 
         h('div', { style: styles.grid },
           h('section', { style: styles.surface, 'aria-labelledby': 'og-start-title' },
@@ -949,13 +1673,25 @@
               h('span', { style: styles.meta, role: 'status', 'aria-live': 'polite' }, starterStatus.completed + ' / ' + starterStatus.total)),
             h('div', { style: styles.starterSteps, role: 'list', 'aria-label': 'Starter path progress' },
               starterSteps.map(function (item) {
+                var isCurrent = !item.ready && starterGuidance && starterGuidance.stepId === item.id;
                 return h('span', {
-                  key: item[0],
+                  key: item.id,
                   role: 'listitem',
-                  style: Object.assign({}, styles.starterChip, item[1] ? styles.starterChipDone : null),
-                  'aria-label': item[0] + (item[1] ? ' ready' : ' not ready')
-                }, item[0]);
+                  style: Object.assign({}, styles.starterChip, item.ready ? styles.starterChipDone : null, isCurrent ? styles.starterChipCurrent : null),
+                  'aria-current': isCurrent ? 'step' : undefined,
+                  'aria-label': item.label + (item.ready ? ' ready' : isCurrent ? ' next' : ' not ready')
+                }, item.label);
               })),
+            h('div', { style: styles.starterNext, role: 'group', 'aria-label': 'Recommended starter step' },
+              h('div', { style: styles.starterNextText },
+                h('span', { style: styles.starterNextKicker }, starterGuidance && starterGuidance.completed ? 'Ready' : 'Next'),
+                h('strong', { style: styles.starterNextTitle }, starterGuidance && starterGuidance.title || 'Beat'),
+                h('span', { style: styles.starterNextDesc }, starterGuidance && starterGuidance.description || 'Build a rhythmic foundation.')),
+              h('button', {
+                style: styles.wideButton,
+                onClick: starterGuidanceAction,
+                'aria-label': (starterGuidance && starterGuidance.actionLabel || 'Make Beat') + ' from Starter Path'
+              }, starterGuidance && starterGuidance.actionLabel || 'Make Beat')),
             h('div', { style: styles.starterActions, role: 'toolbar', 'aria-label': 'Starter path actions' },
               h('button', { style: styles.smallButton, onClick: seedStarterBeat }, 'Make Beat'),
               h('button', { style: styles.smallButton, onClick: applyProgression }, 'Add Harmony'),
@@ -1184,6 +1920,13 @@
               scaleNotes.map(function (note) {
                 return h('span', { key: note, style: styles.chip }, note);
               })),
+            h('div', { style: styles.theoryGrid, role: 'list', 'aria-label': 'Scale degree names' },
+              (compositionNames.scaleDegrees || []).map(function (degree) {
+                return h('div', { key: degree.degree, role: 'listitem', style: styles.theoryCard },
+                  h('strong', null, degree.roman + ' / ' + degree.nashville),
+                  h('span', null, degree.note + ' ' + degree.solfege),
+                  h('span', null, degree.degreeName));
+              })),
             h('div', { style: styles.chordButtons },
               chordChoices.map(function (chord) {
                 return h('button', {
@@ -1218,10 +1961,60 @@
           h('section', { style: styles.surface, 'aria-labelledby': 'og-score-title' },
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-score-title', style: styles.h2 }, 'Score Preview'),
-              h('span', { style: styles.meta }, currentMeasure.notes.length + ' notes in bar ' + (selectedBar + 1))),
+              h('span', { style: styles.meta }, (namedMeasure.notes && namedMeasure.notes.length || 0) + ' notes in bar ' + (selectedBar + 1))),
+            h('div', { style: styles.staffEditor },
+              h('div', { style: styles.staffToolbar, role: 'group', 'aria-label': 'Engraved staff editor controls' },
+                h('label', { style: styles.fieldLabel }, 'Tool',
+                  h('select', {
+                    style: styles.select,
+                    value: staffTool,
+                    onChange: function (ev) { setStaffTool(ev.target.value); },
+                    'aria-label': 'Staff editor tool'
+                  },
+                    h('option', { value: 'note' }, 'Note'),
+                    h('option', { value: 'rest' }, 'Rest'))),
+                h('label', { style: styles.fieldLabel }, 'Pitch',
+                  h('select', {
+                    style: styles.select,
+                    value: staffPitch,
+                    disabled: staffTool === 'rest',
+                    onChange: function (ev) { setStaffPitch(ev.target.value); },
+                    'aria-label': 'Staff note pitch'
+                  },
+                    staffPitches.map(function (pitch) {
+                      return h('option', { key: pitch, value: pitch }, pitch);
+                    }))),
+                h('label', { style: styles.fieldLabel }, 'Value',
+                  h('select', {
+                    style: styles.select,
+                    value: staffDuration,
+                    onChange: function (ev) { setStaffDuration(ev.target.value); },
+                    'aria-label': 'Staff note value'
+                  },
+                    h('option', { value: 'w' }, 'Whole'),
+                    h('option', { value: 'h' }, 'Half'),
+                    h('option', { value: 'q' }, 'Quarter'),
+                    h('option', { value: 'e' }, 'Eighth'),
+                    h('option', { value: 's' }, 'Sixteenth')))),
+              renderEngravedStaff()),
+            h('div', { style: styles.notationComposer },
+              h('label', { style: styles.fieldLabel }, 'Notation Input',
+                h('textarea', {
+                  style: styles.notationTextarea,
+                  value: notationEntry,
+                  onChange: function (ev) { setNotationEntry(ev.target.value); },
+                  'aria-label': 'Notation input'
+                })),
+              h('button', {
+                style: Object.assign({}, styles.wideButton, !C.ogWriteNotationInput ? styles.disabledButton : null),
+                onClick: writeNotationEntry,
+                disabled: !C.ogWriteNotationInput,
+                'aria-label': 'Write notation input to selected bar'
+              }, 'Write Notation')),
+            h('div', { style: styles.sampleRegion }, compositionNames.keyName + ' - selected bar ' + (selectedBar + 1)),
             h('div', { style: styles.timeline },
               barIndexes.map(function (bar) {
-                var measure = notation.measures[bar] || { notes: [], drumHits: [] };
+                var measure = compositionNames.measures[bar] || notation.measures[bar] || { notes: [], drumHits: [] };
                 return h('div', { key: bar, style: styles.barCell },
                   h('strong', null, 'Bar ' + (bar + 1)),
                   h('span', null, formatMeasureSummary(measure)));
@@ -1323,6 +2116,120 @@
                   }, 'Solo'));
               }))),
 
+          h('section', { style: styles.surface, 'aria-labelledby': 'og-effects-title' },
+            h('div', { style: styles.sectionHeader },
+              h('h2', { id: 'og-effects-title', style: styles.h2 }, 'Effects'),
+              h('span', { style: styles.meta }, (selectedEffectTrack && selectedEffectTrack.name || 'Track') + ' - ' + automationSnapshot.pointCount + ' points')),
+            h('div', { style: styles.effectHeader },
+              h('label', { style: styles.fieldLabel }, 'Track',
+                h('select', {
+                  style: styles.select,
+                  value: selectedEffectTrackSafeId,
+                  onChange: function (ev) { setSelectedEffectTrackId(ev.target.value); },
+                  'aria-label': 'Effects track'
+                },
+                  effectTracks.map(function (track) {
+                    return h('option', { key: track.id, value: track.id }, track.name);
+                  }))),
+              h('button', {
+                style: styles.wideButton,
+                onClick: previewEffectRack,
+                disabled: !selectedEffectTrackSafeId,
+                'aria-label': 'Preview selected effects rack'
+              }, 'Preview Rack')),
+            h('div', { style: styles.effectRack, role: 'group', 'aria-label': 'Track effects rack' },
+              effectRack.length ? effectRack.map(function (effect) {
+                return h('div', { key: effect.type, style: Object.assign({}, styles.effectRow, effect.enabled ? styles.effectRowOn : null) },
+                  h('label', { style: styles.effectToggle },
+                    h('input', {
+                      type: 'checkbox',
+                      checked: !!effect.enabled,
+                      onChange: function (ev) { toggleTrackEffect(effect.type, ev.target.checked); },
+                      'aria-label': (effect.enabled ? 'Disable ' : 'Enable ') + effect.name
+                    }),
+                    h('span', null, effect.name)),
+                  h('div', { style: styles.effectParamGrid },
+                    Object.keys(effect.params || {}).map(function (param) {
+                      return renderEffectParamControl(effect, param);
+                    })));
+              }) : h('span', { style: styles.muted }, 'No effects available.')),
+            h('div', { style: styles.automationPanel, role: 'group', 'aria-label': 'Effect automation' },
+              h('div', { style: styles.automationControls },
+                h('label', { style: styles.fieldLabel }, 'Target',
+                  h('select', {
+                    style: styles.select,
+                    value: automationSpec.id,
+                    onChange: function (ev) { changeAutomationTarget(ev.target.value); },
+                    'aria-label': 'Automation target'
+                  },
+                    automationTargets.map(function (target) {
+                      return h('option', { key: target.id, value: target.id }, target.label);
+                    }))),
+                h('label', { style: styles.fieldLabel }, 'Step',
+                  h('input', {
+                    style: styles.mixerSlider,
+                    type: 'range',
+                    min: 0,
+                    max: stepsPerBar - 1,
+                    step: 1,
+                    value: automationStep,
+                    onChange: function (ev) { setAutomationStep(Number(ev.target.value)); },
+                    'aria-label': 'Automation step in selected bar'
+                  }),
+                  h('span', { style: styles.mixerValue }, String(automationStep + 1))),
+                h('label', { style: styles.fieldLabel }, 'Curve',
+                  h('select', {
+                    style: styles.select,
+                    value: automationCurveMode,
+                    onChange: function (ev) { setAutomationCurveMode(ev.target.value); },
+                    'aria-label': 'Automation curve shape'
+                  },
+                    h('option', { value: 'linear' }, 'Linear'),
+                    h('option', { value: 'hold' }, 'Hold'))),
+                h('label', { style: styles.fieldLabel }, 'Value',
+                  h('input', {
+                    style: styles.mixerSlider,
+                    type: 'range',
+                    min: automationSpec.min,
+                    max: automationSpec.max,
+                    step: automationStepSize(automationSpec),
+                    value: automationValue,
+                    onChange: function (ev) { setAutomationValue(Number(ev.target.value)); },
+                    'aria-label': automationSpec.label + ' value'
+                  }),
+                  h('span', { style: styles.mixerValue }, formatAutomationValue(automationSpec, automationValue)))),
+              renderAutomationCurveEditor(),
+              h('div', { style: styles.automationSteps, role: 'group', 'aria-label': automationSpec.label + ' points in selected bar' },
+                visibleSteps.map(function (step) {
+                  var localStep = step % stepsPerBar;
+                  var point = automationStepMap[localStep];
+                  var selected = automationStep === localStep;
+                  return h('button', {
+                    key: 'auto-' + step,
+                    style: Object.assign({}, styles.automationStep, point ? styles.automationStepOn : null, selected ? styles.automationStepSelected : null),
+                    onClick: function () {
+                      setAutomationStep(localStep);
+                      setAutomationValue(point ? point.value : automationSpec.defaultValue);
+                      if (point) setAutomationCurveMode(point.curve === 'hold' ? 'hold' : 'linear');
+                    },
+                    'aria-pressed': selected,
+                    'aria-label': 'Automation step ' + (localStep + 1) + (point ? ', ' + formatAutomationValue(automationSpec, point.value) : ', empty')
+                  }, point ? '*' : String(localStep + 1));
+                })),
+              h('div', { style: styles.automationActions, role: 'toolbar', 'aria-label': 'Automation point actions' },
+                h('button', {
+                  style: Object.assign({}, styles.wideButton, !C.ogSetAutomationPoint ? styles.disabledButton : null),
+                  onClick: writeAutomationPoint,
+                  disabled: !C.ogSetAutomationPoint,
+                  'aria-label': 'Write automation point'
+                }, 'Write Point'),
+                h('button', {
+                  style: Object.assign({}, styles.smallButton, !C.ogSetAutomationPoint ? styles.disabledButton : null),
+                  onClick: clearAutomationPoint,
+                  disabled: !C.ogSetAutomationPoint,
+                  'aria-label': 'Clear automation point'
+                }, 'Clear Point')))),
+
           h('section', { style: styles.surface, 'aria-labelledby': 'og-samples-title' },
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-samples-title', style: styles.h2 }, 'Samples'),
@@ -1364,6 +2271,56 @@
               }) : h('span', { style: styles.muted }, 'No samples assigned yet.')),
             h('div', { style: licenseReport.exportSafe ? styles.license : styles.warning },
               (licenseReport.exportSafe ? 'Export rights clear.' : licenseReport.warnings.join(' ')) + ' Embedded: ' + storageReport.embeddedCount + ' / ' + Math.round((storageReport.embeddedBytes || 0) / 1024) + ' KB' + ' Slices: ' + (storageReport.slicedPadCount || 0))),
+
+          h('section', { style: styles.surface, 'aria-labelledby': 'og-stems-title' },
+            h('div', { style: styles.sectionHeader },
+              h('h2', { id: 'og-stems-title', style: styles.h2 }, 'Stem Prep'),
+              h('span', { style: styles.meta }, stemGroups.length + ' sets')),
+            h('div', { style: styles.formRow },
+              h('label', { style: styles.fieldLabel }, 'Split',
+                h('select', {
+                  style: styles.select,
+                  value: selectedStemMode,
+                  onChange: function (ev) { setSelectedStemMode(ev.target.value); },
+                  'aria-label': 'Stem separation target set'
+                },
+                  h('option', { value: 'two' }, '2 stems'),
+                  h('option', { value: 'four' }, '4 stems'),
+                  h('option', { value: 'five' }, '5 stems'),
+                  h('option', { value: 'six' }, '6 stems'))),
+              h('label', { style: styles.fieldLabel }, 'Engine',
+                h('select', {
+                  style: styles.select,
+                  value: selectedStemEngine,
+                  onChange: function (ev) { setSelectedStemEngine(ev.target.value); },
+                  'aria-label': 'Stem preparation engine'
+                },
+                  stemEngines.map(function (engine) {
+                    return h('option', { key: engine.id, value: engine.id }, engine.name);
+                  })))),
+            h('div', { style: styles.stemActionRow },
+              h('span', { style: readinessStyle, role: 'status' }, stemReadiness.tierLabel || 'Ready'),
+              h('button', { style: styles.wideButton, onClick: prepareStemSlots, 'aria-label': 'Prepare stem slots for import or separation' }, 'Prepare Stems')),
+            h('div', { style: styles.stemTargetRow, role: 'list', 'aria-label': 'Stem targets' },
+              (stemPlan.targets || []).map(function (target) {
+                return h('span', { key: target, role: 'listitem', style: styles.stemChip }, target);
+              })),
+            h('div', { style: styles.sampleRegion },
+              (stemReadiness.engineName || 'Stem engine') + ': ' + stemReadiness.summary + ' ' + (stemReadiness.estimate && stemReadiness.estimate.label || '')),
+            h('div', { style: styles.requirementList, role: 'list', 'aria-label': 'Stem engine readiness' },
+              (stemReadiness.requirements || []).map(function (req) {
+                return h('div', { key: req.id, role: 'listitem', style: styles.requirementRow },
+                  h('strong', null, req.label),
+                  h('span', null, req.met ? 'Ready' : req.required),
+                  h('span', null, req.value || 'Unknown'));
+              })),
+            h('div', { style: styles.assetList },
+              stemGroups.length ? stemGroups.map(function (group) {
+                return h('div', { key: group.groupId, style: styles.assetRow },
+                  h('strong', null, group.rolesList.join(', ')),
+                  h('span', null, group.readyCount + ' / ' + group.count + ' ready'),
+                  h('span', null, group.groupId));
+              }) : h('span', { style: styles.muted }, 'No stem sets prepared yet.'))),
 
           h('section', { style: styles.surface, 'aria-labelledby': 'og-project-title' },
             h('div', { style: styles.sectionHeader },
@@ -1432,12 +2389,20 @@
     subtitle: { color: '#475569', fontSize: '12px', fontWeight: 700, marginTop: '2px' },
     transport: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' },
     transportButton: { minHeight: '38px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 12px', fontWeight: 800, cursor: 'pointer' },
+    loopButtonOn: { background: '#ccfbf1', border: '1px solid #0f766e', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
     tempoLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
     tempoInput: { width: '70px', height: '34px', border: '1px solid #9ca3af', padding: '0 8px', fontWeight: 800 },
     swingLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
     swingSlider: { width: '92px', accentColor: '#0f766e' },
     swingValue: { minWidth: '34px', color: '#475569', fontSize: '12px', fontWeight: 900 },
+    themeLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
+    themeSelect: { minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800 },
     iconButton: { width: '38px', height: '38px', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, cursor: 'pointer' },
+    playheadPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '10px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#f8fafc' },
+    playheadTrack: { position: 'relative', minHeight: '16px', border: '1px solid #64748b', background: '#e2e8f0', overflow: 'hidden' },
+    playheadFill: { position: 'absolute', inset: '0 auto 0 0', background: '#0f766e' },
+    playheadLine: { position: 'absolute', top: '-3px', bottom: '-3px', width: '3px', background: '#111827', transform: 'translateX(-1px)' },
+    playheadStatus: { color: '#334155', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '12px', padding: '12px', overflow: 'auto' },
     surface: { background: '#ffffff', border: '1px solid #d1d5db', padding: '12px', minWidth: 0 },
     sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' },
@@ -1448,14 +2413,27 @@
     select: { width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800 },
     chipRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' },
     chip: { minWidth: '34px', minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', fontSize: '12px', fontWeight: 900 },
+    theoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', marginBottom: '10px' },
+    theoryCard: { minHeight: '66px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '4px', fontSize: '12px', overflowWrap: 'anywhere' },
     chordButtons: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', marginBottom: '8px' },
     melodyControls: { display: 'grid', gridTemplateColumns: 'minmax(128px, 1fr) minmax(128px, 1fr)', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    staffEditor: { display: 'grid', gap: '8px', marginBottom: '10px' },
+    staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
+    staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
+    notationComposer: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(118px, 0.45fr)', gap: '8px', alignItems: 'end', marginBottom: '8px' },
+    notationTextarea: { width: '100%', minHeight: '54px', resize: 'vertical', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '7px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
     barTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' },
     barTab: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', fontSize: '12px', fontWeight: 800, cursor: 'pointer' },
     barTabOn: { background: '#ccfbf1', border: '1px solid #0f766e', color: '#0f172a' },
     starterSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(72px, 1fr))', gap: '6px', marginBottom: '10px' },
     starterChip: { minHeight: '30px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', fontSize: '12px', fontWeight: 900 },
     starterChipDone: { border: '1px solid #15803d', background: '#dcfce7', color: '#14532d' },
+    starterChipCurrent: { border: '1px solid #0f766e', background: '#ecfeff', color: '#134e4a', boxShadow: 'inset 0 0 0 2px #0f766e' },
+    starterNext: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '8px', alignItems: 'center', marginBottom: '10px' },
+    starterNextText: { display: 'grid', gap: '2px', minWidth: 0 },
+    starterNextKicker: { color: '#0f766e', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 },
+    starterNextTitle: { color: '#0f172a', fontSize: '14px', fontWeight: 900, overflowWrap: 'anywhere' },
+    starterNextDesc: { color: '#475569', fontSize: '12px', fontWeight: 700, lineHeight: 1.35, overflowWrap: 'anywhere' },
     starterActions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(94px, 1fr))', gap: '6px' },
     padGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(68px, 1fr))', gap: '8px' },
     pad: { aspectRatio: '1 / 0.78', border: '1px solid #9ca3af', background: '#e5e7eb', color: '#111827', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-start', padding: '8px', cursor: 'pointer', textAlign: 'left', minWidth: 0 },
@@ -1491,6 +2469,25 @@
     mixerValue: { color: '#475569', fontSize: '12px', fontWeight: 900, textAlign: 'right' },
     muteButtonOn: { background: '#fee2e2', border: '1px solid #991b1b', color: '#7f1d1d' },
     soloButtonOn: { background: '#dbeafe', border: '1px solid #1d4ed8', color: '#1e3a8a' },
+    effectHeader: { display: 'grid', gridTemplateColumns: 'minmax(136px, 1fr) minmax(112px, 0.55fr)', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    effectRack: { display: 'grid', gap: '8px' },
+    effectRow: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px' },
+    effectRowOn: { border: '1px solid #0f766e', background: '#ecfeff', boxShadow: 'inset 0 0 0 1px #0f766e' },
+    effectToggle: { display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#0f172a', fontSize: '12px', fontWeight: 900 },
+    effectParamGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '8px', alignItems: 'end' },
+    automationPanel: { display: 'grid', gap: '8px', marginTop: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px' },
+    automationControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))', gap: '8px', alignItems: 'end' },
+    automationCurveSvg: { width: '100%', minHeight: '132px', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'none', cursor: 'crosshair', display: 'block' },
+    automationCurveGrid: { stroke: '#cbd5e1' },
+    automationCurveBeat: { stroke: '#64748b' },
+    automationCurvePath: { stroke: '#0f766e' },
+    automationCurvePoint: { fill: '#ffffff', stroke: '#0f766e' },
+    automationCurvePointSelected: { fill: '#fbbf24' },
+    automationSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(24px, 1fr))', gap: '4px' },
+    automationStep: { minHeight: '30px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontSize: '11px', fontWeight: 900, cursor: 'pointer', padding: 0 },
+    automationStepOn: { background: '#fde68a', border: '1px solid #a16207', color: '#111827' },
+    automationStepSelected: { boxShadow: 'inset 0 0 0 2px #0f766e', border: '1px solid #0f766e' },
+    automationActions: { display: 'grid', gridTemplateColumns: 'minmax(112px, 1fr) minmax(112px, 1fr)', gap: '6px' },
     learningNote: { margin: '0 0 10px', color: '#334155', fontSize: '12px', lineHeight: 1.45 },
     barCell: { minHeight: '74px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px', fontSize: '12px' },
     license: { marginTop: '10px', color: '#166534', fontWeight: 800, fontSize: '12px' },
@@ -1506,10 +2503,217 @@
     sampleRegion: { minHeight: '30px', display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', background: '#eef2ff', color: '#1e293b', padding: '6px 8px', fontSize: '12px', fontWeight: 800, marginBottom: '8px', overflowWrap: 'anywhere' },
     assetList: { display: 'grid', gap: '6px', minHeight: '54px' },
     assetRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '7px', fontSize: '12px', minWidth: 0, overflowWrap: 'anywhere' },
+    stemActionRow: { display: 'grid', gridTemplateColumns: 'minmax(110px, 0.7fr) minmax(130px, 1fr)', gap: '8px', alignItems: 'stretch', marginBottom: '8px' },
+    stemTargetRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' },
+    stemChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', padding: '0 8px', fontSize: '12px', fontWeight: 900 },
+    readinessBadge: { minHeight: '34px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #64748b', padding: '0 8px', fontSize: '12px', fontWeight: 900, textAlign: 'center' },
+    readinessReady: { border: '1px solid #15803d', background: '#dcfce7', color: '#14532d' },
+    readinessWarning: { border: '1px solid #a16207', background: '#fef3c7', color: '#78350f' },
+    readinessBlocked: { border: '1px solid #b91c1c', background: '#fee2e2', color: '#7f1d1d' },
+    requirementList: { display: 'grid', gap: '6px', marginBottom: '8px' },
+    requirementRow: { display: 'grid', gridTemplateColumns: 'minmax(84px, 0.8fr) minmax(84px, 0.8fr) minmax(90px, 1fr)', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', fontSize: '12px', overflowWrap: 'anywhere' },
     warning: { marginTop: '10px', color: '#991b1b', fontWeight: 800, fontSize: '12px' },
     textarea: { width: '100%', minHeight: '170px', resize: 'vertical', border: '1px solid #cbd5e1', padding: '8px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
     muted: { color: '#475569' }
   };
+
+  function mergeOpenGrooveStyles(base, overrides) {
+    var merged = {};
+    Object.keys(base).forEach(function (key) {
+      merged[key] = Object.assign({}, base[key], overrides && overrides[key] || {});
+    });
+    Object.keys(overrides || {}).forEach(function (key) {
+      if (!merged[key]) merged[key] = Object.assign({}, overrides[key]);
+    });
+    return merged;
+  }
+
+  function getOpenGrooveStyles(themeMode) {
+    var dark = {
+      overlay: { background: 'rgba(2, 6, 23, 0.86)' },
+      shell: { background: '#0f172a', color: '#f8fafc', border: '1px solid #64748b', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.52)' },
+      panel: { background: '#111827', color: '#f8fafc', border: '1px solid #64748b' },
+      header: { background: '#111827', borderBottom: '1px solid #64748b' },
+      eyebrow: { color: '#5eead4' },
+      subtitle: { color: '#cbd5e1' },
+      transportButton: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
+      loopButtonOn: { background: '#115e59', border: '1px solid #5eead4', color: '#ecfeff', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      tempoLabel: { color: '#e2e8f0' },
+      tempoInput: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      swingLabel: { color: '#e2e8f0' },
+      swingSlider: { accentColor: '#5eead4' },
+      swingValue: { color: '#e2e8f0' },
+      themeLabel: { color: '#e2e8f0' },
+      themeSelect: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      iconButton: { border: '1px solid #f8fafc', background: '#f8fafc', color: '#020617' },
+      playheadPanel: { background: '#0f172a', borderBottom: '1px solid #64748b' },
+      playheadTrack: { border: '1px solid #94a3b8', background: '#020617' },
+      playheadFill: { background: '#2dd4bf' },
+      playheadLine: { background: '#facc15' },
+      playheadStatus: { color: '#e2e8f0' },
+      surface: { background: '#111827', border: '1px solid #64748b' },
+      meta: { color: '#cbd5e1' },
+      fieldLabel: { color: '#e2e8f0' },
+      select: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      chip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
+      theoryCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      staffSvg: { border: '1px solid #64748b', background: '#020617' },
+      notationTextarea: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      barTab: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      barTabOn: { background: '#115e59', border: '1px solid #5eead4', color: '#ecfeff' },
+      starterChip: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      starterChipDone: { border: '1px solid #86efac', background: '#14532d', color: '#dcfce7' },
+      starterChipCurrent: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      starterNextKicker: { color: '#5eead4' },
+      starterNextTitle: { color: '#f8fafc' },
+      starterNextDesc: { color: '#cbd5e1' },
+      pad: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
+      padSelected: { background: '#115e59', border: '1px solid #5eead4', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      padIndex: { color: '#cbd5e1' },
+      step: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      stepBeat: { border: '1px solid #e2e8f0' },
+      stepOn: { background: '#facc15', border: '1px solid #fef3c7', color: '#111827' },
+      stats: { color: '#cbd5e1' },
+      noteLabel: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
+      noteStep: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      noteStepOn: { background: '#38bdf8', border: '1px solid #bae6fd', color: '#082f49' },
+      songSection: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      songSectionActive: { background: '#14532d', border: '1px solid #86efac', boxShadow: 'inset 0 0 0 2px #86efac' },
+      mixerRow: { border: '1px solid #64748b', background: '#1f2937' },
+      mixerName: { color: '#e2e8f0' },
+      sliderLabel: { color: '#e2e8f0' },
+      mixerSlider: { accentColor: '#5eead4' },
+      mixerValue: { color: '#e2e8f0' },
+      muteButtonOn: { background: '#7f1d1d', border: '1px solid #fecaca', color: '#fee2e2' },
+      soloButtonOn: { background: '#1e3a8a', border: '1px solid #bfdbfe', color: '#dbeafe' },
+      effectRow: { border: '1px solid #64748b', background: '#1f2937' },
+      effectRowOn: { border: '1px solid #5eead4', background: '#134e4a', boxShadow: 'inset 0 0 0 1px #5eead4' },
+      effectToggle: { color: '#f8fafc' },
+      automationPanel: { border: '1px solid #64748b', background: '#1f2937' },
+      automationCurveSvg: { border: '1px solid #64748b', background: '#020617' },
+      automationCurveGrid: { stroke: '#334155' },
+      automationCurveBeat: { stroke: '#94a3b8' },
+      automationCurvePath: { stroke: '#5eead4' },
+      automationCurvePoint: { fill: '#020617', stroke: '#5eead4' },
+      automationCurvePointSelected: { fill: '#facc15' },
+      automationStep: { border: '1px solid #64748b', background: '#020617', color: '#f8fafc' },
+      automationStepOn: { background: '#facc15', border: '1px solid #fef3c7', color: '#111827' },
+      automationStepSelected: { boxShadow: 'inset 0 0 0 2px #5eead4', border: '1px solid #5eead4' },
+      learningNote: { color: '#e2e8f0' },
+      barCell: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      license: { color: '#86efac' },
+      smallButton: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
+      wideButton: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff' },
+      sampleRegion: { border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc' },
+      assetRow: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      stemChip: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff' },
+      readinessBadge: { border: '1px solid #94a3b8' },
+      readinessReady: { border: '1px solid #86efac', background: '#14532d', color: '#dcfce7' },
+      readinessWarning: { border: '1px solid #fde68a', background: '#713f12', color: '#fef3c7' },
+      readinessBlocked: { border: '1px solid #fca5a5', background: '#7f1d1d', color: '#fee2e2' },
+      requirementRow: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      recordButton: { border: '1px solid #fca5a5', background: '#7f1d1d', color: '#fee2e2' },
+      recordingButton: { background: '#fee2e2', color: '#7f1d1d' },
+      warning: { color: '#fca5a5' },
+      textarea: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      muted: { color: '#cbd5e1' }
+    };
+
+    var contrast = {
+      overlay: { background: '#000000' },
+      shell: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff', boxShadow: 'none' },
+      panel: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff' },
+      header: { background: '#000000', borderBottom: '2px solid #ffffff' },
+      eyebrow: { color: '#ffff00' },
+      subtitle: { color: '#ffffff' },
+      transportButton: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      loopButtonOn: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      tempoLabel: { color: '#ffffff' },
+      tempoInput: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      swingLabel: { color: '#ffffff' },
+      swingSlider: { accentColor: '#ffff00' },
+      swingValue: { color: '#ffffff' },
+      themeLabel: { color: '#ffffff' },
+      themeSelect: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      iconButton: { border: '2px solid #ffffff', background: '#ffffff', color: '#000000' },
+      playheadPanel: { background: '#000000', borderBottom: '2px solid #ffffff' },
+      playheadTrack: { border: '2px solid #ffffff', background: '#000000' },
+      playheadFill: { background: '#ffff00' },
+      playheadLine: { background: '#00ffff' },
+      playheadStatus: { color: '#ffffff' },
+      surface: { background: '#000000', border: '2px solid #ffffff' },
+      meta: { color: '#ffffff' },
+      fieldLabel: { color: '#ffffff' },
+      select: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      chip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      theoryCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffSvg: { border: '2px solid #ffffff', background: '#000000' },
+      notationTextarea: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      barTab: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      barTabOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },
+      starterChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      starterChipDone: { border: '2px solid #ffffff', background: '#00ff66', color: '#000000' },
+      starterChipCurrent: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      starterNextKicker: { color: '#ffff00' },
+      starterNextTitle: { color: '#ffffff' },
+      starterNextDesc: { color: '#ffffff' },
+      pad: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      padSelected: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      padIndex: { color: '#ffffff' },
+      step: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      stepBeat: { border: '2px solid #ffff00' },
+      stepOn: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000' },
+      stats: { color: '#ffffff' },
+      noteLabel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      noteStep: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      noteStepOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },
+      songSection: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      songSectionActive: { background: '#00ff66', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      mixerRow: { border: '2px solid #ffffff', background: '#000000' },
+      mixerName: { color: '#ffffff' },
+      sliderLabel: { color: '#ffffff' },
+      mixerSlider: { accentColor: '#ffff00' },
+      mixerValue: { color: '#ffffff' },
+      muteButtonOn: { background: '#ffb3b3', border: '2px solid #ffffff', color: '#000000' },
+      soloButtonOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },
+      effectRow: { border: '2px solid #ffffff', background: '#000000' },
+      effectRowOn: { border: '2px solid #ffff00', background: '#000000', color: '#ffffff', boxShadow: 'inset 0 0 0 2px #ffff00' },
+      effectToggle: { color: '#ffffff' },
+      automationPanel: { border: '2px solid #ffffff', background: '#000000' },
+      automationCurveSvg: { border: '2px solid #ffffff', background: '#000000' },
+      automationCurveGrid: { stroke: '#ffffff' },
+      automationCurveBeat: { stroke: '#ffff00' },
+      automationCurvePath: { stroke: '#00ffff' },
+      automationCurvePoint: { fill: '#000000', stroke: '#ffffff' },
+      automationCurvePointSelected: { fill: '#ffff00' },
+      automationStep: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      automationStepOn: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000' },
+      automationStepSelected: { boxShadow: 'inset 0 0 0 2px #00ffff', border: '2px solid #00ffff' },
+      learningNote: { color: '#ffffff' },
+      barCell: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      license: { color: '#00ff66' },
+      smallButton: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      wideButton: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
+      disabledButton: { opacity: 0.7 },
+      sampleRegion: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      assetRow: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      stemChip: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
+      readinessBadge: { border: '2px solid #ffffff' },
+      readinessReady: { border: '2px solid #ffffff', background: '#00ff66', color: '#000000' },
+      readinessWarning: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
+      readinessBlocked: { border: '2px solid #ffffff', background: '#ffb3b3', color: '#000000' },
+      requirementRow: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      recordButton: { border: '2px solid #ffffff', background: '#ffb3b3', color: '#000000' },
+      recordingButton: { background: '#ffffff', color: '#000000' },
+      warning: { color: '#ffb3b3' },
+      textarea: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      muted: { color: '#ffffff' }
+    };
+
+    if (themeMode === 'dark') return mergeOpenGrooveStyles(styles, dark);
+    if (themeMode === 'contrast') return mergeOpenGrooveStyles(styles, contrast);
+    return styles;
+  }
 
   root.AlloModules = root.AlloModules || {};
   OpenGrooveStudio.ogAnnounce = ogAnnounce;

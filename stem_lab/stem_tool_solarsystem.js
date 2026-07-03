@@ -1637,19 +1637,89 @@ const d = labToolData.solarSystem || {};
 
               // â"€â"€ Planet label overlay â"€â"€
 
-              const labelContainer = canvas.parentElement.querySelector('.solar-labels');
+              const labelContainer = canvas.parentElement ? canvas.parentElement.querySelector('.solar-labels') : null;
 
 
 
               // â"€â"€ Animation loop â"€â"€
 
-              let animId;
+              let animId = null;
+
+              let solarAlive = true;
+
+              let resizeObserver = null;
 
               let time = 0;
 
+              function isSolarHidden() {
+                return typeof document !== 'undefined' && !!document.hidden;
+              }
+
+              function cancelSolarFrame() {
+                if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+                animId = null;
+              }
+
+              function scheduleSolarFrame() {
+                if (!solarAlive || animId || isSolarHidden()) return;
+                if (typeof requestAnimationFrame !== 'function') return;
+                animId = requestAnimationFrame(animate);
+              }
+
+              function clearSolarLabels() {
+                if (labelContainer) labelContainer.innerHTML = '';
+              }
+
+              function cleanupSolarCanvas() {
+                if (!solarAlive) return;
+                solarAlive = false;
+                cancelSolarFrame();
+
+                canvas.removeEventListener('pointerdown', onSolarDown);
+
+                canvas.removeEventListener('pointermove', onSolarMove);
+
+                canvas.removeEventListener('pointerup', onSolarUp);
+
+                canvas.removeEventListener('wheel', onSolarWheel);
+
+                canvas.removeEventListener('click', onSolarClick);
+
+                canvas.removeEventListener('dblclick', onSolarDblClick);
+
+                if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onSolarVisibilityChange);
+
+                if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+
+                clearSolarLabels();
+
+                if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
+                renderer.dispose();
+
+                scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+
+                stopPlanetAmbience();
+
+                canvas._solarCleanup = null;
+                canvas._solarInit = false;
+              }
+
+              function onSolarVisibilityChange() {
+                if (!solarAlive) return;
+                if (!canvas.isConnected) { cleanupSolarCanvas(); return; }
+                if (isSolarHidden()) { cancelSolarFrame(); clearSolarLabels(); }
+                else { cancelSolarFrame(); animate(); }
+              }
+
               function animate() {
 
-                animId = requestAnimationFrame(animate);
+                if (!solarAlive) return;
+
+                animId = null;
+
+                if (!canvas.isConnected) { cleanupSolarCanvas(); return; }
+
+                if (isSolarHidden()) { cancelSolarFrame(); return; }
 
                 const speed = parseFloat(canvas.dataset.speed || '1');
 
@@ -1856,7 +1926,7 @@ const d = labToolData.solarSystem || {};
 
                       const label = document.createElement('div');
 
-                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:10px;font-weight:700;letter-spacing:0.05em;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.9),0 0 6px rgba(0,0,0,0.8);color:' + (isSelected ? '#fbbf24' : '#94a3b8') + ';white-space:nowrap;transition:color 0.2s;';
+                      label.style.cssText = 'position:absolute;left:' + lx + 'px;top:' + ly + 'px;transform:translate(-50%,-100%);font-size:10px;font-weight:800;letter-spacing:0.02em;pointer-events:none;color:' + (isSelected ? '#111827' : '#0f172a') + ';background:' + (isSelected ? 'rgba(254,240,138,0.96)' : 'rgba(248,250,252,0.92)') + ';border:1px solid ' + (isSelected ? 'rgba(251,191,36,0.95)' : 'rgba(148,163,184,0.55)') + ';border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(2,6,23,0.45),0 0 0 1px rgba(255,255,255,0.12);white-space:nowrap;transition:background 0.2s,color 0.2s,border-color 0.2s;';
 
                       label.textContent = mesh.userData.name;
 
@@ -1888,15 +1958,13 @@ const d = labToolData.solarSystem || {};
                 if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
                 else { renderer.render(scene, camera); }
 
+                scheduleSolarFrame();
+
               }
-
-              animate();
-
-
 
               // â"€â"€ Resize handler â"€â"€
 
-              const resizeObserver = new ResizeObserver(function () {
+              resizeObserver = new ResizeObserver(function () {
 
                 const w = canvas.clientWidth; const h = canvas.clientHeight;
 
@@ -1906,36 +1974,17 @@ const d = labToolData.solarSystem || {};
 
               resizeObserver.observe(canvas);
 
+              if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onSolarVisibilityChange);
+
 
 
               // â"€â"€ Cleanup â"€â"€
 
               canvas._solarCleanup = function () {
-
-                cancelAnimationFrame(animId);
-
-                canvas.removeEventListener('pointerdown', onSolarDown);
-
-                canvas.removeEventListener('pointermove', onSolarMove);
-
-                canvas.removeEventListener('pointerup', onSolarUp);
-
-                canvas.removeEventListener('wheel', onSolarWheel);
-
-                canvas.removeEventListener('click', onSolarClick);
-
-                canvas.removeEventListener('dblclick', onSolarDblClick);
-
-                resizeObserver.disconnect();
-
-                if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
-                renderer.dispose();
-
-                scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
-
-                stopPlanetAmbience();
-
+                cleanupSolarCanvas();
               };
+
+              animate();
 
             }
 

@@ -2311,10 +2311,50 @@ const d = labToolData.waterCycle || {};
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._wcInit = false; return; }
 
             var dpr = 2;
 
             var tick = 0;
+            var wcAlive = true;
+            var wcMotionReduced = false;
+            try { wcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isWaterCycleHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelWaterCycleFrame() {
+              if (canvasEl._wcAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._wcAnim);
+              canvasEl._wcAnim = null;
+            }
+
+            function scheduleWaterCycleFrame() {
+              if (!wcAlive || canvasEl._wcAnim || isWaterCycleHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._wcAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupWaterCycleCanvas() {
+              wcAlive = false;
+              cancelWaterCycleFrame();
+              canvasEl.removeEventListener('click', onWaterCycleCanvasClick);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWaterCycleVisibilityChange);
+              canvasEl._onJourneyTransition = null;
+              canvasEl._onJourneyComplete = null;
+              canvasEl._wcSyncReact = null;
+              canvasEl._wcCleanup = null;
+            }
+
+            function onWaterCycleVisibilityChange() {
+              if (!wcAlive) return;
+              if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
+              if (isWaterCycleHidden()) cancelWaterCycleFrame();
+              else { cancelWaterCycleFrame(); draw(); }
+            }
+
+            canvasEl._wcCleanup = cleanupWaterCycleCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onWaterCycleVisibilityChange);
 
 
 
@@ -2563,7 +2603,7 @@ const d = labToolData.waterCycle || {};
             }
 
             // Click handler for journey decisions  -  uses shared GROUND_CHOICES for hit zones
-            canvasEl.addEventListener('click', function(e) {
+            function onWaterCycleCanvasClick(e) {
               if (journey.state !== 'ground_choice') return;
               var rect = canvasEl.getBoundingClientRect();
               var mx = (e.clientX - rect.left) / rect.width;
@@ -2585,12 +2625,16 @@ const d = labToolData.waterCycle || {};
                   break;
                 }
               }
-            });
+            }
+            canvasEl.addEventListener('click', onWaterCycleCanvasClick);
 
             function draw() {
-              if (!canvasEl.isConnected) { if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim); return; }
+              if (!wcAlive) return;
+              canvasEl._wcAnim = null;
+              if (!canvasEl.isConnected) { cleanupWaterCycleCanvas(); return; }
+              if (isWaterCycleHidden()) { cancelWaterCycleFrame(); return; }
 
-              tick++;
+              tick += wcMotionReduced ? 0.2 : 1;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -3824,11 +3868,11 @@ const d = labToolData.waterCycle || {};
 
 
 
-              canvasEl._wcAnim = requestAnimationFrame(draw);
+              scheduleWaterCycleFrame();
 
             }
 
-            canvasEl._wcAnim = requestAnimationFrame(draw);
+            scheduleWaterCycleFrame();
 
             // Journey callbacks
             canvasEl._onJourneyTransition = function(nextState) {
@@ -3863,12 +3907,6 @@ const d = labToolData.waterCycle || {};
                 paths[pathKey] = (paths[pathKey] || 0) + 1;
                 upd('journeyPaths', paths);
               }
-            };
-
-            canvasEl._wcCleanup = function () {
-
-              if (canvasEl._wcAnim) cancelAnimationFrame(canvasEl._wcAnim);
-
             };
 
           };

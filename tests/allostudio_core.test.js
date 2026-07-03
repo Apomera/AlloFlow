@@ -296,6 +296,16 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(types).toContain('reading-order');
     expect(result.counts.error).toBeGreaterThanOrEqual(1);
     expect(result.counts.warning).toBeGreaterThanOrEqual(2);
+    const checklist = ST.stBuildAccessibilityChecklist(result);
+    expect(checklist.find(c => c.key === 'alt').status).toBe('fix');
+    expect(checklist.find(c => c.key === 'contrast').status).toBe('review');
+    expect(checklist.find(c => c.key === 'objects').count).toBeGreaterThanOrEqual(1);
+    const quickFix = ST.stBuildA11yAutoFixPlan(d);
+    expect(quickFix.ops.length).toBeGreaterThanOrEqual(1);
+    quickFix.ops.forEach(op => ST.stAppend(d, op, 'user', T0));
+    const afterTypes = ST.stAnalyzeDoc(d).issues.map(issue => issue.type);
+    expect(afterTypes).not.toContain('small-text');
+    expect(afterTypes).not.toContain('contrast');
   });
   it('multi-point sampling catches a caption that straddles a dark shape (center alone would pass)', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Straddle', T0);
@@ -410,9 +420,36 @@ describe('resource shelf + portfolio continuity helpers', () => {
       imageSrc: 'data:image/png;base64,abc',
       sourceTitle: 'Science pack'
     }, { canvas: ST.ST_CANVAS_PRESETS['letter-portrait'], x: 40, y: 50, w: 500 });
-    expect(objects.map(o => o.type)).toEqual(expect.arrayContaining(['text', 'image']));
+    expect(objects.map(o => o.type)).toEqual(expect.arrayContaining(['shape', 'text', 'image']));
     expect(objects.every(o => o.provenance && o.provenance.origin === 'resource-history')).toBe(true);
     expect(objects.find(o => o.type === 'image').alt).toBe('Habitat');
+    expect(objects.some(o => o.type === 'text' && /Definition/.test(o.runs[0].text))).toBe(true);
+  });
+  it('turns question cues into a prompt card with an answer space', () => {
+    const objects = ST.stObjectsFromResourceCue({
+      id: 'q-1',
+      kind: 'question',
+      label: 'Question 1',
+      text: 'Why does condensation happen?',
+      sourceTitle: 'Science pack'
+    }, { canvas: ST.ST_CANVAS_PRESETS['letter-portrait'], x: 40, y: 50, w: 500 });
+    expect(objects.some(o => o.type === 'text' && /Why does condensation/.test(o.runs[0].text))).toBe(true);
+    expect(objects.some(o => o.type === 'text' && /Answer space/.test(o.runs[0].text))).toBe(true);
+    expect(objects.some(o => o.type === 'shape' && o.fill === '#ffffff')).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.resourceId === 'q-1')).toBe(true);
+  });
+  it('turns image cues into a visual card with caption text', () => {
+    const objects = ST.stObjectsFromResourceCue({
+      id: 'img-1',
+      kind: 'image',
+      label: 'Cloud diagram',
+      text: 'Clouds form as vapor cools.',
+      imageSrc: 'data:image/png;base64,abc',
+      sourceTitle: 'Science pack'
+    }, { canvas: ST.ST_CANVAS_PRESETS['letter-portrait'], x: 40, y: 50, w: 520 });
+    expect(objects.find(o => o.type === 'image').alt).toBe('Cloud diagram');
+    expect(objects.some(o => o.type === 'text' && /Clouds form/.test(o.runs[0].text))).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.origin === 'resource-history')).toBe(true);
   });
   it('builds a compact AlloStudio portfolio artifact without embedding image bytes', () => {
     const d = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
@@ -484,6 +521,118 @@ describe('Studio visual ergonomics helpers', () => {
     expect(moved.find(p => p.id === 'a').frame).toEqual({ x: 20, y: 10, w: 50, h: 20, rotation: 0 });
     expect(moved.find(p => p.id === 'b').frame).toEqual({ x: 170, y: 90, w: 50, h: 30, rotation: 0 });
   });
+  it('sorts object navigator layers by visual stack while preserving reading positions', () => {
+    const objects = [
+      { id: 'a', type: 'shape', shape: 'rect', z: 1, frame: { x: 0, y: 0, w: 20, h: 20 } },
+      { id: 'b', type: 'text', role: 'body', z: 5, frame: { x: 0, y: 0, w: 20, h: 20 }, runs: [{ text: 'Body', style: {} }] },
+      { id: 'c', type: 'image', z: 5, frame: { x: 0, y: 0, w: 20, h: 20 }, alt: 'Diagram' }
+    ];
+    const layers = ST.stLayerItems(objects);
+    expect(layers.map(item => item.id)).toEqual(['c', 'b', 'a']);
+    expect(layers.find(item => item.id === 'b').readingIndex).toBe(2);
+  });
+  it('snaps dragged frames to margins, centers, and nearby object edges', () => {
+    const canvas = { w: 500, h: 400 };
+    const margin = ST.stSnapFrame({ x: 45, y: 47, w: 100, h: 60 }, canvas, [], { threshold: 8 });
+    expect(margin.frame.x).toBe(48);
+    expect(margin.frame.y).toBe(48);
+    expect(margin.guides.map(g => g.label)).toEqual(expect.arrayContaining(['left margin', 'top margin']));
+    const objectSnap = ST.stSnapFrame({ x: 196, y: 150, w: 50, h: 50 }, canvas, [
+      { id: 'other', frame: { x: 200, y: 20, w: 80, h: 40 } }
+    ], { threshold: 8 });
+    expect(objectSnap.frame.x).toBe(200);
+    expect(objectSnap.guides.some(g => g.label === 'object left')).toBe(true);
+  });
+  it('switches AlloStudio chrome from desktop columns to compact stacked layouts', () => {
+    const desktop = ST.stStudioLayout(1280, 900);
+    expect(desktop.mode).toBe('desktop');
+    expect(desktop.stacked).toBe(false);
+    expect(desktop.panelWidth).toBe('215px');
+    const tablet = ST.stStudioLayout(900, 760);
+    expect(tablet.mode).toBe('stacked');
+    expect(tablet.stacked).toBe(true);
+    expect(tablet.panelWidth).toBe('auto');
+    expect(tablet.canvasScale).toBeLessThan(desktop.canvasScale);
+    const phone = ST.stStudioLayout(390, 740);
+    expect(phone.mode).toBe('phone');
+    expect(phone.shellWidth).toBe('100vw');
+    expect(phone.shellRadius).toBe(0);
+    expect(phone.headerWrap).toBe('wrap');
+  });
+  it('computes fit scale and bounded canvas zoom steps', () => {
+    const canvas = { w: 816, h: 1056 };
+    const desktop = ST.stStudioLayout(1280, 900);
+    expect(ST.stCanvasFitScale(canvas, desktop, { w: 1280, h: 900 })).toBe(0.62);
+    const phone = ST.stStudioLayout(390, 740);
+    const fit = ST.stCanvasFitScale(canvas, phone, { w: 390, h: 740 });
+    expect(fit).toBeGreaterThanOrEqual(0.34);
+    expect(fit).toBeLessThan(0.62);
+    expect(ST.stAdjustCanvasZoom(null, 'fit', fit)).toBeNull();
+    expect(ST.stAdjustCanvasZoom(null, 'actual', fit)).toBe(1);
+    expect(ST.stAdjustCanvasZoom(null, 'in', 0.42)).toBe(0.52);
+    expect(ST.stAdjustCanvasZoom(1.48, 'in', fit)).toBe(1.5);
+    expect(ST.stAdjustCanvasZoom(0.27, 'out', fit)).toBe(0.25);
+  });
+  it('builds AI edit scopes without sending raw image pixels', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Agent scope', T0);
+    const textOp = addText(d, 'Explain photosynthesis', 'body');
+    const imageOp = addImage(d, 'data:image/png;base64,SECRETPIXELS', 'leaf diagram');
+    const scope = ST.stBuildAgentScope(d, 'selection', [textOp.object.id, imageOp.object.id]);
+    expect(scope.scope).toBe('selection');
+    expect(scope.selectedIds).toEqual([textOp.object.id, imageOp.object.id]);
+    const image = scope.objects.find(o => o.type === 'image');
+    expect(image.hasImage).toBe(true);
+    expect(image.alt).toBe('leaf diagram');
+    expect(image.src).toBeUndefined();
+  });
+  it('normalizes AI edit plans to safe in-scope document ops', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Agent plan', T0);
+    const a = addText(d, 'Original', 'body').object.id;
+    const b = addText(d, 'Outside', 'body').object.id;
+    const img = addImage(d, 'data:image/png;base64,SECRETPIXELS', '').object.id;
+    const plan = {
+      summary: 'Tighten language and describe the image',
+      ops: [
+        { type: 'object.update', target: a, patch: { text: 'Clearer wording', style: { size: 18, color: '#111827', bold: true, align: 'center' }, frame: { x: 20, y: 20, w: 260, h: 80 } } },
+        { type: 'object.update', target: b, patch: { text: 'Should be skipped' } },
+        { type: 'object.update', target: img, patch: { src: 'data:image/png;base64,NEWPIXELS', alt: 'Leaf diagram', decorative: false, fit: 'contain' } },
+        { type: 'canvas.background', fill: '#000000' },
+        { type: 'object.remove', target: a }
+      ]
+    };
+    const normalized = ST.stNormalizeAgentPlan(plan, d, { scope: 'selection', ids: [a, img] });
+    expect(normalized.ops).toHaveLength(2);
+    expect(normalized.ops[0].patch.runs[0].text).toBe('Clearer wording');
+    expect(normalized.ops[0].patch.frame).toEqual({ x: 20, y: 20, w: 260, h: 80, rotation: 0 });
+    expect(normalized.ops[1].patch).toEqual({ alt: 'Leaf diagram', decorative: false, fit: 'contain' });
+    expect(JSON.stringify(normalized.ops)).not.toContain('NEWPIXELS');
+    expect(normalized.rejected.length).toBeGreaterThanOrEqual(3);
+    const textChange = ST.stDescribeAgentChange(normalized.ops[0], d, 0);
+    expect(textChange.notes).toContain('Text changed');
+    expect(textChange.before).toBe('Original');
+    expect(textChange.after).toBe('Clearer wording');
+    const imageChange = ST.stDescribeAgentChange(normalized.ops[1], d, 1);
+    expect(imageChange.safety).toBe('No image pixels changed');
+    expect(JSON.stringify(imageChange)).not.toContain('SECRETPIXELS');
+  });
+  it('keeps UI status tones above WCAG AA text contrast', () => {
+    for (const theme of ['light', 'dark', 'contrast']) {
+      for (const tone of ['error', 'warning', 'success', 'review']) {
+        const colors = ST.stUiStatusTone(theme, tone);
+        expect(ST.stContrastRatio(colors.fg, colors.bg)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+  it('supports keyboard-accessible crop presets and adjustments', () => {
+    expect(ST.stCropPresetRect('top')).toEqual({ x: 0, y: 0, w: 1, h: 0.5 });
+    const nudged = ST.stAdjustCropRect({ x: 0.1, y: 0.1, w: 0.8, h: 0.8 }, 'right', 0.1);
+    expect(nudged).toEqual({ x: 0.2, y: 0.1, w: 0.8, h: 0.8 });
+    const wider = ST.stAdjustCropRect({ x: 0.02, y: 0.2, w: 0.95, h: 0.4 }, 'wider', 0.2);
+    expect(wider.x).toBe(0);
+    expect(wider.w).toBe(1);
+    const tiny = ST.stAdjustCropRect({ x: 0.4, y: 0.4, w: 0.06, h: 0.06 }, 'shorter', 0.2);
+    expect(tiny.h).toBeGreaterThanOrEqual(0.05);
+  });
 });
 
 describe('in-editor crop (math + privacy: removed pixels do not persist)', () => {
@@ -530,7 +679,7 @@ describe('alt gate (design law 3)', () => {
 describe('templates (doc §11 set)', () => {
   it('ships the classroom template gallery — all valid, all ledger-seeded', () => {
     const tpls = ST.stTemplates();
-    expect(tpls.map(t => t.key)).toEqual(['flyer', 'worksheet', 'poster', 'exitTicket', 'vocabPoster', 'labSafety', 'checklist', 'newsletter', 'bookReport', 'cerOrganizer', 'compareContrast', 'blank']);
+    expect(tpls.map(t => t.key)).toEqual(['flyer', 'worksheet', 'poster', 'exitTicket', 'vocabPoster', 'labSafety', 'checklist', 'newsletter', 'bookReport', 'cerOrganizer', 'compareContrast', 'visualSchedule', 'socialStory', 'anchorChart', 'choiceBoard', 'vocabMat', 'rubric', 'labSheet', 'reflectionPage', 'onePageExplainer', 'blank']);
     for (const tpl of tpls) {
       const d = tpl.make(T0);
       expect(ST.stValidateDoc(d)).toEqual([]);
@@ -543,6 +692,19 @@ describe('templates (doc §11 set)', () => {
       d.objects.filter(o => o.type === 'image').forEach(o => expect(o.alt).toBe(''));
       // no template blocks export out of the box
       expect(ST.stAltGate(d.objects)).toEqual([]);
+    }
+  });
+  it('expanded classroom starters are text-first and ready for accessible export', () => {
+    const expanded = ['visualSchedule', 'socialStory', 'anchorChart', 'choiceBoard', 'vocabMat', 'rubric', 'labSheet', 'reflectionPage', 'onePageExplainer'];
+    const byKey = new Map(ST.stTemplates().map(t => [t.key, t]));
+    for (const key of expanded) {
+      const d = byKey.get(key).make(T0);
+      expect(d.ledger.ops[0]).toMatchObject({ type: 'doc.template', template: key });
+      expect(d.objects.some(o => o.type === 'text' && o.role === 'heading1')).toBe(true);
+      expect(d.objects.length).toBeGreaterThan(6);
+      expect(d.objects.filter(o => o.type === 'image')).toHaveLength(0);
+      expect(ST.stAltGate(d.objects)).toEqual([]);
+      expect(ST.stExportHtml(d, { lang: 'en' })).toMatch(/^<!DOCTYPE html>/);
     }
   });
   it('blank canvas honors the chosen orientation at creation (portrait/landscape/square)', () => {

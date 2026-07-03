@@ -1073,10 +1073,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       // ── Canvas ref callback (MAJOR ENHANCEMENTS) ──
       var canvasRef = function(canvas) {
-        if (!canvas || canvas._ecoInit) return;
+        if (!canvas) {
+          if (typeof window !== 'undefined' && window._ecosystemCanvasCleanup) window._ecosystemCanvasCleanup();
+          return;
+        }
+        if (canvas._ecoInit) {
+          if (canvas._ecoSchedule) canvas._ecoSchedule();
+          return;
+        }
+        if (typeof window !== 'undefined' && window._ecosystemCanvasCleanup) window._ecosystemCanvasCleanup();
         canvas._ecoInit = true;
 
         var ctxC = canvas.getContext('2d');
+        if (!ctxC) { canvas._ecoInit = false; return; }
         var dpr = window.devicePixelRatio || 2;
         var cw = canvas.clientWidth;
         var ch = canvas.clientHeight;
@@ -1086,7 +1095,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         var tick = 0;
         var animId = null;
+        var ecoAlive = true;
         var wasDay = true;
+
+        function isEcoHidden() {
+          return typeof document !== 'undefined' && !!document.hidden;
+        }
+
+        function cancelEcoFrame() {
+          if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+          animId = null;
+        }
+
+        function scheduleEcoFrame() {
+          if (!ecoAlive || animId || isEcoHidden()) return;
+          if (typeof requestAnimationFrame !== 'function') return;
+          animId = requestAnimationFrame(draw);
+        }
+
+        function cleanupEcoCanvas() {
+          ecoAlive = false;
+          cancelEcoFrame();
+          canvas.removeEventListener('mousemove', onMouseMove);
+          canvas.removeEventListener('mousedown', onMouseDown);
+          canvas.removeEventListener('mouseup', onMouseUp);
+          canvas.removeEventListener('click', onClick);
+          canvas.removeEventListener('touchstart', onTouchStart);
+          canvas.removeEventListener('touchmove', onTouchMove);
+          canvas.removeEventListener('touchend', onMouseUp);
+          canvas.removeEventListener('touchcancel', onMouseUp);
+          if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onEcoVisibilityChange);
+          canvas._ecoInit = false;
+          canvas._ecoCleanup = null;
+          canvas._ecoSchedule = null;
+          if (typeof window !== 'undefined' && window._ecosystemCanvasCleanup === cleanupEcoCanvas) window._ecosystemCanvasCleanup = null;
+        }
+
+        function onEcoVisibilityChange() {
+          if (!ecoAlive) return;
+          if (!canvas.isConnected) { cleanupEcoCanvas(); return; }
+          if (isEcoHidden()) cancelEcoFrame();
+          else { cancelEcoFrame(); draw(); }
+        }
         // Rolling population history for the phase explainer + live mini-chart.
         // Sampled every ~10 frames (6 samples/sec), capped at last 60 samples
         // = 10 seconds of history. Closed over the animation loop so it
@@ -1182,6 +1232,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         canvas.addEventListener('touchmove', onTouchMove, { passive: false });
         canvas.addEventListener('touchend', onMouseUp);
         canvas.addEventListener('touchcancel', onMouseUp);
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onEcoVisibilityChange);
+        canvas._ecoCleanup = cleanupEcoCanvas;
+        canvas._ecoSchedule = scheduleEcoFrame;
+        if (typeof window !== 'undefined') window._ecosystemCanvasCleanup = cleanupEcoCanvas;
 
         // ── Ground level: animals stay on/below the terrain horizon ──
         var groundY = Math.round(ch * 0.46);
@@ -1264,6 +1318,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ── Draw function ──
         var draw = function() {
+          if (!ecoAlive) return;
+          animId = null;
+          if (!canvas.isConnected) { cleanupEcoCanvas(); return; }
+          if (isEcoHidden()) { cancelEcoFrame(); return; }
           // ── Read speed & pause from dataset ──
           var speed = parseInt(canvas.dataset.speed || '2', 10);
           var paused = canvas.dataset.paused === '1';
@@ -2761,23 +2819,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ctxC.restore();
           }
 
-          animId = requestAnimationFrame(draw);
+          scheduleEcoFrame();
         };
 
-        animId = requestAnimationFrame(draw);
+        scheduleEcoFrame();
 
         canvas._checkEcoChallenges = function(hist) {
           try { checkEcoChallenges(hist); } catch(e) {}
         };
 
-        // Cleanup on canvas removal
-        canvas._ecoCleanup = function() {
-          if (animId) cancelAnimationFrame(animId);
-          canvas.removeEventListener('mousemove', onMouseMove);
-          canvas.removeEventListener('mousedown', onMouseDown);
-          canvas.removeEventListener('mouseup', onMouseUp);
-          canvas.removeEventListener('click', onClick);
-        };
       };
 
       // ── Preset configurations ──

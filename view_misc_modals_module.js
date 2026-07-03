@@ -443,6 +443,63 @@ function AIBackendModal(props) {
     GEMINI_MODELS
   } = props;
   if (!(showAIBackendModal && !_isCanvasEnv)) return null;
+  const aiBackendDefaults = {
+    gemini: "",
+    "alloflow-local": "http://localhost:32173",
+    lmstudio: "http://localhost:1234",
+    localai: "http://localhost:8080",
+    ollama: "http://localhost:11434",
+    openai: "https://api.openai.com",
+    claude: "https://api.anthropic.com",
+    "onnx-npu": "http://localhost:11435",
+    custom: "http://localhost:8080"
+  };
+  const readAIBackendConfig = () => {
+    try {
+      return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
+    } catch {
+      return {};
+    }
+  };
+  const writeAIBackendConfig = (config) => {
+    try {
+      localStorage.setItem("alloflow_ai_config", JSON.stringify(config));
+    } catch (_) {
+    }
+  };
+  const populateModelSelect = (select, emptyLabel, models, selectedValue = "") => {
+    if (!select) return;
+    select.innerHTML = "";
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = emptyLabel;
+    select.appendChild(emptyOption);
+    (models || []).forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = model.id;
+      select.appendChild(option);
+    });
+    select.value = selectedValue || "";
+  };
+  const createAIProviderFromSettings = () => {
+    const cfg = readAIBackendConfig();
+    const backend = cfg.backend || "gemini";
+    const Provider = typeof window !== "undefined" && window.AIProvider || ai && ai.constructor;
+    if (!Provider) return ai;
+    const canInheritActiveProvider = backend === "gemini" || backend === (ai && ai.backend);
+    const inheritedApiKey = canInheritActiveProvider ? ai && ai.apiKey : "";
+    const inheritedModels = canInheritActiveProvider ? ai && ai.models : {};
+    return new Provider({
+      backend,
+      apiKey: cfg.apiKey ?? inheritedApiKey ?? "",
+      baseUrl: cfg.baseUrl || aiBackendDefaults[backend] || "",
+      models: cfg.models || inheritedModels || {},
+      ttsProvider: cfg.ttsProvider || "auto",
+      imageProvider: cfg.imageProvider || "auto",
+      isCanvasEnv: false
+    });
+  };
   return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
   }, className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { className: "font-black text-lg" }, t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
@@ -459,16 +516,26 @@ function AIBackendModal(props) {
         }
       })(),
       onChange: (e) => {
-        const current = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-        const defaults = { gemini: "", localai: "http://localhost:8080", ollama: "http://localhost:11434", openai: "https://api.openai.com", claude: "https://api.anthropic.com", "onnx-npu": "http://localhost:11435", custom: "http://localhost:8080" };
-        const updated = { ...current, backend: e.target.value, baseUrl: defaults[e.target.value] || "" };
-        localStorage.setItem("alloflow_ai_config", JSON.stringify(updated));
+        const current = readAIBackendConfig();
+        const backend = e.target.value;
+        const updated = { ...current, backend, baseUrl: aiBackendDefaults[backend] || "" };
+        if (backend !== current.backend) delete updated.models;
+        writeAIBackendConfig(updated);
         const urlEl = document.getElementById("ai-backend-url");
         if (urlEl) urlEl.value = updated.baseUrl || "";
+        populateModelSelect(document.getElementById("ai-backend-model-default"), "Auto (server default)", [], "");
+        populateModelSelect(document.getElementById("ai-backend-model-fallback"), "Same as default", [], "");
+        const status = document.getElementById("ai-backend-status");
+        if (status) {
+          status.textContent = "Preset applied. Test connection to discover models, then reload to apply.";
+          status.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+        }
       },
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
     },
     /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini (Google) \u2014 Default"),
+    /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "AlloFlow Built-in Engine (future)"),
+    /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"),
     /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"),
     /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)"),
     /* @__PURE__ */ React.createElement("option", { value: "openai" }, "\u{1F916} OpenAI"),
@@ -554,23 +621,26 @@ function AIBackendModal(props) {
           status.className = "";
         }
         try {
-          const result = await ai.testConnection();
+          const result = await createAIProviderFromSettings().testConnection();
           if (result.success) {
-            if (status) {
-              status.textContent = "\u2705 Connected! " + result.modelCount + " model(s) available";
-              status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
-            }
             const modelSelect = document.getElementById("ai-backend-model-default");
             const fallbackSelect = document.getElementById("ai-backend-model-fallback");
+            const cfg = readAIBackendConfig();
+            const firstModel = result.models?.[0]?.id || "";
+            if (firstModel && !cfg.models?.default) {
+              const models = { ...cfg.models || {}, default: firstModel };
+              writeAIBackendConfig({ ...cfg, models });
+            }
+            const refreshedCfg = readAIBackendConfig();
+            if (status) {
+              status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && !cfg.models?.default ? ". Default model selected." : "");
+              status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+            }
             if (modelSelect && result.models?.length > 0) {
-              modelSelect.innerHTML = '<option value="">Auto (server default)</option>' + result.models.map((m) => `<option value="${m.id}">${m.id}</option>`).join("");
-              const cfg = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-              if (cfg.models?.default) modelSelect.value = cfg.models.default;
+              populateModelSelect(modelSelect, "Auto (server default)", result.models, refreshedCfg.models?.default || "");
             }
             if (fallbackSelect && result.models?.length > 0) {
-              fallbackSelect.innerHTML = '<option value="">Same as default</option>' + result.models.map((m) => `<option value="${m.id}">${m.id}</option>`).join("");
-              const cfg = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-              if (cfg.models?.fallback) fallbackSelect.value = cfg.models.fallback;
+              populateModelSelect(fallbackSelect, "Same as default", result.models, refreshedCfg.models?.fallback || "");
             }
           } else {
             if (status) {

@@ -253,7 +253,14 @@ const d = labToolData.physics;
 
           const canvasRef = function (canvasEl) {
 
-            if (!canvasEl) return;
+            if (!canvasEl) {
+              try {
+                var prevCanvas = canvasRef._lastCanvas;
+                if (prevCanvas && prevCanvas._physCleanup) prevCanvas._physCleanup();
+                else if (prevCanvas && prevCanvas._physAnim) { cancelAnimationFrame(prevCanvas._physAnim); prevCanvas._physAnim = null; prevCanvas._physAnimActive = false; }
+              } catch (e) {}
+              return;
+            }
 
             // Always rebind the hit callback so it captures the LATEST
             // checkTargetHit closure (which sees the current `d`). Without
@@ -301,9 +308,11 @@ const d = labToolData.physics;
 
               if (!canvasEl._physAnimActive && canvasEl._drawFunc) {
 
-                canvasEl._physAnimActive = true;
-
-                canvasEl._physAnim = requestAnimationFrame(canvasEl._drawFunc);
+                if (canvasEl._physScheduleFrame) canvasEl._physScheduleFrame();
+                else {
+                  canvasEl._physAnimActive = true;
+                  canvasEl._physAnim = requestAnimationFrame(canvasEl._drawFunc);
+                }
 
               }
 
@@ -329,6 +338,7 @@ const d = labToolData.physics;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._physInit = false; canvasEl._physAnimActive = false; return; }
 
             var dpr = 2;
 
@@ -345,6 +355,46 @@ const d = labToolData.physics;
             var impactParticles = canvasEl._impactParticles || [];
 
             var landingMarkers = canvasEl._landingMarkers || [];
+            var physAlive = true;
+            var physMotionReduced = false;
+            try { physMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isPhysicsHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelPhysicsFrame() {
+              if (canvasEl._physAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._physAnim);
+              canvasEl._physAnim = null;
+              canvasEl._physAnimActive = false;
+            }
+
+            function schedulePhysicsFrame() {
+              if (!physAlive || canvasEl._physAnim || isPhysicsHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._physAnimActive = true;
+              canvasEl._physAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupPhysicsCanvas() {
+              physAlive = false;
+              cancelPhysicsFrame();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onPhysicsVisibilityChange);
+              canvasEl._physCleanup = null;
+              canvasEl._physScheduleFrame = null;
+              canvasEl._physInit = false;
+            }
+
+            function onPhysicsVisibilityChange() {
+              if (!physAlive) return;
+              if (!canvasEl.isConnected) { cleanupPhysicsCanvas(); return; }
+              if (isPhysicsHidden()) cancelPhysicsFrame();
+              else { cancelPhysicsFrame(); draw(); }
+            }
+
+            canvasEl._physCleanup = cleanupPhysicsCanvas;
+            canvasEl._physScheduleFrame = schedulePhysicsFrame;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onPhysicsVisibilityChange);
 
             // Target flags
 
@@ -468,10 +518,13 @@ const d = labToolData.physics;
             var DT_BASE = 0.035;
 
             function draw() {
+              if (!physAlive) return;
+              canvasEl._physAnim = null;
               if (!canvasEl.isConnected) {
-                canvasEl._physAnimActive = false;
+                cleanupPhysicsCanvas();
                 return;
               }
+              if (isPhysicsHidden()) { cancelPhysicsFrame(); return; }
               // Apply user-selected simulation speed (1.0 real-time, 0.5 / 0.25
               // slow-motion, 0 paused). Scales the physics dt every frame so
               // a paused projectile renders normally but advances no physics —
@@ -487,7 +540,7 @@ const d = labToolData.physics;
               } else {
                 dt = DT_BASE * _ss;
               }
-              tick++;
+              tick += physMotionReduced ? 0.2 : 1;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -1856,13 +1909,13 @@ const d = labToolData.physics;
 
               canvasEl._launched = launched; canvasEl._impactParticles = impactParticles; canvasEl._landingMarkers = landingMarkers;
 
-              canvasEl._physAnim = requestAnimationFrame(draw);
+              schedulePhysicsFrame();
 
             }
 
             canvasEl._drawFunc = draw;
 
-            canvasEl._physAnim = requestAnimationFrame(draw);
+            schedulePhysicsFrame();
 
           };
 

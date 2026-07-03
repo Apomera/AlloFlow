@@ -666,6 +666,7 @@
     var x = Math.max(24, Math.min(stFiniteNumber(options.x, 56), Math.max(24, canvas.w - 200)));
     var y = Math.max(24, Math.min(stFiniteNumber(options.y, 72), Math.max(24, canvas.h - 120)));
     var w = Math.max(180, Math.min(stFiniteNumber(options.w, canvas.w - x - 56), canvas.w - x - 24));
+    var kind = stCleanText(cue.kind || cue.type || 'resource', 40).toLowerCase();
     var label = stCleanText(cue.label || cue.title || 'Resource', 160);
     var text = stCleanText(cue.text || cue.definition || cue.prompt, 900);
     var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
@@ -676,34 +677,44 @@
       sourceType: stCleanText(cue.sourceType || cue.kind, 50)
     };
     var objects = [];
-    if (label) {
-      var heading = stMakeText('heading2', label, { x: x, y: y, w: w, h: 44 }, { size: cue.kind === 'question' ? 20 : 24 });
-      heading.provenance = source;
-      objects.push(heading);
-      y += 52;
-    }
-    if (imageSrc) {
-      var imgW = Math.min(260, Math.max(180, Math.round(w * 0.36)));
-      var imgH = Math.min(220, Math.max(140, Math.round(imgW * 0.72)));
-      var image = stMakeImage(imageSrc, label || text || 'Resource image', { x: x + w - imgW, y: y, w: imgW, h: imgH }, 'resource-history');
-      image.provenance = source;
-      objects.push(image);
-      if (text && text !== label) {
-        var bodyW = Math.max(160, w - imgW - 20);
-        var body = stMakeText('body', text, { x: x, y: y, w: bodyW, h: Math.min(170, Math.max(80, imgH)) }, { size: 16 });
-        body.provenance = source;
-        objects.push(body);
+    var add = function (object) {
+      object.provenance = source;
+      objects.push(object);
+    };
+    var card = function (h, fill) {
+      add(stMakeShape('rect', { x: x, y: y, w: w, h: h }, fill));
+    };
+    var bodyText = text && text !== label ? text : '';
+    if (kind === 'glossary') {
+      var termH = imageSrc ? 230 : 190;
+      card(termH, '#ecfeff');
+      add(stMakeText('heading2', label || 'Vocabulary term', { x: x + 20, y: y + 18, w: w - 40, h: 42 }, { size: 24 }));
+      add(stMakeText('heading3', 'Definition', { x: x + 20, y: y + 66, w: 180, h: 28 }, { size: 15 }));
+      if (imageSrc) {
+        var termImgW = Math.min(210, Math.max(150, Math.round(w * 0.32)));
+        add(stMakeImage(imageSrc, label || bodyText || 'Resource image', { x: x + w - termImgW - 20, y: y + 72, w: termImgW, h: 130 }, 'resource-history'));
+        add(stMakeText('body', bodyText || 'Add a student-friendly definition or example.', { x: x + 20, y: y + 98, w: Math.max(160, w - termImgW - 60), h: 104 }, { size: 16 }));
+      } else {
+        add(stMakeText('body', bodyText || 'Add a student-friendly definition or example.', { x: x + 20, y: y + 98, w: w - 40, h: 70 }, { size: 16 }));
       }
-    } else if (text && text !== label) {
-      var bodyOnly = stMakeText('body', text, { x: x, y: y, w: w, h: cue.kind === 'question' ? 72 : 110 }, { size: 16 });
-      bodyOnly.provenance = source;
-      objects.push(bodyOnly);
-    }
-    if (cue.kind === 'question') {
-      var answerY = y + (text && text !== label ? 86 : 12);
-      var answer = stMakeShape('rect', { x: x, y: answerY, w: w, h: 96 }, '#f8fafc');
-      answer.provenance = source;
-      objects.push(answer);
+    } else if (kind === 'question') {
+      card(238, '#fef9c3');
+      add(stMakeText('heading2', 'Question', { x: x + 20, y: y + 18, w: w - 40, h: 36 }, { size: 22 }));
+      add(stMakeText('body', text || label || 'Write the question here.', { x: x + 20, y: y + 62, w: w - 40, h: 68 }, { size: 16 }));
+      add(stMakeText('heading3', 'Answer space', { x: x + 20, y: y + 142, w: w - 40, h: 26 }, { size: 14 }));
+      add(stMakeShape('rect', { x: x + 20, y: y + 170, w: w - 40, h: 50 }, '#ffffff'));
+    } else if (kind === 'image' && imageSrc) {
+      var imageCardH = 226;
+      var imgW = Math.min(280, Math.max(170, Math.round(w * 0.42)));
+      card(imageCardH, '#f8fafc');
+      add(stMakeImage(imageSrc, label || text || 'Resource image', { x: x + 20, y: y + 24, w: imgW, h: 164 }, 'resource-history'));
+      add(stMakeText('heading2', label || 'Visual resource', { x: x + imgW + 36, y: y + 32, w: Math.max(150, w - imgW - 56), h: 44 }, { size: 22 }));
+      add(stMakeText('body', bodyText || 'Add a caption or explanation for this visual.', { x: x + imgW + 36, y: y + 88, w: Math.max(150, w - imgW - 56), h: 100 }, { size: 15 }));
+    } else {
+      var sectionFill = kind === 'section' ? '#eff6ff' : '#f8fafc';
+      card(180, sectionFill);
+      add(stMakeText('heading2', label || (kind === 'section' ? 'Section' : 'Resource'), { x: x + 20, y: y + 20, w: w - 40, h: 42 }, { size: 22 }));
+      add(stMakeText('body', bodyText || text || 'Add notes from this resource.', { x: x + 20, y: y + 76, w: w - 40, h: 82 }, { size: 16 }));
     }
     return objects;
   }
@@ -752,6 +763,98 @@
       title: status === 'ready' ? 'Ready to share' : status === 'blocked' ? 'Exports need attention' : 'Review before sharing',
       message: status === 'ready' ? 'No accessibility issues found.' : status === 'blocked' ? 'Fix required items before accessible export.' : 'A few quality checks could improve this artifact.'
     };
+  }
+
+  function stBuildAccessibilityChecklist(analysis) {
+    var issues = (analysis && Array.isArray(analysis.issues)) ? analysis.issues : [];
+    var rank = { error: 3, warning: 2, review: 1, pass: 0 };
+    var defs = [
+      { key: 'alt', name: 'Alt text', types: ['alt'], pass: 'Content images are described or marked decorative.', fix: 'Some images need alt text before accessible export.' },
+      { key: 'contrast', name: 'Contrast', types: ['contrast'], pass: 'Text contrast meets the current checks.', fix: 'Some text needs stronger contrast.' },
+      { key: 'text', name: 'Readable text', types: ['small-text', 'empty-text'], pass: 'Text is present and readable.', fix: 'Some text is tiny or empty.' },
+      { key: 'structure', name: 'Structure', types: ['heading-order', 'reading-order'], pass: 'Headings and reading order look ready.', fix: 'Review headings or reading order before sharing.' },
+      { key: 'objects', name: 'Objects', types: ['bounds', 'empty-image', 'large-image'], pass: 'Objects are inside the page and export-friendly.', fix: 'Some objects need layout or file-size attention.' }
+    ];
+    return defs.map(function (def) {
+      var matches = issues.filter(function (issue) { return def.types.indexOf(issue.type) >= 0; });
+      var severity = matches.reduce(function (best, issue) { return rank[issue.severity] > rank[best] ? issue.severity : best; }, 'pass');
+      return {
+        key: def.key,
+        name: def.name,
+        status: matches.length ? (severity === 'error' ? 'fix' : 'review') : 'pass',
+        severity: matches.length ? severity : 'pass',
+        count: matches.length,
+        message: matches.length ? def.fix : def.pass
+      };
+    });
+  }
+
+  function stBuildA11yAutoFixPlan(doc) {
+    var analysis = stAnalyzeDoc(doc);
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var patches = {};
+    var fixed = [];
+    var review = [];
+    function targetFor(issue) {
+      return issue && issue.id ? objects.filter(function (o) { return o && o.id === issue.id; })[0] : null;
+    }
+    function patchFor(o) {
+      if (!o || !o.id) return null;
+      if (!patches[o.id]) patches[o.id] = { type: 'object.update', target: o.id, patch: {} };
+      return patches[o.id].patch;
+    }
+    analysis.issues.forEach(function (issue) {
+      var o = targetFor(issue);
+      if (issue.type === 'small-text' && o && o.type === 'text') {
+        var p = patchFor(o);
+        var runs = p.runs || stClone(o.runs || [{ text: '', style: {} }]);
+        if (!runs[0]) runs[0] = { text: '', style: {} };
+        runs[0].style = Object.assign({}, runs[0].style, { size: Math.max(12, stFiniteNumber(runs[0].style && runs[0].style.size, 16)) });
+        p.runs = runs;
+        fixed.push(issue.type);
+        return;
+      }
+      if (issue.type === 'contrast' && o && o.type === 'text') {
+        var suggestion = stSuggestTextColor(doc, o);
+        if (suggestion && suggestion.color) {
+          var cp = patchFor(o);
+          var cruns = cp.runs || stClone(o.runs || [{ text: '', style: {} }]);
+          if (!cruns[0]) cruns[0] = { text: '', style: {} };
+          cruns[0].style = Object.assign({}, cruns[0].style, { color: suggestion.color });
+          cp.runs = cruns;
+          fixed.push(issue.type);
+          return;
+        }
+      }
+      if (issue.type === 'bounds' && o && o.frame) {
+        var bp = patchFor(o);
+        bp.frame = stClampFrame(o.frame, doc.canvas);
+        fixed.push(issue.type);
+        return;
+      }
+      review.push(issue);
+    });
+    return {
+      ops: Object.keys(patches).map(function (id) { return patches[id]; }),
+      fixedTypes: fixed,
+      reviewCount: review.length,
+      remainingIssues: review
+    };
+  }
+
+  function stLayerItems(objects) {
+    return (Array.isArray(objects) ? objects : []).map(function (o, i) {
+      return {
+        id: o && o.id,
+        type: o && o.type,
+        label: stObjectLabelForAgent(o),
+        z: Math.round(stFiniteNumber(o && o.z, 1)),
+        readingIndex: i + 1
+      };
+    }).filter(function (item) { return !!item.id; }).sort(function (a, b) {
+      var dz = b.z - a.z;
+      return dz || (b.readingIndex - a.readingIndex);
+    });
   }
 
   function stStyleKits() {
@@ -847,6 +950,379 @@
       f.y = stFiniteNumber(f.y, 0) + deltaY;
       return { id: o.id, frame: canvas ? stClampFrame(f, canvas) : f };
     });
+  }
+
+  function stStudioLayout(width, height) {
+    var w = Math.max(320, Math.round(stFiniteNumber(width, 1220)));
+    var h = Math.max(360, Math.round(stFiniteNumber(height, 860)));
+    var phone = w < 720;
+    var stacked = phone || w < 1040 || h < 620;
+    var compact = stacked || w < 1180;
+    return {
+      mode: phone ? 'phone' : (stacked ? 'stacked' : (compact ? 'compact' : 'desktop')),
+      compact: compact,
+      stacked: stacked,
+      overlayPadding: phone ? '0' : '12px',
+      shellWidth: phone ? '100vw' : 'min(1220px, 98vw)',
+      shellHeight: phone ? '100dvh' : 'min(860px, 96vh)',
+      shellRadius: phone ? 0 : 14,
+      headerWrap: compact ? 'wrap' : 'nowrap',
+      titleWidth: phone ? 'min(100%, 210px)' : (compact ? '190px' : '220px'),
+      buttonPadding: compact ? '5px 9px' : '6px 12px',
+      panelWidth: stacked ? 'auto' : '215px',
+      inspectorWidth: stacked ? 'auto' : '250px',
+      panelMaxHeight: phone ? '26dvh' : (stacked ? '24vh' : 'none'),
+      inspectorMaxHeight: phone ? '32dvh' : (stacked ? '28vh' : 'none'),
+      canvasPadding: phone ? 8 : (compact ? 12 : 18),
+      canvasScale: phone ? 0.42 : (stacked ? 0.52 : 0.62),
+      readingListMaxHeight: stacked ? '132px' : '38%'
+    };
+  }
+
+  function stCanvasFitScale(canvas, layout, viewport) {
+    var l = layout || stStudioLayout();
+    var c = canvas || ST_CANVAS_PRESETS['letter-portrait'];
+    var vw = stFiniteNumber(viewport && viewport.w, 1220);
+    var base = stFiniteNumber(l.canvasScale, 0.62);
+    if (!l.stacked) return base;
+    var pad = stFiniteNumber(l.canvasPadding, 12);
+    var available = Math.max(260, vw - (pad * 2) - 18);
+    return Math.max(0.34, Math.min(base, available / Math.max(1, stFiniteNumber(c.w, 816))));
+  }
+
+  function stAdjustCanvasZoom(current, action, fitScale) {
+    var fit = Math.max(0.25, Math.min(1.5, stFiniteNumber(fitScale, 0.62)));
+    var cur = (current === null || current === undefined || current === 'fit') ? fit : stFiniteNumber(current, fit);
+    var next = cur;
+    if (action === 'fit') return null;
+    if (action === 'actual') next = 1;
+    else if (action === 'in') next = cur + 0.1;
+    else if (action === 'out') next = cur - 0.1;
+    next = Math.max(0.25, Math.min(1.5, next));
+    return Math.round(next * 100) / 100;
+  }
+
+  function stSnapFrame(frame, canvas, objects, options) {
+    options = options || {};
+    var c = canvas || ST_CANVAS_PRESETS['letter-portrait'];
+    var threshold = Math.max(1, Math.min(24, stFiniteNumber(options.threshold, 8)));
+    var f = stClampFrame(frame, c);
+    var raw = Object.assign({}, f, {
+      x: stFiniteNumber(frame && frame.x, f.x),
+      y: stFiniteNumber(frame && frame.y, f.y)
+    });
+    var xCandidates = [
+      { value: 0, label: 'page left' },
+      { value: 48, label: 'left margin' },
+      { value: c.w / 2, label: 'page center' },
+      { value: c.w - 48, label: 'right margin' },
+      { value: c.w, label: 'page right' }
+    ];
+    var yCandidates = [
+      { value: 0, label: 'page top' },
+      { value: 48, label: 'top margin' },
+      { value: c.h / 2, label: 'page middle' },
+      { value: c.h - 48, label: 'bottom margin' },
+      { value: c.h, label: 'page bottom' }
+    ];
+    (Array.isArray(objects) ? objects : []).forEach(function (o) {
+      if (!o || !o.frame) return;
+      var of = stClampFrame(o.frame, c);
+      xCandidates.push({ value: of.x, label: 'object left' }, { value: of.x + of.w / 2, label: 'object center' }, { value: of.x + of.w, label: 'object right' });
+      yCandidates.push({ value: of.y, label: 'object top' }, { value: of.y + of.h / 2, label: 'object middle' }, { value: of.y + of.h, label: 'object bottom' });
+    });
+    function best(axis, candidates) {
+      var probes = axis === 'x'
+        ? [{ edge: 'start', value: raw.x }, { edge: 'center', value: raw.x + raw.w / 2 }, { edge: 'end', value: raw.x + raw.w }]
+        : [{ edge: 'start', value: raw.y }, { edge: 'center', value: raw.y + raw.h / 2 }, { edge: 'end', value: raw.y + raw.h }];
+      var out = null;
+      probes.forEach(function (probe) {
+        candidates.forEach(function (candidate) {
+          var delta = candidate.value - probe.value;
+          if (Math.abs(delta) <= threshold && (!out || Math.abs(delta) < Math.abs(out.delta))) {
+            out = { axis: axis, edge: probe.edge, value: Math.round(candidate.value), label: candidate.label, delta: delta };
+          }
+        });
+      });
+      return out;
+    }
+    var sx = best('x', xCandidates);
+    var sy = best('y', yCandidates);
+    if (sx) raw.x += sx.delta;
+    if (sy) raw.y += sy.delta;
+    var snapped = stClampFrame(raw, c);
+    return { frame: snapped, guides: [sx, sy].filter(Boolean).map(function (g) { return { axis: g.axis, value: g.value, label: g.label }; }) };
+  }
+
+  function stObjectForAgent(o) {
+    if (!o || !o.id) return null;
+    var out = { id: o.id, type: o.type, frame: stClone(o.frame || {}), z: stFiniteNumber(o.z, 1) };
+    if (o.type === 'text') {
+      var run = (o.runs && o.runs[0]) || { text: '', style: {} };
+      var s = run.style || {};
+      out.role = stSafeTextRole(o.role);
+      out.text = stCleanText(run.text, 3000);
+      out.style = { size: Math.max(8, Math.min(120, stFiniteNumber(s.size, 16))), color: stSafeCssColor(s.color, '#111827'), bold: !!s.bold, align: stSafeAlign(s.align) };
+    } else if (o.type === 'shape') {
+      out.shape = stSafeShape(o.shape);
+      out.fill = stSafeCssColor(o.fill, '#dbeafe');
+      out.decorative = o.decorative !== false;
+    } else if (o.type === 'image') {
+      out.hasImage = !!o.src;
+      out.alt = stCleanText(o.alt, 500);
+      out.decorative = !!o.decorative;
+      out.fit = o.fit === 'contain' ? 'contain' : 'cover';
+      out.origin = (o.provenance && o.provenance.origin) || 'unknown';
+    }
+    return out;
+  }
+
+  function stAgentScopeIds(doc, scope, ids) {
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var all = objects.map(function (o) { return o && o.id; }).filter(Boolean);
+    var requested = (Array.isArray(ids) ? ids : []).filter(function (id) { return all.indexOf(id) >= 0; });
+    if (scope === 'selection' && requested.length) return requested;
+    return all;
+  }
+
+  function stBuildAgentScope(doc, scope, ids) {
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var selection = stAgentScopeIds(doc, scope, ids);
+    var actualScope = (scope === 'selection' && selection.length) ? 'selection' : 'document';
+    var allowed = actualScope === 'selection' ? selection : objects.map(function (o) { return o && o.id; }).filter(Boolean);
+    var analysis = doc ? stAnalyzeDoc(doc) : { counts: { error: 0, warning: 0, review: 0 } };
+    return {
+      title: (doc && doc.title) || 'Untitled',
+      scope: actualScope,
+      selectedIds: actualScope === 'selection' ? allowed.slice() : [],
+      canvas: {
+        preset: doc && doc.canvas && doc.canvas.preset,
+        w: doc && doc.canvas && doc.canvas.w,
+        h: doc && doc.canvas && doc.canvas.h,
+        background: doc && doc.canvas && doc.canvas.background ? { fill: stSafeCssColor(doc.canvas.background.fill, '#ffffff') } : { fill: '#ffffff' }
+      },
+      accessibility: { counts: stClone(analysis.counts) },
+      objects: objects.filter(function (o) { return allowed.indexOf(o && o.id) >= 0; }).map(stObjectForAgent).filter(Boolean)
+    };
+  }
+
+  function stAgentTextRuns(target, patch) {
+    var base = (target.runs && target.runs[0]) || { text: '', style: {} };
+    var source = (patch.runs && patch.runs[0]) || {};
+    var sourceStyle = Object.assign({}, source.style || {}, patch.style || {});
+    var baseStyle = base.style || {};
+    var hasText = Object.prototype.hasOwnProperty.call(patch, 'text') || Object.prototype.hasOwnProperty.call(source, 'text');
+    var text = hasText ? (Object.prototype.hasOwnProperty.call(patch, 'text') ? patch.text : source.text) : base.text;
+    return [{
+      text: String(text == null ? '' : text).slice(0, 4000),
+      style: {
+        size: Math.max(8, Math.min(120, stFiniteNumber(sourceStyle.size, stFiniteNumber(baseStyle.size, 16)))),
+        color: stSafeCssColor(sourceStyle.color, stSafeCssColor(baseStyle.color, '#111827')),
+        bold: Object.prototype.hasOwnProperty.call(sourceStyle, 'bold') ? !!sourceStyle.bold : !!baseStyle.bold,
+        align: stSafeAlign(sourceStyle.align || baseStyle.align)
+      }
+    }];
+  }
+
+  function stNormalizeAgentPatch(target, patch, canvas) {
+    patch = patch && typeof patch === 'object' ? patch : {};
+    var out = {};
+    if (patch.frame) out.frame = stClampFrame(patch.frame, canvas);
+    if (target.type === 'text') {
+      if (patch.runs || Object.prototype.hasOwnProperty.call(patch, 'text') || patch.style) out.runs = stAgentTextRuns(target, patch);
+      if (patch.role) out.role = stSafeTextRole(patch.role);
+    } else if (target.type === 'shape') {
+      if (patch.fill) out.fill = stSafeCssColor(patch.fill, target.fill || '#dbeafe');
+      if (patch.shape) out.shape = stSafeShape(patch.shape);
+    } else if (target.type === 'image') {
+      if (Object.prototype.hasOwnProperty.call(patch, 'alt')) out.alt = stCleanText(patch.alt, 500);
+      if (Object.prototype.hasOwnProperty.call(patch, 'decorative')) out.decorative = !!patch.decorative;
+      if (patch.fit === 'contain' || patch.fit === 'cover') out.fit = patch.fit;
+    }
+    return out;
+  }
+
+  function stNormalizeAgentPlan(plan, doc, options) {
+    options = options || {};
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var allowedIds = stAgentScopeIds(doc, options.scope || (plan && plan.scope), options.ids);
+    var raw = Array.isArray(plan) ? plan : (Array.isArray(plan && plan.ops) ? plan.ops : (Array.isArray(plan && plan.changes) ? plan.changes : []));
+    var out = [];
+    var rejected = [];
+    raw.slice(0, 30).forEach(function (op) {
+      if (!op || typeof op !== 'object') { rejected.push('Invalid change'); return; }
+      if (op.type === 'object.update') {
+        var target = objects.filter(function (o) { return o && o.id === op.target; })[0];
+        if (!target || allowedIds.indexOf(op.target) < 0) { rejected.push('Skipped change outside scope'); return; }
+        var patch = stNormalizeAgentPatch(target, op.patch || {}, doc.canvas);
+        if (!Object.keys(patch).length) { rejected.push('Skipped empty object change'); return; }
+        out.push({ type: 'object.update', target: op.target, patch: patch });
+        return;
+      }
+      if (op.type === 'canvas.background') {
+        if ((options.scope || (plan && plan.scope)) === 'selection') { rejected.push('Skipped page background change for selection scope'); return; }
+        out.push({ type: 'canvas.background', fill: stSafeCssColor(op.fill, '#ffffff') });
+        return;
+      }
+      rejected.push('Unsupported change type');
+    });
+    return {
+      summary: stCleanText((plan && (plan.summary || plan.title)) || (out.length ? out.length + ' change(s) ready' : 'No safe changes found'), 220),
+      ops: out,
+      rejected: rejected
+    };
+  }
+
+  function stObjectLabelForAgent(o) {
+    if (!o) return 'Document';
+    if (o.type === 'text') {
+      var txt = stCleanText(o.runs && o.runs[0] && o.runs[0].text, 48);
+      if (txt) return txt;
+      return /^heading/.test(o.role || '') ? 'Heading' : 'Text block';
+    }
+    if (o.type === 'image') {
+      var alt = stCleanText(o.alt, 48);
+      return alt ? 'Image: ' + alt : 'Image';
+    }
+    return o.shape === 'ellipse' ? 'Ellipse' : 'Rectangle';
+  }
+
+  function stFrameSummary(frame) {
+    var f = frame || {};
+    return 'x ' + stFiniteNumber(f.x, 0) + ', y ' + stFiniteNumber(f.y, 0) + ', w ' + stFiniteNumber(f.w, 0) + ', h ' + stFiniteNumber(f.h, 0);
+  }
+
+  function stDescribeAgentChange(op, doc, index) {
+    var info = {
+      targetId: op && op.target ? op.target : null,
+      title: 'Change ' + ((index || 0) + 1),
+      objectLabel: 'Document',
+      kind: 'Document',
+      notes: [],
+      before: '',
+      after: '',
+      safety: 'Previewed before apply'
+    };
+    if (!op || typeof op !== 'object') return info;
+    if (op.type === 'canvas.background') {
+      info.title = 'Page background';
+      info.kind = 'Background';
+      info.notes.push('Background changed');
+      var currentFill = doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill;
+      info.before = stSafeCssColor(currentFill, '#ffffff');
+      info.after = stSafeCssColor(op.fill, '#ffffff');
+      return info;
+    }
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var target = objects.filter(function (o) { return o && o.id === op.target; })[0];
+    var patch = op.patch || {};
+    info.objectLabel = stObjectLabelForAgent(target);
+    info.title = info.objectLabel;
+    info.kind = target && target.type ? target.type.charAt(0).toUpperCase() + target.type.slice(1) : 'Object';
+    if (patch.runs) {
+      var beforeText = target && target.runs && target.runs[0] ? target.runs[0].text : '';
+      var afterText = patch.runs && patch.runs[0] ? patch.runs[0].text : beforeText;
+      if (String(beforeText) !== String(afterText)) {
+        info.notes.push('Text changed');
+        info.before = stCleanText(beforeText, 220);
+        info.after = stCleanText(afterText, 220);
+      }
+      info.notes.push('Text style checked');
+    }
+    if (patch.role) {
+      info.notes.push('Tag role changed');
+      if (!info.before) info.before = target && target.role ? target.role : '';
+      if (!info.after) info.after = patch.role;
+    }
+    if (patch.frame) {
+      info.notes.push('Layout changed');
+      if (!info.before) info.before = stFrameSummary(target && target.frame);
+      if (!info.after) info.after = stFrameSummary(patch.frame);
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, 'alt')) {
+      info.notes.push('Alt text changed');
+      if (!info.before) info.before = stCleanText(target && target.alt, 220);
+      if (!info.after) info.after = stCleanText(patch.alt, 220);
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, 'decorative')) {
+      info.notes.push('Decorative setting changed');
+      if (!info.before) info.before = target && target.decorative ? 'Decorative' : 'Content image';
+      if (!info.after) info.after = patch.decorative ? 'Decorative' : 'Content image';
+    }
+    if (patch.fill) {
+      info.notes.push('Fill changed');
+      if (!info.before) info.before = target && target.fill ? target.fill : '';
+      if (!info.after) info.after = patch.fill;
+    }
+    if (patch.fit) {
+      info.notes.push('Image fit changed');
+      if (!info.before) info.before = target && target.fit ? target.fit : 'cover';
+      if (!info.after) info.after = patch.fit;
+    }
+    if (target && target.type === 'image') info.safety = 'No image pixels changed';
+    if (!info.notes.length) info.notes.push('Object settings changed');
+    return info;
+  }
+
+  function stUiStatusTone(themeName, tone) {
+    var theme = themeName === 'dark' || themeName === 'contrast' ? themeName : 'light';
+    var key = tone === 'error' || tone === 'warning' || tone === 'success' ? tone : 'review';
+    var palettes = {
+      light: {
+        error: { bg: '#fee2e2', fg: '#7f1d1d', border: '#fecaca' },
+        warning: { bg: '#fef3c7', fg: '#78350f', border: '#fde68a' },
+        success: { bg: '#dcfce7', fg: '#166534', border: '#bbf7d0' },
+        review: { bg: '#ffffff', fg: '#0f172a', border: '#cbd5e1' }
+      },
+      dark: {
+        error: { bg: '#450a0a', fg: '#fecaca', border: '#f87171' },
+        warning: { bg: '#451a03', fg: '#fde68a', border: '#f59e0b' },
+        success: { bg: '#052e16', fg: '#bbf7d0', border: '#22c55e' },
+        review: { bg: '#111827', fg: '#f8fafc', border: '#475569' }
+      },
+      contrast: {
+        error: { bg: '#000000', fg: '#ffffff', border: '#ffff00' },
+        warning: { bg: '#000000', fg: '#ffff00', border: '#ffff00' },
+        success: { bg: '#000000', fg: '#ffffff', border: '#ffff00' },
+        review: { bg: '#000000', fg: '#ffffff', border: '#ffff00' }
+      }
+    };
+    return palettes[theme][key];
+  }
+
+  function stCropPresetRect(key) {
+    if (key === 'full') return { x: 0, y: 0, w: 1, h: 1 };
+    if (key === 'top') return { x: 0, y: 0, w: 1, h: 0.5 };
+    if (key === 'bottom') return { x: 0, y: 0.5, w: 1, h: 0.5 };
+    if (key === 'left') return { x: 0, y: 0, w: 0.5, h: 1 };
+    if (key === 'right') return { x: 0.5, y: 0, w: 0.5, h: 1 };
+    if (key === 'square') return { x: 0.125, y: 0.125, w: 0.75, h: 0.75 };
+    return { x: 0.1, y: 0.1, w: 0.8, h: 0.8 };
+  }
+
+  function stAdjustCropRect(rect, action, step) {
+    var s = Math.max(0.01, Math.min(0.2, stFiniteNumber(step, 0.04)));
+    var r = rect || stCropPresetRect('center');
+    var out = {
+      x: Math.min(Math.max(stFiniteNumber(r.x, 0.1), 0), 0.95),
+      y: Math.min(Math.max(stFiniteNumber(r.y, 0.1), 0), 0.95),
+      w: Math.min(Math.max(stFiniteNumber(r.w, 0.8), 0.05), 1),
+      h: Math.min(Math.max(stFiniteNumber(r.h, 0.8), 0.05), 1)
+    };
+    if (action === 'left') out.x -= s;
+    else if (action === 'right') out.x += s;
+    else if (action === 'up') out.y -= s;
+    else if (action === 'down') out.y += s;
+    else if (action === 'wider') { out.x -= s / 2; out.w += s; }
+    else if (action === 'narrower') { out.x += s / 2; out.w -= s; }
+    else if (action === 'taller') { out.y -= s / 2; out.h += s; }
+    else if (action === 'shorter') { out.y += s / 2; out.h -= s; }
+    out.w = Math.min(Math.max(out.w, 0.05), 1);
+    out.h = Math.min(Math.max(out.h, 0.05), 1);
+    out.x = Math.min(Math.max(out.x, 0), 1 - out.w);
+    out.y = Math.min(Math.max(out.y, 0), 1 - out.h);
+    var round = function (v) { return Math.round(v * 10000) / 10000; };
+    return { x: round(out.x), y: round(out.y), w: round(out.w), h: round(out.h) };
   }
 
   function stBuildPortfolioArtifact(doc, opts) {
@@ -1131,6 +1607,178 @@
           stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 210, w: 260, h: 440 }, '#eff6ff') }, 'user', now);
           stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 330, y: 210, w: 156, h: 440 }, '#fef9c3') }, 'user', now);
           stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 492, y: 210, w: 260, h: 440 }, '#f0fdf4') }, 'user', now);
+          return d;
+        } },
+      { key: 'visualSchedule', emoji: 'SCHED', name: 'Visual schedule', desc: 'A step-by-step day or lesson sequence with simple visual boxes.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Visual Schedule', now);
+          stAppend(d, { type: 'doc.template', template: 'visualSchedule' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Visual Schedule', { x: 48, y: 44, w: 720, h: 64 }, { align: 'center', size: 38 }) }, 'user', now);
+          var steps = ['Arrive', 'Warm up', 'Mini lesson', 'Practice', 'Share', 'Wrap up'];
+          for (var vs = 0; vs < steps.length; vs++) {
+            var yStep = 132 + vs * 128;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yStep, w: 72, h: 72 }, vs % 2 ? '#ecfeff' : '#eef2ff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', String(vs + 1), { x: 64, y: yStep + 17, w: 72, h: 36 }, { align: 'center', size: 28 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 156, y: yStep, w: 596, h: 72 }, '#f8fafc') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', steps[vs], { x: 176, y: yStep + 10, w: 250, h: 32 }, { size: 22 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', 'Time, materials, or support note.', { x: 430, y: yStep + 16, w: 300, h: 34 }, { size: 15 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'socialStory', emoji: 'STORY', name: 'Social story', desc: 'A calm four-part page for expectations, feelings, choices, and plans.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Social Story', now);
+          stAppend(d, { type: 'doc.template', template: 'socialStory' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Social Story', { x: 48, y: 44, w: 720, h: 60 }, { align: 'center', size: 38 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Use clear, supportive language that helps a student prepare and choose a next step.', { x: 72, y: 112, w: 672, h: 52 }, { align: 'center', size: 16 }) }, 'user', now);
+          var storyParts = [
+            ['When this happens', 'Describe the situation in concrete, neutral words.'],
+            ['I might feel', 'Name possible feelings without judging them.'],
+            ['I can try', 'List one or two choices that are safe and realistic.'],
+            ['My plan', 'Write the plan the student wants to remember.']
+          ];
+          for (var ss = 0; ss < storyParts.length; ss++) {
+            var xStory = 64 + (ss % 2) * 356;
+            var yStory = 188 + Math.floor(ss / 2) * 286;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: xStory, y: yStory, w: 316, h: 226 }, ss % 2 ? '#f0fdf4' : '#eff6ff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', storyParts[ss][0], { x: xStory + 18, y: yStory + 18, w: 280, h: 40 }, { size: 22 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', storyParts[ss][1], { x: xStory + 18, y: yStory + 74, w: 280, h: 104 }, { size: 16 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'anchorChart', emoji: 'ANCHOR', name: 'Anchor chart', desc: 'Big idea, reminders, examples, and a student try-it space.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Anchor Chart', now);
+          stAppend(d, { type: 'doc.template', template: 'anchorChart' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 0, w: 816, h: 150 }, '#dbeafe') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Big Idea', { x: 48, y: 48, w: 720, h: 62 }, { align: 'center', size: 44 }) }, 'user', now);
+          var chartBlocks = [
+            ['Remember', 'Write the rule, strategy, or core concept.'],
+            ['Examples', 'Add two or three quick examples students can scan.'],
+            ['Try it', 'Leave space for a student-generated example.']
+          ];
+          for (var ac = 0; ac < chartBlocks.length; ac++) {
+            var yChart = 210 + ac * 210;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yChart, w: 688, h: 144 }, ac === 1 ? '#fef9c3' : '#f8fafc') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', chartBlocks[ac][0], { x: 90, y: yChart + 24, w: 250, h: 38 }, { size: 24 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', chartBlocks[ac][1], { x: 90, y: yChart + 76, w: 610, h: 46 }, { size: 17 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'choiceBoard', emoji: 'CHOICE', name: 'Choice board', desc: 'Nine compact activity choices for centers, extension, or review.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Choice Board', now);
+          stAppend(d, { type: 'doc.template', template: 'choiceBoard' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Choice Board', { x: 48, y: 44, w: 720, h: 58 }, { align: 'center', size: 38 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Choose activities that help you show what you know.', { x: 72, y: 110, w: 672, h: 40 }, { align: 'center', size: 17 }) }, 'user', now);
+          for (var cb = 0; cb < 9; cb++) {
+            var xChoice = 64 + (cb % 3) * 232;
+            var yChoice = 178 + Math.floor(cb / 3) * 176;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: xChoice, y: yChoice, w: 204, h: 132 }, cb % 2 ? '#f0fdf4' : '#eff6ff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Choice ' + (cb + 1), { x: xChoice + 14, y: yChoice + 16, w: 176, h: 32 }, { size: 20, align: 'center' }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', 'Activity or product option.', { x: xChoice + 18, y: yChoice + 64, w: 168, h: 42 }, { size: 14, align: 'center' }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'vocabMat', emoji: 'VOCAB', name: 'Vocabulary mat', desc: 'Term, definition, example, non-example, and sketch space.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Vocabulary Mat', now);
+          stAppend(d, { type: 'doc.template', template: 'vocabMat' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Vocabulary Mat', { x: 48, y: 42, w: 720, h: 58 }, { align: 'center', size: 38 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 122, w: 688, h: 92 }, '#ede9fe') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Term', { x: 92, y: 148, w: 632, h: 36 }, { align: 'center', size: 28 }) }, 'user', now);
+          var vocabBlocks = [
+            ['Definition', 'Write the meaning in your own words.'],
+            ['Example', 'Show where the term appears or how it is used.'],
+            ['Non-example', 'Show what the term is not.'],
+            ['Sketch', 'Draw or add a visual model.']
+          ];
+          for (var vm = 0; vm < vocabBlocks.length; vm++) {
+            var xVocab = 64 + (vm % 2) * 352;
+            var yVocab = 248 + Math.floor(vm / 2) * 248;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: xVocab, y: yVocab, w: 320, h: 196 }, vm % 2 ? '#f8fafc' : '#ecfeff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', vocabBlocks[vm][0], { x: xVocab + 18, y: yVocab + 18, w: 284, h: 34 }, { size: 22 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', vocabBlocks[vm][1], { x: xVocab + 18, y: yVocab + 70, w: 284, h: 82 }, { size: 16 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'rubric', emoji: 'RUBRIC', name: 'Rubric', desc: 'Criteria rows with four clear performance levels.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Rubric', now);
+          stAppend(d, { type: 'doc.template', template: 'rubric' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Rubric', { x: 48, y: 44, w: 720, h: 58 }, { align: 'center', size: 38 }) }, 'user', now);
+          var levels = ['Start', 'Grow', 'Meet', 'Extend'];
+          var criteria = ['Idea', 'Accuracy', 'Clarity', 'Care'];
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Criteria', { x: 64, y: 130, w: 140, h: 32 }, { size: 18 }) }, 'user', now);
+          for (var rl = 0; rl < levels.length; rl++) {
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', levels[rl], { x: 214 + rl * 130, y: 130, w: 118, h: 32 }, { size: 18, align: 'center' }) }, 'user', now);
+          }
+          for (var rr = 0; rr < criteria.length; rr++) {
+            var yRubric = 184 + rr * 112;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yRubric, w: 668, h: 86 }, rr % 2 ? '#f8fafc' : '#eff6ff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', criteria[rr], { x: 78, y: yRubric + 26, w: 116, h: 34 }, { size: 18 }) }, 'user', now);
+            for (var rc = 0; rc < 4; rc++) {
+              stAppend(d, { type: 'object.add', object: stMakeText('body', 'Descriptor', { x: 214 + rc * 130, y: yRubric + 26, w: 118, h: 34 }, { align: 'center', size: 14 }) }, 'user', now);
+            }
+          }
+          return d;
+        } },
+      { key: 'labSheet', emoji: 'LAB', name: 'Lab sheet', desc: 'Question, hypothesis, materials, procedure, observations, and conclusion.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Lab Sheet', now);
+          stAppend(d, { type: 'doc.template', template: 'labSheet' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Lab Sheet', { x: 48, y: 44, w: 720, h: 58 }, { align: 'center', size: 38 }) }, 'user', now);
+          var labBlocks = [
+            ['Question', 'What are we trying to find out?'],
+            ['Hypothesis', 'I think... because...'],
+            ['Materials', 'List what you need.'],
+            ['Procedure', 'Number the steps.'],
+            ['Observations', 'Record data, drawings, or notes.'],
+            ['Conclusion', 'Use evidence to answer the question.']
+          ];
+          for (var lb = 0; lb < labBlocks.length; lb++) {
+            var xLab = 64 + (lb % 2) * 356;
+            var yLab = 130 + Math.floor(lb / 2) * 234;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: xLab, y: yLab, w: 316, h: 176 }, lb % 2 ? '#f8fafc' : '#ecfeff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', labBlocks[lb][0], { x: xLab + 18, y: yLab + 18, w: 280, h: 34 }, { size: 22 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', labBlocks[lb][1], { x: xLab + 18, y: yLab + 70, w: 280, h: 70 }, { size: 15 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'reflectionPage', emoji: 'REFLECT', name: 'Reflection page', desc: 'Prompts for noticing, strategy, next step, and confidence.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Reflection Page', now);
+          stAppend(d, { type: 'doc.template', template: 'reflectionPage' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Reflection', { x: 48, y: 44, w: 720, h: 58 }, { align: 'center', size: 38 }) }, 'user', now);
+          var prompts = ['Today I noticed', 'I tried', 'Next time I will', 'A question I still have'];
+          for (var rp = 0; rp < prompts.length; rp++) {
+            var yReflect = 132 + rp * 166;
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', prompts[rp], { x: 64, y: yReflect, w: 688, h: 34 }, { size: 22 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yReflect + 44, w: 688, h: 88 }, '#f8fafc') }, 'user', now);
+          }
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Confidence', { x: 64, y: 810, w: 200, h: 34 }, { size: 22 }) }, 'user', now);
+          for (var scale = 0; scale < 5; scale++) {
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64 + scale * 92, y: 858, w: 58, h: 58 }, '#ffffff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', String(scale + 1), { x: 64 + scale * 92, y: 874, w: 58, h: 28 }, { align: 'center', size: 20 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'onePageExplainer', emoji: 'EXPLAIN', name: 'One-page explainer', desc: 'A polished one-page layout for a concept, process, or topic.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'One-Page Explainer', now);
+          stAppend(d, { type: 'doc.template', template: 'onePageExplainer' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 0, w: 816, h: 144 }, '#f0fdf4') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Topic or Concept', { x: 48, y: 44, w: 720, h: 62 }, { align: 'center', size: 40 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Key idea', { x: 64, y: 186, w: 300, h: 38 }, { size: 24 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Explain the big idea in one or two sentences.', { x: 64, y: 238, w: 300, h: 96 }, { size: 17 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 424, y: 186, w: 300, h: 220 }, '#f8fafc') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Visual model', { x: 448, y: 214, w: 252, h: 34 }, { align: 'center', size: 22 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Add a diagram, example, or sketch.', { x: 454, y: 276, w: 240, h: 60 }, { align: 'center', size: 16 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Steps or parts', { x: 64, y: 460, w: 688, h: 38 }, { size: 24 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 516, w: 688, h: 160 }, '#eff6ff') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', '1. First part\n2. Second part\n3. Third part', { x: 90, y: 546, w: 636, h: 94 }, { size: 18 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Takeaway', { x: 64, y: 724, w: 688, h: 38 }, { size: 24 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'What should someone remember after reading this?', { x: 64, y: 780, w: 688, h: 70 }, { size: 18 }) }, 'user', now);
           return d;
         } },
       { key: 'blank', emoji: '⬜', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).', orientations: true,
@@ -1419,6 +2067,14 @@
     var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
     var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
+    var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
+    var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
+    var _snapEnabled = React.useState(true); var snapEnabled = _snapEnabled[0], setSnapEnabled = _snapEnabled[1];
+    var _snapGuides = React.useState([]); var snapGuides = _snapGuides[0], setSnapGuides = _snapGuides[1];
+    var readViewport = function () {
+      try { return { w: window.innerWidth || 1220, h: window.innerHeight || 860 }; } catch (_) { return { w: 1220, h: 860 }; }
+    };
+    var _viewport = React.useState(readViewport); var viewport = _viewport[0], setViewport = _viewport[1];
     var _drag = React.useRef(null); // {id, mode:'move'|'resize', startX, startY, frame0}
     var _skipFocusSelect = React.useRef(false);
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
@@ -1436,6 +2092,12 @@
       } catch (_) {}
       return function () { try { var p = _prevFocusRef.current; if (p && typeof p.focus === 'function') p.focus(); } catch (_) {} };
     }, []);
+    React.useEffect(function () {
+      var update = function () { setViewport(readViewport()); };
+      update();
+      try { window.addEventListener('resize', update); } catch (_) {}
+      return function () { try { window.removeEventListener('resize', update); } catch (_) {} };
+    }, []);
     var trapTab = function (ev) {
       if (ev.key !== 'Tab') return;
       var root = _shellRef.current; if (!root) return;
@@ -1451,10 +2113,16 @@
     // result enters the ledger as actor 'ai' (provenance by construction).
     var canGenerateImage = typeof props.onGenerateImage === 'function';
     var canSuggestAlt = typeof props.onSuggestAlt === 'function';
+    var canAgentEdit = typeof props.onAgentEdit === 'function';
     var _aiGenOpen = React.useState(false); var aiGenOpen = _aiGenOpen[0], setAiGenOpen = _aiGenOpen[1];
     var _aiGenPrompt = React.useState(''); var aiGenPrompt = _aiGenPrompt[0], setAiGenPrompt = _aiGenPrompt[1];
     var _aiBusy = React.useState(null); var aiBusy = _aiBusy[0], setAiBusy = _aiBusy[1];
     var _altNonce = React.useState(0); var altNonce = _altNonce[0], setAltNonce = _altNonce[1];
+    var _agentOpen = React.useState(false); var agentOpen = _agentOpen[0], setAgentOpen = _agentOpen[1];
+    var _agentScope = React.useState('selection'); var agentScope = _agentScope[0], setAgentScope = _agentScope[1];
+    var _agentPrompt = React.useState(''); var agentPrompt = _agentPrompt[0], setAgentPrompt = _agentPrompt[1];
+    var _agentPlan = React.useState(null); var agentPlan = _agentPlan[0], setAgentPlan = _agentPlan[1];
+    var _agentSelectedOps = React.useState([]); var agentSelectedOps = _agentSelectedOps[0], setAgentSelectedOps = _agentSelectedOps[1];
     // In-editor crop: cropId opens the modal, cropRect is the drag selection in
     // 0..1 fractions of the displayed image.
     var _cropId = React.useState(null); var cropId = _cropId[0], setCropId = _cropId[1];
@@ -1475,9 +2143,17 @@
       : themeName === 'dark'
         ? { overlay: 'rgba(2,6,23,0.78)', shell: '#0f172a', panel: '#111827', panelAlt: '#1e293b', text: '#f8fafc', muted: '#cbd5e1', soft: '#94a3b8', border: '#475569', headerBg: '#020617', headerText: '#f8fafc', hBtnBg: '#1e293b', hBtnText: '#f8fafc', hBtnBorder: '#475569', inputBg: '#020617', inputText: '#f8fafc', accent: '#a5b4fc', exportBg: '#1e1b4b', exportBorder: '#4338ca', selectedBg: '#312e81' }
         : { overlay: 'rgba(15,23,42,0.55)', shell: '#f8fafc', panel: '#ffffff', panelAlt: '#f8fafc', text: '#0f172a', muted: '#64748b', soft: '#94a3b8', border: '#cbd5e1', headerBg: '#0f172a', headerText: '#ffffff', hBtnBg: '#1e293b', hBtnText: '#e2e8f0', hBtnBorder: '#334155', inputBg: '#ffffff', inputText: '#0f172a', accent: '#6366f1', exportBg: '#eef2ff', exportBorder: '#c7d2fe', selectedBg: '#e0e7ff' };
+    var layout = stStudioLayout(viewport.w, viewport.h);
+    var statusTone = function (tone) { return stUiStatusTone(themeName, tone); };
 
     var doc = _docRef.current;
-    var SCALE = 0.62; // canvas display scale (816 → ~506px, fits beside panels)
+    var fitScale = doc ? stCanvasFitScale(doc.canvas, layout, viewport) : layout.canvasScale;
+    var SCALE = canvasZoom === null ? fitScale : stAdjustCanvasZoom(canvasZoom, 'clamp', fitScale);
+    var zoomLabel = Math.round(SCALE * 100) + '%';
+    var changeCanvasZoom = function (action) {
+      setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
+      stAnnounce(TT('studio.a11y_zoom_changed', 'Canvas zoom changed'));
+    };
 
     var dispatch = function (opBody, actor) {
       try {
@@ -1504,9 +2180,12 @@
     });
     if (!selectionIds.length && selected) selectionIds = [selected.id];
     var selectedGroup = doc ? stSelectionObjects(doc.objects, selectionIds) : [];
+    var agentEffectiveScope = agentScope === 'selection' && selectionIds.length ? 'selection' : 'document';
     var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
     var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
+    var accessibilityChecklist = stBuildAccessibilityChecklist(preflight);
     var ready = doc ? stBuildReadyActions(doc) : null;
+    var a11yAutoFix = doc ? stBuildA11yAutoFixPlan(doc) : { ops: [], fixedTypes: [], reviewCount: 0 };
     var historyItems = [];
     try {
       historyItems = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : (Array.isArray(window.__alloflowHistory) ? window.__alloflowHistory : []));
@@ -1595,6 +2274,18 @@
     };
 
     // ── AI (Milestone B): generate image + suggest alt text ──
+    var applyA11yAutoFix = function () {
+      if (!doc) return;
+      var plan = stBuildA11yAutoFixPlan(doc);
+      if (!plan.ops.length) {
+        addToast(TT('studio.a11y_no_quick_fixes', 'No simple accessibility fixes are available. Review the remaining items.'), 'info');
+        return;
+      }
+      plan.ops.forEach(function (op) { dispatch(op, 'user'); });
+      stAnnounce(TT('studio.a11y_quick_fixed', 'Simple accessibility fixes applied'));
+      addToast(TT('studio.a11y_quick_fixed', 'Simple accessibility fixes applied') + ' (' + plan.fixedTypes.length + ')', 'success');
+    };
+
     var runGenerateImage = function () {
       var prompt = String(aiGenPrompt || '').trim();
       if (!prompt) { addToast(TT('studio.ai_need_prompt', 'Describe the image you want first.'), 'info'); return; }
@@ -1630,6 +2321,47 @@
         stAnnounce(TT('studio.a11y_ai_alt', 'Draft alt text added — review it'));
         addToast(TT('studio.ai_alt_ok', '✨ Draft alt text added (logged as AI). Please review and edit it.'), 'info');
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.') + ' ' + (err && err.message || ''), 'error'); });
+    };
+
+    var runAgentEdit = function () {
+      var prompt = String(agentPrompt || '').trim();
+      if (!prompt) { addToast(TT('studio.agent_need_prompt', 'Tell the AI what to change first.'), 'info'); return; }
+      if (!doc || !canAgentEdit || aiBusy) return;
+      var scope = stBuildAgentScope(doc, agentEffectiveScope, selectionIds);
+      setAiBusy('agent');
+      setAgentPlan(null);
+      setAgentSelectedOps([]);
+      Promise.resolve(props.onAgentEdit({ prompt: prompt, scope: scope.scope, selectionIds: scope.selectedIds, document: scope })).then(function (plan) {
+        setAiBusy(null);
+        var normalized = stNormalizeAgentPlan(plan, _docRef.current, { scope: scope.scope, ids: scope.selectedIds });
+        setAgentPlan(normalized);
+        setAgentSelectedOps(normalized.ops.map(function (_, idx) { return idx; }));
+        if (normalized.ops.length) {
+          stAnnounce(TT('studio.a11y_agent_plan_ready', 'AI edit proposal ready'));
+          addToast(TT('studio.agent_plan_ready', 'AI proposed changes. Review before applying.'), 'info');
+        } else {
+          addToast(TT('studio.agent_no_safe_changes', 'AI did not return safe editable changes.'), 'error');
+        }
+      }).catch(function (err) {
+        setAiBusy(null);
+        addToast(TT('studio.agent_failed', 'AI edit failed.') + ' ' + (err && err.message || ''), 'error');
+      });
+    };
+    var applyAgentPlan = function () {
+      if (!agentPlan || !agentPlan.ops || !agentPlan.ops.length) return;
+      var selectedIndexes = Array.isArray(agentSelectedOps) ? agentSelectedOps : [];
+      var opsToApply = agentPlan.ops.filter(function (_, idx) { return selectedIndexes.indexOf(idx) >= 0; });
+      if (!opsToApply.length) { addToast(TT('studio.agent_select_change', 'Choose at least one change to apply.'), 'info'); return; }
+      var touched = [];
+      opsToApply.forEach(function (op) {
+        dispatch(op, 'ai');
+        if (op.target && touched.indexOf(op.target) < 0) touched.push(op.target);
+      });
+      if (touched.length) { setSelectedIds(touched); setSelectedId(touched[touched.length - 1]); }
+      setAgentPlan(null);
+      setAgentSelectedOps([]);
+      stAnnounce(TT('studio.a11y_agent_applied', 'AI proposed changes applied'));
+      addToast(TT('studio.agent_applied', 'Applied AI changes and logged them in the process history.'), 'success');
     };
 
     // ── in-editor crop ──
@@ -1673,6 +2405,18 @@
       im.onerror = function () { addToast(TT('studio.crop_failed', 'Could not crop the image.'), 'error'); };
       im.src = o.src;
     };
+    var setCropPreset = function (key) {
+      setCropRect(stCropPresetRect(key));
+      stAnnounce(TT('studio.a11y_crop_region_changed', 'Crop region changed'));
+    };
+    var adjustCrop = function (action) {
+      setCropRect(function (r) { return stAdjustCropRect(r || stCropPresetRect('center'), action, 0.04); });
+      stAnnounce(TT('studio.a11y_crop_region_changed', 'Crop region changed'));
+    };
+    var cropSummary = function (rect) {
+      if (!rect) return TT('studio.crop_no_region', 'No crop region selected');
+      return TT('studio.crop_region', 'Crop region') + ': X ' + Math.round(rect.x * 100) + '%, Y ' + Math.round(rect.y * 100) + '%, W ' + Math.round(rect.w * 100) + '%, H ' + Math.round(rect.h * 100) + '%';
+    };
 
     // ── selection + drag ──
     var onObjectPointerDown = function (o, mode) {
@@ -1693,7 +2437,16 @@
       var dx = (ev.clientX - d.startX) / SCALE, dy = (ev.clientY - d.startY) / SCALE;
       var f = stClone(d.frame0);
       if (d.mode === 'move') { f.x += dx; f.y += dy; } else { f.w += dx; f.h += dy; }
-      setDragLive({ id: d.id, frame: stClampFrame(f, _docRef.current.canvas) });
+      var live = stClampFrame(f, _docRef.current.canvas);
+      if (snapEnabled && d.mode === 'move') {
+        var others = ((_docRef.current && _docRef.current.objects) || []).filter(function (o) { return o && o.id !== d.id; });
+        var snapped = stSnapFrame(f, _docRef.current.canvas, others, { threshold: 8 });
+        live = snapped.frame;
+        setSnapGuides(snapped.guides);
+      } else {
+        setSnapGuides([]);
+      }
+      setDragLive({ id: d.id, frame: live });
     };
     var onCanvasPointerUp = function () {
       var d = _drag.current; if (!d) return;
@@ -1704,6 +2457,7 @@
         else dispatch({ type: 'object.resize', target: d.id, w: f.w, h: f.h }, 'user');
       }
       setDragLive(null);
+      setSnapGuides([]);
     };
 
     // Keyboard object manipulation (a11y law, doc §7): same grammar as the
@@ -1885,23 +2639,30 @@
 
     // ── styles ──
     var S = {
-      overlay: { position: 'fixed', inset: 0, zIndex: 9000, background: C.overlay, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' },
-      shell: { background: C.shell, color: C.text, border: '1px solid ' + C.border, borderRadius: '14px', width: 'min(1220px, 98vw)', height: 'min(860px, 96vh)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: themeName === 'contrast' ? '0 0 0 3px #ffff00' : '0 8px 40px rgba(15,23,42,0.4)', fontFamily: 'system-ui, sans-serif' },
-      header: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: C.headerBg, color: C.headerText, borderBottom: '1px solid ' + C.hBtnBorder },
-      hBtn: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + C.hBtnBorder, background: C.hBtnBg, color: C.hBtnText, fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
-      body: { flex: 1, display: 'flex', minHeight: 0 },
-      panel: { width: '215px', padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, borderRight: '1px solid ' + C.border, display: 'flex', flexDirection: 'column', gap: '8px' },
-      rpanel: { width: '250px', padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, borderLeft: '1px solid ' + C.border, display: 'flex', flexDirection: 'column', gap: '8px' },
-      tool: { padding: '8px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '12px', fontWeight: 700, color: C.text, cursor: 'pointer', textAlign: 'left' },
+      overlay: { position: 'fixed', inset: 0, zIndex: 9000, background: C.overlay, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: layout.overlayPadding },
+      shell: { background: C.shell, color: C.text, border: '1px solid ' + C.border, borderRadius: layout.shellRadius + 'px', width: layout.shellWidth, height: layout.shellHeight, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: themeName === 'contrast' ? '0 0 0 3px #ffff00' : '0 8px 40px rgba(15,23,42,0.4)', fontFamily: 'system-ui, sans-serif' },
+      header: { display: 'flex', alignItems: 'center', alignContent: 'flex-start', gap: layout.compact ? '6px' : '10px', padding: layout.compact ? '8px 10px' : '10px 14px', background: C.headerBg, color: C.headerText, borderBottom: '1px solid ' + C.hBtnBorder, flexWrap: layout.headerWrap },
+      headerSpacer: { marginLeft: layout.compact ? 0 : 'auto', flex: layout.compact ? '1 0 10px' : '0 0 auto' },
+      titleInput: { background: C.hBtnBg, color: C.hBtnText, border: '1px solid ' + C.hBtnBorder, borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: layout.titleWidth, maxWidth: '100%' },
+      hBtn: { padding: layout.buttonPadding, minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.hBtnBorder, background: C.hBtnBg, color: C.hBtnText, fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
+      body: { flex: 1, display: 'flex', flexDirection: layout.stacked ? 'column' : 'row', minHeight: 0, overflow: layout.stacked ? 'auto' : 'hidden' },
+      panel: Object.assign({ width: layout.panelWidth, padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }, layout.stacked ? { maxHeight: layout.panelMaxHeight, borderRight: 'none', borderBottom: '1px solid ' + C.border } : { borderRight: '1px solid ' + C.border }),
+      rpanel: Object.assign({ width: layout.inspectorWidth, padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }, layout.stacked ? { maxHeight: layout.inspectorMaxHeight, borderLeft: 'none', borderTop: '1px solid ' + C.border } : { borderLeft: '1px solid ' + C.border }),
+      canvasWrap: { flex: 1, minHeight: layout.stacked ? '260px' : 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start', gap: '8px', padding: layout.canvasPadding + 'px' },
+      canvasToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', flexShrink: 0 },
+      canvasViewport: { flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' },
+      canvasPage: { position: 'relative', background: (doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
+      readingList: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: layout.readingListMaxHeight, overflowY: 'auto' },
+      tool: { padding: layout.compact ? '7px 9px' : '8px 10px', minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '12px', fontWeight: 700, color: C.text, cursor: 'pointer', textAlign: 'left' },
       label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: C.muted, marginTop: '4px' },
       input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid ' + C.border, borderRadius: '6px', fontSize: '12px', background: C.inputBg, color: C.inputText },
     };
 
     var templateCategoryFor = function (tpl) {
       if (!tpl) return 'all';
-      if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport') return 'poster';
-      if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist') return 'worksheet';
-      if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast') return 'organizer';
+      if (tpl.key === 'flyer' || tpl.key === 'poster' || tpl.key === 'vocabPoster' || tpl.key === 'labSafety' || tpl.key === 'newsletter' || tpl.key === 'bookReport' || tpl.key === 'anchorChart' || tpl.key === 'onePageExplainer') return 'poster';
+      if (tpl.key === 'worksheet' || tpl.key === 'exitTicket' || tpl.key === 'checklist' || tpl.key === 'rubric' || tpl.key === 'labSheet' || tpl.key === 'reflectionPage') return 'worksheet';
+      if (tpl.key === 'cerOrganizer' || tpl.key === 'compareContrast' || tpl.key === 'visualSchedule' || tpl.key === 'socialStory' || tpl.key === 'choiceBoard' || tpl.key === 'vocabMat') return 'organizer';
       if (tpl.key === 'blank') return 'blank';
       return 'poster';
     };
@@ -1945,7 +2706,7 @@
       var shownTemplates = templateFilter === 'all' ? allTemplates : allTemplates.filter(function (tpl) { return templateCategoryFor(tpl) === templateFilter; });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
-        h('div', { ref: _shellRef, style: Object.assign({}, S.shell, { width: 'min(860px, 96vw)', height: 'auto', maxHeight: '92vh' }) },
+        h('div', { ref: _shellRef, style: Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
@@ -2009,22 +2770,26 @@
       var scene = stReplay(doc, at);
       var summary = stActorSummary(ops);
       var mins = Math.max(1, Math.round(summary.activeMs / 60000));
+      var processScale = layout.stacked
+        ? Math.max(0.34, Math.min(0.45, ((viewport.w || 920) - (layout.canvasPadding * 2) - 18) / Math.max(1, doc.canvas.w)))
+        : 0.45;
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); setScrubSeq(null); setView('edit'); } } },
         h('div', { ref: _shellRef, style: S.shell },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎞️'),
             h('strong', null, student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline')),
-            h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: exportProcess }, 'Process notes'),
+            h('span', { style: S.headerSpacer }),
+            h('button', { style: S.hBtn, onClick: exportProcess }, 'Process notes'),
             h('button', { style: S.hBtn, onClick: function () { setScrubSeq(null); setView('edit'); } }, '← ' + TT('studio.back_to_editing', 'Back to editing'))),
-          h('div', { style: { display: 'flex', flex: 1, minHeight: 0 } },
-            h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px', overflow: 'auto' } },
-              h('div', { style: { position: 'relative', width: doc.canvas.w * 0.45 + 'px', height: doc.canvas.h * 0.45 + 'px', background: (scene.canvas.background && scene.canvas.background.fill) || '#fff', boxShadow: '0 2px 10px rgba(15,23,42,0.2)', overflow: 'hidden', flexShrink: 0 } },
-                scene.objects.map(function (o) { return renderObject(o, 0.45, null, {}, h); })),
+          h('div', { style: { display: 'flex', flexDirection: layout.stacked ? 'column' : 'row', flex: 1, minHeight: 0, overflow: layout.stacked ? 'auto' : 'hidden' } },
+            h('div', { style: { flex: 1, minHeight: layout.stacked ? '260px' : 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: layout.canvasPadding + 'px', overflow: 'auto' } },
+              h('div', { style: { position: 'relative', width: doc.canvas.w * processScale + 'px', height: doc.canvas.h * processScale + 'px', background: (scene.canvas.background && scene.canvas.background.fill) || '#fff', boxShadow: '0 2px 10px rgba(15,23,42,0.2)', overflow: 'hidden', flexShrink: 0 } },
+                scene.objects.map(function (o) { return renderObject(o, processScale, null, {}, h); })),
               h('label', { style: { width: '90%', marginTop: '12px', fontSize: '12px', color: C.text, fontWeight: 700 } },
                 TT('studio.scrub_label', 'Scrub the timeline') + ' — ' + at + ' / ' + maxSeq,
                 h('input', { type: 'range', min: 0, max: maxSeq, value: at, style: { width: '100%' }, 'aria-valuetext': TT('studio.scrub_step', 'step') + ' ' + at + ' ' + TT('studio.of', 'of') + ' ' + maxSeq, onChange: function (e) { setScrubSeq(parseInt(e.target.value, 10)); } }))),
-            h('div', { style: Object.assign({}, S.rpanel, { width: '300px' }) },
+            h('div', { style: Object.assign({}, S.rpanel, { width: layout.stacked ? 'auto' : '300px' }) },
               h('div', { style: { padding: '10px', background: C.exportBg, border: '1px solid ' + C.exportBorder, borderRadius: '10px', fontSize: '12px', color: C.text, fontWeight: 700 } },
                 summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
                 h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
@@ -2042,15 +2807,33 @@
 
     // ── editor view ──
     var liveFrameFor = function (o) { return (dragLive && dragLive.id === o.id) ? dragLive.frame : o.frame; };
+    var agentSelectedSet = {};
+    (Array.isArray(agentSelectedOps) ? agentSelectedOps : []).forEach(function (idx) { agentSelectedSet[idx] = true; });
+    var agentChangeItems = agentPlan && Array.isArray(agentPlan.ops)
+      ? agentPlan.ops.map(function (op, idx) { return stDescribeAgentChange(op, doc, idx); })
+      : [];
+    var selectedAgentCount = agentPlan && Array.isArray(agentPlan.ops)
+      ? agentPlan.ops.filter(function (_, idx) { return !!agentSelectedSet[idx]; }).length
+      : 0;
+    var agentPendingIds = [];
+    if (agentPlan && Array.isArray(agentPlan.ops)) {
+      agentPlan.ops.forEach(function (op, idx) {
+        if (agentSelectedSet[idx] && op && op.target && agentPendingIds.indexOf(op.target) < 0) agentPendingIds.push(op.target);
+      });
+    }
+    var agentPendingColor = themeName === 'contrast' ? C.accent : '#f59e0b';
+    var snapGuideColor = themeName === 'contrast' ? '#ffff00' : '#f59e0b';
 
     function renderObject(o, scale, interactivity, extra, hh) {
       var f = interactivity ? liveFrameFor(o) : o.frame;
       var isSel = interactivity && (selectedId === o.id || selectionIds.indexOf(o.id) >= 0);
+      var isAgentPending = interactivity && agentPendingIds.indexOf(o.id) >= 0;
       var base = {
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
         boxSizing: 'border-box', cursor: interactivity ? 'move' : 'default',
-        outline: isSel ? '2px solid ' + C.accent : '1px dashed transparent',
+        outline: isSel ? '2px solid ' + C.accent : (isAgentPending ? '2px solid ' + agentPendingColor : '1px dashed transparent'),
+        boxShadow: isAgentPending ? '0 0 0 4px rgba(245,158,11,0.22)' : undefined,
       };
       var inner = null;
       if (o.type === 'text') {
@@ -2132,6 +2915,19 @@
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
         h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
         h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
+    });
+
+    var layerList = stLayerItems(doc.objects).map(function (item) {
+      var o = doc.objects.filter(function (obj) { return obj && obj.id === item.id; })[0];
+      var text = objectSummary(o, 30);
+      var selectedLayer = selectionIds.indexOf(item.id) >= 0;
+      return h('div', { key: item.id, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px', padding: '5px', borderRadius: '8px', background: selectedLayer ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
+        h('button', { onClick: function () { selectOnly(item.id); }, style: { border: 'none', background: 'none', color: C.text, textAlign: 'left', cursor: 'pointer', minWidth: 0, padding: 0 }, 'aria-label': TT('studio.select_layer', 'Select layer') + ': ' + text },
+          h('span', { style: { display: 'block', fontSize: '11px', fontWeight: 800, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, text),
+          h('span', { style: { display: 'block', fontSize: '9.5px', color: C.muted, marginTop: '2px' } }, TT('studio.layer_z', 'Layer') + ' ' + item.z + ' - ' + TT('studio.reading_position', 'Read') + ' ' + item.readingIndex)),
+        h('span', { style: { display: 'flex', gap: '3px', alignItems: 'center' } },
+          h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: item.z + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, '+z'),
+          h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: Math.max(0, item.z - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '-z')));
     });
 
     var propPanel = null;
@@ -2265,9 +3061,14 @@
       if (!(ev.ctrlKey || ev.metaKey)) return;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       var k = (ev.key || '').toLowerCase();
-      if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
+      if (k === '+' || k === '=') { ev.preventDefault(); changeCanvasZoom('in'); }
+      else if (k === '-' || k === '_') { ev.preventDefault(); changeCanvasZoom('out'); }
+      else if (k === '0') { ev.preventDefault(); changeCanvasZoom('fit'); }
+      else if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
       else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); if (stRedo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_redone', 'Redone')); } }
     };
+    var errorTone = statusTone('error');
+    var successTone = statusTone('success');
     return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
       h('div', { ref: _shellRef, style: S.shell },
         // header
@@ -2275,7 +3076,7 @@
           h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           // Uncontrolled + commit-on-blur: one clean doc.retitle op instead of
           // an op per keystroke polluting the process timeline.
-          h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: { background: C.hBtnBg, color: C.hBtnText, border: '1px solid ' + C.hBtnBorder, borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: '220px' },
+          h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
@@ -2283,7 +3084,7 @@
           h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { setRole(student ? 'teacher' : 'student'); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
-          h('span', { style: { marginLeft: 'auto' } }),
+          h('span', { style: S.headerSpacer }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
@@ -2291,20 +3092,39 @@
         preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
-            h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : '')),
-          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: 1 } },
+            h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : ''),
+            h('button', { style: Object.assign({}, S.hBtn, { marginTop: '6px', width: '100%', opacity: a11yAutoFix.ops.length ? 1 : 0.5 }), disabled: !a11yAutoFix.ops.length, onClick: applyA11yAutoFix, title: TT('studio.a11y_quick_fix_hint', 'Automatically fixes simple contrast, tiny text, and off-page object issues') }, TT('studio.a11y_quick_fix', 'Fix simple issues') + (a11yAutoFix.ops.length ? ' (' + a11yAutoFix.ops.length + ')' : ''))),
+          h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(5, minmax(112px, 1fr))', gap: '6px', flex: '1 1 520px' } },
+            accessibilityChecklist.map(function (check) {
+              var tone = check.severity === 'error' ? statusTone('error') : check.severity === 'warning' ? statusTone('warning') : check.severity === 'review' ? statusTone('review') : statusTone('success');
+              var label = check.status === 'pass' ? TT('studio.a11y_pass', 'Pass') : check.status === 'fix' ? TT('studio.a11y_fix', 'Fix') : TT('studio.a11y_review', 'Review');
+              return h('div', { key: check.key, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', minHeight: '76px' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
+                  h('strong', { style: { fontSize: '11px' } }, check.name),
+                  h('span', { style: { fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, label + (check.count ? ' ' + check.count : ''))),
+                h('div', { style: { fontSize: '10px', lineHeight: 1.25, marginTop: '5px' } }, check.message));
+            })),
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: '1 1 100%' } },
             ready && ready.actions.length ? ready.actions.slice(0, 8).map(function (action, idx) {
-              var bg = action.severity === 'error' ? '#fee2e2' : action.severity === 'warning' ? '#fef3c7' : C.panel;
-              var fg = action.severity === 'error' ? '#7f1d1d' : action.severity === 'warning' ? '#78350f' : C.text;
+              var tone = statusTone(action.severity === 'error' ? 'error' : action.severity === 'warning' ? 'warning' : 'review');
               var label = action.type === 'fix-small-text' ? TT('studio.fix_small_text', 'Make text readable')
                 : action.type === 'fix-contrast' ? TT('studio.fix_contrast', 'Improve contrast')
                   : action.type === 'add-alt' ? TT('studio.add_alt', 'Add alt text')
                     : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
                       : action.title;
-              return h('button', { key: idx, style: { border: '1px solid ' + (action.severity === 'review' ? C.border : 'transparent'), background: bg, color: fg, borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
+              return h('button', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
                 onClick: function () { applyReadyAction(action); },
                 title: action.message }, label);
-            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, TT('studio.no_a11y_issues', 'No accessibility issues found.')))) : null,
+            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, TT('studio.no_a11y_issues', 'No accessibility issues found.'))),
+          preflight.issues.length ? h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px', flex: '1 1 100%' } },
+            preflight.issues.slice(0, 10).map(function (issue, idx) {
+              var tone = statusTone(issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'review');
+              return h('button', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', textAlign: 'left', cursor: issue.id ? 'pointer' : 'default', fontSize: '11px' },
+                onClick: function () { if (issue.id) selectOnly(issue.id); else applyReadyAction({ type: 'review-reading-order', severity: issue.severity, title: issue.title, message: issue.message }); },
+                title: issue.message },
+                h('strong', { style: { display: 'block', marginBottom: '2px' } }, issue.title),
+                h('span', { style: { lineHeight: 1.25 } }, issue.message));
+            })) : null) : null,
         // export panel
         exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
@@ -2315,12 +3135,12 @@
           h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
           h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
           h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.save_portfolio', 'Save to Portfolio')),
-          altFailures.length ? h('span', { style: { fontSize: '11px', color: '#b91c1c', fontWeight: 700 } },
+          altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
             '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
             altFailures.map(function (m) {
-              return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid #fca5a5', background: '#fee2e2', color: '#b91c1c', borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
+              return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid ' + errorTone.border, background: errorTone.bg, color: errorTone.fg, borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
                 onClick: function () { selectOnly(m.id); stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.')); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
-            })) : h('span', { style: { fontSize: '11px', color: '#166534', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
+            })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
         // body
         h('div', { style: S.body },
           // left: insert tools
@@ -2338,6 +3158,62 @@
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAiGenPrompt(e.target.value); } }),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? '… ' + TT('studio.ai_generating', 'Generating…') : '✨ ' + TT('studio.ai_generate', 'Generate')),
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_gen_note', 'Logged as AI in your process. You still add alt text.'))) : null,
+            canAgentEdit ? h('button', { style: Object.assign({}, S.tool, agentOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': agentOpen, onClick: function () { setAgentOpen(!agentOpen); } }, TT('studio.agent_edit', 'Ask AI to edit')) : null,
+            (canAgentEdit && agentOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
+              h('label', { style: { fontSize: '10px', color: C.muted, display: 'flex', flexDirection: 'column', gap: '2px' } }, TT('studio.agent_scope', 'Scope'),
+                h('select', { value: agentEffectiveScope, style: S.input, 'aria-label': TT('studio.agent_scope', 'Scope'),
+                  onChange: function (e) { setAgentScope(e.target.value); setAgentPlan(null); setAgentSelectedOps([]); } },
+                  h('option', { value: 'selection', disabled: !selectionIds.length }, TT('studio.agent_scope_selection', 'Selected objects') + (selectionIds.length ? ' (' + selectionIds.length + ')' : '')),
+                  h('option', { value: 'document' }, TT('studio.agent_scope_document', 'Whole document')))),
+              h('textarea', { value: agentPrompt, rows: 3, placeholder: TT('studio.agent_prompt_placeholder', 'e.g. make this section clearer and easier to read'), 'aria-label': TT('studio.agent_prompt_label', 'Describe the edit to preview'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'agent',
+                onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAgentPrompt(e.target.value); setAgentPlan(null); setAgentSelectedOps([]); } }),
+              h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'agent' || !String(agentPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'agent' || !String(agentPrompt).trim(), onClick: runAgentEdit }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : TT('studio.agent_preview', 'Preview changes')),
+              agentPlan ? h('div', { style: { border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '7px', color: C.text, fontSize: '11px', lineHeight: 1.35 } },
+                h('strong', { style: { display: 'block', marginBottom: '4px' } }, agentPlan.summary),
+                h('div', { style: { color: C.muted } }, selectedAgentCount + ' / ' + agentPlan.ops.length + ' ' + TT('studio.agent_safe_changes', 'safe change(s)') + (agentPlan.rejected.length ? ' - ' + agentPlan.rejected.length + ' ' + TT('studio.agent_skipped_changes', 'skipped') : '')),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '6px' } },
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10.5px' }), disabled: !agentPlan.ops.length, onClick: function () { setAgentSelectedOps(agentPlan.ops.map(function (_, idx) { return idx; })); } }, TT('studio.select_all', 'Select all')),
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10.5px' }), disabled: !agentPlan.ops.length, onClick: function () { setAgentSelectedOps([]); } }, TT('studio.select_none', 'Select none'))),
+                agentChangeItems.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '230px', overflowY: 'auto', marginTop: '7px' } },
+                  agentChangeItems.map(function (info, idx) {
+                    var checked = !!agentSelectedSet[idx];
+                    var tone = checked ? statusTone('review') : { bg: C.panelAlt, fg: C.muted, border: C.border };
+                    return h('div', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '6px' } },
+                      h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+                        h('label', { style: { display: 'flex', alignItems: 'center', gap: '5px', flex: 1, minWidth: 0, fontWeight: 800 } },
+                          h('input', { type: 'checkbox', checked: checked, 'aria-label': TT('studio.agent_include_change', 'Include change') + ' ' + (idx + 1),
+                            onChange: function (e) {
+                              var want = e.target.checked;
+                              setAgentSelectedOps(function (prev) {
+                                var list = Array.isArray(prev) ? prev.slice() : [];
+                                var at = list.indexOf(idx);
+                                if (want && at < 0) list.push(idx);
+                                if (!want && at >= 0) list.splice(at, 1);
+                                return list.sort(function (a, b) { return a - b; });
+                              });
+                            } }),
+                          h('span', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, info.title)),
+                        h('button', { style: Object.assign({}, S.tool, { padding: '4px 6px', minHeight: '24px', fontSize: '10px', opacity: info.targetId ? 1 : 0.45 }), disabled: !info.targetId, onClick: function () { if (info.targetId) selectOnly(info.targetId); } }, TT('studio.show', 'Show'))),
+                      h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '5px' } },
+                        info.notes.slice(0, 4).map(function (note, noteIdx) {
+                          return h('span', { key: noteIdx, style: { border: '1px solid ' + tone.border, borderRadius: '999px', padding: '1px 6px', fontSize: '9.5px', fontWeight: 800 } }, note);
+                        })),
+                      (info.before || info.after) ? h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '5px' } },
+                        h('div', { style: { border: '1px solid ' + C.border, borderRadius: '6px', padding: '4px', background: C.panel, color: C.muted, minWidth: 0 } },
+                          h('strong', { style: { display: 'block', fontSize: '9px', textTransform: 'uppercase' } }, TT('studio.before', 'Before')),
+                          h('span', { style: { overflowWrap: 'anywhere' } }, info.before || '-')),
+                        h('div', { style: { border: '1px solid ' + C.border, borderRadius: '6px', padding: '4px', background: C.panel, color: C.text, minWidth: 0 } },
+                          h('strong', { style: { display: 'block', fontSize: '9px', textTransform: 'uppercase' } }, TT('studio.after', 'After')),
+                          h('span', { style: { overflowWrap: 'anywhere' } }, info.after || '-'))) : null,
+                      h('div', { style: { marginTop: '4px', fontSize: '9.5px', color: C.soft } }, info.kind + ' - ' + info.safety));
+                  })) : null,
+                agentPlan.rejected && agentPlan.rejected.length ? h('details', { style: { marginTop: '6px', color: C.muted } },
+                  h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, TT('studio.agent_skipped_changes', 'Skipped') + ' ' + agentPlan.rejected.length),
+                  h('ul', { style: { margin: '4px 0 0 16px', padding: 0 } }, agentPlan.rejected.slice(0, 8).map(function (msg, idx) { return h('li', { key: idx }, msg); }))) : null,
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '7px' } },
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), disabled: !selectedAgentCount, onClick: applyAgentPlan }, TT('studio.apply_selected', 'Apply selected')),
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), onClick: function () { setAgentPlan(null); setAgentSelectedOps([]); } }, TT('studio.discard', 'Discard')))) : null,
+              h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.agent_note', 'Preview first. Applied changes are logged as AI.'))) : null,
             h('button', { style: Object.assign({}, S.tool, resourceOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
               TT('studio.resource_shelf', 'Source shelf') + ' ' + resourceCues.length),
             resourceOpen ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
@@ -2377,15 +3253,32 @@
               h('input', { type: 'color', value: (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'canvas.background', fill: e.target.value }, 'user'); } })),
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
-          h('div', { style: { flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px' }, onPointerDown: clearSelection },
-            h('div', { style: { position: 'relative', width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
-              onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
-              onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp },
-              doc.objects.map(function (o) { return renderObject(o, SCALE, true, {}, h); }))),
+          h('div', { style: S.canvasWrap },
+            h('div', { style: S.canvasToolbar, role: 'group', 'aria-label': TT('studio.zoom_controls', 'Canvas zoom controls') },
+              h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('out'); }, 'aria-label': TT('studio.zoom_out', 'Zoom out') }, '-'),
+              h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '48px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: C.text } }, zoomLabel),
+              h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('in'); }, 'aria-label': TT('studio.zoom_in', 'Zoom in') }, '+'),
+              h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit'); }, 'aria-pressed': canvasZoom === null }, TT('studio.zoom_fit', 'Fit')),
+              h('button', { style: Object.assign({}, S.hBtn, canvasZoom === 1 ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('actual'); }, 'aria-pressed': canvasZoom === 1 }, '100%'),
+              h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap'))),
+            h('div', { style: S.canvasViewport, onPointerDown: clearSelection },
+              h('div', { style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
+                onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
+                onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp },
+                snapGuides.map(function (guide, idx) {
+                  return h('div', { key: 'snap-' + idx, 'aria-hidden': true, style: guide.axis === 'x'
+                    ? { position: 'absolute', left: guide.value * SCALE + 'px', top: 0, width: 0, height: '100%', borderLeft: '2px dashed ' + snapGuideColor, zIndex: 9999, pointerEvents: 'none' }
+                    : { position: 'absolute', left: 0, top: guide.value * SCALE + 'px', width: '100%', height: 0, borderTop: '2px dashed ' + snapGuideColor, zIndex: 9999, pointerEvents: 'none' } });
+                }),
+                doc.objects.map(function (o) { return renderObject(o, SCALE, true, {}, h); })))),
           // right: reading order + properties
           h('div', { style: S.rpanel },
             h('div', { style: S.label }, '🔊 ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: '38%', overflowY: 'auto' } }, orderList),
+            h('div', { role: 'group', 'aria-label': TT('studio.object_navigator', 'Object navigator'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
+              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
+              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
+            h('div', { style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorMode === 'layers' ? TT('studio.layers_hint', 'Visual stack only. Reading order stays in the other tab.') : TT('studio.reading_order_hint', 'This is what screen readers and tagged PDF follow.')),
+            h('div', { style: S.readingList }, navigatorMode === 'layers' ? layerList : orderList),
             propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
         h('input', { ref: fileRef, type: 'file', accept: 'image/*', style: { display: 'none' },
           onChange: function (ev) {
@@ -2409,8 +3302,17 @@
             h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, '✂ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
               h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed — including from your saved file.'))),
             h('div', { style: { position: 'relative', maxWidth: '80vw', maxHeight: '68vh', touchAction: 'none' }, onPointerMove: cropPointerMove, onPointerUp: cropPointerUp },
-              h('img', { ref: _cropImgRef, src: co.src, alt: '', draggable: false, style: { display: 'block', maxWidth: '80vw', maxHeight: '68vh', userSelect: 'none', cursor: 'crosshair' }, onPointerDown: cropPointerDown }),
+              h('img', { ref: _cropImgRef, src: co.src, alt: co.alt || TT('studio.crop_preview_alt', 'Image being cropped'), draggable: false, style: { display: 'block', maxWidth: '80vw', maxHeight: '68vh', userSelect: 'none', cursor: 'crosshair' }, onPointerDown: cropPointerDown }),
               (r.w > 0 && r.h > 0) ? h('div', { style: { position: 'absolute', left: (r.x * 100) + '%', top: (r.y * 100) + '%', width: (r.w * 100) + '%', height: (r.h * 100) + '%', border: '2px solid #6366f1', boxShadow: '0 0 0 9999px rgba(2,6,23,0.55)', pointerEvents: 'none' } }) : null),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { color: '#fff', fontSize: '11px', fontWeight: 700, marginTop: '8px', textAlign: 'center' } }, cropSummary(cropRect)),
+            h('div', { role: 'group', 'aria-label': TT('studio.crop_presets', 'Crop presets'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(72px, 1fr))', gap: '6px', marginTop: '8px', maxWidth: '80vw' } },
+              [['full', 'Full'], ['center', 'Center'], ['square', 'Square'], ['top', 'Top'], ['bottom', 'Bottom'], ['left', 'Left'], ['right', 'Right']].map(function (opt) {
+                return h('button', { key: 'preset-' + opt[0], style: Object.assign({}, S.hBtn, { padding: '5px 8px' }), onClick: function () { setCropPreset(opt[0]); }, 'aria-label': TT('studio.crop_preset', 'Crop preset') + ': ' + opt[1] }, opt[1]);
+              })),
+            h('div', { role: 'group', 'aria-label': TT('studio.crop_adjustments', 'Crop adjustments'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(72px, 1fr))', gap: '6px', marginTop: '8px', maxWidth: '80vw' } },
+              [['left', 'Nudge L'], ['right', 'Nudge R'], ['up', 'Nudge U'], ['down', 'Nudge D'], ['wider', 'Wider'], ['narrower', 'Narrower'], ['taller', 'Taller'], ['shorter', 'Shorter']].map(function (opt) {
+                return h('button', { key: 'adjust-' + opt[0], style: Object.assign({}, S.hBtn, { padding: '5px 8px' }), onClick: function () { adjustCrop(opt[0]); }, 'aria-label': TT('studio.crop_adjust', 'Adjust crop') + ': ' + opt[1] }, opt[1]);
+              })),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
               h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a', color: '#fff' }), onClick: applyCrop }, '✂ ' + TT('studio.crop_apply', 'Apply crop')),
               h('button', { style: S.hBtn, onClick: function () { setCropId(null); setCropRect(null); } }, TT('studio.cancel', 'Cancel'))));
@@ -2445,12 +3347,25 @@
   AlloStudio.stObjectsFromResourceCue = stObjectsFromResourceCue;
   AlloStudio.stSuggestTextColor = stSuggestTextColor;
   AlloStudio.stBuildReadyActions = stBuildReadyActions;
+  AlloStudio.stBuildAccessibilityChecklist = stBuildAccessibilityChecklist;
+  AlloStudio.stBuildA11yAutoFixPlan = stBuildA11yAutoFixPlan;
   AlloStudio.stStyleKits = stStyleKits;
   AlloStudio.stStyleKitPatch = stStyleKitPatch;
+  AlloStudio.stLayerItems = stLayerItems;
   AlloStudio.stSelectionBounds = stSelectionBounds;
   AlloStudio.stAlignFramesAsGroup = stAlignFramesAsGroup;
   AlloStudio.stDistributeFramesAsGroup = stDistributeFramesAsGroup;
   AlloStudio.stMoveFramesAsGroup = stMoveFramesAsGroup;
+  AlloStudio.stStudioLayout = stStudioLayout;
+  AlloStudio.stCanvasFitScale = stCanvasFitScale;
+  AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
+  AlloStudio.stSnapFrame = stSnapFrame;
+  AlloStudio.stBuildAgentScope = stBuildAgentScope;
+  AlloStudio.stNormalizeAgentPlan = stNormalizeAgentPlan;
+  AlloStudio.stDescribeAgentChange = stDescribeAgentChange;
+  AlloStudio.stUiStatusTone = stUiStatusTone;
+  AlloStudio.stCropPresetRect = stCropPresetRect;
+  AlloStudio.stAdjustCropRect = stAdjustCropRect;
   AlloStudio.stBuildPortfolioArtifact = stBuildPortfolioArtifact;
   AlloStudio.stRecentProjectSummary = stRecentProjectSummary;
   AlloStudio.stReadRecentProjects = stReadRecentProjects;

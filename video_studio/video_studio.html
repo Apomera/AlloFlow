@@ -64,6 +64,53 @@
   .caption-style-high-contrast span { background: #000; color: #ffff00; border: 2px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.72); text-shadow: none; }
   .caption-style-lower-third { justify-content: flex-start; left: 6%; right: 18%; bottom: 7%; text-align: left; }
   .caption-style-lower-third span { max-width: min(66%, 720px); background: rgba(30,64,175,0.84); border-color: rgba(191,219,254,0.65); box-shadow: 0 12px 34px rgba(0,0,0,0.38); text-align: left; }
+  .edit-focus-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .edit-focus-card .row { margin: 0; }
+  .vs-workflow-hidden { display: none !important; }
+  .timeline-lanes { display: grid; gap: 6px; margin-top: 10px; }
+  .timeline-lane { display: grid; grid-template-columns: minmax(84px, 110px) 1fr; gap: 8px; align-items: center; min-height: 22px; }
+  .timeline-lane-label { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .timeline-lane-track { position: relative; height: 18px; background: rgba(15,23,42,0.66); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .timeline-lane-segment { position: absolute; top: 3px; height: 10px; min-width: 3px; border: 0; padding: 0; border-radius: 999px; box-shadow: 0 0 0 1px rgba(255,255,255,0.18) inset; cursor: pointer; }
+  .timeline-lane-segment:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+  .timeline-lane-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #f8fafc; box-shadow: 0 0 8px rgba(248,250,252,0.65); }
+  .edit-nav { margin-top: 8px; justify-content: space-between; }
+  .edit-map-counts { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .edit-map-list { display: grid; gap: 6px; margin-top: 8px; }
+  .edit-map-chip { cursor: pointer; }
+  .edit-map-chip[aria-pressed="true"] { border-color: var(--accent2); color: var(--text); background: rgba(99,102,241,0.2); }
+  .edit-map-item { width: 100%; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; text-align: left; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; cursor: pointer; }
+  .edit-map-item:hover { border-color: var(--accent2); }
+  .edit-map-item[aria-current="true"] { border-color: var(--accent2); box-shadow: 0 0 0 1px rgba(129,140,248,0.28) inset; }
+  .edit-map-item .time { font-variant-numeric: tabular-nums; color: var(--accent2); font-weight: 800; font-size: 12px; }
+  .edit-map-item .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .edit-map-item .kind { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .edit-overlay-preview { position: absolute; z-index: 3; pointer-events: none; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.65); }
+  .edit-overlay-preview .overlay-box { max-width: min(72vw, 520px); background: rgba(15,23,42,0.88); border: 1px solid rgba(255,255,255,0.28); border-left: 5px solid #60a5fa; border-radius: 12px; padding: 10px 14px; box-shadow: 0 16px 40px rgba(0,0,0,0.46); }
+  .edit-overlay-preview strong { display: block; font-size: 15px; line-height: 1.25; }
+  .edit-overlay-preview span { display: block; margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.82); }
+  .edit-overlay-preview img { display: block; max-width: min(34vw, 280px); max-height: 30vh; border-radius: 10px; border: 1px solid rgba(255,255,255,0.32); object-fit: contain; background: #020617; }
+  .edit-overlay-preview.overlay-center { inset: 50% auto auto 50%; transform: translate(-50%, -50%); }
+  .edit-overlay-preview.overlay-lower { left: 6%; right: 6%; bottom: 9%; transform: none; }
+  .edit-overlay-preview.overlay-point { transform: translate(-50%, -50%); }
+  .edit-overlay-preview.overlay-zoom { width: 86px; height: 86px; border: 2px solid rgba(129,140,248,0.95); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 9999px rgba(15,23,42,0.2), 0 0 24px rgba(129,140,248,0.72); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+  .edit-overlay-preview.theme-green .overlay-box { border-left-color: #4ade80; }
+  .edit-overlay-preview.theme-amber .overlay-box { border-left-color: #fbbf24; }
+  .edit-overlay-preview.theme-pink .overlay-box { border-left-color: #f472b6; }
+  .edit-overlay-preview.theme-slate .overlay-box { border-left-color: #cbd5e1; }
+  .edit-row-selected { border-color: var(--accent2) !important; box-shadow: 0 0 0 1px rgba(129,140,248,0.28) inset; }
+  .inspector-empty { border: 1px dashed var(--line); border-radius: 10px; padding: 10px; color: var(--dim); background: rgba(15,23,42,0.28); }
+  .inspector-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; align-items: end; }
+  .inspector-form label { display: flex; flex-direction: column; gap: 4px; }
+  .inspector-form input, .inspector-form select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; font-size: 13px; }
+  .finish-guide { display: grid; gap: 8px; }
+  .finish-step { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; background: rgba(15,23,42,0.24); }
+  .finish-step .badge { min-width: 30px; height: 30px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: var(--panel2); color: var(--text); font-weight: 800; font-size: 12px; }
+  .finish-step.complete .badge { background: rgba(74,222,128,0.18); color: var(--ok); }
+  .finish-step.warn .badge, .finish-step.pending .badge, .finish-step.review .badge { background: rgba(251,191,36,0.16); color: var(--warn); }
+  .finish-step.info .badge { background: rgba(148,163,184,0.16); color: var(--dim); }
+  .finish-step strong { display: block; color: var(--text); font-size: 13px; }
+  .finish-step span { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
   .caption-custom-grid { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 10px; align-items: end; width: 100%; }
   .caption-custom-grid label { display: flex; flex-direction: column; gap: 4px; }
   .caption-custom-grid select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; font-size: 13px; }
@@ -84,6 +131,28 @@
   .take[aria-current="true"] { border-color: var(--accent); }
   .take .nm { flex: 1; font-weight: 600; }
   .take .meta { color: var(--dim); font-size: 12px; }
+  .scene-builder-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+  .scene-builder-toolbar select, .scene-row input, .scene-row select { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; }
+  .scene-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .scene-row { display: grid; grid-template-columns: auto minmax(160px, 1fr) auto auto auto; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--panel2); }
+  .scene-row strong { color: var(--text); font-size: 13px; }
+  .scene-row span { color: var(--dim); font-size: 12px; }
+  .scene-row .scene-index { width: 26px; height: 26px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(99,102,241,0.16); color: var(--accent2); font-weight: 800; font-size: 12px; }
+  .scene-row input[type="text"] { width: 100%; min-width: 120px; }
+  .scene-row input[type="number"] { width: 72px; }
+  .scene-row.scene-drop-target { border-color: var(--accent2); box-shadow: 0 0 0 1px rgba(129,140,248,0.35) inset; }
+  .scene-index[draggable="true"] { cursor: grab; user-select: none; }
+  .scene-index[draggable="true"]:active { cursor: grabbing; }
+  .scene-readiness { display: grid; gap: 6px; margin-top: 8px; }
+  .scene-check { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; background: rgba(15,23,42,0.22); color: var(--dim); font-size: 12px; }
+  .scene-check strong { color: var(--text); display: block; font-size: 13px; }
+  .scene-check.ok .scene-dot { background: var(--ok); }
+  .scene-check.warn .scene-dot { background: var(--warn); }
+  .scene-check.info .scene-dot { background: var(--accent2); }
+  .scene-dot { width: 9px; height: 9px; border-radius: 999px; margin-top: 5px; background: var(--dim); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
+  .scene-preview { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #020617; }
+  .scene-preview canvas { display: block; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
+  @media (max-width: 760px) { .scene-row { grid-template-columns: auto 1fr; } .scene-row .row { grid-column: 1 / -1; } }
   .status { min-height: 20px; font-size: 13px; color: var(--dim); margin-top: 8px; }
   .status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.warn { color: var(--warn); }
   progress { width: 100%; height: 10px; accent-color: var(--accent); }
@@ -228,6 +297,24 @@
 
   <!-- ─── EDIT ─── -->
   <section id="panelEdit" role="tabpanel" aria-labelledby="tabEdit" hidden>
+    <div class="card edit-focus-card">
+      <div>
+        <h2>Editor focus</h2>
+        <div class="status" id="editorFocusStatus">All editor tools are visible.</div>
+      </div>
+      <div class="row">
+        <label for="editorFocusMode">Focus</label>
+        <select id="editorFocusMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <option value="all">All tools</option>
+          <option value="record">Lesson polish</option>
+          <option value="caption">Caption cleanup</option>
+          <option value="narrate">Narration/audio</option>
+          <option value="describe">Visual accessibility</option>
+          <option value="family">Family/share version</option>
+        </select>
+        <label><input type="checkbox" id="editorShowAll"> Show all</label>
+      </div>
+    </div>
     <div class="grid2">
       <div>
         <div class="card">
@@ -237,12 +324,70 @@
         </div>
         <div class="stage">
           <video id="editVideo" controls playsinline style="width:100%"></video>
+          <div class="edit-overlay-preview" id="editOverlayPreview" hidden></div>
           <div class="caption-preview caption-style-clean-card" id="editCapPreview" hidden><span id="editCapPreviewText"></span></div>
         </div>
         <div class="card" style="margin-top:12px">
           <h2>Timeline</h2>
           <canvas id="waveCanvas" style="width:100%;height:84px;display:block;background:#0b1220;border-radius:8px;cursor:pointer" height="84" role="slider" tabindex="0" aria-label="Audio timeline — click or use arrow keys to move the playhead"></canvas>
           <div class="status" id="waveStatus">Silences you add show red, zooms indigo, captions amber. Click anywhere to jump; Space plays/pauses.</div>
+          <div class="row edit-nav">
+            <button class="quiet" id="prevEditBtn">Previous edit</button>
+            <button class="quiet" id="selectActiveEditBtn">Select active edit</button>
+            <button class="quiet" id="nextEditBtn">Next edit</button>
+            <span class="status" id="editNavStatus" style="margin-top:0">No edit selected yet.</span>
+          </div>
+          <div id="timelineLaneSummary" class="timeline-lanes" aria-label="Timeline lanes"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Scene builder</h2>
+          <div class="status" id="sceneStatus">Build a short sequence from selected takes, section cards, and pause cards. Teaching inserts still belong inside each take.</div>
+          <div class="scene-builder-toolbar">
+            <button class="quiet" id="sceneAddTakeBtn">Add selected take</button>
+            <button class="quiet" id="sceneAddAllBtn">Add all takes</button>
+            <button class="quiet" id="sceneAddTitleBtn">Add section card</button>
+            <button class="quiet" id="sceneAddPauseBtn">Add pause card</button>
+            <label for="sceneDefaultTransition">Transition</label>
+            <select id="sceneDefaultTransition" aria-label="Default scene transition">
+              <option value="cut">Cut</option>
+              <option value="dissolve">Soft dissolve</option>
+              <option value="black">Fade through black</option>
+              <option value="white">Dip through white</option>
+            </select>
+            <button class="quiet" id="sceneApplyTransitionBtn">Apply transition</button>
+            <button class="action" id="sceneExportBtn" style="background:#0f766e">Prepare scene export</button>
+            <button class="quiet" id="sceneDownloadPlanBtn">Download plan</button>
+            <button class="quiet" id="sceneLoadPlanBtn">Load plan...</button>
+            <input type="file" id="scenePlanInput" accept=".json,application/json" hidden>
+            <button class="quiet" id="scenePreviewBtn">Preview scene</button>
+            <button class="quiet" id="sceneStopPreviewBtn" hidden>Stop preview</button>
+            <button class="quiet" id="sceneClearBtn">Clear</button>
+          </div>
+          <div class="scene-builder-toolbar">
+            <label for="sceneTemplateSelect">Template</label>
+            <select id="sceneTemplateSelect" aria-label="Scene template">
+              <option value="mini_lesson">Mini lesson</option>
+              <option value="compare">Compare examples</option>
+              <option value="reflect">Watch and reflect</option>
+              <option value="family_update">Family update</option>
+            </select>
+            <button class="quiet" id="sceneApplyTemplateBtn">Add template</button>
+            <button class="quiet" id="sceneUseBundledPlanBtn">Use bundled plan</button>
+          </div>
+          <div class="scene-builder-toolbar">
+            <label for="sceneAudioMode">Audio</label>
+            <select id="sceneAudioMode" aria-label="Scene audio mode">
+              <option value="keep">Keep clip audio</option>
+              <option value="normalize">Smooth clip volume</option>
+              <option value="mute">Mute scene audio</option>
+            </select>
+            <label><input type="checkbox" id="sceneAudioFade" checked> Fade clip edges</label>
+          </div>
+          <div class="scene-preview" id="scenePreviewBox" hidden>
+            <canvas id="scenePreviewCanvas" width="960" height="540" aria-label="Scene preview canvas"></canvas>
+          </div>
+          <div id="sceneList" class="scene-list"></div>
+          <div id="sceneReadinessList" class="scene-readiness"></div>
         </div>
         <div class="card" style="margin-top:12px">
           <h2>Trim</h2>
@@ -381,6 +526,33 @@
         </div>
       </div>
       <div>
+        <div class="card" id="selectedInspectorCard">
+          <h2>Selected edit</h2>
+          <div id="selectedInspector"><div class="inspector-empty">Select a zoom, spotlight, title card, pause prompt, callout, sticker, or image overlay to tune it here.</div></div>
+        </div>
+        <div class="card" id="editMapCard">
+          <h2>Edit map</h2>
+          <div class="status" id="editMapStatus">Select a take to see the edit worklist.</div>
+          <div class="row" style="margin-top:8px">
+            <label for="editMapFilter">Layer</label>
+            <select id="editMapFilter" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+              <option value="">All layers</option>
+              <option value="Captions">Captions</option>
+              <option value="Inserts">Inserts</option>
+              <option value="Zooms">Zooms</option>
+              <option value="Silences">Silences</option>
+              <option value="Audio">Audio</option>
+              <option value="Chapters">Chapters</option>
+            </select>
+            <label for="editMapScope">Show</label>
+            <select id="editMapScope" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+              <option value="upcoming">Upcoming</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+          <div id="editMapCounts" class="edit-map-counts"></div>
+          <div id="editMapList" class="edit-map-list"></div>
+        </div>
         <div class="card">
           <h2>Captions</h2>
           <div class="row" style="margin-bottom:8px">
@@ -516,6 +688,10 @@
       </div>
       <div class="status" id="finishChecklistStatus">Select a take to see readiness checks before sharing.</div>
       <div id="finishChecklistList" style="margin-top:8px"></div>
+    </div>
+    <div class="card" id="finishGuideCard">
+      <h2>Share-ready review</h2>
+      <div id="finishGuideList" class="finish-guide"></div>
     </div>
     <div class="card">
       <h2>Export the selected take</h2>
@@ -1470,6 +1646,16 @@
     return Object.assign({}, presets[id] || presets['clean-circle']);
   }
 
+  function vsInsertCardLayout(key) {
+    var id = String(key || 'center-card').toLowerCase().replace(/[\s_]+/g, '-');
+    var layouts = {
+      'center-card': { key: 'center-card', label: 'Center card', placement: 'center', align: 'center' },
+      'lower-banner': { key: 'lower-banner', label: 'Lower banner', placement: 'bottom', align: 'left' },
+      'split-panel': { key: 'split-panel', label: 'Split panel', placement: 'left', align: 'left' }
+    };
+    return Object.assign({}, layouts[id] || layouts['center-card']);
+  }
+
   function vsCaptionPreviewLines(text, maxChars, maxLines) {
     var words = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
     var limit = Math.max(18, Math.min(72, Math.round(Number(maxChars) || 42)));
@@ -1553,6 +1739,7 @@
     var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
     var motions = { none: 1, fade: 1, slide_left: 1, slide_right: 1, slide_up: 1, slide_down: 1, drift_right: 1, drift_left: 1, zoom_in: 1 };
     var styles = { label: 1, box: 1, spotlight: 1, arrow: 1 };
+    var layouts = { 'center-card': 1, 'lower-banner': 1, 'split-panel': 1 };
     var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
     for (var i = 0; i < list.length && out.length < 32; i++) {
       var s = list[i] || {};
@@ -1575,6 +1762,7 @@
       if (type === 'image_overlay' && !imageSrc) continue;
       var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
       var style = String(s.style || s.calloutStyle || '').toLowerCase().replace(/[\s-]+/g, '_');
+      var layout = String(s.layout || s.cardLayout || '').toLowerCase().replace(/[\s_]+/g, '-');
       var width = Number(s.width != null ? s.width : s.w);
       var scale = Number(s.scale);
       out.push({
@@ -1591,6 +1779,7 @@
         motion: motions[motion] ? motion : (type === 'image_overlay' ? 'fade' : 'none'),
         theme: themes[String(s.theme || '').toLowerCase()] ? String(s.theme).toLowerCase() : 'blue',
         style: styles[style] ? style : (type === 'callout' ? 'arrow' : 'label'),
+        layout: layouts[layout] ? layout : 'center-card',
         animation: anims[String(s.animation || '').toLowerCase()] ? String(s.animation).toLowerCase() : (type === 'sticker' ? 'pulse' : 'none'),
         imageSrc: imageSrc,
         source: String(s.source || '').slice(0, 40),
@@ -2231,6 +2420,68 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       try { target.focus({ preventScroll: true }); } catch (_) { try { target.focus(); } catch (__) {} }
     }, 30);
   }
+  var EDITOR_SURFACE_TARGETS = {
+    takes: 'takesList',
+    timeline: 'waveCanvas',
+    trim: 'trimStart',
+    zooms: 'zoomList',
+    inserts: 'insertList',
+    audio: 'volSlider',
+    narration: 'narrateBtn',
+    visual: 'visualDescribeBtn',
+    captions: 'cueTable',
+    transcript: 'transcriptSearch',
+    chapters: 'buildChaptersBtn',
+    localization: 'localizeBtn',
+    ai: 'aiSuggestBtn'
+  };
+  var EDITOR_FOCUS_GROUPS = {
+    all: Object.keys(EDITOR_SURFACE_TARGETS),
+    record: ['takes', 'timeline', 'trim', 'zooms', 'inserts', 'audio', 'captions', 'chapters', 'ai'],
+    caption: ['takes', 'timeline', 'captions', 'transcript', 'chapters', 'localization', 'ai'],
+    narrate: ['takes', 'timeline', 'audio', 'narration', 'captions', 'transcript', 'localization'],
+    describe: ['takes', 'timeline', 'inserts', 'visual', 'chapters', 'captions', 'localization'],
+    family: ['takes', 'timeline', 'inserts', 'captions', 'transcript', 'chapters', 'localization', 'ai']
+  };
+  var EDITOR_FOCUS_COPY = {
+    all: 'All editor tools are visible.',
+    record: 'Showing lesson polish tools: trim, timeline, zooms, inserts, audio, captions, and chapters.',
+    caption: 'Showing caption cleanup tools: captions, transcript, chapters, localization, and review.',
+    narrate: 'Showing narration and audio tools with captions nearby for script support.',
+    describe: 'Showing visual accessibility tools: inserts, visual descriptions, chapters, and captions.',
+    family: 'Showing family/share tools: captions, transcript, chapters, localization, inserts, and review.'
+  };
+  function editorCardForSurface(surface) {
+    var id = EDITOR_SURFACE_TARGETS[surface];
+    var el = id && $(id);
+    return el && el.closest ? el.closest('.card') : null;
+  }
+  function setEditorFocusMode(mode, showAll) {
+    mode = EDITOR_FOCUS_GROUPS[mode] ? mode : 'all';
+    var forceAll = !!showAll || mode === 'all';
+    var active = EDITOR_FOCUS_GROUPS[mode] || EDITOR_FOCUS_GROUPS.all;
+    var activeMap = {};
+    active.forEach(function (name) { activeMap[name] = true; });
+    Object.keys(EDITOR_SURFACE_TARGETS).forEach(function (surface) {
+      var card = editorCardForSurface(surface);
+      if (card) card.classList.toggle('vs-workflow-hidden', !forceAll && !activeMap[surface]);
+    });
+    if ($('editorFocusMode')) $('editorFocusMode').value = mode;
+    if ($('editorShowAll')) $('editorShowAll').checked = forceAll && mode !== 'all';
+    setStatus($('editorFocusStatus'), forceAll ? EDITOR_FOCUS_COPY.all : EDITOR_FOCUS_COPY[mode]);
+  }
+  function editorFocusForTemplate(key) {
+    if (key === 'caption_only') return 'caption';
+    if (key === 'family') return 'family';
+    if (key === 'feedback') return 'narrate';
+    return 'record';
+  }
+  function syncEditorFocusFromControls() {
+    setEditorFocusMode($('editorFocusMode') ? $('editorFocusMode').value : 'all', $('editorShowAll') && $('editorShowAll').checked);
+  }
+  if ($('editorFocusMode')) $('editorFocusMode').addEventListener('change', function () { if ($('editorShowAll')) $('editorShowAll').checked = false; syncEditorFocusFromControls(); });
+  if ($('editorShowAll')) $('editorShowAll').addEventListener('change', syncEditorFocusFromControls);
+  setEditorFocusMode('all', false);
   function currentCaptionStyleKey() {
     return $('captionStyle') ? $('captionStyle').value : 'clean-card';
   }
@@ -2299,6 +2550,87 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     textEl.textContent = vsCaptionPreviewLines(cue.text, display.position === 'lower-left' ? 36 : 44, display.maxLines || 3).join('\n');
     host.hidden = false;
   }
+  function activeZoomAt(t, timeSec) {
+    var now = Number(timeSec) || 0;
+    var list = (t && t.zooms) || [];
+    for (var i = list.length - 1; i >= 0; i--) {
+      var z = list[i] || {};
+      var start = Number(z.t) || 0;
+      var end = start + Math.max(0.2, Number(z.dur) || 3);
+      if (Number(z.scale) > 1 && now >= start && now <= end) return z;
+    }
+    return null;
+  }
+  function activeInsertAt(t, timeSec) {
+    var now = Number(timeSec) || 0;
+    var list = vsSanitizeTeachingInserts((t && t.inserts) || [], (t && t.duration) || 0);
+    var active = list.filter(function (ins) { return now >= Number(ins.start || 0) && now <= Number(ins.end || 0); });
+    return active.length ? active[active.length - 1] : null;
+  }
+  function resetOverlayPreview(host) {
+    host.className = 'edit-overlay-preview';
+    host.hidden = true;
+    host.innerHTML = '';
+    host.style.left = '';
+    host.style.right = '';
+    host.style.top = '';
+    host.style.bottom = '';
+    host.style.transform = '';
+  }
+  function updateEditOverlayPreview() {
+    var host = $('editOverlayPreview'), t = currentTake();
+    if (!host) return;
+    if (!t) { resetOverlayPreview(host); return; }
+    var now = $('editVideo').currentTime || 0;
+    var ins = activeInsertAt(t, now);
+    var zoom = activeZoomAt(t, now);
+    resetOverlayPreview(host);
+    if (ins) {
+      host.hidden = false;
+      host.classList.add('theme-' + (ins.theme || 'blue'));
+      var layout = ins.layout || (ins.type === 'pause_prompt' ? 'lower-banner' : 'center-card');
+      if (ins.type === 'callout' || ins.type === 'sticker' || ins.type === 'image_overlay') {
+        host.classList.add('overlay-point');
+        host.style.left = Math.round((ins.x || 0.5) * 100) + '%';
+        host.style.top = Math.round((ins.y || 0.5) * 100) + '%';
+      } else if (layout === 'lower-banner') {
+        host.classList.add('overlay-lower');
+      } else {
+        host.classList.add('overlay-center');
+      }
+      var box = document.createElement('div');
+      box.className = 'overlay-box';
+      if ((ins.type === 'image_overlay' || ins.type === 'visual_card') && ins.imageSrc) {
+        var img = document.createElement('img');
+        img.src = ins.imageSrc;
+        img.alt = '';
+        box.appendChild(img);
+      }
+      if (String(ins.text || '').trim()) {
+        var strong = document.createElement('strong');
+        strong.textContent = ins.text;
+        box.appendChild(strong);
+      } else if (ins.type === 'image_overlay') {
+        var fallback = document.createElement('strong');
+        fallback.textContent = 'Image overlay';
+        box.appendChild(fallback);
+      }
+      if (String(ins.note || '').trim()) {
+        var note = document.createElement('span');
+        note.textContent = ins.note;
+        box.appendChild(note);
+      }
+      host.appendChild(box);
+      return;
+    }
+    if (zoom) {
+      host.hidden = false;
+      host.classList.add('overlay-zoom');
+      host.style.left = Math.round((zoom.x || 0.5) * 100) + '%';
+      host.style.top = Math.round((zoom.y || 0.5) * 100) + '%';
+      host.textContent = (zoom.scale || 2) + 'x';
+    }
+  }
 
   // ── Workflow presets: make the dense editor feel like a few clear jobs ──
   var VIDEO_TEMPLATES = {
@@ -2319,6 +2651,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('capMode').value = tpl.capMode || 'vtt';
     $('captionStyle').value = tpl.captionStyle || 'clean-card';
     $('exportPreset').value = tpl.preset || 'lms';
+    setEditorFocusMode(editorFocusForTemplate(key), false);
     syncCaptionStylePreview();
     updateEditCaptionPreview();
     setStatus($('exportStatus'), tpl.note || 'Template applied.', 'ok');
@@ -2383,6 +2716,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Recording engine ──
   var takes = [];            // {id, name, blob, url, duration, captions, createdAt}
   var selectedTakeId = null;
+  var sceneItems = [];       // ordered clips/cards for Scene builder exports
   var rec = null, recChunks = [], recBytes = 0;
   var recStreams = [];       // raw streams to stop on teardown
   var audioCtx = null;
@@ -2683,7 +3017,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations) {
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
@@ -2696,7 +3030,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), finishReview: {}, zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), scenePlan: scenePlan || null, finishReview: {}, zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -2722,7 +3056,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, musicText = null, musicData = null, musicName = '';
+      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, musicText = null, musicData = null, musicName = '';
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
@@ -2731,6 +3065,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         else if (/(^|\/)teaching_inserts\.json$/i.test(e.name)) { insertText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)visual_prompts\.json$/i.test(e.name)) { promptText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)localizations\.json$/i.test(e.name)) { localText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)scene_plan\.json$/i.test(e.name)) { scenePlanText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\.json$/i.test(e.name)) { musicText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\./i.test(e.name) && /\.(mp3|wav|ogg|m4a|webm)$/i.test(e.name)) { musicData = e.data; musicName = e.name; }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
@@ -2748,6 +3083,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (promptText) { try { visualPrompts = (JSON.parse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
       var localizations = [];
       if (localText) { try { localizations = (JSON.parse(localText) || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, (meta && meta.duration) || 0); }); } catch (_) {} }
+      var scenePlan = null;
+      if (scenePlanText) { try { scenePlan = JSON.parse(scenePlanText); } catch (_) { scenePlan = null; } }
       var musicBed = null;
       if (musicText && musicData) {
         try {
@@ -2759,7 +3096,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           musicBed = rawMusic;
         } catch (_) {}
       }
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations);
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -2782,7 +3119,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations) {
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
     var safeMusic = musicBed ? vsSanitizeMusicBed(musicBed, duration || 0) : null;
@@ -2816,6 +3153,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (inserts && inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
     if (visualPrompts && visualPrompts.length) entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
     if (localizations && localizations.length) entries.push({ name: 'localizations.json', data: new TextEncoder().encode(JSON.stringify(localizations, null, 2)) });
+    if (scenePlan) entries.push({ name: 'scene_plan.json', data: new TextEncoder().encode(JSON.stringify(scenePlan, null, 2)) });
     if (safeMusic && safeMusic.blob) {
       var musicExt = /\.mp3$/i.test(safeMusic.fileName) ? '.mp3' : /\.wav$/i.test(safeMusic.fileName) ? '.wav' : /\.ogg$/i.test(safeMusic.fileName) ? '.ogg' : /\.m4a$/i.test(safeMusic.fileName) ? '.m4a' : '.webm';
       entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, safeMusic, { blob: undefined }), null, 2)) });
@@ -2823,9 +3161,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan);
     return Promise.all(built.entries.map(function (entry, idx) {
       if (idx === 1) return blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); });
       if (entry._blob) return entry._blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); delete entry._blob; });
@@ -2844,7 +3182,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -2996,6 +3334,260 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Zoom & spotlight keyframes ──
   var aimingZoomId = null;
   var aimingInsertId = null;
+  var selectedEditItem = null;
+  var inspectorPreviewStop = null;
+  function insertTypeLabel(type) {
+    var map = { title_card: 'Title card', pause_prompt: 'Pause prompt', callout: 'Callout', sticker: 'Sticker', visual_card: 'Visual card', image_overlay: 'Image overlay' };
+    return map[type] || 'Insert';
+  }
+  function selectedEditObject(t) {
+    if (!t || !selectedEditItem) return null;
+    if (selectedEditItem.kind === 'zoom') return (t.zooms || []).find(function (z) { return z.id === selectedEditItem.id; }) || null;
+    if (selectedEditItem.kind === 'insert') return (t.inserts || []).find(function (i) { return i.id === selectedEditItem.id; }) || null;
+    return null;
+  }
+  function syncSelectedRowHighlight() {
+    var all = document.querySelectorAll('[data-edit-kind]');
+    Array.prototype.forEach.call(all, function (el) {
+      el.classList.toggle('edit-row-selected', !!selectedEditItem && el.getAttribute('data-edit-kind') === selectedEditItem.kind && el.getAttribute('data-edit-id') === selectedEditItem.id);
+    });
+  }
+  function selectEditItem(kind, id) {
+    selectedEditItem = kind && id ? { kind: kind, id: id } : null;
+    renderSelectedInspector();
+    syncSelectedRowHighlight();
+    updateEditOverlayPreview();
+  }
+  function inspectorEmpty(text) {
+    var host = $('selectedInspector'); if (!host) return;
+    host.innerHTML = '';
+    var empty = document.createElement('div');
+    empty.className = 'inspector-empty';
+    empty.textContent = text || 'Select a zoom, spotlight, title card, pause prompt, callout, sticker, or image overlay to tune it here.';
+    host.appendChild(empty);
+  }
+  function inspectorNumber(label, value, step, min, max, onChange) {
+    var wrap = document.createElement('label');
+    wrap.textContent = label;
+    var inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = step || '0.1';
+    if (min != null) inp.min = String(min);
+    if (max != null) inp.max = String(max);
+    inp.value = String(Math.round((Number(value) || 0) * 10) / 10);
+    inp.addEventListener('change', function () { onChange(Number(inp.value) || 0); });
+    wrap.appendChild(inp);
+    return wrap;
+  }
+  function inspectorText(label, value, onChange) {
+    var wrap = document.createElement('label');
+    wrap.textContent = label;
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = value || '';
+    inp.addEventListener('change', function () { onChange(inp.value); });
+    wrap.appendChild(inp);
+    return wrap;
+  }
+  function inspectorSelect(label, value, options, onChange) {
+    var wrap = document.createElement('label');
+    wrap.textContent = label;
+    var sel = document.createElement('select');
+    options.forEach(function (pair) {
+      var o = document.createElement('option');
+      o.value = pair[0];
+      o.textContent = pair[1];
+      if (String(value || '') === String(pair[0])) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener('change', function () { onChange(sel.value); });
+    wrap.appendChild(sel);
+    return wrap;
+  }
+  function renderSelectedInspector() {
+    var host = $('selectedInspector'); if (!host) return;
+    var t = currentTake();
+    var obj = selectedEditObject(t);
+    if (!t) { inspectorEmpty('Select or import a video before tuning edit items.'); return; }
+    if (!selectedEditItem || !obj) { selectedEditItem = null; inspectorEmpty(); return; }
+    host.innerHTML = '';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-weight:800;color:var(--text);margin-bottom:8px';
+    title.textContent = selectedEditItem.kind === 'zoom' ? 'Zoom at ' + fmtClock(obj.t || 0) : insertTypeLabel(obj.type) + ' at ' + fmtClock(obj.start || 0);
+    host.appendChild(title);
+    var form = document.createElement('div');
+    form.className = 'inspector-form';
+    if (selectedEditItem.kind === 'zoom') {
+      form.appendChild(inspectorNumber('At (s)', obj.t || 0, '0.1', 0, Math.ceil(t.duration || 0), function (v) { obj.t = Math.max(0, Math.min(t.duration || v, v)); saveDraft(t); renderZooms(); renderSelectedInspector(); }));
+      form.appendChild(inspectorNumber('Hold (s)', obj.dur || 3, '0.1', 0.5, 60, function (v) { obj.dur = Math.max(0.5, v); saveDraft(t); renderZooms(); renderSelectedInspector(); }));
+      form.appendChild(inspectorSelect('Zoom', String(obj.scale || 2), [['1.5', '1.5x'], ['2', '2x'], ['2.5', '2.5x'], ['3', '3x']], function (v) { obj.scale = Number(v) || 2; saveDraft(t); renderZooms(); renderSelectedInspector(); }));
+      form.appendChild(inspectorNumber('X (%)', Math.round((obj.x || 0.5) * 100), '1', 0, 100, function (v) { obj.x = Math.max(0, Math.min(1, v / 100)); saveDraft(t); renderZooms(); renderSelectedInspector(); }));
+      form.appendChild(inspectorNumber('Y (%)', Math.round((obj.y || 0.5) * 100), '1', 0, 100, function (v) { obj.y = Math.max(0, Math.min(1, v / 100)); saveDraft(t); renderZooms(); renderSelectedInspector(); }));
+    } else {
+      form.appendChild(inspectorSelect('Type', obj.type, [['title_card', 'Title card'], ['pause_prompt', 'Pause prompt'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual card'], ['image_overlay', 'Image overlay']], function (v) { obj.type = v; saveInsertList(t); renderSelectedInspector(); }));
+      form.appendChild(inspectorNumber('At (s)', obj.start || 0, '0.1', 0, Math.ceil(t.duration || 0), function (v) { var d = Math.max(0.6, (obj.end || 0) - (obj.start || 0)); obj.start = Math.max(0, v); obj.end = obj.start + d; saveInsertList(t); renderSelectedInspector(); }));
+      form.appendChild(inspectorNumber('Dur (s)', Math.max(0.6, (obj.end || 0) - (obj.start || 0)), '0.1', 0.6, 60, function (v) { obj.end = (obj.start || 0) + Math.max(0.6, v); saveInsertList(t); renderSelectedInspector(); }));
+      form.appendChild(inspectorText('Text', obj.text || '', function (v) { obj.text = v; saveInsertList(t); renderSelectedInspector(); }));
+      form.appendChild(inspectorText('Note', obj.note || '', function (v) { obj.note = v; saveInsertList(t); renderSelectedInspector(); }));
+      form.appendChild(inspectorSelect('Theme', obj.theme || 'blue', [['blue', 'blue'], ['green', 'green'], ['amber', 'amber'], ['pink', 'pink'], ['slate', 'slate']], function (v) { obj.theme = v; saveInsertList(t); renderSelectedInspector(); }));
+      if (obj.type === 'title_card' || obj.type === 'pause_prompt') {
+        form.appendChild(inspectorSelect('Layout', obj.layout || 'center-card', [['center-card', 'center card'], ['lower-banner', 'lower banner'], ['split-panel', 'split panel']], function (v) { obj.layout = v; saveInsertList(t); renderSelectedInspector(); }));
+      }
+      if (obj.type === 'callout') {
+        form.appendChild(inspectorSelect('Style', obj.style || 'arrow', [['arrow', 'arrow'], ['spotlight', 'spotlight'], ['box', 'box'], ['label', 'label']], function (v) { obj.style = v; saveInsertList(t); renderSelectedInspector(); }));
+      }
+      if (obj.type === 'sticker') {
+        form.appendChild(inspectorSelect('Animation', obj.animation || 'pulse', [['pulse', 'pulse'], ['bounce', 'bounce'], ['sparkle', 'sparkle'], ['none', 'none']], function (v) { obj.animation = v; saveInsertList(t); renderSelectedInspector(); }));
+      }
+      if (obj.type === 'callout' || obj.type === 'sticker' || obj.type === 'image_overlay') {
+        form.appendChild(inspectorNumber('X (%)', Math.round((obj.x || 0.5) * 100), '1', 0, 100, function (v) { obj.x = Math.max(0, Math.min(1, v / 100)); saveInsertList(t); renderSelectedInspector(); }));
+        form.appendChild(inspectorNumber('Y (%)', Math.round((obj.y || 0.5) * 100), '1', 0, 100, function (v) { obj.y = Math.max(0, Math.min(1, v / 100)); saveInsertList(t); renderSelectedInspector(); }));
+      }
+      if (obj.type === 'image_overlay') {
+        form.appendChild(inspectorNumber('Size (%)', Math.round((obj.width || 0.28) * 100), '1', 8, 90, function (v) { obj.width = Math.max(0.08, Math.min(0.9, v / 100)); saveInsertList(t); renderSelectedInspector(); }));
+        form.appendChild(inspectorSelect('Motion', obj.motion || 'fade', [['fade', 'fade'], ['slide_left', 'slide left'], ['slide_right', 'slide right'], ['slide_up', 'slide up'], ['slide_down', 'slide down'], ['drift_right', 'drift right'], ['drift_left', 'drift left'], ['zoom_in', 'zoom in'], ['none', 'none']], function (v) { obj.motion = v; saveInsertList(t); renderSelectedInspector(); }));
+      }
+    }
+    host.appendChild(form);
+    var actions = document.createElement('div');
+    actions.className = 'row';
+    actions.style.marginTop = '10px';
+    var persistInspectorEdit = function () {
+      if (selectedEditItem.kind === 'zoom') {
+        saveDraft(t);
+        renderZooms();
+        renderSelectedInspector();
+        drawWave();
+        updateEditOverlayPreview();
+      } else {
+        saveInsertList(t);
+      }
+    };
+    var moveSelectedBy = function (delta) {
+      var max = Math.max(0, Number(t.duration) || 0);
+      if (selectedEditItem.kind === 'zoom') obj.t = Math.max(0, Math.min(max, Number(obj.t || 0) + delta));
+      else {
+        var d = Math.max(0.6, Number(obj.end || 0) - Number(obj.start || 0));
+        obj.start = Math.max(0, Math.min(Math.max(0, max - 0.1), Number(obj.start || 0) + delta));
+        obj.end = Math.min(max || obj.start + d, obj.start + d);
+      }
+      persistInspectorEdit();
+    };
+    var jump = document.createElement('button');
+    jump.className = 'quiet';
+    jump.textContent = 'Jump';
+    jump.addEventListener('click', function () { $('editVideo').currentTime = Math.max(0, selectedEditItem.kind === 'zoom' ? (obj.t || 0) : (obj.start || 0)); updateEditOverlayPreview(); drawWave(); });
+    actions.appendChild(jump);
+    var preview = document.createElement('button');
+    preview.className = 'quiet';
+    preview.textContent = 'Preview';
+    preview.addEventListener('click', function () {
+      var start = selectedEditItem.kind === 'zoom' ? Number(obj.t || 0) : Number(obj.start || 0);
+      var end = selectedEditItem.kind === 'zoom' ? (start + Math.max(0.6, Number(obj.dur) || 3)) : Number(obj.end || start + 3);
+      var v = $('editVideo');
+      var stopAt = Math.min(t.duration || end, Math.max(end + 0.7, start + 1.2));
+      if (inspectorPreviewStop) v.removeEventListener('timeupdate', inspectorPreviewStop);
+      var onTime = function () {
+        if (v.currentTime >= stopAt) {
+          v.pause();
+          v.removeEventListener('timeupdate', onTime);
+          inspectorPreviewStop = null;
+        }
+      };
+      inspectorPreviewStop = onTime;
+      v.currentTime = Math.max(0, start - 0.7);
+      v.addEventListener('timeupdate', onTime);
+      try { v.play(); } catch (_) {}
+    });
+    actions.appendChild(preview);
+    var setHere = document.createElement('button');
+    setHere.className = 'quiet';
+    setHere.textContent = 'Set start here';
+    setHere.addEventListener('click', function () {
+      var at = Math.max(0, Math.min(t.duration || 0, $('editVideo').currentTime || 0));
+      if (selectedEditItem.kind === 'zoom') obj.t = at;
+      else {
+        var d = Math.max(0.6, Number(obj.end || 0) - Number(obj.start || 0));
+        obj.start = at;
+        obj.end = Math.min(t.duration || at + d, at + d);
+      }
+      persistInspectorEdit();
+    });
+    actions.appendChild(setHere);
+    if (selectedEditItem.kind === 'insert') {
+      var endHere = document.createElement('button');
+      endHere.className = 'quiet';
+      endHere.textContent = 'Set end here';
+      endHere.addEventListener('click', function () {
+        var at = Math.max(0, Math.min(t.duration || 0, $('editVideo').currentTime || 0));
+        obj.end = Math.max(Number(obj.start || 0) + 0.6, at);
+        persistInspectorEdit();
+      });
+      actions.appendChild(endHere);
+    }
+    var nudgeBack = document.createElement('button');
+    nudgeBack.className = 'quiet';
+    nudgeBack.textContent = '-0.5s';
+    nudgeBack.addEventListener('click', function () { moveSelectedBy(-0.5); });
+    actions.appendChild(nudgeBack);
+    var nudgeForward = document.createElement('button');
+    nudgeForward.className = 'quiet';
+    nudgeForward.textContent = '+0.5s';
+    nudgeForward.addEventListener('click', function () { moveSelectedBy(0.5); });
+    actions.appendChild(nudgeForward);
+    var duplicate = document.createElement('button');
+    duplicate.className = 'quiet';
+    duplicate.textContent = 'Duplicate';
+    duplicate.addEventListener('click', function () {
+      var at = Math.max(0, Math.min(t.duration || 0, $('editVideo').currentTime || 0));
+      if (selectedEditItem.kind === 'zoom') {
+        var copyZ = Object.assign({}, obj, { id: 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: at });
+        t.zooms = t.zooms || [];
+        t.zooms.push(copyZ);
+        selectedEditItem = { kind: 'zoom', id: copyZ.id };
+        saveDraft(t);
+        renderZooms();
+      } else {
+        var d = Math.max(0.6, Number(obj.end || 0) - Number(obj.start || 0));
+        var copyIns = Object.assign({}, obj, { id: 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), start: at, end: Math.min(t.duration || at + d, at + d) });
+        t.inserts = t.inserts || [];
+        t.inserts.push(copyIns);
+        selectedEditItem = { kind: 'insert', id: copyIns.id };
+        saveInsertList(t);
+      }
+      renderSelectedInspector();
+      drawWave();
+      updateEditOverlayPreview();
+    });
+    actions.appendChild(duplicate);
+    if (selectedEditItem.kind === 'zoom' || obj.type === 'callout' || obj.type === 'sticker' || obj.type === 'image_overlay') {
+      var aim = document.createElement('button');
+      aim.className = 'quiet';
+      aim.textContent = 'Aim on video';
+      aim.addEventListener('click', function () {
+        if (selectedEditItem.kind === 'zoom') { aimingZoomId = obj.id; aimingInsertId = null; renderZooms(); }
+        else { aimingInsertId = obj.id; aimingZoomId = null; renderTeachingInserts(); }
+      });
+      actions.appendChild(aim);
+    }
+    var del = document.createElement('button');
+    del.className = 'danger';
+    del.textContent = 'Delete';
+    del.addEventListener('click', function () {
+      if (selectedEditItem.kind === 'zoom') t.zooms.splice(t.zooms.indexOf(obj), 1);
+      else t.inserts.splice(t.inserts.indexOf(obj), 1);
+      selectedEditItem = null;
+      saveDraft(t);
+      renderZooms();
+      renderTeachingInserts();
+      renderSelectedInspector();
+      drawWave();
+      updateEditOverlayPreview();
+    });
+    actions.appendChild(del);
+    host.appendChild(actions);
+    syncSelectedRowHighlight();
+  }
   function renderZooms() {
     var t = currentTake();
     var host = $('zoomList');
@@ -3006,13 +3598,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var row = document.createElement('div');
       row.className = 'row';
       row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px' + (z.id === aimingZoomId ? ';border-color:var(--warn)' : '');
+      row.setAttribute('data-edit-kind', 'zoom');
+      row.setAttribute('data-edit-id', z.id);
+      row.setAttribute('role', 'group');
+      row.tabIndex = 0;
+      row.setAttribute('aria-label', 'Select zoom ' + (idx + 1));
+      if (selectedEditItem && selectedEditItem.kind === 'zoom' && selectedEditItem.id === z.id) row.classList.add('edit-row-selected');
+      row.addEventListener('click', function () { selectEditItem('zoom', z.id); });
+      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('zoom', z.id); } });
       var mkNum = function (label, field, step, min, max) {
         var l = document.createElement('label'); l.textContent = label + ' ';
         var inp = document.createElement('input');
         inp.type = 'number'; inp.step = step; inp.min = min; inp.max = max; inp.style.width = '70px';
         inp.value = (Math.round((z[field] != null ? z[field] : 0) * 10) / 10).toFixed(1);
         inp.setAttribute('aria-label', label + ' for zoom ' + (idx + 1));
-        inp.addEventListener('change', function () { z[field] = Number(inp.value) || 0; saveDraft(t); });
+        inp.addEventListener('change', function () { z[field] = Number(inp.value) || 0; saveDraft(t); renderSelectedInspector(); drawWave(); updateEditOverlayPreview(); });
         l.appendChild(inp); return l;
       };
       row.appendChild(mkNum('At (s)', 't', '0.1', '0', String(Math.ceil(t.duration))));
@@ -3022,19 +3622,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       sel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
       [1.5, 2, 2.5, 3].forEach(function (v) { var o = document.createElement('option'); o.value = String(v); o.textContent = v + '×'; if (Math.abs(z.scale - v) < 0.01) o.selected = true; sel.appendChild(o); });
       sel.setAttribute('aria-label', 'Zoom level for zoom ' + (idx + 1));
-      sel.addEventListener('change', function () { z.scale = Number(sel.value); saveDraft(t); });
+      sel.addEventListener('change', function () { z.scale = Number(sel.value); saveDraft(t); renderSelectedInspector(); drawWave(); updateEditOverlayPreview(); });
       zl.appendChild(sel); row.appendChild(zl);
       var aim = document.createElement('button'); aim.className = 'quiet';
       aim.textContent = z.id === aimingZoomId ? '🎯 Click the video…' : '🎯 Aim';
       aim.setAttribute('aria-label', 'Aim zoom ' + (idx + 1) + ' by clicking the video preview');
-      aim.addEventListener('click', function () { aimingZoomId = (aimingZoomId === z.id ? null : z.id); aimingInsertId = null; renderZooms(); renderTeachingInserts(); });
+      aim.addEventListener('click', function (ev) { ev.stopPropagation(); selectEditItem('zoom', z.id); aimingZoomId = (aimingZoomId === z.id ? null : z.id); aimingInsertId = null; renderZooms(); renderTeachingInserts(); });
       row.appendChild(aim);
       var pos = document.createElement('span'); pos.className = 'status'; pos.style.marginTop = '0';
       pos.textContent = '@ ' + Math.round((z.x || 0.5) * 100) + '%, ' + Math.round((z.y || 0.5) * 100) + '%';
       row.appendChild(pos);
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete zoom ' + (idx + 1));
-      del.addEventListener('click', function () { t.zooms.splice(t.zooms.indexOf(z), 1); if (aimingZoomId === z.id) aimingZoomId = null; saveDraft(t); renderZooms(); });
+      del.addEventListener('click', function (ev) { ev.stopPropagation(); t.zooms.splice(t.zooms.indexOf(z), 1); if (aimingZoomId === z.id) aimingZoomId = null; if (selectedEditItem && selectedEditItem.kind === 'zoom' && selectedEditItem.id === z.id) selectedEditItem = null; saveDraft(t); renderZooms(); renderSelectedInspector(); updateEditOverlayPreview(); });
       row.appendChild(del);
       host.appendChild(row);
     });
@@ -3049,6 +3649,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     aimingInsertId = null;
     saveDraft(t);
     renderZooms();
+    selectEditItem('zoom', z.id);
     announce('Zoom added — click the video preview to aim it');
   });
   $('addSpotlightBtn').addEventListener('click', function () {
@@ -3071,16 +3672,20 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var z = t.zooms.find(function (k) { return k.id === aimingZoomId; });
       if (!z) { aimingZoomId = null; return; }
       z.x = px; z.y = py;
+      selectedEditItem = { kind: 'zoom', id: z.id };
       aimingZoomId = null;
     } else if (aimingInsertId) {
       var ins = (t.inserts || []).find(function (k) { return k.id === aimingInsertId; });
       if (!ins) { aimingInsertId = null; return; }
       ins.x = px; ins.y = py;
+      selectedEditItem = { kind: 'insert', id: ins.id };
       aimingInsertId = null;
     }
     saveDraft(t);
     renderZooms();
     renderTeachingInserts();
+    renderSelectedInspector();
+    updateEditOverlayPreview();
     announce('Target aimed');
     ev.preventDefault();
   });
@@ -3090,8 +3695,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function defaultInsert(type) {
     var at = $('editVideo').currentTime || 0;
     var base = { id: 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: type, start: at, end: at + (type === 'callout' || type === 'sticker' ? 3 : (type === 'image_overlay' ? 5 : 4)), x: type === 'callout' || type === 'sticker' ? 0.68 : (type === 'image_overlay' ? 0.72 : 0.5), y: type === 'callout' || type === 'sticker' ? 0.34 : (type === 'image_overlay' ? 0.42 : 0.5), width: type === 'image_overlay' ? 0.28 : 0.46, scale: 1, motion: type === 'image_overlay' ? 'fade' : 'none', theme: 'blue', animation: type === 'sticker' ? 'pulse' : 'none' };
-    if (type === 'title_card') { base.text = 'Part ' + (((currentTake() && currentTake().inserts || []).filter(function (i) { return i.type === 'title_card'; }).length) + 1); base.note = 'What learners will see next'; }
-    else if (type === 'pause_prompt') { base.text = 'Pause and try it'; base.note = 'What do you notice?'; base.theme = 'amber'; }
+    if (type === 'title_card') { base.text = 'Part ' + (((currentTake() && currentTake().inserts || []).filter(function (i) { return i.type === 'title_card'; }).length) + 1); base.note = 'What learners will see next'; base.layout = 'center-card'; }
+    else if (type === 'pause_prompt') { base.text = 'Pause and try it'; base.note = 'What do you notice?'; base.theme = 'amber'; base.layout = 'lower-banner'; }
     else if (type === 'callout') { base.text = 'Look here'; base.theme = 'green'; base.style = 'arrow'; }
     else if (type === 'sticker') { base.text = 'Key idea'; base.theme = 'pink'; }
     else if (type === 'image_overlay') { base.text = 'Image overlay'; base.note = ''; base.theme = 'slate'; }
@@ -3102,7 +3707,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     t.inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0);
     saveDraft(t);
     renderTeachingInserts();
+    renderSelectedInspector();
     drawWave();
+    updateEditOverlayPreview();
   }
   function addTeachingInsert(type, extra) {
     var t = currentTake(); if (!t) return;
@@ -3110,6 +3717,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var ins = Object.assign(defaultInsert(type), extra || {});
     t.inserts.push(ins);
     saveInsertList(t);
+    selectEditItem('insert', ins.id);
     setStatus($('insertStatus'), 'Insert added. It will render into the exported video.', 'ok');
     return ins;
   }
@@ -3242,6 +3850,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var row = document.createElement('div');
       row.className = 'row';
       row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
+      row.setAttribute('data-edit-kind', 'insert');
+      row.setAttribute('data-edit-id', ins.id);
+      row.setAttribute('role', 'group');
+      row.tabIndex = 0;
+      row.setAttribute('aria-label', 'Select ' + insertTypeLabel(ins.type) + ' ' + (idx + 1));
+      if (selectedEditItem && selectedEditItem.kind === 'insert' && selectedEditItem.id === ins.id) row.classList.add('edit-row-selected');
+      row.addEventListener('click', function () { selectEditItem('insert', ins.id); });
+      row.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('insert', ins.id); } });
       var type = document.createElement('select');
       type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
       [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual'], ['image_overlay', 'Image overlay']].forEach(function (pair) {
@@ -3262,13 +3878,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       txt.type = 'text'; txt.value = ins.text || ''; txt.placeholder = 'Text'; txt.style.minWidth = '150px'; txt.style.flex = '1';
       txt.addEventListener('change', function () { ins.text = txt.value; saveInsertList(t); });
       row.appendChild(txt);
+      if (ins.type === 'title_card' || ins.type === 'pause_prompt') {
+        var layoutSel = document.createElement('select');
+        layoutSel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+        [['center-card', 'center card'], ['lower-banner', 'lower banner'], ['split-panel', 'split panel']].forEach(function (pair) {
+          var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if ((ins.layout || 'center-card') === pair[0]) o.selected = true; layoutSel.appendChild(o);
+        });
+        layoutSel.setAttribute('aria-label', 'Layout for insert ' + (idx + 1));
+        layoutSel.addEventListener('change', function () { ins.layout = layoutSel.value; saveInsertList(t); });
+        row.appendChild(layoutSel);
+      }
       if (ins.type === 'callout' || ins.type === 'sticker' || ins.type === 'image_overlay') {
         row.appendChild(mkNum('X%', Math.round((ins.x || 0.5) * 100), function (v) { ins.x = Math.max(0, Math.min(1, v / 100)); }, 100));
         row.appendChild(mkNum('Y%', Math.round((ins.y || 0.5) * 100), function (v) { ins.y = Math.max(0, Math.min(1, v / 100)); }, 100));
         var aimIns = document.createElement('button'); aimIns.className = 'quiet';
         aimIns.textContent = ins.id === aimingInsertId ? 'Click video...' : 'Aim';
         aimIns.setAttribute('aria-label', 'Aim insert ' + (idx + 1) + ' by clicking the video preview');
-        aimIns.addEventListener('click', function () { aimingInsertId = (aimingInsertId === ins.id ? null : ins.id); aimingZoomId = null; renderZooms(); renderTeachingInserts(); });
+        aimIns.addEventListener('click', function (ev) { ev.stopPropagation(); selectEditItem('insert', ins.id); aimingInsertId = (aimingInsertId === ins.id ? null : ins.id); aimingZoomId = null; renderZooms(); renderTeachingInserts(); });
         row.appendChild(aimIns);
       }
       if (ins.type === 'callout') {
@@ -3307,11 +3933,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       var play = document.createElement('button'); play.className = 'quiet'; play.textContent = '▶';
       play.setAttribute('aria-label', 'Preview insert ' + (idx + 1));
-      play.addEventListener('click', function () { $('editVideo').currentTime = Math.max(0, ins.start - 0.4); $('editVideo').play(); setTimeout(function () { try { $('editVideo').pause(); } catch (_) {} }, 2600); });
+      play.addEventListener('click', function (ev) { ev.stopPropagation(); selectEditItem('insert', ins.id); $('editVideo').currentTime = Math.max(0, ins.start - 0.4); $('editVideo').play(); setTimeout(function () { try { $('editVideo').pause(); } catch (_) {} }, 2600); });
       row.appendChild(play);
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete insert ' + (idx + 1));
-      del.addEventListener('click', function () { t.inserts.splice(t.inserts.indexOf(ins), 1); saveInsertList(t); });
+      del.addEventListener('click', function (ev) { ev.stopPropagation(); t.inserts.splice(t.inserts.indexOf(ins), 1); if (selectedEditItem && selectedEditItem.kind === 'insert' && selectedEditItem.id === ins.id) selectedEditItem = null; saveInsertList(t); });
       row.appendChild(del);
       host.appendChild(row);
     });
@@ -4306,7 +4932,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var speakers = [];
     captions.forEach(function (c) { if (c.speaker && speakers.indexOf(c.speaker) === -1) speakers.push(c.speaker); });
     var inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0).map(function (ins) {
-      return { type: ins.type, start: ins.start, end: ins.end, text: ins.text, note: ins.note, theme: ins.theme, resourceTitle: ins.resourceTitle || '' };
+      return { type: ins.type, start: ins.start, end: ins.end, text: ins.text, note: ins.note, theme: ins.theme, style: ins.style || '', layout: ins.layout || '', resourceTitle: ins.resourceTitle || '' };
     });
     var descriptions = ((t.visualDescriptions || []).filter(function (s) { return s && String(s.description || '').trim(); })).map(function (s) {
       return { start: s.start, end: s.end, description: s.description, basis: s.basis, confidence: s.confidence, checked: !!s.checked };
@@ -4649,6 +5275,204 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return wavePeaksCache[t.id];
     });
   }
+  function editTimelineEntries(t) {
+    if (!t) return [];
+    var dur = Math.max(0.01, Number(t.duration) || 0.01);
+    var entries = [];
+    var add = function (entry) {
+      if (!entry) return;
+      var start = Math.max(0, Math.min(dur, Number(entry.start) || 0));
+      var end = Math.max(start + 0.03, Math.min(dur, Number(entry.end) || start + 0.03));
+      entries.push(Object.assign({}, entry, { start: start, end: end }));
+    };
+    (t.captions || []).forEach(function (c, idx) {
+      if (!c || !String(c.text || '').trim()) return;
+      add({ lane: 'Captions', kind: 'caption', id: 'caption-' + idx, index: idx, start: c.start, end: c.end, label: 'Caption: ' + String(c.text || '').slice(0, 80), color: '#fbbf24', targetId: 'cueRow' + idx });
+    });
+    (t.audio && t.audio.muteSpans ? t.audio.muteSpans : []).forEach(function (s, idx) {
+      add({ lane: 'Silences', kind: 'silence', id: 'silence-' + idx, index: idx, start: s.start, end: s.end, label: 'Silence', color: '#f87171', targetId: 'muteList' });
+    });
+    (t.zooms || []).filter(function (z) { return Number(z.scale) > 1; }).forEach(function (z, idx) {
+      add({ lane: 'Zooms', kind: 'zoom', id: z.id, index: idx, start: z.t, end: Number(z.t || 0) + Number(z.dur || 3), label: 'Zoom ' + (z.scale || 2) + 'x', color: '#818cf8', targetId: 'zoomList' });
+    });
+    (t.inserts || []).forEach(function (ins, idx) {
+      add({ lane: 'Inserts', kind: 'insert', id: ins.id, index: idx, start: ins.start, end: ins.end, label: insertTypeLabel(ins.type) + (ins.text ? ': ' + String(ins.text).slice(0, 60) : ''), color: '#14b8a6', targetId: 'insertList' });
+    });
+    (t.audioClips || []).forEach(function (c, idx) {
+      add({ lane: 'Audio', kind: 'clip', id: c.id || ('clip-' + idx), index: idx, start: c.t, end: Number(c.t || 0) + Number(c.dur || 1.2), label: c.name || 'Audio clip', color: '#4ade80', targetId: 'clipList' });
+    });
+    if (t.musicBed) {
+      var mb = vsSanitizeMusicBed(t.musicBed, dur);
+      if (mb) add({ lane: 'Audio', kind: 'music', id: 'music-bed', start: mb.start, end: mb.end, label: mb.name || 'Music bed', color: '#10b981', targetId: 'musicBedBox' });
+    }
+    (t.chapters || []).forEach(function (ch, idx) {
+      add({ lane: 'Chapters', kind: 'chapter', id: 'chapter-' + idx, index: idx, start: ch.start, end: Number(ch.start || 0) + Math.max(0.12, dur * 0.01), label: ch.title || 'Chapter', color: '#f8fafc', targetId: 'chapterList' });
+    });
+    return entries.sort(function (a, b) { return a.start - b.start || a.end - b.end || String(a.label).localeCompare(String(b.label)); });
+  }
+  function timelineEntryPriority(entry) {
+    var order = { insert: 0, zoom: 1, caption: 2, silence: 3, clip: 4, music: 5, chapter: 6 };
+    return order[entry && entry.kind] == null ? 9 : order[entry.kind];
+  }
+  function setTimelineNavStatus(entry, prefix) {
+    var host = $('editNavStatus'); if (!host) return;
+    if (!entry) {
+      var t = currentTake();
+      host.textContent = t ? ('Playhead: ' + fmtClock($('editVideo').currentTime || 0) + ' - no active edit.') : 'Select a take to navigate edits.';
+      return;
+    }
+    host.textContent = (prefix ? prefix + ': ' : '') + entry.label + ' at ' + fmtClock(entry.start) + '.';
+  }
+  function openTimelineEntry(entry) {
+    var t = currentTake(); if (!t || !entry) return;
+    $('editVideo').currentTime = Math.max(0, Math.min(t.duration || entry.start, entry.start));
+    if (entry.kind === 'zoom') selectEditItem('zoom', entry.id);
+    else if (entry.kind === 'insert') selectEditItem('insert', entry.id);
+    else { selectedEditItem = null; renderSelectedInspector(); syncSelectedRowHighlight(); }
+    setTimelineNavStatus(entry, 'Opened');
+    drawWave();
+    updateEditCaptionPreview();
+    updateEditOverlayPreview();
+    if (entry.targetId) focusStudioTarget('tabEdit', entry.targetId);
+  }
+  function activeTimelineEntry() {
+    var t = currentTake(); if (!t) return null;
+    var now = $('editVideo').currentTime || 0;
+    var active = editTimelineEntries(t).filter(function (entry) { return now >= entry.start - 0.04 && now <= entry.end + 0.04; });
+    active.sort(function (a, b) { return timelineEntryPriority(a) - timelineEntryPriority(b) || Math.abs(a.start - now) - Math.abs(b.start - now); });
+    return active[0] || null;
+  }
+  function updateTimelineNavStatus() {
+    var t = currentTake(); if (!t) { setTimelineNavStatus(null); return; }
+    var entry = activeTimelineEntry();
+    if (entry) setTimelineNavStatus(entry, 'At playhead');
+    else setTimelineNavStatus(null);
+  }
+  function stepTimelineEntry(dir) {
+    var t = currentTake(); if (!t) return;
+    var now = $('editVideo').currentTime || 0;
+    var entries = editTimelineEntries(t);
+    if (!entries.length) { setTimelineNavStatus(null); return; }
+    var entry;
+    if (dir < 0) {
+      for (var i = entries.length - 1; i >= 0; i--) { if (entries[i].start < now - 0.05) { entry = entries[i]; break; } }
+      if (!entry) entry = entries[entries.length - 1];
+    } else {
+      entry = entries.find(function (item) { return item.start > now + 0.05; }) || entries[0];
+    }
+    openTimelineEntry(entry);
+  }
+  function renderEditMap() {
+    var status = $('editMapStatus'), countHost = $('editMapCounts'), listHost = $('editMapList');
+    if (!status || !countHost || !listHost) return;
+    var t = currentTake();
+    countHost.innerHTML = '';
+    listHost.innerHTML = '';
+    if (!t) {
+      setStatus(status, 'Select a take to see the edit worklist.');
+      return;
+    }
+    var entries = editTimelineEntries(t);
+    if (!entries.length) {
+      setStatus(status, 'No timed edits yet. Add captions, chapters, zooms, inserts, or audio clips to build the map.');
+      return;
+    }
+    var filter = $('editMapFilter') ? $('editMapFilter').value : '';
+    var scope = $('editMapScope') ? $('editMapScope').value : 'upcoming';
+    var lanes = ['Captions', 'Inserts', 'Zooms', 'Silences', 'Audio', 'Chapters'];
+    var allChip = document.createElement('button');
+    allChip.type = 'button';
+    allChip.className = 'mini-pill edit-map-chip';
+    allChip.textContent = entries.length + ' all';
+    allChip.setAttribute('aria-pressed', String(!filter));
+    allChip.addEventListener('click', function () { if ($('editMapFilter')) $('editMapFilter').value = ''; renderEditMap(); });
+    countHost.appendChild(allChip);
+    lanes.forEach(function (lane) {
+      var n = entries.filter(function (entry) { return entry.lane === lane; }).length;
+      if (!n) return;
+      var pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'mini-pill edit-map-chip';
+      pill.textContent = n + ' ' + lane.toLowerCase();
+      pill.setAttribute('aria-pressed', String(filter === lane));
+      pill.addEventListener('click', function () { if ($('editMapFilter')) $('editMapFilter').value = lane; renderEditMap(); });
+      countHost.appendChild(pill);
+    });
+    var now = $('editVideo').currentTime || 0;
+    var visible = filter ? entries.filter(function (entry) { return entry.lane === filter; }) : entries.slice();
+    if (!visible.length) {
+      setStatus(status, 'No ' + filter.toLowerCase() + ' edits in this take.');
+      return;
+    }
+    var shown = scope === 'all' ? visible.slice(0, 80) : visible.filter(function (entry) { return entry.end >= now - 0.05; }).slice(0, 12);
+    if (!shown.length) shown = visible.slice(0, Math.min(12, visible.length));
+    var filteredLabel = filter ? (filter.toLowerCase() + ' ') : '';
+    setStatus(status, visible.length + ' ' + filteredLabel + 'timed edit' + (visible.length === 1 ? '' : 's') + '. Showing ' + (scope === 'all' ? 'all visible' : 'upcoming') + ' items.');
+    shown.forEach(function (entry) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'edit-map-item';
+      btn.setAttribute('aria-label', 'Open ' + entry.label + ' at ' + fmtClock(entry.start));
+      btn.setAttribute('aria-current', String(now >= entry.start - 0.04 && now <= entry.end + 0.04));
+      var time = document.createElement('span');
+      time.className = 'time';
+      time.textContent = fmtClock(entry.start);
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = entry.label;
+      var kind = document.createElement('span');
+      kind.className = 'kind';
+      kind.textContent = entry.lane;
+      btn.appendChild(time);
+      btn.appendChild(label);
+      btn.appendChild(kind);
+      btn.addEventListener('click', function () { openTimelineEntry(entry); });
+      listHost.appendChild(btn);
+    });
+  }
+  function renderTimelineLanes() {
+    var host = $('timelineLaneSummary'); if (!host) return;
+    var t = currentTake();
+    host.innerHTML = '';
+    if (!t) { renderEditMap(); return; }
+    var dur = Math.max(0.01, Number(t.duration) || 0.01);
+    var now = Math.max(0, Math.min(dur, $('editVideo').currentTime || 0));
+    var entries = editTimelineEntries(t);
+    var lanes = ['Captions', 'Silences', 'Zooms', 'Inserts', 'Audio', 'Chapters'].map(function (label) {
+      return { label: label, items: entries.filter(function (entry) { return entry.lane === label; }) };
+    });
+    lanes.forEach(function (lane) {
+      if (!lane.items.length) return;
+      var row = document.createElement('div');
+      row.className = 'timeline-lane';
+      var label = document.createElement('div');
+      label.className = 'timeline-lane-label';
+      label.textContent = lane.label;
+      var track = document.createElement('div');
+      track.className = 'timeline-lane-track';
+      lane.items.slice(0, 80).forEach(function (item) {
+        var seg = document.createElement('button');
+        seg.type = 'button';
+        seg.className = 'timeline-lane-segment';
+        seg.style.left = (item.start / dur * 100).toFixed(3) + '%';
+        seg.style.width = Math.max(0.35, (item.end - item.start) / dur * 100).toFixed(3) + '%';
+        seg.style.background = item.color;
+        seg.title = item.label ? item.label + ' (' + fmtClock(item.start) + ')' : fmtClock(item.start);
+        seg.setAttribute('aria-label', 'Open ' + (item.label || lane.label) + ' at ' + fmtClock(item.start));
+        seg.addEventListener('click', function () { openTimelineEntry(item); });
+        track.appendChild(seg);
+      });
+      var playhead = document.createElement('span');
+      playhead.className = 'timeline-lane-playhead';
+      playhead.style.left = (now / dur * 100).toFixed(3) + '%';
+      track.appendChild(playhead);
+      row.appendChild(label);
+      row.appendChild(track);
+      host.appendChild(row);
+    });
+    updateTimelineNavStatus();
+    renderEditMap();
+  }
   function drawWave() {
     var cv = $('waveCanvas');
     var t = currentTake();
@@ -4660,7 +5484,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var ctx = cv.getContext('2d');
     ctx.fillStyle = '#0b1220';
     ctx.fillRect(0, 0, W, H);
-    if (!t) return;
+    if (!t) { renderTimelineLanes(); return; }
     var dur = Math.max(0.01, t.duration || 0.01);
     var xOf = function (sec) { return Math.max(0, Math.min(W, sec / dur * W)); };
     // Peaks
@@ -4735,6 +5559,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     cv.setAttribute('aria-valuemax', String(Math.round(dur)));
     cv.setAttribute('aria-valuenow', String(Math.round(cur)));
     cv.setAttribute('aria-valuetext', fmtClock(cur) + ' of ' + fmtClock(dur));
+    renderTimelineLanes();
   }
   function waveFollow() {
     drawWave();
@@ -4743,6 +5568,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('editVideo').addEventListener('play', function () { cancelAnimationFrame(waveRaf); waveRaf = requestAnimationFrame(waveFollow); });
   $('editVideo').addEventListener('pause', function () { cancelAnimationFrame(waveRaf); drawWave(); });
   $('editVideo').addEventListener('seeked', drawWave);
+  $('editVideo').addEventListener('timeupdate', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
+  $('editVideo').addEventListener('seeked', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
+  $('editVideo').addEventListener('loadedmetadata', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
   window.addEventListener('resize', drawWave);
   ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('input', drawWave); });
   function waveSeekTo(clientX) {
@@ -4759,6 +5587,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var step = ev.shiftKey ? 1 : 0.2;
     if (ev.key === 'ArrowRight') { v.currentTime = Math.min(t.duration, v.currentTime + step); drawWave(); ev.preventDefault(); }
     else if (ev.key === 'ArrowLeft') { v.currentTime = Math.max(0, v.currentTime - step); drawWave(); ev.preventDefault(); }
+  });
+  if ($('prevEditBtn')) $('prevEditBtn').addEventListener('click', function () { stepTimelineEntry(-1); });
+  if ($('nextEditBtn')) $('nextEditBtn').addEventListener('click', function () { stepTimelineEntry(1); });
+  if ($('selectActiveEditBtn')) $('selectActiveEditBtn').addEventListener('click', function () {
+    var entry = activeTimelineEntry();
+    if (entry) openTimelineEntry(entry);
+    else setTimelineNavStatus(null);
+  });
+  ['editMapFilter', 'editMapScope'].forEach(function (id) {
+    if ($(id)) $(id).addEventListener('change', renderEditMap);
   });
   // Space toggles play/pause anywhere in the Edit tab (except while typing).
   document.addEventListener('keydown', function (ev) {
@@ -4811,6 +5649,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         ev.stopPropagation();
         takes = takes.filter(function (x) { return x.id !== t.id; });
         deleteDraft(t.id);
+        removeSceneItemsForTake(t.id);
         try { URL.revokeObjectURL(t.url); } catch (_) {}
         if (selectedTakeId === t.id) {
           selectedTakeId = null;
@@ -4820,7 +5659,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             $('editVideo').src = '';
             aiNarrSegments = [];
             resetPreviewAudio();
-            renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); renderLocalization(); renderFinishChecklist(); renderResultReadiness(); drawWave();
+            renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); renderLocalization(); renderFinishChecklist(); renderResultReadiness(); renderSelectedInspector(); drawWave(); updateEditOverlayPreview();
           }
         }
         renderTakes();
@@ -4830,6 +5669,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.appendChild(nm); row.appendChild(meta); row.appendChild(del);
       list.appendChild(row);
     });
+    renderSceneBuilder();
   }
 
   function selectTake(id) {
@@ -4856,10 +5696,926 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     renderLocalization();
     renderFinishChecklist();
     renderResultReadiness();
+    renderSelectedInspector();
     if (!resourceCuesLoaded) refreshResourceCues(); else renderResourceCueList();
     drawWave();
     updateEditCaptionPreview();
+    updateEditOverlayPreview();
     ensurePeaks(t).then(drawWave);
+    renderSceneBuilder();
+  }
+
+  function sceneNewId(prefix) {
+    return (prefix || 'sc') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  function sceneDefaultTransition() {
+    return $('sceneDefaultTransition') ? $('sceneDefaultTransition').value : 'cut';
+  }
+  function sceneTransitionLabel(key) {
+    var labels = { cut: 'Cut', dissolve: 'Soft dissolve', black: 'Fade through black', white: 'Dip through white' };
+    return labels[key] || labels.cut;
+  }
+  function sceneTransitionDuration(key) {
+    return key && key !== 'cut' ? 0.7 : 0;
+  }
+  function sceneItemTake(item) {
+    return item && item.takeId ? takes.find(function (t) { return t.id === item.takeId; }) || null : null;
+  }
+  function sanitizeSceneTransition(key) {
+    return ({ cut: 1, dissolve: 1, black: 1, white: 1 })[key] ? key : 'cut';
+  }
+  function sanitizeSceneAudioMode(key) {
+    return ({ keep: 1, normalize: 1, mute: 1 })[key] ? key : 'keep';
+  }
+  function sanitizeSceneItem(raw, idx) {
+    var item = raw || {};
+    var type = item.type === 'card' ? 'card' : 'clip';
+    if (type === 'card') {
+      var cardType = item.cardType === 'pause' ? 'pause' : 'title';
+      return {
+        id: sceneNewId(cardType === 'pause' ? 'pause' : 'card'),
+        type: 'card',
+        cardType: cardType,
+        text: String(item.text || (cardType === 'pause' ? 'Pause and think' : 'New section')).slice(0, 120),
+        duration: Math.max(0.5, Math.min(12, Number(item.duration) || (cardType === 'pause' ? 4 : 2.5))),
+        transition: idx ? sanitizeSceneTransition(item.transition) : 'cut'
+      };
+    }
+    return {
+      id: sceneNewId('clip'),
+      type: 'clip',
+      takeId: String(item.takeId || '').slice(0, 80),
+      start: Math.max(0, Number(item.start) || 0),
+      end: Math.max(0.2, Number(item.end) || 0.2),
+      transition: idx ? sanitizeSceneTransition(item.transition) : 'cut'
+    };
+  }
+  function sceneItemDuration(item) {
+    if (!item) return 0;
+    if (item.type === 'clip') {
+      var t = sceneItemTake(item);
+      var end = Number(item.end);
+      if (!isFinite(end) || end <= 0) end = t ? Number(t.duration) || 0 : 0;
+      return Math.max(0.2, end - Math.max(0, Number(item.start) || 0));
+    }
+    return Math.max(0.5, Number(item.duration) || 2.5);
+  }
+  function sceneTotalDuration() {
+    return sceneItems.reduce(function (sum, item) { return sum + sceneItemDuration(item); }, 0);
+  }
+  var SCENE_STORE = 'allo_video_scene_builder_v1';
+  var sceneDraftTimer = 0;
+  var sceneDraftReady = false;
+  var scenePreviewState = null;
+  var sceneDragIndex = null;
+  function sceneSerializableItems() {
+    return sceneItems.map(function (item, idx) {
+      if (item.type === 'card') {
+        return { type: 'card', cardType: item.cardType || 'title', text: item.text || '', duration: sceneItemDuration(item), transition: idx ? sanitizeSceneTransition(item.transition) : 'cut' };
+      }
+      return { type: 'clip', takeId: item.takeId || '', start: Number(item.start) || 0, end: Number(item.end) || 0, transition: idx ? sanitizeSceneTransition(item.transition) : 'cut' };
+    });
+  }
+  function saveSceneDraftSoon() {
+    if (!sceneDraftReady) return;
+    clearTimeout(sceneDraftTimer);
+    sceneDraftTimer = setTimeout(saveSceneDraft, 180);
+  }
+  function saveSceneDraft() {
+    try {
+      var payload = {
+        version: 1,
+        updatedAt: new Date().toISOString(),
+        defaultTransition: sceneDefaultTransition(),
+        audioMode: $('sceneAudioMode') ? $('sceneAudioMode').value : 'keep',
+        audioFade: !$('sceneAudioFade') || $('sceneAudioFade').checked,
+        items: sceneSerializableItems()
+      };
+      localStorage.setItem(SCENE_STORE, JSON.stringify(payload));
+    } catch (_) {}
+  }
+  function loadSceneDraft() {
+    sceneDraftReady = false;
+    try {
+      var raw = localStorage.getItem(SCENE_STORE);
+      if (!raw) { sceneDraftReady = true; return; }
+      var data = JSON.parse(raw) || {};
+      sceneItems = (Array.isArray(data.items) ? data.items : []).slice(0, 80).map(sanitizeSceneItem).filter(function (item) { return item.type === 'card' || item.takeId; });
+      if ($('sceneDefaultTransition')) $('sceneDefaultTransition').value = sanitizeSceneTransition(data.defaultTransition);
+      if ($('sceneAudioMode')) $('sceneAudioMode').value = sanitizeSceneAudioMode(data.audioMode);
+      if ($('sceneAudioFade')) $('sceneAudioFade').checked = data.audioFade !== false;
+    } catch (_) {}
+    sceneDraftReady = true;
+  }
+  function clearSceneDraft() {
+    try { localStorage.removeItem(SCENE_STORE); } catch (_) {}
+  }
+  function sceneClipItemFromTake(take) {
+    return {
+      id: sceneNewId('clip'),
+      type: 'clip',
+      takeId: take.id,
+      start: 0,
+      end: Math.max(0.2, Number(take.duration) || 0.2),
+      transition: sceneItems.length ? sceneDefaultTransition() : 'cut'
+    };
+  }
+  function sceneCardItem(text, kind, duration) {
+    var cardType = kind === 'pause' ? 'pause' : 'title';
+    return {
+      id: sceneNewId(cardType === 'pause' ? 'pause' : 'card'),
+      type: 'card',
+      cardType: cardType,
+      text: String(text || (cardType === 'pause' ? 'Pause and think' : 'New section')).slice(0, 120),
+      duration: Math.max(0.5, Math.min(12, Number(duration) || (cardType === 'pause' ? 4 : 2.5))),
+      transition: sceneItems.length ? sceneDefaultTransition() : 'cut'
+    };
+  }
+  function addSceneClipFromCurrentTake() {
+    var t = currentTake();
+    if (!t) { setStatus($('sceneStatus'), 'Select or import a take before adding it to the scene.', 'warn'); return; }
+    sceneItems.push(sceneClipItemFromTake(t));
+    renderSceneBuilder();
+  }
+  function addAllTakesToScene() {
+    if (!takes.length) { setStatus($('sceneStatus'), 'Record or import takes before adding them to a scene.', 'warn'); return; }
+    takes.forEach(function (t) { sceneItems.push(sceneClipItemFromTake(t)); });
+    if (sceneItems[0]) sceneItems[0].transition = 'cut';
+    renderSceneBuilder();
+  }
+  function applySceneTransitionToAll() {
+    if (sceneItems.length < 2) { setStatus($('sceneStatus'), 'Add at least two scenes before applying a transition.', 'warn'); return; }
+    var key = sceneDefaultTransition();
+    sceneItems.forEach(function (item, idx) { item.transition = idx ? key : 'cut'; });
+    renderSceneBuilder();
+  }
+  function addSceneCard(kind) {
+    var title = ($('titleInput') && $('titleInput').value.trim()) || (kind === 'pause' ? 'Pause and think' : 'New section');
+    sceneItems.push(sceneCardItem(kind === 'pause' ? 'Pause and think' : title, kind, kind === 'pause' ? 4 : 2.5));
+    renderSceneBuilder();
+  }
+  function sceneOrderedTakes() {
+    var current = currentTake();
+    var out = [];
+    if (current) out.push(current);
+    takes.forEach(function (t) { if (!current || t.id !== current.id) out.push(t); });
+    return out;
+  }
+  function applySceneTemplate() {
+    var key = $('sceneTemplateSelect') ? $('sceneTemplateSelect').value : 'mini_lesson';
+    var title = ($('titleInput') && $('titleInput').value.trim()) || 'Lesson';
+    var ordered = sceneOrderedTakes();
+    var items = [];
+    var addCard = function (text, kind, dur) { items.push(sceneCardItem(text, kind, dur)); };
+    var addClip = function (take) { if (take) items.push(sceneClipItemFromTake(take)); };
+    if (key === 'compare') {
+      addCard('Example A', 'title', 2);
+      addClip(ordered[0]);
+      addCard('Example B', 'title', 2);
+      addClip(ordered[1] || ordered[0]);
+      addCard('Compare: what changed?', 'pause', 4);
+      addCard('Pattern to remember', 'title', 2.5);
+    } else if (key === 'reflect') {
+      addCard('Watch closely', 'title', 2);
+      (ordered.length ? ordered : []).slice(0, 2).forEach(addClip);
+      addCard('Pause and reflect', 'pause', 4);
+      addCard('Try it next', 'title', 2.5);
+    } else if (key === 'family_update') {
+      addCard(title, 'title', 2.5);
+      ordered.slice(0, 3).forEach(addClip);
+      addCard('What to practice next', 'title', 3);
+    } else {
+      addCard(title, 'title', 2.5);
+      ordered.forEach(addClip);
+      addCard('Pause: what did you notice?', 'pause', 4);
+      addCard('Key takeaway', 'title', 2.5);
+    }
+    if (!items.length) { setStatus($('sceneStatus'), 'Record or import a take before adding that template.', 'warn'); return; }
+    var startIdx = sceneItems.length;
+    sceneItems = sceneItems.concat(items);
+    sceneItems.forEach(function (item, idx) {
+      if (idx === 0) item.transition = 'cut';
+      else if (idx >= startIdx) item.transition = sceneDefaultTransition();
+    });
+    renderSceneBuilder();
+  }
+  function removeSceneItemsForTake(takeId) {
+    var before = sceneItems.length;
+    sceneItems = sceneItems.filter(function (item) { return !(item.type === 'clip' && item.takeId === takeId); });
+    if (before !== sceneItems.length) renderSceneBuilder();
+  }
+  function reorderSceneItems(from, to) {
+    from = Number(from); to = Number(to);
+    if (!isFinite(from) || !isFinite(to) || from === to || from < 0 || to < 0 || from >= sceneItems.length || to >= sceneItems.length) return;
+    var item = sceneItems.splice(from, 1)[0];
+    sceneItems.splice(to, 0, item);
+    if (sceneItems[0]) sceneItems[0].transition = 'cut';
+    renderSceneBuilder();
+  }
+  function duplicateSceneItem(idx) {
+    var item = sceneItems[idx];
+    if (!item) return;
+    var copy = sanitizeSceneItem(item, idx + 1);
+    copy.transition = sceneDefaultTransition();
+    sceneItems.splice(idx + 1, 0, copy);
+    if (sceneItems[0]) sceneItems[0].transition = 'cut';
+    renderSceneBuilder();
+  }
+  function renderSceneBuilder() {
+    var host = $('sceneList');
+    if (!host) return;
+    host.innerHTML = '';
+    if ($('sceneReadinessList')) $('sceneReadinessList').innerHTML = '';
+    if (!sceneItems.length) {
+      host.innerHTML = '<p class="status">No scenes yet. Add the selected take or add a card to begin.</p>';
+      setStatus($('sceneStatus'), takes.length ? 'Build a sequence from selected takes and cards.' : 'Record or import a take before building a sequence.');
+      if ($('sceneUseBundledPlanBtn')) $('sceneUseBundledPlanBtn').disabled = !(currentTake() && currentTake().scenePlan);
+      return;
+    }
+    if ($('sceneUseBundledPlanBtn')) $('sceneUseBundledPlanBtn').disabled = !(currentTake() && currentTake().scenePlan);
+    sceneItems.forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'scene-row';
+      var badge = document.createElement('span');
+      badge.className = 'scene-index';
+      badge.textContent = String(idx + 1);
+      badge.title = 'Drag to reorder scene ' + (idx + 1);
+      badge.setAttribute('aria-label', 'Drag to reorder scene ' + (idx + 1));
+      badge.setAttribute('draggable', 'true');
+      badge.addEventListener('dragstart', function (ev) {
+        sceneDragIndex = idx;
+        try { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', String(idx)); } catch (_) {}
+      });
+      badge.addEventListener('dragend', function () { sceneDragIndex = null; });
+      row.addEventListener('dragover', function (ev) { if (sceneDragIndex == null || sceneDragIndex === idx) return; ev.preventDefault(); row.classList.add('scene-drop-target'); });
+      row.addEventListener('dragleave', function () { row.classList.remove('scene-drop-target'); });
+      row.addEventListener('drop', function (ev) {
+        ev.preventDefault();
+        row.classList.remove('scene-drop-target');
+        var from = sceneDragIndex;
+        try { from = Number(ev.dataTransfer.getData('text/plain')); } catch (_) {}
+        sceneDragIndex = null;
+        reorderSceneItems(from, idx);
+      });
+      row.appendChild(badge);
+
+      var info = document.createElement('div');
+      var strong = document.createElement('strong');
+      var meta = document.createElement('span');
+      meta.style.display = 'block';
+      if (item.type === 'clip') {
+        var t = sceneItemTake(item);
+        strong.textContent = t ? t.name : 'Missing take';
+        meta.textContent = fmtClock(sceneItemDuration(item)) + ' clip' + (idx ? ' - ' + sceneTransitionLabel(item.transition) : '');
+        info.appendChild(strong);
+        info.appendChild(meta);
+      } else {
+        var text = document.createElement('input');
+        text.type = 'text';
+        text.value = item.text || (item.cardType === 'pause' ? 'Pause and think' : 'New section');
+        text.setAttribute('aria-label', 'Scene card text ' + (idx + 1));
+        text.addEventListener('change', function () { item.text = text.value.trim() || (item.cardType === 'pause' ? 'Pause and think' : 'New section'); renderSceneBuilder(); });
+        meta.textContent = (item.cardType === 'pause' ? 'Pause card' : 'Section card') + (idx ? ' - ' + sceneTransitionLabel(item.transition) : '');
+        info.appendChild(text);
+        info.appendChild(meta);
+      }
+      row.appendChild(info);
+
+      var timing = document.createElement('div');
+      timing.className = 'row';
+      timing.style.margin = '0';
+      if (item.type === 'clip') {
+        var t2 = sceneItemTake(item);
+        var start = document.createElement('input');
+        start.type = 'number'; start.min = '0'; start.step = '0.1'; start.value = String(Math.round((Number(item.start) || 0) * 10) / 10);
+        start.setAttribute('aria-label', 'Clip start time ' + (idx + 1));
+        var end = document.createElement('input');
+        end.type = 'number'; end.min = '0.2'; end.step = '0.1'; end.value = String(Math.round((Number(item.end) || (t2 && t2.duration) || 0.2) * 10) / 10);
+        end.setAttribute('aria-label', 'Clip end time ' + (idx + 1));
+        start.addEventListener('change', function () {
+          var maxEnd = Math.max(0.2, Number(item.end) || (t2 && t2.duration) || 0.2);
+          item.start = Math.max(0, Math.min(maxEnd - 0.2, Number(start.value) || 0));
+          renderSceneBuilder();
+        });
+        end.addEventListener('change', function () {
+          var maxDur = Math.max(0.2, t2 ? Number(t2.duration) || 0.2 : Number(end.value) || 0.2);
+          item.end = Math.max((Number(item.start) || 0) + 0.2, Math.min(maxDur, Number(end.value) || maxDur));
+          renderSceneBuilder();
+        });
+        timing.appendChild(document.createTextNode('Start'));
+        timing.appendChild(start);
+        timing.appendChild(document.createTextNode('End'));
+        timing.appendChild(end);
+      } else {
+        var dur = document.createElement('input');
+        dur.type = 'number'; dur.min = '0.5'; dur.max = '12'; dur.step = '0.5'; dur.value = String(Math.round(sceneItemDuration(item) * 10) / 10);
+        dur.setAttribute('aria-label', 'Card duration ' + (idx + 1));
+        dur.addEventListener('change', function () { item.duration = Math.max(0.5, Math.min(12, Number(dur.value) || 2.5)); renderSceneBuilder(); });
+        timing.appendChild(document.createTextNode('Seconds'));
+        timing.appendChild(dur);
+      }
+      row.appendChild(timing);
+
+      var trans = document.createElement('select');
+      trans.setAttribute('aria-label', 'Transition into scene ' + (idx + 1));
+      ['cut', 'dissolve', 'black', 'white'].forEach(function (key) {
+        var opt = document.createElement('option');
+        opt.value = key; opt.textContent = sceneTransitionLabel(key);
+        trans.appendChild(opt);
+      });
+      trans.value = idx ? (item.transition || 'cut') : 'cut';
+      trans.disabled = idx === 0;
+      trans.addEventListener('change', function () { item.transition = trans.value; renderSceneBuilder(); });
+      row.appendChild(trans);
+
+      var actions = document.createElement('div');
+      actions.className = 'row';
+      actions.style.margin = '0';
+      var up = document.createElement('button'); up.className = 'quiet'; up.textContent = 'Up'; up.disabled = idx === 0;
+      var down = document.createElement('button'); down.className = 'quiet'; down.textContent = 'Down'; down.disabled = idx === sceneItems.length - 1;
+      var dup = document.createElement('button'); dup.className = 'quiet'; dup.textContent = 'Duplicate';
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Remove';
+      up.addEventListener('click', function () { var tmp = sceneItems[idx - 1]; sceneItems[idx - 1] = sceneItems[idx]; sceneItems[idx] = tmp; sceneItems[0].transition = 'cut'; renderSceneBuilder(); });
+      down.addEventListener('click', function () { var tmp = sceneItems[idx + 1]; sceneItems[idx + 1] = sceneItems[idx]; sceneItems[idx] = tmp; sceneItems[0].transition = 'cut'; renderSceneBuilder(); });
+      dup.addEventListener('click', function () { duplicateSceneItem(idx); });
+      del.addEventListener('click', function () { sceneItems.splice(idx, 1); if (sceneItems[0]) sceneItems[0].transition = 'cut'; renderSceneBuilder(); });
+      actions.appendChild(up); actions.appendChild(down); actions.appendChild(dup); actions.appendChild(del);
+      row.appendChild(actions);
+      host.appendChild(row);
+    });
+    var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); }).length;
+    setStatus($('sceneStatus'), sceneItems.length + ' scene' + (sceneItems.length === 1 ? '' : 's') + ' - about ' + fmtClock(sceneTotalDuration()) + (missing ? ' - ' + missing + ' missing take' + (missing === 1 ? '' : 's') : ''), missing ? 'warn' : 'ok');
+    renderSceneReadiness();
+    saveSceneDraftSoon();
+  }
+  function scenePlanSnapshot() {
+    var meta = sceneTimelineData(sceneItems);
+    return {
+      title: ($('titleInput') && $('titleInput').value.trim()) || 'Scene sequence',
+      duration: meta.duration,
+      audio: {
+        mode: sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep'),
+        fadeEdges: !$('sceneAudioFade') || $('sceneAudioFade').checked
+      },
+      scenes: sceneItems.map(function (item, idx) {
+        var take = sceneItemTake(item);
+        return {
+          index: idx + 1,
+          type: item.type,
+          cardType: item.cardType || null,
+          text: item.text || '',
+          takeId: item.takeId || null,
+          takeName: take ? take.name : null,
+          start: Number(item.start) || 0,
+          end: Number(item.end) || 0,
+          duration: sceneItemDuration(item),
+          transition: idx ? (item.transition || 'cut') : 'cut',
+          captionCount: take && take.captions ? take.captions.length : (item.type === 'card' ? 1 : 0)
+        };
+      }),
+      captions: meta.cues,
+      chapters: meta.chapters,
+      generatedAt: new Date().toISOString()
+    };
+  }
+  function addSceneCheck(host, status, title, detail) {
+    var row = document.createElement('div');
+    row.className = 'scene-check ' + (status || 'info');
+    var dot = document.createElement('span');
+    dot.className = 'scene-dot';
+    var body = document.createElement('div');
+    var strong = document.createElement('strong');
+    strong.textContent = title;
+    var span = document.createElement('span');
+    span.textContent = detail;
+    body.appendChild(strong);
+    body.appendChild(span);
+    row.appendChild(dot);
+    row.appendChild(body);
+    host.appendChild(row);
+  }
+  function renderSceneReadiness() {
+    var host = $('sceneReadinessList'); if (!host) return;
+    host.innerHTML = '';
+    if (!sceneItems.length) return;
+    var plan = scenePlanSnapshot();
+    var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); }).length;
+    var clipItems = sceneItems.filter(function (item) { return item.type === 'clip'; });
+    var clipsWithoutCaptions = clipItems.filter(function (item) {
+      var take = sceneItemTake(item);
+      return !take || !(take.captions || []).length;
+    }).length;
+    var flags = privacyFlagsForCues(plan.captions || []);
+    addSceneCheck(host, missing ? 'warn' : 'ok', 'Structure', plan.scenes.length + ' scene' + (plan.scenes.length === 1 ? '' : 's') + ', about ' + fmtClock(plan.duration) + (missing ? ', with ' + missing + ' missing clip' + (missing === 1 ? '' : 's') : '') + '.');
+    addSceneCheck(host, clipsWithoutCaptions ? 'warn' : 'ok', 'Combined transcript', (plan.captions || []).length + ' cue' + ((plan.captions || []).length === 1 ? '' : 's') + ' and ' + (plan.chapters || []).length + ' chapter marker' + ((plan.chapters || []).length === 1 ? '' : 's') + (clipsWithoutCaptions ? '. ' + clipsWithoutCaptions + ' clip' + (clipsWithoutCaptions === 1 ? ' has' : 's have') + ' no captions yet.' : '.'));
+    addSceneCheck(host, flags.length ? 'warn' : 'ok', 'Review flags', flags.length ? (flags.length + ' possible private detail' + (flags.length === 1 ? '' : 's') + ' found in the combined transcript.') : 'No obvious private details found in the combined transcript. Please still review before sharing.');
+    addSceneCheck(host, missing ? 'warn' : 'ok', 'Export packet', missing ? 'Remove missing clips before preparing the scene export.' : 'Scene export can create a video, captions, transcript, packets, and a project bundle.');
+  }
+  function downloadScenePlan() {
+    if (!sceneItems.length) { setStatus($('sceneStatus'), 'Add scenes before downloading a plan.', 'warn'); return; }
+    var plan = scenePlanSnapshot();
+    downloadBlobFile(new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json;charset=utf-8' }), safeName(plan.title) + '_scene_plan.json');
+    setStatus($('sceneStatus'), 'Scene plan downloaded.', 'ok');
+  }
+  function loadScenePlanObject(data, label) {
+    var rawItems = Array.isArray(data && data.items) ? data.items : (Array.isArray(data && data.scenes) ? data.scenes : []);
+    if (!rawItems.length) throw new Error('no scenes found');
+    sceneItems = rawItems.slice(0, 80).map(function (raw, idx) {
+      var item = Object.assign({}, raw);
+      if (item.type !== 'card' && item.type !== 'clip') item.type = item.cardType ? 'card' : 'clip';
+      return sanitizeSceneItem(item, idx);
+    }).filter(function (item) { return item.type === 'card' || item.takeId; });
+    if ($('sceneAudioMode') && data && data.audio) $('sceneAudioMode').value = sanitizeSceneAudioMode(data.audio.mode);
+    if ($('sceneAudioFade') && data && data.audio) $('sceneAudioFade').checked = data.audio.fadeEdges !== false;
+    if (sceneItems[0]) sceneItems[0].transition = 'cut';
+    renderSceneBuilder();
+    setStatus($('sceneStatus'), (label || 'Scene plan') + ' loaded. Missing clips stay marked until their source takes are opened.', 'ok');
+  }
+  function importScenePlanFile(file) {
+    if (!file) return;
+    file.text().then(function (text) {
+      try {
+        var data = JSON.parse(text) || {};
+        loadScenePlanObject(data, 'Scene plan');
+      } catch (e) {
+        setStatus($('sceneStatus'), 'Could not load that scene plan - ' + (e && e.message || e), 'bad');
+      }
+    });
+  }
+  function loadBundledScenePlan() {
+    var t = currentTake();
+    if (!t || !t.scenePlan) { setStatus($('sceneStatus'), 'The selected take does not include a bundled scene plan.', 'warn'); return; }
+    try { loadScenePlanObject(t.scenePlan, 'Bundled scene plan'); }
+    catch (e) { setStatus($('sceneStatus'), 'Could not use the bundled scene plan - ' + (e && e.message || e), 'bad'); }
+  }
+  if ($('sceneAddTakeBtn')) $('sceneAddTakeBtn').addEventListener('click', addSceneClipFromCurrentTake);
+  if ($('sceneAddAllBtn')) $('sceneAddAllBtn').addEventListener('click', addAllTakesToScene);
+  if ($('sceneApplyTemplateBtn')) $('sceneApplyTemplateBtn').addEventListener('click', applySceneTemplate);
+  if ($('sceneAddTitleBtn')) $('sceneAddTitleBtn').addEventListener('click', function () { addSceneCard('title'); });
+  if ($('sceneAddPauseBtn')) $('sceneAddPauseBtn').addEventListener('click', function () { addSceneCard('pause'); });
+  if ($('sceneApplyTransitionBtn')) $('sceneApplyTransitionBtn').addEventListener('click', applySceneTransitionToAll);
+  if ($('sceneDownloadPlanBtn')) $('sceneDownloadPlanBtn').addEventListener('click', downloadScenePlan);
+  if ($('sceneLoadPlanBtn')) $('sceneLoadPlanBtn').addEventListener('click', function () { $('scenePlanInput').click(); });
+  if ($('scenePlanInput')) $('scenePlanInput').addEventListener('change', function () { importScenePlanFile($('scenePlanInput').files[0]); $('scenePlanInput').value = ''; });
+  if ($('sceneUseBundledPlanBtn')) $('sceneUseBundledPlanBtn').addEventListener('click', loadBundledScenePlan);
+  if ($('scenePreviewBtn')) $('scenePreviewBtn').addEventListener('click', previewSceneBuilder);
+  if ($('sceneStopPreviewBtn')) $('sceneStopPreviewBtn').addEventListener('click', stopScenePreview);
+  if ($('sceneDefaultTransition')) $('sceneDefaultTransition').addEventListener('change', saveSceneDraftSoon);
+  ['sceneAudioMode', 'sceneAudioFade'].forEach(function (id) { if ($(id)) $(id).addEventListener('change', saveSceneDraftSoon); });
+  if ($('sceneClearBtn')) $('sceneClearBtn').addEventListener('click', function () { stopScenePreview(); sceneItems = []; clearSceneDraft(); renderSceneBuilder(); });
+  if ($('sceneExportBtn')) $('sceneExportBtn').addEventListener('click', exportSceneMontage);
+
+  function sceneWaitForMetadata(video) {
+    return new Promise(function (resolve, reject) {
+      if (video.readyState >= 1) { resolve(); return; }
+      video.addEventListener('loadedmetadata', resolve, { once: true });
+      video.addEventListener('error', function () { reject(new Error('could not load a scene clip')); }, { once: true });
+      setTimeout(resolve, 6000);
+    });
+  }
+  function sceneSeekVideo(video, time) {
+    return new Promise(function (resolve) {
+      var done = false;
+      var finish = function () { if (done) return; done = true; resolve(); };
+      video.addEventListener('seeked', finish, { once: true });
+      video.addEventListener('loadeddata', function () { if (Math.abs((video.currentTime || 0) - time) < 0.08) finish(); }, { once: true });
+      try { video.currentTime = Math.max(0, time || 0); } catch (_) { finish(); }
+      setTimeout(finish, 1200);
+    });
+  }
+  function sceneNextFrame() {
+    return new Promise(function (resolve) { requestAnimationFrame(resolve); });
+  }
+  function drawSceneVideo(ctx, video, w, hgt) {
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, w, hgt);
+    var vw = video.videoWidth || w;
+    var vh = video.videoHeight || hgt;
+    var scale = Math.min(w / vw, hgt / vh);
+    var dw = vw * scale;
+    var dh = vh * scale;
+    var dx = (w - dw) / 2;
+    var dy = (hgt - dh) / 2;
+    try { ctx.drawImage(video, dx, dy, dw, dh); } catch (_) {}
+  }
+  function drawSceneCard(ctx, w, hgt, item, progress) {
+    var title = String(item.text || (item.cardType === 'pause' ? 'Pause and think' : 'New section')).trim();
+    drawStyledTitleCard(ctx, w, hgt, title, $('titleCardStyle') ? $('titleCardStyle').value : 'clean-classroom', progress);
+    if (item.cardType === 'pause') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,0.76)';
+      drawRoundRect(ctx, w * 0.28, hgt * 0.66, w * 0.44, hgt * 0.11, Math.round(hgt * 0.03));
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.24)';
+      ctx.lineWidth = Math.max(2, w * 0.002);
+      ctx.stroke();
+      ctx.fillStyle = '#f8fafc';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '700 ' + Math.round(hgt * 0.035) + 'px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.fillText('Pause, jot, or discuss', w * 0.5, hgt * 0.715, w * 0.38);
+      ctx.restore();
+    }
+  }
+  function stopScenePreview() {
+    if (!scenePreviewState) return;
+    scenePreviewState.stopped = true;
+    try { if (scenePreviewState.video) scenePreviewState.video.pause(); } catch (_) {}
+    scenePreviewState = null;
+    if ($('sceneStopPreviewBtn')) $('sceneStopPreviewBtn').hidden = true;
+    if ($('scenePreviewBtn')) $('scenePreviewBtn').disabled = false;
+  }
+  async function previewSceneBuilder() {
+    if (!sceneItems.length) { setStatus($('sceneStatus'), 'Add scenes before previewing.', 'warn'); return; }
+    var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); });
+    if (missing.length) { setStatus($('sceneStatus'), 'Open or remove missing clips before previewing.', 'warn'); return; }
+    stopScenePreview();
+    var cv = $('scenePreviewCanvas');
+    var box = $('scenePreviewBox');
+    if (!cv || !box) return;
+    box.hidden = false;
+    var ctx = cv.getContext('2d');
+    var items = sceneItems.map(function (item, idx) { var copy = Object.assign({}, item); if (idx === 0) copy.transition = 'cut'; return copy; });
+    var meta = sceneTimelineData(items);
+    var captionStyle = vsResolveCaptionStyle(currentCaptionStyleKey(), currentCaptionCustomization());
+    var state = scenePreviewState = { stopped: false, raf: 0, video: null };
+    if ($('scenePreviewBtn')) $('scenePreviewBtn').disabled = true;
+    if ($('sceneStopPreviewBtn')) $('sceneStopPreviewBtn').hidden = false;
+    setStatus($('sceneStatus'), 'Previewing scene sequence...', 'ok');
+    var done = 0;
+    try {
+      for (var i = 0; i < items.length; i++) {
+        if (state.stopped) break;
+        var item = items[i];
+        var dur = sceneItemDuration(item);
+        if (item.type === 'clip') {
+          var take = sceneItemTake(item);
+          var v = document.createElement('video');
+          state.video = v;
+          v.src = take.url;
+          v.muted = true;
+          v.playsInline = true;
+          v.preload = 'auto';
+          await sceneWaitForMetadata(v);
+          var start = Math.max(0, Number(item.start) || 0);
+          var end = Math.max(start + 0.2, Math.min(Number(take.duration) || start + dur, Number(item.end) || Number(take.duration) || start + dur));
+          dur = Math.max(0.2, end - start);
+          await sceneSeekVideo(v, start);
+          try { await v.play(); } catch (_) {}
+          while (!state.stopped) {
+            var local = Math.max(0, Math.min(dur, (v.currentTime || 0) - start));
+            drawSceneVideo(ctx, v, cv.width, cv.height);
+            drawSceneBoundaries(ctx, cv.width, cv.height, items, i, local, dur);
+            drawSceneCaption(ctx, cv.width, cv.height, meta.cues || [], done + local, captionStyle);
+            if (local >= dur - 0.03 || (v.currentTime || 0) >= end - 0.03 || v.ended) break;
+            await new Promise(function (resolve) { state.raf = requestAnimationFrame(resolve); });
+          }
+          try { v.pause(); } catch (_) {}
+          state.video = null;
+        } else {
+          var started = performance.now();
+          while (!state.stopped) {
+            var localCard = Math.min(dur, (performance.now() - started) / 1000);
+            drawSceneCard(ctx, cv.width, cv.height, item, dur ? localCard / dur : 1);
+            drawSceneBoundaries(ctx, cv.width, cv.height, items, i, localCard, dur);
+            drawSceneCaption(ctx, cv.width, cv.height, meta.cues || [], done + localCard, captionStyle);
+            if (localCard >= dur) break;
+            await new Promise(function (resolve) { state.raf = requestAnimationFrame(resolve); });
+          }
+        }
+        done += dur;
+      }
+      if (!state.stopped) setStatus($('sceneStatus'), 'Preview complete.', 'ok');
+    } catch (e) {
+      setStatus($('sceneStatus'), 'Preview stopped - ' + (e && e.message || e), 'warn');
+    } finally {
+      stopScenePreview();
+    }
+  }
+  function drawSceneTransitionOverlay(ctx, w, hgt, key, alpha) {
+    if (!key || key === 'cut' || alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+    ctx.fillStyle = key === 'white' ? '#f8fafc' : '#020617';
+    ctx.fillRect(0, 0, w, hgt);
+    ctx.restore();
+  }
+  function drawSceneBoundaries(ctx, w, hgt, items, idx, local, duration) {
+    var item = items[idx];
+    var inDur = idx ? sceneTransitionDuration(item.transition) : 0;
+    if (inDur && local < inDur) {
+      var inAlpha = item.transition === 'dissolve' ? (1 - local / inDur) * 0.38 : (1 - local / inDur);
+      drawSceneTransitionOverlay(ctx, w, hgt, item.transition, inAlpha);
+    }
+    var next = items[idx + 1];
+    var outDur = next ? sceneTransitionDuration(next.transition) : 0;
+    if (outDur && duration - local < outDur) {
+      var outAlpha = next.transition === 'dissolve' ? (1 - Math.max(0, duration - local) / outDur) * 0.38 : (1 - Math.max(0, duration - local) / outDur);
+      drawSceneTransitionOverlay(ctx, w, hgt, next.transition, outAlpha);
+    }
+  }
+  function sceneCardCaptionText(item) {
+    var text = String(item && item.text || (item && item.cardType === 'pause' ? 'Pause and think' : 'New section')).trim();
+    if (!text) text = item && item.cardType === 'pause' ? 'Pause and think' : 'New section';
+    if (item && item.cardType === 'pause' && !/pause|think|discuss|jot/i.test(text)) text += ' - pause, jot, or discuss';
+    return text;
+  }
+  function sceneTimelineData(items) {
+    var cues = [], chapters = [], offset = 0;
+    (Array.isArray(items) ? items : []).forEach(function (item, idx) {
+      var dur = Math.max(0.1, Number(item && (item._duration || item.duration)) || sceneItemDuration(item));
+      if (item && item.type === 'clip') {
+        var take = item._take || sceneItemTake(item);
+        var title = take ? String(take.name || ('Clip ' + (idx + 1))).replace(/^\s*[^\w\s]+\s*/, '') : 'Clip ' + (idx + 1);
+        chapters.push({ start: offset, title: title.slice(0, 80) || ('Clip ' + (idx + 1)) });
+        var clipStart = Number(item._start != null ? item._start : item.start) || 0;
+        var clipEnd = Number(item._end != null ? item._end : item.end) || (clipStart + dur);
+        ((take && take.captions) || []).forEach(function (cue) {
+          var txt = String(cue && cue.text || '').trim();
+          var start = Number(cue && cue.start) || 0;
+          var end = Number(cue && cue.end) || 0;
+          if (!txt || end <= clipStart || start >= clipEnd) return;
+          var outStart = offset + Math.max(0, start - clipStart);
+          var outEnd = offset + Math.min(dur, end - clipStart);
+          if (outEnd - outStart >= 0.12) cues.push({ start: outStart, end: outEnd, text: txt });
+        });
+      } else if (item) {
+        var text = sceneCardCaptionText(item);
+        chapters.push({ start: offset, title: text.slice(0, 80) || ('Scene ' + (idx + 1)) });
+        cues.push({ start: offset, end: offset + dur, text: text });
+      }
+      offset += dur;
+    });
+    cues.sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+    return { cues: cues, chapters: chapters, duration: offset };
+  }
+  function sceneTakeForExport(exported) {
+    if (!exported || !exported.isScene) return currentTake();
+    var cues = Array.isArray(exported.sceneCues) ? exported.sceneCues : (exported.vtt ? vsParseVtt(exported.vtt) : []);
+    return {
+      id: 'scene',
+      name: exported.title || 'Scene sequence',
+      duration: exported.duration || 0,
+      captions: cues,
+      visualDescriptions: [],
+      chapters: exported.sceneChapters || [],
+      inserts: [],
+      visualPrompts: [],
+      localizations: [],
+      finishReview: {},
+      zooms: [],
+      audio: null,
+      musicBed: null,
+      narration: null,
+      audioClips: []
+    };
+  }
+  function drawSceneCaption(ctx, w, hgt, cues, tSec, captionStyle) {
+    var cue = activeCaptionAt(cues, tSec);
+    var line = cue && cue.text;
+    if (!line) return;
+    ctx.save();
+    var fontSize = Math.max(18, Math.round(hgt * 0.046 * (captionStyle.scale || 1)));
+    var lineHeight = Math.round(fontSize * 1.26);
+    ctx.font = String(captionStyle.fontWeight || 800) + ' ' + fontSize + 'px ' + (captionStyle.fontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = captionStyle.align === 'left' ? 'left' : 'center';
+    var maxWidth = w * (captionStyle.position === 'lower-left' ? 0.58 : 0.78);
+    var lines = wrapCaptionLinesCanvas(ctx, line, maxWidth, captionStyle.maxLines || 3);
+    var textW = 0;
+    for (var li = 0; li < lines.length; li++) textW = Math.max(textW, ctx.measureText(lines[li]).width);
+    var padX = Math.round(fontSize * 0.72);
+    var padY = Math.round(fontSize * 0.42);
+    var boxW = Math.min(w * 0.9, textW + padX * 2);
+    var boxH = lines.length * lineHeight + padY * 2;
+    var boxX = captionStyle.position === 'lower-left' ? Math.round(w * 0.06) : Math.round((w - boxW) / 2);
+    var boxY = captionStyle.position === 'top' ? Math.round(Math.max(hgt * 0.055, 28)) : Math.round(hgt - Math.max(hgt * 0.055, 28) - boxH);
+    if (captionStyle.position === 'lower-left') boxY = Math.round(hgt - Math.max(hgt * 0.065, 34) - boxH);
+    boxX = Math.max(Math.round(w * 0.035), Math.min(w - boxW - Math.round(w * 0.035), boxX));
+    boxY = Math.max(Math.round(hgt * 0.04), Math.min(hgt - boxH - Math.round(hgt * 0.04), boxY));
+    if (captionStyle.box) {
+      ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = Math.round(fontSize * 0.75);
+      ctx.shadowOffsetY = Math.round(fontSize * 0.22);
+      ctx.fillStyle = captionStyle.background || 'rgba(0,0,0,0.78)';
+      drawRoundRect(ctx, boxX, boxY, boxW, boxH, Math.round(fontSize * 0.55));
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.lineWidth = Math.max(1, Math.round(fontSize * 0.055));
+      ctx.strokeStyle = captionStyle.border || 'rgba(255,255,255,0.24)';
+      ctx.stroke();
+    } else {
+      ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur = Math.round(fontSize * 0.42);
+      ctx.shadowOffsetY = Math.round(fontSize * 0.12);
+      ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.14));
+      ctx.strokeStyle = captionStyle.stroke || 'rgba(0,0,0,0.9)';
+    }
+    var textX = captionStyle.align === 'left' ? boxX + padX : boxX + boxW / 2;
+    var firstY = boxY + padY + lineHeight / 2;
+    for (var ti = 0; ti < lines.length; ti++) {
+      var ty = firstY + ti * lineHeight;
+      if (!captionStyle.box) ctx.strokeText(lines[ti], textX, ty, maxWidth);
+      ctx.fillStyle = captionStyle.textColor || '#ffffff';
+      ctx.fillText(lines[ti], textX, ty, maxWidth);
+    }
+    ctx.restore();
+  }
+  function sceneSetExportProgress(done, local, total) {
+    var pct = total ? Math.min(100, Math.round((done + Math.max(0, local || 0)) / total * 100)) : 0;
+    if ($('exportProgress')) { $('exportProgress').hidden = false; $('exportProgress').value = pct; }
+    setStatus($('sceneStatus'), 'Preparing scene export... ' + pct + '%', 'warn');
+  }
+  function sceneAudioGainAt(mode, fadeEdges, local, duration) {
+    if (mode === 'mute') return 0;
+    var gain = mode === 'normalize' ? 0.85 : 1;
+    if (fadeEdges) {
+      var fadeDur = Math.min(0.65, Math.max(0.12, duration / 4));
+      gain *= Math.max(0, Math.min(1, local / fadeDur, (duration - local) / fadeDur));
+    }
+    return gain;
+  }
+  async function exportSceneMontage() {
+    if (!sceneItems.length) { setStatus($('sceneStatus'), 'Add at least one clip or card before preparing a scene export.', 'warn'); return; }
+    var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); });
+    if (missing.length) { setStatus($('sceneStatus'), 'Remove missing clips before exporting the scene.', 'warn'); return; }
+    var btn = $('sceneExportBtn');
+    if (btn) btn.disabled = true;
+    var exportItems = sceneItems.map(function (item, idx) {
+      var copy = Object.assign({}, item);
+      if (idx === 0) copy.transition = 'cut';
+      return copy;
+    });
+    var cv = document.createElement('canvas');
+    cv.width = 1280;
+    cv.height = 720;
+    var ctx = cv.getContext('2d');
+    var stream = cv.captureStream(30);
+    var canvasTrack = stream.getVideoTracks()[0] || null;
+    var sceneAudioMode = sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep');
+    var sceneAudioFade = !$('sceneAudioFade') || $('sceneAudioFade').checked;
+    var ac = null, dest = null;
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      dest = ac.createMediaStreamDestination();
+      await ac.resume();
+    } catch (_) { ac = null; dest = null; }
+    try {
+      for (var i = 0; i < exportItems.length; i++) {
+        var item = exportItems[i];
+        if (item.type !== 'clip') {
+          item._duration = sceneItemDuration(item);
+          continue;
+        }
+        var take = sceneItemTake(item);
+        item._take = take;
+        item._start = Math.max(0, Math.min(Number(take.duration) || 0, Number(item.start) || 0));
+        item._end = Math.max(item._start + 0.2, Math.min(Number(take.duration) || item._start + 0.2, Number(item.end) || Number(take.duration) || item._start + 0.2));
+        item._duration = Math.max(0.2, item._end - item._start);
+        var v = document.createElement('video');
+        v.src = take.url;
+        v.preload = 'auto';
+        v.playsInline = true;
+        v.muted = false;
+        v.volume = 1;
+        await sceneWaitForMetadata(v);
+        if (dest && ac && sceneAudioMode !== 'mute') {
+          try {
+            var gain = ac.createGain();
+            gain.gain.value = sceneAudioGainAt(sceneAudioMode, sceneAudioFade, 0, item._duration);
+            ac.createMediaElementSource(v).connect(gain);
+            gain.connect(dest);
+            item._gain = gain;
+          } catch (_) { v.muted = true; }
+        } else {
+          v.muted = true;
+        }
+        item._video = v;
+      }
+      if (sceneAudioMode !== 'mute' && dest && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
+      var mime = pickMime();
+      var totalDur = exportItems.reduce(function (sum, item) { return sum + Math.max(0.1, item._duration || sceneItemDuration(item)); }, 0);
+      var sceneMeta = sceneTimelineData(exportItems);
+      var sceneCues = sceneMeta.cues || [];
+      var sceneChapters = sceneMeta.chapters || [];
+      var capMode = $('capMode') ? $('capMode').value : 'vtt';
+      var burnSceneCaptions = capMode === 'burn' && sceneCues.length;
+      var sceneVtt = (capMode === 'vtt' && sceneCues.length) ? vsBuildVtt(sceneCues) : null;
+      var captionStyleKey = currentCaptionStyleKey();
+      var captionCustom = currentCaptionCustomization();
+      var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
+      var scenePlan = scenePlanSnapshot();
+      scenePlan.duration = totalDur;
+      scenePlan.captions = sceneCues;
+      scenePlan.chapters = sceneChapters;
+      var mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined);
+      var chunks = [];
+      var recorded = new Promise(function (resolve) {
+        mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        mr.onstop = function () { resolve(new Blob(chunks, { type: 'video/webm' })); };
+      });
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      try { if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame(); } catch (_) {}
+      mr.start(1000);
+      setStatus($('exportStatus'), 'Preparing scene export... keep this window visible.', 'warn');
+      var done = 0;
+      for (var si = 0; si < exportItems.length; si++) {
+        var scene = exportItems[si];
+        var dur = Math.max(0.1, scene._duration || sceneItemDuration(scene));
+        if (scene.type === 'clip') {
+          var vid = scene._video;
+          await sceneSeekVideo(vid, scene._start || 0);
+          try { await vid.play(); }
+          catch (_) {
+            vid.muted = true;
+            try { await vid.play(); } catch (playErr) { throw new Error('scene clip playback was blocked'); }
+          }
+          var wallStart = performance.now();
+          while (true) {
+            var local = Math.max(0, Math.min(dur, (vid.currentTime || 0) - (scene._start || 0)));
+            if (scene._gain && ac) {
+              var gainNow = sceneAudioGainAt(sceneAudioMode, sceneAudioFade, local, dur);
+              try { scene._gain.gain.setTargetAtTime(gainNow, ac.currentTime, 0.025); } catch (_) { scene._gain.gain.value = gainNow; }
+            }
+            drawSceneVideo(ctx, vid, cv.width, cv.height);
+            drawSceneBoundaries(ctx, cv.width, cv.height, exportItems, si, local, dur);
+            if (burnSceneCaptions) drawSceneCaption(ctx, cv.width, cv.height, sceneCues, done + local, captionStyle);
+            try { if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame(); } catch (_) {}
+            sceneSetExportProgress(done, local, totalDur);
+            if (local >= dur - 0.03 || vid.currentTime >= scene._end - 0.03 || vid.ended) break;
+            if ((performance.now() - wallStart) / 1000 > dur + 3) break;
+            await sceneNextFrame();
+          }
+          try { vid.pause(); } catch (_) {}
+        } else {
+          var start = performance.now();
+          while (true) {
+            var localCard = Math.min(dur, (performance.now() - start) / 1000);
+            drawSceneCard(ctx, cv.width, cv.height, scene, dur ? localCard / dur : 1);
+            drawSceneBoundaries(ctx, cv.width, cv.height, exportItems, si, localCard, dur);
+            if (burnSceneCaptions) drawSceneCaption(ctx, cv.width, cv.height, sceneCues, done + localCard, captionStyle);
+            try { if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame(); } catch (_) {}
+            sceneSetExportProgress(done, localCard, totalDur);
+            if (localCard >= dur) break;
+            await sceneNextFrame();
+          }
+        }
+        done += dur;
+      }
+      sceneSetExportProgress(totalDur, 0, totalDur);
+      try { if (mr.state === 'recording' && mr.requestData) mr.requestData(); } catch (_) {}
+      await new Promise(function (resolve) { setTimeout(resolve, 420); });
+      try { mr.stop(); } catch (_) {}
+      var raw = await recorded;
+      var patched = raw;
+      try {
+        var buf = await raw.arrayBuffer();
+        patched = new Blob([vsPatchWebmDuration(new Uint8Array(buf), totalDur * 1000)], { type: 'video/webm' });
+      } catch (_) {}
+      if (!patched.size) throw new Error('browser did not produce scene video data');
+      var title = ($('titleInput') && $('titleInput').value.trim()) || 'Scene sequence';
+      if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
+      lastExport = {
+        blob: patched,
+        vtt: sceneVtt,
+        title: title,
+        duration: totalDur,
+        url: URL.createObjectURL(patched),
+        ext: '.webm',
+        takeId: 'scene',
+        isScene: true,
+        sceneItems: exportItems.map(function (item) { return { type: item.type, cardType: item.cardType, takeId: item.takeId, text: item.text, start: item._start || item.start || 0, end: item._end || item.end || 0, duration: item._duration || item.duration || 0, transition: item.transition || 'cut' }; }),
+        sceneCues: sceneCues,
+        sceneChapters: sceneChapters,
+        scenePlan: scenePlan,
+        captionStyle: captionStyleKey,
+        captionCustom: captionCustom,
+        titleCardStyle: $('titleCardStyle') ? $('titleCardStyle').value : 'clean-classroom',
+        thumb: null
+      };
+      $('resultCard').hidden = false;
+      $('resultVideo').src = lastExport.url;
+      $('downloadVttBtn').hidden = !(sceneVtt && capMode === 'vtt');
+      setStatus($('resultStatus'), 'Scene export - ' + fmtClock(totalDur) + ' - ' + fmtBytes(patched.size) + (sceneCues.length ? ' - ' + sceneCues.length + ' caption cues' : ''));
+      setStatus($('sceneStatus'), 'Scene export ready.', 'ok');
+      setStatus($('exportStatus'), 'Scene export ready (' + fmtBytes(patched.size) + ').', 'ok');
+      announce('Scene export ready');
+      setupThumbnailAfterExport();
+      renderFinishChecklist();
+      renderResultReadiness();
+      showTab('tabExport');
+    } catch (e) {
+      setStatus($('sceneStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
+      setStatus($('exportStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
+    } finally {
+      if ($('exportProgress')) $('exportProgress').hidden = true;
+      exportItems.forEach(function (item) { try { if (item._video) { item._video.pause(); item._video.removeAttribute('src'); item._video.load(); } } catch (_) {} });
+      try { if (ac) ac.close(); } catch (_) {}
+      try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+      if (btn) btn.disabled = false;
+      renderSceneBuilder();
+    }
   }
 
   // Trim preview: clamp playback into the kept window.
@@ -4998,6 +6754,59 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     focusStudioTarget(item.targetTab, item.targetId);
   }
+  function renderFinishGuide(items, t) {
+    var host = $('finishGuideList'); if (!host) return;
+    host.innerHTML = '';
+    var list = Array.isArray(items) ? items.slice() : [];
+    if (!t) {
+      list = [{ label: 'Choose a video', status: 'pending', detail: 'Record or import a video before reviewing the share path.', targetTab: 'tabRecord', targetId: 'flowRecord', action: 'Start' }];
+    } else {
+      var supportCount = ((t.chapters || []).length) + ((t.inserts || []).length) + ((t.visualDescriptions || []).length);
+      list.push({
+        label: 'Learning supports',
+        status: supportCount ? 'complete' : 'info',
+        detail: supportCount ? (supportCount + ' support item(s) are attached.') : 'Optional: add chapters, inserts, or visual descriptions when they would help learners.',
+        targetTab: 'tabEdit',
+        targetId: supportCount ? 'chapterList' : 'addSectionCardBtn',
+        action: supportCount ? 'Review' : 'Add'
+      });
+      list.push({
+        label: 'Thumbnail and packet',
+        status: lastExport && lastExport.takeId === t.id ? (lastExport.thumb ? 'complete' : 'review') : 'pending',
+        detail: lastExport && lastExport.takeId === t.id ? (lastExport.thumb ? 'Thumbnail is ready for sharing contexts.' : 'Choose a clear thumbnail after export.') : 'Prepare export first, then choose a thumbnail and packet downloads.',
+        targetTab: 'tabExport',
+        targetId: lastExport && lastExport.takeId === t.id ? 'thumbTools' : 'exportBtn',
+        action: lastExport && lastExport.takeId === t.id ? 'Review' : 'Prepare'
+      });
+    }
+    list.forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'finish-step ' + (item.status || 'info');
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = item.status === 'complete' ? 'OK' : String(idx + 1);
+      var body = document.createElement('div');
+      var strong = document.createElement('strong');
+      strong.textContent = item.label || 'Review';
+      var detail = document.createElement('span');
+      detail.textContent = item.detail || '';
+      body.appendChild(strong);
+      body.appendChild(detail);
+      row.appendChild(badge);
+      row.appendChild(body);
+      if (item.targetTab && item.targetId) {
+        var go = document.createElement('button');
+        go.className = item.status === 'complete' ? 'quiet' : 'action';
+        go.textContent = item.action || 'Open';
+        go.addEventListener('click', function () {
+          if (item.id) openFinishItem(item);
+          else focusStudioTarget(item.targetTab, item.targetId);
+        });
+        row.appendChild(go);
+      }
+      host.appendChild(row);
+    });
+  }
   function renderFinishChecklist() {
     var host = $('finishChecklistList'); if (!host) return;
     var t = currentTake();
@@ -5078,6 +6887,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       host.appendChild(capBox);
     }
+    renderFinishGuide(items, t);
     setStatus($('finishChecklistStatus'), t ? (needs ? (needs + ' item' + (needs === 1 ? '' : 's') + ' still need attention before sharing.') : 'Ready to share after final playback.') : 'Select a take to see readiness checks before sharing.', needs ? 'warn' : 'ok');
   }
   [
@@ -5510,16 +7320,24 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (ins.type === 'title_card' || ins.type === 'pause_prompt') {
         ctx.fillStyle = 'rgba(2,6,23,0.72)';
         ctx.fillRect(0, 0, w, hgt);
-        var cw = w * 0.72, ch = hgt * 0.34, cx = (w - cw) / 2, cy = (hgt - ch) / 2;
+        var layout = vsInsertCardLayout(ins.layout);
+        var cw = layout.placement === 'bottom' ? w * 0.86 : (layout.placement === 'left' ? w * 0.48 : w * 0.72);
+        var ch = layout.placement === 'bottom' ? hgt * 0.22 : (layout.placement === 'left' ? hgt * 0.54 : hgt * 0.34);
+        var cx = layout.placement === 'left' ? w * 0.06 : (w - cw) / 2;
+        var cy = layout.placement === 'bottom' ? hgt - ch - hgt * 0.08 : (layout.placement === 'left' ? hgt * 0.23 : (hgt - ch) / 2);
         ctx.fillStyle = theme.bg;
         drawRoundRect(ctx, cx, cy, cw, ch, 24); ctx.fill();
-        ctx.fillStyle = theme.fg; ctx.textAlign = 'center';
-        ctx.font = 'bold ' + Math.round(hgt * 0.065) + 'px system-ui, sans-serif';
-        wrapCanvasText(ctx, ins.text, w / 2, cy + ch * 0.34, cw * 0.82, Math.round(hgt * 0.075), 2);
+        ctx.fillStyle = theme.accent;
+        if (layout.placement === 'bottom') { ctx.fillRect(cx, cy, Math.max(8, w * 0.012), ch); }
+        else { ctx.fillRect(cx + cw * 0.08, cy + ch * 0.16, cw * 0.22, Math.max(4, hgt * 0.008)); }
+        ctx.fillStyle = theme.fg; ctx.textAlign = layout.align === 'left' ? 'left' : 'center';
+        var textX = layout.align === 'left' ? cx + cw * 0.08 : cx + cw / 2;
+        ctx.font = 'bold ' + Math.round(hgt * (layout.placement === 'bottom' ? 0.052 : 0.065)) + 'px system-ui, sans-serif';
+        wrapCanvasText(ctx, ins.text, textX, cy + ch * (layout.placement === 'bottom' ? 0.45 : 0.34), cw * (layout.align === 'left' ? 0.84 : 0.82), Math.round(hgt * (layout.placement === 'bottom' ? 0.06 : 0.075)), 2);
         if (ins.note) {
           ctx.fillStyle = theme.accent;
-          ctx.font = Math.round(hgt * 0.035) + 'px system-ui, sans-serif';
-          wrapCanvasText(ctx, ins.note, w / 2, cy + ch * 0.68, cw * 0.78, Math.round(hgt * 0.045), 2);
+          ctx.font = Math.round(hgt * (layout.placement === 'bottom' ? 0.03 : 0.035)) + 'px system-ui, sans-serif';
+          wrapCanvasText(ctx, ins.note, textX, cy + ch * (layout.placement === 'bottom' ? 0.72 : 0.68), cw * (layout.align === 'left' ? 0.84 : 0.78), Math.round(hgt * 0.045), 2);
         }
       } else if (ins.type === 'visual_card') {
         var vw = w * 0.46, vh = hgt * 0.56, vx = w * 0.06, vy = hgt * 0.22;
@@ -5916,6 +7734,33 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var host = $('resultReadinessList'); if (!host) return;
     host.innerHTML = '';
     var take = currentTake();
+    if (lastExport && lastExport.isScene) {
+      var sceneTake = sceneTakeForExport(lastExport);
+      var cues = sceneTake.captions || [];
+      var flags = privacyFlagsForCues(cues).length;
+      var sceneCount = lastExport.sceneItems ? lastExport.sceneItems.length : sceneItems.length;
+      var row = document.createElement('div');
+      row.className = 'status ok';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
+      row.textContent = '[ready] Scene export - ' + sceneCount + ' scene' + (sceneCount === 1 ? '' : 's') + ', ' + fmtClock(lastExport.duration || 0) + '.';
+      host.appendChild(row);
+      var caps = document.createElement('div');
+      caps.className = 'status' + (flags ? ' warn' : (cues.length ? ' ok' : ''));
+      caps.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
+      caps.textContent = cues.length ? ('[ready] Combined captions/transcript - ' + cues.length + ' cue' + (cues.length === 1 ? '' : 's') + (flags ? ', ' + flags + ' privacy flag' + (flags === 1 ? '' : 's') + ' to review' : '')) : '[info] No source captions were available; packets will include scene chapters and metadata.';
+      host.appendChild(caps);
+      var chapters = document.createElement('div');
+      chapters.className = 'status ok';
+      chapters.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
+      chapters.textContent = '[ready] Scene chapters - ' + ((sceneTake.chapters || []).length) + ' marker' + ((sceneTake.chapters || []).length === 1 ? '' : 's') + '.';
+      host.appendChild(chapters);
+      var note = document.createElement('div');
+      note.className = 'status ok';
+      note.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
+      note.textContent = '[ready] Transcript, student/family packet, accessibility packet, project bundle, and Send use the assembled scene metadata.';
+      host.appendChild(note);
+      return;
+    }
     if (!lastExport || !take || lastExport.takeId !== take.id) {
       host.innerHTML = '<p class="status">Prepare an export to see the share/readiness summary.</p>';
       return;
@@ -5946,22 +7791,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
   $('downloadTranscriptResultBtn').addEventListener('click', function () {
-    var take = currentTake();
-    var cues = currentTranscriptCues();
+    var take = sceneTakeForExport(lastExport);
+    var cues = lastExport && lastExport.isScene ? (take && take.captions || []) : currentTranscriptCues();
     if (!cues.length) { setStatus($('resultStatus'), 'No captions are available for a transcript yet.', 'warn'); return; }
     var title = (lastExport && lastExport.title) || (take && take.name) || 'Teacher video';
     downloadBlobFile(new Blob([transcriptTextFromCues(cues, title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_transcript.txt');
     setStatus($('resultStatus'), 'Transcript downloaded.', 'ok');
   });
   $('downloadStudentPacketBtn').addEventListener('click', function () {
-    var take = currentTake();
+    var take = sceneTakeForExport(lastExport);
     if (!lastExport && (!take || !(take.captions || []).length)) { setStatus($('resultStatus'), 'Add captions or prepare an export before building a student/family packet.', 'warn'); return; }
     var packet = buildAccessibilityPacket(lastExport, take, { audience: 'student_family' });
     downloadBlobFile(packet.blob, packet.base + '_student_family_packet.zip');
     setStatus($('resultStatus'), 'Student/family packet downloaded' + (packet.flags ? ' with privacy flags to review.' : '.'), packet.flags ? 'warn' : 'ok');
   });
   $('downloadAccessPacketBtn').addEventListener('click', function () {
-    var take = currentTake();
+    var take = sceneTakeForExport(lastExport);
     if (!lastExport && (!take || (!(take.captions || []).length && !approvedVisualDescriptions(take).length))) { setStatus($('resultStatus'), 'Export, caption, or approve visual descriptions before building an accessibility packet.', 'warn'); return; }
     var packet = buildAccessibilityPacket(lastExport, take);
     downloadBlobFile(packet.blob, packet.base + '_accessibility_packet.zip');
@@ -5969,9 +7814,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   });
   $('downloadProjectResultBtn').addEventListener('click', function () {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
-    var take = currentTake();
-    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : []).then(function () {
-      setStatus($('resultStatus'), 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
+    var take = sceneTakeForExport(lastExport);
+    var bundleVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null).then(function () {
+      setStatus($('resultStatus'), lastExport.isScene ? 'Project bundle downloaded. It will reopen the assembled scene as one editable take.' : 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
   $('sendBtn').addEventListener('click', function () {
@@ -5993,9 +7839,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         }
       };
       window.addEventListener('message', onAck);
-      var take = currentTake();
+      var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
+      var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);
@@ -6037,6 +7884,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       lastExport.thumb = thumb;
       if ($('thumbPreview')) $('thumbPreview').src = thumb;
       setStatus($('thumbStatus'), 'Thumbnail ready. It will travel with the AlloFlow pack reference.', 'ok');
+      renderFinishChecklist();
       return thumb;
     });
   }
@@ -6106,7 +7954,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });
@@ -6145,6 +7993,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } catch (_) {}
     });
   }
+  loadSceneDraft();
   loadDrafts();
   renderTakes();
   refreshProjectShelf();

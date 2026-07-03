@@ -2347,7 +2347,17 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                           ref: function(canvas) {
 
-                            if (!canvas) return;
+                            if (!canvas) {
+                              if (typeof window !== 'undefined' && window._moleculeBohrCleanup) window._moleculeBohrCleanup();
+                              return;
+                            }
+
+                            if (canvas._bohrInit) {
+                              if (canvas._bohrSchedule) canvas._bohrSchedule();
+                              return;
+                            }
+
+                            if (typeof window !== 'undefined' && window._moleculeBohrCleanup) window._moleculeBohrCleanup();
 
                             var el = d.selectedElement;
 
@@ -2386,6 +2396,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                               window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
                             }
                             var ctx = canvas.getContext('2d');
+                            if (!ctx) return;
                             if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
                             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
@@ -2404,6 +2415,49 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             var angle = 0;
 
                             var animId = null;
+                            var bohrAlive = true;
+                            var bohrMotionReduced = false;
+                            var observer = null;
+                            try { bohrMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+                            function isBohrHidden() {
+                              return typeof document !== 'undefined' && !!document.hidden;
+                            }
+
+                            function cancelBohrFrame() {
+                              if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+                              animId = null;
+                            }
+
+                            function scheduleBohrFrame() {
+                              if (!bohrAlive || animId || bohrMotionReduced || isBohrHidden()) return;
+                              if (typeof requestAnimationFrame !== 'function') return;
+                              animId = requestAnimationFrame(draw);
+                            }
+
+                            function cleanupBohrCanvas() {
+                              bohrAlive = false;
+                              cancelBohrFrame();
+                              if (observer) { observer.disconnect(); observer = null; }
+                              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onBohrVisibilityChange);
+                              canvas._bohrInit = false;
+                              canvas._bohrCleanup = null;
+                              canvas._bohrSchedule = null;
+                              if (typeof window !== 'undefined' && window._moleculeBohrCleanup === cleanupBohrCanvas) window._moleculeBohrCleanup = null;
+                            }
+
+                            function onBohrVisibilityChange() {
+                              if (!bohrAlive) return;
+                              if (!canvas.isConnected) { cleanupBohrCanvas(); return; }
+                              if (isBohrHidden()) cancelBohrFrame();
+                              else { cancelBohrFrame(); draw(); }
+                            }
+
+                            canvas._bohrInit = true;
+                            canvas._bohrCleanup = cleanupBohrCanvas;
+                            canvas._bohrSchedule = scheduleBohrFrame;
+                            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onBohrVisibilityChange);
+                            if (typeof window !== 'undefined') window._moleculeBohrCleanup = cleanupBohrCanvas;
 
                             // State interpolation for expanding/contracting shells smoothly
                             var targetRadii = [];
@@ -2439,6 +2493,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             canvas._prevN = atomicNum;
 
                             function draw() {
+                              if (!bohrAlive) return;
+                              animId = null;
+                              if (!canvas.isConnected) { cleanupBohrCanvas(); return; }
+                              if (isBohrHidden()) { cancelBohrFrame(); return; }
 
                               ctx.clearRect(0, 0, W, H);
 
@@ -2633,19 +2691,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                               ctx.fillText(el.s + ' (' + atomicNum + ')', cx, 14);
 
-                              angle += 0.015;
+                              if (!bohrMotionReduced) angle += 0.015;
 
-                              animId = requestAnimationFrame(draw);
+                              scheduleBohrFrame();
 
                             }
 
                             draw();
 
-                            // Cleanup on unmount
-
-                            canvas._bohrCleanup = function() { if (animId) cancelAnimationFrame(animId); };
-
-                            var observer = new MutationObserver(function(mutations) {
+                            observer = new MutationObserver(function(mutations) {
 
                               mutations.forEach(function(m) {
 
@@ -2653,9 +2707,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                                   if (node === canvas || (node.contains && node.contains(canvas))) {
 
-                                    if (canvas._bohrCleanup) canvas._bohrCleanup();
-
-                                    observer.disconnect();
+                                    cleanupBohrCanvas();
 
                                   }
 

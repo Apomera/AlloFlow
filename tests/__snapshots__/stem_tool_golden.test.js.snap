@@ -22,10 +22,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquarium 1`] = `
 {
-  "buttons": 20,
+  "buttons": 24,
   "inputs": 0,
-  "lengthBucket": 50,
-  "sha": "7c8dfa7b675f261d",
+  "lengthBucket": 146,
+  "sha": "59627a0487005215",
   "svgs": 0,
 }
 `;
@@ -42,30 +42,30 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for cellularLab 1`] = `
 {
-  "buttons": 18,
+  "buttons": 22,
   "inputs": 1,
-  "lengthBucket": 43,
-  "sha": "592091d05fa606fa",
+  "lengthBucket": 64,
+  "sha": "eb5a813a25fa458a",
   "svgs": 1,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for climateExplorer 1`] = `
 {
-  "buttons": 36,
+  "buttons": 39,
   "inputs": 0,
-  "lengthBucket": 146,
-  "sha": "8cc68bf952256157",
+  "lengthBucket": 166,
+  "sha": "b58c56f4befa904b",
   "svgs": 0,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for ecosystem 1`] = `
 {
-  "buttons": 29,
+  "buttons": 33,
   "inputs": 8,
-  "lengthBucket": 98,
-  "sha": "e902be6bd35e81cd",
+  "lengthBucket": 117,
+  "sha": "1348f5982ec2886d",
   "svgs": 0,
 }
 `;
@@ -112,10 +112,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for opticsLab 1`] = `
 {
-  "buttons": 41,
+  "buttons": 34,
   "inputs": 0,
-  "lengthBucket": 110,
-  "sha": "5e9bd05cc466d8e3",
+  "lengthBucket": 101,
+  "sha": "d791730eef303d91",
   "svgs": 0,
 }
 `;
@@ -125,7 +125,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 13,
   "inputs": 6,
   "lengthBucket": 57,
-  "sha": "1bc33c7498693443",
+  "sha": "a8c7e0ada8b61f7e",
   "svgs": 1,
 }
 `;
@@ -135,7 +135,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 15,
   "inputs": 7,
   "lengthBucket": 62,
-  "sha": "785f99df9fff6bdd",
+  "sha": "be17112a5e48ede3",
   "svgs": 1,
 }
 `;

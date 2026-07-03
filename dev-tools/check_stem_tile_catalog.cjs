@@ -31,6 +31,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const acorn = require('acorn');
 
 const ROOT = path.resolve(__dirname, '..');
 const STEM_DIR = path.join(ROOT, 'stem_lab');
@@ -41,6 +42,64 @@ const VERBOSE = args.includes('--verbose');
 const QUIET = args.includes('--quiet');
 
 function log(s) { if (!QUIET) console.log(s); }
+
+function walk(node, visit) {
+  if (!node || typeof node.type !== 'string') return;
+  visit(node);
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key === 'range' || key === 'start' || key === 'end') continue;
+    const value = node[key];
+    if (Array.isArray(value)) {
+      for (const child of value) walk(child, visit);
+    } else if (value && typeof value.type === 'string') {
+      walk(value, visit);
+    }
+  }
+}
+
+function memberName(node) {
+  if (!node) return null;
+  if (node.type === 'Identifier') return node.name;
+  if (node.type === 'Literal') return String(node.value);
+  return null;
+}
+
+function calleeHasStemLab(node) {
+  let cur = node;
+  while (cur) {
+    if (cur.type === 'Identifier' && cur.name === 'StemLab') return true;
+    if (cur.type !== 'MemberExpression') return false;
+    if (memberName(cur.property) === 'StemLab') return true;
+    cur = cur.object;
+  }
+  return false;
+}
+
+function collectRegisterToolIds(src, file) {
+  const ids = [];
+  let ast;
+  try {
+    ast = acorn.parse(src, {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      allowReturnOutsideFunction: true,
+    });
+  } catch (e) {
+    console.error('Could not parse ' + file + ': ' + ((e && e.message) || e));
+    process.exit(2);
+  }
+  walk(ast, function (node) {
+    if (node.type !== 'CallExpression') return;
+    const callee = node.callee;
+    if (!callee || callee.type !== 'MemberExpression') return;
+    if (memberName(callee.property) !== 'registerTool') return;
+    if (!calleeHasStemLab(callee.object)) return;
+    const firstArg = node.arguments && node.arguments[0];
+    if (!firstArg || firstArg.type !== 'Literal' || typeof firstArg.value !== 'string') return;
+    ids.push(firstArg.value);
+  });
+  return ids;
+}
 
 // ──────────────────────────────────────────────────────────────────────────
 // Step 1: collect every registerTool('id', ...) id from stem_tool_*.js
@@ -58,11 +117,7 @@ const registeredIds = new Map(); // id → file
 
 for (const f of toolFiles) {
   const src = fs.readFileSync(path.join(STEM_DIR, f), 'utf8');
-  // Match window.StemLab.registerTool('id', { ... })
-  const re = /window\.StemLab\.registerTool\s*\(\s*['"]([a-zA-Z][a-zA-Z0-9_$]*)['"]/g;
-  let m;
-  while ((m = re.exec(src)) !== null) {
-    const id = m[1];
+  for (const id of collectRegisterToolIds(src, f)) {
     if (registeredIds.has(id)) {
       // duplicate id across files — also a bug, but flag separately
       log('  ⚠ Duplicate registerTool id "' + id + '" in ' + f + ' (also in ' + registeredIds.get(id) + ')');
@@ -135,7 +190,8 @@ while ((cm = idRe.exec(catalogRegion)) !== null) {
 // covers those registerTool ids too. Example: stem_tool_fractions.js
 // registers both 'fractionViz' and 'fractions' against the same plugin
 // for backward-compat links. Without alias awareness, the checker
-// false-positives on the legitimate second registration.
+// false-positives on the legitimate second registration. Search-only aliases
+// like "stoichiometry" or "lenses" are intentionally NOT treated as tools.
 const aliasRe = /\baliases:\s*\[\s*([^\]]+)\]/g;
 let am;
 while ((am = aliasRe.exec(catalogRegion)) !== null) {
@@ -144,21 +200,29 @@ while ((am = aliasRe.exec(catalogRegion)) !== null) {
   const aliasList = am[1].match(/['"]([a-zA-Z_][a-zA-Z0-9_$]*)['"]/g) || [];
   for (const quoted of aliasList) {
     const aliasId = quoted.slice(1, -1);
-    if (!catalogIds.has(aliasId)) catalogIds.set(aliasId, line);
+    if (registeredIds.has(aliasId) && !catalogIds.has(aliasId)) catalogIds.set(aliasId, line);
   }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
 // Step 3: diff the two sets
 // ──────────────────────────────────────────────────────────────────────────
+const intentionallyHiddenRegisteredIds = new Set([
+  // Teacher/developer authoring surface. Loaded for contract tests and direct
+  // entry points, but not exposed as a general student-facing catalog tile yet.
+  'forge',
+]);
 const registeredButNotInCatalog = [];
 for (const [id, file] of registeredIds) {
+  if (intentionallyHiddenRegisteredIds.has(id)) continue;
   if (!catalogIds.has(id)) registeredButNotInCatalog.push({ id, file });
 }
 const inCatalogButNotRegistered = [];
 for (const [id, line] of catalogIds) {
   if (!registeredIds.has(id)) inCatalogButNotRegistered.push({ id, line });
 }
+const hiddenRegisteredCount = [...intentionallyHiddenRegisteredIds].filter(function (id) { return registeredIds.has(id); }).length;
+const visibleRegisteredCount = registeredIds.size - hiddenRegisteredCount;
 
 // ──────────────────────────────────────────────────────────────────────────
 // Step 4: report
@@ -205,7 +269,7 @@ if (inCatalogButNotRegistered.length > 0) {
 }
 
 if (!fail) {
-  log('  ✅ All ' + registeredIds.size + ' registered tools have catalog tiles. All ' + catalogIds.size + ' tiles have registered handlers.');
+  log('  ✅ All ' + visibleRegisteredCount + ' visible registered tools have catalog tiles. All ' + catalogIds.size + ' tiles have registered handlers.');
   log('');
 }
 

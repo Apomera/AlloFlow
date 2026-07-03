@@ -17999,6 +17999,12 @@ var d = labToolData.cell || {};
 
               var dotGlowColor = hexToRgba(def.color, 0.18);
 
+              var labelFillColor = 'rgba(248,250,252,0.97)';
+
+              var labelTextColor = '#0f172a';
+
+              var labelShadowColor = 'rgba(2,6,23,0.38)';
+
               var labelBoxes = [];
 
               def.anatomy.forEach(function (a, i) {
@@ -18215,9 +18221,19 @@ var d = labToolData.cell || {};
 
                 cctx.closePath();
 
-                cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))';
+                cctx.shadowColor = labelShadowColor;
+
+                cctx.shadowBlur = 8 * dpr;
+
+                cctx.shadowOffsetY = 2 * dpr;
+
+                cctx.fillStyle = labelFillColor;
 
                 cctx.fill();
+
+                cctx.shadowBlur = 0;
+
+                cctx.shadowOffsetY = 0;
 
                 cctx.strokeStyle = def.color;
 
@@ -18227,7 +18243,7 @@ var d = labToolData.cell || {};
 
                 // Label text
 
-                cctx.fillStyle = '#ffffff';
+                cctx.fillStyle = labelTextColor;
 
                 cctx.fillText(a.name, pillX + fontSize * 0.7, ly);
 
@@ -20350,7 +20366,7 @@ var d = labToolData.cell || {};
 
             d.mode !== 'interior' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
 
-              React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: srOnly || "sr-only" }, cellCanvasStatus),
+              React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: typeof srOnly === 'string' ? srOnly : "sr-only", style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, cellCanvasStatus),
 
               React.createElement("div", { className: "absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur" },
                 React.createElement("div", { className: "min-w-0" },

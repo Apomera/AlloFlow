@@ -147,8 +147,15 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('startTime: canvasNow()');
 
       expect(source).toContain('var labelBoxes = [];');
+      expect(source).toContain("var labelFillColor = 'rgba(248,250,252,0.97)';");
+      expect(source).toContain("var labelTextColor = '#0f172a';");
+      expect(source).toContain("var labelShadowColor = 'rgba(2,6,23,0.38)';");
       expect(source).toContain('var overlaps = !(pillX > b.x + b.w + gapX || pillX + pillW + gapX < b.x || pillY > b.y + b.h + gapY || pillY + pillH + gapY < b.y);');
       expect(source).toContain('labelBoxes.push({ x: pillX, y: pillY, w: pillW, h: pillH });');
+      expect(source).toContain('cctx.shadowColor = labelShadowColor;');
+      expect(source).toContain('cctx.fillStyle = labelFillColor;');
+      expect(source).toContain('cctx.fillStyle = labelTextColor;');
+      expect(source).not.toContain("cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))';");
 
       expect(source).toContain('var cellCanvasStatus =');
       expect(source).toContain('var cellRenderPrefersReducedMotion = false;');
@@ -159,6 +166,9 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('var p = !effectiveCellPaused;');
       expect(source).not.toContain('var p = !d.paused;');
       expect(source).toContain('id: "cell-sim-status", role: "status", "aria-live": "polite"');
+      expect(source).toContain('className: typeof srOnly === \'string\' ? srOnly : "sr-only"');
+      expect(source).toContain('style: srOnly && typeof srOnly === \'object\' ? srOnly : undefined');
+      expect(source).not.toContain('className: srOnly || "sr-only"');
       expect(source).toContain('"aria-describedby": "cell-sim-status"');
     });
   });

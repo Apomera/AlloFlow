@@ -52,9 +52,11 @@
     return Math.max(0, base + nudge + ogSwingOffsetTicks(project, event, options.stepsPerBar));
   }
 
-  function ogPlanMixerState(C, project, trackId) {
+  function ogPlanMixerState(C, project, trackId, patternId, tick) {
     if (C.ogTrackIsAudible && !C.ogTrackIsAudible(project, trackId)) return null;
-    var channel = C.ogGetMixerChannel ? C.ogGetMixerChannel(project, trackId) : { gain: 1 };
+    var channel = C.ogResolveMixerChannelAtTick
+      ? C.ogResolveMixerChannelAtTick(project, patternId, trackId, tick)
+      : C.ogGetMixerChannel ? C.ogGetMixerChannel(project, trackId) : { gain: 1 };
     var master = C.ogGetMixerChannel ? C.ogGetMixerChannel(project, 'master') : { gain: 1 };
     var channelGain = Math.max(0, Math.min(1.5, Number(channel && channel.gain) || 0));
     var masterGain = Math.max(0, Math.min(1.5, Number(master && master.gain) || 0));
@@ -88,6 +90,22 @@
     (pattern.events || []).forEach(function (event) {
       var playTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
       if (playTick < fromTick || playTick >= toTick) return;
+      if (event.type === 'automationPoint') {
+        plan.push({
+          id: event.id,
+          type: event.type,
+          trackId: event.trackId,
+          target: event.target,
+          value: event.value,
+          curve: event.curve || 'linear',
+          patternTick: event.startTick,
+          playTick: playTick,
+          scheduledTick: playTick,
+          time: originTime + ogTicksToSeconds(playTick - originTick, bpm, ppq),
+          event: event
+        });
+        return;
+      }
       var durationTicks = Math.max(1, Number(event.durationTicks) || 1);
       var track = C.ogFindTrack(project, event.trackId);
       var pad = null;
@@ -99,9 +117,12 @@
           }
         }
       }
-      var mix = ogPlanMixerState(C, project, event.trackId);
+      var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, playTick);
       if (!mix || !mix.outputGain) return;
       var eventVelocity = event.velocity == null ? 0.8 : event.velocity;
+      var effects = C.ogResolveTrackEffectsAtTick
+        ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, playTick)
+        : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
       plan.push({
         id: event.id,
         type: event.type,
@@ -123,6 +144,7 @@
         channelGain: mix.channelGain,
         masterGain: mix.masterGain,
         outputGain: mix.outputGain,
+        effects: effects,
         muted: mix.muted,
         solo: mix.solo,
         probability: event.probability == null ? 1 : event.probability,
@@ -159,6 +181,24 @@
         var patternTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
         var absoluteTick = loopStart + patternTick;
         if (absoluteTick < startTick || absoluteTick >= endTick) return;
+        if (event.type === 'automationPoint') {
+          plan.push({
+            id: event.id + '@' + loop,
+            sourceId: event.id,
+            type: event.type,
+            trackId: event.trackId,
+            target: event.target,
+            value: event.value,
+            curve: event.curve || 'linear',
+            patternTick: event.startTick,
+            playTick: patternTick,
+            scheduledTick: absoluteTick,
+            loopIndex: loop,
+            time: originTime + ogTicksToSeconds(absoluteTick - startTick, bpm, ppq),
+            event: event
+          });
+          return;
+        }
         var durationTicks = Math.max(1, Number(event.durationTicks) || 1);
         var track = C.ogFindTrack(project, event.trackId);
         var pad = null;
@@ -170,9 +210,12 @@
             }
           }
         }
-        var mix = ogPlanMixerState(C, project, event.trackId);
+        var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, patternTick);
         if (!mix || !mix.outputGain) return;
         var eventVelocity = event.velocity == null ? 0.8 : event.velocity;
+        var effects = C.ogResolveTrackEffectsAtTick
+          ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, patternTick)
+          : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
         plan.push({
           id: event.id + '@' + loop,
           sourceId: event.id,
@@ -196,6 +239,7 @@
           channelGain: mix.channelGain,
           masterGain: mix.masterGain,
           outputGain: mix.outputGain,
+          effects: effects,
           muted: mix.muted,
           solo: mix.solo,
           probability: event.probability == null ? 1 : event.probability,

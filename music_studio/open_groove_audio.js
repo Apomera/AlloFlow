@@ -55,6 +55,135 @@
     };
   }
 
+  function normalizeEffects(effects) {
+    var C = getCore();
+    return (Array.isArray(effects) ? effects : []).map(function (effect) {
+      return C && C.ogNormalizeEffect ? C.ogNormalizeEffect(effect) : effect;
+    }).filter(function (effect) {
+      return effect && effect.enabled !== false;
+    });
+  }
+
+  function effectByType(effects, type) {
+    for (var i = 0; i < effects.length; i++) {
+      if (effects[i].type === type) return effects[i];
+    }
+    return null;
+  }
+
+  function disconnectLater(ctx, nodes, stopAt) {
+    if (!root.setTimeout || !nodes.length) return;
+    var delayMs = Math.max(60, (Math.max(ctx.currentTime, stopAt) - ctx.currentTime + 0.2) * 1000);
+    root.setTimeout(function () {
+      nodes.forEach(function (node) {
+        try { node.disconnect(); } catch (_) {}
+      });
+    }, delayMs);
+  }
+
+  function connectWetDry(ctx, input, wetNode, mix) {
+    var output = ctx.createGain();
+    var dry = ctx.createGain();
+    var wet = ctx.createGain();
+    var wetMix = Math.max(0, Math.min(1, Number(mix) || 0));
+    dry.gain.value = 1 - wetMix;
+    wet.gain.value = wetMix;
+    input.connect(dry);
+    dry.connect(output);
+    wetNode.connect(wet);
+    wet.connect(output);
+    return { output: output, dry: dry, wet: wet };
+  }
+
+  function createEffectOutput(engine, effects, startTime, tailSec) {
+    var list = normalizeEffects(effects);
+    if (!list.length) return engine.master;
+    var ctx = engine.ctx;
+    var input = ctx.createGain();
+    var chain = input;
+    var nodes = [input];
+    var filterEffect = effectByType(list, 'filter');
+    var driveEffect = effectByType(list, 'drive');
+    var chorusEffect = effectByType(list, 'chorus');
+    var delayEffect = effectByType(list, 'delay');
+    var reverbEffect = effectByType(list, 'reverb');
+
+    if (filterEffect) {
+      var filter = ctx.createBiquadFilter();
+      var filterParams = filterEffect.params || {};
+      filter.type = filterParams.type || 'lowpass';
+      filter.frequency.setValueAtTime(Math.max(80, Math.min(18000, Number(filterParams.cutoff) || 12000)), startTime);
+      filter.Q.value = Math.max(0.1, Math.min(20, Number(filterParams.q) || 0.8));
+      chain.connect(filter);
+      chain = filter;
+      nodes.push(filter);
+    }
+
+    if (driveEffect) {
+      var driveParams = driveEffect.params || {};
+      var shaper = ctx.createWaveShaper();
+      shaper.curve = makeDistCurve(Math.max(0, Math.min(1, Number(driveParams.amount) || 0)) * 80);
+      shaper.oversample = '2x';
+      chain.connect(shaper);
+      var driveMix = connectWetDry(ctx, chain, shaper, driveParams.mix == null ? 0.35 : driveParams.mix);
+      chain = driveMix.output;
+      nodes.push(shaper, driveMix.output, driveMix.dry, driveMix.wet);
+    }
+
+    if (chorusEffect) {
+      var chorusParams = chorusEffect.params || {};
+      var chorusDelay = ctx.createDelay(0.05);
+      var lfo = ctx.createOscillator();
+      var depth = ctx.createGain();
+      chorusDelay.delayTime.value = 0.012;
+      lfo.type = 'sine';
+      lfo.frequency.value = Math.max(0.05, Math.min(8, Number(chorusParams.rate) || 1.2));
+      depth.gain.value = Math.max(0, Math.min(1, Number(chorusParams.depth) || 0.35)) * 0.014;
+      lfo.connect(depth);
+      depth.connect(chorusDelay.delayTime);
+      chain.connect(chorusDelay);
+      var chorusMix = connectWetDry(ctx, chain, chorusDelay, chorusParams.mix == null ? 0.18 : chorusParams.mix);
+      lfo.start(Math.max(ctx.currentTime, startTime));
+      lfo.stop(Math.max(ctx.currentTime, startTime) + Math.max(0.3, tailSec || 1));
+      chain = chorusMix.output;
+      nodes.push(chorusDelay, lfo, depth, chorusMix.output, chorusMix.dry, chorusMix.wet);
+    }
+
+    if (delayEffect) {
+      var delayParams = delayEffect.params || {};
+      var delay = ctx.createDelay(1);
+      var feedback = ctx.createGain();
+      delay.delayTime.value = Math.max(0.03, Math.min(0.75, Number(delayParams.time) || 0.25));
+      feedback.gain.value = Math.max(0, Math.min(0.85, Number(delayParams.feedback) || 0.28));
+      chain.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      var delayMix = connectWetDry(ctx, chain, delay, delayParams.mix == null ? 0.22 : delayParams.mix);
+      chain = delayMix.output;
+      nodes.push(delay, feedback, delayMix.output, delayMix.dry, delayMix.wet);
+    }
+
+    if (reverbEffect) {
+      var reverbParams = reverbEffect.params || {};
+      var reverbDelay = ctx.createDelay(0.4);
+      var reverbFeedback = ctx.createGain();
+      var decay = Math.max(0.05, Math.min(1.2, Number(reverbParams.decay) || 0.55));
+      reverbDelay.delayTime.value = 0.045 + decay * 0.11;
+      reverbFeedback.gain.value = Math.max(0.1, Math.min(0.72, 0.22 + decay * 0.34));
+      chain.connect(reverbDelay);
+      reverbDelay.connect(reverbFeedback);
+      reverbFeedback.connect(reverbDelay);
+      var reverbMix = connectWetDry(ctx, chain, reverbDelay, reverbParams.mix == null ? 0.2 : reverbParams.mix);
+      chain = reverbMix.output;
+      nodes.push(reverbDelay, reverbFeedback, reverbMix.output, reverbMix.dry, reverbMix.wet);
+    }
+
+    chain.connect(engine.master);
+    nodes.push(chain);
+    disconnectLater(ctx, nodes, Math.max(ctx.currentTime, startTime) + Math.max(0.2, tailSec || 1));
+    return input;
+  }
+
   function connectEnvelope(ctx, destination, startTime, duration, velocity, envelope) {
     envelope = envelope || {};
     var gain = ctx.createGain();
@@ -82,12 +211,12 @@
     return buffer;
   }
 
-  function ogPlayDrum(engine, type, when, velocity) {
+  function ogPlayDrum(engine, type, when, velocity, effects) {
     if (!engine || !engine.available) return false;
     var ctx = engine.ctx;
     var start = Math.max(ctx.currentTime, Number(when) || ctx.currentTime);
     var vel = Math.max(0, Math.min(1, Number(velocity) || 0.8));
-    var out = engine.master;
+    var out = createEffectOutput(engine, effects, start, 1.5);
     var kind = String(type || 'kick');
 
     if (kind === 'kick' || kind === 'sub') {
@@ -138,18 +267,45 @@
     var patch = C && C.ogNormalizeSynthInstrument ? C.ogNormalizeSynthInstrument(event && event.instrument) : event && event.instrument || {};
     var filterPatch = patch.filter || {};
     var envelopePatch = patch.envelope || {};
-    var osc = ctx.createOscillator();
     var filter = ctx.createBiquadFilter();
-    var env = connectEnvelope(ctx, engine.master, start, dur, event && event.velocity, envelopePatch);
-    osc.type = patch.oscillator || 'sawtooth';
-    osc.frequency.setValueAtTime(freq, start);
+    var output = createEffectOutput(engine, event && event.effects, start, dur + Math.max(0.18, Number(envelopePatch.release) || 0.18) + 1.5);
+    var env = connectEnvelope(ctx, output, start, dur, event && event.velocity, envelopePatch);
+    var partials = patch.partials && patch.partials.length ? patch.partials : [{ ratio: 1, type: patch.oscillator || 'sawtooth', gain: 1, detune: 0 }];
+    var stopAt = start + dur + Math.max(0.18, Number(envelopePatch.release) || 0.18) + 0.05;
     filter.type = filterPatch.type || 'lowpass';
     filter.frequency.setValueAtTime(Math.max(80, Math.min(18000, Number(filterPatch.cutoff) || 4200)), start);
     filter.Q.value = Math.max(0.1, Math.min(20, Number(filterPatch.q) || 0.8));
-    osc.connect(filter);
     filter.connect(env);
-    osc.start(start);
-    osc.stop(start + dur + 0.18);
+    partials.forEach(function (partial) {
+      var osc = ctx.createOscillator();
+      var partialGain = ctx.createGain();
+      osc.type = partial.type || patch.oscillator || 'sawtooth';
+      osc.frequency.setValueAtTime(freq * Math.max(0.125, Number(partial.ratio) || 1), start);
+      osc.detune.value = Number(partial.detune) || 0;
+      partialGain.gain.value = Math.max(0, Math.min(1, Number(partial.gain) || 0));
+      osc.connect(partialGain);
+      partialGain.connect(filter);
+      osc.start(start);
+      osc.stop(stopAt);
+    });
+    if (patch.transient && patch.transient.gain > 0) {
+      var source = ctx.createBufferSource();
+      var transientDur = Math.max(0.001, Math.min(0.2, Number(patch.transient.duration) || 0.015));
+      var transientFilter = ctx.createBiquadFilter();
+      var transientEnv = connectEnvelope(ctx, output, start, transientDur, (event && event.velocity || 0.8) * patch.transient.gain, {
+        attack: 0.001,
+        decay: transientDur * 0.5,
+        sustain: 0.01,
+        release: transientDur
+      });
+      source.buffer = noiseBuffer(ctx, transientDur);
+      transientFilter.type = 'bandpass';
+      transientFilter.frequency.value = Math.max(200, Math.min(12000, Number(patch.transient.cutoff) || 4500));
+      source.connect(transientFilter);
+      transientFilter.connect(transientEnv);
+      source.start(start);
+      source.stop(start + transientDur + 0.02);
+    }
     return true;
   }
 
@@ -232,7 +388,7 @@
     });
   }
 
-  function ogPlaySample(engine, assetId, when, velocity, region) {
+  function ogPlaySample(engine, assetId, when, velocity, region, effects) {
     if (!engine || !engine.available || !assetId) return false;
     var sample = sessionSamples[assetId];
     var buffer = sample && sample.buffer || null;
@@ -247,7 +403,8 @@
     var duration = Math.max(0.001, end - offset);
     var source = ctx.createBufferSource();
     source.buffer = buffer;
-    var gain = connectEnvelope(ctx, engine.master, start, Math.max(0.03, duration), vel, { attack: 0.001, decay: 0.01, sustain: 0.98, release: 0.03 });
+    var output = createEffectOutput(engine, effects, start, duration + 1.5);
+    var gain = connectEnvelope(ctx, output, start, Math.max(0.03, duration), vel, { attack: 0.001, decay: 0.01, sustain: 0.98, release: 0.03 });
     source.connect(gain);
     source.start(start, offset, duration);
     source.stop(start + Math.max(0.04, duration) + 0.05);
@@ -259,18 +416,19 @@
     if (!engine || !engine.available || !Array.isArray(plan)) return 0;
     var scheduled = 0;
     plan.forEach(function (item) {
+      if (item.type === 'automationPoint') return;
       if (item.muted || item.outputGain === 0) return;
       if (item.probability != null && item.probability < 1 && Math.random() > item.probability) return;
       var when = (Number(options.baseTime) || 0) + (Number(item.time) || 0);
       if (item.type === 'drumHit') {
-        if (item.assetId && ogPlaySample(engine, item.assetId, when, item.velocity, item.sampleRegion)) {
+        if (item.assetId && ogPlaySample(engine, item.assetId, when, item.velocity, item.sampleRegion, item.effects)) {
           scheduled += 1;
           return;
         }
         var padType = item.padEngine || item.event && (item.event.engine || item.event.padEngine) || item.padId || 'kick';
         var padMap = { pad_1: 'kick', pad_2: 'snare', pad_3: 'hihat', pad_4: 'openhat', pad_5: 'clap', pad_6: 'rim', pad_7: 'tomLow', pad_8: 'tomHigh', pad_9: 'crash', pad_10: 'ride', pad_11: 'shaker', pad_13: 'sub' };
         if (padMap[padType]) padType = padMap[padType];
-        scheduled += ogPlayDrum(engine, padType, when, item.velocity) ? 1 : 0;
+        scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects) ? 1 : 0;
       } else if (item.type === 'note') {
         scheduled += ogPlayNote(engine, item, when, item.durationSec) ? 1 : 0;
       }

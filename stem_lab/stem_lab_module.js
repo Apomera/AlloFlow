@@ -5219,7 +5219,7 @@
             // Science
             anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
-            dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
+            dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, geologyExplorer: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,

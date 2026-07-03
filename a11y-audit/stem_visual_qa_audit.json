@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-07-03T20:10:00.822Z",
+  "generatedAt": "2026-07-03T20:24:09.696Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 48
+    "monitoredMarkerCount": 49
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 48,
+    "markerPassCount": 49,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 24,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 0,
-    "sourcePublicDriftCount": 0,
+    "syncDriftCount": 1,
+    "sourcePublicDriftCount": 1,
     "monitoredSyncDriftCount": 0
   },
   "loadErrors": [],
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17205,
+      "htmlBytes": 17203,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17205
+        "htmlBytes": 17203
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47685,
+      "htmlBytes": 47687,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47685
+        "htmlBytes": 47687
       }
     },
     {
@@ -1125,6 +1125,22 @@
       }
     },
     {
+      "id": "semiconductor",
+      "file": "stem_tool_semiconductor.js",
+      "marker": "data-semiconductor-command",
+      "label": "Semiconductor command bench",
+      "ok": true,
+      "htmlBytes": 16752,
+      "issues": [],
+      "metrics": {
+        "buttons": 37,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 16752
+      }
+    },
+    {
       "id": "wave",
       "file": "stem_tool_wave.js",
       "marker": "data-wave-canvas",
@@ -1142,8 +1158,44 @@
     }
   ],
   "sync": {
-    "drift": [],
-    "sourcePublicDrift": [],
+    "drift": [
+      {
+        "file": "stem_tool_rocks.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BD8972314264",
+          "public": "AAD3D827749D",
+          "build": "AAD3D827749D"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
+    "sourcePublicDrift": [
+      {
+        "file": "stem_tool_rocks.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BD8972314264",
+          "public": "AAD3D827749D",
+          "build": "AAD3D827749D"
+        },
+        "sourcePublicMatch": false,
+        "sourceBuildMatch": false,
+        "status": "source-public-drift"
+      }
+    ],
     "monitoredDrift": []
   },
   "topFindings": [

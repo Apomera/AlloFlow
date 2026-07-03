@@ -1231,12 +1231,62 @@ window.StemLab = window.StemLab || {
               isShort && h('canvas', {
                 ref: function(canvas) {
                   if (!canvas) {
-                    if (window._circuitCanvasCleanup) window._circuitCanvasCleanup();
+                    if (typeof window !== 'undefined' && window._circuitCanvasCleanup) window._circuitCanvasCleanup();
                     return;
                   }
+                  if (canvas._circuitSparkInit) {
+                    if (canvas._circuitSparkResize) canvas._circuitSparkResize();
+                    if (canvas._circuitSparkSchedule) canvas._circuitSparkSchedule();
+                    return;
+                  }
+                  if (typeof window !== 'undefined' && window._circuitCanvasCleanup) window._circuitCanvasCleanup();
                   var ctx2d = canvas.getContext('2d');
-                  var w = canvas.width = canvas.offsetWidth || W;
-                  var h = canvas.height = canvas.offsetHeight || H;
+                  if (!ctx2d) return;
+                  canvas._circuitSparkInit = true;
+                  var w = 0;
+                  var h = 0;
+                  var sparkActive = true;
+                  var sparkRaf = null;
+
+                  function resizeCircuitSparkCanvas() {
+                    w = canvas.width = canvas.offsetWidth || W;
+                    h = canvas.height = canvas.offsetHeight || H;
+                  }
+
+                  function isCircuitSparkHidden() {
+                    return typeof document !== 'undefined' && !!document.hidden;
+                  }
+
+                  function cancelCircuitSparkFrame() {
+                    if (sparkRaf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(sparkRaf);
+                    sparkRaf = null;
+                  }
+
+                  function scheduleCircuitSparkFrame() {
+                    if (!sparkActive || sparkRaf || _prefersReducedMotion || isCircuitSparkHidden()) return;
+                    if (typeof requestAnimationFrame !== 'function') return;
+                    sparkRaf = requestAnimationFrame(loop);
+                  }
+
+                  function cleanupCircuitSparkCanvas() {
+                    sparkActive = false;
+                    cancelCircuitSparkFrame();
+                    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onCircuitSparkVisibilityChange);
+                    canvas._circuitSparkInit = false;
+                    canvas._circuitSparkCleanup = null;
+                    canvas._circuitSparkResize = null;
+                    canvas._circuitSparkSchedule = null;
+                    if (typeof window !== 'undefined' && window._circuitCanvasCleanup === cleanupCircuitSparkCanvas) window._circuitCanvasCleanup = null;
+                  }
+
+                  function onCircuitSparkVisibilityChange() {
+                    if (!sparkActive) return;
+                    if (!canvas.isConnected) { cleanupCircuitSparkCanvas(); return; }
+                    if (isCircuitSparkHidden()) cancelCircuitSparkFrame();
+                    else { cancelCircuitSparkFrame(); loop(); }
+                  }
+
+                  resizeCircuitSparkCanvas();
                   
                   if (!canvas.particles) {
                     canvas.particles = [];
@@ -1254,9 +1304,11 @@ window.StemLab = window.StemLab || {
                     }
                   }
                   
-                  var active = true;
                   function loop() {
-                    if (!active) return;
+                    if (!sparkActive) return;
+                    sparkRaf = null;
+                    if (!canvas.isConnected) { cleanupCircuitSparkCanvas(); return; }
+                    if (isCircuitSparkHidden()) { cancelCircuitSparkFrame(); return; }
                     ctx2d.clearRect(0, 0, w, h);
                     
                     // Spawn sparks near battery / short components
@@ -1312,11 +1364,15 @@ window.StemLab = window.StemLab || {
                     }
                     
                     canvas.particles = canvas.particles.filter(function(pt) { return pt.life > 0; });
-                    if (!_prefersReducedMotion) requestAnimationFrame(loop);
+                    scheduleCircuitSparkFrame();
                   }
                   
-                  requestAnimationFrame(loop);
-                  window._circuitCanvasCleanup = function() { active = false; };
+                  canvas._circuitSparkCleanup = cleanupCircuitSparkCanvas;
+                  canvas._circuitSparkResize = resizeCircuitSparkCanvas;
+                  canvas._circuitSparkSchedule = scheduleCircuitSparkFrame;
+                  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onCircuitSparkVisibilityChange);
+                  if (typeof window !== 'undefined') window._circuitCanvasCleanup = cleanupCircuitSparkCanvas;
+                  loop();
                 },
                 className: 'absolute inset-0 w-full h-full pointer-events-none'
               })

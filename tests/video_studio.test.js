@@ -44,6 +44,50 @@ describe('shared-block sync gate', () => {
 });
 
 // ─── vsFormatTimestamp ───────────────────────────────────────────────────────
+describe('Scene builder popup wiring', () => {
+  const popup = () => readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  it('keeps the scene assembly controls in the editor', () => {
+    const html = popup();
+    expect(html).toContain('<h2>Scene builder</h2>');
+    expect(html).toContain('id="sceneAddTakeBtn"');
+    expect(html).toContain('id="sceneAddAllBtn"');
+    expect(html).toContain('id="sceneAddTitleBtn"');
+    expect(html).toContain('id="sceneAddPauseBtn"');
+    expect(html).toContain('id="sceneDefaultTransition"');
+    expect(html).toContain('id="sceneApplyTransitionBtn"');
+    expect(html).toContain('id="sceneExportBtn"');
+    expect(html).toContain('id="sceneDownloadPlanBtn"');
+    expect(html).toContain('id="sceneLoadPlanBtn"');
+    expect(html).toContain('id="scenePreviewBtn"');
+    expect(html).toContain('id="sceneAudioMode"');
+    expect(html).toContain('id="sceneApplyTemplateBtn"');
+    expect(html).toContain('id="sceneUseBundledPlanBtn"');
+    expect(html).toContain('id="sceneReadinessList"');
+    expect(html).toContain('function exportSceneMontage()');
+  });
+  it('keeps combined scene metadata wired into exports', () => {
+    const html = popup();
+    expect(html).toContain('function sceneTimelineData');
+    expect(html).toContain('function sceneTakeForExport');
+    expect(html).toContain('function renderSceneReadiness');
+    expect(html).toContain('function downloadScenePlan');
+    expect(html).toContain('function loadSceneDraft');
+    expect(html).toContain('function previewSceneBuilder');
+    expect(html).toContain('function sceneAudioGainAt');
+    expect(html).toContain('function reorderSceneItems');
+    expect(html).toContain('function duplicateSceneItem');
+    expect(html).toContain('function applySceneTemplate');
+    expect(html).toContain('function loadBundledScenePlan');
+    expect(html).toContain('scenePlan: scenePlan || null');
+    expect(html).toContain('scenePlan: take.scenePlan || null');
+    expect(html).toContain('sceneCues: sceneCues');
+    expect(html).toContain('sceneChapters: sceneChapters');
+    expect(html).toContain('scenePlan: scenePlan');
+    expect(html).toContain("name: 'scene_plan.json'");
+    expect(html).toContain('Project bundle downloaded. It will reopen the assembled scene as one editable take.');
+  });
+});
+
 describe('vsFormatTimestamp', () => {
   it('formats zero, sub-second, and hour-scale values', () => {
     expect(VS.vsFormatTimestamp(0)).toBe('00:00:00.000');
@@ -555,6 +599,12 @@ describe('caption polish, chapters, and teaching inserts', () => {
       labelText: 'Teacher',
     });
     expect(VS.vsPipFramePreset('unknown')).toMatchObject({ key: 'clean-circle', shape: 'circle' });
+    expect(VS.vsInsertCardLayout('lower banner')).toMatchObject({
+      key: 'lower-banner',
+      placement: 'bottom',
+      align: 'left',
+    });
+    expect(VS.vsInsertCardLayout('unknown')).toMatchObject({ key: 'center-card' });
   });
   it('builds lesson chapters from caption gaps and transition language', () => {
     const chapters = VS.vsBuildChapters([
@@ -569,14 +619,14 @@ describe('caption polish, chapters, and teaching inserts', () => {
   });
   it('sanitizes teaching inserts for editable video overlays', () => {
     const inserts = VS.vsSanitizeTeachingInserts([
-      { type: 'pause', start: -5, duration: 999, text: 'try it', theme: 'amber' },
+      { type: 'pause', start: -5, duration: 999, text: 'try it', theme: 'amber', layout: 'lower banner' },
       { type: 'gif', t: 10, text: '', x: 9, y: -2, animation: 'bounce' },
       { type: 'callout', start: 12, duration: 3, text: 'focus here', style: 'spotlight' },
       { type: 'generated_image', start: 20, imageSrc: 'javascript:bad', text: 'visual' },
       { type: 'run_script', start: 1, text: 'bad' },
     ], 30);
     expect(inserts.map(i => i.type)).toEqual(['pause_prompt', 'sticker', 'callout', 'visual_card']);
-    expect(inserts[0]).toMatchObject({ start: 0, end: 15, theme: 'amber' });
+    expect(inserts[0]).toMatchObject({ start: 0, end: 15, theme: 'amber', layout: 'lower-banner' });
     expect(inserts[1].x).toBe(1);
     expect(inserts[1].y).toBe(0);
     expect(inserts[2]).toMatchObject({ type: 'callout', style: 'spotlight' });

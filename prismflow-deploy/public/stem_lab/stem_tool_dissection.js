@@ -894,7 +894,10 @@ var d = labToolData.dissection || {};
 
           var canvasRef = function (canvas) {
 
-            if (!canvas) return;
+            if (!canvas) {
+              try { if (window.__alloDissectionCanvasCleanup) window.__alloDissectionCanvasCleanup(); } catch (e) {}
+              return;
+            }
 
             // Always update zoom/pan on canvas element so animation loop reads latest values
 
@@ -928,27 +931,71 @@ var d = labToolData.dissection || {};
 
             // If animation loop is already running, just update state â€” don't restart
 
-            if (canvas._dissAnim) return;
+            if (canvas._dissAnim && canvas._dissCleanup) return;
+            if (canvas._dissCleanup) canvas._dissCleanup();
+            else if (canvas._dissAnim) { cancelAnimationFrame(canvas._dissAnim); canvas._dissAnim = null; }
+            try { if (window.__alloDissectionCanvasCleanup && window.__alloDissectionCanvasCleanup !== canvas._dissCleanup) window.__alloDissectionCanvasCleanup(); } catch (e) {}
 
             // PL7 HiDPI: crisp rendering on retina displays.
             if (window.StemLab && window.StemLab.setupHiDPI) {
               window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
             }
             var ctx = canvas.getContext('2d');
+            if (!ctx) return;
             if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
             var dissTick = 0;
+            var dissAlive = true;
+            var dissMotionReduced = false;
+            try { dissMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isDissectionHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelDissectionFrame() {
+              if (canvas._dissAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvas._dissAnim);
+              canvas._dissAnim = null;
+            }
+
+            function scheduleDissectionFrame() {
+              if (!dissAlive || dissMotionReduced || canvas._dissAnim || isDissectionHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
+            }
+
+            function cleanupDissectionCanvas() {
+              dissAlive = false;
+              cancelDissectionFrame();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onDissectionVisibilityChange);
+              if (window.__alloDissectionCanvasCleanup === canvas._dissCleanup) window.__alloDissectionCanvasCleanup = null;
+              canvas._dissCleanup = null;
+            }
+
+            function onDissectionVisibilityChange() {
+              if (!dissAlive) return;
+              if (!canvas.isConnected) { cleanupDissectionCanvas(); return; }
+              if (isDissectionHidden()) cancelDissectionFrame();
+              else { cancelDissectionFrame(); drawDissectionFrame(); }
+            }
+
+            canvas._dissCleanup = cleanupDissectionCanvas;
+            try { window.__alloDissectionCanvasCleanup = canvas._dissCleanup; } catch (e) {}
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onDissectionVisibilityChange);
 
             function drawDissectionFrame() {
 
+              if (!dissAlive) return;
+              canvas._dissAnim = null;
               // Stop the loop once React unmounts the canvas — this heavyweight
               // full-anatomy redraw otherwise reschedules itself at 60fps forever,
               // surviving tab switches and navigation away from the tool.
-              if (!canvas.isConnected) { canvas._dissAnim = null; return; }
+              if (!canvas.isConnected) { cleanupDissectionCanvas(); return; }
+              if (isDissectionHidden()) { cancelDissectionFrame(); return; }
 
-              dissTick++;
+              if (!dissMotionReduced) dissTick++;
 
               // Guard: skip frame if canvas dimensions are not finite or zero
 
@@ -956,7 +1003,7 @@ var d = labToolData.dissection || {};
 
               if (!W || !H || !isFinite(W) || !isFinite(H)) {
 
-                canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
+                scheduleDissectionFrame();
 
                 return;
 
@@ -5492,7 +5539,7 @@ var d = labToolData.dissection || {};
 
               } catch (e) { console.error('[DissectionLab] render error:', e); try { ctx.restore(); ctx.restore(); } catch (_) {} }
 
-              canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);
+              scheduleDissectionFrame();
 
             }
 

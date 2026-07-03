@@ -1,24 +1,24 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T20:10:00.822Z
+Generated: 2026-07-03T20:24:09.696Z
 
 ## Scope
 
 - Registered STEM tools: 114
 - STEM tool files: 111
-- Monitored student-facing visual markers: 48
+- Monitored student-facing visual markers: 49
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 48 |
+| Marker passes | 49 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 33 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 0 |
+| Source/public drift | 1 |
+| Any source/public/build drift | 1 |
 | Monitored file drift | 0 |
 
 ## Visual Marker Coverage
@@ -72,6 +72,7 @@ Generated: 2026-07-03T20:10:00.822Z
 | pass | `logicLab` | `data-logiclab-focus` | Rendered |
 | pass | `fractions` | `data-fraction-focus` | Rendered |
 | pass | `galaxy` | `data-galaxy-canvas` | Rendered |
+| pass | `semiconductor` | `data-semiconductor-command` | Rendered |
 | pass | `wave` | `data-wave-canvas` | Rendered |
 
 ## Top First-Screen Findings
@@ -85,7 +86,9 @@ Generated: 2026-07-03T20:10:00.822Z
 
 ## Sync Drift
 
-All source, public, and local build STEM tool copies match.
+| Status | File | Monitored | Hashes |
+| --- | --- | --- | --- |
+| source-public-drift | `stem_tool_rocks.js` | no | source `BD8972314264`, public `AAD3D827749D`, build `AAD3D827749D` |
 
 ## Gate Policy
 

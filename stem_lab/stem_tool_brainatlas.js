@@ -540,15 +540,18 @@ var d = labToolData.brainAtlas || {};
 
           var canvasRef = function (canvas) {
 
-            if (!canvas) return;
+            if (!canvas) {
+              try { if (window.__alloBrainAtlasCanvasCleanup) window.__alloBrainAtlasCanvasCleanup(); } catch (e) {}
+              return;
+            }
 
             // If view or sim scenario changed, cancel the old animation so we restart with fresh closures
 
             var _cacheKey = viewKey + '|' + simScenario;
 
-            if (canvas._brainAnim && canvas._brainViewKey === _cacheKey) return;
-
-            if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
+            if (canvas._brainCleanup) canvas._brainCleanup();
+            else if (canvas._brainAnim) { cancelAnimationFrame(canvas._brainAnim); canvas._brainAnim = null; }
+            try { if (window.__alloBrainAtlasCanvasCleanup && window.__alloBrainAtlasCanvasCleanup !== canvas._brainCleanup) window.__alloBrainAtlasCanvasCleanup(); } catch (e) {}
 
             canvas._brainViewKey = _cacheKey;
 
@@ -557,6 +560,7 @@ var d = labToolData.brainAtlas || {};
               window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
             }
             var ctx = canvas.getContext('2d');
+            if (!ctx) return;
             if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
@@ -578,10 +582,50 @@ var d = labToolData.brainAtlas || {};
             var neurons = canvas._neurons;
 
             canvas._brainTick = canvas._brainTick || 0;
+            var brainAlive = true;
+            var brainMotionReduced = !!prefersReducedMotion;
+
+            function isBrainAtlasHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelBrainFrame() {
+              if (canvas._brainAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvas._brainAnim);
+              canvas._brainAnim = null;
+            }
+
+            function scheduleBrainFrame() {
+              if (!brainAlive || brainMotionReduced || canvas._brainAnim || isBrainAtlasHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvas._brainAnim = requestAnimationFrame(drawBrainFrame);
+            }
+
+            function cleanupBrainCanvas() {
+              brainAlive = false;
+              cancelBrainFrame();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onBrainAtlasVisibilityChange);
+              if (window.__alloBrainAtlasCanvasCleanup === canvas._brainCleanup) window.__alloBrainAtlasCanvasCleanup = null;
+              canvas._brainCleanup = null;
+            }
+
+            function onBrainAtlasVisibilityChange() {
+              if (!brainAlive) return;
+              if (!canvas.isConnected) { cleanupBrainCanvas(); return; }
+              if (isBrainAtlasHidden()) cancelBrainFrame();
+              else { cancelBrainFrame(); drawBrainFrame(); }
+            }
+
+            canvas._brainCleanup = cleanupBrainCanvas;
+            try { window.__alloBrainAtlasCanvasCleanup = canvas._brainCleanup; } catch (e) {}
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onBrainAtlasVisibilityChange);
 
             function drawBrainFrame() {
 
-              canvas._brainTick++;
+              if (!brainAlive) return;
+              canvas._brainAnim = null;
+              if (!canvas.isConnected) { cleanupBrainCanvas(); return; }
+              if (isBrainAtlasHidden()) { cancelBrainFrame(); return; }
+              if (!brainMotionReduced) canvas._brainTick++;
 
               ctx.clearRect(0, 0, W, H);
 
@@ -1416,7 +1460,7 @@ var d = labToolData.brainAtlas || {};
 
 
 
-                canvas._brainAnim = requestAnimationFrame(drawBrainFrame); return;
+                scheduleBrainFrame(); return;
 
               }
 
@@ -3564,7 +3608,7 @@ var d = labToolData.brainAtlas || {};
 
               // Continue animation
 
-              canvas._brainAnim = requestAnimationFrame(drawBrainFrame);
+              scheduleBrainFrame();
 
             };
 
@@ -4746,13 +4790,20 @@ var d = labToolData.brainAtlas || {};
 
                   var canvas = document.getElementById('brainwave-canvas');
 
-                  if (!canvas || canvas._bwAnimFrame) return;
+                  if (!canvas) {
+                    try { if (window.__alloBrainwaveCanvasCleanup) window.__alloBrainwaveCanvasCleanup(); } catch (e) {}
+                    return;
+                  }
+                  if (canvas._bwCleanup) canvas._bwCleanup();
+                  else if (canvas._bwAnimFrame) { cancelAnimationFrame(canvas._bwAnimFrame); canvas._bwAnimFrame = null; }
+                  try { if (window.__alloBrainwaveCanvasCleanup && window.__alloBrainwaveCanvasCleanup !== canvas._bwCleanup) window.__alloBrainwaveCanvasCleanup(); } catch (e) {}
 
                   // PL7 HiDPI: crisp rendering on retina displays.
                   if (window.StemLab && window.StemLab.setupHiDPI) {
                     window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
                   }
                   var ctx = canvas.getContext('2d');
+                  if (!ctx) return;
                   if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
                   var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
@@ -4772,16 +4823,49 @@ var d = labToolData.brainAtlas || {};
                     gamma: { freq: 22, amp: 0.18, color: '#f472b6', lineWidth: 1.5 }
 
                   };
+                  var bwAlive = true;
+
+                  function isBrainwaveHidden() {
+                    return typeof document !== 'undefined' && !!document.hidden;
+                  }
+
+                  function cancelBrainwaveFrame() {
+                    if (canvas._bwAnimFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvas._bwAnimFrame);
+                    canvas._bwAnimFrame = null;
+                  }
+
+                  function scheduleBrainwaveFrame() {
+                    if (!bwAlive || prefersReducedMotion || canvas._bwAnimFrame || isBrainwaveHidden()) return;
+                    if (typeof requestAnimationFrame !== 'function') return;
+                    canvas._bwAnimFrame = requestAnimationFrame(drawFrame);
+                  }
+
+                  function cleanupBrainwaveCanvas() {
+                    bwAlive = false;
+                    cancelBrainwaveFrame();
+                    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onBrainwaveVisibilityChange);
+                    if (window.__alloBrainwaveCanvasCleanup === canvas._bwCleanup) window.__alloBrainwaveCanvasCleanup = null;
+                    canvas._bwCleanup = null;
+                  }
+
+                  function onBrainwaveVisibilityChange() {
+                    if (!bwAlive) return;
+                    if (!canvas.isConnected) { cleanupBrainwaveCanvas(); return; }
+                    if (isBrainwaveHidden()) cancelBrainwaveFrame();
+                    else { cancelBrainwaveFrame(); drawFrame(); }
+                  }
+
+                  canvas._bwCleanup = cleanupBrainwaveCanvas;
+                  try { window.__alloBrainwaveCanvasCleanup = canvas._bwCleanup; } catch (e) {}
+                  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onBrainwaveVisibilityChange);
 
                   function drawFrame() {
 
-                    if (!prefersReducedMotion) {
-
-                      canvas._bwAnimFrame = requestAnimationFrame(drawFrame);
-
-                      tick += 0.8;
-
-                    }
+                    if (!bwAlive) return;
+                    canvas._bwAnimFrame = null;
+                    if (!canvas.isConnected) { cleanupBrainwaveCanvas(); return; }
+                    if (isBrainwaveHidden()) { cancelBrainwaveFrame(); return; }
+                    if (!prefersReducedMotion) tick += 0.8;
 
                     ctx.fillStyle = 'rgba(15, 11, 46, 0.15)';
 
@@ -4896,14 +4980,11 @@ var d = labToolData.brainAtlas || {};
                     ctx.textAlign = 'center';
 
                     for (var s = 1; s <= 3; s++) { ctx.fillText(s + 's', W * s / 4, H - 4); }
+                    scheduleBrainwaveFrame();
 
                   }
 
                   drawFrame();
-
-                  // Cleanup on unmount
-
-                  canvas._bwCleanup = function () { cancelAnimationFrame(canvas._bwAnimFrame); canvas._bwAnimFrame = null; };
 
                 }, 50);
 

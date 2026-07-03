@@ -10273,15 +10273,20 @@ Return ONLY valid JSON:
     const _failList = failed.length > 0
       ? ` \u00b7 Failed: ${failed.slice(0, 3).map(q => q.fileName).join(', ')}${failed.length > 3 ? ` + ${failed.length - 3} more` : ''}`
       : '';
-    // A quota stop is a PAUSE, not a completion \u2014 saying "Batch complete" while
-    // most files are still queued misreports the run.
+    // A quota stop is a PAUSE and a user cancel is an ABORT \u2014 neither is a completion. Saying "Batch
+    // complete" (+ the triumphant chord) while files are still queued misreports the run. (M6 2026-07-03)
+    const _aborted = !!(_batchAbortCtrl && _batchAbortCtrl.signal && _batchAbortCtrl.signal.aborted);
     if (_quotaStopped) {
       addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. Remaining files stay queued \u2014 use Resume after the quota resets.`, 'warning');
+    } else if (_aborted) {
+      addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. Remaining files stay queued.`, 'warning');
     } else {
     addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
     }
-    // Audio: triumphant chord when batch finishes
-    try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
+    // Audio: triumphant chord ONLY on a genuine full completion (not a quota pause or a user abort).
+    if (!_quotaStopped && !_aborted) {
+      try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
+    }
   };
 
   // C4 (deep dive 2026-07-01 → fixed 2026-07-02): tagged-PDF byte cache for the batch ZIP.
@@ -10569,12 +10574,15 @@ Return ONLY JSON: {"quality": N, "issues": "description or null", "missingConten
             let vCleaned = verifyResult.trim();
             if (vCleaned.indexOf('```') !== -1) { const parts = vCleaned.split('```'); vCleaned = parts[1] || parts[0]; if (vCleaned.indexOf('\n') !== -1) vCleaned = vCleaned.split('\n').slice(1).join('\n'); if (vCleaned.lastIndexOf('```') !== -1) vCleaned = vCleaned.substring(0, vCleaned.lastIndexOf('```')); }
             const verification = JSON.parse(vCleaned);
-            if (verification.quality < 6) {
-              addToast(`⚠ Extraction quality: ${verification.quality}/10. ${verification.issues || 'Some content may be missing.'}`, 'info');
-            } else if (verification.quality >= 8) {
-              addToast(`✅ Extraction verified: ${verification.quality}/10 accuracy`, 'success');
+            // M7 (2026-07-03): this "quality" is the SAME model self-rating a 4KB sample — not an
+            // independent verification — so never badge it "✅ verified". Surface it as an AI self-rating,
+            // and consume missingContent (previously a dead field): if the model flags missing content,
+            // warn regardless of the numeric score.
+            const _missing = verification.missingContent === true;
+            if (verification.quality < 6 || _missing) {
+              addToast(`⚠ Extraction: AI self-rated ${verification.quality}/10 on a sample${_missing ? ' and flagged possibly MISSING content' : ''}. ${verification.issues || 'Review against the original before distributing.'}`, 'warning');
             } else {
-              addToast(`Extraction quality: ${verification.quality}/10`, 'info');
+              addToast(`Extraction: AI self-rated ${verification.quality}/10 (sampled)`, 'info');
             }
           } catch (parseErr) { /* verification parsing failed — non-critical */ }
         } catch (verifyErr) {
@@ -18557,7 +18565,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               warnLog(`[Integrity] In-order coverage ${integrityCoverage}% is below 97%, but the source content is PRESENT (routed to the "Preserved source content" box) — placement, not loss; the placement note below covers it.`);
             }
           } else if (!_silentMode && integrityCoverage >= 98) {
-            addToast(`✅ Content integrity: ${integrityCoverage}% coverage verified`, 'success');
+            addToast(`✅ Content integrity: ${integrityCoverage}% of source characters present`, 'success');
           }
           // R2 (2026-07-03): flag ONLY passages that genuinely could NOT be placed — the orphans gathered
           // in the "Preserved source content" box. The earlier P2-d counted EVERY data-source-restored,
@@ -18898,6 +18906,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         activeContent: (_auditResult && _auditResult.activeContent) || null,
         // Structural fidelity nets (links/tables/refusal) — [{kind,msg}], drives the review banner.
         fidelityNotes: _structuralFidelityNotes,
+        // M5 (2026-07-03): the coverage/placement/numeric integrity warning string, so the DOWNLOADABLE
+        // report can surface it instead of printing "Full text preserved." over a real concern.
+        integrityWarning: integrityWarning || null,
         // #1 score↔fidelity coupling: when content fidelity is in question, the displayed
         // accessibility score must carry a qualifier so a high number can't be read as "all good"
         // on a doc that may have lost content. (<90% coverage OR any structural note.)
@@ -19077,9 +19088,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // and no success chord. (sliced-baseline-delta, 2026-06-29)
         addToast(`PDF processed: ${beforeScore} → ${finalAfterScore}${fixNote}. The 'before' score was a page-slice approximation, so this change is approximate — review the Diff before distributing.`, 'info');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
-      } else if (finalAfterScore !== null && finalAfterScore >= 80) {
+      } else if (finalAfterScore !== null && finalAfterScore >= 80 && !needsExpertReview) {
         addToast(`✅ PDF remediated! Score: ${beforeScore} → ${finalAfterScore} (+${scoreGain})${fixNote}`, 'success');
         try { window.remediationAudio && window.remediationAudio.sessionComplete(); } catch(e) {}
+      } else if (finalAfterScore !== null && finalAfterScore >= 80 && needsExpertReview) {
+        // M4 (2026-07-03): score is high but a fidelity concern (garbled OCR, low alt quality, a dropped
+        // link/table, a changed number) set needsExpertReview WITHOUT an integrityWarning, so the branches
+        // above missed it. Don't play the victory chord or a green "remediated!" the teacher acts on as
+        // done — route to the neutral/actionable toast + non-triumphant sound, like the integrity branch.
+        addToast(`Score ${beforeScore} → ${finalAfterScore}${fixNote} — but this document needs an expert review before distributing (see the fidelity notes).`, 'warning');
+        try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else if (finalAfterScore !== null) {
         addToast(`⚠️ PDF improved: ${beforeScore} → ${finalAfterScore}${fixNote}. Some issues may need manual review.`, 'info');
         // Audio: partial-success plays the complete chord (the integrityWarning case is handled
@@ -19186,6 +19204,19 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     // the accessibility report (post-tag) has the PdfValidator data; the
     // audit report (pre-tag) stays 2-axis.
     let h = '';
+    // M5 (2026-07-03): surface fidelity concerns (coverage/placement/numeric warning + structural notes)
+    // in the Content Integrity section so this DOWNLOADABLE compliance report never prints "Full text
+    // preserved." over a flagged concern. opts.integrityWarning + opts.fidelityNotes thread from the result.
+    const _escRB = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const _fidelityItems = (() => {
+      const out = [];
+      if (opts && opts.integrityWarning) out.push(String(opts.integrityWarning));
+      if (opts && Array.isArray(opts.fidelityNotes)) opts.fidelityNotes.forEach((n) => { if (n && n.msg) out.push(String(n.msg)); });
+      return out;
+    })();
+    const _fidelityBlock = _fidelityItems.length
+      ? `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px"><strong style="color:#b45309">&#9888; Fidelity notes — review before distributing:</strong><ul style="margin:6px 0 0;padding-left:20px;color:#78350f;font-size:12px">${_fidelityItems.map((m) => `<li>${_escRB(m)}</li>`).join('')}</ul></div>`
+      : '';
     const hasPdfUa = pdfua && (typeof pdfua.pass === 'number') && (typeof pdfua.fail === 'number');
     // Denominator must include WARN (a warn is not a pass), matching the canonical
     // conformancePct (computed at validator time as pass/(pass+fail+warn)) and the
@@ -19214,7 +19245,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       <p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Automated engine checks are not applicable to this document.</strong> It has no searchable text layer (image-only scan), so the automated WCAG engines could only audit an empty text reconstruction &mdash; their results would be by-construction, not earned. The AI rubric (which reviews the scanned pages themselves) governs the headline. Run OCR/remediation to produce a text layer before automated results can be meaningful.</p>`;
       if (typeof coverage === 'number') {
         h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
-        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>.</p>`;
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>.</p>${_fidelityBlock}`;
       }
       return h;
     }
@@ -19247,8 +19278,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       }
     }
     if (typeof coverage === 'number') {
+      // M5: suppress "Full text preserved." whenever a fidelity concern exists — the report must never read
+      // cleaner than the actual review state (present chars != correct/complete content).
+      const _covNote = _fidelityItems.length
+        ? 'See the fidelity notes below before distributing.'
+        : (coverage < 97 ? 'Some characters differ from the source — usually formatting cleanup (de-hyphenation, whitespace normalization), not lost content. Review the Diff to confirm no meaning was dropped.' : 'Full text preserved.');
       h += `<h2 style="font-size:1.15rem;margin-top:1.5rem;color:#1e3a5f">Content Integrity</h2>
-        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>. ${coverage < 97 ? 'Some characters differ from the source — usually formatting cleanup (de-hyphenation, whitespace normalization), not lost content. Review the Diff to confirm no meaning was dropped.' : 'Full text preserved.'}</p>`;
+        <p style="font-size:13px;color:#475569;margin:0 0 12px">Text preserved from source: <strong>${coverage}%</strong>. ${_covNote}</p>${_fidelityBlock}`;
     }
     return h;
   };
@@ -19353,7 +19389,7 @@ tr { page-break-inside: avoid; }
     // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
     // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt });
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes });
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
@@ -19797,7 +19833,8 @@ tr { page-break-inside: avoid; }
     (fr.verificationAudit && fr.verificationAudit.score != null ? fr.verificationAudit.score : (fr.aiAudit && fr.aiAudit.score != null ? fr.aiAudit.score : ar._aiOnlyScore)),
     fr.integrityCoverage,
     opts.postExportValidator && opts.postExportValidator.summary,
-    (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined)
+    (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined),
+    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes }
   )}
 
   ${_veraBlock}

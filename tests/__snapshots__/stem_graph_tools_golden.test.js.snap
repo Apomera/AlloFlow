@@ -110,25 +110,25 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for logicLab 1`] = `
 {
-  "buttons": 35,
-  "circles": 0,
+  "buttons": 41,
+  "circles": 3,
   "inputs": 1,
-  "lengthBucket": 87,
-  "paths": 0,
-  "sha": "58d70676473c7412",
-  "svgs": 0,
+  "lengthBucket": 124,
+  "paths": 1,
+  "sha": "09efa68587a1bd5b",
+  "svgs": 1,
 }
 `;
 
 exports[`math/logic graph cluster render goldens (default state) > renders + pins a digest for probability 1`] = `
 {
-  "buttons": 31,
-  "circles": 1,
+  "buttons": 37,
+  "circles": 6,
   "inputs": 4,
-  "lengthBucket": 69,
-  "paths": 0,
-  "sha": "83841a7d1839f4e5",
-  "svgs": 1,
+  "lengthBucket": 100,
+  "paths": 1,
+  "sha": "136c88a7d97a1187",
+  "svgs": 2,
 }
 `;
 
@@ -139,7 +139,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 44,
   "paths": 0,
-  "sha": "8cf3fb9b48b93d6e",
+  "sha": "16f5b2ea6f5618ba",
   "svgs": 0,
 }
 `;

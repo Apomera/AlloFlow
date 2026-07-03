@@ -2,12 +2,12 @@
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for areamodel 1`] = `
 {
-  "buttons": 20,
+  "buttons": 42,
   "circles": 0,
-  "inputs": 6,
-  "lengthBucket": 75,
+  "inputs": 3,
+  "lengthBucket": 100,
   "rects": 0,
-  "sha": "4b5f99c28383980a",
+  "sha": "a0724ef26ff132a5",
   "svgs": 0,
 }
 `;
@@ -62,13 +62,13 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for moneyMath 1`] = `
 {
-  "buttons": 23,
-  "circles": 0,
+  "buttons": 29,
+  "circles": 7,
   "inputs": 0,
-  "lengthBucket": 65,
-  "rects": 0,
-  "sha": "5048c8f974871cd8",
-  "svgs": 0,
+  "lengthBucket": 104,
+  "rects": 9,
+  "sha": "d2d45e18e9e86039",
+  "svgs": 1,
 }
 `;
 
@@ -86,13 +86,13 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for numberline 1`] = `
 {
-  "buttons": 15,
+  "buttons": 21,
   "circles": 0,
   "inputs": 5,
-  "lengthBucket": 53,
-  "rects": 0,
-  "sha": "652ac71a74ddf0ca",
-  "svgs": 1,
+  "lengthBucket": 82,
+  "rects": 1,
+  "sha": "166cc2311d952827",
+  "svgs": 2,
 }
 `;
 

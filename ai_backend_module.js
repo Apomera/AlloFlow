@@ -211,8 +211,8 @@
  * Licensed under GNU AGPL v3 (same as AlloFlow core)
  * 
  * This module provides a unified interface for all AI operations,
- * supporting multiple backends: Gemini, LocalAI, Ollama, OpenAI, Claude, or any
- * OpenAI-compatible custom endpoint.
+ * supporting multiple backends: Gemini, LocalAI, LM Studio, Ollama, OpenAI,
+ * Claude, AlloFlow Local Engine, or any OpenAI-compatible custom endpoint.
  * 
  * Usage:
  *   const ai = new AIProvider({ backend: 'gemini', apiKey, models: {...} });
@@ -834,9 +834,9 @@ class AIProvider {
 
     /**
      * @param {Object} config
-     * @param {string} config.backend - 'gemini' | 'openai' | 'localai' | 'ollama' | 'claude' | 'custom'
+     * @param {string} config.backend - 'gemini' | 'openai' | 'localai' | 'lmstudio' | 'ollama' | 'claude' | 'alloflow-local' | 'custom'
      * @param {string} [config.apiKey] - API key (empty string for Canvas mode)
-     * @param {string} [config.baseUrl] - Base URL for the API (required for localai/ollama/custom)
+     * @param {string} [config.baseUrl] - Base URL for the API (required for local/custom backends)
      * @param {Object} [config.models] - Model name overrides
      * @param {boolean} [config.isCanvasEnv] - Whether running in Gemini Canvas
      * @param {Function} [config.fetchWithRetry] - Retry wrapper function (fetchWithExponentialBackoff)
@@ -896,9 +896,11 @@ class AIProvider {
         switch (this.backend) {
             case 'gemini': return 'https://generativelanguage.googleapis.com/v1beta';
             case 'localai': return 'http://localhost:8080';
+            case 'lmstudio': return 'http://localhost:1234';
             case 'ollama': return 'http://localhost:11434';
             case 'openai': return 'https://api.openai.com';
             case 'claude': return 'https://api.anthropic.com';
+            case 'alloflow-local': return 'http://localhost:32173';
             case 'custom': return 'http://localhost:8080';
             default: return 'https://generativelanguage.googleapis.com/v1beta';
         }
@@ -929,7 +931,9 @@ class AIProvider {
                 return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens });
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens });
@@ -1025,7 +1029,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _openaiGenerateText(prompt, { json, search, temperature, maxTokens }) {
-        // OpenAI-compatible format (works with LocalAI, Ollama, OpenAI, custom endpoints)
+        // OpenAI-compatible format (works with LocalAI, LM Studio, OpenAI, AlloFlow Local, custom endpoints)
         const url = this.backend === 'ollama'
             ? `${this.baseUrl}/api/chat`
             : `${this.baseUrl}/v1/chat/completions`;
@@ -1149,7 +1153,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             // Claude doesn't support image generation — fall through to OpenAI-compatible
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiGenerateImage(prompt, width, quality);
@@ -1306,8 +1312,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64);
@@ -1426,8 +1434,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiAnalyzeImage(prompt, base64Data, mimeType);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiAnalyzeImage(prompt, base64Data, mimeType);
@@ -1514,8 +1524,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiAnalyzeAudio(prompt, base64Data, mimeType);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 // Most non-Gemini backends don't accept audio inline; fail
@@ -1601,8 +1613,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return this._geminiTTS(text, voice, speed);
             case 'openai':
             case 'localai':
+            case 'lmstudio':
             case 'ollama':
             case 'claude':
+            case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiTTS(text, voice, speed);

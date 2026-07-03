@@ -754,12 +754,38 @@ const d = labToolData.rocks || {};
             const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
 
             const ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._rocksInit = false; return; }
 
             const dpr = window.devicePixelRatio || 1;
 
             let tick = 0;
 
             let hoverZone = null;
+            let rocksAlive = true;
+            let rocksMotionReduced = false;
+            try { rocksMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isRocksHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelRocksFrame() {
+              if (animId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animId);
+              animId = null;
+            }
+
+            function scheduleRocksFrame() {
+              if (!rocksAlive || rocksMotionReduced || animId || isRocksHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              animId = requestAnimationFrame(loop);
+            }
+
+            function onRocksVisibilityChange() {
+              if (!rocksAlive) return;
+              if (!canvasEl.isConnected) { canvasEl._rocksCleanup(); return; }
+              if (isRocksHidden()) cancelRocksFrame();
+              else { cancelRocksFrame(); loop(); }
+            }
 
 
 
@@ -1237,16 +1263,20 @@ const d = labToolData.rocks || {};
             let animId = null;
 
             function loop() {
+              if (!rocksAlive) return;
+              animId = null;
+              if (!canvasEl.isConnected) { canvasEl._rocksCleanup(); return; }
+              if (isRocksHidden()) { cancelRocksFrame(); return; }
 
-              tick++;
+              if (!rocksMotionReduced) tick++;
 
               drawLandscape();
 
-              animId = requestAnimationFrame(loop);
+              scheduleRocksFrame();
 
             }
 
-            animId = requestAnimationFrame(loop);
+            loop();
 
 
 
@@ -1269,6 +1299,7 @@ const d = labToolData.rocks || {};
               });
 
               canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
+              if (rocksMotionReduced) drawLandscape();
 
             }
 
@@ -1335,6 +1366,7 @@ const d = labToolData.rocks || {};
                 var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
 
                 if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+                if (rocksMotionReduced) drawLandscape();
 
               }
 
@@ -1355,6 +1387,7 @@ const d = labToolData.rocks || {};
                 canvasEl.width = newW;
 
                 canvasEl.height = newH;
+                if (rocksMotionReduced) drawLandscape();
 
               }
 
@@ -1363,18 +1396,24 @@ const d = labToolData.rocks || {};
             ro.observe(canvasEl);
 
             canvasEl._rocksRO = ro;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onRocksVisibilityChange);
 
             canvasEl._rocksCleanup = function () {
+              rocksAlive = false;
 
-              if (animId) cancelAnimationFrame(animId);
+              cancelRocksFrame();
 
               canvasEl.removeEventListener('mousemove', onRockMove);
 
               canvasEl.removeEventListener('click', onRockClick);
 
               canvasEl.removeEventListener('keydown', onRockKey);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRocksVisibilityChange);
 
               ro.disconnect();
+              canvasEl._rocksRO = null;
+              canvasEl._rocksCleanup = null;
+              canvasEl._rocksInit = false;
 
             };
 
@@ -3701,10 +3740,45 @@ const d = labToolData.rockCycle || {};
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) { canvasEl._rcInit = false; return; }
 
             var dpr = 2;
 
             var tick = 0;
+            var rcAlive = true;
+            var rcMotionReduced = false;
+            try { rcMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isRockCycleHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelRockCycleFrame() {
+              if (canvasEl._rcAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._rcAnim);
+              canvasEl._rcAnim = null;
+            }
+
+            function scheduleRockCycleFrame() {
+              if (!rcAlive || rcMotionReduced || canvasEl._rcAnim || isRockCycleHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._rcAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupRockCycleCanvas() {
+              rcAlive = false;
+              cancelRockCycleFrame();
+              canvasEl.removeEventListener('click', onRockCycleClick);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
+              canvasEl._rcCleanup = null;
+              canvasEl._rcInit = false;
+            }
+
+            function onRockCycleVisibilityChange() {
+              if (!rcAlive) return;
+              if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }
+              if (isRockCycleHidden()) cancelRockCycleFrame();
+              else { cancelRockCycleFrame(); draw(); }
+            }
 
 
 
@@ -3761,8 +3835,12 @@ const d = labToolData.rockCycle || {};
 
 
             function draw() {
+              if (!rcAlive) return;
+              canvasEl._rcAnim = null;
+              if (!canvasEl.isConnected) { cleanupRockCycleCanvas(); return; }
+              if (isRockCycleHidden()) { cancelRockCycleFrame(); return; }
 
-              tick++;
+              if (!rcMotionReduced) tick++;
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -4405,17 +4483,18 @@ const d = labToolData.rockCycle || {};
 
               ctx.fillText('\uD83E\uDEA8 Rock Cycle', 12 * dpr, 19 * dpr);
 
-              canvasEl._rcAnim = requestAnimationFrame(draw);
+              scheduleRockCycleFrame();
 
             }
 
-            canvasEl._rcAnim = requestAnimationFrame(draw);
+            draw();
 
-            canvasEl._rcCleanup = function () { if (canvasEl._rcAnim) cancelAnimationFrame(canvasEl._rcAnim); };
+            canvasEl._rcCleanup = cleanupRockCycleCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onRockCycleVisibilityChange);
 
 
 
-            canvasEl.addEventListener('click', function (e) {
+            function onRockCycleClick(e) {
 
               var rect = canvasEl.getBoundingClientRect();
 
@@ -4443,12 +4522,14 @@ const d = labToolData.rockCycle || {};
                     v[rock.id] = true;
                     return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) });
                   });
+                  if (rcMotionReduced) draw();
 
                 }
 
               });
 
-            });
+            }
+            canvasEl.addEventListener('click', onRockCycleClick);
 
           };
 

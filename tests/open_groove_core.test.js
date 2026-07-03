@@ -166,6 +166,8 @@ describe('Open Groove project core', () => {
 
     const presets = OG.ogListSynthPatchPresets();
     expect(presets.map(preset => preset.name)).toContain('Warm Bass');
+    expect(presets.map(preset => preset.name)).toContain('Classic Piano');
+    expect(OG.ogGetSynthPatchPreset('classicPiano').instrument.partials.length).toBeGreaterThan(1);
     const presetPatch = OG.ogApplySynthPatchPreset(projectA, synthA.id, 'glassPluck');
     expect(presetPatch).toMatchObject({
       name: 'Glass Pluck',
@@ -232,7 +234,75 @@ describe('Open Groove project core', () => {
     expect(created.filter(event => event.type === 'note')).toHaveLength(12);
     const preview = OG.ogBuildNotationPreview(project, pattern.id);
     expect(preview.measures.map(measure => measure.chords[0].symbol)).toEqual(['Cm', 'Eb', 'Bb', 'Gm']);
+    const names = OG.ogBuildCompositionNomenclature(project, pattern.id);
+    expect(names).toMatchObject({ keyName: 'C Minor' });
+    expect(names.scaleDegrees.map(degree => degree.note)).toEqual(['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb']);
+    expect(names.scaleDegrees.map(degree => degree.roman)).toEqual(['i', 'iidim', 'III', 'iv', 'v', 'VI', 'VII']);
+    expect(names.measures.map(measure => measure.chords[0].roman)).toEqual(['i', 'III', 'VII', 'v']);
     expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('writes notation-style text input into notation-timed note events', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const written = OG.ogWriteNotationInput(project, pattern.id, synth.id, 'C4:q D4:e R:e [Eb4+G4]:h | Bb4/4', {
+      startBar: 0,
+      replace: true
+    });
+    expect(written.noteCount).toBe(5);
+    expect(written.warnings).toEqual([]);
+
+    const preview = OG.ogBuildCompositionNomenclature(project, pattern.id);
+    expect(preview.measures[0].notes.map(note => note.pitch)).toEqual(['C4', 'D4', 'Eb4', 'G4']);
+    expect(preview.measures[0].notes.find(note => note.pitch === 'D4')).toMatchObject({ durationBeats: 0.5, solfege: 'Re' });
+    expect(preview.measures[1].notes[0]).toMatchObject({ pitch: 'Bb4', solfege: 'Ti' });
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('builds an editable engraved staff model for notation-first composition', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const emptyStaff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id, selectedBar: 0 });
+    expect(emptyStaff).toMatchObject({ clef: 'treble', keyName: 'C Minor', slotsPerMeasure: 8 });
+    expect(emptyStaff.measures[0].slots).toHaveLength(8);
+    expect(emptyStaff.measures[0].selected).toBe(true);
+
+    const written = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1.5,
+      pitch: 'C4',
+      duration: 'e',
+      replaceSlot: true
+    });
+    expect(written.event).toMatchObject({
+      pitch: 'C4',
+      startTick: 480,
+      durationTicks: 480,
+      role: 'notation',
+      source: 'staffEditor'
+    });
+
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id, selectedBar: 0 });
+    const note = staff.measures[0].notes.find(item => item.pitch === 'C4');
+    expect(note).toMatchObject({
+      startBeat: 1.5,
+      durationName: 'eighth',
+      accidental: '',
+      stem: true
+    });
+    expect(note.y).toBeGreaterThan(staff.geometry.bottomY);
+    expect(note.ledgerLines.length).toBeGreaterThan(0);
+
+    const rest = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1.5,
+      tool: 'rest',
+      rest: true
+    });
+    expect(rest).toMatchObject({ rest: true, removed: 1 });
+    expect(OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id }).measures[0].notes).toHaveLength(0);
   });
 
   it('writes scale-aware melody phrases as notation-safe events', () => {
@@ -333,7 +403,19 @@ describe('Open Groove project core', () => {
     const synth = project.tracks[1];
     let status = OG.ogBuildOnboardingStatus(project, pattern.id);
     expect(status).toMatchObject({ beatReady: false, harmonyReady: false, variationReady: false, songReady: true, sampleReady: false, exportReady: true });
+    expect(OG.ogBuildOnboardingGuidance(project, pattern.id)).toMatchObject({
+      stepId: 'beat',
+      title: 'Beat',
+      actionId: 'beat',
+      actionLabel: 'Make Beat',
+      completed: false
+    });
     OG.ogSetDrumStep(project, pattern.id, drums.id, 'pad_1', 0, 16, { on: true });
+    expect(OG.ogBuildOnboardingGuidance(project, pattern.id)).toMatchObject({
+      stepId: 'harmony',
+      actionId: 'harmony',
+      actionLabel: 'Add Harmony'
+    });
     OG.ogSetNoteStep(project, pattern.id, synth.id, 'C4', 0, 16, { on: true });
     OG.ogDuplicatePattern(project, pattern.id, 'Variation');
     const asset = OG.ogRegisterUserRecording(project, { name: 'Tap' });
@@ -341,6 +423,14 @@ describe('Open Groove project core', () => {
     status = OG.ogBuildOnboardingStatus(project, pattern.id);
     expect(status).toMatchObject({ beatReady: true, harmonyReady: true, variationReady: true, songReady: true, sampleReady: true, exportReady: true });
     expect(status.completed).toBe(6);
+    expect(OG.ogBuildOnboardingGuidance(project, pattern.id)).toMatchObject({
+      stepId: 'complete',
+      title: 'Session Ready',
+      actionId: 'export',
+      actionLabel: 'Prepare JSON',
+      completed: true,
+      completedCount: 6
+    });
   });
 
   it('builds license reports without blocking local project validation', () => {
@@ -352,6 +442,87 @@ describe('Open Groove project core', () => {
     expect(report.exportSafe).toBe(false);
     expect(report.warnings[0]).toMatch(/Mystery Loop/);
     expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('prepares rights-aware stem separation slots without requiring an ML engine', () => {
+    const project = OG.ogCreateProject({ title: 'Stem Lesson' });
+    const source = OG.ogAddAsset(project, { name: 'Class Mix', license: 'Unknown', type: 'loop' });
+    const riskyPlan = OG.ogBuildStemSeparationPlan(project, { mode: 'four', sourceAssetId: source.id });
+    expect(riskyPlan).toMatchObject({
+      mode: 'four',
+      label: '4-stem',
+      sourceAssetId: source.id,
+      rightsSafe: false,
+      recommendedEngineId: 'external-demucs'
+    });
+    expect(riskyPlan.targets).toEqual(['vocals', 'drums', 'bass', 'other']);
+    expect(riskyPlan.warnings[0]).toMatch(/Confirm rights/);
+
+    const prepared = OG.ogPrepareStemSlots(project, {
+      mode: 'six',
+      sourceAssetId: source.id,
+      userConfirmedRights: true,
+      prefix: 'Class Mix'
+    });
+    expect(prepared.plan.targets).toEqual(['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']);
+    expect(prepared.assets).toHaveLength(6);
+    expect(prepared.assets.every(asset => asset.license === 'User Owned' && asset.type === 'loop')).toBe(true);
+    expect(prepared.assets.map(asset => asset.stemRole)).toEqual(['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']);
+    expect(OG.ogBuildStemAssetSummary(project)[0]).toMatchObject({
+      groupId: prepared.groupId,
+      count: 6,
+      readyCount: 0
+    });
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('scores optional stem engines by setup and machine requirements', () => {
+    const manual = OG.ogBuildStemEngineReadiness({ engineId: 'manual-import', mode: 'six' });
+    expect(manual).toMatchObject({
+      engineId: 'manual-import',
+      tier: 'ready',
+      tierLabel: 'Ready'
+    });
+
+    const blockedDemucs = OG.ogBuildStemEngineReadiness({
+      engineId: 'external-demucs',
+      mode: 'four',
+      capabilities: { cpuCores: 8, memoryGb: 16, gpuVramGb: 8 }
+    });
+    expect(blockedDemucs.tier).toBe('blocked');
+    expect(blockedDemucs.requirements.find(req => req.id === 'local-worker')).toMatchObject({
+      met: false,
+      severity: 'blocker'
+    });
+
+    const readyDemucs = OG.ogBuildStemEngineReadiness({
+      engineId: 'demucs',
+      mode: 'six',
+      capabilities: { localWorkerInstalled: true, cpuCores: 8, memoryGb: 16, gpuVramGb: 8 }
+    });
+    expect(readyDemucs).toMatchObject({
+      engineId: 'external-demucs',
+      tier: 'ready'
+    });
+
+    const unsupportedSpleeter = OG.ogBuildStemEngineReadiness({
+      engineId: 'spleeter',
+      mode: 'six',
+      capabilities: { localWorkerInstalled: true, cpuCores: 8, memoryGb: 16 }
+    });
+    expect(unsupportedSpleeter.tier).toBe('blocked');
+    expect(unsupportedSpleeter.requirements.find(req => req.id === 'mode-support')).toMatchObject({
+      met: false,
+      severity: 'blocker'
+    });
+
+    const browserBlocked = OG.ogBuildStemEngineReadiness({
+      engineId: 'browser-onnx',
+      mode: 'four',
+      capabilities: { webgpu: false, memoryGb: 16 }
+    });
+    expect(browserBlocked.tier).toBe('blocked');
+    expect(browserBlocked.requirements.find(req => req.id === 'webgpu')).toMatchObject({ met: false });
   });
 
   it('registers user-owned recordings and assigns them to pads without attribution debt', () => {
@@ -496,6 +667,65 @@ describe('Open Groove scheduler', () => {
     expect(soloPlan[0]).toMatchObject({ channelGain: 0.5, masterGain: 0.9, outputGain: 0.45 });
     expect(soloPlan[0].velocity).toBeCloseTo(0.45, 5);
     expect(OG.ogBuildMixerSnapshot(project).channels.find(channel => channel.trackId === drums.id)).toMatchObject({ solo: true, audible: true });
+  });
+
+  it('stores track effect racks and automation lane snapshots', () => {
+    const project = OG.ogCreateProject({ bpm: 120 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+
+    const delay = OG.ogSetTrackEffect(project, synth.id, 'delay', {
+      params: { mix: 0.4, time: 0.33, feedback: 0.5 }
+    });
+    expect(delay).toMatchObject({ type: 'delay', enabled: true, params: { mix: 0.4, time: 0.33, feedback: 0.5 } });
+    expect(OG.ogGetTrackEffects(project, synth.id)).toHaveLength(1);
+    expect(OG.ogBuildEffectRack(project, synth.id).find(effect => effect.type === 'delay')).toMatchObject({ enabled: true });
+
+    const point = OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.mix', 8, 16, 0.75);
+    expect(point).toMatchObject({ type: 'automationPoint', target: 'effect.delay.mix', value: 0.75 });
+    const lane = OG.ogBuildAutomationLane(project, pattern.id, synth.id, 'effect.delay.mix');
+    expect(lane.points).toHaveLength(1);
+    expect(OG.ogBuildAutomationSnapshot(project, pattern.id, synth.id).pointCount).toBe(1);
+    expect(OG.ogBuildMixerSnapshot(project).channels.find(channel => channel.trackId === synth.id).effectCount).toBe(1);
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('resolves effect and mixer automation into playback plans', () => {
+    const project = OG.ogCreateProject({ bpm: 120 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    OG.ogSetTrackEffect(project, synth.id, 'delay', { params: { mix: 0.1 } });
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'C4', 0, 16, { on: true, velocity: 1 });
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'G4', 8, 16, { on: true, velocity: 1 });
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.mix', 8, 16, 0.8);
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'mixer.gain', 8, 16, 0.5);
+
+    const notes = OS.ogBuildPlaybackPlan(project, { patternId: pattern.id }).filter(item => item.type === 'note');
+    expect(notes).toHaveLength(2);
+    expect(notes[0].effects.find(effect => effect.type === 'delay').params.mix).toBeCloseTo(0.1, 5);
+    expect(notes[1].effects.find(effect => effect.type === 'delay').params.mix).toBeCloseTo(0.8, 5);
+    expect(notes[0].outputGain).toBeCloseTo(0.675, 5);
+    expect(notes[1].outputGain).toBeCloseTo(0.45, 5);
+  });
+
+  it('interpolates linear automation curves and holds stepped curves', () => {
+    const project = OG.ogCreateProject({ bpm: 120 });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.mix', 0, 16, 0.2, { curve: 'linear' });
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.mix', 8, 16, 0.8);
+    expect(OG.ogResolveAutomationValueAtTick(project, pattern.id, synth.id, 'effect.delay.mix', OG.ogTicksPerMeasure(project) / 4, 0)).toBeCloseTo(0.5, 5);
+
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.feedback', 0, 16, 0.2, { curve: 'hold' });
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.feedback', 8, 16, 0.8);
+    expect(OG.ogResolveAutomationValueAtTick(project, pattern.id, synth.id, 'effect.delay.feedback', OG.ogTicksPerMeasure(project) / 4, 0)).toBeCloseTo(0.2, 5);
+
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'E4', 4, 16, { on: true, velocity: 1 });
+    const note = OS.ogBuildPlaybackPlan(project, { patternId: pattern.id }).find(item => item.type === 'note');
+    const delay = note.effects.find(effect => effect.type === 'delay');
+    expect(delay.params.mix).toBeCloseTo(0.5, 5);
+    expect(delay.params.feedback).toBeCloseTo(0.2, 5);
   });
 
   it('builds playback plans from song arrangement sections', () => {

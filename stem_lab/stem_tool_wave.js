@@ -165,8 +165,11 @@ const d = labToolData.wave;
               // would otherwise leak if you leave the tool mid-tone).
               try {
                 var _prevCv = canvasRef._lastCanvas;
-                if (_prevCv && _prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
-                if (_prevCv && _prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
+                if (_prevCv && _prevCv._waveCleanup) _prevCv._waveCleanup();
+                else {
+                  if (_prevCv && _prevCv._waveAnim) { cancelAnimationFrame(_prevCv._waveAnim); _prevCv._waveAnim = null; }
+                  if (_prevCv && _prevCv._wavePointerUp) { window.removeEventListener('mouseup', _prevCv._wavePointerUp); window.removeEventListener('touchend', _prevCv._wavePointerUp); _prevCv._wavePointerUp = null; }
+                }
               } catch (e) {}
               try { if (d && d._audioCtx) { d._audioCtx.close(); d._audioCtx = null; } } catch (e) {}
               return;
@@ -277,10 +280,65 @@ const d = labToolData.wave;
             var cH = canvasEl.height = canvasEl.offsetHeight * 2;
 
             var ctx = canvasEl.getContext('2d');
+            if (!ctx) {
+              canvasEl.removeEventListener('mousedown', onPointerDown);
+              canvasEl.removeEventListener('mousemove', onPointerMove);
+              canvasEl.removeEventListener('touchstart', onPointerDown);
+              canvasEl.removeEventListener('touchmove', onPointerMove);
+              window.removeEventListener('mouseup', onPointerUp);
+              window.removeEventListener('touchend', onPointerUp);
+              canvasEl._wavePointerUp = null;
+              canvasEl._waveInit = false;
+              return;
+            }
 
             var dpr = 2;
 
             var tick = 0;
+            var waveAlive = true;
+            var waveMotionReduced = false;
+            try { waveMotionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
+            function isWaveHidden() {
+              return typeof document !== 'undefined' && !!document.hidden;
+            }
+
+            function cancelWaveFrame() {
+              if (canvasEl._waveAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(canvasEl._waveAnim);
+              canvasEl._waveAnim = null;
+            }
+
+            function scheduleWaveFrame() {
+              if (!waveAlive || canvasEl._waveAnim || isWaveHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              canvasEl._waveAnim = requestAnimationFrame(draw);
+            }
+
+            function cleanupWaveCanvas() {
+              waveAlive = false;
+              cancelWaveFrame();
+              canvasEl.removeEventListener('mousedown', onPointerDown);
+              canvasEl.removeEventListener('mousemove', onPointerMove);
+              canvasEl.removeEventListener('touchstart', onPointerDown);
+              canvasEl.removeEventListener('touchmove', onPointerMove);
+              window.removeEventListener('mouseup', onPointerUp);
+              window.removeEventListener('touchend', onPointerUp);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onWaveVisibilityChange);
+              canvasEl._wavePointerUp = null;
+              canvasEl._waveCleanup = null;
+              canvasEl._waveInit = false;
+              try { if (d && d._audioCtx) { d._audioCtx.close(); d._audioCtx = null; } } catch (e) {}
+            }
+
+            function onWaveVisibilityChange() {
+              if (!waveAlive) return;
+              if (!document.body.contains(canvasEl)) { cleanupWaveCanvas(); return; }
+              if (isWaveHidden()) cancelWaveFrame();
+              else { cancelWaveFrame(); draw(); }
+            }
+
+            canvasEl._waveCleanup = cleanupWaveCanvas;
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onWaveVisibilityChange);
 
 
 
@@ -337,8 +395,11 @@ const d = labToolData.wave;
 
 
             function draw() {
-              if (!document.body.contains(canvasEl)) return;
-              tick++;
+              if (!waveAlive) return;
+              canvasEl._waveAnim = null;
+              if (!document.body.contains(canvasEl)) { cleanupWaveCanvas(); return; }
+              if (isWaveHidden()) { cancelWaveFrame(); return; }
+              tick += waveMotionReduced ? 0.2 : 1;
               var t = tick;
 
               ctx.clearRect(0, 0, cW, cH);
@@ -1466,11 +1527,11 @@ const d = labToolData.wave;
 
               }
 
-              canvasEl._waveAnim = requestAnimationFrame(draw);
+              scheduleWaveFrame();
 
             }
 
-            canvasEl._waveAnim = requestAnimationFrame(draw);
+            scheduleWaveFrame();
 
           };
 
