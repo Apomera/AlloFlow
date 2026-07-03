@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T14:42:32.185Z",
+  "generatedAt": "2026-07-03T15:04:13.318Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 43
+    "monitoredMarkerCount": 44
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 43,
+    "markerPassCount": 44,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17211,
+      "htmlBytes": 17205,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17211
+        "htmlBytes": 17205
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13343,
+      "htmlBytes": 13364,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13343
+        "htmlBytes": 13364
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47691,
+      "htmlBytes": 47689,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47691
+        "htmlBytes": 47689
       }
     },
     {
@@ -1010,6 +1010,22 @@
         "canvases": 1,
         "headings": 2,
         "htmlBytes": 40215
+      }
+    },
+    {
+      "id": "chemBalance",
+      "file": "stem_tool_chembalance.js",
+      "marker": "data-chembalance-command",
+      "label": "Chemistry Lab bench",
+      "ok": true,
+      "htmlBytes": 8754,
+      "issues": [],
+      "metrics": {
+        "buttons": 12,
+        "fields": 1,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 8754
       }
     },
     {

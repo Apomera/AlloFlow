@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T14:42:33.033Z
+Generated: 2026-07-03T15:04:11.819Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-03T14:42:33.033Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 132 |
+| Total findings | 129 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 116 |
+| Tool-level warnings | 113 |
 | Review notices | 16 |
-| Tools with any finding | 65 |
+| Tools with any finding | 64 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -25,10 +25,10 @@ Generated: 2026-07-03T14:42:33.033Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `canvas-focus` | 31 | 23 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
-| warning | `tiny-text` | 18 | 18 | areamodel, birdLab, cell, chemBalance, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `canvas-focus` | 30 | 22 | anatomy, areamodel, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath, musicSynth | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
+| warning | `tiny-text` | 17 | 17 | areamodel, birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 15 | 15 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology | Start each tool with a semantic heading so screen-reader users can orient quickly. |
-| warning | `canvas-name` | 17 | 14 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
+| warning | `canvas-name` | 16 | 13 | anatomy, areamodel, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `inline-contrast` | 32 | 12 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, typingPractice, waterCycle | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 3 | 3 | birdLab, molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 13 | 13 | accessLens, archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
@@ -74,7 +74,7 @@ Generated: 2026-07-03T14:42:33.033Z
 | `cell` Cell Simulator | science | standard | 39 | 3 | 1 | 0 | 2 | 0 | inline-contrast x1, tiny-text x1 |
 | `cellularLab` Cellular Automaton Lab | math | standard | 22 | 1 | 0 | 0 | 4 | 0 | inline-contrast x3, heading x1 |
 | `cephalopodLab` Cephalopod Lab | science | standard | 17 | 0 | 0 | 0 | 1 | 0 | heading x1 |
-| `chemBalance` Chemistry Lab | science | standard | 40 | 2 | 1 | 0 | 3 | 0 | canvas-focus x1, canvas-name x1, tiny-text x1 |
+| `chemBalance` Chemistry Lab | science | standard | 12 | 1 | 1 | 0 | 0 | 0 |  |
 | `circuit` Circuit Builder | science | standard | 43 | 1 | 0 | 0 | 0 | 0 |  |
 | `climateExplorer` Climate Explorer | science | standard | 39 | 0 | 2 | 0 | 2 | 0 | canvas-focus x1, canvas-name x1 |
 | `codingPlayground` codingPlayground | creative | standard | 57 | 2 | 1 | 0 | 1 | 1 | canvas-focus x1, metadata x1 |

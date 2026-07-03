@@ -86,6 +86,7 @@ const EXPECTED_MARKERS = [
   { id: 'probability', file: 'stem_tool_probability.js', marker: 'data-probability-command', label: 'Probability Lab command deck' },
     { id: 'punnett', file: 'stem_tool_punnett.js', marker: 'data-punnett-cross-focus', label: 'Punnett cross focus board' },
   { id: 'circuit', file: 'stem_tool_circuit.js', marker: 'data-circuit-bench', label: 'Circuit electronics bench' },
+  { id: 'chemBalance', file: 'stem_tool_chembalance.js', marker: 'data-chembalance-command', label: 'Chemistry Lab bench' },
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
   { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }
