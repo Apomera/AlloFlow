@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T02:25:49.929Z",
+  "generatedAt": "2026-07-03T03:16:38.473Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 41
+    "monitoredMarkerCount": 42
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 41,
+    "markerPassCount": 42,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
@@ -737,7 +737,7 @@
       "marker": "data-pt-sim-focus",
       "label": "Plate Tectonics sim focus",
       "ok": true,
-      "htmlBytes": 23160,
+      "htmlBytes": 23334,
       "issues": [
         {
           "toolId": "plateTectonics",
@@ -801,7 +801,7 @@
         "fields": 5,
         "canvases": 6,
         "headings": 5,
-        "htmlBytes": 23160
+        "htmlBytes": 23334
       }
     },
     {
@@ -902,7 +902,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46578,
+      "htmlBytes": 46582,
       "issues": [
         {
           "toolId": "throwlab",
@@ -931,7 +931,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46578
+        "htmlBytes": 46582
       }
     },
     {
@@ -1040,6 +1040,22 @@
         "canvases": 0,
         "headings": 3,
         "htmlBytes": 20164
+      }
+    },
+    {
+      "id": "punnett",
+      "file": "stem_tool_punnett.js",
+      "marker": "data-punnett-command",
+      "label": "Punnett genetics command deck",
+      "ok": true,
+      "htmlBytes": 23631,
+      "issues": [],
+      "metrics": {
+        "buttons": 30,
+        "fields": 4,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 23631
       }
     },
     {

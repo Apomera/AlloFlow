@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T02:25:50.626Z",
+  "generatedAt": "2026-07-03T03:16:36.561Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 154,
+    "issueCount": 153,
     "errorCount": 0,
-    "warningCount": 136,
+    "warningCount": 135,
     "noticeCount": 18,
-    "toolsWithIssues": 69,
+    "toolsWithIssues": 68,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 62,
+    "toolsWithWarnings": 61,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 72,
+        "warningCount": 71,
         "noticeCount": 6
       },
       "technology": {
@@ -193,8 +193,8 @@
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 21,
-      "toolCount": 21,
+      "count": 20,
+      "toolCount": 20,
       "exampleTools": [
         "areamodel",
         "birdLab",
@@ -1865,7 +1865,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16006,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2181,7 +2181,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22808,
+      "renderedBytes": 22821,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2630,7 +2630,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1578,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3188,7 +3188,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13326,
+      "renderedBytes": 13350,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3551,7 +3551,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
-      "renderedBytes": 23160,
+      "renderedBytes": 23334,
       "standardShell": true,
       "issueCount": 8,
       "errorCount": 0,
@@ -3653,7 +3653,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17331,
+      "renderedBytes": 17337,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3799,36 +3799,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Genetics lab: crosses, pedigrees, population genetics, DNA translation",
-      "renderedBytes": 16506,
+      "renderedBytes": 23631,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 24,
+        "buttons": 30,
         "roleButtons": 0,
         "fields": 4,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 5,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "punnett",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 5,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "raptorHunt",
@@ -4034,7 +4023,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Applied K-12 behavior practice — what school psychs and educators actually do with operant-conditioning science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (the slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab (which teaches the science) and Disability Voices in SEL Hub (which centers the people the field has been done to).",
-      "renderedBytes": 21336,
+      "renderedBytes": 21459,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4393,7 +4382,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46579,
+      "renderedBytes": 46581,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

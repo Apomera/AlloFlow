@@ -1706,7 +1706,91 @@ window.StemLab = window.StemLab || {
           // ════════════════════════════════════════
           // RENDER
           // ════════════════════════════════════════
-          return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
+          var currentSub = SUBTOOLS.filter(function(st) { return st.id === subtool; })[0] || SUBTOOLS[0];
+          var completedQuestCount = PUNNETT_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
+          var earnedBadgeCount = Object.keys(badges).length;
+          var readyStats = [
+            { label: 'Crosses', value: String(crossCount), hint: 'Punnett runs' },
+            { label: 'Presets', value: String(presetsUsed), hint: 'examples tried' },
+            { label: 'Quest', value: completedQuestCount + '/' + PUNNETT_CHALLENGES.length, hint: 'challenge path' },
+            { label: 'Badges', value: earnedBadgeCount + '/' + BADGES.length, hint: 'mastery trail' }
+          ];
+          var routeCards = [
+            { id: 'cross', title: 'Predict Traits', icon: '\uD83E\uDDEC', note: 'Build a cross and compare genotype to phenotype ratios.', color: '#7c3aed' },
+            { id: 'pedigree', title: 'Trace Families', icon: '\uD83D\uDC6A', note: 'Read inheritance patterns across generations.', color: '#0891b2' },
+            { id: 'population', title: 'Model Populations', icon: '\uD83D\uDCCA', note: 'Watch allele frequencies change over time.', color: '#15803d' },
+            { id: 'dna2protein', title: 'Translate DNA', icon: '\uD83E\uDDEA', note: 'Connect DNA letters to codons and proteins.', color: '#b45309' }
+          ];
+          var goSubtool = function(id) {
+            upd('subtool', id);
+            var target = SUBTOOLS.filter(function(st) { return st.id === id; })[0];
+            if (target && announceToSR) announceToSR('Switched to ' + target.label);
+          };
+          var renderGeneticsCommand = function() {
+            return h('section', {
+              'data-punnett-command': 'true',
+              'aria-labelledby': 'punnett-command-title',
+              className: 'mb-4',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, padding: 16, borderRadius: 14, border: '1px solid #c7d2fe', background: 'linear-gradient(135deg, #eef2ff 0%, #ffffff 52%, #ecfdf5 100%)', boxShadow: '0 12px 28px rgba(79,70,229,0.08)' }
+            },
+              h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 } },
+                h('div', { style: { color: '#4338ca', fontSize: 11, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' } }, 'Genetics command deck'),
+                h('h2', { id: 'punnett-command-title', style: { margin: 0, color: '#111827', fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, 'Predict inheritance, then test the pattern'),
+                h('p', { style: { margin: 0, color: '#334155', fontSize: 13, lineHeight: 1.55, maxWidth: '62ch' } }, 'Choose a cross, compare the ratios, then extend the same genetics idea into pedigrees, populations, and DNA translation.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(104px, 1fr))', gap: 8 } },
+                  readyStats.map(function(stat) {
+                    return h('div', { key: stat.label, style: { padding: '9px 10px', borderRadius: 10, background: 'rgba(255,255,255,0.82)', border: '1px solid #dbeafe' } },
+                      h('div', { style: { color: '#4338ca', fontSize: 17, fontWeight: 900 } }, stat.value),
+                      h('div', { style: { marginTop: 2, color: '#475569', fontSize: 11, fontWeight: 800 } }, stat.label),
+                      h('div', { style: { marginTop: 1, color: '#64748b', fontSize: 10 } }, stat.hint)
+                    );
+                  })
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { onClick: function() { goSubtool('cross'); }, className: 'px-4 py-2 rounded-lg text-sm font-bold transition-all', style: { background: '#4338ca', color: '#fff', border: '1px solid #3730a3', boxShadow: '0 8px 18px rgba(67,56,202,0.22)' } }, 'Start a Cross'),
+                  h('button', { onClick: function() { goSubtool('learn'); }, className: 'px-4 py-2 rounded-lg text-sm font-bold transition-all', style: { background: 'rgba(255,255,255,0.86)', color: '#0f766e', border: '1px solid #99f6e4' } }, 'Review Concepts')
+                )
+              ),
+              h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
+                h('div', { style: { padding: 12, borderRadius: 12, background: 'rgba(255,255,255,0.82)', border: '1px solid #dbeafe' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 27 }, 'aria-hidden': 'true' }, currentSub.icon),
+                    h('div', null,
+                      h('div', { style: { color: '#4338ca', fontSize: 12, fontWeight: 900 } }, currentSub.label),
+                      h('div', { style: { color: '#475569', fontSize: 11, lineHeight: 1.35 } }, currentSub.desc)
+                    )
+                  ),
+                  h('svg', { viewBox: '0 0 330 160', width: '100%', height: 'auto', role: 'img', 'aria-label': 'Punnett square visual showing parent alleles combining into offspring genotypes', style: { display: 'block', maxHeight: 180 } },
+                    h('rect', { x: 0, y: 0, width: 330, height: 160, rx: 18, fill: '#eff6ff' }),
+                    h('path', { d: 'M22 32 C78 6, 138 28, 166 52 C198 22, 258 14, 306 42', fill: 'none', stroke: '#14b8a6', strokeWidth: 5, strokeLinecap: 'round' }),
+                    [['B', 'b'], ['B', 'BB', 'Bb'], ['b', 'Bb', 'bb']].map(function(row, ri) {
+                      return row.map(function(cell, ci) {
+                        var x = 82 + ci * 58;
+                        var y = 42 + ri * 36;
+                        var header = ri === 0 || ci === 0;
+                        return h('g', { key: ri + '-' + ci },
+                          h('rect', { x: x, y: y, width: 48, height: 28, rx: 8, fill: header ? '#c7d2fe' : '#ffffff', stroke: header ? '#6366f1' : '#a7f3d0', strokeWidth: 2 }),
+                          h('text', { x: x + 24, y: y + 19, textAnchor: 'middle', fill: header ? '#312e81' : '#064e3b', fontSize: 13, fontWeight: 900 }, cell)
+                        );
+                      });
+                    }),
+                    h('text', { x: 28, y: 135, fill: '#4338ca', fontSize: 13, fontWeight: 900 }, 'Alleles combine into probabilities')
+                  )
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: 8 } },
+                  routeCards.map(function(route) {
+                    var active = subtool === route.id;
+                    return h('button', { key: route.id, onClick: function() { goSubtool(route.id); }, className: 'text-left rounded-lg transition-all', style: { padding: 10, border: '1px solid ' + (active ? route.color : '#e2e8f0'), background: active ? '#f5f3ff' : 'rgba(255,255,255,0.78)', color: '#1e293b' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 900, color: active ? route.color : '#334155' } }, route.icon + ' ' + route.title),
+                      h('div', { style: { marginTop: 3, color: '#64748b', fontSize: 10, lineHeight: 1.35 } }, route.note)
+                    );
+                  })
+                )
+              )
+            );
+          };
+
+          return h('div', { className: 'max-w-4xl mx-auto animate-in fade-in duration-200' },
 
             // ── Header ──
             h('div', { className: 'flex items-center gap-3 mb-3' },
@@ -1729,6 +1813,8 @@ window.StemLab = window.StemLab || {
             ),
 
             // ── Sub-tool Navigation ──
+            renderGeneticsCommand(),
+
             h('div', { className: 'flex flex-wrap gap-1 mb-4' },
               SUBTOOLS.map(function(st) {
                 var isActive = subtool === st.id;
@@ -1762,7 +1848,7 @@ window.StemLab = window.StemLab || {
                   },
                     h('span', { className: 'text-lg mb-1' }, chal.icon),
                     h('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    h('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
+                    h('span', { className: 'text-[10px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-500') },
                       isDone ? 'Done' : 'Locked'
                     )
                   );

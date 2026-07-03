@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T02:25:50.626Z
+Generated: 2026-07-03T03:16:36.561Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-03T02:25:50.626Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 154 |
+| Total findings | 153 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 136 |
+| Tool-level warnings | 135 |
 | Review notices | 18 |
-| Tools with any finding | 69 |
+| Tools with any finding | 68 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -26,7 +26,7 @@ Generated: 2026-07-03T02:25:50.626Z
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
-| warning | `tiny-text` | 21 | 21 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `tiny-text` | 20 | 20 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `heading` | 15 | 15 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 48 | 14 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, skatelab, throwlab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
@@ -134,7 +134,7 @@ Generated: 2026-07-03T02:25:50.626Z
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 1 | 0 | svg-name x1 |
 | `probability` Probability Lab | math | standard | 37 | 5 | 0 | 0 | 0 | 0 |  |
 | `protractor` Angle Explorer | math | standard | 69 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
-| `punnett` Punnett Square Lab | science | standard | 24 | 4 | 0 | 0 | 1 | 0 | tiny-text x1 |
+| `punnett` Punnett Square Lab | science | standard | 30 | 4 | 0 | 0 | 0 | 0 |  |
 | `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 48 | 1 | 0 | 0 | 0 | 0 |  |
 | `renewablesLab` Renewables Lab | physics-chemistry | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 64 | 3 | 0 | 0 | 0 | 0 |  |
