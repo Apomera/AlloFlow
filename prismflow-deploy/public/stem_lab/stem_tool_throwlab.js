@@ -62,13 +62,22 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-throwlab-polish-css';
     st.textContent = [
-      '.throwlab-play-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,320px);gap:16px;align-items:start}',
+      '.throwlab-play-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,320px);gap:16px;align-items:start}',
       '.throwlab-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);gap:12px}',
       '.throwlab-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.throwlab-launch-arc{position:relative;min-height:118px;margin-top:12px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.16),rgba(22,163,74,.18));border:1px solid rgba(125,211,252,.24)}',
+      '.throwlab-launch-arc:before{content:"";position:absolute;left:7%;right:7%;bottom:24px;height:2px;background:rgba(226,232,240,.45)}',
+      '.throwlab-launch-arc:after{content:"";position:absolute;left:13%;right:18%;bottom:28px;height:58px;border-top:3px solid rgba(251,191,36,.9);border-radius:65% 65% 0 0;filter:drop-shadow(0 0 10px rgba(251,191,36,.35))}',
+      '.throwlab-arc-point{position:absolute;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:18px;background:rgba(15,23,42,.78);border:1px solid rgba(226,232,240,.18);color:#e0f2fe;font-size:11px;font-weight:800}',
+      '.throwlab-plan-list{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}',
+      '.throwlab-plan-chip{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:10px;background:rgba(15,23,42,.52);border:1px solid rgba(148,163,184,.20);color:#dbeafe;font-size:11px;line-height:1.35}',
+      '.throwlab-preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}',
+      '.throwlab-result-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}',
       '.throwlab-sim-shell{position:relative;border-radius:16px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.98),#08111f);border:1px solid rgba(251,191,36,.32);box-shadow:0 18px 40px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.08)}',
       '.throwlab-sim-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
       '.throwlab-control-card{background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(30,41,59,.94));border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:12px;box-shadow:0 12px 26px rgba(15,23,42,.22)}',
-      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid{grid-template-columns:1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}}'
+      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}}',
+      '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -3078,7 +3087,7 @@ window.StemLab = window.StemLab || {
       }
       React.useEffect(function() {
         var canvas = canvasRef.current; if (!canvas) return;
-        _tlSetupHiDPI(canvas, 720, 360);
+        _tlSetupHiDPI(canvas, 640, 360);
         var gfx = canvas.getContext('2d');
         gfx.setTransform(canvas._tlDpr, 0, 0, canvas._tlDpr, 0, 0);
         gfx.imageSmoothingEnabled = true;
@@ -4238,6 +4247,29 @@ window.StemLab = window.StemLab || {
         if (guideText && guideText.length > 150) guideText = guideText.slice(0, 147) + '...';
         var progressWidth = throws ? Math.max(8, successPct) : 10;
         var metricBg = 'rgba(15,23,42,0.58)';
+        var targetText = isPitching ? __alloT('stem.throwlab.zone_target', 'Strike zone')
+          : isFreeKick ? __alloT('stem.throwlab.goal_target', 'Goal mouth')
+          : isFieldGoal ? __alloT('stem.throwlab.uprights_target', 'Uprights')
+          : isBowling ? __alloT('stem.throwlab.stumps_target', 'Stumps')
+          : isGolf ? __alloT('stem.throwlab.green_target', 'Green')
+          : isVolleyball ? __alloT('stem.throwlab.deep_corner_target', 'Deep court')
+          : __alloT('stem.throwlab.hoop_target', 'Hoop');
+        var leverText = isPitching ? __alloT('stem.throwlab.lever_spin_axis', 'Spin axis changes break')
+          : isFreeKick ? __alloT('stem.throwlab.lever_spin_curl', 'Spin creates curl')
+          : isFieldGoal ? __alloT('stem.throwlab.lever_angle_power', 'Angle plus power clears height')
+          : isBowling ? __alloT('stem.throwlab.lever_length_line', 'Line and bounce length decide wickets')
+          : isGolf ? __alloT('stem.throwlab.lever_loft_backspin', 'Loft and backspin hold carry')
+          : isVolleyball ? __alloT('stem.throwlab.lever_speed_topspin', 'Speed plus topspin controls dive')
+          : __alloT('stem.throwlab.lever_arc_touch', 'Arc and touch decide the shot');
+        function planChip(icon, label, detail) {
+          return h('div', { className: 'throwlab-plan-chip' },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 15, lineHeight: 1 } }, icon),
+            h('span', null,
+              h('strong', { style: { display: 'block', color: '#fef3c7', fontSize: 11 } }, label),
+              h('span', { style: { color: '#cbd5e1' } }, detail)
+            )
+          );
+        }
         function metric(label, value, detail, color) {
           return h('div', {
             style: {
@@ -4272,7 +4304,7 @@ window.StemLab = window.StemLab || {
               h('span', {
                 style: {
                   padding: '4px 9px',
-                  borderRadius: 999,
+                  borderRadius: 20,
                   background: 'rgba(251,191,36,0.16)',
                   color: '#fde68a',
                   border: '1px solid rgba(251,191,36,0.34)',
@@ -4286,7 +4318,19 @@ window.StemLab = window.StemLab || {
               throws ? madeLabel + ': ' + made + ' of ' + throws : __alloT('stem.throwlab.first_launch_ready', 'First launch ready')),
             h('div', { style: { marginTop: 5, color: '#dbeafe', fontSize: 12, lineHeight: 1.45 } }, guideText),
             h('div', {
-              style: { marginTop: 12, height: 9, borderRadius: 999, overflow: 'hidden', background: 'rgba(15,23,42,0.72)' },
+              className: 'throwlab-launch-arc',
+              role: 'img',
+              'aria-label': __alloT('stem.throwlab.training_field_arc_summary', 'Training field arc summary')
+            },
+              h('span', { className: 'throwlab-arc-point', style: { left: '7%', bottom: 12 } },
+                __alloT('stem.throwlab.release', 'Release'), ' ', d.releaseHeight.toFixed(2), ' m'),
+              h('span', { className: 'throwlab-arc-point', style: { left: '38%', top: 14 } },
+                d.aimDegV.toFixed(1), '° / ', d.spinRpm, ' rpm'),
+              h('span', { className: 'throwlab-arc-point', style: { right: '7%', bottom: 12 } },
+                targetText)
+            ),
+            h('div', {
+              style: { marginTop: 12, height: 9, borderRadius: 20, overflow: 'hidden', background: 'rgba(15,23,42,0.72)' },
               'aria-label': __alloT('stem.throwlab.session_success_progress', 'Session success progress')
             },
               h('div', {
@@ -4304,6 +4348,11 @@ window.StemLab = window.StemLab || {
               metric(__alloT('stem.throwlab.speed', 'Speed'), d.speedMph + ' mph', __alloT('stem.throwlab.launch_power', 'Launch power'), '#fbbf24'),
               metric(__alloT('stem.throwlab.success_rate', 'Success rate'), successPct + '%', madeLabel + ' / ' + __alloT('stem.throwlab.throws', 'throws'), successPct >= 50 ? '#22c55e' : '#38bdf8'),
               metric(__alloT('stem.throwlab.gravity', 'Gravity'), gp.label, windText, '#a78bfa')
+            ),
+            h('div', { className: 'throwlab-plan-list', 'aria-label': __alloT('stem.throwlab.current_launch_plan', 'Current launch plan') },
+              planChip('1', __alloT('stem.throwlab.pick_the_rep', 'Pick the rep'), activePreset.label || modeMeta.label),
+              planChip('2', __alloT('stem.throwlab.watch_the_arc', 'Watch the arc'), leverText),
+              planChip('3', __alloT('stem.throwlab.change_one_variable', 'Change one variable'), __alloT('stem.throwlab.compare_the_next_throw', 'Compare the next throw'))
             ),
             h('button', {
               onClick: throwPitch,
@@ -4327,7 +4376,7 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: '68rem', margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the simulation runs (previously hover-only on the chip).
@@ -4498,7 +4547,7 @@ window.StemLab = window.StemLab || {
               'aria-selected': sel,
               'data-tl-focusable': 'true',
               style: {
-                padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                padding: '8px 14px', borderRadius: 22, cursor: 'pointer',
                 border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                 background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
                 color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontWeight: 600
@@ -4719,12 +4768,12 @@ window.StemLab = window.StemLab || {
                 'aria-label': b.label + (earned ? ' (earned)' : ' (locked)') + ': ' + b.hint,
                 title: b.hint,
                 style: {
-                  padding: '5px 10px', borderRadius: 999,
-                  border: '1px solid ' + (earned ? '#fbbf24' : '#334155'),
-                  background: earned ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                  color: earned ? '#fbbf24' : '#475569',
+                  padding: '5px 10px', borderRadius: 20,
+                  border: '1px solid ' + (earned ? '#fbbf24' : '#475569'),
+                  background: earned ? 'rgba(251,191,36,0.18)' : '#172033',
+                  color: earned ? '#fbbf24' : '#cbd5e1',
                   fontSize: 11, fontWeight: earned ? 700 : 500,
-                  opacity: earned ? 1 : 0.6
+                  opacity: earned ? 1 : 0.82
                 }
               }, b.emoji + ' ' + b.label);
             })
@@ -4923,7 +4972,7 @@ window.StemLab = window.StemLab || {
                 },
                 'data-tl-focusable': 'true',
                 style: {
-                  padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
+                  padding: '8px 14px', borderRadius: 22, cursor: 'pointer',
                   border: '1px solid #10b981', background: 'rgba(16,185,129,0.18)',
                   color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, fontWeight: 600
                 }
@@ -4969,7 +5018,7 @@ window.StemLab = window.StemLab || {
         })(),
 
         // Two-column layout
-        h('div', { className: 'throwlab-play-grid', 'data-throwlab-play-grid': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
+        h('div', { className: 'throwlab-play-grid', 'data-throwlab-play-grid': 'true' },
 
           // LEFT: side-view canvas (wrapped for fullscreen) + result panel
           h('div', null,
@@ -4980,7 +5029,7 @@ window.StemLab = window.StemLab || {
                 h('span', {
                   style: {
                     padding: '4px 8px',
-                    borderRadius: 999,
+                    borderRadius: 18,
                     background: 'rgba(14,165,233,0.14)',
                     color: '#bae6fd',
                     border: '1px solid rgba(56,189,248,0.26)'
@@ -4989,7 +5038,7 @@ window.StemLab = window.StemLab || {
                 h('span', {
                   style: {
                     padding: '4px 8px',
-                    borderRadius: 999,
+                    borderRadius: 18,
                     background: 'rgba(251,191,36,0.14)',
                     color: '#fde68a',
                     border: '1px solid rgba(251,191,36,0.28)'
@@ -4999,7 +5048,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { id: 'throwlab-fs-wrap', className: 'throwlab-sim-shell', 'data-throwlab-sim-surface': 'true', style: { position: 'relative' } },
             h('canvas', {
-              ref: canvasRef, width: 720, height: 360,
+              ref: canvasRef, width: 640, height: 360,
               role: 'img',
               tabIndex: 0,
               'data-tl-focusable': 'true',
@@ -5049,7 +5098,7 @@ window.StemLab = window.StemLab || {
               lr ? (
                 h('div', null,
                   h('div', { style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 } }, outcomeLabel(lr.location)),
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 } },
+                  h('div', { className: 'throwlab-result-grid', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, __alloT('stem.throwlab.speed', 'Speed')), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
                     h('div', null,
                       h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
@@ -5146,7 +5195,7 @@ window.StemLab = window.StemLab || {
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
                 isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
+              h('div', { className: 'throwlab-preset-grid' },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
                           : isFreeKick ? d.kickType === pt.id
@@ -5311,7 +5360,7 @@ window.StemLab = window.StemLab || {
                     'aria-pressed': sel,
                     'data-tl-focusable': 'true',
                     style: {
-                      padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
+                      padding: '4px 9px', borderRadius: 18, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
                       background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
                       color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
@@ -5361,7 +5410,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('div', { className: 'text-[10px] text-slate-700 mt-1' }, sm.desc),
                   React.createElement('div', { className: 'text-[10px] text-slate-600 font-mono mt-1' }, 'Range ≈ ' + range.toFixed(1) + ' m')
                 ),
-                React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
+                React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                   [{ k: 'angle', l: 'Angle (°)', mn: 10, mx: 80, st: 1 },
                    { k: 'velocity', l: 'Velocity (m/s)', mn: 5, mx: 50, st: 1 },
                    { k: 'spin', l: 'Spin (rpm)', mn: -200, mx: 200, st: 5 }].map(function(s) {
@@ -5373,13 +5422,13 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.angle, v: iq.velocity, s: iq.spin, r: range.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-700 text-[10px] font-bold text-slate-200 border border-slate-600' }, __alloT('stem.throwlab.log', '📋 Log')),
-                  React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-transparent text-[10px] font-semibold text-slate-400 border border-slate-600' }, __alloT('stem.throwlab.reset', '↺ Reset'))
+                  React.createElement('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.angle, v: iq.velocity, s: iq.spin, r: range.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-3 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-200 border border-slate-600' }, __alloT('stem.throwlab.log', '📋 Log')),
+                  React.createElement('button', { onClick: function() { setIQ({ angle: 45, velocity: 30, spin: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-3 py-1 rounded bg-transparent text-[11px] font-semibold text-slate-300 border border-slate-600' }, __alloT('stem.throwlab.reset', '↺ Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.throwlab.hypothesis_why_is_45_special_what_abou', 'Hypothesis: Why is 45° special? What about with spin?'),
                   className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-slate-600 rounded p-1 font-mono', rows: 2 }),
-                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-700/30 text-[10px] font-bold text-amber-300 border border-amber-700' }, __alloT('stem.throwlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[10px] text-slate-200' },
+                !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-3 py-1 rounded bg-amber-700/30 text-[11px] font-bold text-amber-300 border border-amber-700' }, __alloT('stem.throwlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-slate-200' },
                   React.createElement('ul', { className: 'list-disc pl-4 space-y-0.5' },
                     React.createElement('li', null, __alloT('stem.throwlab.real_quarterbacks_throw_at_lower_angle', 'Real quarterbacks throw at lower angles. Why?')),
                     React.createElement('li', null, __alloT('stem.throwlab.how_does_spin_magnus_effect_alter_traj', 'How does spin (Magnus effect) alter trajectory?')))),
@@ -5388,7 +5437,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.throwlab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.throwlab.explain_throw_trajectory_physics', 'Explain throw trajectory physics.'),
                   className: 'w-full text-[11px] bg-slate-900 text-slate-100 border border-emerald-700 rounded p-1 font-mono mt-1', rows: 3 }),
-                React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
+                React.createElement('div', { className: 'text-[10px] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
               );
             })(),
             // ── Hot Hand + Hype HUD (engagement layer) ──
@@ -5563,7 +5612,7 @@ window.StemLab = window.StemLab || {
                     'data-tl-focusable': 'true',
                     title: p.prepend,
                     style: {
-                      padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
+                      padding: '4px 9px', borderRadius: 18, cursor: 'pointer',
                       border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
                       background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
                       color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: sel ? 700 : 500

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T03:53:39.883Z",
+  "generatedAt": "2026-07-03T05:39:31.076Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -9,10 +9,10 @@
     "loadErrorCount": 0,
     "markerPassCount": 43,
     "markerFailCount": 0,
-    "monitoredIssueCount": 37,
+    "monitoredIssueCount": 36,
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 26,
-    "monitoredNoticeCount": 11,
+    "monitoredNoticeCount": 10,
     "syncDriftCount": 0,
     "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
@@ -314,14 +314,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 20393,
+      "htmlBytes": 20655,
       "issues": [],
       "metrics": {
-        "buttons": 38,
+        "buttons": 39,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 20393
+        "htmlBytes": 20655
       }
     },
     {
@@ -510,14 +510,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25574,
+      "htmlBytes": 25543,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25574
+        "htmlBytes": 25543
       }
     },
     {
@@ -632,7 +632,7 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 141328,
+      "htmlBytes": 142539,
       "issues": [
         {
           "toolId": "birdLab",
@@ -657,7 +657,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 141328
+        "htmlBytes": 142539
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17203,
+      "htmlBytes": 17212,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17203
+        "htmlBytes": 17212
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13365,
+      "htmlBytes": 13327,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13365
+        "htmlBytes": 13327
       }
     },
     {
@@ -902,36 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46579,
-      "issues": [
-        {
-          "toolId": "throwlab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 29,
-          "examples": [
-            {
-              "selector": "div > div"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(1)"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(2)"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(3)"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 47685,
+      "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46579
+        "htmlBytes": 47685
       }
     },
     {
@@ -976,7 +954,7 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 68804,
+      "htmlBytes": 68774,
       "issues": [
         {
           "toolId": "skatelab",
@@ -1023,7 +1001,7 @@
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 68804
+        "htmlBytes": 68774
       }
     },
     {
@@ -1175,8 +1153,8 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 11,
-      "toolCount": 11,
+      "count": 10,
+      "toolCount": 10,
       "exampleTools": [
         "opticsLab",
         "renewablesLab",
@@ -1186,7 +1164,6 @@
         "birdLab",
         "playlab",
         "bikeLab",
-        "throwlab",
         "echolocation",
         "skatelab"
       ]

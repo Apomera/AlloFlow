@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T03:53:39.883Z
+Generated: 2026-07-03T05:39:31.076Z
 
 ## Scope
 
@@ -15,7 +15,7 @@ Generated: 2026-07-03T03:53:39.883Z
 | Load errors | 0 |
 | Marker passes | 43 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 37 |
+| Monitored first-screen findings | 36 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
 | Any source/public/build drift | 0 |
@@ -76,7 +76,7 @@ Generated: 2026-07-03T03:53:39.883Z
 | warning | `canvas-focus` | 14 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `musicSynth`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
 | warning | `canvas-name` | 10 | `epidemicSim`, `climateExplorer`, `musicSynth`, `anatomy`, `waterCycle`, `plateTectonics`, `skatelab` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
-| notice | `horizontal-overflow-risk` | 11 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `throwlab`, `echolocation`, `skatelab` |
+| notice | `horizontal-overflow-risk` | 10 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `skatelab` |
 
 ## Sync Drift
 

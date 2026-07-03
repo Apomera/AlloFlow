@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T03:53:54.999Z",
+  "generatedAt": "2026-07-03T05:39:44.686Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 152,
+    "issueCount": 136,
     "errorCount": 0,
-    "warningCount": 134,
-    "noticeCount": 18,
-    "toolsWithIssues": 67,
+    "warningCount": 119,
+    "noticeCount": 17,
+    "toolsWithIssues": 66,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 60,
+    "toolsWithWarnings": 59,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -31,7 +31,7 @@
       "general": {
         "toolCount": 5,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 3,
         "noticeCount": 6
       },
       "math": {
@@ -49,8 +49,8 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 70,
-        "noticeCount": 6
+        "warningCount": 54,
+        "noticeCount": 5
       },
       "technology": {
         "toolCount": 2,
@@ -193,8 +193,8 @@
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 19,
-      "toolCount": 19,
+      "count": 18,
+      "toolCount": 18,
       "exampleTools": [
         "areamodel",
         "birdLab",
@@ -256,8 +256,8 @@
     {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 48,
-      "toolCount": 14,
+      "count": 33,
+      "toolCount": 13,
       "exampleTools": [
         "algebraCAS",
         "appLab",
@@ -270,16 +270,17 @@
         "kitchenLab",
         "llmLiteracy",
         "skatelab",
-        "throwlab"
+        "typingPractice"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
       "code": "svg-name",
       "severity": "warning",
-      "count": 2,
-      "toolCount": 2,
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
+        "birdLab",
         "molecule",
         "printingPress"
       ],
@@ -309,14 +310,13 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 5,
-      "toolCount": 5,
+      "count": 4,
+      "toolCount": 4,
       "exampleTools": [
         "birdLab",
         "plateTectonics",
         "playlab",
-        "skatelab",
-        "throwlab"
+        "skatelab"
       ],
       "recommendation": "Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow."
     }
@@ -1084,18 +1084,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 141328,
+      "renderedBytes": 142539,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 4,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 2,
       "noticeCount": 2,
       "metrics": {
         "buttons": 127,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
         "headings": 127,
         "links": 0,
@@ -1103,6 +1103,14 @@
         "fixedWidthRiskCount": 2
       },
       "issues": [
+        {
+          "toolId": "birdLab",
+          "severity": "warning",
+          "code": "svg-name",
+          "message": "SVG is neither aria-hidden nor named.",
+          "index": 1,
+          "selector": "div.birdlab-shell.p-6 > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
+        },
         {
           "toolId": "birdLab",
           "severity": "warning",
@@ -1246,14 +1254,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 20393,
+      "renderedBytes": 20655,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 38,
+        "buttons": 39,
         "roleButtons": 0,
         "fields": 3,
         "canvases": 1,
@@ -1854,7 +1862,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16006,
+      "renderedBytes": 16015,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2170,7 +2178,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22797,
+      "renderedBytes": 22800,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2619,7 +2627,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1598,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3177,7 +3185,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13326,
+      "renderedBytes": 13350,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3642,7 +3650,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17331,
+      "renderedBytes": 17338,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3816,7 +3824,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25574,
+      "renderedBytes": 25543,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4120,7 +4128,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 68804,
+      "renderedBytes": 68774,
       "standardShell": true,
       "issueCount": 4,
       "errorCount": 0,
@@ -4371,12 +4379,12 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46576,
+      "renderedBytes": 47691,
       "standardShell": true,
-      "issueCount": 17,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 16,
-      "noticeCount": 1,
+      "warningCount": 0,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 53,
         "roleButtons": 0,
@@ -4386,214 +4394,10 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 1,
-        "fixedWidthRiskCount": 1
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 77,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(1)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🌀 Beckham Badge"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 78,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(2)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🏏 Howzat"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 79,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(3)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "💰 Money"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 80,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(4)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🌠 Hail Mary Hero"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 81,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(5)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "⚡ Cutter"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 82,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(6)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🔥 Fastball Heat"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 83,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(7)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🦋 Knuckle King"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 84,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(8)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "⛳ Birdie Threat"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 85,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(9)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🏐 Ace Server"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 86,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(10)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🎯 Streak Hunter"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 87,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(11)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "👑 Legendary"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 88,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(12)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🌍 Globetrotter"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 89,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(13)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🚀 Cosmonaut"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 90,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(14)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "🌪️ Storm Rider"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 91,
-          "selector": "div > div > details:nth-of-type(2) > div > span:nth-of-type(15)",
-          "ratio": 1.93,
-          "color": "#475569",
-          "background": "#1e293b",
-          "text": "📚 Curator"
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
-        {
-          "toolId": "throwlab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div#throwlab-fs-wrap > canvas",
-              "width": "720"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "titrationLab",
