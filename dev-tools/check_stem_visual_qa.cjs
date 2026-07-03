@@ -88,6 +88,7 @@ const EXPECTED_MARKERS = [
   { id: 'circuit', file: 'stem_tool_circuit.js', marker: 'data-circuit-bench', label: 'Circuit electronics bench' },
   { id: 'chemBalance', file: 'stem_tool_chembalance.js', marker: 'data-chembalance-command', label: 'Chemistry Lab bench' },
   { id: 'areamodel', file: 'stem_tool_areamodel.js', marker: 'data-areamodel-focus', label: 'Area Model workshop' },
+  { id: 'numberline', file: 'stem_tool_numberline.js', marker: 'data-numberline-focus', label: 'Number Line workspace' },
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
   { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }
@@ -145,6 +146,11 @@ const STARTER_DATA = {
   echolocation: { echolocation: { tab: 'sonar', playableSpecies: 'insectivore' } },
   probability: { probability: { mode: 'coin' } },
   punnett: { punnett: { subtool: 'cross' } },
+  numberline: { _numberline: { tab: 'explore', range: { min: -10, max: 10 }, markers: [
+    { value: -5, label: '-5', color: '#f97316' },
+    { value: 0, label: '0', color: '#facc15' },
+    { value: 6, label: '6', color: '#22c55e' }
+  ], score: { correct: 3, total: 5 } } },
   circuit: { _circuit: { mode: 'series', voltage: 9, components: [
     { id: 101, type: 'resistor', value: 100 },
     { id: 102, type: 'led', value: 40, ledColor: '#ef4444' }

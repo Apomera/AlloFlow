@@ -168,6 +168,7 @@ window.StemLab = window.StemLab || {
 
           // Global mute (affects ALL sounds across all tabs)
           var muted = _n.muted || false;
+          var showIntegerLab = _n.showIntegerLab || false;
 
           // Recent-positions trail (most-recent prev values from arithmetic; only on fracdec)
           var fdTrail = Array.isArray(_n.fdTrail) ? _n.fdTrail : [];
@@ -619,7 +620,7 @@ window.StemLab = window.StemLab || {
           var renderExplore = function() {
             return h('div', { className: 'space-y-4 allo-nl-bg-explore' },
               // Range controls
-              h('div', { className: 'grid grid-cols-2 gap-3' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
                   h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.min_value', 'Min Value')),
                   h('input', {
@@ -654,12 +655,12 @@ window.StemLab = window.StemLab || {
                 renderNumberLine(range, null, null)
               ),
               // Add marker
-              h('div', { className: 'flex gap-2 items-center' },
+              h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: t('stem.numberline.value', 'Value'),
                   'aria-label': t('stem.numberline.marker_value', 'Marker value'),
-                  className: 'w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
+                  className: 'w-full sm:w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', {
                   type: 'text', id: 'nlMarkerLabel', placeholder: t('stem.numberline.label_optional', 'Label (optional)'),
@@ -699,8 +700,8 @@ window.StemLab = window.StemLab || {
               ),
               // Challenge section
               h('div', { className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
-                h('div', { className: 'flex items-center justify-between' },
-                  h('div', { className: 'flex items-center gap-2' },
+                h('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-2' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('h4', { className: 'text-sm font-bold text-blue-800' }, t('stem.numberline.number_line_challenge', '\uD83C\uDFAF Number Line Challenge')),
                     h('div', { className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
@@ -725,7 +726,7 @@ window.StemLab = window.StemLab || {
                         streak > 0 && h('span', { className: 'text-[11px] font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak)
                       ),
                       h('p', { className: 'text-sm font-bold text-blue-800' }, challenge.question),
-                      h('div', { className: 'flex gap-2 items-center' },
+                      h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
                         challenge.type !== 'place' ? h('input', {
                           type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1',
                           onChange: function(e) { upd({ answer: e.target.value }); },
@@ -763,7 +764,7 @@ window.StemLab = window.StemLab || {
 
             return h('div', { className: 'space-y-4 allo-nl-bg-skipcount' },
               // Controls
-              h('div', { className: 'grid grid-cols-3 gap-3' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
                   h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.skip_by', 'Skip By')),
                   h('input', {
@@ -1380,7 +1381,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
 
-              h('div', { className: 'grid grid-cols-3 gap-2' },
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
                 h('div', { className: 'bg-cyan-50 rounded-xl p-3 border-2 border-cyan-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
                   h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1' }, t('stem.numberline.fraction', 'Fraction')),
                   h('p', { className: 'text-2xl font-bold text-cyan-900 font-mono' },
@@ -1807,6 +1808,172 @@ window.StemLab = window.StemLab || {
             { id: 'magCompare', icon: '\uD83D\uDD04', label: t('stem.numberline.compare', 'Compare') }
           ];
 
+          var renderNumberLineFocus = function() {
+            var activeTab = tabs.filter(function(t2) { return t2.id === tab; })[0] || tabs[0];
+            var rangeLen = range.max - range.min;
+            if (rangeLen <= 0) rangeLen = 1;
+            var accuracy = score.total ? Math.round((score.correct / score.total) * 100) + '%' : 'Ready';
+            var earnedBadges = Object.keys(badges).length;
+            var modeCards = [
+              {
+                id: 'explore',
+                label: t('stem.numberline.focus_explore_label', 'Explore'),
+                metric: range.min + ' to ' + range.max,
+                body: t('stem.numberline.focus_explore_body', 'Set the range, add markers, and compare distances.'),
+                active: 'border-blue-500 bg-blue-50 text-blue-900'
+              },
+              {
+                id: 'challenges',
+                label: t('stem.numberline.focus_challenges_label', 'Challenge'),
+                metric: score.correct + '/' + score.total,
+                body: challenge ? challenge.question : t('stem.numberline.focus_challenges_body', 'Practice estimating, rounding, and locating values.'),
+                active: 'border-amber-500 bg-amber-50 text-amber-900'
+              },
+              {
+                id: 'skipcount',
+                label: t('stem.numberline.focus_skip_label', 'Skip Count'),
+                metric: skipBy + 's',
+                body: skipCount + ' hops from ' + skipFrom,
+                active: 'border-violet-500 bg-violet-50 text-violet-900'
+              },
+              {
+                id: 'fracdec',
+                label: t('stem.numberline.focus_frac_label', 'Frac/Dec'),
+                metric: fdDen + ' parts',
+                body: t('stem.numberline.focus_frac_body', 'Connect fractions, decimals, percents, and area models.'),
+                active: 'border-cyan-600 bg-cyan-50 text-cyan-900'
+              },
+              {
+                id: 'magCompare',
+                label: t('stem.numberline.focus_compare_label', 'Compare'),
+                metric: t('stem.numberline.focus_compare_metric', 'A vs B'),
+                body: t('stem.numberline.focus_compare_body', 'Test fraction size relationships without a score.'),
+                active: 'border-emerald-500 bg-emerald-50 text-emerald-900'
+              }
+            ];
+
+            var mapX = function(value) {
+              var x = 54 + ((value - range.min) / rangeLen) * 532;
+              if (x < 54) x = 54;
+              if (x > 586) x = 586;
+              return x;
+            };
+            var focusValue = range.min + rangeLen * 0.6;
+            if (tab === 'challenges' && challenge && challenge._arrowValue != null) focusValue = challenge._arrowValue;
+            else if (tab === 'skipcount') focusValue = skipFrom + skipBy * Math.min(Math.max(skipCount - 1, 0), 4);
+            else if (tab === 'fracdec') {
+              var fdSpan = fdMax - fdMin;
+              if (fdSpan <= 0) fdSpan = 1;
+              focusValue = range.min + ((fdValue - fdMin) / fdSpan) * rangeLen;
+            } else if (tab === 'magCompare') {
+              focusValue = range.min + rangeLen * 0.5;
+            }
+            var focusX = mapX(focusValue);
+            var labelValues = [
+              { key: 'min', value: range.min, label: '' + range.min },
+              { key: 'mid', value: range.min + rangeLen / 2, label: '' + (Math.round((range.min + rangeLen / 2) * 100) / 100) },
+              { key: 'max', value: range.max, label: '' + range.max }
+            ];
+            var visibleMarkers = (markers || []).slice(-3).filter(function(m) {
+              return m && typeof m.value === 'number' && !isNaN(m.value);
+            });
+
+            return h('section', {
+              className: 'rounded-2xl border border-blue-200 bg-white shadow-sm overflow-hidden',
+              'data-numberline-focus': 'true',
+              role: 'region',
+              'aria-label': t('stem.numberline.number_line_workspace', 'Number Line workspace')
+            },
+              h('div', { className: 'grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-4 p-4' },
+                h('div', { className: 'space-y-3' },
+                  h('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3' },
+                    h('div', null,
+                      h('p', { className: 'text-xs font-bold uppercase tracking-wide text-blue-700' }, t('stem.numberline.number_line_workspace_label', 'Number Line Workspace')),
+                      h('h2', { className: 'text-xl font-black text-slate-900 leading-tight' }, activeTab.label + ': ' + t('stem.numberline.make_magnitude_visible', 'make magnitude visible')),
+                      h('p', { className: 'text-sm text-slate-600 mt-1 leading-relaxed' }, t('stem.numberline.focus_summary', 'Use one line to locate values, show jumps, and connect equivalent forms.'))
+                    ),
+                    h('div', { className: 'grid grid-cols-3 gap-2 text-center sm:min-w-[210px]' },
+                      h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.range', 'Range')),
+                        h('p', { className: 'text-sm font-black text-slate-900 font-mono' }, range.min + '..' + range.max)
+                      ),
+                      h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.accuracy', 'Accuracy')),
+                        h('p', { className: 'text-sm font-black text-slate-900' }, accuracy)
+                      ),
+                      h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 px-2 py-2' },
+                        h('p', { className: 'text-xs text-slate-500 font-bold' }, t('stem.numberline.badges', 'Badges')),
+                        h('p', { className: 'text-sm font-black text-slate-900' }, earnedBadges + '/' + BADGES.length)
+                      )
+                    )
+                  ),
+                  h('div', { className: 'rounded-2xl border border-slate-200 bg-slate-950 p-3' },
+                    h('svg', {
+                      width: '100%',
+                      height: 150,
+                      viewBox: '0 0 640 150',
+                      role: 'img',
+                      'aria-label': 'Overview number line from ' + range.min + ' to ' + range.max + ' with the current activity highlighted'
+                    },
+                      h('defs', null,
+                        h('linearGradient', { id: 'nlFocusTrack', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                          h('stop', { offset: '0%', stopColor: '#38bdf8' }),
+                          h('stop', { offset: '50%', stopColor: '#a78bfa' }),
+                          h('stop', { offset: '100%', stopColor: '#34d399' })
+                        )
+                      ),
+                      h('rect', { x: 0, y: 0, width: 640, height: 150, rx: 18, fill: '#020617' }),
+                      h('line', { x1: 54, y1: 82, x2: 586, y2: 82, stroke: 'url(#nlFocusTrack)', strokeWidth: 6, strokeLinecap: 'round' }),
+                      labelValues.map(function(item) {
+                        var x = mapX(item.value);
+                        return h('g', { key: item.key },
+                          h('line', { x1: x, y1: 62, x2: x, y2: 102, stroke: '#e2e8f0', strokeWidth: 2, opacity: 0.85 }),
+                          h('text', { x: x, y: 124, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 15, fontFamily: 'monospace', fontWeight: '700' }, item.label)
+                        );
+                      }),
+                      range.min < 0 && range.max > 0 && h('g', { key: 'zero' },
+                        h('circle', { cx: mapX(0), cy: 82, r: 10, fill: '#facc15', opacity: 0.95 }),
+                        h('text', { x: mapX(0), y: 48, textAnchor: 'middle', fill: '#fde68a', fontSize: 13, fontWeight: '800' }, 'zero')
+                      ),
+                      visibleMarkers.map(function(m, idx) {
+                        var x = mapX(m.value);
+                        return h('g', { key: 'focus-marker-' + idx },
+                          h('circle', { cx: x, cy: 82, r: 8, fill: m.color || '#f97316', stroke: '#ffffff', strokeWidth: 2 }),
+                          h('text', { x: x, y: 50, textAnchor: 'middle', fill: '#fed7aa', fontSize: 12, fontWeight: '800' }, m.label || m.value)
+                        );
+                      }),
+                      h('g', { key: 'active-focus' },
+                        h('line', { x1: focusX, y1: 28, x2: focusX, y2: 70, stroke: '#f97316', strokeWidth: 4, strokeLinecap: 'round' }),
+                        h('polygon', { points: (focusX - 10) + ',70 ' + (focusX + 10) + ',70 ' + focusX + ',88', fill: '#f97316' }),
+                        h('text', { x: focusX, y: 22, textAnchor: 'middle', fill: '#fed7aa', fontSize: 13, fontWeight: '800' }, activeTab.label)
+                      )
+                    )
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2' },
+                  modeCards.map(function(card) {
+                    var isActive = tab === card.id;
+                    return h('button', {
+                      key: card.id,
+                      type: 'button',
+                      onClick: function() { sfxClick(); upd({ tab: card.id }); },
+                      'aria-pressed': isActive,
+                      className: 'rounded-xl border p-3 text-left transition-all hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ' +
+                        (isActive ? card.active : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-white'),
+                      style: { minHeight: 88 }
+                    },
+                      h('div', { className: 'flex items-center justify-between gap-2' },
+                        h('span', { className: 'text-sm font-black' }, card.label),
+                        h('span', { className: 'text-sm font-black font-mono' }, card.metric)
+                      ),
+                      h('p', { className: 'text-xs leading-snug mt-1 opacity-80' }, card.body)
+                    );
+                  })
+                )
+              )
+            );
+          };
+
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-2' },
@@ -1833,13 +2000,15 @@ window.StemLab = window.StemLab || {
               )
             ),
 
+            renderNumberLineFocus(),
+
             // Tab bar
-            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections') },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': t('stem.numberline.number_line_sections', 'Number Line sections') },
               tabs.map(function(t2) {
                 return h('button', { key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   role: 'tab', 'aria-selected': tab === t2.id,
-                  className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+                  className: 'min-h-[42px] py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
                     (tab === t2.id ? 'bg-white text-blue-800 shadow-sm' : 'text-blue-500 hover:text-blue-700')
                 }, t2.icon + ' ' + t2.label);
               })
@@ -1966,16 +2135,28 @@ window.StemLab = window.StemLab || {
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
+            h('p', { className: 'sr-only' },
               t('stem.numberline.1_4_tabs_n_new_challenge_ai_tutor_on_m', '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends')
             ),
 
             // \u2550\u2550\u2550 INTEGERS & ABSOLUTE VALUE \u2550\u2550\u2550
-            h('div', { className: 'mt-5 rounded-2xl border border-sky-300 bg-white p-3 shadow-sm' },
-              h('h4', { className: 'text-sm font-bold text-sky-700 mb-2' }, t('stem.numberline.integers_absolute_value_distance_from_', '\uD83D\uDD22 Integers \u2014 Absolute value = distance from zero')),
-              h('div', { className: 'rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
+            h('div', { className: 'mt-4 rounded-2xl border border-sky-200 bg-white p-3 shadow-sm' },
+              h('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
+                h('div', null,
+                  h('h4', { className: 'text-sm font-bold text-sky-700' }, t('stem.numberline.integers_absolute_value_distance_from_', 'Integers - Absolute value = distance from zero')),
+                  h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.numberline.integer_lab_summary', 'Open the mini lab when negative numbers are the focus.'))
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { sfxClick(); upd({ showIntegerLab: !showIntegerLab }); },
+                  'aria-expanded': showIntegerLab,
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold border border-sky-500 text-sky-700 bg-sky-50 hover:bg-sky-100'
+                }, showIntegerLab ? t('stem.numberline.hide_integer_lab', 'Hide mini lab') : t('stem.numberline.open_integer_lab', 'Open mini lab'))
+              ),
+              showIntegerLab && h('div', { className: 'mt-3 rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
                 h('canvas', {
                   role: 'img',
+                  tabIndex: 0,
                   'aria-label': t('stem.numberline.absolute_value_number_line_showing_dis', 'Absolute value number line showing distance from zero'),
                   ref: function(cvEl) {
                     if (!cvEl) return;

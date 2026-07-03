@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T15:18:53.473Z",
+  "generatedAt": "2026-07-03T15:43:06.685Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 126,
+    "issueCount": 125,
     "errorCount": 0,
-    "warningCount": 110,
+    "warningCount": 109,
     "noticeCount": 16,
-    "toolsWithIssues": 63,
+    "toolsWithIssues": 62,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 56,
-    "toolsWithCanvas": 37,
+    "toolsWithWarnings": 55,
+    "toolsWithCanvas": 36,
     "shellCoverage": {
       "standardShellTools": 114,
       "lightBackgroundTools": [],
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 22,
+        "warningCount": 21,
         "noticeCount": 0
       },
       "Games": {
@@ -172,8 +172,8 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 29,
-      "toolCount": 21,
+      "count": 28,
+      "toolCount": 20,
       "exampleTools": [
         "anatomy",
         "artStudio",
@@ -186,7 +186,7 @@
         "logicLab",
         "moneyMath",
         "musicSynth",
-        "numberline"
+        "oratory"
       ],
       "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
     },
@@ -1807,7 +1807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16026,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2123,7 +2123,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22779,
+      "renderedBytes": 22800,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2572,7 +2572,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1586,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3130,7 +3130,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13356,
+      "renderedBytes": 13343,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3269,34 +3269,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.",
-      "renderedBytes": 10826,
+      "renderedBytes": 16580,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 15,
+        "buttons": 21,
         "roleButtons": 0,
         "fields": 5,
-        "canvases": 1,
-        "svgs": 1,
+        "canvases": 0,
+        "svgs": 2,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "numberline",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "nutritionLab",
@@ -3595,7 +3586,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17333,
+      "renderedBytes": 17338,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4280,7 +4271,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47691,
+      "renderedBytes": 47689,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

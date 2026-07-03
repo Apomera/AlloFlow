@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T15:19:46.614Z",
+  "generatedAt": "2026-07-03T15:43:50.669Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 45
+    "monitoredMarkerCount": 46
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 45,
+    "markerPassCount": 46,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17198,
+      "htmlBytes": 17204,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17198
+        "htmlBytes": 17204
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13343,
+      "htmlBytes": 13356,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13343
+        "htmlBytes": 13356
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47690,
+      "htmlBytes": 47691,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47690
+        "htmlBytes": 47691
       }
     },
     {
@@ -1042,6 +1042,22 @@
         "canvases": 0,
         "headings": 4,
         "htmlBytes": 20095
+      }
+    },
+    {
+      "id": "numberline",
+      "file": "stem_tool_numberline.js",
+      "marker": "data-numberline-focus",
+      "label": "Number Line workspace",
+      "ok": true,
+      "htmlBytes": 18817,
+      "issues": [],
+      "metrics": {
+        "buttons": 22,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 18817
       }
     },
     {
