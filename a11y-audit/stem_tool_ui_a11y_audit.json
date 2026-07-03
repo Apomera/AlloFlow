@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T17:38:53.345Z",
+  "generatedAt": "2026-07-03T18:00:20.511Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 123,
+    "issueCount": 122,
     "errorCount": 0,
-    "warningCount": 107,
+    "warningCount": 106,
     "noticeCount": 16,
-    "toolsWithIssues": 60,
+    "toolsWithIssues": 59,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 53,
+    "toolsWithWarnings": 52,
     "toolsWithCanvas": 34,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 48,
+        "warningCount": 47,
         "noticeCount": 4
       },
       "technology": {
@@ -214,12 +214,11 @@
     {
       "code": "heading",
       "severity": "warning",
-      "count": 15,
-      "toolCount": 15,
+      "count": 14,
+      "toolCount": 14,
       "exampleTools": [
         "archStudio",
         "astronomy",
-        "bridgeLab",
         "cellularLab",
         "cephalopodLab",
         "funcGrapher",
@@ -228,7 +227,8 @@
         "graphCalc",
         "kitchenLab",
         "lumen",
-        "microbiology"
+        "microbiology",
+        "physics"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
@@ -1163,32 +1163,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.",
-      "renderedBytes": 303,
+      "renderedBytes": 39836,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 24,
         "roleButtons": 0,
-        "fields": 0,
+        "fields": 8,
         "canvases": 0,
-        "svgs": 0,
+        "svgs": 2,
         "images": 0,
-        "headings": 0,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "bridgeLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "calculus",
@@ -1807,7 +1800,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16015,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2123,7 +2116,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22808,
+      "renderedBytes": 22793,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2572,7 +2565,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1586,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3112,7 +3105,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13327,
+      "renderedBytes": 13348,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3568,7 +3561,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17340,
+      "renderedBytes": 17331,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4253,7 +4246,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47687,
+      "renderedBytes": 47697,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4398,7 +4391,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts",
-      "renderedBytes": 8896,
+      "renderedBytes": 8900,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,

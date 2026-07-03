@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T17:39:39.164Z",
+  "generatedAt": "2026-07-03T18:00:35.161Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -181,14 +181,14 @@
       "marker": "data-bridgelab-design-brief",
       "label": "Bridge design brief",
       "ok": true,
-      "htmlBytes": 37600,
+      "htmlBytes": 39836,
       "issues": [],
       "metrics": {
         "buttons": 24,
         "fields": 8,
         "canvases": 0,
-        "headings": 1,
-        "htmlBytes": 37600
+        "headings": 2,
+        "htmlBytes": 39836
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17212,
+      "htmlBytes": 17202,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17212
+        "htmlBytes": 17202
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13339,
+      "htmlBytes": 13327,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13339
+        "htmlBytes": 13327
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47685,
+      "htmlBytes": 47690,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47685
+        "htmlBytes": 47690
       }
     },
     {

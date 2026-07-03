@@ -466,6 +466,24 @@
       // during the previous render" the first time the lab opens).
       var _bridgeACRef = React.useRef ? React.useRef(null) : { current: null };
 
+      var DEFAULT_BRIDGE_LAB_STATE = {
+        tab: 'build',
+        showBridgeLibrary: false,
+        span: 30, height: 6, nBays: 4, loadPerJoint: 50, materialId: 'steel',
+        crossSectionMm2: 5000,
+        bridgeType: 'truss',
+        trussStyle: 'warren',
+        loadMode: 'uniform',
+        vehiclePos: 0.5,
+        vehicleLoad: 150,
+        selectedForce: 'tension',
+        selectedCase: 'tacoma',
+        selectedStep: 'define',
+        quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0,
+        designName: '', designNotes: '',
+        autoDriving: false
+      };
+
       if (!labToolData || !labToolData.bridgeLab) {
         setLabToolData(function(prev) {
           return Object.assign({}, prev, { bridgeLab: {
@@ -486,9 +504,8 @@
             autoDriving: false
           }});
         });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, __alloT('stem.bridgelab.initializing_bridge_lab', '🌉 Initializing Bridge Lab...'));
       }
-      var d = labToolData.bridgeLab;
+      var d = Object.assign({}, DEFAULT_BRIDGE_LAB_STATE, (labToolData && labToolData.bridgeLab) || {});
 
       // ── Web Audio API Sound Effects Engine ──
       // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
@@ -595,6 +612,23 @@
         { id: 'forces', label: __alloT('stem.bridgelab.route_forces', 'Forces'), hint: __alloT('stem.bridgelab.route_forces_hint', 'Read tension, compression, shear, and torsion.') },
         { id: 'cycle', label: __alloT('stem.bridgelab.route_cycle', 'Design cycle'), hint: __alloT('stem.bridgelab.route_cycle_hint', 'Plan, test, revise, and document.') }
       ];
+      var bridgeBriefMat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
+      var bridgeBriefLoad = d.loadMode === 'vehicle'
+        ? Math.max(1, (d.vehicleLoad || 150) / Math.max(1, d.nBays || 4))
+        : d.loadPerJoint;
+      var bridgeBriefAnalysis = analyzeTruss(d.span, d.height, d.nBays, bridgeBriefLoad);
+      var bridgeBriefAreaM2 = d.crossSectionMm2 / 1e6;
+      var bridgeBriefVolumeM3 = bridgeBriefAnalysis.totalLen * bridgeBriefAreaM2;
+      var bridgeBriefStress = Math.max(bridgeBriefAnalysis.maxChord, bridgeBriefAnalysis.maxDiag) * 1000 / Math.max(1, d.crossSectionMm2);
+      var bridgeBriefSF = bridgeBriefMat.yieldMPa / Math.max(0.001, bridgeBriefStress);
+      var bridgeBriefStatus = bridgeBriefSF >= 2 ? 'safe' : bridgeBriefSF >= 1 ? 'marginal' : 'failed';
+      var bridgeBriefStatusCopy = bridgeBriefStatus === 'safe'
+        ? __alloT('stem.bridgelab.brief_safe', 'Ready for testing')
+        : bridgeBriefStatus === 'marginal'
+          ? __alloT('stem.bridgelab.brief_marginal', 'Needs revision')
+          : __alloT('stem.bridgelab.brief_failed', 'Redesign needed');
+      var bridgeBriefStatusColor = bridgeBriefStatus === 'safe' ? '#22c55e' : bridgeBriefStatus === 'marginal' ? '#f59e0b' : '#ef4444';
+      var bridgeBriefStyle = ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren');
 
       var tabBar = h('div', {
         role: 'tablist', 'aria-label': __alloT('stem.bridgelab.bridge_engineering_sections', 'Bridge Engineering sections'),
@@ -1177,7 +1211,7 @@
                   : h('div', null,
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 8 } }, '✓ ' + results.length + ' combinations pass. Top 5 by cost:'),
                       h('div', { style: { overflowX: 'auto' } },
-                        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 580 } },
+                        h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 0 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {
                               return h('th', { key: i, style: { padding: 6, textAlign: 'left', background: 'var(--allo-stem-deeper, #0a0e1a)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontWeight: 800 } }, c);
@@ -2229,7 +2263,7 @@
             __alloT('stem.bridgelab.every_material_has_tradeoffs_strength_', 'Every material has tradeoffs. Strength, weight, cost, durability, environmental impact. The right material depends on the structure and the context.')
           ),
           h('div', { style: { overflowX: 'auto', marginBottom: 14 } },
-            h('table', { style: { width: '100%', minWidth: 600, borderCollapse: 'collapse', fontSize: 12 } },
+            h('table', { style: { width: '100%', minWidth: 0, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null, h('tr', null,
                 ['Material', 'Yield (MPa)', 'Density (kg/m³)', 'Modulus E (GPa)', 'Cost (rel.)'].map(function(c, i) {
                   return h('th', { key: i, style: { padding: 8, textAlign: 'left', background: 'var(--allo-stem-panel, #1e293b)', color: '#fbbf24', borderBottom: '2px solid ' + AMBER, fontSize: 11, fontWeight: 800 } }, c);
@@ -4511,32 +4545,57 @@
           )
         ),
         h('section', { 'data-bridgelab-design-brief': 'true',
-          style: { margin: '12px 16px 10px', padding: 14, borderRadius: 8, background: 'linear-gradient(135deg, rgba(120,53,15,0.84), rgba(15,23,42,0.94))', border: '1px solid rgba(251,191,36,0.32)', color: '#fffbeb', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.15fr) minmax(230px,0.85fr)', gap: 12 } },
+          role: 'region',
+          'aria-labelledby': 'bridgelab-brief-heading',
+          style: { margin: '12px 16px 10px', padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(120,53,15,0.84), rgba(15,23,42,0.94))', border: '1px solid rgba(251,191,36,0.32)', color: '#fffbeb', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 12, alignItems: 'stretch' } },
             h('div', null,
               h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#fde68a', letterSpacing: 0, marginBottom: 4 } }, __alloT('stem.bridgelab.design_brief', 'Design brief')),
-              h('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, currentBridgeTab.label),
+              h('h3', { id: 'bridgelab-brief-heading', style: { margin: 0, fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, currentBridgeTab.label),
               h('p', { style: { margin: '0 0 10px', fontSize: 12, lineHeight: 1.5, color: '#e2e8f0' } },
                 __alloT('stem.bridgelab.design_brief_copy', 'Start by stress-testing a bridge, then use material and force references only when you need evidence for a redesign.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 } },
                 bridgeRoutes.map(function(route) {
                   var active = d.tab === route.id;
                   return h('button', { key: route.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    'aria-label': __alloT('stem.bridgelab.open_route', 'Open') + ' ' + route.label,
                     onClick: function() { upd({ tab: route.id }); },
                     style: { minHeight: 72, padding: 9, textAlign: 'left', borderRadius: 8, border: '1px solid ' + (active ? 'rgba(251,191,36,0.72)' : 'rgba(251,191,36,0.24)'), background: active ? 'rgba(245,158,11,0.18)' : 'rgba(15,23,42,0.55)', color: '#fffbeb', cursor: 'pointer' } },
                     h('div', { style: { fontSize: 12, fontWeight: 900, marginBottom: 3 } }, route.label),
-                    h('div', { style: { fontSize: 10, lineHeight: 1.35, color: '#fde68a' } }, route.hint)
+                    h('div', { style: { fontSize: 11, lineHeight: 1.35, color: '#fde68a' } }, route.hint)
                   );
                 })
               )
             ),
             h('div', null,
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 112px', gap: 10, alignItems: 'center', padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.38)', border: '1px solid rgba(148,163,184,0.2)', marginBottom: 8 } },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 3 } }, __alloT('stem.bridgelab.design_readiness', 'Design readiness')),
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 17, color: bridgeBriefStatusColor } }, bridgeBriefStatusCopy),
+                    h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, 'SF ' + bridgeBriefSF.toFixed(2))
+                  ),
+                  h('div', { style: { marginTop: 4, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45 } },
+                    bridgeBriefStyle + ' truss, ' + d.nBays + ' bays, ' + bridgeBriefMat.name)
+                ),
+                h('svg', { viewBox: '0 0 160 88', role: 'img', 'aria-label': __alloT('stem.bridgelab.bridge_readiness_visual', 'Bridge readiness visual'), style: { width: '100%', display: 'block' } },
+                  h('rect', { x: 0, y: 0, width: 160, height: 88, rx: 12, fill: '#020617' }),
+                  h('path', { d: 'M12 66 H148', stroke: '#64748b', strokeWidth: 3, strokeLinecap: 'round' }),
+                  h('path', { d: 'M24 62 L56 26 L88 62 L120 26 L144 62', fill: 'none', stroke: '#fbbf24', strokeWidth: 6, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                  h('path', { d: 'M24 62 H144', stroke: bridgeBriefStatusColor, strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 24, cy: 62, r: 6, fill: '#e2e8f0' }),
+                  h('circle', { cx: 144, cy: 62, r: 6, fill: '#e2e8f0' }),
+                  h('text', { x: 80, y: 18, textAnchor: 'middle', fill: bridgeBriefStatusColor, fontSize: 13, fontWeight: 900 }, bridgeBriefStatus.toUpperCase())
+                )
+              ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 } },
                 [
                   { label: __alloT('stem.bridgelab.status_span', 'Span'), value: d.span + ' m' },
                   { label: __alloT('stem.bridgelab.status_load', 'Load'), value: d.loadMode === 'vehicle' ? (d.vehicleLoad + ' kN') : (d.loadPerJoint + ' kN') },
-                  { label: __alloT('stem.bridgelab.status_material', 'Material'), value: (MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[0]).name },
-                  { label: __alloT('stem.bridgelab.status_library', 'Library'), value: showFullBridgeNav ? __alloT('stem.bridgelab.expanded', 'Expanded') : __alloT('stem.bridgelab.core', 'Core') }
+                  { label: __alloT('stem.bridgelab.status_material', 'Material'), value: bridgeBriefMat.name },
+                  { label: __alloT('stem.bridgelab.status_stress', 'Stress'), value: bridgeBriefStress.toFixed(0) + ' MPa' },
+                  { label: __alloT('stem.bridgelab.status_mass', 'Mass'), value: (bridgeBriefVolumeM3 * bridgeBriefMat.densityKgM3).toFixed(0) + ' kg' },
+                  { label: __alloT('stem.bridgelab.status_cost', 'Material cost'), value: '$' + (bridgeBriefVolumeM3 * bridgeBriefMat.costPerM3).toFixed(0) }
                 ].map(function(card) {
                   return h('div', { key: card.label, style: { padding: 9, borderRadius: 8, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(148,163,184,0.18)' } },
                     h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, card.label),
