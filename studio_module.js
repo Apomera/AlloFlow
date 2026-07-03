@@ -79,6 +79,81 @@
   };
 
   function stClone(v) { return JSON.parse(JSON.stringify(v)); }
+  function stFiniteNumber(v, fallback) {
+    if (v === null || v === undefined || v === '') return fallback;
+    var n = Number(v);
+    return isFinite(n) ? n : fallback;
+  }
+  function stIsFiniteNumber(v) {
+    return typeof v === 'number' && isFinite(v);
+  }
+  function stFrameIsFinite(frame) {
+    return !!frame && stIsFiniteNumber(frame.x) && stIsFiniteNumber(frame.y) && stIsFiniteNumber(frame.w) && stIsFiniteNumber(frame.h);
+  }
+  function stSafeCssColor(value, fallback) {
+    var s = String(value || '').trim();
+    return /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(s) ? s : fallback;
+  }
+  function stSafeAlign(value) {
+    return value === 'center' || value === 'right' ? value : 'left';
+  }
+  function stSafeTextRole(value) {
+    return value === 'heading1' || value === 'heading2' || value === 'heading3' || value === 'body' ? value : 'body';
+  }
+  function stSafeShape(value) {
+    return value === 'ellipse' ? 'ellipse' : 'rect';
+  }
+  function stOrderedObjects(objects) {
+    return (Array.isArray(objects) ? objects : []).map(function (o, i) { return { o: o, i: i }; })
+      .sort(function (a, b) {
+        var dz = stFiniteNumber(a.o && a.o.z, 1) - stFiniteNumber(b.o && b.o.z, 1);
+        return dz || (a.i - b.i);
+      })
+      .map(function (item) { return item.o; });
+  }
+  function stHexToRgb(hex) {
+    var s = stSafeCssColor(hex, '#000000').slice(1);
+    if (s.length === 3) s = s.split('').map(function (ch) { return ch + ch; }).join('');
+    return { r: parseInt(s.slice(0, 2), 16), g: parseInt(s.slice(2, 4), 16), b: parseInt(s.slice(4, 6), 16) };
+  }
+  function stRelLum(hex) {
+    var rgb = stHexToRgb(hex);
+    var vals = [rgb.r, rgb.g, rgb.b].map(function (v) {
+      v = v / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * vals[0] + 0.7152 * vals[1] + 0.0722 * vals[2];
+  }
+  function stContrastRatio(fg, bg) {
+    var a = stRelLum(fg), b = stRelLum(bg);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }
+  function stFrameContainsPoint(frame, x, y) {
+    return !!frame && x >= frame.x && x <= frame.x + frame.w && y >= frame.y && y <= frame.y + frame.h;
+  }
+  function stTextBackgroundFor(doc, textObj) {
+    var bg = stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff');
+    var f = stClampFrame(textObj && textObj.frame, doc.canvas);
+    var cx = f.x + f.w / 2, cy = f.y + f.h / 2;
+    stOrderedObjects(doc.objects).forEach(function (o) {
+      if (!o || o.id === textObj.id || o.type !== 'shape') return;
+      if (stFiniteNumber(o.z, 1) > stFiniteNumber(textObj.z, 1)) return;
+      if (stFrameContainsPoint(stClampFrame(o.frame, doc.canvas), cx, cy)) bg = stSafeCssColor(o.fill, bg);
+    });
+    return bg;
+  }
+  function stAlignFrame(frame, canvas, mode) {
+    var f = stClampFrame(frame, canvas);
+    var c = canvas || ST_CANVAS_PRESETS['letter-portrait'];
+    if (mode === 'left') f.x = 0;
+    else if (mode === 'hcenter') f.x = Math.round((c.w - f.w) / 2);
+    else if (mode === 'right') f.x = Math.round(c.w - f.w);
+    else if (mode === 'top') f.y = 0;
+    else if (mode === 'vcenter') f.y = Math.round((c.h - f.h) / 2);
+    else if (mode === 'bottom') f.y = Math.round(c.h - f.h);
+    else if (mode === 'page-width') { f.x = 48; f.w = Math.max(ST_MIN_SIZE, c.w - 96); }
+    return stClampFrame(f, c);
+  }
 
   function stCreateDoc(preset, title, now) {
     var p = ST_CANVAS_PRESETS[preset] || ST_CANVAS_PRESETS['letter-portrait'];
@@ -96,11 +171,15 @@
   }
 
   function stClampFrame(frame, canvas) {
-    var w = Math.max(ST_MIN_SIZE, Math.min(frame.w, canvas.w));
-    var h = Math.max(ST_MIN_SIZE, Math.min(frame.h, canvas.h));
-    var x = Math.max(0, Math.min(frame.x, canvas.w - w));
-    var y = Math.max(0, Math.min(frame.y, canvas.h - h));
-    return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), rotation: frame.rotation || 0 };
+    frame = frame && typeof frame === 'object' ? frame : {};
+    canvas = canvas && typeof canvas === 'object' ? canvas : {};
+    var cw = Math.max(ST_MIN_SIZE, stFiniteNumber(canvas.w, ST_CANVAS_PRESETS['letter-portrait'].w));
+    var ch = Math.max(ST_MIN_SIZE, stFiniteNumber(canvas.h, ST_CANVAS_PRESETS['letter-portrait'].h));
+    var w = Math.max(ST_MIN_SIZE, Math.min(stFiniteNumber(frame.w, ST_MIN_SIZE), cw));
+    var h = Math.max(ST_MIN_SIZE, Math.min(stFiniteNumber(frame.h, ST_MIN_SIZE), ch));
+    var x = Math.max(0, Math.min(stFiniteNumber(frame.x, 0), cw - w));
+    var y = Math.max(0, Math.min(stFiniteNumber(frame.y, 0), ch - h));
+    return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), rotation: stFiniteNumber(frame.rotation, 0) };
   }
 
   // Apply ONE op to a scene ({title, canvas, objects}) — pure; unknown op types
@@ -111,6 +190,7 @@
     var idx = function (id) { for (var i = 0; i < objects.length; i++) { if (objects[i].id === id) return i; } return -1; };
     var t = op.type;
     if (t === 'object.add') {
+      if (!op.object || typeof op.object !== 'object') return scene;
       var obj = stClone(op.object);
       obj.frame = stClampFrame(obj.frame, scene.canvas);
       objects.push(obj);
@@ -137,16 +217,16 @@
       var oi = idx(op.target);
       if (oi >= 0) {
         var item = objects.splice(oi, 1)[0];
-        var to = Math.max(0, Math.min(op.toIndex, objects.length));
+        var to = Math.max(0, Math.min(Math.round(stFiniteNumber(op.toIndex, objects.length)), objects.length));
         objects.splice(to, 0, item);
       }
     } else if (t === 'object.z') {
       var zi = idx(op.target);
-      if (zi >= 0) { objects[zi] = stClone(objects[zi]); objects[zi].z = op.z; }
+      if (zi >= 0) { objects[zi] = stClone(objects[zi]); objects[zi].z = Math.round(stFiniteNumber(op.z, objects[zi].z || 1)); }
     } else if (t === 'doc.retitle') {
       return { title: String(op.title || 'Untitled'), canvas: scene.canvas, objects: objects };
     } else if (t === 'canvas.background') {
-      var c = stClone(scene.canvas); c.background = { fill: op.fill };
+      var c = stClone(scene.canvas); c.background = { fill: stSafeCssColor(op.fill, '#ffffff') };
       return { title: scene.title, canvas: c, objects: objects };
     } else if (t === 'doc.template') {
       // marker op (records which template seeded the doc) — no scene change
@@ -261,10 +341,141 @@
     if (!doc || typeof doc !== 'object') return ['Not an object'];
     if (doc.format !== ST_FORMAT) errs.push('Not an AlloStudio file (format "' + doc.format + '")');
     if (typeof doc.version !== 'number' || doc.version > ST_DOC_VERSION) errs.push('Newer save version (' + doc.version + ') than this build understands (' + ST_DOC_VERSION + ')');
-    if (!doc.canvas || !(doc.canvas.w > 0) || !(doc.canvas.h > 0)) errs.push('Missing canvas');
-    if (!Array.isArray(doc.objects)) errs.push('Missing objects');
-    if (!doc.ledger || !Array.isArray(doc.ledger.ops)) errs.push('Missing ledger');
+    if (!doc.canvas || !stIsFiniteNumber(doc.canvas.w) || !stIsFiniteNumber(doc.canvas.h) || !(doc.canvas.w > 0) || !(doc.canvas.h > 0)) errs.push('Missing canvas');
+    if (!Array.isArray(doc.objects)) {
+      errs.push('Missing objects');
+    } else {
+      doc.objects.forEach(function (o, i) {
+        var label = 'Object #' + (i + 1);
+        if (!o || typeof o !== 'object') { errs.push(label + ' is malformed'); return; }
+        if (!o.id || typeof o.id !== 'string') errs.push(label + ' is missing an id');
+        if (o.type !== 'text' && o.type !== 'image' && o.type !== 'shape') errs.push(label + ' has an unknown type');
+        if (!stFrameIsFinite(o.frame) || o.frame.w <= 0 || o.frame.h <= 0) errs.push(label + ' has an invalid frame');
+        if (o.type === 'text') {
+          if (!Array.isArray(o.runs) || !o.runs[0] || typeof o.runs[0].text !== 'string') errs.push(label + ' has invalid text');
+        } else if (o.type === 'image') {
+          if (o.src != null && typeof o.src !== 'string') errs.push(label + ' has an invalid image source');
+          if (o.alt != null && typeof o.alt !== 'string') errs.push(label + ' has invalid alt text');
+          if (o.fit != null && o.fit !== 'cover' && o.fit !== 'contain') errs.push(label + ' has an invalid image fit');
+        } else if (o.type === 'shape') {
+          if (o.shape !== 'rect' && o.shape !== 'ellipse') errs.push(label + ' has an unknown shape');
+        }
+      });
+    }
+    if (!doc.ledger || !Array.isArray(doc.ledger.ops)) {
+      errs.push('Missing ledger');
+    } else {
+      doc.ledger.ops.forEach(function (op, i) {
+        var label = 'Step #' + (i + 1);
+        if (!op || typeof op !== 'object') { errs.push(label + ' is malformed'); return; }
+        if (!ST_ACTORS[op.actor]) errs.push(label + ' has an unknown actor');
+        if (!stIsFiniteNumber(op.seq)) errs.push(label + ' has an invalid sequence');
+        if (typeof op.type !== 'string') errs.push(label + ' has an invalid type');
+      });
+      if (doc.ledger.checkpoints && !Array.isArray(doc.ledger.checkpoints)) errs.push('Malformed checkpoints');
+    }
     return errs;
+  }
+
+  function stDescribeOp(op) {
+    if (!op || typeof op !== 'object') return 'Unknown step';
+    if (op.type === 'doc.template') return op.template ? 'Started from the ' + op.template + ' template' : 'Started from a template';
+    if (op.type === 'doc.retitle') return 'Renamed the document';
+    if (op.type === 'canvas.background') return 'Changed the page background';
+    if (op.type === 'object.add') {
+      var kind = op.object && op.object.type;
+      if (kind === 'text') return 'Added text';
+      if (kind === 'image') return 'Added an image';
+      if (kind === 'shape') return 'Added a shape';
+      return 'Added an object';
+    }
+    if (op.type === 'object.remove') return 'Removed an object';
+    if (op.type === 'object.move') return 'Moved an object';
+    if (op.type === 'object.resize') return 'Resized an object';
+    if (op.type === 'object.reorder') return 'Changed the reading order';
+    if (op.type === 'object.z') return 'Changed the visual layer';
+    if (op.type === 'object.update') {
+      var p = op.patch || {};
+      if (p.runs) return 'Edited text';
+      if (p.src) return 'Replaced an image';
+      if (Object.prototype.hasOwnProperty.call(p, 'alt')) return 'Updated alt text';
+      if (Object.prototype.hasOwnProperty.call(p, 'decorative')) return p.decorative ? 'Marked an image decorative' : 'Marked an image as content';
+      if (p.role) return 'Changed the text role';
+      if (p.fill) return 'Changed a fill color';
+      if (p.provenance) return 'Updated image details';
+      return 'Updated an object';
+    }
+    return op.type;
+  }
+
+  function stAnalyzeDoc(doc) {
+    var issues = [];
+    if (!doc || !Array.isArray(doc.objects)) return { issues: [{ type: 'file', severity: 'error', title: 'Document is not ready', message: 'Open or create an AlloStudio document first.' }], counts: { error: 1, warning: 0, review: 0 } };
+    stAltGate(doc.objects).forEach(function (m) {
+      issues.push({ id: m.id, type: 'alt', severity: 'error', title: 'Image needs alt text', message: 'Add alt text or mark the image decorative before accessible export.' });
+    });
+    doc.objects.forEach(function (o, i) {
+      if (!o || typeof o !== 'object') return;
+      var f = stClampFrame(o.frame, doc.canvas);
+      if (o.frame && (f.x !== Math.round(stFiniteNumber(o.frame.x, 0)) || f.y !== Math.round(stFiniteNumber(o.frame.y, 0)) || f.w !== Math.round(stFiniteNumber(o.frame.w, ST_MIN_SIZE)) || f.h !== Math.round(stFiniteNumber(o.frame.h, ST_MIN_SIZE)))) {
+        issues.push({ id: o.id, type: 'bounds', severity: 'warning', title: 'Object is outside the page', message: 'Move or resize this object so it sits fully on the page.' });
+      }
+      if (o.type === 'image') {
+        if (!o.src) issues.push({ id: o.id, type: 'empty-image', severity: 'review', title: 'Empty image frame', message: 'Add an image, remove the frame, or keep it as a placeholder while drafting.' });
+        else if (String(o.src).length > 1500000) issues.push({ id: o.id, type: 'large-image', severity: 'warning', title: 'Large image', message: 'This image may make the save file and exports heavy.' });
+      } else if (o.type === 'text') {
+        var run = (o.runs && o.runs[0]) || { text: '', style: {} };
+        var s = run.style || {};
+        var text = String(run.text || '').trim();
+        var size = Math.max(8, Math.min(160, stFiniteNumber(s.size, 16)));
+        if (!text) issues.push({ id: o.id, type: 'empty-text', severity: 'review', title: 'Empty text box', message: 'Add text or remove this box.' });
+        if (text && size < 12) issues.push({ id: o.id, type: 'small-text', severity: 'warning', title: 'Small text', message: 'Text under 12 px can be hard to read in print or projection.' });
+        if (text) {
+          var fg = stSafeCssColor(s.color, '#111827');
+          var bg = stTextBackgroundFor(doc, o);
+          var ratio = stContrastRatio(fg, bg);
+          var large = size >= 24 || (s.bold && size >= 18);
+          var required = large ? 3 : 4.5;
+          if (ratio < required) {
+            issues.push({ id: o.id, type: 'contrast', severity: 'warning', title: 'Low text contrast', message: 'Text contrast is ' + ratio.toFixed(2) + ':1. Aim for at least ' + required + ':1.' });
+          }
+        }
+      }
+    });
+    if (doc.objects.length > 1) issues.push({ type: 'reading-order', severity: 'review', title: 'Review reading order', message: 'The right-side order list is what screen readers and tagged PDF follow.' });
+    var counts = { error: 0, warning: 0, review: 0 };
+    issues.forEach(function (issue) { if (counts[issue.severity] !== undefined) counts[issue.severity]++; });
+    return { issues: issues, counts: counts };
+  }
+
+  function stExportWorksheetData(doc) {
+    var out = { title: doc.title || 'Worksheet', instructions: '', questions: [] };
+    var current = null;
+    doc.objects.forEach(function (o) {
+      if (!o || o.type !== 'text') return;
+      var text = String((o.runs && o.runs[0] && o.runs[0].text) || '').trim();
+      if (!text) return;
+      if (o.role === 'heading1') out.title = text;
+      else if (o.role === 'heading2' && /^\d+[\.)]\s*/.test(text)) {
+        current = { prompt: text.replace(/^\d+[\.)]\s*/, ''), supportText: '' };
+        out.questions.push(current);
+      } else if (!out.instructions) {
+        out.instructions = text;
+      } else if (current) {
+        current.supportText = current.supportText ? current.supportText + '\n' + text : text;
+      }
+    });
+    return out;
+  }
+
+  function stExportProcessMarkdown(doc, role) {
+    var s = stActorSummary((doc.ledger && doc.ledger.ops) || []);
+    var mins = Math.max(1, Math.round(s.activeMs / 60000));
+    var lines = ['# ' + (doc.title || 'AlloStudio Process'), '', role === 'student' ? '## My Process' : '## Process Summary', '', '- User edits: ' + s.user, '- AI actions: ' + s.ai, '- Imported items: ' + s.import, '- Approximate active minutes: ' + mins, '', ST_HONESTY_LINE, '', '## Recent Steps'];
+    ((doc.ledger && doc.ledger.ops) || []).slice(-20).forEach(function (op) {
+      lines.push('- #' + op.seq + ' ' + stDescribeOp(op) + ' (' + op.actor + ')');
+    });
+    return lines.join('\n');
   }
 
   // ── Object factories (frames are template/editor concerns; ids minted at append) ──
@@ -276,7 +487,7 @@
     return { type: 'shape', shape: shape, frame: frame, z: 1, fill: fill || '#dbeafe', decorative: true };
   }
   function stMakeImage(src, alt, frame, origin) {
-    return { type: 'image', src: src || '', alt: alt || '', decorative: false, frame: frame, z: 5,
+    return { type: 'image', src: src || '', alt: alt || '', decorative: false, frame: frame, z: 5, fit: 'cover',
       provenance: { origin: origin || 'upload' } };
   }
 
@@ -323,6 +534,106 @@
           stAppend(d, { type: 'object.add', object: stMakeText('body', '1. …\n2. …\n3. …', { x: 48, y: 600, w: 720, h: 160 }) }, 'user', now);
           return d;
         } },
+      { key: 'exitTicket', emoji: 'OK', name: 'Exit ticket', desc: 'One prompt with quick reflection spaces for the end of class.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Exit Ticket', now);
+          stAppend(d, { type: 'doc.template', template: 'exitTicket' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Exit Ticket', { x: 48, y: 44, w: 720, h: 64 }, { size: 38 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Today I learned...', { x: 64, y: 150, w: 688, h: 54 }, { size: 22 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 214, w: 688, h: 180 }, '#f8fafc') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'One question I still have...', { x: 64, y: 440, w: 688, h: 54 }, { size: 22 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 504, w: 688, h: 180 }, '#f8fafc') }, 'user', now);
+          return d;
+        } },
+      { key: 'vocabPoster', emoji: 'ABC', name: 'Vocabulary poster', desc: 'Term, definition, example, and visual frame.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Vocabulary Poster', now);
+          stAppend(d, { type: 'doc.template', template: 'vocabPoster' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 0, w: 816, h: 160 }, '#ede9fe') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Key Term', { x: 48, y: 50, w: 720, h: 70 }, { align: 'center', size: 46 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Definition', { x: 48, y: 210, w: 320, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Write the meaning in student-friendly language.', { x: 48, y: 270, w: 320, h: 140 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeImage('', '', { x: 430, y: 220, w: 300, h: 240 }, 'upload') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Example', { x: 48, y: 500, w: 720, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Use the word in a sentence or show where it appears.', { x: 48, y: 560, w: 720, h: 120 }) }, 'user', now);
+          return d;
+        } },
+      { key: 'labSafety', emoji: 'SAFE', name: 'Lab safety poster', desc: 'Clear safety rules with a strong heading and rule blocks.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Lab Safety', now);
+          stAppend(d, { type: 'doc.template', template: 'labSafety' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Lab Safety', { x: 48, y: 48, w: 720, h: 70 }, { align: 'center', size: 44 }) }, 'user', now);
+          var rules = ['1. Wear the right protection.', '2. Follow directions before touching materials.', '3. Report spills or broken equipment right away.'];
+          for (var r = 0; r < rules.length; r++) {
+            var yRule = 170 + r * 190;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yRule, w: 688, h: 130 }, r % 2 ? '#ecfeff' : '#fef2f2') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', rules[r], { x: 92, y: yRule + 34, w: 632, h: 54 }, { size: 24 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'checklist', emoji: 'LIST', name: 'Checklist', desc: 'A printable checklist or rubric-style task tracker.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Checklist', now);
+          stAppend(d, { type: 'doc.template', template: 'checklist' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Project Checklist', { x: 48, y: 44, w: 720, h: 64 }, { size: 38 }) }, 'user', now);
+          for (var c = 0; c < 6; c++) {
+            var yCheck = 150 + c * 92;
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yCheck, w: 42, h: 42 }, '#ffffff') }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeText('body', 'Task or criterion ' + (c + 1), { x: 126, y: yCheck + 6, w: 600, h: 36 }, { size: 20 }) }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'newsletter', emoji: 'NEWS', name: 'Class newsletter', desc: 'Sections for updates, reminders, and highlights.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Class Newsletter', now);
+          stAppend(d, { type: 'doc.template', template: 'newsletter' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 0, y: 0, w: 816, h: 140 }, '#dbeafe') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Class Newsletter', { x: 48, y: 44, w: 720, h: 58 }, { align: 'center', size: 40 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'This week', { x: 48, y: 190, w: 320, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Add a short update for families or students.', { x: 48, y: 244, w: 320, h: 180 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Reminders', { x: 430, y: 190, w: 320, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Dates, materials, or next steps.', { x: 430, y: 244, w: 320, h: 180 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeImage('', '', { x: 248, y: 520, w: 320, h: 220 }, 'upload') }, 'user', now);
+          return d;
+        } },
+      { key: 'bookReport', emoji: 'BOOK', name: 'Book report poster', desc: 'Book title, visual, summary, and recommendation.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Book Report Poster', now);
+          stAppend(d, { type: 'doc.template', template: 'bookReport' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Book Title', { x: 48, y: 44, w: 720, h: 64 }, { align: 'center', size: 40 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeImage('', '', { x: 64, y: 150, w: 260, h: 340 }, 'upload') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Summary', { x: 370, y: 160, w: 360, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Write a brief summary without spoiling the ending.', { x: 370, y: 214, w: 360, h: 180 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Recommendation', { x: 64, y: 560, w: 666, h: 42 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('body', 'Who would enjoy this book and why?', { x: 64, y: 616, w: 666, h: 120 }) }, 'user', now);
+          return d;
+        } },
+      { key: 'cerOrganizer', emoji: 'CER', name: 'CER organizer', desc: 'Claim, Evidence, Reasoning layout.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'CER Organizer', now);
+          stAppend(d, { type: 'doc.template', template: 'cerOrganizer' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Claim Evidence Reasoning', { x: 48, y: 44, w: 720, h: 64 }, { align: 'center', size: 34 }) }, 'user', now);
+          var labels = ['Claim', 'Evidence', 'Reasoning'];
+          for (var ce = 0; ce < labels.length; ce++) {
+            var yCer = 150 + ce * 210;
+            stAppend(d, { type: 'object.add', object: stMakeText('heading2', labels[ce], { x: 64, y: yCer, w: 688, h: 40 }, { size: 24 }) }, 'user', now);
+            stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: yCer + 52, w: 688, h: 130 }, '#f8fafc') }, 'user', now);
+          }
+          return d;
+        } },
+      { key: 'compareContrast', emoji: 'A/B', name: 'Compare / contrast', desc: 'Two-column organizer with a shared middle space.',
+        make: function (now) {
+          var d = stCreateDoc('letter-portrait', 'Compare and Contrast', now);
+          stAppend(d, { type: 'doc.template', template: 'compareContrast' }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading1', 'Compare and Contrast', { x: 48, y: 44, w: 720, h: 64 }, { align: 'center', size: 38 }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Topic A', { x: 64, y: 150, w: 260, h: 42 }, { align: 'center' }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Both', { x: 330, y: 150, w: 156, h: 42 }, { align: 'center' }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeText('heading2', 'Topic B', { x: 492, y: 150, w: 260, h: 42 }, { align: 'center' }) }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 64, y: 210, w: 260, h: 440 }, '#eff6ff') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 330, y: 210, w: 156, h: 440 }, '#fef9c3') }, 'user', now);
+          stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 492, y: 210, w: 260, h: 440 }, '#f0fdf4') }, 'user', now);
+          return d;
+        } },
       { key: 'blank', emoji: '⬜', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).',
         make: function (now) {
           var d = stCreateDoc('letter-portrait', 'Untitled', now);
@@ -343,30 +654,38 @@
   function stExportHtml(doc, opts) {
     var lang = (opts && opts.lang) || 'en';
     var parts = [];
-    var canvas = doc.canvas;
+    var canvas = {
+      w: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.w, ST_CANVAS_PRESETS['letter-portrait'].w)),
+      h: Math.max(ST_MIN_SIZE, stFiniteNumber(doc && doc.canvas && doc.canvas.h, ST_CANVAS_PRESETS['letter-portrait'].h)),
+      background: { fill: stSafeCssColor(doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill, '#ffffff') },
+    };
     for (var i = 0; i < doc.objects.length; i++) {
       var o = doc.objects[i];
-      var f = o.frame;
-      var pos = 'position:absolute;left:' + f.x + 'px;top:' + f.y + 'px;width:' + f.w + 'px;height:' + f.h + 'px;z-index:' + (o.z || 1) + ';margin:0;';
+      if (!o || typeof o !== 'object') continue;
+      var f = stClampFrame(o.frame, canvas);
+      var pos = 'position:absolute;left:' + f.x + 'px;top:' + f.y + 'px;width:' + f.w + 'px;height:' + f.h + 'px;z-index:' + Math.round(stFiniteNumber(o.z, 1)) + ';margin:0;';
       if (o.type === 'text') {
         var run = (o.runs && o.runs[0]) || { text: '', style: {} };
         var s = run.style || {};
-        var tag = o.role === 'heading1' ? 'h1' : o.role === 'heading2' ? 'h2' : o.role === 'heading3' ? 'h3' : 'p';
-        var style = pos + 'font-size:' + (s.size || 16) + 'px;color:' + (s.color || '#111827') + ';font-weight:' + (s.bold ? '700' : '400') + ';text-align:' + (s.align || 'left') + ';white-space:pre-wrap;line-height:1.25;font-family:system-ui,sans-serif;overflow-wrap:break-word;';
+        var role = stSafeTextRole(o.role);
+        var tag = role === 'heading1' ? 'h1' : role === 'heading2' ? 'h2' : role === 'heading3' ? 'h3' : 'p';
+        var size = Math.max(8, Math.min(160, stFiniteNumber(s.size, 16)));
+        var style = pos + 'font-size:' + size + 'px;color:' + stSafeCssColor(s.color, '#111827') + ';font-weight:' + (s.bold ? '700' : '400') + ';text-align:' + stSafeAlign(s.align) + ';white-space:pre-wrap;line-height:1.25;font-family:system-ui,sans-serif;overflow-wrap:break-word;';
         parts.push('<' + tag + ' style="' + style + '">' + stEscapeHtml(run.text) + '</' + tag + '>');
       } else if (o.type === 'image') {
         if (!o.src) continue; // empty frame — nothing to show OR announce
+        var fit = o.fit === 'contain' ? 'contain' : 'cover';
         if (o.decorative) {
-          parts.push('<img src="' + o.src + '" alt="" role="presentation" style="' + pos + 'object-fit:cover;">');
+          parts.push('<img src="' + stEscapeHtml(o.src) + '" alt="" role="presentation" style="' + pos + 'object-fit:' + fit + ';">');
         } else {
-          parts.push('<img src="' + o.src + '" alt="' + stEscapeHtml(o.alt) + '" style="' + pos + 'object-fit:cover;">');
+          parts.push('<img src="' + stEscapeHtml(o.src) + '" alt="' + stEscapeHtml(o.alt) + '" style="' + pos + 'object-fit:' + fit + ';">');
         }
       } else if (o.type === 'shape') {
-        var radius = o.shape === 'ellipse' ? 'border-radius:50%;' : 'border-radius:8px;';
-        parts.push('<div aria-hidden="true" style="' + pos + 'background:' + (o.fill || '#e2e8f0') + ';' + radius + '"></div>');
+        var radius = stSafeShape(o.shape) === 'ellipse' ? 'border-radius:50%;' : 'border-radius:8px;';
+        parts.push('<div aria-hidden="true" style="' + pos + 'background:' + stSafeCssColor(o.fill, '#e2e8f0') + ';' + radius + '"></div>');
       }
     }
-    return '<!DOCTYPE html>\n<html lang="' + lang + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + (canvas.background && canvas.background.fill || '#ffffff') + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n<main class="st-page">\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
+    return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n<main class="st-page">\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
   }
 
   // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
@@ -380,36 +699,14 @@
         c.width = Math.round(doc.canvas.w * scale); c.height = Math.round(doc.canvas.h * scale);
         var g = c.getContext('2d');
         g.scale(scale, scale);
-        g.fillStyle = (doc.canvas.background && doc.canvas.background.fill) || '#ffffff';
+        g.fillStyle = stSafeCssColor(doc.canvas.background && doc.canvas.background.fill, '#ffffff');
         g.fillRect(0, 0, doc.canvas.w, doc.canvas.h);
         // Paint order = z, stable within equal z by array order
-        var byZ = doc.objects.slice().sort(function (a, b) { return (a.z || 1) - (b.z || 1); });
+        var byZ = stOrderedObjects(doc.objects);
         var pending = [];
         byZ.forEach(function (o) {
-          var f = o.frame;
-          if (o.type === 'shape') {
-            g.fillStyle = o.fill || '#e2e8f0';
-            if (o.shape === 'ellipse') { g.beginPath(); g.ellipse(f.x + f.w / 2, f.y + f.h / 2, f.w / 2, f.h / 2, 0, 0, Math.PI * 2); g.fill(); }
-            else { g.fillRect(f.x, f.y, f.w, f.h); }
-          } else if (o.type === 'text') {
-            var run = (o.runs && o.runs[0]) || { text: '', style: {} };
-            var s = run.style || {};
-            g.fillStyle = s.color || '#111827';
-            g.font = (s.bold ? '700 ' : '400 ') + (s.size || 16) + 'px system-ui, sans-serif';
-            g.textBaseline = 'top';
-            var lineH = Math.round((s.size || 16) * 1.25);
-            var y = f.y;
-            String(run.text || '').split('\n').forEach(function (para) {
-              var words = para.split(/\s+/); var line = '';
-              for (var wi = 0; wi < words.length; wi++) {
-                var probe = line ? line + ' ' + words[wi] : words[wi];
-                if (g.measureText(probe).width > f.w && line) {
-                  stDrawAligned(g, line, f, y, s.align); y += lineH; line = words[wi];
-                } else { line = probe; }
-              }
-              stDrawAligned(g, line, f, y, s.align); y += lineH;
-            });
-          } else if (o.type === 'image' && o.src) {
+          if (!o || typeof o !== 'object') return;
+          if (o.type === 'image' && o.src) {
             pending.push(new Promise(function (res) {
               var im = new Image();
               im.onload = function () { res({ o: o, im: im }); };
@@ -419,12 +716,42 @@
           }
         });
         Promise.all(pending).then(function (loaded) {
-          // Images painted after shapes/text of any z — acceptable MVP approximation
-          // EXCEPT we honor z among images themselves by re-sorting.
-          loaded.filter(Boolean).sort(function (a, b) { return (a.o.z || 1) - (b.o.z || 1); }).forEach(function (item) {
-            var f = item.o.frame;
-            try { g.drawImage(item.im, f.x, f.y, f.w, f.h); } catch (_) {}
+          var loadedById = {};
+          loaded.filter(Boolean).forEach(function (item) { loadedById[item.o.id || item.o.src] = item.im; });
+          g.fillStyle = stSafeCssColor(doc.canvas.background && doc.canvas.background.fill, '#ffffff');
+          g.fillRect(0, 0, doc.canvas.w, doc.canvas.h);
+          byZ.forEach(function (o) {
+            if (!o || typeof o !== 'object') return;
+            var f2 = stClampFrame(o.frame, doc.canvas);
+            if (o.type === 'shape') {
+              g.fillStyle = stSafeCssColor(o.fill, '#e2e8f0');
+              if (stSafeShape(o.shape) === 'ellipse') { g.beginPath(); g.ellipse(f2.x + f2.w / 2, f2.y + f2.h / 2, f2.w / 2, f2.h / 2, 0, 0, Math.PI * 2); g.fill(); }
+              else { g.fillRect(f2.x, f2.y, f2.w, f2.h); }
+            } else if (o.type === 'text') {
+              var run2 = (o.runs && o.runs[0]) || { text: '', style: {} };
+              var s2 = run2.style || {};
+              var size2 = Math.max(8, Math.min(160, stFiniteNumber(s2.size, 16)));
+              g.fillStyle = stSafeCssColor(s2.color, '#111827');
+              g.font = (s2.bold ? '700 ' : '400 ') + size2 + 'px system-ui, sans-serif';
+              g.textBaseline = 'top';
+              var lineH2 = Math.round(size2 * 1.25);
+              var y2 = f2.y;
+              String(run2.text || '').split('\n').forEach(function (para) {
+                var words = para.split(/\s+/); var line = '';
+                for (var wi = 0; wi < words.length; wi++) {
+                  var probe = line ? line + ' ' + words[wi] : words[wi];
+                  if (g.measureText(probe).width > f2.w && line) {
+                    stDrawAligned(g, line, f2, y2, stSafeAlign(s2.align)); y2 += lineH2; line = words[wi];
+                  } else { line = probe; }
+                }
+                stDrawAligned(g, line, f2, y2, stSafeAlign(s2.align)); y2 += lineH2;
+              });
+            } else if (o.type === 'image' && o.src) {
+              var im2 = loadedById[o.id || o.src];
+              if (im2) { try { stDrawImageFit(g, im2, f2, o.fit); } catch (_) {} }
+            }
           });
+          // Repainted above in true layer order after async images load.
           c.toBlob(function (blob) { blob ? resolvePng(blob) : rejectPng(new Error('toBlob returned null')); }, 'image/png');
         });
       } catch (err) { rejectPng(err); }
@@ -435,6 +762,19 @@
     var w = g.measureText(line).width;
     var x = align === 'center' ? f.x + (f.w - w) / 2 : align === 'right' ? f.x + f.w - w : f.x;
     g.fillText(line, x, y);
+  }
+  function stDrawImageFit(g, im, f, fit) {
+    var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+    if (!iw || !ih) { g.drawImage(im, f.x, f.y, f.w, f.h); return; }
+    if (fit === 'contain') {
+      var contain = Math.min(f.w / iw, f.h / ih);
+      var dw = iw * contain, dh = ih * contain;
+      g.drawImage(im, f.x + (f.w - dw) / 2, f.y + (f.h - dh) / 2, dw, dh);
+      return;
+    }
+    var cover = Math.max(f.w / iw, f.h / ih);
+    var sw = f.w / cover, sh = f.h / cover;
+    g.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, f.x, f.y, f.w, f.h);
   }
 
   // ════════════════════════════ Editor component ════════════════════════════
@@ -452,22 +792,40 @@
     var _role = React.useState(props.initialRole === 'student' ? 'student' : 'teacher'); var role = _role[0], setRole = _role[1];
     var _scrub = React.useState(null); var scrubSeq = _scrub[0], setScrubSeq = _scrub[1];
     var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
+    var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
     var _drag = React.useRef(null); // {id, mode:'move'|'resize', startX, startY, frame0}
     var _dragLive = React.useState(null); var dragLive = _dragLive[0], setDragLive = _dragLive[1];
     var fileRef = React.useRef(null);
     var loadRef = React.useRef(null);
     var student = role === 'student';
+    var propTheme = ['light', 'dark', 'contrast'].indexOf(props.theme) >= 0 ? props.theme : null;
+    var themeName = propTheme || (function () {
+      try {
+        if (document.querySelector('.theme-contrast')) return 'contrast';
+        if (document.querySelector('.theme-dark')) return 'dark';
+      } catch (_) {}
+      return 'light';
+    })();
+    var C = themeName === 'contrast'
+      ? { overlay: 'rgba(0,0,0,0.88)', shell: '#000000', panel: '#000000', panelAlt: '#000000', text: '#ffffff', muted: '#ffff00', soft: '#ffffff', border: '#ffffff', headerBg: '#000000', headerText: '#ffff00', hBtnBg: '#000000', hBtnText: '#ffff00', hBtnBorder: '#ffff00', inputBg: '#000000', inputText: '#ffffff', accent: '#ffff00', exportBg: '#000000', exportBorder: '#ffff00', selectedBg: '#1f2937' }
+      : themeName === 'dark'
+        ? { overlay: 'rgba(2,6,23,0.78)', shell: '#0f172a', panel: '#111827', panelAlt: '#1e293b', text: '#f8fafc', muted: '#cbd5e1', soft: '#94a3b8', border: '#475569', headerBg: '#020617', headerText: '#f8fafc', hBtnBg: '#1e293b', hBtnText: '#f8fafc', hBtnBorder: '#475569', inputBg: '#020617', inputText: '#f8fafc', accent: '#a5b4fc', exportBg: '#1e1b4b', exportBorder: '#4338ca', selectedBg: '#312e81' }
+        : { overlay: 'rgba(15,23,42,0.55)', shell: '#f8fafc', panel: '#ffffff', panelAlt: '#f8fafc', text: '#0f172a', muted: '#64748b', soft: '#94a3b8', border: '#cbd5e1', headerBg: '#0f172a', headerText: '#ffffff', hBtnBg: '#1e293b', hBtnText: '#e2e8f0', hBtnBorder: '#334155', inputBg: '#ffffff', inputText: '#0f172a', accent: '#6366f1', exportBg: '#eef2ff', exportBorder: '#c7d2fe', selectedBg: '#e0e7ff' };
 
     var doc = _docRef.current;
     var SCALE = 0.62; // canvas display scale (816 → ~506px, fits beside panels)
 
     var dispatch = function (opBody, actor) {
       try {
-        stAppend(_docRef.current, opBody, actor || 'user', Date.now());
+        var op = stAppend(_docRef.current, opBody, actor || 'user', Date.now());
         bump();
+        return op;
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'op failed'), 'error'); }
+      return null;
     };
     var selected = doc && selectedId ? doc.objects.filter(function (o) { return o.id === selectedId; })[0] : null;
+    var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
+    var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
 
     var startFromTemplate = function (tpl) {
       _docRef.current = tpl.make(Date.now());
@@ -476,12 +834,13 @@
     };
 
     // ── object insertion ──
+    var selectFromOp = function (op) { if (op && op.object && op.object.id) setSelectedId(op.object.id); return op; };
     var insertText = function (roleKind) {
       var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
-      dispatch({ type: 'object.add', object: obj }, 'user');
+      selectFromOp(dispatch({ type: 'object.add', object: obj }, 'user'));
     };
     var insertShape = function (kind) {
-      dispatch({ type: 'object.add', object: stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe') }, 'user');
+      selectFromOp(dispatch({ type: 'object.add', object: stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe') }, 'user'));
     };
     var onPickImage = function (ev) {
       var f = ev.target.files && ev.target.files[0];
@@ -491,7 +850,7 @@
       r.onload = function (e) {
         // actor 'import': the asset came from outside the editor — the ledger
         // labels it honestly (we cannot see inside an uploaded image).
-        dispatch({ type: 'object.add', object: stMakeImage(e.target.result, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import');
+        selectFromOp(dispatch({ type: 'object.add', object: stMakeImage(e.target.result, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import'));
         addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
       };
       r.readAsDataURL(f);
@@ -542,6 +901,7 @@
           setSelectedId(null);
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
+          ev.stopPropagation(); // handled here — don't let the shell close the modal
           setSelectedId(null);
         }
       };
@@ -558,6 +918,19 @@
     };
 
     // ── exports ──
+    var alignSelected = function (mode) {
+      if (!selected) return;
+      dispatch({ type: 'object.update', target: selected.id, patch: { frame: stAlignFrame(selected.frame, doc.canvas, mode) } }, 'user');
+    };
+    var duplicateSelected = function () {
+      if (!selected) return;
+      var copy = stClone(selected);
+      delete copy.id;
+      copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
+      copy.z = stFiniteNumber(copy.z, 1) + 1;
+      var op = dispatch({ type: 'object.add', object: copy }, 'user');
+      if (op && op.object && op.object.id) setSelectedId(op.object.id);
+    };
     var altFailures = doc ? stAltGate(doc.objects) : [];
     var download = function (blob, name) {
       var a = document.createElement('a');
@@ -594,6 +967,14 @@
         .then(function (ok) { if (ok !== false) addToast(TT('studio.tagged_done', '✅ Tagged PDF downloaded — structure comes from your reading-order panel.'), 'success'); })
         .catch(function (err) { addToast(TT('studio.tagged_failed', 'Tagged PDF failed: ') + (err && err.message || 'unknown'), 'error'); });
     });
+    var exportWorksheet = function () {
+      download(new Blob([JSON.stringify(stExportWorksheetData(doc), null, 2)], { type: 'application/json' }), safeName() + '.worksheet.json');
+      addToast(TT('studio.exported_worksheet', 'Worksheet data downloaded.'), 'success');
+    };
+    var exportProcess = function () {
+      download(new Blob([stExportProcessMarkdown(doc, role)], { type: 'text/markdown' }), safeName() + '.process.md');
+      addToast(TT('studio.exported_process', 'Process reflection downloaded.'), 'success');
+    };
     var saveDoc = function () {
       download(new Blob([JSON.stringify(doc, null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
       addToast(TT('studio.saved', '💾 Saved. The file includes your full process history — it stays on this device.'), 'success');
@@ -619,37 +1000,37 @@
 
     // ── styles ──
     var S = {
-      overlay: { position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' },
-      shell: { background: '#f8fafc', borderRadius: '14px', width: 'min(1220px, 98vw)', height: 'min(860px, 96vh)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 8px 40px rgba(15,23,42,0.4)', fontFamily: 'system-ui, sans-serif' },
-      header: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#0f172a', color: '#fff' },
-      hBtn: { padding: '6px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#1e293b', color: '#e2e8f0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
+      overlay: { position: 'fixed', inset: 0, zIndex: 9000, background: C.overlay, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px' },
+      shell: { background: C.shell, color: C.text, border: '1px solid ' + C.border, borderRadius: '14px', width: 'min(1220px, 98vw)', height: 'min(860px, 96vh)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: themeName === 'contrast' ? '0 0 0 3px #ffff00' : '0 8px 40px rgba(15,23,42,0.4)', fontFamily: 'system-ui, sans-serif' },
+      header: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: C.headerBg, color: C.headerText, borderBottom: '1px solid ' + C.hBtnBorder },
+      hBtn: { padding: '6px 12px', borderRadius: '8px', border: '1px solid ' + C.hBtnBorder, background: C.hBtnBg, color: C.hBtnText, fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
       body: { flex: 1, display: 'flex', minHeight: 0 },
-      panel: { width: '215px', padding: '10px', overflowY: 'auto', background: '#fff', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' },
-      rpanel: { width: '250px', padding: '10px', overflowY: 'auto', background: '#fff', borderLeft: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' },
-      tool: { padding: '8px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', fontSize: '12px', fontWeight: 700, color: '#334155', cursor: 'pointer', textAlign: 'left' },
-      label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginTop: '4px' },
-      input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px' },
+      panel: { width: '215px', padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, borderRight: '1px solid ' + C.border, display: 'flex', flexDirection: 'column', gap: '8px' },
+      rpanel: { width: '250px', padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, borderLeft: '1px solid ' + C.border, display: 'flex', flexDirection: 'column', gap: '8px' },
+      tool: { padding: '8px 10px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panelAlt, fontSize: '12px', fontWeight: 700, color: C.text, cursor: 'pointer', textAlign: 'left' },
+      label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: C.muted, marginTop: '4px' },
+      input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid ' + C.border, borderRadius: '6px', fontSize: '12px', background: C.inputBg, color: C.inputText },
     };
 
     if (!doc || view === 'templates') {
       // ── template picker ──
-      return h('div', { className: 'st-root', style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio') },
+      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio') },
         h('div', { style: Object.assign({}, S.shell, { width: 'min(860px, 96vw)', height: 'auto', maxHeight: '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
-            h('span', { style: { fontSize: '11px', color: '#94a3b8' } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
+            h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
           h('div', { style: { padding: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
             stTemplates().map(function (tpl) {
-              return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'flex-start' } },
+              return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                 h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
                 h('span', null,
-                  h('strong', { style: { display: 'block', fontSize: '14px', color: '#0f172a' } }, tpl.name),
-                  h('span', { style: { fontSize: '11px', color: '#64748b' } }, tpl.desc)));
+                  h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
+                  h('span', { style: { fontSize: '11px', color: C.muted } }, tpl.desc)));
             })),
-          h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: '#64748b' } },
+          h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
             TT('studio.privacy_note', 'Everything stays on this device. Your document — including its full process history — lives in a local save file.')),
           h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
     }
@@ -663,32 +1044,33 @@
       var scene = stReplay(doc, at);
       var summary = stActorSummary(ops);
       var mins = Math.max(1, Math.round(summary.activeMs / 60000));
-      return h('div', { className: 'st-root', style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline') },
+      return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline') },
         h('div', { style: S.shell },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎞️'),
             h('strong', null, student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline')),
-            h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { setScrubSeq(null); setView('edit'); } }, '← ' + TT('studio.back_to_editing', 'Back to editing'))),
+            h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: exportProcess }, 'Process notes'),
+            h('button', { style: S.hBtn, onClick: function () { setScrubSeq(null); setView('edit'); } }, '← ' + TT('studio.back_to_editing', 'Back to editing'))),
           h('div', { style: { display: 'flex', flex: 1, minHeight: 0 } },
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px', overflow: 'auto' } },
               h('div', { style: { position: 'relative', width: doc.canvas.w * 0.45 + 'px', height: doc.canvas.h * 0.45 + 'px', background: (scene.canvas.background && scene.canvas.background.fill) || '#fff', boxShadow: '0 2px 10px rgba(15,23,42,0.2)', overflow: 'hidden', flexShrink: 0 } },
                 scene.objects.map(function (o) { return renderObject(o, 0.45, null, {}, h); })),
-              h('label', { style: { width: '90%', marginTop: '12px', fontSize: '12px', color: '#334155', fontWeight: 700 } },
+              h('label', { style: { width: '90%', marginTop: '12px', fontSize: '12px', color: C.text, fontWeight: 700 } },
                 TT('studio.scrub_label', 'Scrub the timeline') + ' — ' + at + ' / ' + maxSeq,
                 h('input', { type: 'range', min: 0, max: maxSeq, value: at, style: { width: '100%' }, 'aria-valuetext': TT('studio.scrub_step', 'step') + ' ' + at + ' ' + TT('studio.of', 'of') + ' ' + maxSeq, onChange: function (e) { setScrubSeq(parseInt(e.target.value, 10)); } }))),
             h('div', { style: Object.assign({}, S.rpanel, { width: '300px' }) },
-              h('div', { style: { padding: '10px', background: '#eef2ff', borderRadius: '10px', fontSize: '12px', color: '#312e81', fontWeight: 700 } },
+              h('div', { style: { padding: '10px', background: C.exportBg, border: '1px solid ' + C.exportBorder, borderRadius: '10px', fontSize: '12px', color: C.text, fontWeight: 700 } },
                 summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
-                h('div', { style: { fontWeight: 400, marginTop: '4px', color: '#4338ca' } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
-              h('p', { style: { fontSize: '11px', color: '#64748b', margin: '2px 0 6px' } }, TT('studio.honesty_line', ST_HONESTY_LINE)),
+                h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
+              h('p', { style: { fontSize: '11px', color: C.muted, margin: '2px 0 6px' } }, TT('studio.honesty_line', ST_HONESTY_LINE)),
               h('div', { style: S.label }, TT('studio.recent_steps', 'Steps (latest first)')),
               h('div', { style: { overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' } },
                 ops.slice(-120).reverse().map(function (op) {
                   var chip = op.actor === 'ai' ? { bg: '#f3e8ff', fg: '#7c2d12', label: 'AI' } : op.actor === 'import' ? { bg: '#fef3c7', fg: '#92400e', label: TT('studio.actor_import', 'import') } : { bg: '#dcfce7', fg: '#166534', label: TT('studio.actor_user', 'you') };
-                  return h('div', { key: op.seq, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '11px', color: '#334155', padding: '2px 4px', background: op.seq === at ? '#e0e7ff' : 'transparent', borderRadius: '4px' } },
-                    h('button', { onClick: function () { setScrubSeq(op.seq); }, style: { border: 'none', background: 'none', cursor: 'pointer', color: '#6366f1', fontWeight: 700, fontSize: '11px', padding: 0 }, 'aria-label': TT('studio.jump_to_step', 'Jump to step') + ' ' + op.seq }, '#' + op.seq),
+                  return h('div', { key: op.seq, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '11px', color: C.text, padding: '2px 4px', background: op.seq === at ? C.selectedBg : 'transparent', borderRadius: '4px' } },
+                    h('button', { onClick: function () { setScrubSeq(op.seq); }, style: { border: 'none', background: 'none', cursor: 'pointer', color: C.accent, fontWeight: 700, fontSize: '11px', padding: 0 }, 'aria-label': TT('studio.jump_to_step', 'Jump to step') + ' ' + op.seq }, '#' + op.seq),
                     h('span', { style: { background: chip.bg, color: chip.fg, borderRadius: '999px', padding: '0 7px', fontWeight: 700, fontSize: '10px' } }, chip.label),
-                    h('span', null, op.type + (op.template ? ' (' + op.template + ')' : '')));
+                    h('span', null, stDescribeOp(op)));
                 }))))));
     }
 
@@ -702,7 +1084,7 @@
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
         boxSizing: 'border-box', cursor: interactivity ? 'move' : 'default',
-        outline: isSel ? '2px solid #6366f1' : '1px dashed transparent',
+        outline: isSel ? '2px solid ' + C.accent : '1px dashed transparent',
       };
       var inner = null;
       if (o.type === 'text') {
@@ -711,8 +1093,8 @@
         inner = hh('div', { style: { fontSize: (s.size || 16) * scale + 'px', color: s.color || '#111827', fontWeight: s.bold ? 700 : 400, textAlign: s.align || 'left', whiteSpace: 'pre-wrap', lineHeight: 1.25, overflow: 'hidden', width: '100%', height: '100%', overflowWrap: 'break-word' } }, run.text);
       } else if (o.type === 'image') {
         inner = o.src
-          ? hh('img', { src: o.src, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' } })
-          : hh('div', { style: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', border: '2px dashed #cbd5e1', borderRadius: '8px', fontSize: 12 * scale + 'px', color: '#64748b', pointerEvents: 'none' } }, '🖼️ ' + TT('studio.image_placeholder', 'Image frame'));
+          ? hh('img', { src: o.src, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: o.fit === 'contain' ? 'contain' : 'cover', pointerEvents: 'none' } })
+          : hh('div', { style: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.panelAlt, border: '2px dashed ' + C.border, borderRadius: '8px', fontSize: 12 * scale + 'px', color: C.muted, pointerEvents: 'none' } }, '🖼️ ' + TT('studio.image_placeholder', 'Image frame'));
       } else if (o.type === 'shape') {
         inner = hh('div', { style: { width: '100%', height: '100%', background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '8px', pointerEvents: 'none' } });
       }
@@ -735,13 +1117,13 @@
           onPointerDown: onObjectPointerDown(o, 'resize'),
           onPointerMove: onCanvasPointerMove,
           onPointerUp: onCanvasPointerUp,
-          style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: '#6366f1', border: '2px solid #fff', borderRadius: '4px', cursor: 'nwse-resize' },
+          style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: C.accent, border: '2px solid ' + C.panel, borderRadius: '4px', cursor: 'nwse-resize' },
         }) : null,
         (editingText && editingText.id === o.id) ? hh('textarea', {
           autoFocus: true,
           defaultValue: editingText.value,
           'aria-label': TT('studio.edit_text', 'Edit text'),
-          style: { position: 'absolute', inset: 0, fontSize: (((o.runs && o.runs[0] && o.runs[0].style && o.runs[0].style.size) || 16) * scale) + 'px', border: '2px solid #6366f1', borderRadius: '4px', resize: 'none', padding: '2px', background: '#fff' },
+          style: { position: 'absolute', inset: 0, fontSize: (((o.runs && o.runs[0] && o.runs[0].style && o.runs[0].style.size) || 16) * scale) + 'px', border: '2px solid ' + C.accent, borderRadius: '4px', resize: 'none', padding: '2px', background: C.inputBg, color: C.inputText },
           onBlur: function (e) { commitTextEdit(o, e.target.value); },
           // Stop ALL keys from bubbling to the object's move/resize/delete
           // handler — typing an arrow key must edit the text, not move the box.
@@ -753,17 +1135,17 @@
     var orderList = doc.objects.map(function (o, i) {
       var text = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || '').slice(0, 26) : o.type === 'image' ? (o.alt ? o.alt.slice(0, 26) : TT('studio.image_no_alt_short', '(no alt yet)')) : (o.shape || 'shape');
       var icon = o.type === 'text' ? (o.role === 'body' ? '¶' : 'H') : o.type === 'image' ? '🖼️' : '⬛';
-      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectedId === o.id ? '#e0e7ff' : '#f8fafc', border: '1px solid #e2e8f0' } },
-        h('button', { onClick: function () { setSelectedId(o.id); }, style: { flex: 1, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: '#334155', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
+      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectedId === o.id ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
+        h('button', { onClick: function () { setSelectedId(o.id); }, style: { flex: 1, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
-        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
-        h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
+        h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
+        h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
 
     var propPanel = null;
     if (selected) {
       var frameInput = function (key, label) {
-        return h('label', { style: { fontSize: '10px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '2px' } }, label,
+        return h('label', { style: { fontSize: '10px', color: C.muted, display: 'flex', flexDirection: 'column', gap: '2px' } }, label,
           h('input', { type: 'number', value: selected.frame[key], style: S.input, 'aria-label': label,
             onChange: function (e) {
               var v = parseInt(e.target.value, 10); if (isNaN(v)) return;
@@ -774,25 +1156,60 @@
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' — ' + selected.type),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } }, frameInput('x', 'X'), frameInput('y', 'Y'), frameInput('w', TT('studio.width', 'Width')), frameInput('h', TT('studio.height', 'Height'))),
-        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.text_role', 'Role (sets the exported tag)'),
+        h('div', { style: S.label }, 'Layout'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
+          h('button', { style: S.tool, onClick: function () { alignSelected('left'); }, title: 'Align left' }, 'L'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('hcenter'); }, title: 'Center horizontally' }, 'C'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('right'); }, title: 'Align right' }, 'R'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('top'); }, title: 'Align top' }, 'T'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('vcenter'); }, title: 'Center vertically' }, 'M'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('bottom'); }, title: 'Align bottom' }, 'B')),
+        h('div', { style: { display: 'flex', gap: '4px' } },
+          h('button', { style: S.tool, onClick: duplicateSelected }, 'Duplicate'),
+          h('button', { style: S.tool, onClick: function () { alignSelected('page-width'); } }, 'Page width')),
+        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_role', 'Role (sets the exported tag)'),
           h('select', { value: selected.role, style: S.input, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { role: e.target.value } }, 'user'); } },
             h('option', { value: 'heading1' }, 'Heading 1'), h('option', { value: 'heading2' }, 'Heading 2'), h('option', { value: 'heading3' }, 'Heading 3'), h('option', { value: 'body' }, TT('studio.body_text', 'Body text')))) : null,
-        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.font_size', 'Font size'),
+        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_content', 'Text'),
+          h('textarea', { key: 'text-' + selected.id, defaultValue: (selected.runs && selected.runs[0] && selected.runs[0].text) || '', rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), 'aria-label': TT('studio.text_content', 'Text'),
+            onKeyDown: function (e) { e.stopPropagation(); },
+            onBlur: function (e) { commitTextEdit(selected, e.target.value); } })) : null,
+        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.font_size', 'Font size'),
           h('input', { type: 'number', min: 8, max: 120, value: (selected.runs[0].style && selected.runs[0].style.size) || 16, style: S.input, onChange: function (e) { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; var runs = stClone(selected.runs); runs[0].style.size = Math.max(8, Math.min(120, v)); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
-        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.text_color', 'Text color'),
+        selected.type === 'text' ? h('div', null,
+          h('div', { style: S.label }, TT('studio.text_align', 'Text alignment & weight')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
+            ['left', 'center', 'right'].map(function (al) {
+              var curAlign = (selected.runs[0].style && selected.runs[0].style.align) || 'left';
+              var active = curAlign === al;
+              return h('button', { key: al, style: Object.assign({}, S.tool, { textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null),
+                'aria-pressed': active, 'aria-label': TT('studio.align_text', 'Align text') + ' ' + al, title: TT('studio.align_text', 'Align text') + ' ' + al,
+                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { align: al }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } },
+                al === 'left' ? 'L' : al === 'center' ? 'C' : 'R');
+            }),
+            (function () {
+              var bold = !!(selected.runs[0].style && selected.runs[0].style.bold);
+              return h('button', { key: 'bold', style: Object.assign({}, S.tool, { textAlign: 'center', fontWeight: 900 }, bold ? { borderColor: C.accent, background: C.selectedBg } : null),
+                'aria-pressed': bold, 'aria-label': TT('studio.bold', 'Bold'), title: TT('studio.bold', 'Bold'),
+                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
+            })())) : null,
+        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_color', 'Text color'),
           h('input', { type: 'color', value: (selected.runs[0].style && selected.runs[0].style.color) || '#111827', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { var runs = stClone(selected.runs); runs[0].style.color = e.target.value; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
-        selected.type === 'shape' ? h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.fill', 'Fill'),
+        selected.type === 'shape' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.fill', 'Fill'),
           h('input', { type: 'color', value: selected.fill || '#dbeafe', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: e.target.value } }, 'user'); } })) : null,
         selected.type === 'image' ? h('div', null,
-          h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.alt_text', 'Alt text (what a screen reader hears)'),
+          h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.alt_text', 'Alt text (what a screen reader hears)'),
             // key by object id: switching selection remounts with the right
             // defaultValue; commit-on-blur = ONE object.update op per edit.
             h('textarea', { key: 'alt-' + selected.id, defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
               onKeyDown: function (e) { e.stopPropagation(); },
               onBlur: function (e) { if (e.target.value !== (selected.alt || '')) dispatch({ type: 'object.update', target: selected.id, patch: { alt: e.target.value } }, 'user'); } })),
-          h('label', { style: { fontSize: '11px', color: '#334155', display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' } },
+          h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' } },
             h('input', { type: 'checkbox', checked: !!selected.decorative, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { decorative: e.target.checked } }, 'user'); } }),
             TT('studio.decorative', 'Decorative (skip in screen readers)')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
+            h('button', { style: Object.assign({}, S.tool, selected.fit !== 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'cover' } }, 'user'); }, 'aria-pressed': selected.fit !== 'contain' }, 'Fill'),
+            h('button', { style: Object.assign({}, S.tool, selected.fit === 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'contain' } }, 'user'); }, 'aria-pressed': selected.fit === 'contain' }, 'Fit')),
           h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }), onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace image…'))) : null,
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only — reading order is the list)') }, '⬆ z'),
@@ -804,36 +1221,60 @@
     // the browser's native text undo keeps working inside inputs/textareas
     // (the object-level keyboard grammar stays on the objects themselves).
     var onShellKeyDown = function (ev) {
-      if (!(ev.ctrlKey || ev.metaKey)) return;
       var tag = (ev.target && ev.target.tagName || '').toUpperCase();
+      // Escape: deselect if something is selected, otherwise close the modal.
+      // A focused object handles (and stops) its own Escape; text fields keep
+      // their native Escape. This only fires from panels/canvas chrome.
+      if (ev.key === 'Escape') {
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        ev.preventDefault();
+        if (selectedId) { setSelectedId(null); return; }
+        if (typeof props.onClose === 'function') props.onClose();
+        return;
+      }
+      if (!(ev.ctrlKey || ev.metaKey)) return;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       var k = (ev.key || '').toLowerCase();
       if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
       else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); if (stRedo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_redone', 'Redone')); } }
     };
-    return h('div', { className: 'st-root', style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: onShellKeyDown },
+    return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: onShellKeyDown },
       h('div', { style: S.shell },
         // header
         h('div', { style: S.header },
           h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           // Uncontrolled + commit-on-blur: one clean doc.retitle op instead of
           // an op per keystroke polluting the process timeline.
-          h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: { background: '#1e293b', color: '#fff', border: '1px solid #334155', borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: '220px' },
+          h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: { background: C.hBtnBg, color: C.hBtnText, border: '1px solid ' + C.hBtnBorder, borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: '220px' },
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: S.hBtn, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
           h('button', { style: S.hBtn, onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
           h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { setRole(student ? 'teacher' : 'student'); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
+          h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
           h('span', { style: { marginLeft: 'auto' } }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
           h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
+        preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '150px' } }, 'Accessibility Preflight',
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors · ' + preflight.counts.warning + ' warnings · ' + preflight.counts.review + ' review')),
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: 1 } },
+            preflight.issues.length ? preflight.issues.slice(0, 8).map(function (issue, idx) {
+              var bg = issue.severity === 'error' ? '#fee2e2' : issue.severity === 'warning' ? '#fef3c7' : C.panel;
+              var fg = issue.severity === 'error' ? '#7f1d1d' : issue.severity === 'warning' ? '#78350f' : C.text;
+              return h('button', { key: idx, style: { border: '1px solid ' + (issue.severity === 'review' ? C.border : 'transparent'), background: bg, color: fg, borderRadius: '8px', padding: '5px 8px', cursor: issue.id ? 'pointer' : 'default', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
+                onClick: function () { if (issue.id) { setSelectedId(issue.id); stAnnounce(issue.title); } },
+                title: issue.message }, issue.title)
+            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, 'No accessibility issues found.'))) : null,
         // export panel
-        exportOpen ? h('div', { style: { padding: '10px 14px', background: '#eef2ff', borderBottom: '1px solid #c7d2fe', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+        exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
           h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
           h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
+          h('button', { style: S.tool, onClick: exportWorksheet }, 'Worksheet JSON'),
+          h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: '#b91c1c', fontWeight: 700 } },
             '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
             altFailures.map(function (m) {
@@ -852,9 +1293,9 @@
             h('button', { style: S.tool, onClick: function () { insertShape('ellipse'); } }, '◯ ' + TT('studio.insert_ellipse', 'Ellipse')),
             h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.removeAttribute('data-st-replace'); fileRef.current.click(); } } }, '🖼️ ' + TT('studio.insert_image', 'Image…')),
             h('div', { style: S.label }, TT('studio.page', 'Page')),
-            h('label', { style: { fontSize: '10px', color: '#64748b' } }, TT('studio.background', 'Background'),
+            h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.background', 'Background'),
               h('input', { type: 'color', value: (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'canvas.background', fill: e.target.value }, 'user'); } })),
-            h('p', { style: { fontSize: '10px', color: '#94a3b8', marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Tab focuses objects; arrows move, Shift+arrows resize, Delete removes. The panel on the right is the reading order.'))),
+            h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Tab focuses objects; arrows move, Shift+arrows resize, Delete removes. The panel on the right is the reading order.'))),
           // center: canvas
           h('div', { style: { flex: 1, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '18px' }, onPointerDown: function () { setSelectedId(null); } },
             h('div', { style: { position: 'relative', width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
@@ -865,7 +1306,7 @@
           h('div', { style: S.rpanel },
             h('div', { style: S.label }, '🔊 ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: '38%', overflowY: 'auto' } }, orderList),
-            propPanel || h('p', { style: { fontSize: '11px', color: '#94a3b8' } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
+            propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
         h('input', { ref: fileRef, type: 'file', accept: 'image/*', style: { display: 'none' },
           onChange: function (ev) {
             var replaceId = ev.target.getAttribute('data-st-replace');
@@ -891,10 +1332,16 @@
   AlloStudio.stActorSummary = stActorSummary;
   AlloStudio.stAltGate = stAltGate;
   AlloStudio.stValidateDoc = stValidateDoc;
+  AlloStudio.stDescribeOp = stDescribeOp;
   AlloStudio.stTemplates = stTemplates;
   AlloStudio.stExportHtml = stExportHtml;
   AlloStudio.stEscapeHtml = stEscapeHtml;
   AlloStudio.stClampFrame = stClampFrame;
+  AlloStudio.stAlignFrame = stAlignFrame;
+  AlloStudio.stAnalyzeDoc = stAnalyzeDoc;
+  AlloStudio.stContrastRatio = stContrastRatio;
+  AlloStudio.stExportWorksheetData = stExportWorksheetData;
+  AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
   AlloStudio.ST_CHECKPOINT_EVERY = ST_CHECKPOINT_EVERY;

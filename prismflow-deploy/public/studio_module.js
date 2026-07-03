@@ -455,7 +455,6 @@
       if (!o || o.type !== 'text') return;
       var text = String((o.runs && o.runs[0] && o.runs[0].text) || '').trim();
       if (!text) return;
-      if (o.role === 'heading1' && !out.title) out.title = text;
       if (o.role === 'heading1') out.title = text;
       else if (o.role === 'heading2' && /^\d+[\.)]\s*/.test(text)) {
         current = { prompt: text.replace(/^\d+[\.)]\s*/, ''), supportText: '' };
@@ -835,12 +834,13 @@
     };
 
     // ── object insertion ──
+    var selectFromOp = function (op) { if (op && op.object && op.object.id) setSelectedId(op.object.id); return op; };
     var insertText = function (roleKind) {
       var obj = stMakeText(roleKind, roleKind === 'body' ? TT('studio.new_text', 'New text — double-click to edit') : TT('studio.new_heading', 'New heading'), { x: 60, y: 60, w: 400, h: roleKind === 'heading1' ? 70 : 50 });
-      dispatch({ type: 'object.add', object: obj }, 'user');
+      selectFromOp(dispatch({ type: 'object.add', object: obj }, 'user'));
     };
     var insertShape = function (kind) {
-      dispatch({ type: 'object.add', object: stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe') }, 'user');
+      selectFromOp(dispatch({ type: 'object.add', object: stMakeShape(kind, { x: 80, y: 80, w: 240, h: 160 }, kind === 'ellipse' ? '#fce7f3' : '#dbeafe') }, 'user'));
     };
     var onPickImage = function (ev) {
       var f = ev.target.files && ev.target.files[0];
@@ -850,7 +850,7 @@
       r.onload = function (e) {
         // actor 'import': the asset came from outside the editor — the ledger
         // labels it honestly (we cannot see inside an uploaded image).
-        dispatch({ type: 'object.add', object: stMakeImage(e.target.result, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import');
+        selectFromOp(dispatch({ type: 'object.add', object: stMakeImage(e.target.result, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import'));
         addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
       };
       r.readAsDataURL(f);
@@ -901,6 +901,7 @@
           setSelectedId(null);
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
+          ev.stopPropagation(); // handled here — don't let the shell close the modal
           setSelectedId(null);
         }
       };
@@ -1175,6 +1176,23 @@
             onBlur: function (e) { commitTextEdit(selected, e.target.value); } })) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.font_size', 'Font size'),
           h('input', { type: 'number', min: 8, max: 120, value: (selected.runs[0].style && selected.runs[0].style.size) || 16, style: S.input, onChange: function (e) { var v = parseInt(e.target.value, 10); if (isNaN(v)) return; var runs = stClone(selected.runs); runs[0].style.size = Math.max(8, Math.min(120, v)); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
+        selected.type === 'text' ? h('div', null,
+          h('div', { style: S.label }, TT('studio.text_align', 'Text alignment & weight')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
+            ['left', 'center', 'right'].map(function (al) {
+              var curAlign = (selected.runs[0].style && selected.runs[0].style.align) || 'left';
+              var active = curAlign === al;
+              return h('button', { key: al, style: Object.assign({}, S.tool, { textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null),
+                'aria-pressed': active, 'aria-label': TT('studio.align_text', 'Align text') + ' ' + al, title: TT('studio.align_text', 'Align text') + ' ' + al,
+                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { align: al }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } },
+                al === 'left' ? 'L' : al === 'center' ? 'C' : 'R');
+            }),
+            (function () {
+              var bold = !!(selected.runs[0].style && selected.runs[0].style.bold);
+              return h('button', { key: 'bold', style: Object.assign({}, S.tool, { textAlign: 'center', fontWeight: 900 }, bold ? { borderColor: C.accent, background: C.selectedBg } : null),
+                'aria-pressed': bold, 'aria-label': TT('studio.bold', 'Bold'), title: TT('studio.bold', 'Bold'),
+                onClick: function () { var runs = stClone(selected.runs); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
+            })())) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_color', 'Text color'),
           h('input', { type: 'color', value: (selected.runs[0].style && selected.runs[0].style.color) || '#111827', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { var runs = stClone(selected.runs); runs[0].style.color = e.target.value; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
         selected.type === 'shape' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.fill', 'Fill'),
@@ -1203,8 +1221,18 @@
     // the browser's native text undo keeps working inside inputs/textareas
     // (the object-level keyboard grammar stays on the objects themselves).
     var onShellKeyDown = function (ev) {
-      if (!(ev.ctrlKey || ev.metaKey)) return;
       var tag = (ev.target && ev.target.tagName || '').toUpperCase();
+      // Escape: deselect if something is selected, otherwise close the modal.
+      // A focused object handles (and stops) its own Escape; text fields keep
+      // their native Escape. This only fires from panels/canvas chrome.
+      if (ev.key === 'Escape') {
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        ev.preventDefault();
+        if (selectedId) { setSelectedId(null); return; }
+        if (typeof props.onClose === 'function') props.onClose();
+        return;
+      }
+      if (!(ev.ctrlKey || ev.metaKey)) return;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       var k = (ev.key || '').toLowerCase();
       if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }

@@ -1,8 +1,9 @@
 // AlloStudio Milestone A (2026-07-02) — pure-core coverage for the event-sourced
 // scene: ledger append/undo/redo, checkpointed replay, the closed actor set, the
-// alt-text export gate, template integrity, and the born-accessible HTML export
+// alt-text export gate, accessibility preflight, bridge exports, layout helpers,
+// template integrity, and the born-accessible HTML export
 // (DOM order = reading order; real text; alt/decorative enforced). Design doc:
-// docs/studio_design.md v0.2.
+// docs/studio_design.md v0.3.
 import { describe, it, expect, beforeAll } from 'vitest';
 import { loadAlloModule } from './setup.js';
 
@@ -35,6 +36,21 @@ describe('doc creation + validation', () => {
     expect(ST.stValidateDoc({ format: 'notallostudio' }).length).toBeGreaterThan(0);
     expect(ST.stValidateDoc({ format: 'allostudio', version: 99, canvas: { w: 1, h: 1 }, objects: [], ledger: { ops: [] } }).some(e => /newer/i.test(e))).toBe(true);
     expect(ST.stValidateDoc(null).length).toBeGreaterThan(0);
+  });
+  it('rejects malformed saved objects and provenance actors', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Bad save', T0);
+    addText(d, 'ok');
+    d.objects[0].frame.x = Number.NaN;
+    d.ledger.ops[0].actor = 'plugin';
+    const errs = ST.stValidateDoc(d);
+    expect(errs.some(e => /invalid frame/i.test(e))).toBe(true);
+    expect(errs.some(e => /unknown actor/i.test(e))).toBe(true);
+  });
+  it('rejects unknown image fit modes in saved files', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Bad fit', T0);
+    addImage(d, 'data:image/png;base64,x', 'diagram');
+    d.objects[0].fit = 'stretch';
+    expect(ST.stValidateDoc(d).some(e => /invalid image fit/i.test(e))).toBe(true);
   });
   it('save→load round-trip (JSON) stays valid and replayable', () => {
     const d = ST.stCreateDoc('square', 'RT', T0);
@@ -81,6 +97,15 @@ describe('scene ops', () => {
     expect(o1.frame.y).toBe(1056 - o1.frame.h);
     ST.stAppend(d, { type: 'object.resize', target: 'o1', w: 2, h: 2 }, 'user', T0);
     expect(d.objects.find(o => o.id === 'o1').frame.w).toBeGreaterThanOrEqual(8);
+  });
+  it('non-finite move / resize values fall back to finite safe frames', () => {
+    const d = mk();
+    ST.stAppend(d, { type: 'object.move', target: 'o1', x: Number.NaN, y: Infinity }, 'user', T0);
+    ST.stAppend(d, { type: 'object.resize', target: 'o1', w: Infinity, h: Number.NaN }, 'user', T0);
+    const f = d.objects.find(o => o.id === 'o1').frame;
+    expect(Object.values(f).every(Number.isFinite)).toBe(true);
+    expect(f.w).toBeGreaterThanOrEqual(8);
+    expect(f.h).toBeGreaterThanOrEqual(8);
   });
   it('reorder changes the READING ORDER (array position)', () => {
     const d = mk();
@@ -182,6 +207,73 @@ describe('actor summary (Process tab)', () => {
     expect(s.total).toBe(4);
     expect(s.activeMs).toBe(120000);
   });
+  it('describes raw event names in student-friendly language', () => {
+    expect(ST.stDescribeOp({ type: 'object.update', patch: { alt: 'diagram' } })).toBe('Updated alt text');
+    expect(ST.stDescribeOp({ type: 'object.reorder' })).toBe('Changed the reading order');
+    expect(ST.stDescribeOp({ type: 'doc.template', template: 'worksheet' })).toBe('Started from the worksheet template');
+  });
+});
+
+describe('accessibility preflight + workflow helpers', () => {
+  it('computes WCAG-style contrast ratios', () => {
+    expect(ST.stContrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 1);
+    expect(ST.stContrastRatio('#777777', '#777777')).toBeCloseTo(1, 2);
+  });
+  it('flags missing alt, low contrast, small type, empty frames, and reading-order review', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Preflight', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#ffffff', decorative: true, frame: { x: 0, y: 0, w: 816, h: 1056 }, z: 1 } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny', style: { size: 10, color: '#fefefe' } }] } }, 'user', T0);
+    addImage(d, 'data:image/png;base64,x', '');
+    addImage(d, '', '');
+    const result = ST.stAnalyzeDoc(d);
+    const types = result.issues.map(issue => issue.type);
+    expect(types).toContain('alt');
+    expect(types).toContain('contrast');
+    expect(types).toContain('small-text');
+    expect(types).toContain('empty-image');
+    expect(types).toContain('reading-order');
+    expect(result.counts.error).toBeGreaterThanOrEqual(1);
+    expect(result.counts.warning).toBeGreaterThanOrEqual(2);
+  });
+  it('aligns frames to edges, centers, and printable page width', () => {
+    const canvas = { w: 500, h: 400 };
+    const frame = { x: 10, y: 20, w: 100, h: 50 };
+    expect(ST.stAlignFrame(frame, canvas, 'right').x).toBe(400);
+    expect(ST.stAlignFrame(frame, canvas, 'bottom').y).toBe(350);
+    expect(ST.stAlignFrame(frame, canvas, 'hcenter').x).toBe(200);
+    expect(ST.stAlignFrame(frame, canvas, 'vcenter').y).toBe(175);
+    expect(ST.stAlignFrame(frame, canvas, 'page-width')).toMatchObject({ x: 48, w: 404 });
+  });
+  it('exports worksheet bridge data from numbered heading prompts', () => {
+    const ws = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
+    const data = ST.stExportWorksheetData(ws);
+    expect(data.title).toBe('Worksheet title');
+    expect(data.instructions).toMatch(/Instructions/i);
+    expect(data.questions.map(q => q.prompt)).toEqual(['Question 1', 'Question 2', 'Question 3']);
+  });
+  it('carries text alignment and bold from object.update into the HTML export', () => {
+    // The property-panel align/bold controls dispatch object.update{patch.runs}.
+    // Lock that the exported CSS honors both (DOM order = reading order stays real).
+    const d = ST.stCreateDoc('letter-portrait', 'Styled', T0);
+    addText(d, 'Centered bold heading', 'heading1');
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { runs: [{ text: 'Centered bold heading', style: { size: 44, align: 'center', bold: true } }] } }, 'user', T0 + 1000);
+    const html = ST.stExportHtml(d, { lang: 'en' });
+    expect(html).toContain('text-align:center');
+    expect(html).toContain('font-weight:700');
+    // toggling bold back off flows through too
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { runs: [{ text: 'Centered bold heading', style: { size: 44, align: 'center', bold: false } }] } }, 'user', T0 + 2000);
+    expect(ST.stExportHtml(d, { lang: 'en' })).toContain('font-weight:400');
+  });
+  it('exports student-friendly process notes as markdown', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Process Notes', T0);
+    addText(d, 'draft');
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { runs: [{ text: 'revised', style: { size: 16 } }] } }, 'user', T0 + 60000);
+    const md = ST.stExportProcessMarkdown(d, 'student');
+    expect(md).toContain('## My Process');
+    expect(md).toContain(ST.ST_HONESTY_LINE);
+    expect(md).toContain('#1 Added text');
+    expect(md).toContain('#2 Edited text');
+  });
 });
 
 describe('alt gate (design law 3)', () => {
@@ -203,9 +295,9 @@ describe('alt gate (design law 3)', () => {
 });
 
 describe('templates (doc §11 set)', () => {
-  it('ships exactly flyer, worksheet, poster, blank — all valid, all ledger-seeded', () => {
+  it('ships the classroom template gallery — all valid, all ledger-seeded', () => {
     const tpls = ST.stTemplates();
-    expect(tpls.map(t => t.key)).toEqual(['flyer', 'worksheet', 'poster', 'blank']);
+    expect(tpls.map(t => t.key)).toEqual(['flyer', 'worksheet', 'poster', 'exitTicket', 'vocabPoster', 'labSafety', 'checklist', 'newsletter', 'bookReport', 'cerOrganizer', 'compareContrast', 'blank']);
     for (const tpl of tpls) {
       const d = tpl.make(T0);
       expect(ST.stValidateDoc(d)).toEqual([]);
@@ -261,6 +353,12 @@ describe('born-accessible HTML export (the moat, doc §6)', () => {
     expect(html).toContain('alt="A student\'s diagram"');
     expect(html).toContain('alt="" role="presentation"');
   });
+  it('honors image fit mode in accessible HTML export', () => {
+    const d = mkDoc();
+    ST.stAppend(d, { type: 'object.update', target: 'o3', patch: { fit: 'contain' } }, 'user', T0);
+    const html = ST.stExportHtml(d, { lang: 'en' });
+    expect(html).toContain('object-fit:contain');
+  });
   it('empty-src image frames emit nothing; export has no scripts and sets lang', () => {
     const d = mkDoc();
     ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: '', alt: '', decorative: false, frame: { x: 0, y: 0, w: 40, h: 40 }, z: 2 } }, 'user', T0);
@@ -269,6 +367,20 @@ describe('born-accessible HTML export (the moat, doc §6)', () => {
     expect(html).not.toContain('<script');
     expect(html).toContain('<html lang="en">');
     expect(html).toContain('<title>Export &amp; Test</title>');
+  });
+  it('bounds exported style values from malformed saves before they become CSS', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Unsafe style', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'script', frame: { x: Number.NaN, y: 0, w: 200, h: 40 }, z: 1, runs: [{ text: 'Safe text', style: { size: Infinity, color: 'red";position:fixed', align: 'evil' } }] } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'diamond', fill: 'url(javascript:bad)', frame: { x: 0, y: 50, w: 80, h: 80 }, z: 1 } }, 'user', T0);
+    const html = ST.stExportHtml(d, { lang: 'en" onclick="bad' });
+    expect(html).toContain('<html lang="en&quot; onclick=&quot;bad">');
+    expect(html).toContain('<p ');
+    expect(html).toContain('font-size:16px');
+    expect(html).toContain('color:#111827');
+    expect(html).toContain('text-align:left');
+    expect(html).toContain('background:#e2e8f0');
+    expect(html).not.toContain('javascript');
+    expect(html).not.toContain('position:fixed');
   });
 });
 
