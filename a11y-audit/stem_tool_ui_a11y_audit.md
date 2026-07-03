@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T20:21:12.879Z
+Generated: 2026-07-03T21:07:40.376Z
 
 ## Scope
 
@@ -112,7 +112,7 @@ Generated: 2026-07-03T20:21:12.879Z
 | `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `kitchenLab` Kitchen Lab | applied | standard | 8 | 1 | 0 | 0 | 2 | 0 | heading x1, inline-contrast x1 |
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
-| `lifeSkills` Life Skills Lab | Life Skills | standard | 15 | 5 | 0 | 0 | 0 | 0 |  |
+| `lifeSkills` Life Skills Lab | Life Skills | standard | 16 | 5 | 0 | 0 | 0 | 0 |  |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 7 | 0 | inline-contrast x7 |
 | `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 22 | 7 | 0 | 0 | 1 | 0 | heading x1 |
