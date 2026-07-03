@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T15:04:13.318Z",
+  "generatedAt": "2026-07-03T15:19:46.614Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 44
+    "monitoredMarkerCount": 45
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 44,
+    "markerPassCount": 45,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
@@ -314,14 +314,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 20655,
+      "htmlBytes": 20806,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 20655
+        "htmlBytes": 20806
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17205,
+      "htmlBytes": 17198,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17205
+        "htmlBytes": 17198
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13364,
+      "htmlBytes": 13343,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13364
+        "htmlBytes": 13343
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47689,
+      "htmlBytes": 47690,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47689
+        "htmlBytes": 47690
       }
     },
     {
@@ -1026,6 +1026,22 @@
         "canvases": 1,
         "headings": 3,
         "htmlBytes": 8754
+      }
+    },
+    {
+      "id": "areamodel",
+      "file": "stem_tool_areamodel.js",
+      "marker": "data-areamodel-focus",
+      "label": "Area Model workshop",
+      "ok": true,
+      "htmlBytes": 20095,
+      "issues": [],
+      "metrics": {
+        "buttons": 18,
+        "fields": 3,
+        "canvases": 0,
+        "headings": 4,
+        "htmlBytes": 20095
       }
     },
     {

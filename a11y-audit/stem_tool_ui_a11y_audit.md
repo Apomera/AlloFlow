@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T15:04:11.819Z
+Generated: 2026-07-03T15:18:53.473Z
 
 ## Scope
 
@@ -13,22 +13,22 @@ Generated: 2026-07-03T15:04:11.819Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 129 |
+| Total findings | 126 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 113 |
+| Tool-level warnings | 110 |
 | Review notices | 16 |
-| Tools with any finding | 64 |
+| Tools with any finding | 63 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 38 |
+| Tools with canvas surfaces | 37 |
 
 ## Top Findings
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `canvas-focus` | 30 | 22 | anatomy, areamodel, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath, musicSynth | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
-| warning | `tiny-text` | 17 | 17 | areamodel, birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `canvas-focus` | 29 | 21 | anatomy, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath, musicSynth, numberline | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
+| warning | `tiny-text` | 16 | 16 | birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle, solarSystem | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 15 | 15 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology | Start each tool with a semantic heading so screen-reader users can orient quickly. |
-| warning | `canvas-name` | 16 | 13 | anatomy, areamodel, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
+| warning | `canvas-name` | 15 | 12 | anatomy, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume, waterCycle | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `inline-contrast` | 32 | 12 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, typingPractice, waterCycle | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 3 | 3 | birdLab, molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 13 | 13 | accessLens, archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
@@ -56,7 +56,7 @@ Generated: 2026-07-03T15:04:11.819Z
 | `aquarium` Aquarium Lab | science | standard | 24 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 23 | 0 | 0 | 0 | 0 | 0 |  |
 | `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 1 | 1 | heading x1, metadata x1 |
-| `areamodel` Area Model | math | standard | 20 | 7 | 1 | 0 | 3 | 0 | canvas-focus x1, canvas-name x1, tiny-text x1 |
+| `areamodel` Area Model | math | standard | 18 | 3 | 0 | 0 | 0 | 0 |  |
 | `artStudio` Art & Design Studio | creative | standard | 24 | 3 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `assessmentLiteracy` Assessment Literacy Lab | Literacy | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `astronomy` Night Sky & Astronomy | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |

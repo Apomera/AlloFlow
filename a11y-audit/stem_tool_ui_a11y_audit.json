@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T15:04:11.819Z",
+  "generatedAt": "2026-07-03T15:18:53.473Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 129,
+    "issueCount": 126,
     "errorCount": 0,
-    "warningCount": 113,
+    "warningCount": 110,
     "noticeCount": 16,
-    "toolsWithIssues": 64,
+    "toolsWithIssues": 63,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 57,
-    "toolsWithCanvas": 38,
+    "toolsWithWarnings": 56,
+    "toolsWithCanvas": 37,
     "shellCoverage": {
       "standardShellTools": 114,
       "lightBackgroundTools": [],
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 25,
+        "warningCount": 22,
         "noticeCount": 0
       },
       "Games": {
@@ -172,11 +172,10 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 30,
-      "toolCount": 22,
+      "count": 29,
+      "toolCount": 21,
       "exampleTools": [
         "anatomy",
-        "areamodel",
         "artStudio",
         "beehive",
         "brainAtlas",
@@ -186,17 +185,17 @@
         "epidemicSim",
         "logicLab",
         "moneyMath",
-        "musicSynth"
+        "musicSynth",
+        "numberline"
       ],
       "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
     },
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 17,
-      "toolCount": 17,
+      "count": 16,
+      "toolCount": 16,
       "exampleTools": [
-        "areamodel",
         "birdLab",
         "cell",
         "dissection",
@@ -207,7 +206,8 @@
         "moonMission",
         "multtable",
         "protractor",
-        "rockCycle"
+        "rockCycle",
+        "solarSystem"
       ],
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
@@ -235,11 +235,10 @@
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 16,
-      "toolCount": 13,
+      "count": 15,
+      "toolCount": 12,
       "exampleTools": [
         "anatomy",
-        "areamodel",
         "climateExplorer",
         "dissection",
         "epidemicSim",
@@ -249,7 +248,8 @@
         "rockCycle",
         "rocks",
         "unitConvert",
-        "volume"
+        "volume",
+        "waterCycle"
       ],
       "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
     },
@@ -723,52 +723,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visual multiplication with area model grids, distributive property, partial products, sound effects, and badges.",
-      "renderedBytes": 15157,
+      "renderedBytes": 20095,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 20,
-        "roleButtons": 0,
-        "fields": 7,
-        "canvases": 1,
+        "buttons": 18,
+        "roleButtons": 24,
+        "fields": 3,
+        "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "areamodel",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4.w-full > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "areamodel",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.w-full > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "areamodel",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "artStudio",
@@ -1253,7 +1226,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 20655,
+      "renderedBytes": 20806,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -1834,7 +1807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16026,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2150,7 +2123,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22800,
+      "renderedBytes": 22779,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2599,7 +2572,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1586,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3157,7 +3130,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13378,
+      "renderedBytes": 13356,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3622,7 +3595,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17347,
+      "renderedBytes": 17333,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4307,7 +4280,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47697,
+      "renderedBytes": 47691,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

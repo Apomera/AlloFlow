@@ -381,9 +381,22 @@ window.StemLab = window.StemLab || {
           var c = i % cols;
           var isHigh = r < highlight.rows && c < highlight.cols;
           (function(ri, ci) {
+            var selectCell = function() {
+              sfxClick();
+              upd({ highlight: { rows: ri + 1, cols: ci + 1 } });
+            };
             cells.push(h('div', {
               key: i,
-              onClick: function() { sfxClick(); upd({ highlight: { rows: ri + 1, cols: ci + 1 } }); },
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': 'Highlight ' + (ri + 1) + ' rows by ' + (ci + 1) + ' columns',
+              onClick: selectCell,
+              onKeyDown: function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  selectCell();
+                }
+              },
               className: 'allo-am-cell aspect-square rounded-sm border cursor-pointer hover:scale-110 ' +
                 (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm allo-am-cell-fill' : (isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-600' : 'bg-amber-100 border-amber-200 hover:bg-amber-200'))
             }));
@@ -874,6 +887,60 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Topic-accent hero band per mode ──
+        h('section', {
+          'data-areamodel-focus': 'true',
+          className: 'rounded-2xl border border-amber-200 bg-white p-4 shadow-sm',
+          style: { background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 48%, #f8fafc 100%)' }
+        },
+          h('div', { className: 'grid lg:grid-cols-[1.15fr_0.85fr] gap-4 items-stretch' },
+            h('div', null,
+              h('p', { className: 'text-xs font-black uppercase tracking-wide text-amber-700 mb-1' }, t('stem.areamodel.multiplication_workshop', 'Multiplication workshop')),
+              h('h3', { className: 'text-xl font-black text-slate-900 leading-tight mb-2' }, rows + ' \u00d7 ' + cols + ' = ' + (rows * cols)),
+              h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-3' },
+                t('stem.areamodel.focus_intro', 'Build the rectangle first, then connect the picture to facts, place value, and real-world word problems.')
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                [
+                  { label: t('stem.areamodel.mode', 'Mode'), value: viewMode === 'multidigit' ? 'partials' : viewMode },
+                  { label: t('stem.areamodel.cells', 'Cells'), value: rows * cols },
+                  { label: t('stem.areamodel.streak', 'Streak'), value: streak || 0 }
+                ].map(function(stat) {
+                  return h('div', { key: stat.label, className: 'rounded-xl bg-white/85 border border-white p-2 shadow-sm' },
+                    h('div', { className: 'text-lg font-black text-slate-900 leading-none' }, stat.value),
+                    h('div', { className: 'text-xs font-bold text-slate-600 mt-1' }, stat.label)
+                  );
+                })
+              )
+            ),
+            h('div', {
+              role: 'img',
+              'aria-label': t('stem.areamodel.focus_visual_label', 'Area model rectangle showing rows times columns as total cells'),
+              className: 'rounded-2xl border border-amber-200 bg-slate-950 p-3 overflow-hidden'
+            },
+              h('div', { className: 'grid gap-1 h-full min-h-[130px]', style: { gridTemplateColumns: 'repeat(' + Math.min(cols, 8) + ', minmax(0, 1fr))' } },
+                Array.from({ length: Math.min(rows, 5) * Math.min(cols, 8) }, function(_, idx) {
+                  var rr = Math.floor(idx / Math.min(cols, 8));
+                  var cc = idx % Math.min(cols, 8);
+                  var inHighlight = highlight.rows > 0 && rr < Math.min(highlight.rows, 5) && cc < Math.min(highlight.cols, 8);
+                  return h('span', {
+                    key: 'focus-cell-' + idx,
+                    'aria-hidden': 'true',
+                    className: 'rounded-md border',
+                    style: {
+                      minHeight: 18,
+                      background: inHighlight ? '#f59e0b' : 'rgba(251, 191, 36, 0.22)',
+                      borderColor: inHighlight ? '#fde68a' : 'rgba(251, 191, 36, 0.34)'
+                    }
+                  });
+                })
+              ),
+              h('div', { className: 'mt-2 text-xs font-bold text-amber-100 text-center' },
+                rows + ' rows by ' + cols + ' columns'
+              )
+            )
+          )
+        ),
+
         (function() {
           var MODE_META = {
             basic:        { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: t('stem.areamodel.basic_grid_multiplication_as_area', 'Basic Grid \u2014 multiplication as area'),                hint: t('stem.areamodel.a_b_is_the_area_of_an_a_by_b_rectangle', 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.') },
@@ -1055,11 +1122,24 @@ window.StemLab = window.StemLab || {
           t('stem.areamodel.b_d_p_w_switch_mode_n_new_challenge_c_', '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor')
         ),
 
+        h('div', { className: 'flex justify-center' },
+          h('button', {
+            onClick: function() { sfxClick(); upd({ showAreaPatterns: !_a.showAreaPatterns }); },
+            'aria-expanded': !!_a.showAreaPatterns,
+            className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
+              (_a.showAreaPatterns ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-50')
+          }, _a.showAreaPatterns ? t('stem.areamodel.hide_pattern_lab', 'Hide pattern lab') : t('stem.areamodel.show_pattern_lab', 'Show pattern lab'))
+        ),
+
         // \u2550\u2550\u2550 DISTRIBUTIVE PROPERTY \u2550\u2550\u2550
-        h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
+        _a.showAreaPatterns && h('div', { className: 'space-y-3' },
+        h('div', { className: 'mt-2 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
           h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.areamodel.distributive_property_a_b_c_ab_ac', '\uD83D\uDD22 Distributive Property \u2014 a(b+c) = ab + ac')),
           h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0f172a', aspectRatio: '16/5' } },
             h('canvas', {
+              role: 'img',
+              tabIndex: 0,
+              'aria-label': t('stem.areamodel.distributive_property_canvas', 'Animated distributive property diagram showing 3 times 4 plus 3 times 2'),
               ref: function(cvEl) {
                 if (!cvEl) return;
                 if (cvEl._dpAnim) return;
@@ -1146,7 +1226,7 @@ window.StemLab = window.StemLab || {
                   c2.fillText('= 12 + 6 = 18', W * 0.55, H * 0.6);
                   c2.fillStyle = 'rgba(0,0,0,0.85)';
                   c2.fillRect(8, H - 14, W - 16, 12);
-                  c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#67e8f9'; c2.textAlign = 'center';
+                  c2.font = 'bold 10px sans-serif'; c2.fillStyle = '#67e8f9'; c2.textAlign = 'center';
                   c2.fillText('Distribution lets you break big problems into easy ones. Foundation of algebra.', W / 2, H - 5);
                   cvEl._dpAnim = requestAnimationFrame(drawDp);
                 }
@@ -1211,9 +1291,10 @@ window.StemLab = window.StemLab || {
               t('stem.areamodel.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.areamodel.explain_commutative_property_area_leng', 'Explain commutative property + area = length × width.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
+            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.areamodel.design_note_discrete_4_state_classific', 'Design note: discrete 4-state classification; no area-test score; no reveal — by design.'))
           );
         })()
+        )
       );
     }
   });
