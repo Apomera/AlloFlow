@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T05:39:31.076Z",
+  "generatedAt": "2026-07-03T14:42:32.185Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -9,10 +9,10 @@
     "loadErrorCount": 0,
     "markerPassCount": 43,
     "markerFailCount": 0,
-    "monitoredIssueCount": 36,
+    "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 26,
-    "monitoredNoticeCount": 10,
+    "monitoredWarningCount": 24,
+    "monitoredNoticeCount": 9,
     "syncDriftCount": 0,
     "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17212,
+      "htmlBytes": 17211,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17212
+        "htmlBytes": 17211
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13327,
+      "htmlBytes": 13343,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13327
+        "htmlBytes": 13343
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47685,
+      "htmlBytes": 47691,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47685
+        "htmlBytes": 47691
       }
     },
     {
@@ -954,54 +954,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 68774,
-      "issues": [
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
-          "width": "720",
-          "height": "320"
-        },
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas"
-        },
-        {
-          "toolId": "skatelab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
-          "count": 48,
-          "examples": [
-            {
-              "selector": "div > div"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(1) > button"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(1)"
-            },
-            {
-              "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > button:nth-of-type(2)"
-            }
-          ]
-        }
-      ],
+      "htmlBytes": 69049,
+      "issues": [],
       "metrics": {
         "buttons": 58,
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 68774
+        "htmlBytes": 69049
       }
     },
     {
@@ -1110,8 +1070,8 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 14,
-      "toolCount": 10,
+      "count": 13,
+      "toolCount": 9,
       "exampleTools": [
         "epidemicSim",
         "climateExplorer",
@@ -1121,23 +1081,21 @@
         "anatomy",
         "waterCycle",
         "plateTectonics",
-        "bikeLab",
-        "skatelab"
+        "bikeLab"
       ]
     },
     {
       "code": "canvas-name",
       "severity": "warning",
-      "count": 10,
-      "toolCount": 7,
+      "count": 9,
+      "toolCount": 6,
       "exampleTools": [
         "epidemicSim",
         "climateExplorer",
         "musicSynth",
         "anatomy",
         "waterCycle",
-        "plateTectonics",
-        "skatelab"
+        "plateTectonics"
       ]
     },
     {
@@ -1153,8 +1111,8 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 10,
-      "toolCount": 10,
+      "count": 9,
+      "toolCount": 9,
       "exampleTools": [
         "opticsLab",
         "renewablesLab",
@@ -1164,8 +1122,7 @@
         "birdLab",
         "playlab",
         "bikeLab",
-        "echolocation",
-        "skatelab"
+        "echolocation"
       ]
     }
   ]

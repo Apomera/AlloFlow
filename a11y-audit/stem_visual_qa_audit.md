@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T05:39:31.076Z
+Generated: 2026-07-03T14:42:32.185Z
 
 ## Scope
 
@@ -15,7 +15,7 @@ Generated: 2026-07-03T05:39:31.076Z
 | Load errors | 0 |
 | Marker passes | 43 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 36 |
+| Monitored first-screen findings | 33 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
 | Any source/public/build drift | 0 |
@@ -73,10 +73,10 @@ Generated: 2026-07-03T05:39:31.076Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 14 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `musicSynth`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab`, `skatelab` |
-| warning | `canvas-name` | 10 | `epidemicSim`, `climateExplorer`, `musicSynth`, `anatomy`, `waterCycle`, `plateTectonics`, `skatelab` |
+| warning | `canvas-focus` | 13 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `musicSynth`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab` |
+| warning | `canvas-name` | 9 | `epidemicSim`, `climateExplorer`, `musicSynth`, `anatomy`, `waterCycle`, `plateTectonics` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
-| notice | `horizontal-overflow-risk` | 10 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `skatelab` |
+| notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation` |
 
 ## Sync Drift
 

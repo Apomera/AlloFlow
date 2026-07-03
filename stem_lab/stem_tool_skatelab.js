@@ -58,6 +58,11 @@ window.StemLab = window.StemLab || {
     st.textContent = [
       '.sk-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:12px}',
       '.sk-run-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.sk-park-map{position:relative;min-height:112px;margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.14),rgba(168,85,247,.12) 48%,rgba(22,163,74,.18));border:1px solid rgba(251,191,36,.24)}',
+      '.sk-park-map:before{content:"";position:absolute;left:8%;right:8%;bottom:23px;height:3px;background:linear-gradient(90deg,rgba(251,191,36,.55),rgba(14,165,233,.65));border-radius:20px}',
+      '.sk-park-map:after{content:"";position:absolute;left:16%;right:16%;bottom:27px;height:54px;border-top:3px solid rgba(251,191,36,.9);border-radius:70% 70% 0 0;filter:drop-shadow(0 0 10px rgba(251,191,36,.35))}',
+      '.sk-park-point{position:absolute;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:18px;background:rgba(15,23,42,.80);border:1px solid rgba(226,232,240,.18);color:#e0f2fe;font-size:11px;font-weight:850}',
+      '.sk-park-start{left:7%;bottom:10px}.sk-park-apex{left:39%;top:12px}.sk-park-land{right:7%;bottom:10px}',
       '.sk-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}',
       '.sk-gap-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}',
       '.sk-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}',
@@ -3045,7 +3050,7 @@ window.StemLab = window.StemLab || {
               h('div', {
                 style: {
                   padding: '5px 10px',
-                  borderRadius: 999,
+                  borderRadius: 20,
                   background: plan.ready ? 'rgba(34,197,94,0.18)' : 'rgba(245,158,11,0.18)',
                   border: '1px solid ' + plan.accent,
                   color: plan.ready ? '#86efac' : '#fbbf24',
@@ -3061,11 +3066,25 @@ window.StemLab = window.StemLab || {
               'aria-valuemax': 100,
               'aria-valuenow': Math.round(plan.pct),
               'aria-label': __alloT('stem.skatelab.run_readiness', 'Run readiness'),
-              style: { height: 9, background: 'rgba(15,23,42,0.8)', borderRadius: 999, overflow: 'hidden', border: '1px solid rgba(254,243,199,0.18)', marginBottom: 8 }
+              style: { height: 9, background: 'rgba(15,23,42,0.8)', borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(254,243,199,0.18)', marginBottom: 8 }
             },
-              h('div', { style: { height: '100%', width: barPct + '%', background: 'linear-gradient(90deg,' + plan.accent + ',#fbbf24)', borderRadius: 999, transition: 'width 180ms ease' } })
+              h('div', { style: { height: '100%', width: barPct + '%', background: 'linear-gradient(90deg,' + plan.accent + ',#fbbf24)', borderRadius: 20, transition: 'width 180ms ease' } })
             ),
             h('p', { style: { margin: '0 0 10px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.45 } }, plan.next),
+            h('div', {
+              className: 'sk-park-map',
+              role: 'img',
+              'aria-label': d.mode === 'halfpipe'
+                ? __alloT('stem.skatelab.halfpipe_run_map', 'Halfpipe run map showing drop-in, airtime, and landing')
+                : __alloT('stem.skatelab.gap_jump_run_map', 'Gap jump run map showing launch, apex, and landing')
+            },
+              h('span', { className: 'sk-park-point sk-park-start' },
+                d.mode === 'halfpipe' ? __alloT('stem.skatelab.drop_in', 'Drop in') : __alloT('stem.skatelab.launch', 'Launch')),
+              h('span', { className: 'sk-park-point sk-park-apex' },
+                d.mode === 'halfpipe' ? plan.metrics[1].value : plan.metrics[2].value),
+              h('span', { className: 'sk-park-point sk-park-land' },
+                plan.ready ? __alloT('stem.skatelab.clean_landing_short', 'Clean') : __alloT('stem.skatelab.tune_landing_short', 'Tune'))
+            ),
             _renderLaunchButton(true)
           ),
           h('div', {
@@ -3107,7 +3126,7 @@ window.StemLab = window.StemLab || {
           'aria-pressed': sel,
           'data-sk-focusable': 'true',
           style: {
-            padding: '8px 16px', borderRadius: 999,
+            padding: '8px 16px', borderRadius: 20,
             background: sel ? 'linear-gradient(135deg,#d97706,#b45309)' : 'rgba(254,243,199,0.10)',
             color: sel ? '#fff' : '#fef3c7',
             border: '1px solid ' + (sel ? '#92400e' : 'rgba(254,243,199,0.30)'),
@@ -3215,7 +3234,7 @@ window.StemLab = window.StemLab || {
           )
         )
       ) : null;
-      return h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontFamily: 'system-ui, sans-serif', maxWidth: 920, margin: '0 auto', padding: 16 } },
+      return h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontFamily: 'system-ui, sans-serif', maxWidth: '58rem', margin: '0 auto', padding: 16 } },
         scenarioIntroModal,
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -3295,7 +3314,7 @@ window.StemLab = window.StemLab || {
                 padding: '5px 10px', fontSize: 10, fontWeight: 700,
                 background: 'rgba(167,139,250,0.18)', color: 'var(--allo-stem-text, #fef3c7)',
                 border: '1px solid rgba(167,139,250,0.45)',
-                borderRadius: 999, cursor: 'pointer', minHeight: 24
+                borderRadius: 20, cursor: 'pointer', minHeight: 24
               }
             }, __alloT('stem.skatelab.save_current', '💾 Save current'))
           ),
@@ -3316,7 +3335,7 @@ window.StemLab = window.StemLab || {
                   background: active ? 'linear-gradient(135deg,#d97706,#b45309)' : 'rgba(254,243,199,0.08)',
                   color: active ? '#fff' : '#fef3c7',
                   border: '1px solid ' + (active ? '#fbbf24' : isToday ? '#fbbf24' : 'rgba(254,243,199,0.55)'),
-                  borderRadius: 999, cursor: 'pointer',
+                  borderRadius: 20, cursor: 'pointer',
                   boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : isToday ? '0 0 6px rgba(251,191,36,0.35)' : 'none'
                 }
               }, (isToday ? '🎯 ' : '') + sc.icon + ' ' + sc.label);
@@ -3345,7 +3364,7 @@ window.StemLab = window.StemLab || {
                     background: active ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'rgba(167,139,250,0.12)',
                     color: active ? '#fff' : '#c4b5fd',
                     border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.35)'),
-                    borderTopLeftRadius: 999, borderBottomLeftRadius: 999,
+                    borderTopLeftRadius: 20, borderBottomLeftRadius: 20,
                     borderTopRightRadius: 0, borderBottomRightRadius: 0,
                     borderRight: 'none',
                     cursor: 'pointer',
@@ -3366,7 +3385,7 @@ window.StemLab = window.StemLab || {
                     background: active ? 'rgba(0,0,0,0.25)' : 'rgba(167,139,250,0.12)',
                     color: '#fca5a5',
                     border: '1px solid ' + (active ? '#a78bfa' : 'rgba(167,139,250,0.35)'),
-                    borderTopRightRadius: 999, borderBottomRightRadius: 999,
+                    borderTopRightRadius: 20, borderBottomRightRadius: 20,
                     borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
                     cursor: 'pointer'
                   }
@@ -3393,7 +3412,7 @@ window.StemLab = window.StemLab || {
                 background: sel ? 'linear-gradient(135deg,#0891b2,#0e7490)' : 'rgba(254,243,199,0.08)',
                 color: sel ? '#fff' : '#fef3c7',
                 border: '1px solid ' + (sel ? '#155e75' : 'rgba(254,243,199,0.55)'),
-                borderRadius: 999, cursor: 'pointer'
+                borderRadius: 20, cursor: 'pointer'
               }
             }, sf.icon + ' ' + sf.label);
           })
@@ -3419,7 +3438,7 @@ window.StemLab = window.StemLab || {
                 background: sel ? 'linear-gradient(135deg,#0ea5e9,#0369a1)' : 'rgba(254,243,199,0.08)',
                 color: sel ? '#fff' : '#fef3c7',
                 border: '1px solid ' + (sel ? '#0369a1' : 'rgba(254,243,199,0.55)'),
-                borderRadius: 999, cursor: 'pointer'
+                borderRadius: 20, cursor: 'pointer'
               }
             }, v.icon + ' ' + v.label);
           })
@@ -3525,7 +3544,7 @@ window.StemLab = window.StemLab || {
               style: {
                 fontSize: 11, padding: '2px 8px',
                 background: 'rgba(31,41,55,0.85)', color: '#fef3c7',
-                borderRadius: 999, fontWeight: 800
+                borderRadius: 20, fontWeight: 800
               }
             }, '×' + tier.mult + ' XP')
           );
@@ -3550,13 +3569,16 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 10, fontWeight: 900, color: '#fbbf24', letterSpacing: '0.08em', textTransform: 'uppercase' } }, __alloT('stem.skatelab.live_motion', 'Live motion')),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('span', { style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)', color: '#fbbf24', fontSize: 10, fontWeight: 800 } }, d.mode === 'halfpipe' ? __alloT('stem.skatelab.energy_loop', 'Energy loop') : __alloT('stem.skatelab.projectile_arc', 'Projectile arc')),
-              h('span', { style: { padding: '3px 8px', borderRadius: 999, background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.32)', color: '#7dd3fc', fontSize: 10, fontWeight: 800 } }, getVehicle(d.vehicle).label)
+              h('span', { style: { padding: '3px 8px', borderRadius: 20, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.32)', color: '#fbbf24', fontSize: 10, fontWeight: 800 } }, d.mode === 'halfpipe' ? __alloT('stem.skatelab.energy_loop', 'Energy loop') : __alloT('stem.skatelab.projectile_arc', 'Projectile arc')),
+              h('span', { style: { padding: '3px 8px', borderRadius: 20, background: 'rgba(14,165,233,0.12)', border: '1px solid rgba(14,165,233,0.32)', color: '#7dd3fc', fontSize: 10, fontWeight: 800 } }, getVehicle(d.vehicle).label)
             )
           ),
           h('canvas', {
             ref: canvasRef,
-            width: 720, height: 320,
+            width: 640, height: 320,
+            role: 'img',
+            tabIndex: 0,
+            'data-sk-focusable': 'true',
             // WCAG 1.1.1 — aria-label rolls up the canvas's current
             // environmental state so screen-reader users know what the
             // simulation is configured to show without watching it.
@@ -3984,7 +4006,7 @@ window.StemLab = window.StemLab || {
               background: d.safetyAck ? 'rgba(34,197,94,0.18)' : 'rgba(251,191,36,0.20)',
               color: d.safetyAck ? '#86efac' : '#fbbf24',
               border: '1px solid ' + (d.safetyAck ? 'rgba(34,197,94,0.55)' : 'rgba(251,191,36,0.55)'),
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, d.safetyAck ? '✓ Safety ack\'d' : '⚠️ Safety'),
           // Tour re-open chip — for students who skipped or want a
@@ -3999,7 +4021,7 @@ window.StemLab = window.StemLab || {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
               background: 'rgba(254,243,199,0.14)', color: 'var(--allo-stem-text, #cbd5e1)',
               border: '1px solid rgba(254,243,199,0.55)',
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, __alloT('stem.skatelab.tour', '💡 Tour')),
           // Mute toggle — gates every skTone call. Persists in
@@ -4016,7 +4038,7 @@ window.StemLab = window.StemLab || {
               background: muted ? 'rgba(251,191,36,0.20)' : 'rgba(254,243,199,0.14)',
               color: muted ? '#fbbf24' : '#94a3b8',
               border: '1px solid ' + (muted ? 'rgba(251,191,36,0.55)' : 'rgba(254,243,199,0.55)'),
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, muted ? '🔇 Muted' : '🔊 Sound'),
           h('button', {
@@ -4030,7 +4052,7 @@ window.StemLab = window.StemLab || {
               background: d.showFormula ? 'rgba(56,189,248,0.18)' : 'rgba(254,243,199,0.14)',
               color: d.showFormula ? '#7dd3fc' : '#94a3b8',
               border: '1px solid ' + (d.showFormula ? 'rgba(56,189,248,0.50)' : 'rgba(254,243,199,0.55)'),
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off')),
           // Ghost toggle — flip the faded best-run trajectory on/off
@@ -4054,7 +4076,7 @@ window.StemLab = window.StemLab || {
                 background: on && hasGhost ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.14)',
                 color: on && hasGhost ? '#c4b5fd' : '#94a3b8',
                 border: '1px solid ' + (on && hasGhost ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.55)'),
-                borderRadius: 999, cursor: 'pointer', minHeight: 26,
+                borderRadius: 20, cursor: 'pointer', minHeight: 26,
                 opacity: hasGhost ? 1 : 0.65
               }
             }, '👻 Ghost: ' + (on ? 'on' : 'off'));
@@ -4076,7 +4098,7 @@ window.StemLab = window.StemLab || {
               background: d.showEnergyBar ? 'rgba(248,113,113,0.18)' : 'rgba(254,243,199,0.14)',
               color: d.showEnergyBar ? '#fda4af' : '#94a3b8',
               border: '1px solid ' + (d.showEnergyBar ? 'rgba(248,113,113,0.50)' : 'rgba(254,243,199,0.55)'),
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, '⚡ Energy: ' + (d.showEnergyBar ? 'on' : 'off')),
           // Session chip — when no session is active, opens the
@@ -4099,7 +4121,7 @@ window.StemLab = window.StemLab || {
                   background: 'linear-gradient(135deg,#22c55e,#15803d)',
                   color: '#fff',
                   border: '1px solid #15803d',
-                  borderRadius: 999, cursor: 'pointer', minHeight: 26
+                  borderRadius: 20, cursor: 'pointer', minHeight: 26
                 }
               }, '🎯 ' + (sess.attempts || []).length + '/' + sess.target);
             }
@@ -4114,7 +4136,7 @@ window.StemLab = window.StemLab || {
                 padding: '4px 10px', fontSize: 10, fontWeight: 700,
                 background: 'rgba(34,197,94,0.10)', color: '#86efac',
                 border: '1px solid rgba(34,197,94,0.40)',
-                borderRadius: 999, cursor: 'pointer', minHeight: 26
+                borderRadius: 20, cursor: 'pointer', minHeight: 26
               }
             }, __alloT('stem.skatelab.session', '🎯 Session'));
           })()
@@ -4150,7 +4172,7 @@ window.StemLab = window.StemLab || {
               padding: '6px 14px', fontSize: 11, fontWeight: 800,
               background: 'linear-gradient(135deg,#22c55e,#15803d)',
               color: '#fff', border: '1px solid #15803d',
-              borderRadius: 999, cursor: 'pointer', minHeight: 28
+              borderRadius: 20, cursor: 'pointer', minHeight: 28
             }
           }, __alloT('stem.skatelab.got_it_wear_gear_in_real_life', '✓ Got it — wear gear in real life'))
         ),
@@ -4265,9 +4287,9 @@ window.StemLab = window.StemLab || {
                   title: tk.label + ' — ' + tk.rotation + '° around ' + tk.axis + ' axis · needs ' + tk.minAir.toFixed(2) + 's air',
                   style: {
                     padding: '4px 8px', fontSize: 11, fontWeight: 700,
-                    background: sel ? '#d97706' : 'rgba(254,243,199,0.10)',
+                    background: sel ? '#92400e' : 'rgba(254,243,199,0.10)',
                     color: sel ? '#fff' : '#fef3c7',
-                    border: '1px solid ' + (sel ? '#92400e' : 'rgba(254,243,199,0.55)'),
+                    border: '1px solid ' + (sel ? '#fbbf24' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 6, cursor: d.running ? 'not-allowed' : 'pointer'
                   }
                 }, tk.emoji + ' ' + tk.label);
@@ -4413,7 +4435,7 @@ window.StemLab = window.StemLab || {
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 800, color: '#fef3c7' } },
                       h('span', { style: { fontSize: 18 } }, tk.emoji),
                       h('span', null, tk.label),
-                      h('span', { style: { marginLeft: 'auto', fontSize: 10, padding: '1px 6px', background: 'rgba(15,23,42,0.5)', color: m.color, borderRadius: 999, border: '1px solid ' + m.color, fontWeight: 800 } }, m.icon + ' ' + m.label)
+                      h('span', { style: { marginLeft: 'auto', fontSize: 10, padding: '1px 6px', background: 'rgba(15,23,42,0.5)', color: m.color, borderRadius: 20, border: '1px solid ' + m.color, fontWeight: 800 } }, m.icon + ' ' + m.label)
                     ),
                     h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between', gap: 4, fontFamily: 'monospace' } },
                       h('span', null, tk.rotation + '° · needs ' + tk.minAir.toFixed(2) + 's air'),
@@ -4586,7 +4608,7 @@ window.StemLab = window.StemLab || {
                           background: sel ? 'linear-gradient(135deg,#a855f7,#7c3aed)' : 'rgba(168,85,247,0.10)',
                           color: sel ? '#fff' : '#e9d5ff',
                           border: '1px solid ' + (sel ? '#7c3aed' : 'rgba(168,85,247,0.40)'),
-                          borderRadius: 999, cursor: 'pointer', minHeight: 32
+                          borderRadius: 20, cursor: 'pointer', minHeight: 32
                         }
                       }, opt.icon + ' ' + opt.label);
                     })
@@ -4695,7 +4717,7 @@ window.StemLab = window.StemLab || {
                 border: '1px solid ' + (sel
                   ? (wp.mph > 0 ? '#15803d' : wp.mph < 0 ? '#7f1d1d' : '#334155')
                   : 'rgba(254,243,199,0.55)'),
-                borderRadius: 999, cursor: 'pointer'
+                borderRadius: 20, cursor: 'pointer'
               }
             }, wp.icon + ' ' + wp.label);
           })
@@ -4733,7 +4755,7 @@ window.StemLab = window.StemLab || {
                   background: d.predictMode ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.14)',
                   color: d.predictMode ? '#d8b4fe' : '#94a3b8',
                   border: '1px solid ' + (d.predictMode ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.55)'),
-                  borderRadius: 999, cursor: 'pointer', minHeight: 26
+                  borderRadius: 20, cursor: 'pointer', minHeight: 26
                 }
               }, '🔮 Predict: ' + (d.predictMode ? 'on' : 'off'))
             ),
@@ -5012,7 +5034,7 @@ window.StemLab = window.StemLab || {
                   'data-sk-focusable': 'true',
                   title: p.label + ' — ' + p.prepend.split('.')[0],
                   style: {
-                    padding: '6px 11px', borderRadius: 999, cursor: 'pointer',
+                    padding: '6px 11px', borderRadius: 20, cursor: 'pointer',
                     background: sel ? 'rgba(167,139,250,0.25)' : 'rgba(254,243,199,0.14)',
                     color: sel ? '#fff' : '#c4b5fd',
                     border: '1px solid ' + (sel ? '#a78bfa' : 'rgba(167,139,250,0.30)'),
@@ -5098,7 +5120,7 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: 20 } }, g.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, g.label),
-                  h('span', { style: { marginLeft: 'auto', fontSize: 10, fontFamily: 'monospace', color: '#86efac', padding: '2px 8px', background: 'rgba(34,197,94,0.18)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: 999 } }, g.stat)
+                  h('span', { style: { marginLeft: 'auto', fontSize: 10, fontFamily: 'monospace', color: '#86efac', padding: '2px 8px', background: 'rgba(34,197,94,0.18)', border: '1px solid rgba(34,197,94,0.45)', borderRadius: 20 } }, g.stat)
                 ),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, display: 'flex', flexDirection: 'column', gap: 4 } },
                   h('div', null, h('b', { style: { color: '#fbbf24' } }, __alloT('stem.skatelab.what_it_does', '🛡️ What it does: ')), g.does),
@@ -5280,7 +5302,7 @@ window.StemLab = window.StemLab || {
               padding: '5px 11px', fontSize: 10, fontWeight: 700,
               background: 'rgba(185,28,28,0.10)', color: '#fca5a5',
               border: '1px solid rgba(185,28,28,0.40)',
-              borderRadius: 999, cursor: 'pointer', minHeight: 26
+              borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
           }, __alloT('stem.skatelab.reset_stats', '🗑 Reset stats'))
         ),
@@ -5378,7 +5400,7 @@ window.StemLab = window.StemLab || {
           return h('div', { style: { background: sm.bg, border: '1px solid ' + sm.border, borderRadius: 12, padding: 14, marginBottom: 12, color: '#e8f0f5' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.skatelab.air_spin_inquiry', '🔬 Air / Spin Inquiry')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.skatelab.set_takeoff_speed_angle_mass_and_your_', 'Set takeoff speed, angle, mass, and your rotation rate. Predict the biggest rotation you can land cleanly. No score, no reveal.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · feasible max ≈ ' + maxTrick),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 20, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · feasible max ≈ ' + maxTrick),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { className: 'sk-inquiry-grid', style: { marginBottom: 10 } },
               [

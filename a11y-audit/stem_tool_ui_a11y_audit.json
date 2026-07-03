@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T05:39:44.686Z",
+  "generatedAt": "2026-07-03T14:42:33.033Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 136,
+    "issueCount": 132,
     "errorCount": 0,
-    "warningCount": 119,
-    "noticeCount": 17,
-    "toolsWithIssues": 66,
+    "warningCount": 116,
+    "noticeCount": 16,
+    "toolsWithIssues": 65,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 59,
+    "toolsWithWarnings": 58,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -49,8 +49,8 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 54,
-        "noticeCount": 5
+        "warningCount": 51,
+        "noticeCount": 4
       },
       "technology": {
         "toolCount": 2,
@@ -172,8 +172,8 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 32,
-      "toolCount": 24,
+      "count": 31,
+      "toolCount": 23,
       "exampleTools": [
         "anatomy",
         "areamodel",
@@ -212,27 +212,6 @@
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
-      "code": "canvas-name",
-      "severity": "warning",
-      "count": 18,
-      "toolCount": 15,
-      "exampleTools": [
-        "anatomy",
-        "areamodel",
-        "chemBalance",
-        "climateExplorer",
-        "dissection",
-        "epidemicSim",
-        "graphCalc",
-        "musicSynth",
-        "plateTectonics",
-        "rockCycle",
-        "rocks",
-        "skatelab"
-      ],
-      "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
-    },
-    {
       "code": "heading",
       "severity": "warning",
       "count": 15,
@@ -254,10 +233,31 @@
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
+      "code": "canvas-name",
+      "severity": "warning",
+      "count": 17,
+      "toolCount": 14,
+      "exampleTools": [
+        "anatomy",
+        "areamodel",
+        "chemBalance",
+        "climateExplorer",
+        "dissection",
+        "epidemicSim",
+        "graphCalc",
+        "musicSynth",
+        "plateTectonics",
+        "rockCycle",
+        "rocks",
+        "unitConvert"
+      ],
+      "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
+    },
+    {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 33,
-      "toolCount": 13,
+      "count": 32,
+      "toolCount": 12,
       "exampleTools": [
         "algebraCAS",
         "appLab",
@@ -269,8 +269,8 @@
         "fireEcology",
         "kitchenLab",
         "llmLiteracy",
-        "skatelab",
-        "typingPractice"
+        "typingPractice",
+        "waterCycle"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
@@ -310,13 +310,12 @@
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 4,
-      "toolCount": 4,
+      "count": 3,
+      "toolCount": 3,
       "exampleTools": [
         "birdLab",
         "plateTectonics",
-        "playlab",
-        "skatelab"
+        "playlab"
       ],
       "recommendation": "Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow."
     }
@@ -1862,7 +1861,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16015,
+      "renderedBytes": 16023,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2178,7 +2177,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22800,
+      "renderedBytes": 22797,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2627,7 +2626,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1598,
+      "renderedBytes": 1580,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3185,7 +3184,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13350,
+      "renderedBytes": 13339,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3650,7 +3649,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17338,
+      "renderedBytes": 17336,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4128,12 +4127,12 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 68774,
+      "renderedBytes": 69049,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
-      "noticeCount": 1,
+      "warningCount": 0,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 58,
         "roleButtons": 0,
@@ -4144,53 +4143,9 @@
         "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 1
+        "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
-          "width": "720",
-          "height": "320"
-        },
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas"
-        },
-        {
-          "toolId": "skatelab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 115,
-          "selector": "div > div.sk-control-grid:nth-of-type(13) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3)",
-          "ratio": 3.19,
-          "color": "#fff",
-          "background": "#d97706",
-          "text": "🔄 Kickflip"
-        },
-        {
-          "toolId": "skatelab",
-          "severity": "notice",
-          "code": "horizontal-overflow-risk",
-          "message": "Tool includes fixed-width surfaces that need mobile visual review.",
-          "count": 1,
-          "examples": [
-            {
-              "selector": "div > div > div.sk-canvas-frame:nth-of-type(9) > canvas",
-              "width": "720"
-            }
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "solarSystem",
@@ -4379,7 +4334,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47691,
+      "renderedBytes": 47688,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

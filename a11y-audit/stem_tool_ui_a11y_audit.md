@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T05:39:44.686Z
+Generated: 2026-07-03T14:42:33.033Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-03T05:39:44.686Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 136 |
+| Total findings | 132 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 119 |
-| Review notices | 17 |
-| Tools with any finding | 66 |
+| Tool-level warnings | 116 |
+| Review notices | 16 |
+| Tools with any finding | 65 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -25,14 +25,14 @@ Generated: 2026-07-03T05:39:44.686Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
+| warning | `canvas-focus` | 31 | 23 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 18 | 18 | areamodel, birdLab, cell, chemBalance, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `heading` | 15 | 15 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology | Start each tool with a semantic heading so screen-reader users can orient quickly. |
-| warning | `inline-contrast` | 33 | 13 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, skatelab, typingPractice | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `canvas-name` | 17 | 14 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
+| warning | `inline-contrast` | 32 | 12 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, typingPractice, waterCycle | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 3 | 3 | birdLab, molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 13 | 13 | accessLens, archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
-| notice | `horizontal-overflow-risk` | 4 | 4 | birdLab, plateTectonics, playlab, skatelab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
+| notice | `horizontal-overflow-risk` | 3 | 3 | birdLab, plateTectonics, playlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
 ## Recommended Next Passes
 
@@ -143,7 +143,7 @@ Generated: 2026-07-03T05:39:44.686Z
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
 | `semiconductor` Semiconductor Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `singing` Singing Lab | art | standard | 29 | 0 | 2 | 0 | 2 | 0 | canvas-focus x2 |
-| `skatelab` SkateLab | science | standard | 58 | 10 | 1 | 0 | 3 | 1 | canvas-focus x1, canvas-name x1, horizontal-overflow-risk x1, inline-contrast x1 |
+| `skatelab` SkateLab | science | standard | 58 | 10 | 1 | 0 | 0 | 0 |  |
 | `solarSystem` Solar System Explorer | science | standard | 25 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
 | `spaceColony` Kepler Colony | strategy | standard | 13 | 7 | 0 | 0 | 0 | 0 |  |
 | `spaceExplorer` Space Explorer | Simulations | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
