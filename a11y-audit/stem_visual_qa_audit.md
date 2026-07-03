@@ -1,19 +1,19 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T03:32:27.107Z
+Generated: 2026-07-03T03:53:39.883Z
 
 ## Scope
 
 - Registered STEM tools: 114
 - STEM tool files: 111
-- Monitored student-facing visual markers: 42
+- Monitored student-facing visual markers: 43
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 42 |
+| Marker passes | 43 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 37 |
 | High-confidence monitored errors | 0 |
@@ -64,6 +64,7 @@ Generated: 2026-07-03T03:32:27.107Z
 | pass | `skatelab` | `data-skatelab-run-focus` | Rendered |
 | pass | `probability` | `data-probability-command` | Rendered |
 | pass | `punnett` | `data-punnett-cross-focus` | Rendered |
+| pass | `circuit` | `data-circuit-bench` | Rendered |
 | pass | `fractions` | `data-fraction-focus` | Rendered |
 | pass | `galaxy` | `data-galaxy-canvas` | Rendered |
 | pass | `wave` | `data-wave-canvas` | Rendered |

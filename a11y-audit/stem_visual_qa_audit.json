@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T03:32:27.107Z",
+  "generatedAt": "2026-07-03T03:53:39.883Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 42
+    "monitoredMarkerCount": 43
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 42,
+    "markerPassCount": 43,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
@@ -314,14 +314,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 20358,
+      "htmlBytes": 20393,
       "issues": [],
       "metrics": {
         "buttons": 38,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 20358
+        "htmlBytes": 20393
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17198,
+      "htmlBytes": 17203,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17198
+        "htmlBytes": 17203
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13356,
+      "htmlBytes": 13365,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13356
+        "htmlBytes": 13365
       }
     },
     {
@@ -902,7 +902,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46590,
+      "htmlBytes": 46579,
       "issues": [
         {
           "toolId": "throwlab",
@@ -931,7 +931,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46590
+        "htmlBytes": 46579
       }
     },
     {
@@ -1056,6 +1056,22 @@
         "canvases": 0,
         "headings": 4,
         "htmlBytes": 27199
+      }
+    },
+    {
+      "id": "circuit",
+      "file": "stem_tool_circuit.js",
+      "marker": "data-circuit-bench",
+      "label": "Circuit electronics bench",
+      "ok": true,
+      "htmlBytes": 40215,
+      "issues": [],
+      "metrics": {
+        "buttons": 53,
+        "fields": 2,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 40215
       }
     },
     {

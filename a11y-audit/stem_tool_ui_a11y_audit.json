@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T03:31:33.131Z",
+  "generatedAt": "2026-07-03T03:53:54.999Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 153,
+    "issueCount": 152,
     "errorCount": 0,
-    "warningCount": 135,
+    "warningCount": 134,
     "noticeCount": 18,
-    "toolsWithIssues": 68,
+    "toolsWithIssues": 67,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 61,
+    "toolsWithWarnings": 60,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 71,
+        "warningCount": 70,
         "noticeCount": 6
       },
       "technology": {
@@ -193,21 +193,21 @@
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 20,
-      "toolCount": 20,
+      "count": 19,
+      "toolCount": 19,
       "exampleTools": [
         "areamodel",
         "birdLab",
         "cell",
         "chemBalance",
-        "circuit",
         "dissection",
         "dnaLab",
         "galaxy",
         "inequality",
         "molecule",
         "moonMission",
-        "multtable"
+        "multtable",
+        "protractor"
       ],
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
@@ -1246,7 +1246,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 20358,
+      "renderedBytes": 20393,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -1458,36 +1458,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build series & parallel circuits with Ohm's Law",
-      "renderedBytes": 16477,
+      "renderedBytes": 21941,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 39,
+        "buttons": 43,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 6,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "circuit",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 6,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "climateExplorer",
@@ -1865,7 +1854,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16022,
+      "renderedBytes": 16006,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2181,7 +2170,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22814,
+      "renderedBytes": 22797,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3188,7 +3177,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13348,
+      "renderedBytes": 13326,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3653,7 +3642,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17335,
+      "renderedBytes": 17331,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4382,7 +4371,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46585,
+      "renderedBytes": 46576,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,
