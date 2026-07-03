@@ -566,7 +566,7 @@
       document.body.appendChild(a); a.click();
       setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (_) {} }, 1500);
     };
-    var safeName = function () { return (doc.title || 'allostudio').replace(/[^\wÀ-￿ -]+/g, '').trim().replace(/ +/g, '_') || 'allostudio'; };
+    var safeName = function () { return (doc.title || 'allostudio').replace(/[^\w\u00C0-\uFFFF -]+/g, '').trim().replace(/ +/g, '_') || 'allostudio'; };
     var gateOr = function (fn) {
       return function () {
         if (altFailures.length) {

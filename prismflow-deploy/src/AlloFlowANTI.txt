@@ -29759,7 +29759,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         if (!_bytes) { addToast(t('toasts.tagged_pdf_generation_returned_bytes') || 'Tagged PDF generation returned no bytes.', 'error'); return false; }
                         const _rt = (_result && _result.roundTrip) || null;
                         if (_rt && _rt.ok === false) { addToast('⚠ ' + (t('toasts.typeset_failed_check') || 'The tagged PDF failed its post-save structure check — use the HTML export instead.'), 'error'); return false; }
-                        safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (title || 'allostudio').replace(/[^\wÀ-￿ -]+/g, '').trim().replace(/ +/g, '_') + '-tagged.pdf');
+                        safeDownloadBlob(new Blob([_bytes], { type: 'application/pdf' }), (title || 'allostudio').replace(/[^\w\u00C0-\uFFFF -]+/g, '').trim().replace(/ +/g, '_') + '-tagged.pdf');
                         return true;
                     } catch (err) {
                         addToast((t('toasts.tagged_pdf_failed') || 'Tagged PDF failed: ') + (err?.message || 'unknown error'), 'error');
