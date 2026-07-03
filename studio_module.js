@@ -634,9 +634,11 @@
           stAppend(d, { type: 'object.add', object: stMakeShape('rect', { x: 492, y: 210, w: 260, h: 440 }, '#f0fdf4') }, 'user', now);
           return d;
         } },
-      { key: 'blank', emoji: '⬜', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).',
-        make: function (now) {
-          var d = stCreateDoc('letter-portrait', 'Untitled', now);
+      { key: 'blank', emoji: '⬜', name: 'Blank canvas', desc: 'Start from nothing (portrait, landscape, or square).', orientations: true,
+        make: function (now, preset) {
+          // orientation chosen AT CREATION — the base canvas, so replay/scrub is
+          // unaffected (no mid-document resize op). Unknown preset → portrait.
+          var d = stCreateDoc(ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', 'Untitled', now);
           stAppend(d, { type: 'doc.template', template: 'blank' }, 'user', now);
           return d;
         } },
@@ -699,9 +701,8 @@
         c.width = Math.round(doc.canvas.w * scale); c.height = Math.round(doc.canvas.h * scale);
         var g = c.getContext('2d');
         g.scale(scale, scale);
-        g.fillStyle = stSafeCssColor(doc.canvas.background && doc.canvas.background.fill, '#ffffff');
-        g.fillRect(0, 0, doc.canvas.w, doc.canvas.h);
-        // Paint order = z, stable within equal z by array order
+        // Paint order = z, stable within equal z by array order. Background is
+        // painted once, after images resolve, right before the real draw pass.
         var byZ = stOrderedObjects(doc.objects);
         var pending = [];
         byZ.forEach(function (o) {
@@ -827,8 +828,8 @@
     var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
     var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
 
-    var startFromTemplate = function (tpl) {
-      _docRef.current = tpl.make(Date.now());
+    var startFromTemplate = function (tpl, preset) {
+      _docRef.current = tpl.make(Date.now(), preset);
       setView('edit'); setSelectedId(null);
       stAnnounce(TT('studio.a11y_started', 'Started a new document from template') + ': ' + tpl.name);
     };
@@ -1024,6 +1025,20 @@
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
           h('div', { style: { padding: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '12px', overflowY: 'auto' } },
             stTemplates().map(function (tpl) {
+              // Cards with an orientation choice render a fieldset of buttons
+              // (a card can't be one <button> and also hold nested buttons).
+              if (tpl.orientations) {
+                return h('div', { key: tpl.key, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '10px' } },
+                  h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
+                    h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
+                    h('span', null,
+                      h('strong', { style: { display: 'block', fontSize: '14px', color: C.text } }, tpl.name),
+                      h('span', { style: { fontSize: '11px', color: C.muted } }, tpl.desc))),
+                  h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
+                    [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
+                      return h('button', { key: opt[0], onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
+                    })));
+              }
               return h('button', { key: tpl.key, onClick: function () { startFromTemplate(tpl); }, style: { textAlign: 'left', padding: '16px', borderRadius: '12px', border: '1px solid ' + C.border, background: C.panel, color: C.text, cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                 h('span', { style: { fontSize: '26px' }, 'aria-hidden': true }, tpl.emoji),
                 h('span', null,
@@ -1248,8 +1263,8 @@
           h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: { background: C.hBtnBg, color: C.hBtnText, border: '1px solid ' + C.hBtnBorder, borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: '220px' },
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
-          h('button', { style: S.hBtn, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
-          h('button', { style: S.hBtn, onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
+          h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
+          h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
           h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { setRole(student ? 'teacher' : 'student'); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),

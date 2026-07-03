@@ -312,6 +312,19 @@ describe('templates (doc §11 set)', () => {
       expect(ST.stAltGate(d.objects)).toEqual([]);
     }
   });
+  it('blank canvas honors the chosen orientation at creation (portrait/landscape/square)', () => {
+    const blank = ST.stTemplates().find(t => t.key === 'blank');
+    expect(blank.orientations).toBe(true);
+    expect(blank.make(T0).canvas.preset).toBe('letter-portrait');              // default
+    const land = blank.make(T0, 'letter-landscape').canvas;
+    expect([land.preset, land.w, land.h]).toEqual(['letter-landscape', 1056, 816]);
+    const sq = blank.make(T0, 'square').canvas;
+    expect([sq.preset, sq.w, sq.h]).toEqual(['square', 900, 900]);
+    expect(blank.make(T0, 'bogus').canvas.preset).toBe('letter-portrait');     // unknown → portrait
+    // orientation is the BASE canvas (not an op) → replay/validate still clean
+    const d = blank.make(T0, 'square');
+    expect(ST.stValidateDoc(d)).toEqual([]);
+  });
   it('worksheet template carries numbered question headings (the doc_pipeline bridge hook)', () => {
     const ws = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
     const headings = ws.objects.filter(o => o.type === 'text' && o.role === 'heading2');
