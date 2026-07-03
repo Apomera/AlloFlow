@@ -1053,7 +1053,8 @@
     category: 'science',
     questHooks: [
       { id: 'explore_3_tabs', label: 'Explore 3 tectonics topics', icon: '🌋', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3'; } },
-      { id: 'select_plate', label: 'Study a tectonic plate', icon: '🌍', check: function(d) { return !!d.selectedPlate; }, progress: function(d) { return d.selectedPlate ? 'Selected!' : 'Pick a plate'; } }
+      { id: 'select_plate', label: 'Study a tectonic plate', icon: '🌍', check: function(d) { return !!d.selectedPlate; }, progress: function(d) { return d.selectedPlate ? 'Selected!' : 'Pick a plate'; } },
+      { id: 'myth_3', label: 'Bust 3 tectonics myths (True or False)', icon: '🧠', check: function(d) { return (d.ptMythsDone || 0) >= 3; }, progress: function(d) { return (d.ptMythsDone || 0) + '/3 myths'; } }
     ],
     render: function(ctx) {
       // Aliases â€” maps ctx properties to original variable names
@@ -1165,7 +1166,8 @@ var d = labToolData.plateTectonics || {};
             { id: 'read_cascadia', name: __alloT('stem.platetectonics.cascadia_scholar', 'Cascadia Scholar'), desc: __alloT('stem.platetectonics.read_the_cascadia_subduction_zone_tab', 'Read the Cascadia Subduction Zone tab'), icon: '🌲', rp: 20, check: function() { return d.simTab === 'cascadia'; } },
             { id: 'quiz_pass', name: __alloT('stem.platetectonics.tectonics_scholar', 'Tectonics Scholar'), desc: __alloT('stem.platetectonics.score_5_on_the_plate_tectonics_quiz', 'Score 5+ on the Plate Tectonics Quiz'), icon: '🎓', rp: 50, check: function() { return d.quizScore >= 5; } },
             { id: 'vocab_look', name: __alloT('stem.platetectonics.earth_glossary', 'Earth Glossary'), desc: __alloT('stem.platetectonics.look_up_3_vocabulary_terms_in_the_dict', 'Look up 3 vocabulary terms in the dictionary'), icon: '📖', rp: 15, check: function() { return (d.vocabLookedUp || []).length >= 3; } },
-            { id: 'timelapse_drift', name: __alloT('stem.platetectonics.continental_drift', 'Continental Drift'), desc: __alloT('stem.platetectonics.play_the_continental_drift_time_lapse', 'Play the continental drift time-lapse'), icon: '⏳', rp: 20, check: function() { return d.timelapsePlayed; } }
+            { id: 'timelapse_drift', name: __alloT('stem.platetectonics.continental_drift', 'Continental Drift'), desc: __alloT('stem.platetectonics.play_the_continental_drift_time_lapse', 'Play the continental drift time-lapse'), icon: '⏳', rp: 20, check: function() { return d.timelapsePlayed; } },
+            { id: 'myth_buster', name: __alloT('stem.platetectonics.myth_buster', 'Myth Buster'), desc: __alloT('stem.platetectonics.answer_3_tectonics_myths', 'Answer 3 tectonics myths (True/False)'), icon: '🧠', rp: 30, check: function() { return (d.ptMythsDone || 0) >= 3; } }
           ];
 
           var TECT_VOCAB = {
@@ -5190,6 +5192,54 @@ var d = labToolData.plateTectonics || {};
           var _gRed = isDark ? 'linear-gradient(135deg, #991b1b, #7f1d1d, #450a0a)' : 'linear-gradient(135deg, #dc2626, #ef4444, #f87171)';
           var _gCard = isDark ? 'linear-gradient(135deg, var(--allo-stem-panel, rgba(30,41,59,0.7)) 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 100%)' : 'linear-gradient(135deg, #fef2f2, #fee2e2, #fef2f2)';
 
+          // ── Grade band (for the Myths panel) ──
+          function ptGradeBand() {
+            var gl = (gradeLevel || '5th Grade').toLowerCase();
+            if (/9th|10|11|12|high/.test(gl)) return '9-12';
+            if (/6th|7th|8th/.test(gl)) return '6-8';
+            return '3-5';
+          }
+          var ptBand = ptGradeBand();
+
+          // ── 🧠 Plate Tectonics Myths — grade-banded misconceptions, each falsifiable
+          // in the sim. Plate tectonics is the single most misconception-dense earth-
+          // science topic (solid-yet-flowing mantle, plates-float-on-magma, continents-
+          // plow-through-seafloor, slab-pull vs convection). Every verdict ends with a
+          // "🔬 Try it" pointing at a tab/toggle that lets the student SEE the truth. ──
+          var PT_MYTHS_35 = [
+            { s: 'The ground under your feet is completely still — nothing moves down there.', t: false, why: 'The plates carrying the continents creep along about as fast as your fingernails grow — a few centimeters a year. It is slow, but it never stops.', tryIt: 'Play the Continental Drift time-lapse on the Timeline tab and watch the continents crawl.' },
+            { s: 'Earthquakes and volcanoes pop up in totally random places.', t: false, why: 'They cluster along the SAME lines — the edges of the plates. The "Ring of Fire" around the Pacific is one giant plate boundary.', tryIt: 'On the Earthquake tab, trigger a quake at a plate boundary and see where the energy concentrates.' },
+            { s: 'Mountains have always been exactly where they are and never change.', t: false, why: 'Colliding plates crumple the crust upward over millions of years — the Himalayas are STILL rising a few millimeters a year as India pushes into Asia.', tryIt: 'In the simulator, push two continental plates together (convergent boundary) and watch the crust buckle up.' },
+            { s: 'The continents have always looked just like they do on today’s map.', t: false, why: 'About 200 million years ago they were joined in one supercontinent, Pangaea. They have been drifting apart ever since — and are still moving.', tryIt: 'Open the Timeline tab and rewind to Pangaea.' }
+          ];
+          var PT_MYTHS_68 = PT_MYTHS_35.concat([
+            { s: 'The mantle is an ocean of liquid magma, and the plates float on it like rafts.', t: false, why: 'The mantle is SOLID rock. It flows — but incredibly slowly, like cold putty over thousands of years. Plates ride on the solid-but-bendable asthenosphere, not on liquid.', tryIt: 'Turn on Convection currents in the simulator: those are loops of SOLID rock creeping in slow circles, not sloshing lava.' },
+            { s: 'Continents plow through the ocean floor like ships cutting through water.', t: false, why: 'That was Wegener’s original mistake, and why his idea was rejected for decades. A plate carries its continent AND its seafloor together — new seafloor is born at ridges and swallowed at trenches.', tryIt: 'Watch a divergent boundary in the sim: new crust forms in the gap and spreads both directions.' },
+            { s: 'When a plate subducts, that crust is destroyed and gone forever.', t: false, why: 'It melts and RECYCLES — some rises again as volcanic magma at the arc above. Plate tectonics and the rock cycle are the same engine.', tryIt: 'Read the Cascadia Subduction Zone tab to follow crust down and magma back up.' }
+          ]);
+          var PT_MYTHS_912 = PT_MYTHS_68.concat([
+            { s: 'Plates move mainly because mantle convection drags them along from below.', t: false, why: 'The dominant force is SLAB PULL — the weight of the cold, dense subducting slab sinking and pulling the rest of the plate behind it. Ridge push and convection help, but slab pull leads.', tryIt: 'Compare fast plates (Pacific, lots of subducting edge) with slow ones (few subduction zones) on the plate info panels.' },
+            { s: 'Earth’s inner core is molten liquid because it is the hottest part of the planet.', t: false, why: 'The inner core is SOLID iron even at ~5,700°C. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.', tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
+            { s: 'Pangaea was the only supercontinent that ever existed.', t: false, why: 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.', tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' }
+          ]);
+          var PT_MYTH_BANK = ptBand === '9-12' ? PT_MYTHS_912 : ptBand === '6-8' ? PT_MYTHS_68 : PT_MYTHS_35;
+          function ptStartMyth() {
+            var bank = PT_MYTH_BANK;
+            var mi = Math.floor(Math.random() * bank.length);
+            if (d.ptMyth && mi === d.ptMyth.idx) mi = (mi + 1) % bank.length;
+            var m = bank[mi];
+            upd({ ptMyth: { idx: mi, s: m.s, t: m.t, why: m.why, tryIt: m.tryIt, answered: false, chosen: null } });
+          }
+          function ptAnswerMyth(val) {
+            var m = d.ptMyth; if (!m || m.answered) return;
+            var right = val === m.t;
+            if (right) { sfxTectCorrect(); if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 5, 'Tectonics myth busted'); }
+            else { sfxTectQuake(); }
+            upd({ ptMyth: Object.assign({}, m, { answered: true, chosen: val }), ptMythsDone: (d.ptMythsDone || 0) + 1 });
+            if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (m.t ? 'True. ' : 'False. ') + m.why);
+            setTimeout(checkChallenges, 50);
+          }
+
           // Sonification refs & helpers
           var sonifyOscRef = React.useRef(null);
           var sonifyGainRef = React.useRef(null);
@@ -7486,6 +7536,42 @@ var d = labToolData.plateTectonics || {};
 
               );
 
+            })(),
+
+            // === 🧠 PLATE TECTONICS MYTHS (quiz tab) ===
+            simTab === 'quiz' && (function() {
+              var m = d.ptMyth || null;
+              return React.createElement("div", { className: "mt-4 p-5 rounded-2xl border-2 " + (isDark ? "border-violet-900/50" : "border-violet-200"), style: { background: isDark ? 'linear-gradient(135deg, rgba(76,29,149,0.25), rgba(15,23,42,0.6))' : 'linear-gradient(135deg, #f5f3ff, #ede9fe)' } },
+                React.createElement("div", { className: "flex items-center justify-between mb-3 flex-wrap gap-2" },
+                  React.createElement("h3", { className: "font-black text-sm flex items-center gap-2 " + (isDark ? "text-violet-300" : "text-violet-900") },
+                    React.createElement("span", null, "🧠"),
+                    React.createElement("span", null, __alloT('stem.platetectonics.tectonics_myths', "Tectonics Myths — true or false?")),
+                    React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[10px] font-bold " + (isDark ? "bg-violet-950/60 text-violet-300" : "bg-violet-100 text-violet-700") }, ptBand)
+                  ),
+                  React.createElement("button", { "aria-label": __alloT('stem.platetectonics.start_a_myth', "Start a tectonics myth"),
+                    onClick: ptStartMyth,
+                    className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-violet-600 text-white hover:bg-violet-700 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                  }, m ? "🔄 New Myth" : "▶ Start")
+                ),
+                m && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, "“" + m.s + "”"),
+                  !m.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                    [true, false].map(function(val) {
+                      return React.createElement("button", { key: String(val),
+                        "aria-label": "Answer " + (val ? 'true' : 'false'),
+                        onClick: function() { ptAnswerMyth(val); },
+                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "border-violet-900/50 bg-slate-900 text-slate-200 hover:border-violet-500" : "border-violet-200 bg-white text-slate-700 hover:border-violet-400 hover:bg-violet-50")
+                      }, val ? '✅ True' : '❌ False');
+                    })
+                  ),
+                  m.answered && React.createElement("div", { className: "p-3 rounded-xl border-2 " + (m.chosen === m.t ? (isDark ? "border-emerald-700 bg-emerald-950/40" : "border-emerald-300 bg-emerald-50") : (isDark ? "border-red-800 bg-red-950/40" : "border-red-300 bg-red-50")) },
+                    React.createElement("p", { className: "text-xs font-black mb-1 " + (m.chosen === m.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
+                      (m.chosen === m.t ? "✅ Correct — " : "❌ Not quite — ") + (m.t ? "TRUE." : "FALSE.")),
+                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-300" : "text-slate-700") }, m.why),
+                    React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-violet-300" : "text-violet-700") }, "🔬 Try it: " + m.tryIt)
+                  )
+                )
+              );
             })(),
 
 

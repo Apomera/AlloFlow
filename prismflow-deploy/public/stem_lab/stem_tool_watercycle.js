@@ -326,6 +326,26 @@
     { id: 'runRestoration', when: function(s) { var m = _wcById(s, 'riverMainstem'); var b = _wcById(s, 'forestBuffer'); return !!m && !!b && m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
   ];
 
+  // Parallel "coaching" view of the feedback rules above: the same thresholds,
+  // but readable so the year-review debrief can (a) explain WHY a cascade fired
+  // and (b) flag a near-miss — a component sitting just under a threshold, so the
+  // student learns which single move would unlock a free downstream benefit.
+  // Kept in lockstep with STEWARD_FEEDBACK_RULES by hand (only 4 rules).
+  var STEWARD_CASCADE_HINTS = [
+    { id: 'bufferFeedsHeadwaters', comp: 'forestBuffer', field: 'quality', threshold: 70,
+      fired: 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).',
+      near: 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.' },
+    { id: 'beaverHelpsFloodplain', comp: 'floodplainWetlands', field: 'quality', threshold: 60,
+      fired: 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.',
+      near: 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.' },
+    { id: 'agCleansUp', comp: 'agriculturalWatershed', field: 'quality', threshold: 60,
+      fired: 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.',
+      near: 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.' },
+    { id: 'runRestoration', comp: 'riverMainstem', field: 'connectivity', threshold: 60,
+      fired: 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.',
+      near: 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.' }
+  ];
+
   var STEWARD_DIFFICULTIES = {
     volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
     coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
@@ -1124,6 +1144,77 @@ const d = labToolData.waterCycle || {};
             };
           }
 
+          // ── Steward's debrief: turn a silent numbers turn into a coaching loop ──
+          // Grades the year's DECISIONS (not just the outcome): were the hours
+          // spent, aimed at the weakest link, and did they trip — or nearly trip —
+          // a downstream feedback cascade? This is the systems-thinking payload the
+          // campaign was missing: interventions have downstream, delayed effects.
+          function stewardYearDebrief() {
+            var snap = steward.yearLog[steward.yearLog.length - 1] || {};
+            var actions = snap.actions || [];
+            var comps = steward.components || [];
+            var byId = {}; comps.forEach(function(c) { byId[c.id] = c; });
+            var techByName = {}; STEWARD_TECHNIQUES.forEach(function(tc) { techByName[tc.name] = tc; });
+            var compByName = {}; MAINE_WATERSHED_COMPONENTS.forEach(function(cd) { compByName[cd.name] = cd; });
+
+            // Hours utilization
+            var hoursSpent = actions.reduce(function(a, x) { return a + (x.hours || 0); }, 0);
+            var hoursPerYear = steward.hoursPerYear || 18;
+            var hoursIdle = Math.max(0, hoursPerYear - hoursSpent);
+
+            // Where did the investment land? Track components touched + notable moves.
+            var investedIds = {}, usedDamRemoval = false, restedOnly = actions.length > 0;
+            actions.forEach(function(a) {
+              var tech = techByName[a.tech];
+              if (tech && tech.id === 'damRemoval') usedDamRemoval = true;
+              if (tech && tech.id !== 'rest') restedOnly = false;
+              var comp = compByName[a.target];
+              if (comp) investedIds[comp.id] = true;
+            });
+
+            // Weakest link = component furthest below its OWN quality target
+            var weakest = null, worstGap = -1;
+            comps.forEach(function(c) {
+              var def = getWatershedComponent(c.id); if (!def) return;
+              var gap = (def.targets && def.targets.quality ? def.targets.quality : 75) - c.quality;
+              if (gap > worstGap) { worstGap = gap; weakest = { c: c, def: def, gap: Math.round(gap) }; }
+            });
+            // Highest-quality technique that directly applies to the weakest link
+            var rec = null, recQ = -1;
+            if (weakest) {
+              STEWARD_TECHNIQUES.forEach(function(tech) {
+                if (tech.appliesTo === 'any' || tech.id === 'rest') return;
+                if (tech.appliesTo.indexOf(weakest.c.id) < 0) return;
+                var q = tech.effects.quality || 0;
+                if (q > recQ) { recQ = q; rec = tech; }
+              });
+              if (!rec) rec = STEWARD_TECHNIQUES.find(function(tc) { return tc.id === 'easement'; });
+            }
+
+            // Cascades: which fired this year, which are one move away
+            var firedIds = {}; (snap.cascades || []).forEach(function(x) { firedIds[x.id] = true; });
+            var firedMsgs = [], nearMsgs = [];
+            STEWARD_CASCADE_HINTS.forEach(function(hint) {
+              var c = byId[hint.comp]; if (!c) return;
+              var v = Math.round(c[hint.field]);
+              if (firedIds[hint.id]) firedMsgs.push(hint.fired);
+              else if (v >= hint.threshold - 8 && v < hint.threshold) nearMsgs.push(hint.near.replace('{v}', v));
+            });
+
+            // Decision grade — targeting × utilization
+            var touchedWeakest = weakest && investedIds[weakest.c.id];
+            var usedMost = hoursSpent >= hoursPerYear * 0.7;
+            var grade;
+            if (touchedWeakest && usedMost) grade = { emoji: '🌟', label: 'Sharp targeting', note: 'You put real hours into the watershed\'s weakest link. That is how a thin stewardship budget actually moves the needle.' };
+            else if (usedMost || touchedWeakest) grade = { emoji: '👍', label: 'Solid year', note: touchedWeakest ? 'Good instinct hitting the priority component — try to spend more of your hour budget next year.' : 'You worked most of your hours; aim them at the single weakest component next year for compounding gains.' };
+            else if (restedOnly) grade = { emoji: '🍃', label: 'Deliberate pause', note: 'Holding steady lets support recover and some components self-heal — a valid move once or twice, but pressures do not wait forever.' };
+            else grade = { emoji: '🤔', label: 'Scattered effort', note: 'A lot of capacity sat idle or spread thin. Pressures never rest — pick the one component holding the watershed back and concentrate there.' };
+
+            var backfire = usedDamRemoval ? 'Dam removal is the single biggest connectivity gain available, but it costs about 12 community support — the backlash is real and modeled. Follow it with public education and River Days to rebuild trust before the support hit stalls your other work.' : '';
+
+            return { hoursSpent: hoursSpent, hoursIdle: hoursIdle, hoursPerYear: hoursPerYear, grade: grade, fired: firedMsgs, near: nearMsgs, weakest: weakest, rec: rec, backfire: backfire };
+          }
+
           // ── Per-component deep-dive ──
           function openStewardDeepDive(id) { setSteward({ deepDiveComponent: id }); }
           function closeStewardDeepDive() { setSteward({ deepDiveComponent: null }); }
@@ -1689,6 +1780,41 @@ const d = labToolData.waterCycle || {};
                   h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, t('stem.watercycle.hydrological_feedback_rules_this_year', '🔄 Hydrological feedback rules this year')),
                   lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
                 ) : null,
+
+                // ── Steward's debrief — coaching synthesis of THIS year's decisions ──
+                (function() {
+                  var db = stewardYearDebrief();
+                  var pillBg = isDark ? 'rgba(15,23,42,0.55)' : '#ffffff';
+                  return h('div', {
+                    style: {
+                      padding: 12, borderRadius: 12,
+                      background: isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)',
+                      border: isDark ? '1px solid rgba(16,185,129,0.28)' : '1px solid rgba(16,185,129,0.35)',
+                      borderLeft: '4px solid #10b981'
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+                      h('strong', { style: { color: isDark ? '#6ee7b7' : '#047857', fontSize: 14 } }, "🧭 Steward's debrief"),
+                      h('span', { style: { fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: pillBg, border: isDark ? '1px solid #334155' : '1px solid #d1fae5', color: isDark ? '#e2e8f0' : '#334155' } }, db.grade.emoji + ' ' + db.grade.label),
+                      h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: db.hoursIdle > 0 ? (isDark ? '#fbbf24' : '#b45309') : (isDark ? '#6ee7b7' : '#047857') } }, db.hoursSpent + '/' + db.hoursPerYear + 'h used' + (db.hoursIdle > 0 ? ' · ' + db.hoursIdle + 'h idle' : ' · full'))
+                    ),
+                    h('p', { style: { margin: '0 0 6px', fontSize: 12.5, lineHeight: 1.55, color: isDark ? '#cbd5e1' : '#334155' } }, db.grade.note),
+                    // Causal chains that fired this year
+                    db.fired.length > 0 ? db.fired.map(function(m, i) {
+                      return h('p', { key: 'f' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#a7f3d0' : '#065f46' } }, '🔗 ' + m);
+                    }) : null,
+                    // Backfire / tradeoff warning
+                    db.backfire ? h('p', { style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#fca5a5' : '#b91c1c' } }, '⚖️ ' + db.backfire) : null,
+                    // Near-miss cascades — the one-move-away coaching
+                    db.near.length > 0 ? db.near.map(function(m, i) {
+                      return h('p', { key: 'n' + i, style: { margin: '4px 0', fontSize: 12, lineHeight: 1.5, color: isDark ? '#7dd3fc' : '#0369a1' } }, '🎯 ' + m);
+                    }) : null,
+                    // Strategic next priority
+                    db.weakest && db.rec ? h('p', { style: { margin: '6px 0 0', paddingTop: 6, borderTop: isDark ? '1px solid rgba(16,185,129,0.2)' : '1px solid #d1fae5', fontSize: 12, lineHeight: 1.5, fontWeight: 600, color: isDark ? '#e2e8f0' : '#334155' } },
+                      '➡️ Weakest link now: ' + db.weakest.def.icon + ' ' + db.weakest.def.name + ' (quality ' + Math.round(db.weakest.c.quality) + ', ' + db.weakest.gap + ' below its goal). Best matched move: ' + db.rec.icon + ' ' + db.rec.name + '.'
+                    ) : null
+                  );
+                })(),
 
                 // Per-component deltas
                 h('div', {

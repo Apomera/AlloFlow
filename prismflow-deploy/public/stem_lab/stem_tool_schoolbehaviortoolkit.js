@@ -1403,7 +1403,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         minHeight: '70vh',
         padding: 0,
         boxShadow: '0 0 40px rgba(20,184,166,0.15)',
-        outline: 'none'
+        outline: 'none',
+        // ── Theme self-containment (2026-07-02, Aaron: "light mode … is not right") ──
+        // This tool's background is a FIXED dark teal atmosphere (above), and its
+        // content is built for a dark substrate: 46 hardcoded light-text colors,
+        // dark SVG strokes (#0f172a), bright teal accents (#5eead4/#14b8a6). But it
+        // draws 80 text nodes with var(--allo-stem-text), which the StemLab shell
+        // makes theme-reactive — so in LIGHT app mode that text flipped DARK and
+        // vanished on the dark panels. Pin the STEM theme vars to their dark-substrate
+        // values ON THIS ROOT so every var(--allo-stem-*) descendant reads light-on-dark
+        // (>13:1, AAA) in every app theme, plus an explicit light `color` so inherited
+        // text is light too. The tool becomes a self-contained dark island — the
+        // standard pattern for an immersive tool whose background can't go light.
+        '--allo-stem-canvas': '#0f172a',
+        '--allo-stem-text': '#e2e8f0',
+        '--allo-stem-text-soft': '#94a3b8',
+        '--allo-stem-border': '#334155',
+        color: '#e2e8f0'
       };
 
       function renderHeader() {

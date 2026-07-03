@@ -1017,7 +1017,12 @@
       React.useEffect(function() {
         var handler = function(e) {
           if (e && e.detail && e.detail.label !== 'Sel') return;
-          _setPluginProgressTick(function(t) { return t + 1; });
+          // Defer out of any in-progress React render (dispatchEvent runs
+          // listeners synchronously): a direct setState here during a host
+          // render trips "Cannot update a component while rendering". The tick
+          // only refreshes the tile grid as plugins stream in — a microtask
+          // defer is imperceptible and render-safe. Mirrors the StemLab fix.
+          Promise.resolve().then(function() { _setPluginProgressTick(function(t) { return t + 1; }); });
         };
         window.addEventListener('allo-plugins-changed', handler);
         return function() { window.removeEventListener('allo-plugins-changed', handler); };
