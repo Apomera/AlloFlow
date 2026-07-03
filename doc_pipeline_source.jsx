@@ -30660,7 +30660,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
-    aiFixChunked: aiFixChunked,
+    // aiFixChunked is already exported below via _wrapAsync (state-binding) — Item C
+    // mistakenly added a raw duplicate here (last-wins made it harmless, but esbuild
+    // flagged the duplicate key). Kept the _wrapAsync export; removed the raw one.
     surgicalToolRegistry: SURGICAL_TOOL_REGISTRY,
     // Pure content-fidelity nets — exposed so the re-fix lanes (Fix Remaining) can run the SAME WARN-only
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the

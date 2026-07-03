@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -30662,7 +30662,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     palettePresets: PALETTE_PRESETS,
     checkReadingOrderPreserved: checkReadingOrderPreserved,
     readingOrderSequenceRatio: readingOrderSequenceRatio,
-    aiFixChunked: aiFixChunked,
+    // aiFixChunked is already exported below via _wrapAsync (state-binding) — Item C
+    // mistakenly added a raw duplicate here (last-wins made it harmless, but esbuild
+    // flagged the duplicate key). Kept the _wrapAsync export; removed the raw one.
     surgicalToolRegistry: SURGICAL_TOOL_REGISTRY,
     // Pure content-fidelity nets — exposed so the re-fix lanes (Fix Remaining) can run the SAME WARN-only
     // integrity sweep the main path runs (~17270/17290) over THIS run's output, instead of carrying the
@@ -30781,11 +30783,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
