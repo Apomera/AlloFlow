@@ -242,6 +242,25 @@
           <div id="zoomList"></div>
         </div>
         <div class="card" style="margin-top:12px">
+          <h2>Teaching inserts &amp; visual flourish</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="addSectionCardBtn">Title card</button>
+            <button class="quiet" id="addPausePromptBtn">Pause prompt</button>
+            <button class="quiet" id="addCalloutBtn">Callout</button>
+            <button class="quiet" id="addStickerBtn">Animated sticker</button>
+            <button class="quiet" id="aiInsertsBtn" title="Sends transcript text, not video bytes, to Gemini for editable insert suggestions.">Gemini suggestions</button>
+            <button class="quiet" id="lessonAssistBtn" title="Samples frames plus captions so Gemini can suggest chapters, pause prompts, callouts, zooms, and visual prompts.">Lesson assistant</button>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <input type="text" id="visualPromptInput" placeholder="Imagen card prompt, e.g. simple fraction wall diagram" style="min-width:240px;flex:1">
+            <button class="quiet" id="genVisualCardBtn">Generate visual card</button>
+            <button class="quiet" id="frameVisualCardBtn" title="Uses the current video frame as the source for a cleaner still visual card.">From current frame</button>
+          </div>
+          <div class="status" id="insertStatus">Inserts render into the exported video as editable overlays. Use them for section breaks, pause-and-think moments, labels, and tiny GIF-style emphasis.</div>
+          <div id="insertList" style="margin-top:8px"></div>
+          <div id="visualPromptList" style="margin-top:8px"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <h2>Audio</h2>
           <div class="row" style="margin-bottom:8px">
             <label for="volSlider">Volume</label>
@@ -323,6 +342,7 @@
             <button class="quiet" id="addCueBtn">＋ Add caption at playhead</button>
             <button class="quiet" id="importCapBtn">📄 Import captions (.vtt / .srt)</button>
             <input type="file" id="importCapInput" accept=".vtt,.srt,text/vtt" hidden>
+            <button class="quiet" id="cleanCaptionBtn">Clean captions</button>
             <span class="status" id="cueCount"></span>
           </div>
           <div class="row" style="margin-bottom:8px">
@@ -355,6 +375,15 @@
           <div class="status" id="transcriptStatus">Search captions, click a line to jump the video, or scan for possible names and private details before export.</div>
           <div id="privacyFlags" style="margin-top:6px"></div>
           <div id="transcriptList" class="transcript-list"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h2>Lesson chapters</h2>
+          <div class="row" style="margin-bottom:8px">
+            <button class="quiet" id="buildChaptersBtn">Build from captions</button>
+            <button class="quiet" id="downloadChaptersBtn">Download chapters</button>
+            <span class="status" id="chapterStatus" style="margin-top:0">Chapters help students scan a lesson and make the exported transcript easier to use.</span>
+          </div>
+          <div id="chapterList"></div>
         </div>
         <div class="card" style="margin-top:12px">
           <h2>AI edit review</h2>
@@ -619,6 +648,10 @@ function vsMakePackReference(meta) {
     sha256: (typeof m.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(m.sha256)) ? m.sha256.toLowerCase() : null,
     fileName: String(m.fileName || '').slice(0, 200) || null,
     hasCaptions: !!m.hasCaptions,
+    hasVisualDescriptions: !!m.hasVisualDescriptions,
+    hasChapters: !!m.hasChapters,
+    hasTeachingInserts: !!m.hasTeachingInserts,
+    hasVisualPrompts: !!m.hasVisualPrompts,
     thumb: thumb,
     createdAt: m.createdAt || null
   };
@@ -890,6 +923,218 @@ function vsSanitizeVisualDescriptions(raw, duration) {
   }
   out.sort(function (x, y) { return x.start - y.start; });
   return out;
+}
+
+function vsCleanCaptionText(text) {
+  var s = String(text || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!s) return '';
+  s = s.replace(/\bi\b/g, 'I').replace(/\bi'm\b/gi, "I'm").replace(/\bi'll\b/gi, "I'll");
+  s = s.charAt(0).toUpperCase() + s.slice(1);
+  if (!/[.!?]$/.test(s)) s += '.';
+  return s.slice(0, 300);
+}
+
+function vsPolishCaptions(cues, duration) {
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var list = (Array.isArray(cues) ? cues : []).slice().sort(function (a, b) { return Number(a && a.start) - Number(b && b.start); });
+  var out = [];
+  for (var i = 0; i < list.length; i++) {
+    var c = list[i] || {};
+    var text = vsCleanCaptionText(c.text);
+    var a = Number(c.start), b = Number(c.end);
+    if (!text || !isFinite(a)) continue;
+    a = Math.max(0, Math.min(dur, a));
+    b = isFinite(b) ? Math.max(a + 0.4, b) : a + 2;
+    b = Math.max(a + 0.4, Math.min(dur, b));
+    var last = out[out.length - 1];
+    var tail = text.replace(/[.!?]$/, '');
+    if (tail && /^[A-Z][a-z]/.test(tail) && !/^(I|I'm|I'll)\b/.test(tail)) tail = tail.charAt(0).toLowerCase() + tail.slice(1);
+    var combined = last ? vsCleanCaptionText(String(last.text || '').replace(/[.!?]$/, '') + ' ' + tail) : '';
+    if (last && a - last.end <= 0.25 && combined.length <= 150) {
+      last.end = Math.max(last.end, b);
+      last.text = combined;
+    } else {
+      out.push({ start: a, end: b, text: text });
+    }
+  }
+  return out;
+}
+
+function vsChapterTitleFromText(text) {
+  var words = String(text || '').replace(/[\r\n]+/g, ' ').replace(/[^A-Za-z0-9' -]+/g, '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return 'New section';
+  var kept = words.slice(0, 7).join(' ');
+  kept = kept.charAt(0).toUpperCase() + kept.slice(1);
+  return kept.length > 64 ? kept.slice(0, 61) + '...' : kept;
+}
+
+function vsBuildChapters(cues, duration) {
+  var dur = Math.max(0, Number(duration) || 0);
+  var caps = vsPolishCaptions(cues, Math.max(dur, 0.1));
+  if (!caps.length) return dur ? [{ start: 0, title: 'Start' }] : [];
+  var chapters = [];
+  var lastStart = -999;
+  var cueSignalsSection = function (txt) {
+    return /^(now|next|first|second|third|finally|last|let'?s|we are going to|we're going to|try this|your turn)\b/i.test(String(txt || '').trim());
+  };
+  for (var i = 0; i < caps.length; i++) {
+    var c = caps[i];
+    var gap = i ? (c.start - caps[i - 1].end) : 999;
+    var shouldStart = i === 0 || (c.start - lastStart >= 45 && (gap >= 6 || cueSignalsSection(c.text))) || (c.start - lastStart >= 90);
+    if (shouldStart && chapters.length < 16) {
+      chapters.push({ start: Math.max(0, c.start), title: vsChapterTitleFromText(c.text) });
+      lastStart = c.start;
+    }
+  }
+  if (chapters.length && chapters[0].start > 1) chapters.unshift({ start: 0, title: 'Opening' });
+  return chapters;
+}
+
+function vsSanitizeTeachingInserts(raw, duration) {
+  var dur = Math.max(0.1, Number(duration) || 0.1);
+  var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.inserts) ? raw.inserts : (raw && Array.isArray(raw.cards) ? raw.cards : (raw && Array.isArray(raw.suggestions) ? raw.suggestions : [])));
+  var out = [];
+  var typeMap = {
+    title: 'title_card',
+    section: 'title_card',
+    title_card: 'title_card',
+    card: 'title_card',
+    pause: 'pause_prompt',
+    question: 'pause_prompt',
+    pause_prompt: 'pause_prompt',
+    callout: 'callout',
+    label: 'callout',
+    arrow: 'callout',
+    sticker: 'sticker',
+    gif: 'sticker',
+    animated_sticker: 'sticker',
+    image: 'visual_card',
+    generated_image: 'visual_card',
+    visual_card: 'visual_card'
+  };
+  var themes = { blue: 1, green: 1, amber: 1, pink: 1, slate: 1 };
+  var anims = { none: 1, pulse: 1, bounce: 1, sparkle: 1 };
+  var clamp01 = function (v, d) { v = Number(v); return isFinite(v) ? Math.max(0, Math.min(1, v)) : d; };
+  for (var i = 0; i < list.length && out.length < 32; i++) {
+    var s = list[i] || {};
+    var typeKey = String(s.type || s.kind || '').toLowerCase().replace(/[\s-]+/g, '_');
+    var type = typeMap[typeKey];
+    if (!type) continue;
+    var start = Number(s.start != null ? s.start : s.t);
+    if (!isFinite(start)) continue;
+    start = Math.max(0, Math.min(dur, start));
+    var end = Number(s.end);
+    var dflt = type === 'title_card' || type === 'pause_prompt' || type === 'visual_card' ? 4 : 3;
+    var span = isFinite(end) ? (end - start) : Number(s.duration != null ? s.duration : s.dur);
+    if (!isFinite(span) || span <= 0) span = dflt;
+    span = Math.max(0.6, Math.min(type === 'callout' || type === 'sticker' ? 20 : 15, span));
+    var text = String(s.text || s.title || s.label || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 180);
+    if (!text && type !== 'sticker' && type !== 'visual_card') continue;
+    var note = String(s.note || s.subtext || s.prompt || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 240);
+    var imageSrc = String(s.imageSrc || s.image || s.src || '').trim();
+    if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
+    out.push({
+      id: String(s.id || ('ins' + (i + 1))).slice(0, 40),
+      type: type,
+      start: start,
+      end: Math.min(dur, start + span),
+      text: text || (type === 'sticker' ? 'Key idea' : ''),
+      note: note,
+      x: clamp01(s.x, type === 'callout' || type === 'sticker' ? 0.68 : 0.5),
+      y: clamp01(s.y, type === 'callout' || type === 'sticker' ? 0.34 : 0.5),
+      theme: themes[String(s.theme || '').toLowerCase()] ? String(s.theme).toLowerCase() : 'blue',
+      animation: anims[String(s.animation || '').toLowerCase()] ? String(s.animation).toLowerCase() : (type === 'sticker' ? 'pulse' : 'none'),
+      imageSrc: imageSrc,
+      source: String(s.source || '').slice(0, 40)
+    });
+  }
+  out.sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+  return out;
+}
+
+// Lesson structure proposals are untrusted model output. They become editable,
+// unchecked finishing ideas: title cards, chapters, questions, callouts, zooms,
+// still-image prompts, and short motion-sticker/GIF prompts.
+function vsSanitizeLessonPlan(raw, duration) {
+var dur = Math.max(0.1, Number(duration) || 0.1);
+var list = Array.isArray(raw) ? raw : (raw && (Array.isArray(raw.suggestions) ? raw.suggestions : (Array.isArray(raw.items) ? raw.items : (Array.isArray(raw.plan) ? raw.plan : (Array.isArray(raw.lessonPlan) ? raw.lessonPlan : [])))));
+var out = [];
+var typeMap = {
+title: 'title_card',
+title_card: 'title_card',
+chapter: 'chapter',
+pause: 'pause_question',
+pause_question: 'pause_question',
+question: 'pause_question',
+recap: 'recap',
+vocabulary: 'vocab',
+vocab: 'vocab',
+callout: 'callout',
+label: 'callout',
+zoom: 'zoom',
+image: 'image_prompt',
+image_prompt: 'image_prompt',
+still_prompt: 'image_prompt',
+visual_insert: 'image_prompt',
+motion: 'motion_sticker',
+motion_sticker: 'motion_sticker',
+gif: 'motion_sticker',
+gif_prompt: 'motion_sticker'
+};
+var styleMap = { label: 'label', box: 'box', spotlight: 'spotlight', arrow: 'arrow' };
+function clean(v, max) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
+function clamp01(v, fallback) {
+v = Number(v);
+return isFinite(v) ? Math.max(0, Math.min(1, v)) : fallback;
+}
+function time(v, fallback) {
+v = Number(v);
+return isFinite(v) ? Math.max(0, Math.min(dur, v)) : fallback;
+}
+for (var i = 0; i < list.length && out.length < 16; i++) {
+var s = list[i] || {};
+var rawType = String(s.type || s.kind || '').toLowerCase().replace(/[\s-]+/g, '_');
+var type = typeMap[rawType];
+if (!type) continue;
+var start = time(s.start != null ? s.start : (s.t != null ? s.t : s.time), type === 'title_card' ? 0 : NaN);
+if (!isFinite(start)) continue;
+var end = time(s.end, NaN);
+var span = Math.max(0.8, Math.min(30, Number(s.dur != null ? s.dur : s.duration) || 4));
+if (!isFinite(end)) end = Math.min(dur, start + span);
+end = Math.min(dur, Math.max(start + 0.8, end));
+var text = clean(s.text || s.question || s.description || s.title || '', 280);
+var label = clean(s.label || s.heading || s.title || text, 90);
+var prompt = clean(s.prompt || s.visualPrompt || s.instruction || text, 600);
+var item = {
+type: type,
+start: start,
+end: end,
+text: text,
+label: label,
+reason: clean(s.reason || s.why || '', 240)
+};
+if (type === 'image_prompt' || type === 'motion_sticker') {
+if (!prompt) continue;
+item.prompt = prompt;
+} else if (type !== 'zoom' && !text && !label) {
+continue;
+}
+if (type === 'callout' || type === 'chapter' || type === 'pause_question' || type === 'recap' || type === 'vocab') {
+item.x = clamp01(s.x, 0.5);
+item.y = clamp01(s.y, 0.5);
+var st = String(s.style || s.calloutType || '').toLowerCase().replace(/[\s-]+/g, '_');
+item.style = styleMap[st] || (type === 'pause_question' ? 'box' : 'label');
+}
+if (type === 'zoom') {
+item.x = clamp01(s.x, 0.5);
+item.y = clamp01(s.y, 0.5);
+item.scale = Math.max(1.5, Math.min(4, Number(s.scale) || 2));
+item.dur = Math.max(0.5, Math.min(30, Number(s.dur != null ? s.dur : s.duration) || 3));
+}
+out.push(item);
+}
+out.sort(function (a, b) { return a.start - b.start; });
+return out;
 }
 
 // 16-bit mono PCM bytes → WAV container (24kHz default — Gemini TTS output).
@@ -1260,7 +1505,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
-        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], zooms: [], createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], zooms: [], createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1299,7 +1544,7 @@ function vsComputePeaks(samples, buckets) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions, visualDescriptions) {
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts) {
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
@@ -1312,7 +1557,7 @@ function vsComputePeaks(samples, buckets) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], zooms: [], imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], zooms: [], imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -1338,11 +1583,14 @@ function vsComputePeaks(samples, buckets) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null, visualText = null;
+      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null;
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)visual_descriptions\.json$/i.test(e.name)) { visualText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)chapters\.json$/i.test(e.name)) { chapterText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)teaching_inserts\.json$/i.test(e.name)) { insertText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)visual_prompts\.json$/i.test(e.name)) { promptText = new TextDecoder().decode(e.data); }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
       });
       if (!video) { setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
@@ -1350,7 +1598,13 @@ function vsComputePeaks(samples, buckets) {
       var captions = vttText ? vsParseVtt(vttText) : [];
       var visualDescriptions = [];
       if (visualText) { try { var rawVisual = JSON.parse(visualText); visualDescriptions = vsSanitizeVisualDescriptions(rawVisual, (meta && meta.duration) || 0).map(function (s, idx) { s.checked = !!((Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx] && (Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx].checked); return s; }); } catch (_) {} }
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions);
+      var chapters = [];
+      if (chapterText) { try { chapters = (JSON.parse(chapterText) || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) { return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) }; }); } catch (_) {} }
+      var inserts = [];
+      if (insertText) { try { inserts = vsSanitizeTeachingInserts(JSON.parse(insertText), (meta && meta.duration) || 0); } catch (_) {} }
+      var visualPrompts = [];
+      if (promptText) { try { visualPrompts = (JSON.parse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -1373,7 +1627,7 @@ function vsComputePeaks(samples, buckets) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions) {
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
     var ref = vsMakePackReference({
@@ -1383,6 +1637,9 @@ function vsComputePeaks(samples, buckets) {
       fileName: base + ext,
       hasCaptions: !!vtt,
       hasVisualDescriptions: !!(visualDescriptions && visualDescriptions.length),
+      hasChapters: !!(chapters && chapters.length),
+      hasTeachingInserts: !!(inserts && inserts.length),
+      hasVisualPrompts: !!(visualPrompts && visualPrompts.length),
       thumb: thumb || null,
       createdAt: new Date().toISOString()
     });
@@ -1392,11 +1649,14 @@ function vsComputePeaks(samples, buckets) {
     ];
     if (vtt) entries.push({ name: base + '.vtt', data: new TextEncoder().encode(vtt) });
     if (visualDescriptions && visualDescriptions.length) entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(visualDescriptions, null, 2)) });
+    if (chapters && chapters.length) entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
+    if (inserts && inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
+    if (visualPrompts && visualPrompts.length) entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts);
     return blob.arrayBuffer().then(function (buf) {
       built.entries[1].data = new Uint8Array(buf);
       downloadBlobFile(new Blob([vsBuildZip(built.entries)], { type: 'application/zip' }), built.base + '.allopack');
@@ -1407,12 +1667,12 @@ function vsComputePeaks(samples, buckets) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
-    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || []).then(function () {
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || []).then(function () {
       setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], zooms: r.zooms || [], audio: r.audio || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -1452,7 +1712,7 @@ function vsComputePeaks(samples, buckets) {
             actions.className = 'row';
             actions.style.justifyContent = 'flex-end';
             var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
-            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null); });
+            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || []); });
             var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
             actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
             row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
@@ -1630,6 +1890,314 @@ function vsComputePeaks(samples, buckets) {
     renderZooms();
     announce('Zoom aimed');
     ev.preventDefault();
+  });
+
+  // ── Teaching inserts: title cards, pause prompts, callouts, stickers, visuals ──
+  var insertReqSeq = 0;
+  function defaultInsert(type) {
+    var at = $('editVideo').currentTime || 0;
+    var base = { id: 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: type, start: at, end: at + (type === 'callout' || type === 'sticker' ? 3 : 4), x: type === 'callout' || type === 'sticker' ? 0.68 : 0.5, y: type === 'callout' || type === 'sticker' ? 0.34 : 0.5, theme: 'blue', animation: type === 'sticker' ? 'pulse' : 'none' };
+    if (type === 'title_card') { base.text = 'Part ' + (((currentTake() && currentTake().inserts || []).filter(function (i) { return i.type === 'title_card'; }).length) + 1); base.note = 'What learners will see next'; }
+    else if (type === 'pause_prompt') { base.text = 'Pause and try it'; base.note = 'What do you notice?'; base.theme = 'amber'; }
+    else if (type === 'callout') { base.text = 'Look here'; base.theme = 'green'; }
+    else if (type === 'sticker') { base.text = 'Key idea'; base.theme = 'pink'; }
+    else { base.text = 'Visual example'; base.note = ''; base.theme = 'slate'; }
+    return base;
+  }
+  function saveInsertList(t) {
+    t.inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0);
+    saveDraft(t);
+    renderTeachingInserts();
+    drawWave();
+  }
+  function addTeachingInsert(type, extra) {
+    var t = currentTake(); if (!t) return;
+    t.inserts = t.inserts || [];
+    t.inserts.push(Object.assign(defaultInsert(type), extra || {}));
+    saveInsertList(t);
+    setStatus($('insertStatus'), 'Insert added. It will render into the exported video.', 'ok');
+  }
+  function addVisualPrompt(t, item) {
+    if (!t) return;
+    t.visualPrompts = t.visualPrompts || [];
+    var prompt = String(item && item.prompt || '').replace(/[\r\n]+/g, ' ').trim();
+    if (!prompt) return;
+    t.visualPrompts.push({
+      id: 'vp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      start: Math.max(0, Number(item.start) || 0),
+      type: item.type || 'image_prompt',
+      label: String(item.label || item.text || (item.type === 'motion_sticker' ? 'Motion support' : 'Visual support')).slice(0, 90),
+      prompt: prompt.slice(0, 600),
+      source: item.source || 'lesson'
+    });
+  }
+  function renderVisualPromptList() {
+    var t = currentTake();
+    var host = $('visualPromptList'); if (!host) return;
+    host.innerHTML = '';
+    var prompts = t ? (t.visualPrompts = (t.visualPrompts || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).slice(-12)) : [];
+    if (!prompts.length) return;
+    var title = document.createElement('div');
+    title.className = 'status';
+    title.textContent = 'Visual prompts from the lesson assistant';
+    host.appendChild(title);
+    prompts.forEach(function (p, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-top:6px;align-items:flex-start';
+      var txt = document.createElement('textarea');
+      txt.rows = 2;
+      txt.value = p.prompt;
+      txt.style.cssText = 'flex:1;min-width:220px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px;resize:vertical';
+      txt.setAttribute('aria-label', 'Visual prompt ' + (idx + 1));
+      txt.addEventListener('change', function () { p.prompt = txt.value.replace(/[\r\n]+/g, ' ').trim(); saveDraft(t); });
+      var use = document.createElement('button');
+      use.className = 'quiet'; use.textContent = 'Use';
+      use.setAttribute('aria-label', 'Use visual prompt ' + (idx + 1));
+      use.addEventListener('click', function () {
+        $('visualPromptInput').value = p.prompt;
+        try { $('editVideo').currentTime = Math.max(0, Number(p.start) || 0); } catch (_) {}
+        setStatus($('insertStatus'), 'Prompt copied into the visual card box. Press Generate visual card when you are ready.', 'ok');
+      });
+      var del = document.createElement('button');
+      del.className = 'danger'; del.textContent = 'X';
+      del.setAttribute('aria-label', 'Delete visual prompt ' + (idx + 1));
+      del.addEventListener('click', function () { t.visualPrompts.splice(t.visualPrompts.indexOf(p), 1); saveDraft(t); renderVisualPromptList(); });
+      row.appendChild(txt); row.appendChild(use); row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+  function applyLessonPlan(plan, t) {
+    var applied = { inserts: 0, chapters: 0, zooms: 0, prompts: 0 };
+    (Array.isArray(plan) ? plan : []).forEach(function (item) {
+      if (!item || !t) return;
+      if (item.type === 'chapter') {
+        (t.chapters = t.chapters || []).push({ start: item.start, title: item.label || item.text || 'New section' });
+        applied.chapters += 1;
+      } else if (item.type === 'zoom') {
+        (t.zooms = t.zooms || []).push({ id: 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: item.start, x: item.x, y: item.y, scale: item.scale || 2, dur: item.dur || 3 });
+        applied.zooms += 1;
+      } else if (item.type === 'image_prompt' || item.type === 'motion_sticker') {
+        addVisualPrompt(t, item);
+        if (item.type === 'motion_sticker') {
+          (t.inserts = t.inserts || []).push(Object.assign(defaultInsert('sticker'), { start: item.start, end: item.end, text: item.label || item.text || 'Key idea', note: item.prompt || item.reason || '', animation: 'sparkle', theme: 'pink', source: 'lesson' }));
+          applied.inserts += 1;
+        }
+        applied.prompts += 1;
+      } else {
+        var kind = item.type === 'pause_question' ? 'pause_prompt' : (item.type === 'vocab' || item.type === 'callout' ? 'callout' : 'title_card');
+        var base = defaultInsert(kind);
+        (t.inserts = t.inserts || []).push(Object.assign(base, {
+          start: item.start,
+          end: item.end,
+          text: item.text || item.label || base.text,
+          note: item.reason || '',
+          x: item.x != null ? item.x : base.x,
+          y: item.y != null ? item.y : base.y,
+          theme: item.type === 'pause_question' ? 'amber' : (item.type === 'recap' ? 'green' : base.theme),
+          source: 'lesson'
+        }));
+        applied.inserts += 1;
+      }
+    });
+    t.inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0);
+    t.chapters = (t.chapters || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).sort(function (a, b) { return a.start - b.start; }).slice(0, 24);
+    saveDraft(t);
+    renderTeachingInserts();
+    renderChapters();
+    renderZooms();
+    drawWave();
+    return applied;
+  }
+  function captureCurrentFrameDataUrl() {
+    return new Promise(function (resolve, reject) {
+      var v = $('editVideo');
+      if (!v || !v.videoWidth || v.readyState < 2) { reject(new Error('pause on a loaded video frame first')); return; }
+      try {
+        var cv = document.createElement('canvas');
+        var w = Math.min(1280, v.videoWidth || 1280);
+        cv.width = w; cv.height = Math.round(w * (v.videoHeight || 720) / (v.videoWidth || 1280));
+        cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
+        resolve(cv.toDataURL('image/jpeg', 0.72));
+      } catch (e) { reject(e); }
+    });
+  }
+  function renderTeachingInserts() {
+    var t = currentTake();
+    var host = $('insertList'); if (!host) return;
+    host.innerHTML = '';
+    var inserts = t ? (t.inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0)) : [];
+    if (!inserts.length) {
+      host.innerHTML = '<p class="status">No teaching inserts yet. Add one at the playhead or ask Gemini for suggestions.</p>';
+      renderVisualPromptList();
+      return;
+    }
+    inserts.forEach(function (ins, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px;align-items:flex-start';
+      var type = document.createElement('select');
+      type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+      [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual']].forEach(function (pair) {
+        var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if (ins.type === pair[0]) o.selected = true; type.appendChild(o);
+      });
+      type.addEventListener('change', function () { ins.type = type.value; saveInsertList(t); });
+      row.appendChild(type);
+      var mkNum = function (label, value, cb, max) {
+        var l = document.createElement('label'); l.textContent = label + ' ';
+        var inp = document.createElement('input'); inp.type = 'number'; inp.step = '0.1'; inp.min = '0'; inp.max = String(max || Math.ceil(t.duration || 0)); inp.style.width = '68px';
+        inp.value = (Math.round(value * 10) / 10).toFixed(1);
+        inp.addEventListener('change', function () { cb(Number(inp.value) || 0); saveInsertList(t); });
+        l.appendChild(inp); return l;
+      };
+      row.appendChild(mkNum('At', ins.start, function (v) { var d = Math.max(0.6, ins.end - ins.start); ins.start = v; ins.end = v + d; }));
+      row.appendChild(mkNum('Dur', Math.max(0.6, ins.end - ins.start), function (v) { ins.end = ins.start + Math.max(0.6, v); }, 20));
+      var txt = document.createElement('input');
+      txt.type = 'text'; txt.value = ins.text || ''; txt.placeholder = 'Text'; txt.style.minWidth = '150px'; txt.style.flex = '1';
+      txt.addEventListener('change', function () { ins.text = txt.value; saveInsertList(t); });
+      row.appendChild(txt);
+      if (ins.type === 'callout' || ins.type === 'sticker') {
+        row.appendChild(mkNum('X%', Math.round((ins.x || 0.5) * 100), function (v) { ins.x = Math.max(0, Math.min(1, v / 100)); }, 100));
+        row.appendChild(mkNum('Y%', Math.round((ins.y || 0.5) * 100), function (v) { ins.y = Math.max(0, Math.min(1, v / 100)); }, 100));
+      }
+      var theme = document.createElement('select');
+      theme.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+      ['blue', 'green', 'amber', 'pink', 'slate'].forEach(function (v) { var o = document.createElement('option'); o.value = v; o.textContent = v; if (ins.theme === v) o.selected = true; theme.appendChild(o); });
+      theme.addEventListener('change', function () { ins.theme = theme.value; saveInsertList(t); });
+      row.appendChild(theme);
+      if (ins.type === 'sticker') {
+        var anim = document.createElement('select');
+        anim.style.cssText = theme.style.cssText;
+        ['pulse', 'bounce', 'sparkle', 'none'].forEach(function (v) { var o = document.createElement('option'); o.value = v; o.textContent = v; if (ins.animation === v) o.selected = true; anim.appendChild(o); });
+        anim.addEventListener('change', function () { ins.animation = anim.value; saveInsertList(t); });
+        row.appendChild(anim);
+      }
+      if (ins.imageSrc) {
+        var ready = document.createElement('span'); ready.className = 'mini-pill'; ready.textContent = 'image ready'; row.appendChild(ready);
+      }
+      var play = document.createElement('button'); play.className = 'quiet'; play.textContent = '▶';
+      play.setAttribute('aria-label', 'Preview insert ' + (idx + 1));
+      play.addEventListener('click', function () { $('editVideo').currentTime = Math.max(0, ins.start - 0.4); $('editVideo').play(); setTimeout(function () { try { $('editVideo').pause(); } catch (_) {} }, 2600); });
+      row.appendChild(play);
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Delete insert ' + (idx + 1));
+      del.addEventListener('click', function () { t.inserts.splice(t.inserts.indexOf(ins), 1); saveInsertList(t); });
+      row.appendChild(del);
+      host.appendChild(row);
+    });
+    renderVisualPromptList();
+  }
+  $('addSectionCardBtn').addEventListener('click', function () { addTeachingInsert('title_card'); });
+  $('addPausePromptBtn').addEventListener('click', function () { addTeachingInsert('pause_prompt'); });
+  $('addCalloutBtn').addEventListener('click', function () { addTeachingInsert('callout'); });
+  $('addStickerBtn').addEventListener('click', function () { addTeachingInsert('sticker'); });
+  $('aiInsertsBtn').addEventListener('click', function () {
+    var t = currentTake();
+    if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('insertStatus'), 'Gemini insert suggestions need the AlloFlow window.', 'warn'); return; }
+    if (!t.captions.length) { setStatus($('insertStatus'), 'Add captions first. Gemini reads transcript text, not the video.', 'warn'); return; }
+    var id = 'insreq' + (++insertReqSeq) + '-' + Date.now().toString(36);
+    var transcript = t.captions.map(function (c) { return '[' + (Math.round(c.start * 10) / 10) + '-' + (Math.round(c.end * 10) / 10) + '] ' + c.text; }).join('\n');
+    var btn = $('aiInsertsBtn'); btn.disabled = true;
+    setStatus($('insertStatus'), 'Asking Gemini for teaching inserts (transcript text only)...');
+    var timer = setTimeout(function () { done({ error: 'timed out after 90s' }); }, 90000);
+    function done(data) {
+      clearTimeout(timer); window.removeEventListener('message', onResp); btn.disabled = false;
+      if (!data || data.error) { setStatus($('insertStatus'), 'Gemini insert suggestions unavailable: ' + ((data && data.error) || 'no response'), 'bad'); return; }
+      var suggested = vsSanitizeTeachingInserts(data.inserts, t.duration);
+      if (!suggested.length) { setStatus($('insertStatus'), 'Gemini did not suggest any inserts for this transcript.', 'ok'); return; }
+      t.inserts = (t.inserts || []).concat(suggested.map(function (s) { s.id = 'ins' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); s.source = 'gemini'; return s; }));
+      saveInsertList(t);
+      setStatus($('insertStatus'), suggested.length + ' suggested insert' + (suggested.length === 1 ? '' : 's') + ' added. Review and delete anything you do not want.', 'ok');
+    }
+    function onResp(ev) {
+      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-teaching-inserts-response' && ev.data.id === id) done(ev.data);
+    }
+    window.addEventListener('message', onResp);
+    postToOpener({ type: 'allostudio-teaching-inserts-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' });
+  });
+  $('lessonAssistBtn').addEventListener('click', async function () {
+    var t = currentTake();
+    if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('insertStatus'), 'Lesson assistant needs the AlloFlow window.', 'warn'); return; }
+    var btn = $('lessonAssistBtn');
+    btn.disabled = true;
+    try {
+      setStatus($('insertStatus'), 'Sampling frames and captions for a lesson structure pass...');
+      var sheet = await buildContactSheet(t, 12);
+      var transcript = t.captions.length ? t.captions.map(function (c) { return '[' + (Math.round(c.start * 10) / 10) + '-' + (Math.round(c.end * 10) / 10) + '] ' + c.text; }).join('\n') : '';
+      var resp = await bridgeRequest('allostudio-lesson-request', {
+        imageBase64: sheet.dataUrl.split(',')[1],
+        mimeType: 'image/jpeg',
+        timestamps: sheet.times,
+        duration: t.duration,
+        transcript: transcript,
+        title: $('titleInput').value || t.name || '',
+        notes: $('visualNotes').value || ''
+      }, 90000);
+      if (resp.error) {
+        setStatus($('insertStatus'), 'Lesson assistant unavailable: ' + resp.error + '.', 'bad');
+      } else {
+        var plan = vsSanitizeLessonPlan(resp.plan || resp.suggestions || resp.items, t.duration);
+        if (!plan.length) { setStatus($('insertStatus'), 'Lesson assistant did not return usable suggestions. Add captions or notes and try again.', 'warn'); }
+        else {
+          var applied = applyLessonPlan(plan, t);
+          setStatus($('insertStatus'), 'Lesson assistant added ' + applied.inserts + ' insert(s), ' + applied.chapters + ' chapter(s), ' + applied.zooms + ' zoom(s), and ' + applied.prompts + ' visual prompt(s). Review everything before export.', 'ok');
+        }
+      }
+    } catch (e) {
+      setStatus($('insertStatus'), 'Lesson assistant failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    }
+    btn.disabled = false;
+  });
+  $('genVisualCardBtn').addEventListener('click', function () {
+    var t = currentTake();
+    var prompt = $('visualPromptInput').value.trim();
+    if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!prompt) { setStatus($('insertStatus'), 'Add a short prompt for the generated visual card.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('insertStatus'), 'Imagen visual cards need the AlloFlow window.', 'warn'); return; }
+    var id = 'imgreq' + (++insertReqSeq) + '-' + Date.now().toString(36);
+    var btn = $('genVisualCardBtn'); btn.disabled = true;
+    setStatus($('insertStatus'), 'Generating a visual card...');
+    var timer = setTimeout(function () { done({ error: 'timed out after 120s' }); }, 120000);
+    function done(data) {
+      clearTimeout(timer); window.removeEventListener('message', onResp); btn.disabled = false;
+      if (!data || data.error || !data.imageSrc) { setStatus($('insertStatus'), 'Generated visual unavailable: ' + ((data && data.error) || 'no image returned'), 'bad'); return; }
+      addTeachingInsert('visual_card', { imageSrc: data.imageSrc, text: prompt.slice(0, 80), note: 'Generated visual card', source: 'imagen' });
+      setStatus($('insertStatus'), 'Generated visual card added at the playhead. It will render into export.', 'ok');
+    }
+    function onResp(ev) {
+      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-imagen-response' && ev.data.id === id) done(ev.data);
+    }
+    window.addEventListener('message', onResp);
+    postToOpener({ type: 'allostudio-imagen-request', id: id, prompt: prompt });
+  });
+  $('frameVisualCardBtn').addEventListener('click', async function () {
+    var t = currentTake();
+    var prompt = $('visualPromptInput').value.trim();
+    if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('insertStatus'), 'Frame visual cards need the AlloFlow window.', 'warn'); return; }
+    var btn = $('frameVisualCardBtn');
+    btn.disabled = true;
+    try {
+      setStatus($('insertStatus'), 'Capturing the current frame...');
+      var frame = await captureCurrentFrameDataUrl();
+      setStatus($('insertStatus'), 'Creating a cleaned visual card from the current frame...');
+      var resp = await bridgeRequest('allostudio-frame-image-request', {
+        imageBase64: frame.split(',')[1],
+        mimeType: 'image/jpeg',
+        prompt: prompt || 'Make a clean, classroom-friendly still diagram or illustration from this video frame. Remove clutter and any private information. No decorative text unless it is essential.'
+      }, 120000);
+      if (resp.error || !resp.imageSrc) {
+        setStatus($('insertStatus'), 'Frame visual unavailable: ' + ((resp && resp.error) || 'no image returned'), 'bad');
+      } else {
+        addTeachingInsert('visual_card', { imageSrc: resp.imageSrc, text: (prompt || 'Frame visual').slice(0, 80), note: 'Generated from current frame', source: 'frame-edit' });
+        setStatus($('insertStatus'), 'Frame visual card added at the playhead. Review it before export.', 'ok');
+      }
+    } catch (e) {
+      setStatus($('insertStatus'), 'Frame visual failed: ' + String((e && e.message) || e).slice(0, 160), 'bad');
+    }
+    btn.disabled = false;
   });
 
   // ── Audio: master volume, remove-all, and mute spans ──
@@ -2400,6 +2968,16 @@ function vsComputePeaks(samples, buckets) {
       ctx.fillStyle = '#4ade80';
       ctx.fillRect(xOf(c.t), 11 * dpr, 3 * dpr, 6 * dpr);
     });
+    // Teaching inserts (cyan bands)
+    (t.inserts || []).forEach(function (ins) {
+      ctx.fillStyle = 'rgba(20,184,166,0.34)';
+      ctx.fillRect(xOf(ins.start || 0), 18 * dpr, Math.max(2, xOf(ins.end || ((ins.start || 0) + 2)) - xOf(ins.start || 0)), 5 * dpr);
+    });
+    // Lesson chapters (white ticks)
+    (t.chapters || []).forEach(function (ch) {
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(xOf(ch.start || 0), 0, 2 * dpr, 10 * dpr);
+    });
     // Playhead
     var cur = $('editVideo').currentTime || 0;
     ctx.fillStyle = '#f1f5f9';
@@ -2522,6 +3100,8 @@ function vsComputePeaks(samples, buckets) {
     renderAudio();
     renderNarration();
     renderClips();
+    renderTeachingInserts();
+    renderChapters();
     renderAiNarr();
     renderVisualDescriptions();
     drawWave();
@@ -2698,6 +3278,40 @@ function vsComputePeaks(samples, buckets) {
     renderCues();
     setStatus($('transcriptStatus'), 'Merged ' + (src.length - out.length) + ' tight caption pair' + ((src.length - out.length) === 1 ? '' : 's') + '.', 'ok');
   }
+  function renderChapters() {
+    var t = currentTake();
+    var host = $('chapterList'); if (!host) return;
+    host.innerHTML = '';
+    var chapters = t ? (t.chapters = (t.chapters || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).sort(function (a, b) { return a.start - b.start; })) : [];
+    if (!chapters.length) {
+      host.innerHTML = '<p class="status">No chapters yet. Build them from captions, then edit the titles below.</p>';
+      setStatus($('chapterStatus'), t && t.captions && t.captions.length ? 'Ready to build chapters from captions.' : 'Add captions before building chapters.');
+      return;
+    }
+    chapters.forEach(function (c, idx) {
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'border:1px solid var(--line);border-radius:9px;padding:6px 9px;margin-bottom:6px';
+      var at = document.createElement('input'); at.type = 'number'; at.step = '0.1'; at.min = '0'; at.style.width = '78px'; at.value = (Math.round((Number(c.start) || 0) * 10) / 10).toFixed(1);
+      at.setAttribute('aria-label', 'Start time for chapter ' + (idx + 1));
+      at.addEventListener('change', function () { c.start = Math.max(0, Number(at.value) || 0); saveDraft(t); renderChapters(); drawWave(); });
+      var title = document.createElement('input'); title.type = 'text'; title.value = c.title || ''; title.style.flex = '1'; title.setAttribute('aria-label', 'Title for chapter ' + (idx + 1));
+      title.addEventListener('change', function () { c.title = title.value.trim() || 'New section'; saveDraft(t); renderChapters(); });
+      var jump = document.createElement('button'); jump.className = 'quiet'; jump.textContent = '▶'; jump.setAttribute('aria-label', 'Jump to chapter ' + (idx + 1));
+      jump.addEventListener('click', function () { $('editVideo').currentTime = Math.max(0, Number(c.start) || 0); $('editVideo').play(); });
+      var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕'; del.setAttribute('aria-label', 'Delete chapter ' + (idx + 1));
+      del.addEventListener('click', function () { t.chapters.splice(t.chapters.indexOf(c), 1); saveDraft(t); renderChapters(); drawWave(); });
+      row.appendChild(at); row.appendChild(title); row.appendChild(jump); row.appendChild(del); host.appendChild(row);
+    });
+    setStatus($('chapterStatus'), chapters.length + ' chapter' + (chapters.length === 1 ? '' : 's') + ' ready.', 'ok');
+  }
+  function chaptersText(chapters, title) {
+    var lines = [title || 'Teacher video', 'Lesson chapters generated by AlloFlow Video Studio.', ''];
+    (Array.isArray(chapters) ? chapters : []).forEach(function (c) {
+      lines.push(vsFormatTimestamp(c.start || 0) + '  ' + String(c.title || '').trim());
+    });
+    return lines.join('\n').trim() + '\n';
+  }
   $('addCueBtn').addEventListener('click', function () {
     var t = currentTake(); if (!t) return;
     var at = $('editVideo').currentTime || 0;
@@ -2706,12 +3320,36 @@ function vsComputePeaks(samples, buckets) {
     saveDraft(t); renderCues();
   });
   $('transcriptSearch').addEventListener('input', renderTranscript);
+  $('cleanCaptionBtn').addEventListener('click', function () {
+    var t = currentTake();
+    if (!t || !t.captions.length) { setStatus($('autoCapStatus'), 'Add captions before cleaning them.', 'warn'); return; }
+    var before = t.captions.length;
+    t.captions = vsPolishCaptions(t.captions, t.duration);
+    saveDraft(t);
+    renderCues();
+    setStatus($('autoCapStatus'), 'Cleaned captions: normalized spacing, capitalization, punctuation, timing, and tight splits (' + before + ' → ' + t.captions.length + ').', 'ok');
+  });
   $('flagPrivacyBtn').addEventListener('click', function () {
     renderTranscript();
     var flags = privacyFlagsForCues(currentTranscriptCues());
     setStatus($('transcriptStatus'), flags.length ? (flags.length + ' possible private detail' + (flags.length === 1 ? '' : 's') + ' flagged for teacher review.') : 'No obvious private details found. Please still review before sharing.', flags.length ? 'warn' : 'ok');
   });
   $('mergeCuesBtn').addEventListener('click', mergeTightCues);
+  $('buildChaptersBtn').addEventListener('click', function () {
+    var t = currentTake();
+    if (!t || !t.captions.length) { setStatus($('chapterStatus'), 'Add captions before building chapters.', 'warn'); return; }
+    t.chapters = vsBuildChapters(t.captions, t.duration);
+    saveDraft(t);
+    renderChapters();
+    drawWave();
+  });
+  $('downloadChaptersBtn').addEventListener('click', function () {
+    var t = currentTake();
+    if (!t || !t.chapters || !t.chapters.length) { setStatus($('chapterStatus'), 'Build chapters before downloading them.', 'warn'); return; }
+    var title = ($('titleInput').value.trim() || t.name || 'Teacher video');
+    downloadBlobFile(new Blob([chaptersText(t.chapters, title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_chapters.txt');
+    setStatus($('chapterStatus'), 'Chapters downloaded.', 'ok');
+  });
   $('downloadTranscriptBtn').addEventListener('click', function () {
     var t = currentTake();
     if (!t || !t.captions.length) { setStatus($('transcriptStatus'), 'Add captions before downloading a transcript.', 'warn'); return; }
@@ -2736,9 +3374,10 @@ function vsComputePeaks(samples, buckets) {
     var cues = t.captions.filter(function (c) { return c.text && c.end > seg.segments[0].start && c.start < seg.segments[0].end; })
       .map(function (c) { return { start: Math.max(0, c.start - seg.segments[0].start), end: Math.max(0.2, c.end - seg.segments[0].start), text: c.text }; });
     var zooms = (t.zooms || []).filter(function (z) { return z && Number(z.scale) > 1; });
+    var inserts = vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0);
     var audioCfg = t.audio || null;
     var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length);
-    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
+    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     $('exportBtn').disabled = true;
     try {
       var outBlob, outDur;
@@ -2756,7 +3395,7 @@ function vsComputePeaks(samples, buckets) {
         setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg);
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts);
         outBlob = res.blob; outDur = res.duration;
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
       }
@@ -2774,10 +3413,98 @@ function vsComputePeaks(samples, buckets) {
     $('exportBtn').disabled = false;
   }
 
+  function drawRoundRect(ctx, x, y, w, h, r) {
+    r = Math.max(0, Math.min(r || 0, Math.min(w, h) / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function insertTheme(theme) {
+    var map = {
+      blue: { bg: '#1d4ed8', fg: '#ffffff', accent: '#bfdbfe' },
+      green: { bg: '#047857', fg: '#ffffff', accent: '#bbf7d0' },
+      amber: { bg: '#92400e', fg: '#ffffff', accent: '#fde68a' },
+      pink: { bg: '#be185d', fg: '#ffffff', accent: '#fbcfe8' },
+      slate: { bg: '#0f172a', fg: '#f8fafc', accent: '#cbd5e1' }
+    };
+    return map[theme] || map.blue;
+  }
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+    var words = String(text || '').split(/\s+/).filter(Boolean);
+    var line = '', lines = [];
+    for (var i = 0; i < words.length; i++) {
+      var probe = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(probe).width > maxWidth && line) { lines.push(line); line = words[i]; }
+      else line = probe;
+    }
+    if (line) lines.push(line);
+    lines.slice(0, maxLines || 4).forEach(function (l, idx) { ctx.fillText(l, x, y + idx * lineHeight); });
+  }
+  function drawTeachingInserts(ctx, w, hgt, inserts, tSec) {
+    (Array.isArray(inserts) ? inserts : []).forEach(function (ins) {
+      if (!ins || tSec < ins.start || tSec > ins.end) return;
+      var theme = insertTheme(ins.theme);
+      var span = Math.max(0.1, ins.end - ins.start);
+      var p = Math.max(0, Math.min(1, (tSec - ins.start) / span));
+      var fade = Math.min(1, p / 0.18, (1 - p) / 0.18);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, fade);
+      if (ins.type === 'title_card' || ins.type === 'pause_prompt') {
+        ctx.fillStyle = 'rgba(2,6,23,0.72)';
+        ctx.fillRect(0, 0, w, hgt);
+        var cw = w * 0.72, ch = hgt * 0.34, cx = (w - cw) / 2, cy = (hgt - ch) / 2;
+        ctx.fillStyle = theme.bg;
+        drawRoundRect(ctx, cx, cy, cw, ch, 24); ctx.fill();
+        ctx.fillStyle = theme.fg; ctx.textAlign = 'center';
+        ctx.font = 'bold ' + Math.round(hgt * 0.065) + 'px system-ui, sans-serif';
+        wrapCanvasText(ctx, ins.text, w / 2, cy + ch * 0.34, cw * 0.82, Math.round(hgt * 0.075), 2);
+        if (ins.note) {
+          ctx.fillStyle = theme.accent;
+          ctx.font = Math.round(hgt * 0.035) + 'px system-ui, sans-serif';
+          wrapCanvasText(ctx, ins.note, w / 2, cy + ch * 0.68, cw * 0.78, Math.round(hgt * 0.045), 2);
+        }
+      } else if (ins.type === 'visual_card') {
+        var vw = w * 0.46, vh = hgt * 0.56, vx = w * 0.06, vy = hgt * 0.22;
+        ctx.fillStyle = 'rgba(2,6,23,0.62)';
+        ctx.fillRect(0, 0, w, hgt);
+        ctx.fillStyle = '#f8fafc';
+        drawRoundRect(ctx, vx, vy, vw, vh, 20); ctx.fill();
+        if (ins._img) {
+          try { ctx.drawImage(ins._img, vx + 10, vy + 10, vw - 20, vh - 20); } catch (_) {}
+        }
+        ctx.fillStyle = theme.fg;
+        drawRoundRect(ctx, w * 0.55, hgt * 0.30, w * 0.36, hgt * 0.28, 18); ctx.fill();
+        ctx.fillStyle = theme.accent; ctx.textAlign = 'left';
+        ctx.font = 'bold ' + Math.round(hgt * 0.045) + 'px system-ui, sans-serif';
+        wrapCanvasText(ctx, ins.text || 'Visual example', w * 0.58, hgt * 0.39, w * 0.30, Math.round(hgt * 0.055), 3);
+      } else if (ins.type === 'callout') {
+        var x = (ins.x || 0.5) * w, y = (ins.y || 0.5) * hgt;
+        ctx.strokeStyle = theme.accent; ctx.lineWidth = Math.max(4, w * 0.004);
+        ctx.beginPath(); ctx.moveTo(x - w * 0.12, y + hgt * 0.10); ctx.lineTo(x, y); ctx.stroke();
+        ctx.fillStyle = theme.bg; drawRoundRect(ctx, x - w * 0.25, y + hgt * 0.10, w * 0.36, hgt * 0.09, 14); ctx.fill();
+        ctx.fillStyle = theme.fg; ctx.textAlign = 'center'; ctx.font = 'bold ' + Math.round(hgt * 0.034) + 'px system-ui, sans-serif';
+        wrapCanvasText(ctx, ins.text, x - w * 0.07, y + hgt * 0.155, w * 0.30, Math.round(hgt * 0.04), 2);
+      } else if (ins.type === 'sticker') {
+        var sx = (ins.x || 0.7) * w, sy = (ins.y || 0.35) * hgt;
+        var pulse = ins.animation === 'bounce' ? Math.abs(Math.sin(p * Math.PI * 2)) * 0.16 : ins.animation === 'sparkle' ? Math.sin(p * Math.PI * 6) * 0.08 : ins.animation === 'none' ? 0 : Math.sin(p * Math.PI * 4) * 0.10;
+        ctx.translate(sx, sy - (ins.animation === 'bounce' ? pulse * hgt * 0.10 : 0));
+        ctx.scale(1 + pulse, 1 + pulse);
+        ctx.fillStyle = theme.bg; drawRoundRect(ctx, -w * 0.13, -hgt * 0.045, w * 0.26, hgt * 0.09, 999); ctx.fill();
+        ctx.fillStyle = theme.fg; ctx.textAlign = 'center'; ctx.font = 'bold ' + Math.round(hgt * 0.035) + 'px system-ui, sans-serif';
+        ctx.fillText(ins.text || 'Key idea', 0, hgt * 0.013, w * 0.22);
+      }
+      ctx.restore();
+    });
+  }
+
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
-  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg) {
+  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
@@ -2823,6 +3550,16 @@ function vsComputePeaks(samples, buckets) {
         try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { reject(e); return; }
         var chunks = [];
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
+        var insertImagesReady = Promise.all(insertList.map(function (ins) {
+          return new Promise(function (res) {
+            if (!ins.imageSrc) { res(); return; }
+            var im = new Image();
+            im.onload = function () { ins._img = im; res(); };
+            im.onerror = function () { res(); };
+            im.src = ins.imageSrc;
+          });
+        }));
         var cardDur = titleCard ? 2.5 : 0;
         var totalDur = cardDur + (seg.end - seg.start);
         mr.onstop = function () {
@@ -2890,6 +3627,7 @@ function vsComputePeaks(samples, buckets) {
             } else {
               ctx.drawImage(v, 0, 0, w, hgt);
             }
+            drawTeachingInserts(ctx, w, hgt, insertList, v.currentTime);
             drawCaption(v.currentTime - seg.start);
             if (v.currentTime >= seg.end || v.ended) {
               cancelAnimationFrame(raf);
@@ -2912,7 +3650,7 @@ function vsComputePeaks(samples, buckets) {
             setTimeout(res, 3000);
           });
         }));
-        readyAll.then(function () {
+        Promise.all([readyAll, insertImagesReady]).then(function () {
           mr.start(1000);
           if (!titleCard) {
             v.currentTime = seg.start;
@@ -2957,13 +3695,16 @@ function vsComputePeaks(samples, buckets) {
     var cues = exported && exported.vtt ? vsParseVtt(exported.vtt) : (take && take.captions || []);
     var vtt = exported && exported.vtt ? exported.vtt : (cues.length ? vsBuildVtt(cues) : '');
     var descriptions = approvedVisualDescriptions(take);
+    var chapters = (take && take.chapters) || [];
+    var inserts = vsSanitizeTeachingInserts((take && take.inserts) || [], (take && take.duration) || 0);
+    var visualPrompts = ((take && take.visualPrompts) || []).filter(function (p) { return p && String(p.prompt || '').trim(); });
     var flags = privacyFlagsForCues(cues);
     var note = [
       'AlloFlow Video Studio accessibility packet',
       '',
       'Video title: ' + title,
       'Generated locally: ' + new Date().toISOString(),
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (visualPrompts.length ? ', visual prompts' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -2975,6 +3716,9 @@ function vsComputePeaks(samples, buckets) {
       captionCount: cues.length,
       hasVisualDescriptions: !!descriptions.length,
       visualDescriptionCount: descriptions.length,
+      chapterCount: chapters.length,
+      teachingInsertCount: inserts.length,
+      visualPromptCount: visualPrompts.length,
       privacyFlags: flags.map(function (f) { return { label: f.label, time: f.start, line: f.index + 1 }; }),
       generatedAt: new Date().toISOString()
     };
@@ -2987,6 +3731,15 @@ function vsComputePeaks(samples, buckets) {
     if (descriptions.length) {
       entries.push({ name: 'visual_descriptions.txt', data: new TextEncoder().encode(visualDescriptionsText(descriptions, title)) });
       entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(descriptions, null, 2)) });
+    }
+    if (chapters.length) {
+      entries.push({ name: 'chapters.txt', data: new TextEncoder().encode(chaptersText(chapters, title)) });
+      entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
+    }
+    if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
+    if (visualPrompts.length) {
+      entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
+      entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
     }
     return { base: safeName(title), blob: new Blob([vsBuildZip(entries)], { type: 'application/zip' }), flags: flags.length };
   }
@@ -3008,7 +3761,7 @@ function vsComputePeaks(samples, buckets) {
   $('downloadProjectResultBtn').addEventListener('click', function () {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
     var take = currentTake();
-    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null, take ? (take.visualDescriptions || []) : []).then(function () {
+      downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, lastExport.vtt, null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : []).then(function () {
       setStatus($('resultStatus'), 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
@@ -3031,7 +3784,7 @@ function vsComputePeaks(samples, buckets) {
       };
       window.addEventListener('message', onAck);
       var take = currentTake();
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [] } });
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: lastExport.vtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [] } });
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);
@@ -3075,7 +3828,7 @@ function vsComputePeaks(samples, buckets) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], zooms: take.zooms || [], audio: take.audio || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

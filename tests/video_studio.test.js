@@ -506,6 +506,72 @@ describe('vsSanitizeVisualDescriptions', () => {
 });
 
 // ─── vsPcmToWav ──────────────────────────────────────────────────────────────
+describe('caption polish, chapters, and teaching inserts', () => {
+  it('cleans caption text and merges tight splits safely', () => {
+    const out = VS.vsPolishCaptions([
+      { start: 0, end: 1, text: '  i notice  ' },
+      { start: 1.1, end: 2, text: 'the denominator' },
+      { start: 5, end: 6, text: 'next idea?' },
+    ], 20);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ start: 0, end: 2, text: 'I notice the denominator.' });
+    expect(out[1].text).toBe('Next idea?');
+  });
+  it('builds lesson chapters from caption gaps and transition language', () => {
+    const chapters = VS.vsBuildChapters([
+      { start: 0, end: 4, text: 'welcome to equivalent fractions' },
+      { start: 12, end: 18, text: 'we model one half' },
+      { start: 62, end: 68, text: 'next compare the two denominators' },
+      { start: 122, end: 128, text: 'finally try one on your own' },
+    ], 150);
+    expect(chapters.map(c => c.start)).toEqual([0, 62, 122]);
+    expect(chapters[0].title).toMatch(/Welcome/i);
+    expect(chapters[1].title).toMatch(/Next compare/i);
+  });
+  it('sanitizes teaching inserts for editable video overlays', () => {
+    const inserts = VS.vsSanitizeTeachingInserts([
+      { type: 'pause', start: -5, duration: 999, text: 'try it', theme: 'amber' },
+      { type: 'gif', t: 10, text: '', x: 9, y: -2, animation: 'bounce' },
+      { type: 'generated_image', start: 20, imageSrc: 'javascript:bad', text: 'visual' },
+      { type: 'run_script', start: 1, text: 'bad' },
+    ], 30);
+    expect(inserts.map(i => i.type)).toEqual(['pause_prompt', 'sticker', 'visual_card']);
+    expect(inserts[0]).toMatchObject({ start: 0, end: 15, theme: 'amber' });
+    expect(inserts[1].x).toBe(1);
+    expect(inserts[1].y).toBe(0);
+    expect(inserts[2].imageSrc).toBe('');
+  });
+  it('accepts safe generated image data URIs for visual cards', () => {
+    const inserts = VS.vsSanitizeTeachingInserts({ inserts: [{ type: 'visual_card', start: 4, duration: 3, text: 'Fraction wall', imageSrc: 'data:image/png;base64,abc' }] }, 20);
+    expect(inserts).toHaveLength(1);
+    expect(inserts[0]).toMatchObject({ type: 'visual_card', imageSrc: 'data:image/png;base64,abc' });
+  });
+  it('sanitizes frame-aware lesson assistant plans into safe editable primitives', () => {
+    const plan = VS.vsSanitizeLessonPlan({
+      plan: [
+        { type: 'chapter', start: 6, label: 'What equivalent means' },
+        { type: 'pause_question', start: 18, duration: 5, text: 'Pause: which model shows one half?', style: 'box' },
+        { type: 'zoom', start: 22, x: 9, y: -2, scale: 9, duration: 99 },
+        { type: 'image_prompt', start: 28, label: 'Clean diagram', prompt: 'Create a simple fraction wall still.' },
+        { type: 'motion_sticker', start: 32, label: 'Key idea', prompt: 'A short sparkle around the correct denominator.' },
+        { type: 'run_code', start: 1, text: 'bad' },
+      ],
+    }, 40);
+    expect(plan.map(p => p.type)).toEqual(['chapter', 'pause_question', 'zoom', 'image_prompt', 'motion_sticker']);
+    expect(plan[1]).toMatchObject({ style: 'box', start: 18 });
+    expect(plan[2]).toMatchObject({ x: 1, y: 0, scale: 4, dur: 30 });
+    expect(plan[3].prompt).toMatch(/fraction wall/);
+  });
+  it('caps lesson assistant plan count/text and rejects garbage', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ type: 'callout', start: i, duration: 2, text: 'x'.repeat(500), style: 'spotlight' }));
+    const out = VS.vsSanitizeLessonPlan(many, 120);
+    expect(out).toHaveLength(16);
+    expect(out[0].text.length).toBeLessThanOrEqual(280);
+    expect(out[0].style).toBe('spotlight');
+    expect(VS.vsSanitizeLessonPlan('garbage', 60)).toEqual([]);
+  });
+});
+
 describe('vsPcmToWav', () => {
   it('produces a valid 44-byte-header mono 16-bit WAV', () => {
     const pcm = new Uint8Array([1, 2, 3, 4]);
@@ -533,12 +599,14 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
     expect(ref.sizeBytes).toBe(14680064);
     expect(ref.hasCaptions).toBe(true);
+    expect(ref.hasVisualDescriptions).toBe(true);
+    expect(ref.hasVisualPrompts).toBe(true);
     expect(Object.keys(ref)).not.toContain('blob');
     expect(Object.keys(ref)).not.toContain('bytes');
     // Whole reference stays tiny (pack-JSON safe)
