@@ -272,6 +272,7 @@ describe('actor summary (Process tab)', () => {
     expect(ST.stDescribeOp({ type: 'object.update', patch: { alt: 'diagram' } })).toBe('Updated alt text');
     expect(ST.stDescribeOp({ type: 'object.reorder' })).toBe('Changed the reading order');
     expect(ST.stDescribeOp({ type: 'doc.template', template: 'worksheet' })).toBe('Started from the worksheet template');
+    expect(ST.stDescribeOp({ type: 'object.update', patch: { src: 'data:x', _crop: true } })).toBe('Cropped an image');
   });
 });
 
@@ -373,6 +374,29 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(md).toContain(ST.ST_HONESTY_LINE);
     expect(md).toContain('#1 Added text');
     expect(md).toContain('#2 Edited text');
+  });
+});
+
+describe('in-editor crop (math + privacy: removed pixels do not persist)', () => {
+  it('stCropBox maps normalized rects to clamped integer pixel boxes', () => {
+    expect(ST.stCropBox(1000, 800, { x: 0.1, y: 0.2, w: 0.5, h: 0.5 })).toEqual({ sx: 100, sy: 160, sw: 500, sh: 400 });
+    // clamps a selection that runs past the right/bottom edge
+    expect(ST.stCropBox(1000, 800, { x: 0.8, y: 0.5, w: 0.9, h: 0.9 })).toEqual({ sx: 800, sy: 400, sw: 200, sh: 400 });
+    // degenerate selection floors to 1px each side
+    const tiny = ST.stCropBox(500, 500, { x: 0, y: 0, w: 0, h: 0 });
+    expect([tiny.sw, tiny.sh]).toEqual([1, 1]);
+  });
+  it('stScrubObjectSrc purges the pre-crop src from ops, checkpoints, AND the live scene', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Crop', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,ORIGINAL', alt: 'a', decorative: false, frame: { x: 0, y: 0, w: 100, h: 80 }, z: 5, fit: 'cover' } }, 'import', T0);
+    ST.stAppend(d, { type: 'object.update', target: 'o1', patch: { src: 'data:image/png;base64,ORIGINAL2' } }, 'import', T0); // a src-replace op too
+    for (let i = 0; i < 48; i++) addText(d, 't' + i); // seq 50 → a checkpoint snapshots the image
+    expect(d.ledger.checkpoints.length).toBe(1);
+    ST.stScrubObjectSrc(d, 'o1', 'data:image/png;base64,CROPPED');
+    expect(d.objects.find(o => o.id === 'o1').src).toBe('data:image/png;base64,CROPPED');
+    const dump = JSON.stringify(d);
+    expect(dump).not.toMatch(/ORIGINAL/);   // no pre-crop pixels anywhere the file is saved
+    expect(dump).toContain('CROPPED');
   });
 });
 

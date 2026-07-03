@@ -431,6 +431,7 @@
     if (op.type === 'object.update') {
       var p = op.patch || {};
       if (p.runs) return 'Edited text';
+      if (p._crop) return 'Cropped an image';
       if (p.src) return 'Replaced an image';
       if (Object.prototype.hasOwnProperty.call(p, 'alt')) return 'Updated alt text';
       if (Object.prototype.hasOwnProperty.call(p, 'decorative')) return p.decorative ? 'Marked an image decorative' : 'Marked an image as content';
@@ -540,6 +541,40 @@
       parts.push('</ol>');
     }
     return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(data.title) + '</title>\n<style>\n  body { font-family: system-ui, sans-serif; color: #111827; max-width: 720px; margin: 32px auto; padding: 0 24px; line-height: 1.5; }\n  h1 { font-size: 28px; }\n  .st-ws-instructions { background: #fef9c3; padding: 10px 12px; border-radius: 8px; }\n  .st-ws-questions { padding-left: 28px; }\n  .st-ws-questions > li { margin: 18px 0; }\n  .st-ws-prompt { font-weight: 600; margin: 0 0 6px; }\n  .st-ws-support { color: #374151; margin: 0 0 8px; }\n  .st-ws-answer { min-height: 96px; border: 1px solid #cbd5e1; border-radius: 8px; }\n  @media print { .st-ws-answer { min-height: 120px; } }\n</style>\n</head>\n<body>\n<main>\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
+  }
+
+  // Convert a normalized selection rect (fractions 0..1 of the image) into an
+  // integer pixel crop box clamped to the image, at least 1px each side.
+  function stCropBox(imgW, imgH, rect) {
+    var W = Math.max(1, Math.round(stFiniteNumber(imgW, 1)));
+    var H = Math.max(1, Math.round(stFiniteNumber(imgH, 1)));
+    var fx = Math.min(Math.max(stFiniteNumber(rect && rect.x, 0), 0), 1);
+    var fy = Math.min(Math.max(stFiniteNumber(rect && rect.y, 0), 0), 1);
+    var fw = Math.min(Math.max(stFiniteNumber(rect && rect.w, 1), 0), 1 - fx);
+    var fh = Math.min(Math.max(stFiniteNumber(rect && rect.h, 1), 0), 1 - fy);
+    var sx = Math.round(fx * W), sy = Math.round(fy * H);
+    var sw = Math.max(1, Math.round(fw * W)), sh = Math.max(1, Math.round(fh * H));
+    if (sx + sw > W) sw = W - sx;
+    if (sy + sh > H) sh = H - sy;
+    return { sx: sx, sy: sy, sw: Math.max(1, sw), sh: Math.max(1, sh) };
+  }
+
+  // PRIVACY invariant (mirrors the Document Builder crop): cropping REMOVES
+  // content, so the pre-crop pixels must not survive where the file is saved.
+  // Rewrite the object's src in every ledger op, every checkpoint, AND the live
+  // scene to the cropped data — the removed pixels become unrecoverable from the
+  // .allostudio.json. A deliberate, documented exception to op-immutability,
+  // scoped to image src (so "crop to remove a face/name" actually removes it).
+  function stScrubObjectSrc(doc, objId, newSrc) {
+    if (!doc || !objId) return;
+    ((doc.ledger && doc.ledger.ops) || []).forEach(function (op) {
+      if (op.type === 'object.add' && op.object && op.object.id === objId && op.object.type === 'image') op.object.src = newSrc;
+      else if (op.type === 'object.update' && op.target === objId && op.patch && Object.prototype.hasOwnProperty.call(op.patch, 'src')) op.patch.src = newSrc;
+    });
+    ((doc.ledger && doc.ledger.checkpoints) || []).forEach(function (c) {
+      ((c && c.objects) || []).forEach(function (o) { if (o && o.id === objId && o.type === 'image') o.src = newSrc; });
+    });
+    ((doc.objects) || []).forEach(function (o) { if (o && o.id === objId && o.type === 'image') o.src = newSrc; });
   }
 
   function stExportProcessMarkdown(doc, role) {
@@ -766,6 +801,28 @@
 
   // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
 
+  // ── Image crop (DOM canvas) — draw the crop box to a new canvas and return a
+  // data URL. JPEG in → JPEG out (no alpha); everything else → PNG (alpha-safe).
+  function stCropImageToDataUrl(src, box) {
+    return new Promise(function (resolve, reject) {
+      try {
+        var im = new Image();
+        im.onload = function () {
+          try {
+            var c = document.createElement('canvas');
+            c.width = box.sw; c.height = box.sh;
+            var g = c.getContext('2d');
+            g.drawImage(im, box.sx, box.sy, box.sw, box.sh, 0, 0, box.sw, box.sh);
+            var isJpeg = /^data:image\/jpe?g/i.test(String(src || ''));
+            resolve(c.toDataURL(isJpeg ? 'image/jpeg' : 'image/png', isJpeg ? 0.9 : undefined));
+          } catch (e) { reject(e); }
+        };
+        im.onerror = function () { reject(new Error('image load failed')); };
+        im.src = src;
+      } catch (e) { reject(e); }
+    });
+  }
+
   // ── PNG rasterizer (DOM canvas; approximate visual fidelity for MVP) ──
   function stRenderPng(doc, scale) {
     scale = scale || 1;
@@ -903,6 +960,12 @@
     var _aiGenPrompt = React.useState(''); var aiGenPrompt = _aiGenPrompt[0], setAiGenPrompt = _aiGenPrompt[1];
     var _aiBusy = React.useState(null); var aiBusy = _aiBusy[0], setAiBusy = _aiBusy[1];
     var _altNonce = React.useState(0); var altNonce = _altNonce[0], setAltNonce = _altNonce[1];
+    // In-editor crop: cropId opens the modal, cropRect is the drag selection in
+    // 0..1 fractions of the displayed image.
+    var _cropId = React.useState(null); var cropId = _cropId[0], setCropId = _cropId[1];
+    var _cropRect = React.useState(null); var cropRect = _cropRect[0], setCropRect = _cropRect[1];
+    var _cropImgRef = React.useRef(null);
+    var _cropDrag = React.useRef(null);
     var student = role === 'student';
     var propTheme = ['light', 'dark', 'contrast'].indexOf(props.theme) >= 0 ? props.theme : null;
     var themeName = propTheme || (function () {
@@ -998,6 +1061,48 @@
         stAnnounce(TT('studio.a11y_ai_alt', 'Draft alt text added — review it'));
         addToast(TT('studio.ai_alt_ok', '✨ Draft alt text added (logged as AI). Please review and edit it.'), 'info');
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.') + ' ' + (err && err.message || ''), 'error'); });
+    };
+
+    // ── in-editor crop ──
+    var _cropXY = function (ev) {
+      var el = _cropImgRef.current; if (!el) return null;
+      var r = el.getBoundingClientRect(); if (!r.width || !r.height) return null;
+      return { x: Math.min(Math.max((ev.clientX - r.left) / r.width, 0), 1), y: Math.min(Math.max((ev.clientY - r.top) / r.height, 0), 1) };
+    };
+    var cropPointerDown = function (ev) {
+      var p = _cropXY(ev); if (!p) return;
+      ev.preventDefault();
+      _cropDrag.current = { x0: p.x, y0: p.y };
+      setCropRect({ x: p.x, y: p.y, w: 0, h: 0 });
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
+    };
+    var cropPointerMove = function (ev) {
+      var d = _cropDrag.current; if (!d) return;
+      var p = _cropXY(ev); if (!p) return;
+      setCropRect({ x: Math.min(d.x0, p.x), y: Math.min(d.y0, p.y), w: Math.abs(p.x - d.x0), h: Math.abs(p.y - d.y0) });
+    };
+    var cropPointerUp = function () { _cropDrag.current = null; };
+    var applyCrop = function () {
+      var id = cropId;
+      var o = doc && id ? doc.objects.filter(function (x) { return x.id === id; })[0] : null;
+      if (!o || !o.src) { setCropId(null); return; }
+      if (!cropRect || cropRect.w < 0.02 || cropRect.h < 0.02) { addToast(TT('studio.crop_too_small', 'Drag a larger area to crop.'), 'info'); return; }
+      var rect = cropRect;
+      var im = new Image();
+      im.onload = function () {
+        var box = stCropBox(im.naturalWidth || im.width, im.naturalHeight || im.height, rect);
+        stCropImageToDataUrl(o.src, box).then(function (cropped) {
+          // Record the crop in the timeline (honesty), then SCRUB the pre-crop
+          // pixels everywhere they persist (privacy invariant). Crop is permanent.
+          dispatch({ type: 'object.update', target: id, patch: { src: cropped, _crop: true } }, 'user');
+          stScrubObjectSrc(_docRef.current, id, cropped);
+          setCropId(null); setCropRect(null); bump();
+          stAnnounce(TT('studio.a11y_cropped', 'Image cropped'));
+          addToast(TT('studio.cropped_ok', '✂ Image cropped — the trimmed pixels are removed, including from your saved file.'), 'success');
+        }).catch(function () { addToast(TT('studio.crop_failed', 'Could not crop the image.'), 'error'); });
+      };
+      im.onerror = function () { addToast(TT('studio.crop_failed', 'Could not crop the image.'), 'error'); };
+      im.src = o.src;
     };
 
     // ── selection + drag ──
@@ -1383,7 +1488,9 @@
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
             h('button', { style: Object.assign({}, S.tool, selected.fit !== 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'cover' } }, 'user'); }, 'aria-pressed': selected.fit !== 'contain' }, 'Fill'),
             h('button', { style: Object.assign({}, S.tool, selected.fit === 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'contain' } }, 'user'); }, 'aria-pressed': selected.fit === 'contain' }, 'Fit')),
-          h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }), onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace image…'))) : null,
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
+            h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace…')),
+            selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image — removed pixels are permanently deleted, including from your saved file') }, '✂ ' + TT('studio.crop', 'Crop…')) : null)) : null,
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only — reading order is the list)') }, '⬆ z'),
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, (selected.z || 1) - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '⬇ z'),
@@ -1506,7 +1613,23 @@
             r2.onload = function (e2) { dispatch({ type: 'object.update', target: replaceId, patch: { src: e2.target.result, provenance: { origin: 'upload' } } }, 'import'); };
             r2.readAsDataURL(f2);
           } }),
-        h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
+        h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile }),
+        // ── crop modal (position:fixed, overlays the studio) ──
+        cropId ? (function () {
+          var co = doc.objects.filter(function (x) { return x.id === cropId; })[0];
+          if (!co || !co.src) return null;
+          var r = cropRect || { x: 0, y: 0, w: 0, h: 0 };
+          return h('div', { style: { position: 'fixed', inset: 0, zIndex: 9500, background: 'rgba(2,6,23,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.crop_title', 'Crop image'),
+            onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setCropId(null); setCropRect(null); } } },
+            h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, '✂ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
+              h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed — including from your saved file.'))),
+            h('div', { style: { position: 'relative', maxWidth: '80vw', maxHeight: '68vh', touchAction: 'none' }, onPointerMove: cropPointerMove, onPointerUp: cropPointerUp },
+              h('img', { ref: _cropImgRef, src: co.src, alt: '', draggable: false, style: { display: 'block', maxWidth: '80vw', maxHeight: '68vh', userSelect: 'none', cursor: 'crosshair' }, onPointerDown: cropPointerDown }),
+              (r.w > 0 && r.h > 0) ? h('div', { style: { position: 'absolute', left: (r.x * 100) + '%', top: (r.y * 100) + '%', width: (r.w * 100) + '%', height: (r.h * 100) + '%', border: '2px solid #6366f1', boxShadow: '0 0 0 9999px rgba(2,6,23,0.55)', pointerEvents: 'none' } }) : null),
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+              h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', borderColor: '#1e3a8a', color: '#fff' }), onClick: applyCrop }, '✂ ' + TT('studio.crop_apply', 'Apply crop')),
+              h('button', { style: S.hBtn, onClick: function () { setCropId(null); setCropRect(null); } }, TT('studio.cancel', 'Cancel'))));
+        })() : null));
   }
 
   // ── registration + pure helpers for tests ──
@@ -1530,6 +1653,8 @@
   AlloStudio.stContrastRatio = stContrastRatio;
   AlloStudio.stExportWorksheetData = stExportWorksheetData;
   AlloStudio.stExportWorksheetHtml = stExportWorksheetHtml;
+  AlloStudio.stCropBox = stCropBox;
+  AlloStudio.stScrubObjectSrc = stScrubObjectSrc;
   AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
