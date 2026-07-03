@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T17:25:07.471Z",
+  "generatedAt": "2026-07-03T17:39:39.164Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 47
+    "monitoredMarkerCount": 48
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 47,
+    "markerPassCount": 48,
     "markerFailCount": 0,
     "monitoredIssueCount": 33,
     "monitoredErrorCount": 0,
@@ -314,14 +314,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 20806,
+      "htmlBytes": 21637,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 20806
+        "htmlBytes": 21637
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17209,
+      "htmlBytes": 17212,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17209
+        "htmlBytes": 17212
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13378,
+      "htmlBytes": 13339,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13378
+        "htmlBytes": 13339
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47691,
+      "htmlBytes": 47685,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47691
+        "htmlBytes": 47685
       }
     },
     {
@@ -1074,6 +1074,22 @@
         "canvases": 0,
         "headings": 7,
         "htmlBytes": 22548
+      }
+    },
+    {
+      "id": "logicLab",
+      "file": "stem_tool_logiclab.js",
+      "marker": "data-logiclab-focus",
+      "label": "Logic Lab reasoning studio",
+      "ok": true,
+      "htmlBytes": 24969,
+      "issues": [],
+      "metrics": {
+        "buttons": 41,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 6,
+        "htmlBytes": 24969
       }
     },
     {

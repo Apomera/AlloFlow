@@ -90,6 +90,7 @@ const EXPECTED_MARKERS = [
   { id: 'areamodel', file: 'stem_tool_areamodel.js', marker: 'data-areamodel-focus', label: 'Area Model workshop' },
   { id: 'numberline', file: 'stem_tool_numberline.js', marker: 'data-numberline-focus', label: 'Number Line workspace' },
   { id: 'moneyMath', file: 'stem_tool_money.js', marker: 'data-moneymath-focus', label: 'Money Math studio' },
+  { id: 'logicLab', file: 'stem_tool_logiclab.js', marker: 'data-logiclab-focus', label: 'Logic Lab reasoning studio' },
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
   { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }
@@ -160,6 +161,7 @@ const STARTER_DATA = {
     { name: 'Apples', price: 1.49, qty: 2, pricePer: 'each' },
     { name: 'Bread', price: 2.99, qty: 1, pricePer: 'each' }
   ], sgHave: 250, sgTarget: 1000 } },
+  logicLab: { logicLab: { mode: 'truth', expression: 'P \u2227 Q', score: 12, streak: 2, bestStreak: 3, gateType: 'AND', gateInputs: { A: true, B: false }, proofSteps: ['P \u2192 Q'] } },
   circuit: { _circuit: { mode: 'series', voltage: 9, components: [
     { id: 101, type: 'resistor', value: 100 },
     { id: 102, type: 'led', value: 40, ledColor: '#ef4444' }

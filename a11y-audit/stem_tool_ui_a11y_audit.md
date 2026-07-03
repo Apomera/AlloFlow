@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T17:25:47.093Z
+Generated: 2026-07-03T17:38:53.345Z
 
 ## Scope
 
@@ -13,19 +13,19 @@ Generated: 2026-07-03T17:25:47.093Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 124 |
+| Total findings | 123 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 108 |
+| Tool-level warnings | 107 |
 | Review notices | 16 |
-| Tools with any finding | 61 |
+| Tools with any finding | 60 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 35 |
+| Tools with canvas surfaces | 34 |
 
 ## Top Findings
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `canvas-focus` | 27 | 19 | anatomy, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, musicSynth, oratory, plateTectonics | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
+| warning | `canvas-focus` | 26 | 18 | anatomy, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, musicSynth, oratory, plateTectonics, rockCycle | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 16 | 16 | birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle, solarSystem | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `heading` | 15 | 15 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `canvas-name` | 15 | 12 | anatomy, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume, waterCycle | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
@@ -114,7 +114,7 @@ Generated: 2026-07-03T17:25:47.093Z
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `lifeSkills` Life Skills Lab | Life Skills | standard | 15 | 5 | 0 | 0 | 0 | 0 |  |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 7 | 0 | inline-contrast x7 |
-| `logicLab` Logic Lab | math | standard | 35 | 1 | 1 | 0 | 1 | 0 | canvas-focus x1 |
+| `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 22 | 7 | 0 | 0 | 1 | 0 | heading x1 |
 | `microbiology` Microbiology Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
 | `migration` Migration & Wind Lab | science | standard | 10 | 6 | 1 | 0 | 0 | 0 |  |

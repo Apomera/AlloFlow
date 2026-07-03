@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T17:25:47.093Z",
+  "generatedAt": "2026-07-03T17:38:53.345Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,14 +8,14 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 124,
+    "issueCount": 123,
     "errorCount": 0,
-    "warningCount": 108,
+    "warningCount": 107,
     "noticeCount": 16,
-    "toolsWithIssues": 61,
+    "toolsWithIssues": 60,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 54,
-    "toolsWithCanvas": 35,
+    "toolsWithWarnings": 53,
+    "toolsWithCanvas": 34,
     "shellCoverage": {
       "standardShellTools": 114,
       "lightBackgroundTools": [],
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 20,
+        "warningCount": 19,
         "noticeCount": 0
       },
       "Games": {
@@ -172,8 +172,8 @@
     {
       "code": "canvas-focus",
       "severity": "warning",
-      "count": 27,
-      "toolCount": 19,
+      "count": 26,
+      "toolCount": 18,
       "exampleTools": [
         "anatomy",
         "artStudio",
@@ -183,10 +183,10 @@
         "codingPlayground",
         "companionPlanting",
         "epidemicSim",
-        "logicLab",
         "musicSynth",
         "oratory",
-        "plateTectonics"
+        "plateTectonics",
+        "rockCycle"
       ],
       "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
     },
@@ -1226,7 +1226,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 20806,
+      "renderedBytes": 21637,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -1807,7 +1807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16022,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2123,7 +2123,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22805,
+      "renderedBytes": 22808,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2572,7 +2572,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1597,
+      "renderedBytes": 1586,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2911,34 +2911,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Propositional Logic, Proofs & Reasoning",
-      "renderedBytes": 17486,
+      "renderedBytes": 24991,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 35,
+        "buttons": 41,
         "roleButtons": 0,
         "fields": 1,
-        "canvases": 1,
-        "svgs": 0,
+        "canvases": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "logicLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.mt-5.mx-4:nth-of-type(6) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "lumen",
@@ -3121,7 +3112,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13364,
+      "renderedBytes": 13327,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3577,7 +3568,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17347,
+      "renderedBytes": 17340,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4262,7 +4253,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47691,
+      "renderedBytes": 47687,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

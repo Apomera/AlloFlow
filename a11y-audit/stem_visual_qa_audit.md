@@ -1,19 +1,19 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T17:25:07.471Z
+Generated: 2026-07-03T17:39:39.164Z
 
 ## Scope
 
 - Registered STEM tools: 114
 - STEM tool files: 111
-- Monitored student-facing visual markers: 47
+- Monitored student-facing visual markers: 48
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 47 |
+| Marker passes | 48 |
 | Marker failures | 0 |
 | Monitored first-screen findings | 33 |
 | High-confidence monitored errors | 0 |
@@ -69,6 +69,7 @@ Generated: 2026-07-03T17:25:07.471Z
 | pass | `areamodel` | `data-areamodel-focus` | Rendered |
 | pass | `numberline` | `data-numberline-focus` | Rendered |
 | pass | `moneyMath` | `data-moneymath-focus` | Rendered |
+| pass | `logicLab` | `data-logiclab-focus` | Rendered |
 | pass | `fractions` | `data-fraction-focus` | Rendered |
 | pass | `galaxy` | `data-galaxy-canvas` | Rendered |
 | pass | `wave` | `data-wave-canvas` | Rendered |
