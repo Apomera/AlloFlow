@@ -44,6 +44,12 @@ describe('P2-a: cleanScannedOcrText (folio strip + hyphen rejoin) — LIVE', () 
   it('removes a folio interposed between the two halves of a page-split word (the reevalu- case)', () => {
     expect(clean('is reevalu-\n92\nated in fact')).toBe('is reevaluated in fact');
   });
+  it('R6: KEEPS the hyphen on a compound split across a line (clinical terms not fused)', () => {
+    expect(clean('overall well-\nbeing improved')).toContain('well-being');
+    expect(clean('low self-\nesteem noted')).toContain('self-esteem');
+    expect(clean('the African-\nAmerican student')).toContain('African-American');
+    expect(clean('developmen-\ntal delay')).toContain('developmental'); // a genuine mid-word split still fuses
+  });
   it('NEVER strips a number that sits inline with other words (safe)', () => {
     expect(clean('he scored 42 points on the test')).toBe('he scored 42 points on the test');
     expect(clean('page 90 of the manual')).toBe('page 90 of the manual');
@@ -68,15 +74,19 @@ describe('P2-b: stripRestoreMarkdown — LIVE', () => {
   it('does NOT touch legit content with # not used as a heading marker', () => {
     expect(stripMd('The C# language and A+ grade')).toBe('The C# language and A+ grade');
   });
+  it('R9: does NOT strip a "#" used as a number sign (Room # 5)', () => {
+    expect(stripMd('Room # 5 is open')).toBe('Room # 5 is open');
+  });
   it('leaves ordinary prose unchanged', () => {
     expect(stripMd('An ordinary restored sentence.')).toBe('An ordinary restored sentence.');
   });
 });
 
 describe('P2-c: restored-sentence insert direction — source-pins + mirror', () => {
-  it('pickBest tracks whether the winning anchor was the FOLLOWING source sentence', () => {
+  it('pickBest tracks the FOLLOWING-anchor win by POSITION, not string value (R8)', () => {
     expect(pipe).toContain('const _followingAnchor = (sentIdx + 1 < sourceSentences.length)');
-    expect(pipe).toMatch(/anchorIsFollowing:\s*\(bestAnchor != null && bestAnchor === _followingAnchor\)/);
+    expect(pipe).toContain('const isFollowing = (_followingAnchor != null && ai === anchorCandidates.length - 1);');
+    expect(pipe).toContain('anchorIsFollowing: bestIsFollowing');
   });
   it('inserts BEFORE the heading when anchor was following AND the block is a heading', () => {
     expect(pipe).toMatch(/const _anchorIsHeading = \/\^H\[1-6\]\$\/\.test/);

@@ -770,7 +770,14 @@ var _cleanScannedOcrText = function (s) {
   // 2. rejoin end-of-line/page hyphenation: letter + regular hyphen + whitespace + letter → one word.
   // (Regular hyphen only — OCR emits a normal '-' at line breaks; no invisible soft-hyphen char in the
   // regex, per the noncharacter-in-regex lesson.)
-  out = out.replace(/(\p{L})-\s+(\p{L})/gu, '$1$2');
+  out = out.replace(/(\p{L}+)-\s+(\p{L}+)/gu, function (m, a, b) {
+    // R6 (2026-07-03): rejoin a word split across a line/page break (developmen-\ntal → developmental),
+    // but KEEP the hyphen for a genuine compound so clinical terms aren't fused — when the 2nd fragment
+    // is capitalized (African-American) or the 1st is a common hyphenated prefix (well-being, self-esteem,
+    // non-verbal, high-functioning, pre-/post-test, co-occurring, cross-cultural).
+    var keepHyphen = /^\p{Lu}/u.test(b) || /^(self|well|non|high|low|pre|post|co|cross|inter|ex|half|anti|semi|multi)$/i.test(a);
+    return keepHyphen ? a + '-' + b : a + b;
+  });
   // collapse any blank-line runs a dropped folio left behind
   out = out.replace(/\n{3,}/g, '\n\n');
   return out;
@@ -784,7 +791,11 @@ var _cleanScannedOcrText = function (s) {
 // never legitimately appears in restored prose; everything else is untouched. Pure + unit-tested.
 var _stripRestoreMarkdown = function (s) {
   return String(s == null ? '' : s)
-    .replace(/(^|\s)#{1,6}(?=\s)/g, '$1')
+    // R9 (2026-07-03): strip ATX heading markers but NOT a "#" used as a number sign. An ATX marker is
+    // line-leading (^ or after \n) with 1-6 hashes, or a mid-line run of 2+ hashes (## / ### never means
+    // "number"). A single mid-line "#" (Room # 5, # of students) is left alone.
+    .replace(/(^|\n)[ \t]*#{1,6}[ \t]+/g, '$1')
+    .replace(/(\s)#{2,6}(?=\s)/g, '$1')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
 };
@@ -10107,6 +10118,7 @@ Return ONLY valid JSON:
         autoFixPasses: _batchSettings.pdfAutoFixPasses,
         polishPasses: _batchSettings.pdfPolishPasses,
         onProgress: (step, msg) => progress(msg),
+        perFileDeadlineTs: Date.now() + _PER_FILE_MS, // R5: let fixAndVerifyPdf's deferred re-audit (B) respect the per-file wall
       }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
 
       // Write remediation cache (Tier 4)
@@ -14712,7 +14724,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
           // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
           const _stormActive = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-            || (_geminiCap === _GEMINI_STORM_MIN);
+            || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
           if (_stormActive && newAxeViolations === 0 && _rePartial) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: Canvas rate-limit storm active + axe clean + AI audit partial — the deterministic layer already governs the headline and more passes would only deepen the storm; stopping early (AI coverage completes in the final audit once the rate-limit eases).`);
             break;
@@ -15363,6 +15375,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // (Mutable: we normalize to null below if the range covers the full doc.)
     let _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
+    // R5 (2026-07-03): in batch mode the runner wraps this whole call in an 8-min _withTimeout; carry the
+    // per-file deadline so the throttle re-audit (fix B) can bail before it pushes a finished run past the
+    // wall. 0 in single-file mode (no wall).
+    const _perFileDeadlineTs = (batchOverrides && batchOverrides.perFileDeadlineTs) || 0;
 
     // Reset pipeline telemetry for this run
     _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
@@ -18154,26 +18170,36 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let _finalAuditThrottled = false;
       if (verification && verification._partialAudit) {
         const _throttleCaused = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
-          || (_geminiCap === _GEMINI_STORM_MIN);
+          || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
         if (_throttleCaused) {
           _finalAuditThrottled = true;
-          const _reauditDeadline = Date.now() + 45000; // bounded — never wait out a true outage
-          while (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now() && Date.now() < _reauditDeadline) {
-            try { _pulsePipelineWatchdog(); } catch (_) {} // a deliberate cooldown wait is activity, not a stall
-            await new Promise(function (r) { setTimeout(r, Math.min(3000, Math.max(500, _geminiCooldownUntil - Date.now()))); });
-          }
-          // Only re-audit if the window actually eased — re-calling under an active cooldown just re-fails.
-          if (!(typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())) {
-            try {
-              const _reFinalAudit = await auditOutputAccessibility(accessibleHtml);
-              if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) > (verification.chunksAudited || 0)) {
-                warnLog('[PDF Fix] Deferred final re-audit after throttle eased: coverage '
-                  + verification.chunksAudited + '/' + verification.chunksRequested + ' → '
-                  + _reFinalAudit.chunksAudited + '/' + _reFinalAudit.chunksRequested
-                  + (_reFinalAudit._partialAudit ? ' (still partial)' : ' (full coverage restored)'));
-                verification = _reFinalAudit;
-              }
-            } catch (_reErr) { /* fail-soft: keep the partial result */ }
+          // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). B's
+          // cooldown wait + re-audit is tail latency INSIDE that wall, so near the deadline it can push a
+          // FINISHED remediation past 8 min → the batch discards it. Skip B when <60s of the per-file budget
+          // remains, and otherwise clamp the wait to leave 30s of headroom for the re-audit + integrity +
+          // export. Single-file runs have no wall (_perFileDeadlineTs 0 → Infinity) so they are unchanged.
+          const _budgetLeft = _perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity;
+          if (_budgetLeft > 60000) {
+            const _reauditDeadline = Math.min(Date.now() + 45000, _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity); // bounded — never wait out a true outage, and leave batch headroom
+            while (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now() && Date.now() < _reauditDeadline) {
+              try { _pulsePipelineWatchdog(); } catch (_) {} // a deliberate cooldown wait is activity, not a stall
+              await new Promise(function (r) { setTimeout(r, Math.min(3000, Math.max(500, _geminiCooldownUntil - Date.now()))); });
+            }
+            // Only re-audit if the window actually eased — re-calling under an active cooldown just re-fails.
+            if (!(typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())) {
+              try {
+                const _reFinalAudit = await auditOutputAccessibility(accessibleHtml);
+                if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) > (verification.chunksAudited || 0)) {
+                  warnLog('[PDF Fix] Deferred final re-audit after throttle eased: coverage '
+                    + verification.chunksAudited + '/' + verification.chunksRequested + ' → '
+                    + _reFinalAudit.chunksAudited + '/' + _reFinalAudit.chunksRequested
+                    + (_reFinalAudit._partialAudit ? ' (still partial)' : ' (full coverage restored)'));
+                  verification = _reFinalAudit;
+                }
+              } catch (_reErr) { /* fail-soft: keep the partial result */ }
+            }
+          } else {
+            warnLog('[PDF Fix] Deferred re-audit SKIPPED — <60s of the per-file batch budget remains; shipping the axe-governed result now (D reframes the coverage note honestly).');
           }
         }
       }
@@ -24611,18 +24637,24 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       // Two-tier threshold: 0.6 first pass over all candidates, 0.4 fallback. Catches cases where
       // both neighbors were heavily paraphrased but still share distinctive vocabulary.
       const pickBest = (minScore) => {
-        let best = null, bestSc = 0, bestAnchor = null;
-        for (const anchor of anchorCandidates) {
+        let best = null, bestSc = 0, bestIsFollowing = false;
+        for (let ai = 0; ai < anchorCandidates.length; ai++) {
+          const anchor = anchorCandidates[ai];
+          // R8 (2026-07-03): the following-sentence anchor, when present, is ALWAYS the last candidate
+          // (preceding is pushed first). Track by POSITION, not string value — identical boilerplate
+          // neighbors ("See below.") would make a value compare (anchor === _followingAnchor) wrongly
+          // flag a preceding-anchor win as following, flipping the insert to before a heading.
+          const isFollowing = (_followingAnchor != null && ai === anchorCandidates.length - 1);
           const anchorWords = wordSet(anchor);
           if (anchorWords.size < 3) continue;
           for (const b of blocks) {
             let common = 0;
             anchorWords.forEach(w => { if (b.words.has(w)) common++; });
             const score = common / anchorWords.size;
-            if (score > bestSc) { bestSc = score; best = b; bestAnchor = anchor; }
+            if (score > bestSc) { bestSc = score; best = b; bestIsFollowing = isFollowing; }
           }
         }
-        return bestSc >= minScore ? { block: best, score: bestSc, anchorIsFollowing: (bestAnchor != null && bestAnchor === _followingAnchor) } : null;
+        return bestSc >= minScore ? { block: best, score: bestSc, anchorIsFollowing: bestIsFollowing } : null;
       };
       const matched = pickBest(0.6) || pickBest(0.5); // raised 0.4→0.5 (2026-06-23): a sub-50% anchor is too weak to graft into; route to Preserved instead
       if (!matched) {

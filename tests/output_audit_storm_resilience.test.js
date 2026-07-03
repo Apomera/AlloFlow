@@ -19,12 +19,12 @@ const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8
 describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
   // Slice the B block so the pins are scoped (the block is right after the final-audit try/catch).
   const bIdx = dp.indexOf('cooldown-aware deferred final re-audit');
-  const bBlock = dp.slice(bIdx, bIdx + 3200); // R3 added the _finalAuditThrottled flag inside B (~+300 chars)
+  const bBlock = dp.slice(bIdx, bIdx + 4000); // R3 + R5 added the throttle flag + batch-deadline guard inside B
   it('gates on a PARTIAL final audit AND a throttle signal (confirmed GeminiGate vars)', () => {
     expect(bIdx).toBeGreaterThan(-1);
     expect(bBlock).toContain('verification._partialAudit');
     expect(bBlock).toContain('_geminiCooldownUntil > Date.now()');
-    expect(bBlock).toContain('_geminiCap === _GEMINI_STORM_MIN');
+    expect(bBlock).toContain('_geminiCap < _geminiEffectiveMax'); // R7: cap suppressed below the run ceiling = storm
     expect(bBlock).not.toContain('authThrottles'); // the non-existent field the design first suggested
   });
   it('bounded wait, then re-audits ONCE and adopts only if coverage increased', () => {
@@ -63,7 +63,7 @@ describe('source-pins: minimal-A — storm-aware loop early-stop', () => {
   const aBlock = dp.slice(aIdx, aIdx + 1400);
   it('breaks only under storm AND axe==0 AND partial re-audit', () => {
     expect(aIdx).toBeGreaterThan(-1);
-    expect(aBlock).toContain('_geminiCap === _GEMINI_STORM_MIN');
+    expect(aBlock).toContain('_geminiCap < _geminiEffectiveMax'); // R7: cap suppressed below the run ceiling = storm
     expect(aBlock).toMatch(/if \(_stormActive && newAxeViolations === 0 && _rePartial\)/);
     expect(aBlock).toContain('Canvas rate-limit storm active + axe clean + AI audit partial');
   });
