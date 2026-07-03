@@ -84,7 +84,7 @@ const EXPECTED_MARKERS = [
   { id: 'echolocation', file: 'stem_tool_echolocation.js', marker: 'data-echolocation-run-focus', label: 'Echolocation run focus' },
   { id: 'skatelab', file: 'stem_tool_skatelab.js', marker: 'data-skatelab-run-focus', label: 'SkateLab run focus' },
   { id: 'probability', file: 'stem_tool_probability.js', marker: 'data-probability-command', label: 'Probability Lab command deck' },
-  { id: 'punnett', file: 'stem_tool_punnett.js', marker: 'data-punnett-command', label: 'Punnett genetics command deck' },
+    { id: 'punnett', file: 'stem_tool_punnett.js', marker: 'data-punnett-cross-focus', label: 'Punnett cross focus board' },
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
   { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }

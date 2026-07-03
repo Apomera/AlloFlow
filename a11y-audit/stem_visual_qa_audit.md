@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T03:16:38.473Z
+Generated: 2026-07-03T03:32:27.107Z
 
 ## Scope
 
@@ -63,7 +63,7 @@ Generated: 2026-07-03T03:16:38.473Z
 | pass | `echolocation` | `data-echolocation-run-focus` | Rendered |
 | pass | `skatelab` | `data-skatelab-run-focus` | Rendered |
 | pass | `probability` | `data-probability-command` | Rendered |
-| pass | `punnett` | `data-punnett-command` | Rendered |
+| pass | `punnett` | `data-punnett-cross-focus` | Rendered |
 | pass | `fractions` | `data-fraction-focus` | Rendered |
 | pass | `galaxy` | `data-galaxy-canvas` | Rendered |
 | pass | `wave` | `data-wave-canvas` | Rendered |

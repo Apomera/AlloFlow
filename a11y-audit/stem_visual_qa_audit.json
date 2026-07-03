@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T03:16:38.473Z",
+  "generatedAt": "2026-07-03T03:32:27.107Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17206,
+      "htmlBytes": 17198,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17206
+        "htmlBytes": 17198
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13353,
+      "htmlBytes": 13356,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13353
+        "htmlBytes": 13356
       }
     },
     {
@@ -902,7 +902,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46582,
+      "htmlBytes": 46590,
       "issues": [
         {
           "toolId": "throwlab",
@@ -931,7 +931,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46582
+        "htmlBytes": 46590
       }
     },
     {
@@ -1045,17 +1045,17 @@
     {
       "id": "punnett",
       "file": "stem_tool_punnett.js",
-      "marker": "data-punnett-command",
-      "label": "Punnett genetics command deck",
+      "marker": "data-punnett-cross-focus",
+      "label": "Punnett cross focus board",
       "ok": true,
-      "htmlBytes": 23631,
+      "htmlBytes": 27199,
       "issues": [],
       "metrics": {
         "buttons": 30,
         "fields": 4,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 23631
+        "htmlBytes": 27199
       }
     },
     {

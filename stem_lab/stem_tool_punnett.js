@@ -1433,6 +1433,27 @@ window.StemLab = window.StemLab || {
           var countEntries = countKeys.map(function(k) { return k + ': ' + counts[k] + '/4'; });
           var genotypeRatioStr = 'Genotype Ratios: ' + countEntries.join(' | ');
           var modeInfo = MODE_INFO[inheritMode];
+          var displayDomLabel = activePreset && activePreset.domLabel ? activePreset.domLabel : (isSexLinked ? 'Unaffected/typical' : 'Dominant');
+          var displayRecLabel = activePreset && activePreset.recLabel ? activePreset.recLabel : (isSexLinked ? 'Affected/recessive' : 'Recessive');
+          var displayBlendLabel = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Blended' : 'Codominant');
+          var parent1Gametes = isSexLinked ? ['X' + parent1[0], 'X' + parent1[1]] : parent1.slice();
+          var parent2Gametes = isSexLinked ? ['X' + parent2[0], 'Y'] : parent2.slice();
+          var phenotypeMix = [
+            { id: 'dom', label: displayDomLabel, count: domCount, color: '#16a34a', soft: '#ecfdf5', border: '#86efac' },
+            { id: 'blend', label: displayBlendLabel, count: blendCount, color: inheritMode === 'incomplete' ? '#db2777' : '#7c3aed', soft: inheritMode === 'incomplete' ? '#fdf2f8' : '#f5f3ff', border: inheritMode === 'incomplete' ? '#f9a8d4' : '#c4b5fd' },
+            { id: 'rec', label: displayRecLabel, count: recCount, color: '#b45309', soft: '#fffbeb', border: '#fcd34d' }
+          ].filter(function(item) { return item.count > 0 || item.id !== 'blend'; });
+          var leadingPhenotype = phenotypeMix.reduce(function(best, item) {
+            return item.count > best.count ? item : best;
+          }, { count: -1, label: '' });
+          var crossReadout = (function() {
+            if (isSexLinked) return 'Read rows as egg choices and columns as sperm choices. Sons inherit Y from the father, so one recessive X can express the trait.';
+            if (inheritMode === 'incomplete') return 'Heterozygous offspring are their own visible middle category, so the genotype and phenotype ratios often match.';
+            if (inheritMode === 'codominant') return 'Heterozygous offspring show both expressed alleles side by side instead of blending them together.';
+            if (domCount === 3 && recCount === 1) return 'This is the classic heterozygote cross: three offspring choices show the dominant trait and one shows the recessive trait.';
+            if (domCount === 2 && recCount === 2) return 'This reads like a test cross: each offspring has an equal chance of the dominant or recessive phenotype.';
+            return 'Each square is one equally likely offspring outcome. The color mix turns the four squares into phenotype probabilities.';
+          })();
 
           // ═══════════════════════════════════════
           // DIHYBRID CROSS LOGIC
@@ -1948,11 +1969,11 @@ window.StemLab = window.StemLab || {
               ),
 
               // Parent allele selectors
-              h('div', { className: 'flex gap-6 mb-4 justify-center' },
+              h('div', { className: 'grid gap-3 mb-4', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' } },
                 [[isSexLinked ? 'Mother (XX)' : 'Parent 1', 'parent1', 'violet'], [isSexLinked ? 'Father (XY)' : 'Parent 2', 'parent2', 'blue']].map(function(_ref) {
                   var label = _ref[0], key = _ref[1], color = _ref[2];
                   var selectorCount = isSexLinked && key === 'parent2' ? 1 : 2;
-                  return h('div', { key: key, className: 'text-center' },
+                  return h('div', { key: key, className: 'text-center bg-white rounded-xl border border-' + color + '-200 p-3 shadow-sm' },
                     h('label', { className: 'text-sm font-bold text-' + color + '-700 mb-2 block' }, label),
                     h('div', { className: 'flex gap-2 items-center justify-center' },
                       Array.from({ length: selectorCount }).map(function(_, i) {
@@ -1976,6 +1997,53 @@ window.StemLab = window.StemLab || {
                     )
                   );
                 })
+              ),
+
+              h('section', {
+                'data-punnett-cross-focus': 'true',
+                'aria-labelledby': 'punnett-cross-focus-title',
+                className: 'mb-4 rounded-xl border border-indigo-200 bg-white p-3 shadow-sm',
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 12 }
+              },
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { id: 'punnett-cross-focus-title', className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2' }, 'Cross focus'),
+                  h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))' } },
+                    [
+                      { label: isSexLinked ? 'Egg gametes' : 'Parent 1 gametes', color: '#7c3aed', chips: parent1Gametes },
+                      { label: isSexLinked ? 'Sperm gametes' : 'Parent 2 gametes', color: '#2563eb', chips: parent2Gametes }
+                    ].map(function(parentBlock) {
+                      return h('div', { key: parentBlock.label, style: { border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, background: '#f8fafc' } },
+                        h('div', { style: { color: parentBlock.color, fontSize: 11, fontWeight: 900, marginBottom: 6 } }, parentBlock.label),
+                        h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                          parentBlock.chips.map(function(chip, idx) {
+                            return h('span', { key: chip + idx, style: { textAlign: 'center', padding: '6px 9px', borderRadius: 16, background: '#fff', border: '1px solid ' + parentBlock.color, color: parentBlock.color, fontSize: 14, fontWeight: 900 } }, chip);
+                          })
+                        )
+                      );
+                    })
+                  )
+                ),
+                h('div', { style: { minWidth: 0 } },
+                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, 'Outcome mix'),
+                  h('div', { style: { display: 'grid', gap: 7 } },
+                    phenotypeMix.map(function(item) {
+                      return h('div', { key: item.id, style: { border: '1px solid ' + item.border, borderRadius: 10, padding: '8px 10px', background: item.soft } },
+                        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 5 } },
+                          h('span', { style: { color: item.color, fontSize: 12, fontWeight: 900 } }, item.label),
+                          h('span', { style: { color: item.color, fontSize: 12, fontWeight: 900 } }, item.count + '/4 - ' + (item.count * 25) + '%')
+                        ),
+                        h('div', { style: { height: 7, borderRadius: 12, background: 'rgba(255,255,255,0.78)', overflow: 'hidden' } },
+                          h('div', { style: { width: (item.count * 25) + '%', height: '100%', background: item.color, borderRadius: 12 } })
+                        )
+                      );
+                    })
+                  )
+                ),
+                h('div', { style: { minWidth: 0, borderRadius: 12, padding: 12, background: '#eef2ff', border: '1px solid #c7d2fe' } },
+                  h('p', { className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-1' }, 'Read this result'),
+                  h('p', { style: { margin: 0, color: '#1e293b', fontSize: 13, lineHeight: 1.45, fontWeight: 800 } }, leadingPhenotype.count > 0 ? (leadingPhenotype.label + ' is most likely at ' + (leadingPhenotype.count * 25) + '%.') : 'Each square is equally likely.'),
+                  h('p', { style: { margin: '7px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5 } }, crossReadout)
+                )
               ),
 
               // Punnett Grid
@@ -2012,12 +2080,9 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-sm font-bold text-slate-600' }, genotypeRatioStr),
                 h('p', { className: 'text-xs text-slate-600 mt-1' },
                   (function() {
-                    var dL = activePreset && activePreset.domLabel ? activePreset.domLabel : 'Dominant';
-                    var rL = activePreset && activePreset.recLabel ? activePreset.recLabel : 'Recessive';
-                    var bL = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Blended' : 'Codominant');
                     return blendCount > 0
-                      ? 'Phenotype: ' + domCount + '/4 ' + dL + ', ' + blendCount + '/4 ' + bL + ', ' + recCount + '/4 ' + rL
-                      : 'Phenotype: ' + domCount + '/4 ' + dL + ', ' + recCount + '/4 ' + rL;
+                      ? 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + blendCount + '/4 ' + displayBlendLabel + ', ' + recCount + '/4 ' + displayRecLabel
+                      : 'Phenotype: ' + domCount + '/4 ' + displayDomLabel + ', ' + recCount + '/4 ' + displayRecLabel;
                   })()
                 )
               ),
