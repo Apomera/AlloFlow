@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T01:43:45.852Z",
+  "generatedAt": "2026-07-03T02:00:48.761Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 165,
+    "issueCount": 159,
     "errorCount": 0,
-    "warningCount": 147,
+    "warningCount": 141,
     "noticeCount": 18,
-    "toolsWithIssues": 71,
+    "toolsWithIssues": 70,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 64,
+    "toolsWithWarnings": 63,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -85,7 +85,7 @@
       "applied": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 8,
+        "warningCount": 2,
         "noticeCount": 0
       },
       "life-skills": {
@@ -212,27 +212,6 @@
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
-      "code": "inline-contrast",
-      "severity": "warning",
-      "count": 58,
-      "toolCount": 16,
-      "exampleTools": [
-        "algebraCAS",
-        "appLab",
-        "cell",
-        "cellularLab",
-        "companionPlanting",
-        "dataStudio",
-        "dnaLab",
-        "echoTrainer",
-        "fireEcology",
-        "kitchenLab",
-        "llmLiteracy",
-        "probability"
-      ],
-      "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
-    },
-    {
       "code": "canvas-name",
       "severity": "warning",
       "count": 18,
@@ -273,6 +252,27 @@
         "microbiology"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
+    },
+    {
+      "code": "inline-contrast",
+      "severity": "warning",
+      "count": 52,
+      "toolCount": 15,
+      "exampleTools": [
+        "algebraCAS",
+        "appLab",
+        "cell",
+        "cellularLab",
+        "companionPlanting",
+        "dataStudio",
+        "dnaLab",
+        "fireEcology",
+        "kitchenLab",
+        "llmLiteracy",
+        "probability",
+        "skatelab"
+      ],
+      "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
       "code": "svg-name",
@@ -1865,7 +1865,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16026,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -1989,98 +1989,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Navigate virtual spaces using only spatial audio echoes. 3D first-person with Three.js. Emit clicks, listen for reflections off walls and moving agents, find the goal. Real HRTF binaural audio — wear headphones!",
-      "renderedBytes": 24273,
+      "renderedBytes": 29244,
       "standardShell": true,
-      "issueCount": 6,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 6,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 26,
+        "buttons": 28,
         "roleButtons": 0,
         "fields": 5,
         "canvases": 1,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 14,
-          "selector": "div > div > div:nth-of-type(2) > div > button",
-          "ratio": 2.15,
-          "color": "#fff",
-          "background": "#f59e0b",
-          "text": "I Understand"
-        },
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 67,
-          "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(1)",
-          "ratio": 4.47,
-          "color": "#fff",
-          "background": "#6366f1",
-          "text": "🏠 Simple Room [3D]"
-        },
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 79,
-          "selector": "div > div > div:nth-of-type(4) > button:nth-of-type(3)",
-          "ratio": 3.98,
-          "color": "#3b82f6",
-          "background": "#1e293b",
-          "text": "🌊 Echo"
-        },
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 81,
-          "selector": "div > div > div:nth-of-type(4) > button:nth-of-type(5)",
-          "ratio": 2.57,
-          "color": "#7c3aed",
-          "background": "#1e293b",
-          "text": "📏 Distance Quiz"
-        },
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 87,
-          "selector": "div > div > div:nth-of-type(5) > button:nth-of-type(2)",
-          "ratio": 4.47,
-          "color": "#fff",
-          "background": "#6366f1",
-          "text": "⚙️ Navigator"
-        },
-        {
-          "toolId": "echoTrainer",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 99,
-          "selector": "div > div > div:nth-of-type(6) > button",
-          "ratio": 3.68,
-          "color": "#fff",
-          "background": "#3b82f6",
-          "text": "Next →"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "echolocation",
@@ -2254,7 +2181,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22793,
+      "renderedBytes": 22821,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2703,7 +2630,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1578,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -3261,7 +3188,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13350,
+      "renderedBytes": 13343,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3726,7 +3653,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17347,
+      "renderedBytes": 17335,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,

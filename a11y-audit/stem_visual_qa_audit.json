@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-03T01:43:33.292Z",
+  "generatedAt": "2026-07-03T02:00:58.750Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
-    "monitoredMarkerCount": 39
+    "monitoredMarkerCount": 40
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 39,
+    "markerPassCount": 40,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 26,
     "monitoredNoticeCount": 11,
-    "syncDriftCount": 1,
+    "syncDriftCount": 0,
     "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
   },
@@ -553,6 +553,22 @@
       }
     },
     {
+      "id": "echoTrainer",
+      "file": "stem_tool_echotrainer.js",
+      "marker": "data-echotrainer-briefing",
+      "label": "Echo Navigator sonar briefing",
+      "ok": true,
+      "htmlBytes": 26842,
+      "issues": [],
+      "metrics": {
+        "buttons": 26,
+        "fields": 5,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 26842
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -683,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17209,
+      "htmlBytes": 17207,
       "issues": [
         {
           "toolId": "playlab",
@@ -712,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17209
+        "htmlBytes": 17207
       }
     },
     {
@@ -810,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13353,
+      "htmlBytes": 13365,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13353
+        "htmlBytes": 13365
       }
     },
     {
@@ -886,7 +902,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46581,
+      "htmlBytes": 46580,
       "issues": [
         {
           "toolId": "throwlab",
@@ -915,7 +931,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46581
+        "htmlBytes": 46580
       }
     },
     {
@@ -1060,25 +1076,7 @@
     }
   ],
   "sync": {
-    "drift": [
-      {
-        "file": "stem_tool_accesslens.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": false
-        },
-        "hashes": {
-          "source": "54B47F15360E",
-          "public": "54B47F15360E",
-          "build": null
-        },
-        "sourcePublicMatch": true,
-        "sourceBuildMatch": false,
-        "status": "build-drift"
-      }
-    ],
+    "drift": [],
     "sourcePublicDrift": [],
     "monitoredDrift": []
   },

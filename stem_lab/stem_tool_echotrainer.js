@@ -1611,7 +1611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var cpm = Math.round((d.clicks || 0) / Math.max(1, elapsed / 60));
 
       var viewModeLabel = (d.viewMode || 'echo') === 'echo' ? '\uD83C\uDF0A Echo' : (d.viewMode || 'echo') === 'audio' ? '\uD83C\uDFA7 Audio' : '\uD83D\uDC41 Reveal';
-      var viewModeColor = (d.viewMode || 'echo') === 'echo' ? '#3b82f6' : (d.viewMode || 'echo') === 'audio' ? '#7c3aed' : '#ef4444';
+      var viewModeColor = (d.viewMode || 'echo') === 'echo' ? (isDark ? '#93c5fd' : '#1d4ed8') : (d.viewMode || 'echo') === 'audio' ? (isDark ? '#ddd6fe' : '#6d28d9') : (isDark ? '#fecaca' : '#b91c1c');
 
       // ── Coverage percentage calculation ──
       var coveredCells = 0, totalCells = 0;
@@ -1623,6 +1623,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
       // ── Material quiz hint map ──
       var matHints = { concrete: 'Bright echo', rock: 'Dull, heavy', wood: 'Muffled, warm', metal: 'Sharp ring', glass: 'Faint, high' };
+      var currentEnv = ENVIRONMENTS[0];
+      for (var cei = 0; cei < ENVIRONMENTS.length; cei++) { if (ENVIRONMENTS[cei].id === envType) { currentEnv = ENVIRONMENTS[cei]; break; } }
+      var viewTone = (d.viewMode || 'echo') === 'echo'
+        ? { label: t('stem.echotrainer.echo_vision', 'Echo Vision'), color: isDark ? '#93c5fd' : '#1d4ed8', bg: isDark ? '#172554' : '#eff6ff', border: '#3b82f6' }
+        : (d.viewMode || 'echo') === 'audio'
+          ? { label: t('stem.echotrainer.audio_only', 'Audio Only'), color: isDark ? '#ddd6fe' : '#6d28d9', bg: isDark ? '#2e1065' : '#f5f3ff', border: '#8b5cf6' }
+          : { label: t('stem.echotrainer.reveal_mode', 'Reveal Mode'), color: isDark ? '#fecaca' : '#b91c1c', bg: isDark ? '#450a0a' : '#fef2f2', border: '#ef4444' };
+      var runCount = (d.runHistory || []).length;
+      var bestRun = null;
+      (d.runHistory || []).forEach(function(run) { if (!bestRun || run.time < bestRun.time) bestRun = run; });
+      var briefingStats = [
+        { label: t('stem.echotrainer.goals_found', 'Goals Found'), value: goalsFound },
+        { label: t('stem.echotrainer.audio_wins', 'Audio Wins'), value: blindWins },
+        { label: t('stem.echotrainer.mapped', 'Mapped'), value: coveragePct + '%' },
+        { label: t('stem.echotrainer.best_run', 'Best Run'), value: bestRun ? bestRun.time + 's' : t('stem.echotrainer.none_yet', 'New') }
+      ];
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' } },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
@@ -1630,6 +1646,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('div', { style: { fontSize: '18px', fontWeight: 900, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
           has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: '#3b82f6', background: isDark ? '#1e3a5f' : '#eff6ff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #3b82f680' } }, '3D') : null,
           h('div', { style: { fontSize: '11px', color: isDark ? '#94a3b8' : '#64748b', marginLeft: '8px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone'))
+        ),
+        h('section', {
+          'data-echotrainer-briefing': 'true',
+          'aria-labelledby': 'echotrainer-briefing-title',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: '14px', border: '1px solid ' + (isDark ? 'rgba(129, 140, 248, 0.42)' : '#c7d2fe'), background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%)' : 'linear-gradient(135deg, #eef2ff 0%, #f8fafc 56%, #ecfeff 100%)', boxShadow: isDark ? 'inset 0 0 38px rgba(99,102,241,0.12)' : '0 12px 30px rgba(79,70,229,0.08)' }
+        },
+          h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' } },
+            h('div', { style: { color: isDark ? '#a5b4fc' : '#4338ca', fontSize: '11px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' } }, t('stem.echotrainer.sonar_briefing', 'Sonar Briefing')),
+            h('h2', { id: 'echotrainer-briefing-title', style: { margin: 0, color: isDark ? '#f8fafc' : '#111827', fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, t('stem.echotrainer.sonar_briefing_title', 'Build a map from echoes')),
+            h('p', { style: { margin: 0, color: isDark ? '#dbeafe' : '#334155', fontSize: '13px', lineHeight: 1.55, maxWidth: '62ch' } }, t('stem.echotrainer.sonar_briefing_copy', 'Emit a click, listen for timing and direction, then move slowly toward the goal while the map appears one pulse at a time.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' } },
+              briefingStats.map(function(stat) {
+                return h('div', { key: stat.label, style: { padding: '10px 12px', borderRadius: '10px', background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.78)', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#dbeafe') } },
+                  h('div', { style: { color: isDark ? '#bfdbfe' : '#1d4ed8', fontSize: '17px', fontWeight: 900 } }, stat.value),
+                  h('div', { style: { marginTop: '2px', color: isDark ? '#cbd5e1' : '#475569', fontSize: '11px', fontWeight: 800 } }, stat.label)
+                );
+              })
+            ),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+              h('button', { onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: '1px solid #c4b5fd', background: isDark ? '#6d28d9' : '#5b21b6', color: '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
+              h('button', { onClick: cycleViewMode, 'aria-label': 'Cycle view mode: currently ' + (d.viewMode || 'echo'), style: { padding: '10px 14px', borderRadius: '10px', border: '1px solid ' + viewTone.border, background: viewTone.bg, color: viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
+              h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1'), color: isDark ? '#e2e8f0' : '#334155', background: isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
+            )
+          ),
+          h('div', { style: { minHeight: '230px', borderRadius: '13px', border: '1px solid ' + (isDark ? 'rgba(96,165,250,0.38)' : '#bfdbfe'), background: isDark ? 'radial-gradient(circle at 42% 45%, rgba(59,130,246,0.24), rgba(2,6,23,0.9) 68%)' : 'radial-gradient(circle at 42% 45%, rgba(147,197,253,0.48), rgba(248,250,252,0.95) 70%)', overflow: 'hidden', position: 'relative' } },
+            h('svg', { viewBox: '0 0 320 230', width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', minHeight: '230px' } },
+              h('defs', null,
+                h('radialGradient', { id: 'echoPulseGlow', cx: '42%', cy: '50%', r: '55%' },
+                  h('stop', { offset: '0%', stopColor: '#a78bfa', stopOpacity: '0.52' }),
+                  h('stop', { offset: '70%', stopColor: '#60a5fa', stopOpacity: '0.13' }),
+                  h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: '0' })
+                )
+              ),
+              h('rect', { x: 0, y: 0, width: 320, height: 230, fill: isDark ? '#020617' : '#eff6ff', opacity: 0.28 }),
+              [34, 62, 92, 126].map(function(r, idx) {
+                return h('circle', { key: r, cx: 136, cy: 116, r: r, fill: idx === 0 ? 'url(#echoPulseGlow)' : 'none', stroke: idx % 2 ? '#a78bfa' : '#60a5fa', strokeWidth: idx === 0 ? 2.4 : 1.4, strokeOpacity: 0.68 - idx * 0.12, strokeDasharray: idx > 1 ? '5 7' : undefined });
+              }),
+              h('circle', { cx: 136, cy: 116, r: 8, fill: '#c4b5fd' }),
+              h('path', { d: 'M210 38 L270 64 L270 166 L210 192 Z', fill: isDark ? '#172554' : '#dbeafe', stroke: '#60a5fa', strokeOpacity: 0.68 }),
+              h('path', { d: 'M210 38 L210 192', stroke: '#93c5fd', strokeWidth: 4, strokeLinecap: 'round' }),
+              h('circle', { cx: 252, cy: 116, r: 13, fill: '#fbbf24', opacity: 0.9 }),
+              h('path', { d: 'M144 114 C178 96 196 88 214 72', stroke: '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
+              h('path', { d: 'M214 158 C190 150 166 136 144 120', stroke: '#34d399', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
+              h('text', { x: 18, y: 28, fill: isDark ? '#dbeafe' : '#1e3a8a', fontSize: 12, fontWeight: 900 }, currentEnv.icon + ' ' + currentEnv.name),
+              h('text', { x: 18, y: 47, fill: isDark ? '#cbd5e1' : '#475569', fontSize: 10, fontWeight: 700 }, has3D ? '3D spatial audio ready' : '2D audio map ready'),
+              h('text', { x: 222, y: 205, fill: isDark ? '#fde68a' : '#92400e', fontSize: 10, fontWeight: 900 }, t('stem.echotrainer.goal_echo', 'Goal echo'))
+            )
+          )
         ),
         !d.disclaimerDismissed && h('div', { role: 'alert', style: { background: isDark ? '#1c1917' : '#fffbeb', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px 16px', marginBottom: '4px' } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
@@ -1640,7 +1704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: '6px 0 0 0' } }, t('stem.echotrainer.do_not_attempt_to_navigate_real_world_', 'Do not attempt to navigate real-world environments using echolocation skills developed in this simulation. Virtual environments are simplified and do not include the complexity, hazards, or unpredictability of real spaces. Success here does not indicate readiness for real-world navigation.')),
               h('p', { style: { fontSize: '10px', color: isDark ? '#a8a29e' : '#92400e', lineHeight: 1.4, margin: '8px 0 0 0', fontStyle: 'italic' } }, t('stem.echotrainer.research_thaler_et_al_2011_2021_demons', 'Research: Thaler et al. (2011, 2021) demonstrated that both blind and sighted individuals can develop echolocation skills through training. This tool is inspired by the work of Daniel Kish and World Access for the Blind.'))
             ),
-            h('button', { onClick: function() { upd('disclaimerDismissed', true); }, 'aria-label': t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { padding: '6px 14px', borderRadius: '6px', background: '#f59e0b', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' } }, t('stem.echotrainer.i_understand', 'I Understand'))
+            h('button', { onClick: function() { upd('disclaimerDismissed', true); }, 'aria-label': t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { padding: '6px 14px', borderRadius: '6px', background: '#fbbf24', color: '#451a03', border: '1px solid #d97706', fontSize: '11px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, t('stem.echotrainer.i_understand', 'I Understand'))
           )
         ),
         h('details', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '4px' } },
@@ -1653,7 +1717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('p', { style: { margin: 0, fontStyle: 'italic' } }, t('stem.echotrainer.daniel_kish_who_is_blind_navigates_by_', '\uD83D\uDC1D Daniel Kish, who is blind, navigates by bicycle using tongue clicks. He has taught echolocation to thousands of people worldwide through World Access for the Blind.'))
           )
         ),
-        h('details', { open: !(d.goalsFound > 0), style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
+        h('details', { open: false, style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' } }, t('stem.echotrainer.how_echolocation_works', '\uD83D\uDCDA How Echolocation Works')),
           h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff' } },
             h('svg', { viewBox: '0 0 500 160', width: '100%', height: 'auto', style: { maxHeight: '140px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
@@ -1706,8 +1770,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700,
                 cursor: unlocked ? 'pointer' : 'not-allowed',
                 opacity: unlocked ? 1 : 0.5,
-                border: '1px solid ' + (active ? '#6366f1' : (isDark ? '#334155' : '#e2e8f0')),
-                background: active ? '#6366f1' : (isDark ? '#1e293b' : '#fff'),
+                border: '1px solid ' + (active ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')),
+                background: active ? '#4338ca' : (isDark ? '#1e293b' : '#fff'),
                 color: active ? '#fff' : (isDark ? '#94a3b8' : '#475569')
               }
             }, (unlocked ? '' : '\uD83D\uDD12 ') + env.icon + ' ' + env.name + (is3D ? ' [3D]' : '') + (!unlocked ? ' (' + (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label || '') + ')' : ''));
@@ -1716,17 +1780,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           h('button', { onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
           h('button', { onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR('Sound: ' + (clickType === 'tongue' ? 'Cane tap' : 'Tongue click')); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
-          h('button', { onClick: cycleViewMode, 'aria-label': 'Cycle view mode: currently ' + (d.viewMode || 'echo'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, viewModeLabel),
+          h('button', { onClick: cycleViewMode, 'aria-label': 'Cycle view mode: currently ' + (d.viewMode || 'echo'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
           h('button', { onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? 'Multi-bounce echoes off' : 'Multi-bounce echoes on \u2014 more realistic but harder'); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
           h('button', {
             onClick: startDistanceChallenge,
             'aria-label': t('stem.echotrainer.start_a_distance_estimation_challenge', 'Start a distance estimation challenge'),
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: '#7c3aed', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#6d28d9' : '#c4b5fd'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#ddd6fe' : '#6d28d9', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
           }, t('stem.echotrainer.distance_quiz', '\uD83D\uDCCF Distance Quiz')),
           h('button', {
             onClick: startMaterialQuiz,
             'aria-label': t('stem.echotrainer.start_a_material_identification_quiz', 'Start a material identification quiz'),
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: '#f59e0b', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#92400e' : '#f59e0b'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fde68a' : '#92400e', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
           }, t('stem.echotrainer.material_quiz', '\uD83E\uDDCA Material Quiz')),
           WAYPOINT_ROUTES[envType] ? h('button', {
             onClick: function() {
@@ -1752,7 +1816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
           DIFFICULTY.map(function(dLvl) {
             var isActive = diffId === dLvl.id;
-            return h('button', { key: dLvl.id, 'aria-label': dLvl.label + ': ' + dLvl.desc, 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR('Difficulty: ' + dLvl.label + '. ' + dLvl.desc); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#6366f1' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#6366f1' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
+            return h('button', { key: dLvl.id, 'aria-label': dLvl.label + ': ' + dLvl.desc, 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR('Difficulty: ' + dLvl.label + '. ' + dLvl.desc); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
           })
         ),
         h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
@@ -1791,7 +1855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'dialog', 'aria-label': 'Tutorial step ' + (tutStep + 1) + ' of 4', style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#3b82f6' } }, 'Tutorial ' + (tutStep + 1) + '/4'), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, TUTORIAL_STEPS[tutStep].title)),
           h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, TUTORIAL_STEPS[tutStep].text),
-          h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR('Tutorial complete! You are ready to explore on your own.'); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
+          h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR('Tutorial complete! You are ready to explore on your own.'); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
         ) : null,
         // Distance challenge UI
         (d.distChallenge && d.distChallenge.active && !d.distChallenge.result) ? h('div', {
