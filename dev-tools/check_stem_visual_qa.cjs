@@ -66,6 +66,7 @@ const EXPECTED_MARKERS = [
   { id: 'molecule', file: 'stem_tool_molecule.js', marker: 'data-molecule-command', label: 'Molecule Lab command deck' },
   { id: 'printingPress', file: 'stem_tool_printingpress.js', marker: 'data-printingpress-command', label: 'PrintingPress shop dashboard' },
   { id: 'fisherLab', file: 'stem_tool_fisherlab.js', marker: 'data-fisherlab-command', label: 'FisherLab harbor briefing' },
+  { id: 'raptorHunt', file: 'stem_tool_raptorhunt.js', marker: 'data-raptorhunt-command', label: 'Raptor Hunt flight briefing' },
   { id: 'brainAtlas', file: 'stem_tool_brainatlas.js', marker: 'data-brainatlas-mission', label: 'Brain Atlas mission panel' },
   { id: 'anatomy', file: 'stem_tool_anatomy.js', marker: 'data-anatomy-mission', label: 'Anatomy mission panel' },
   { id: 'birdLab', file: 'stem_tool_birdlab.js', marker: 'data-birdlab-field-station', label: 'Bird Lab field station' },

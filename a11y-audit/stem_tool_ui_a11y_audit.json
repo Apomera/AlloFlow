@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T21:25:53.326Z",
+  "generatedAt": "2026-07-03T00:25:32.475Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 175,
+    "issueCount": 174,
     "errorCount": 0,
-    "warningCount": 158,
+    "warningCount": 157,
     "noticeCount": 17,
-    "toolsWithIssues": 73,
+    "toolsWithIssues": 72,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 67,
+    "toolsWithWarnings": 66,
     "toolsWithCanvas": 38,
     "shellCoverage": {
       "standardShellTools": 113,
@@ -43,7 +43,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 73,
+        "warningCount": 72,
         "noticeCount": 6
       },
       "technology": {
@@ -212,27 +212,6 @@
       "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
-      "code": "heading",
-      "severity": "warning",
-      "count": 17,
-      "toolCount": 17,
-      "exampleTools": [
-        "archStudio",
-        "astronomy",
-        "bridgeLab",
-        "cellularLab",
-        "cephalopodLab",
-        "flightSim",
-        "funcGrapher",
-        "geoSandbox",
-        "geometryWorld",
-        "graphCalc",
-        "kitchenLab",
-        "lumen"
-      ],
-      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
-    },
-    {
       "code": "inline-contrast",
       "severity": "warning",
       "count": 67,
@@ -252,6 +231,27 @@
         "llmLiteracy"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
+    },
+    {
+      "code": "heading",
+      "severity": "warning",
+      "count": 16,
+      "toolCount": 16,
+      "exampleTools": [
+        "archStudio",
+        "astronomy",
+        "bridgeLab",
+        "cellularLab",
+        "cephalopodLab",
+        "flightSim",
+        "funcGrapher",
+        "geoSandbox",
+        "geometryWorld",
+        "graphCalc",
+        "kitchenLab",
+        "lumen"
+      ],
+      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
     {
       "code": "canvas-name",
@@ -1292,7 +1292,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Riemann sums, derivatives, and guided discovery missions",
-      "renderedBytes": 20555,
+      "renderedBytes": 20826,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1939,7 +1939,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16022,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2328,7 +2328,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22814,
+      "renderedBytes": 22804,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2784,7 +2784,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1598,
+      "renderedBytes": 1597,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2825,7 +2825,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Graph functions, analyze zeros and intersections, explore transformations",
-      "renderedBytes": 13617,
+      "renderedBytes": 13799,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2850,7 +2850,7 @@
           "code": "canvas-name",
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 0,
-          "selector": "div > div > div:nth-of-type(3) > div:nth-of-type(2) > canvas"
+          "selector": "div > div.graphcalc-shell > div:nth-of-type(3) > div:nth-of-type(2) > canvas"
         },
         {
           "toolId": "graphCalc",
@@ -3342,7 +3342,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13339,
+      "renderedBytes": 13343,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3807,7 +3807,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17344,
+      "renderedBytes": 17347,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4051,32 +4051,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 22355,
+      "renderedBytes": 25574,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 48,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
-        "svgs": 0,
+        "svgs": 1,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "raptorHunt",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "renewablesLab",
@@ -4613,7 +4606,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 46581,
+      "renderedBytes": 46580,
       "standardShell": true,
       "issueCount": 17,
       "errorCount": 0,

@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-02T21:25:53.326Z
+Generated: 2026-07-03T00:25:32.475Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-02T21:25:53.326Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 175 |
+| Total findings | 174 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 158 |
+| Tool-level warnings | 157 |
 | Review notices | 17 |
-| Tools with any finding | 73 |
+| Tools with any finding | 72 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 38 |
 
@@ -27,8 +27,8 @@ Generated: 2026-07-02T21:25:53.326Z
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 32 | 24 | anatomy, areamodel, artStudio, beehive, brainAtlas, chemBalance, climateExplorer, codingPlayground, companionPlanting, epidemicSim, logicLab, moneyMath | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 22 | 22 | areamodel, birdLab, cell, chemBalance, circuit, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `heading` | 17 | 17 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, flightSim, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `inline-contrast` | 67 | 17 | algebraCAS, appLab, atcTower, cell, cellularLab, companionPlanting, dataStudio, dnaLab, echoTrainer, fireEcology, kitchenLab, llmLiteracy | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `heading` | 16 | 16 | archStudio, astronomy, bridgeLab, cellularLab, cephalopodLab, flightSim, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `canvas-name` | 18 | 15 | anatomy, areamodel, chemBalance, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, skatelab | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `svg-name` | 2 | 2 | molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 12 | 12 | archStudio, birdLab, codingPlayground, cyberDefense, dinoLab, evoLab, geologyExplorer, geometryWorld, nutritionLab, rockCycle, rocks, weldLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
@@ -134,7 +134,7 @@ Generated: 2026-07-02T21:25:53.326Z
 | `probability` Probability Lab | math | standard | 31 | 5 | 0 | 0 | 5 | 0 | inline-contrast x4, tiny-text x1 |
 | `protractor` Angle Explorer | math | standard | 69 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `punnett` Punnett Square Lab | science | standard | 24 | 4 | 0 | 0 | 1 | 0 | tiny-text x1 |
-| `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 48 | 1 | 0 | 0 | 1 | 0 | heading x1 |
+| `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 48 | 1 | 0 | 0 | 0 | 0 |  |
 | `renewablesLab` Renewables Lab | physics-chemistry | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 64 | 3 | 0 | 0 | 0 | 0 |  |
 | `rockCycle` rockCycle | science | standard | 13 | 1 | 1 | 0 | 3 | 1 | canvas-focus x1, canvas-name x1, metadata x1, tiny-text x1 |

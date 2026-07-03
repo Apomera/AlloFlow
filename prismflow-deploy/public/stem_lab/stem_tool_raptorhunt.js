@@ -6974,14 +6974,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: HUB
       // ────────────────────────────────────────────────────────
       function renderHub() {
+        var hubVisited = rh.visited || {};
+        var hubVisitedCount = Object.keys(hubVisited).filter(function(k) { return hubVisited[k] > 0; }).length;
+        var hubSpecies = sp || findSpecies('peregrine');
+        var hubHuntStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
+        var hubSuccess = hubHuntStats.attempts ? Math.round((hubHuntStats.catches / hubHuntStats.attempts) * 100) + '% success' : 'ready to fly';
+        var hubStats = [
+          { label: __alloT('stem.raptorhunt.selected_species', 'Selected species'), value: hubSpecies.name, note: hubSpecies.family },
+          { label: __alloT('stem.raptorhunt.flight_profile', 'Flight profile'), value: (hubSpecies.stoopMph || 0) + ' mph stoop', note: (hubSpecies.visualAcuityX || 1) + 'x human acuity' },
+          { label: __alloT('stem.raptorhunt.hunt_record', 'Hunt record'), value: (hubHuntStats.catches || 0) + ' catches', note: hubSuccess },
+          { label: __alloT('stem.raptorhunt.tour_progress_2', 'Tour progress'), value: hubVisitedCount + '/' + SECTIONS.length, note: __alloT('stem.raptorhunt.sections_opened', 'sections opened') }
+        ];
+        function openHubSection(sid) {
+          var sec = findSection(sid);
+          setRH(function(cur) {
+            var visited = Object.assign({}, cur.visited || {});
+            visited[sid] = (visited[sid] || 0) + 1;
+            var recent = (cur.recentlyViewed || []).slice();
+            recent.push(sid);
+            if (recent.length > 20) recent = recent.slice(-20);
+            return Object.assign({}, cur, {
+              activeSection: sid,
+              visited: visited,
+              recentlyViewed: recent,
+              activeCategory: SECTION_TO_CATEGORY[sid] || cur.activeCategory
+            });
+          });
+          rhAnnounce((sec ? sec.label : sid) + ' opened');
+        }
         return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
+          h('section', { className: 'bg-gradient-to-br from-amber-950/60 via-slate-900/70 to-cyan-950/45 border border-amber-700/40 rounded-xl p-5 shadow-lg shadow-amber-950/20', 'data-raptorhunt-command': 'true', 'aria-labelledby': 'rh-command-title' },
             h('div', { className: 'flex items-start gap-3' },
               h('div', { className: 'text-5xl' }, '🦅'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology', 'Raptor Hunt: Predator Physics + Biology')),
+                h('h2', { id: 'rh-command-title', className: 'text-xl font-bold text-amber-200' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology', 'Raptor Hunt: Predator Physics + Biology')),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.hunt_as_a_peregrine_at_240_mph_crush_b', 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.')),
                 h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, __alloT('stem.raptorhunt.25_sections_20_species_6_interactive_l', '25 sections · 20 species · 6 interactive labs · anatomy + acuity demo · case studies · 42-term glossary · 70-question quiz'))
+              )
+            ),
+            h('div', { className: 'mt-4 grid grid-cols-1 lg:grid-cols-5 gap-3' },
+              h('div', { className: 'lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-2' },
+                hubStats.map(function(stat, idx) {
+                  return h('div', { key: idx, className: 'rounded-lg border border-amber-700/35 bg-slate-950/45 p-3 min-h-[86px]' },
+                    h('div', { className: 'text-[10px] font-bold uppercase text-amber-300/70' }, stat.label),
+                    h('div', { className: 'text-sm font-bold text-amber-100 mt-1 leading-snug' }, stat.value),
+                    h('div', { className: 'text-[11px] text-cyan-100/75 mt-1 leading-snug' }, stat.note)
+                  );
+                })
+              ),
+              h('div', { className: 'lg:col-span-2 rounded-lg border border-cyan-700/35 bg-cyan-950/30 p-3', 'aria-label': __alloT('stem.raptorhunt.flight_briefing_path', 'Flight briefing path') },
+                h('svg', { viewBox: '0 0 420 170', preserveAspectRatio: 'xMidYMid meet', style: { width: '100%', height: 'auto', display: 'block' }, 'aria-hidden': 'true' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'rhFlightPath', x1: '0', y1: '0', x2: '1', y2: '0' },
+                      h('stop', { offset: '0%', stopColor: '#f59e0b' }),
+                      h('stop', { offset: '55%', stopColor: '#22d3ee' }),
+                      h('stop', { offset: '100%', stopColor: '#34d399' })
+                    )
+                  ),
+                  h('rect', { x: '10', y: '10', width: '400', height: '150', rx: '8', fill: '#020617', opacity: '0.72' }),
+                  h('path', { d: 'M40 120 C96 42 166 30 218 76 C260 114 310 134 382 62', fill: 'none', stroke: 'url(#rhFlightPath)', strokeWidth: '5', strokeLinecap: 'round' }),
+                  h('path', { d: 'M213 66 l24 13 -26 10 7 -12 z', fill: '#fbbf24', opacity: '0.9' }),
+                  [['Perch', 42, 132], ['Stoop', 154, 42], ['Strike', 250, 124], ['Study', 342, 54]].map(function(pt, idx) {
+                    return h('g', { key: idx },
+                      h('circle', { cx: pt[1], cy: pt[2] - 8, r: '6', fill: idx === 3 ? '#34d399' : '#f59e0b' }),
+                      h('text', { x: pt[1], y: pt[2] + 12, textAnchor: 'middle', fontSize: '12', fill: '#fef3c7', fontWeight: '700' }, pt[0])
+                    );
+                  })
+                ),
+                h('div', { className: 'mt-2 text-xs text-cyan-100/80 leading-relaxed' }, __alloT('stem.raptorhunt.flight_briefing_caption', 'Start with the hunt, compare species physics, then connect the flight data to conservation and field ID.'))
               )
             ),
             // ── NEW v0.20: "Surprise me" random-section button ──
@@ -6992,12 +7052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   // Pick a random section that isn't 'hub' or 'resources' (the bookend sections)
                   var pickable = SECTIONS.filter(function(s) { return s.id !== 'hub' && s.id !== 'resources'; });
                   var pick = pickable[Math.floor(Math.random() * pickable.length)];
-                  setRH(function(cur) {
-                    var visited = Object.assign({}, cur.visited || {});
-                    visited[pick.id] = (visited[pick.id] || 0) + 1;
-                    return Object.assign({}, cur, { activeSection: pick.id, visited: visited });
-                  });
-                  rhAnnounce('Surprise section: ' + pick.label);
+                  openHubSection(pick.id);
                 },
                 className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-all',
                 'aria-label': __alloT('stem.raptorhunt.jump_to_a_random_section', 'Jump to a random section')
@@ -7007,7 +7062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Quick CTA cards
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
             h('button', {
-              onClick: function() { setRH({ activeSection: 'hunt' }); },
+              onClick: function() { openHubSection('hunt'); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-red-900/40 to-orange-900/40 border border-red-700/40 hover:border-red-500/70 transition-all',
               'aria-label': __alloT('stem.raptorhunt.launch_3d_hunt_simulator', 'Launch 3D Hunt Simulator')
             },
@@ -7016,7 +7071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs text-red-100/80 mt-1' }, __alloT('stem.raptorhunt.third_person_3d_stoop_sim_wasd_to_fly_', 'Third-person 3D stoop sim. WASD to fly, Shift to dive, Space to pull up, F to strike. Species-specific physics.'))
             ),
             h('button', {
-              onClick: function() { setRH({ activeSection: 'roster' }); },
+              onClick: function() { openHubSection('roster'); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 hover:border-amber-500/70 transition-all',
               'aria-label': __alloT('stem.raptorhunt.browse_species_roster', 'Browse Species Roster')
             },
@@ -7025,7 +7080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.20_species_peregrine_harpy_golden_bald', '20 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.'))
             ),
             h('button', {
-              onClick: function() { setRH({ activeSection: 'talons' }); },
+              onClick: function() { openHubSection('talons'); },
               className: 'text-left p-4 rounded-xl bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 hover:border-orange-500/70 transition-all',
               'aria-label': __alloT('stem.raptorhunt.talon_mechanics_2', 'Talon Mechanics')
             },
@@ -7050,7 +7105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               ].map(function(t) {
                 return h('button', {
                   key: t.id,
-                  onClick: function() { setRH({ activeSection: t.id }); },
+                  onClick: function() { openHubSection(t.id); },
                   className: 'text-left p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 hover:border-amber-600/40 transition-all active:scale-[0.97]',
                   'aria-label': t.label
                 },

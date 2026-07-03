@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-02T21:25:53.164Z",
+  "generatedAt": "2026-07-03T00:25:31.957Z",
   "source": {
     "stemToolFileCount": 110,
     "registeredToolCount": 113,
-    "monitoredMarkerCount": 36
+    "monitoredMarkerCount": 37
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 36,
+    "markerPassCount": 37,
     "markerFailCount": 0,
     "monitoredIssueCount": 37,
     "monitoredErrorCount": 0,
@@ -505,6 +505,22 @@
       }
     },
     {
+      "id": "raptorHunt",
+      "file": "stem_tool_raptorhunt.js",
+      "marker": "data-raptorhunt-command",
+      "label": "Raptor Hunt flight briefing",
+      "ok": true,
+      "htmlBytes": 25574,
+      "issues": [],
+      "metrics": {
+        "buttons": 48,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 25574
+      }
+    },
+    {
       "id": "brainAtlas",
       "file": "stem_tool_brainatlas.js",
       "marker": "data-brainatlas-mission",
@@ -635,7 +651,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17202,
+      "htmlBytes": 17207,
       "issues": [
         {
           "toolId": "playlab",
@@ -664,7 +680,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17202
+        "htmlBytes": 17207
       }
     },
     {
@@ -762,14 +778,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13365,
+      "htmlBytes": 13353,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13365
+        "htmlBytes": 13353
       }
     },
     {
@@ -838,7 +854,7 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 46588,
+      "htmlBytes": 46581,
       "issues": [
         {
           "toolId": "throwlab",
@@ -867,7 +883,7 @@
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 46588
+        "htmlBytes": 46581
       }
     },
     {
