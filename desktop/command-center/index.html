@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AlloFlow Desktop</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Desktop sections">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>
+          <strong>AlloFlow</strong>
+          <small>Desktop</small>
+        </span>
+      </div>
+      <nav class="tabs" aria-label="Command center">
+        <button class="tab active" data-tab="app" type="button">App</button>
+        <button class="tab" data-tab="ai" type="button">AI</button>
+        <button class="tab" data-tab="schoolbox" type="button">School Box</button>
+        <button class="tab" data-tab="settings" type="button">Settings</button>
+      </nav>
+      <div class="runtime-pill" id="runtime-pill">Starting</div>
+    </aside>
+
+    <main class="workspace">
+      <section class="pane active" id="pane-app" aria-labelledby="tab-app">
+        <header class="pane-header">
+          <div>
+            <h1>AlloFlow App</h1>
+            <p id="app-status">Checking local app</p>
+          </div>
+          <div class="toolbar">
+            <input id="app-url" type="url" aria-label="AlloFlow app URL">
+            <button id="save-app-url" type="button">Save</button>
+            <a id="open-app-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
+            <button id="refresh-all" type="button">Refresh</button>
+          </div>
+        </header>
+        <div class="app-frame-wrap">
+          <iframe id="app-frame" title="AlloFlow application preview"></iframe>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-ai" aria-labelledby="tab-ai">
+        <header class="pane-header">
+          <div>
+            <h1>AI Runtime</h1>
+            <p id="ai-status">Checking providers</p>
+          </div>
+          <button id="refresh-providers" type="button">Refresh</button>
+        </header>
+        <div class="split">
+          <section class="panel">
+            <h2>Providers</h2>
+            <div class="provider-list" id="provider-list"></div>
+          </section>
+          <section class="panel">
+            <h2>Provider Settings</h2>
+            <label for="provider-select">Active provider</label>
+            <select id="provider-select"></select>
+            <label for="provider-base-url">Server URL</label>
+            <input id="provider-base-url" type="url">
+            <label for="provider-api-key">API key</label>
+            <input id="provider-api-key" type="password" autocomplete="off">
+            <div class="button-row">
+              <button id="save-provider" type="button">Save</button>
+              <button id="test-provider" type="button">Test</button>
+            </div>
+            <pre id="provider-result" class="result" aria-live="polite"></pre>
+          </section>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-schoolbox" aria-labelledby="tab-schoolbox">
+        <header class="pane-header">
+          <div>
+            <h1>School Box</h1>
+            <p id="schoolbox-status">Checking host status</p>
+          </div>
+          <div class="toolbar">
+            <button id="start-schoolbox" type="button">Start Host</button>
+            <button id="stop-schoolbox" type="button">Stop Host</button>
+          </div>
+        </header>
+        <div class="split">
+          <section class="panel">
+            <h2>Host</h2>
+            <dl class="kv">
+              <dt>Mode</dt><dd id="schoolbox-mode">-</dd>
+              <dt>Address</dt><dd id="schoolbox-address">-</dd>
+              <dt>Embedded</dt><dd id="schoolbox-embedded">-</dd>
+              <dt>Status</dt><dd id="schoolbox-state">-</dd>
+            </dl>
+          </section>
+          <section class="panel">
+            <h2>Configuration</h2>
+            <label for="schoolbox-mode-select">Mode</label>
+            <select id="schoolbox-mode-select">
+              <option value="disabled">Disabled</option>
+              <option value="desktop-host">Desktop Host</option>
+              <option value="district-server">District Server</option>
+            </select>
+            <label for="schoolbox-port">Port</label>
+            <input id="schoolbox-port" type="number" min="1024" max="65535" step="1">
+            <button id="save-schoolbox" type="button">Save</button>
+            <pre id="schoolbox-result" class="result" aria-live="polite"></pre>
+          </section>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-settings" aria-labelledby="tab-settings">
+        <header class="pane-header">
+          <div>
+            <h1>Runtime Settings</h1>
+            <p id="settings-status">Ready</p>
+          </div>
+        </header>
+        <section class="panel wide">
+          <h2>Runtime</h2>
+          <dl class="kv">
+            <dt>Version</dt><dd id="runtime-version">-</dd>
+            <dt>Data directory</dt><dd id="runtime-data-dir">-</dd>
+            <dt>Config</dt><dd id="runtime-config-path">-</dd>
+            <dt>Command center</dt><dd id="runtime-command-dir">-</dd>
+          </dl>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="./command-center.js"></script>
+</body>
+</html>
+

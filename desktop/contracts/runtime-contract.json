@@ -1,0 +1,63 @@
+{
+  "name": "AlloFlow Desktop Runtime Contract",
+  "version": "0.1.0-foundation",
+  "status": "foundation",
+  "defaultPorts": {
+    "commandCenter": 32170,
+    "alloflowLocalEngine": 32173,
+    "schoolBoxHost": 32174,
+    "alloflowWebApp": 3000
+  },
+  "providers": {
+    "alloflow-local": {
+      "label": "AlloFlow Built-in Engine",
+      "protocol": "openai-compatible",
+      "baseUrl": "http://localhost:32173",
+      "modelsEndpoint": "/v1/models",
+      "managedByDesktop": true
+    },
+    "lmstudio": {
+      "label": "LM Studio",
+      "protocol": "openai-compatible",
+      "baseUrl": "http://localhost:1234",
+      "modelsEndpoint": "/v1/models",
+      "managedByDesktop": false
+    },
+    "ollama": {
+      "label": "Ollama",
+      "protocol": "ollama-native",
+      "baseUrl": "http://localhost:11434",
+      "modelsEndpoint": "/api/tags",
+      "managedByDesktop": false
+    },
+    "gemini": {
+      "label": "Gemini",
+      "protocol": "gemini",
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "managedByDesktop": false
+    }
+  },
+  "httpApi": [
+    { "method": "GET", "path": "/api/health", "purpose": "Runtime, app, path, and service status" },
+    { "method": "GET", "path": "/api/config", "purpose": "Redacted runtime configuration" },
+    { "method": "POST", "path": "/api/config", "purpose": "Merge runtime configuration" },
+    { "method": "GET", "path": "/api/providers", "purpose": "Provider presets and availability" },
+    { "method": "POST", "path": "/api/providers/test", "purpose": "Probe one provider by id/baseUrl" },
+    { "method": "POST", "path": "/api/secrets/{providerId}", "purpose": "Store a provider key locally and return only redacted state" },
+    { "method": "GET", "path": "/api/engine/status", "purpose": "AlloFlow local engine status" },
+    { "method": "POST", "path": "/api/engine/start", "purpose": "Future managed local engine launcher" },
+    { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Embedded School Box host status" },
+    { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Future embedded School Box host launcher" },
+    { "method": "POST", "path": "/api/schoolbox/stop", "purpose": "Future embedded School Box host shutdown" }
+  ],
+  "security": {
+    "bindHost": "127.0.0.1",
+    "configResponse": "secrets are redacted",
+    "next": [
+      "Move secrets into the OS keychain before production packaging.",
+      "Gate non-loopback access behind explicit admin approval.",
+      "Add signed update and model provenance checks before bundling model files."
+    ]
+  }
+}
+
