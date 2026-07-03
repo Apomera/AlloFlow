@@ -1015,6 +1015,36 @@
   // ──────────────────────────────────────────────────────────────────
   // Plugin registration
   // ──────────────────────────────────────────────────────────────────
+  var DEFAULT_MICROBIOLOGY_STATE = {
+    tab: 'home',
+    showMicroLibrary: false,
+    selectedBacterium: 'ecoli',
+    selectedVirus: 'covid',
+    selectedScope: 'lightbright',
+    selectedMicrobiome: 'gut',
+    selectedFerment: 'sourdough',
+    selectedCase: 'snow',
+    scopeOrganism: 'ecoli',
+    magnification: 400,
+    microscopeFocus: 10,
+    microscopeTargetFocus: 50,
+    gramStep: 0,
+    quizIdx: 0,
+    quizAnswers: [],
+    quizSubmitted: false,
+    quizCorrect: 0,
+    growthLab: {
+      tempC: 30,
+      pH: 7,
+      oxygen: 50,
+      hypothesis: '',
+      stuckRevealed: false,
+      understood: false,
+      explanation: '',
+      log: []
+    }
+  };
+
   window.StemLab.registerTool('microbiology', {
     icon: '🦠',
     label: 'Microbiology Lab',
@@ -1030,29 +1060,18 @@
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
 
-      if (!labToolData || !labToolData.microbiology) {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { microbiology: {
-            tab: 'home',
-            showMicroLibrary: false,
-            selectedBacterium: 'ecoli',
-            selectedVirus: 'covid',
-            selectedScope: 'lightbright',
-            selectedMicrobiome: 'gut',
-            selectedFerment: 'sourdough',
-            selectedCase: 'snow',
-            magnification: 100,
-            gramStep: 0,
-            quizIdx: 0, quizAnswers: [], quizSubmitted: false, quizCorrect: 0
-          }});
-        });
-        return h('div', { style: { padding: 24, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center' } }, __alloT('stem.microbiology.initializing_microbiology_lab', '🦠 Initializing Microbiology Lab...'));
-      }
-      var d = labToolData.microbiology;
+      var savedMicrobiology = (labToolData && labToolData.microbiology) || {};
+      var d = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, savedMicrobiology);
+      d.quizAnswers = Array.isArray(savedMicrobiology.quizAnswers) ? savedMicrobiology.quizAnswers : DEFAULT_MICROBIOLOGY_STATE.quizAnswers;
+      d.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, savedMicrobiology.growthLab || {});
 
       function upd(patch) {
         setLabToolData(function(prev) {
-          var s = Object.assign({}, (prev && prev.microbiology) || {}, patch);
+          var prior = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, (prev && prev.microbiology) || {});
+          var s = Object.assign({}, prior, patch);
+          if (patch && patch.growthLab) {
+            s.growthLab = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, prior.growthLab || {}, patch.growthLab);
+          }
           return Object.assign({}, prev, { microbiology: s });
         });
       }
@@ -1147,12 +1166,42 @@
       var visibleMicroTabs = showFullMicroNav ? TABS : TABS.filter(function(tab) { return MICRO_CORE_TABS.indexOf(tab.id) !== -1; });
       var currentMicroTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
       var microAnsweredCount = Array.isArray(d.quizAnswers) ? d.quizAnswers.filter(function(ans) { return ans != null; }).length : 0;
+      var MICRO_SCOPE_LABELS = {
+        lightbright: __alloT('stem.microbiology.scope_brightfield_short', 'Brightfield'),
+        phase: __alloT('stem.microbiology.scope_phase_short', 'Phase contrast'),
+        fluorescent: __alloT('stem.microbiology.scope_fluorescence_short', 'Fluorescence'),
+        em: __alloT('stem.microbiology.scope_electron_short', 'Electron'),
+        afm: __alloT('stem.microbiology.scope_afm_short', 'AFM')
+      };
+      var MICRO_ORGANISM_LABELS = {
+        ecoli: 'E. coli',
+        strep: 'Strep',
+        parame: 'Paramecium',
+        plasmo: 'Plasmodium',
+        phage: 'T4 phage'
+      };
+      var microGrowthLab = d.growthLab || DEFAULT_MICROBIOLOGY_STATE.growthLab;
+      var microTempScore = (microGrowthLab.tempC > 15 && microGrowthLab.tempC < 45) ? 1 - Math.abs(microGrowthLab.tempC - 37) / 30 : 0;
+      var microPhScore = (microGrowthLab.pH > 4 && microGrowthLab.pH < 9) ? 1 - Math.abs(microGrowthLab.pH - 7) / 5 : 0;
+      var microGrowthScore = microTempScore * microPhScore * ((microGrowthLab.oxygen || 0) / 100);
+      var microGrowthLabel = microGrowthScore < 0.05 ? __alloT('stem.microbiology.growth_status_none', 'No growth') :
+        (microGrowthScore < 0.25 ? __alloT('stem.microbiology.growth_status_slow', 'Slow') :
+        (microGrowthScore < 0.6 ? __alloT('stem.microbiology.growth_status_healthy', 'Healthy') :
+        __alloT('stem.microbiology.growth_status_optimal', 'Optimal')));
+      var microScopeLabel = MICRO_SCOPE_LABELS[d.selectedScope] || d.selectedScope || MICRO_SCOPE_LABELS.lightbright;
+      var microOrganismLabel = MICRO_ORGANISM_LABELS[d.scopeOrganism] || 'E. coli';
+      var microStatusCards = [
+        { label: __alloT('stem.microbiology.status_mode', 'Mode'), value: currentMicroTab.label || 'Home', note: showFullMicroNav ? __alloT('stem.microbiology.full_library_visible', 'Full library visible') : __alloT('stem.microbiology.core_tools_visible', 'Core tools visible') },
+        { label: __alloT('stem.microbiology.status_specimen', 'Specimen'), value: microOrganismLabel, note: microScopeLabel + ' at ' + (d.magnification || DEFAULT_MICROBIOLOGY_STATE.magnification) + 'x' },
+        { label: __alloT('stem.microbiology.status_growth', 'Growth'), value: microGrowthLabel, note: (microGrowthLab.tempC || 0) + 'C, pH ' + (microGrowthLab.pH || 0) + ', O2 ' + (microGrowthLab.oxygen || 0) + '%' },
+        { label: __alloT('stem.microbiology.status_quiz', 'Quiz'), value: microAnsweredCount + '/' + QUIZ_QUESTIONS.length, note: d.quizSubmitted ? __alloT('stem.microbiology.quiz_submitted', 'Submitted') : __alloT('stem.microbiology.quiz_in_progress', 'In progress') }
+      ];
       var MICRO_ROUTES = [
-        { id: 'microscope', title: __alloT('stem.microbiology.route_microscope', 'Microscope'), copy: __alloT('stem.microbiology.route_microscope_copy', 'Mount a slide and compare what each instrument can resolve.') },
-        { id: 'bacteria', title: __alloT('stem.microbiology.route_bacteria', 'Bacteria'), copy: __alloT('stem.microbiology.route_bacteria_copy', 'Study shape, Gram behavior, and helpful/pathogenic roles.') },
-        { id: 'resistance', title: __alloT('stem.microbiology.route_resistance', 'Resistance'), copy: __alloT('stem.microbiology.route_resistance_copy', 'Run selection-pressure thinking without digging through the library.') },
-        { id: 'microbiome', title: __alloT('stem.microbiology.route_microbiome', 'Microbiome'), copy: __alloT('stem.microbiology.route_microbiome_copy', 'Compare gut, soil, ocean, and built-environment communities.') },
-        { id: 'growthLab', title: __alloT('stem.microbiology.route_growth', 'Growth Lab'), copy: __alloT('stem.microbiology.route_growth_copy', 'Adjust temperature, pH, and oxygen to test a hypothesis.') }
+        { id: 'microscope', tag: 'Observe', accent: '#38bdf8', title: __alloT('stem.microbiology.route_microscope', 'Microscope'), copy: __alloT('stem.microbiology.route_microscope_copy', 'Mount a slide and compare what each instrument can resolve.') },
+        { id: 'bacteria', tag: 'Classify', accent: '#10b981', title: __alloT('stem.microbiology.route_bacteria', 'Bacteria'), copy: __alloT('stem.microbiology.route_bacteria_copy', 'Study shape, Gram behavior, and helpful/pathogenic roles.') },
+        { id: 'resistance', tag: 'Evolve', accent: '#f59e0b', title: __alloT('stem.microbiology.route_resistance', 'Resistance'), copy: __alloT('stem.microbiology.route_resistance_copy', 'Run selection-pressure thinking without digging through the library.') },
+        { id: 'microbiome', tag: 'Connect', accent: '#a78bfa', title: __alloT('stem.microbiology.route_microbiome', 'Microbiome'), copy: __alloT('stem.microbiology.route_microbiome_copy', 'Compare gut, soil, ocean, and built-environment communities.') },
+        { id: 'growthLab', tag: 'Test', accent: '#34d399', title: __alloT('stem.microbiology.route_growth', 'Growth Lab'), copy: __alloT('stem.microbiology.route_growth_copy', 'Adjust temperature, pH, and oxygen to test a hypothesis.') }
       ];
 
       var tabBar = h('div', {
@@ -4653,21 +4702,30 @@
 
       return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
         h('style', null,
-          '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.28); background: linear-gradient(135deg, rgba(6,78,59,0.72), rgba(15,23,42,0.94)); box-shadow: 0 16px 38px rgba(2,8,23,0.24); }\n' +
+          '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.30); background: radial-gradient(circle at 78% 18%, rgba(56,189,248,0.18), transparent 28%), linear-gradient(135deg, rgba(6,78,59,0.78), rgba(15,23,42,0.96)); box-shadow: 0 18px 42px rgba(2,8,23,0.28); }\n' +
           '.micro-focus-panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b, #a78bfa); }\n' +
           '.micro-focus-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.8fr); gap: 14px; align-items: stretch; }\n' +
           '.micro-focus-kicker { margin: 0 0 4px; font-size: 10px; font-weight: 900; letter-spacing: 0; text-transform: uppercase; color: #6ee7b7; }\n' +
           '.micro-focus-title { margin: 0; font-size: 21px; line-height: 1.15; font-weight: 900; color: #ecfdf5; }\n' +
           '.micro-focus-copy { margin: 7px 0 12px; max-width: 68ch; font-size: 12px; line-height: 1.55; color: #cbd5e1; }\n' +
           '.micro-route-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px; }\n' +
-          '.micro-route-card { min-height: 82px; padding: 10px; text-align: left; border-radius: 8px; border: 1px solid rgba(110,231,183,0.22); background: rgba(15,23,42,0.58); color: #d1fae5; cursor: pointer; }\n' +
-          '.micro-route-card[aria-pressed="true"] { background: rgba(16,185,129,0.16); border-color: rgba(110,231,183,0.58); box-shadow: 0 0 0 2px rgba(16,185,129,0.18); }\n' +
+          '.micro-route-card { position: relative; min-height: 88px; padding: 10px; text-align: left; border-radius: 8px; border: 1px solid rgba(110,231,183,0.22); background: rgba(15,23,42,0.62); color: #d1fae5; cursor: pointer; overflow: hidden; transition: transform 160ms ease, border-color 160ms ease, background 160ms ease; }\n' +
+          '.micro-route-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--micro-route-accent, #10b981); opacity: 0.85; }\n' +
+          '.micro-route-card:hover { transform: translateY(-1px); border-color: rgba(110,231,183,0.48); background: rgba(15,23,42,0.78); }\n' +
+          '.micro-route-card[aria-pressed="true"] { background: rgba(16,185,129,0.18); border-color: rgba(110,231,183,0.62); box-shadow: 0 0 0 2px rgba(16,185,129,0.18); }\n' +
+          '.micro-route-tag { display: inline-flex; margin-bottom: 6px; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.08); color: var(--micro-route-accent, #6ee7b7); font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; }\n' +
           '.micro-route-title { display: block; margin-bottom: 3px; font-size: 12px; font-weight: 900; color: #f8fafc; }\n' +
           '.micro-route-copy { display: block; font-size: 10px; line-height: 1.35; color: #a7f3d0; }\n' +
           '.micro-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }\n' +
-          '.micro-status-card { min-height: 62px; padding: 9px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.34); }\n' +
+          '.micro-status-card { min-height: 70px; padding: 9px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.38); }\n' +
           '.micro-status-label { margin: 0 0 4px; font-size: 10px; font-weight: 900; letter-spacing: 0; text-transform: uppercase; color: #94a3b8; }\n' +
           '.micro-status-value { margin: 0; font-size: 15px; font-weight: 900; color: #f8fafc; }\n' +
+          '.micro-status-note { margin: 4px 0 0; font-size: 10px; line-height: 1.35; color: #a7f3d0; }\n' +
+          '.micro-scope-stage { position: relative; min-height: 118px; margin-bottom: 9px; border-radius: 8px; border: 1px solid rgba(56,189,248,0.22); background: linear-gradient(145deg, rgba(8,47,73,0.42), rgba(2,6,23,0.48)); overflow: hidden; }\n' +
+          '.micro-scope-stage::before { content: ""; position: absolute; inset: 13px; border-radius: 999px; border: 1px solid rgba(125,211,252,0.24); box-shadow: inset 0 0 34px rgba(56,189,248,0.12); }\n' +
+          '.micro-scope-cross { position: absolute; inset: 50% 14px auto; height: 1px; background: rgba(125,211,252,0.18); }\n' +
+          '.micro-scope-cross::after { content: ""; position: absolute; left: 50%; top: -45px; width: 1px; height: 90px; background: rgba(125,211,252,0.18); }\n' +
+          '.micro-scope-cell { position: absolute; display: block; border-radius: 999px; background: #6ee7b7; border: 1px solid rgba(2,6,23,0.55); box-shadow: 0 0 14px rgba(110,231,183,0.34); }\n' +
           '.micro-library-toggle { width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(110,231,183,0.32); background: rgba(16,185,129,0.10); color: #a7f3d0; font-size: 11px; font-weight: 900; cursor: pointer; }\n' +
           '@media (max-width: 760px) { .micro-focus-grid { grid-template-columns: 1fr; } .micro-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n' +
           '.micro-tab-list { display: flex; gap: 6px; padding: 10px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); overflow-x: auto; flex-shrink: 0; background: rgba(10, 14, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); scrollbar-width: none; }\n' +
@@ -4705,12 +4763,12 @@
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.microbiology.ngss_ms_ls1_hs_ls1_hs_ls3_hs_ls4_2', 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4'))
           )
         ),
-        h('section', { className: 'micro-focus-panel', 'data-microbiology-focus': 'true' },
+        h('section', { className: 'micro-focus-panel', 'data-microbiology-focus': 'true', 'aria-labelledby': 'microbiology-focus-title' },
           h('div', { className: 'micro-focus-grid' },
             h('div', null,
               h('p', { className: 'micro-focus-kicker' }, __alloT('stem.microbiology.lab_mission', 'Lab mission')),
-              h('h3', { className: 'micro-focus-title' }, currentMicroTab.label || __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
-              h('p', { className: 'micro-focus-copy' }, __alloT('stem.microbiology.lab_mission_copy', 'Start with an observable lab action, then expand the topic library when you want organisms, history, biotech, fermentation, vaccines, and case studies.')),
+              h('h3', { id: 'microbiology-focus-title', className: 'micro-focus-title' }, currentMicroTab.label || __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
+              h('p', { className: 'micro-focus-copy' }, __alloT('stem.microbiology.lab_mission_copy', 'Start with a lab action: observe a specimen, classify evidence, test growth conditions, or model resistance before opening the full topic library.')),
               h('div', { className: 'micro-route-grid', 'data-microbiology-route-grid': 'true' },
                 MICRO_ROUTES.map(function(route) {
                   var active = d.tab === route.id;
@@ -4718,9 +4776,11 @@
                     key: route.id,
                     type: 'button',
                     className: 'micro-route-card',
+                    style: { '--micro-route-accent': route.accent },
                     'aria-pressed': active ? 'true' : 'false',
                     onClick: function() { upd({ tab: route.id }); }
                   },
+                    h('span', { className: 'micro-route-tag' }, route.tag),
                     h('span', { className: 'micro-route-title' }, route.title),
                     h('span', { className: 'micro-route-copy' }, route.copy)
                   );
@@ -4728,16 +4788,19 @@
               )
             ),
             h('div', null,
+              h('div', { className: 'micro-scope-stage', 'aria-hidden': 'true' },
+                h('span', { className: 'micro-scope-cross' }),
+                h('span', { className: 'micro-scope-cell micro-wiggle', style: { width: 38, height: 12, left: '19%', top: '31%', transform: 'rotate(14deg)' } }),
+                h('span', { className: 'micro-scope-cell micro-wiggle', style: { width: 15, height: 15, left: '57%', top: '23%', background: '#fbbf24' } }),
+                h('span', { className: 'micro-scope-cell micro-wiggle', style: { width: 32, height: 10, left: '62%', top: '62%', background: '#38bdf8', transform: 'rotate(-28deg)' } }),
+                h('span', { className: 'micro-scope-cell micro-wiggle', style: { width: 18, height: 18, left: '33%', top: '67%', background: '#a78bfa' } })
+              ),
               h('div', { className: 'micro-status-grid' },
-                [
-                  { label: __alloT('stem.microbiology.status_section', 'Section'), value: currentMicroTab.label || 'Home' },
-                  { label: __alloT('stem.microbiology.status_slide', 'Slide'), value: d.selectedScope || 'lightbright' },
-                  { label: __alloT('stem.microbiology.status_quiz', 'Quiz'), value: microAnsweredCount + '/' + QUIZ_QUESTIONS.length },
-                  { label: __alloT('stem.microbiology.status_library', 'Library'), value: showFullMicroNav ? __alloT('stem.microbiology.expanded', 'Expanded') : __alloT('stem.microbiology.core', 'Core') }
-                ].map(function(card) {
+                microStatusCards.map(function(card) {
                   return h('div', { key: card.label, className: 'micro-status-card' },
                     h('p', { className: 'micro-status-label' }, card.label),
-                    h('p', { className: 'micro-status-value' }, card.value)
+                    h('p', { className: 'micro-status-value' }, card.value),
+                    h('p', { className: 'micro-status-note' }, card.note)
                   );
                 })
               ),

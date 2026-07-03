@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-03T18:00:20.511Z
+Generated: 2026-07-03T20:08:47.024Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-03T18:00:20.511Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 122 |
+| Total findings | 121 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 106 |
+| Tool-level warnings | 105 |
 | Review notices | 16 |
-| Tools with any finding | 59 |
+| Tools with any finding | 58 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 34 |
 
@@ -27,7 +27,7 @@ Generated: 2026-07-03T18:00:20.511Z
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `canvas-focus` | 26 | 18 | anatomy, artStudio, beehive, brainAtlas, climateExplorer, codingPlayground, companionPlanting, epidemicSim, musicSynth, oratory, plateTectonics, rockCycle | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `tiny-text` | 16 | 16 | birdLab, cell, dissection, dnaLab, galaxy, inequality, molecule, moonMission, multtable, protractor, rockCycle, solarSystem | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `heading` | 14 | 14 | archStudio, astronomy, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, microbiology, physics | Start each tool with a semantic heading so screen-reader users can orient quickly. |
+| warning | `heading` | 13 | 13 | archStudio, astronomy, cellularLab, cephalopodLab, funcGrapher, geoSandbox, geometryWorld, graphCalc, kitchenLab, lumen, physics, semiconductor | Start each tool with a semantic heading so screen-reader users can orient quickly. |
 | warning | `canvas-name` | 15 | 12 | anatomy, climateExplorer, dissection, epidemicSim, graphCalc, musicSynth, plateTectonics, rockCycle, rocks, unitConvert, volume, waterCycle | Give each canvas a tool-specific role and aria-label, not only the host fallback. |
 | warning | `inline-contrast` | 32 | 12 | algebraCAS, appLab, cell, cellularLab, companionPlanting, dataStudio, dnaLab, fireEcology, kitchenLab, llmLiteracy, typingPractice, waterCycle | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | warning | `svg-name` | 3 | 3 | birdLab, molecule, printingPress | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
@@ -116,7 +116,7 @@ Generated: 2026-07-03T18:00:20.511Z
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 7 | 0 | inline-contrast x7 |
 | `logicLab` Logic Lab | math | standard | 41 | 1 | 0 | 0 | 0 | 0 |  |
 | `lumen` Lumen | data | standard | 22 | 7 | 0 | 0 | 1 | 0 | heading x1 |
-| `microbiology` Microbiology Lab | science | standard | 0 | 0 | 0 | 0 | 1 | 0 | heading x1 |
+| `microbiology` Microbiology Lab | science | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `migration` Migration & Wind Lab | science | standard | 10 | 6 | 1 | 0 | 0 | 0 |  |
 | `molecule` Molecule Lab | science | standard | 103 | 1 | 0 | 0 | 2 | 0 | svg-name x1, tiny-text x1 |
 | `moneyMath` Money Math | math | standard | 29 | 2 | 0 | 0 | 0 | 0 |  |

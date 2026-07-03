@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T18:00:35.161Z",
+  "generatedAt": "2026-07-03T20:10:00.822Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -54,14 +54,14 @@
       "marker": "data-microbiology-focus",
       "label": "Microbiology mission panel",
       "ok": true,
-      "htmlBytes": 40472,
+      "htmlBytes": 43472,
       "issues": [],
       "metrics": {
         "buttons": 14,
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 40472
+        "htmlBytes": 43472
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17202,
+      "htmlBytes": 17205,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17202
+        "htmlBytes": 17205
       }
     },
     {
@@ -826,14 +826,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13327,
+      "htmlBytes": 13364,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13327
+        "htmlBytes": 13364
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47690,
+      "htmlBytes": 47685,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47690
+        "htmlBytes": 47685
       }
     },
     {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T18:00:20.511Z",
+  "generatedAt": "2026-07-03T20:08:47.024Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 122,
+    "issueCount": 121,
     "errorCount": 0,
-    "warningCount": 106,
+    "warningCount": 105,
     "noticeCount": 16,
-    "toolsWithIssues": 59,
+    "toolsWithIssues": 58,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 52,
+    "toolsWithWarnings": 51,
     "toolsWithCanvas": 34,
     "shellCoverage": {
       "standardShellTools": 114,
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 47,
+        "warningCount": 46,
         "noticeCount": 4
       },
       "technology": {
@@ -214,8 +214,8 @@
     {
       "code": "heading",
       "severity": "warning",
-      "count": 14,
-      "toolCount": 14,
+      "count": 13,
+      "toolCount": 13,
       "exampleTools": [
         "archStudio",
         "astronomy",
@@ -227,8 +227,8 @@
         "graphCalc",
         "kitchenLab",
         "lumen",
-        "microbiology",
-        "physics"
+        "physics",
+        "semiconductor"
       ],
       "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
     },
@@ -1800,7 +1800,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16015,
+      "renderedBytes": 16026,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2116,7 +2116,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22793,
+      "renderedBytes": 22809,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2565,7 +2565,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1578,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
@@ -2967,32 +2967,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibiotic resistance evolution (interactive petri-dish selection-pressure sim), the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow's 1854 cholera map as walkable interactive, Fleming's penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.",
-      "renderedBytes": 312,
+      "renderedBytes": 43472,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 0,
+        "buttons": 14,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "microbiology",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "migration",
@@ -3105,7 +3098,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13348,
+      "renderedBytes": 13326,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3561,7 +3554,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17331,
+      "renderedBytes": 17337,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
