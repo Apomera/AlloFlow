@@ -8532,12 +8532,16 @@ var createDocPipeline = function(deps) {
       let bm;
       while ((bm = _blipRe.exec(partXml)) !== null && hits.length < 60) hits.push({ rid: bm[1], idx: bm.index });
       const _xmlDecode = (s) => String(s).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
-      for (const hit of hits) {
+      for (let _hi = 0; _hi < hits.length; _hi++) {
+        const hit = hits[_hi];
         const target = relMap[hit.rid];
         if (!target || !/media\//i.test(target)) continue;
-        // Alt: the nearest descr= BEFORE the blip (docPr/cNvPr precede it in
-        // both OOXML formats). 'Picture N' auto-names don't count as alt.
-        const before = partXml.slice(Math.max(0, hit.idx - 1200), hit.idx);
+        // Alt: the nearest descr= BEFORE the blip (docPr/cNvPr precede it in both OOXML formats).
+        // #8 (2026-07-03): CLAMP the look-back to AFTER the previous blip, so an image with no descr of
+        // its own can't STEAL the previous image's alt out of the 1200-char window. 'Picture N' auto-names
+        // don't count as alt.
+        const _prevBlipIdx = _hi > 0 ? hits[_hi - 1].idx : -1;
+        const before = partXml.slice(Math.max(0, hit.idx - 1200, _prevBlipIdx + 1), hit.idx);
         const descrs = before.match(/\bdescr="([^"]*)"/g);
         let alt = '';
         if (descrs && descrs.length) { const last = descrs[descrs.length - 1].match(/\bdescr="([^"]*)"/); alt = last ? _xmlDecode(last[1]).trim() : ''; }
@@ -8587,10 +8591,15 @@ var createDocPipeline = function(deps) {
     } catch (_pe) {
       // Regex fallback (the legacy path), narrowed to this file only.
       try {
-        const tagOpen = '<' + paragraphTag + '[\\s>]';
-        const tagClose = '<\\/' + paragraphTag + '>';
+        // #7 (2026-07-03): OOXML tags are NAMESPACED (<w:p>/<w:t>, <a:p>/<a:t>) but callers pass the bare
+        // local name ('p'/'t'), so the old '<p[\s>]' matched nothing and this "never lose the file"
+        // fallback returned '' — silently dropping the part on the exact DOMParser failure it exists to
+        // survive. Tolerate an optional namespace prefix.
+        const _nsp = '(?:[A-Za-z0-9]+:)?';
+        const tagOpen = '<' + _nsp + paragraphTag + '[\\s>]';
+        const tagClose = '<\\/' + _nsp + paragraphTag + '>';
         const paraRe = new RegExp(tagOpen + '[\\s\\S]*?' + tagClose, 'g');
-        const textRe = new RegExp('<' + textTag + '[^>]*>([\\s\\S]*?)<\\/' + textTag + '>', 'g');
+        const textRe = new RegExp('<' + _nsp + textTag + '[^>]*>([\\s\\S]*?)<\\/' + _nsp + textTag + '>', 'g');
         const matches = xml.match(paraRe) || [];
         const out = [];
         for (const p of matches) {
@@ -8766,8 +8775,12 @@ var createDocPipeline = function(deps) {
         if (hdrM) { await _readPart(name, 'HEADER', hdrM[1] || '1'); continue; }
         const ftrM = name.match(/^word\/footer(\d*)\.xml$/);
         if (ftrM) { await _readPart(name, 'FOOTER', ftrM[1] || '1'); continue; }
-        if (name === 'word/footnotes.xml') { await _readPart(name, 'FOOTNOTES', null); continue; }
-        if (name === 'word/endnotes.xml') { await _readPart(name, 'ENDNOTES', null); continue; }
+        // #6 (2026-07-03): mammoth.convertToHtml already renders footnotes/endnotes (as a trailing list)
+        // into bodyText, so appending them again here DUPLICATES the text (and inflates the integrity
+        // denominator). Only augment them when the HTML path was NOT used (the raw-text/jszip fallback
+        // drops notes, so it still needs them). Headers/footers/comments below are never in bodyText.
+        if (name === 'word/footnotes.xml') { if (!usedMammothHtml) await _readPart(name, 'FOOTNOTES', null); continue; }
+        if (name === 'word/endnotes.xml') { if (!usedMammothHtml) await _readPart(name, 'ENDNOTES', null); continue; }
         if (name === 'word/comments.xml') { await _readPart(name, 'COMMENTS', null); continue; }
       }
     } catch (e) {
@@ -8830,20 +8843,40 @@ var createDocPipeline = function(deps) {
       const chartFiles = allNames.filter(n => /^ppt\/charts\/chart\d+\.xml$/.test(n)).sort();
       const diagramFiles = allNames.filter(n => /^ppt\/diagrams\/data\d+\.xml$/.test(n)).sort();
       const notesByNum = new Map();
+      const notesByFile = new Map();
       for (const nf of notesFiles) {
         const m = nf.match(/notesSlide(\d+)\.xml/);
-        if (!m) continue;
-        const num = parseInt(m[1], 10);
         const notesText = await _ooxmlExtractPart(zip.file(nf), 'p', 't', _A_NS);
-        if (notesText && notesText.trim()) notesByNum.set(num, notesText);
+        if (notesText && notesText.trim()) {
+          notesByFile.set(nf, notesText);
+          if (m) notesByNum.set(parseInt(m[1], 10), notesText);
+        }
       }
+      // #5 (2026-07-03): notesSlideK.xml is numbered by CREATION order, NOT slide order — the authoritative
+      // slide->notes link is the slide's .rels (same source the media loader uses). Resolve via rels; fall
+      // back to the by-number best-guess only when a slide declares no notes relationship.
+      const _notesForSlide = async (sf, slideNum) => {
+        try {
+          const relsF = zip.file('ppt/slides/_rels/' + sf.split('/').pop() + '.rels');
+          if (relsF) {
+            const relsXml = await relsF.async('string');
+            const rm = relsXml.match(/<Relationship\b[^>]*\bTarget="([^"]*notesSlide\d+\.xml)"[^>]*>/i);
+            if (rm) {
+              const tgt = rm[1];
+              const path = tgt.charAt(0) === '/' ? tgt.slice(1) : ('ppt/slides/' + tgt).replace(/ppt\/slides\/\.\.\//, 'ppt/');
+              if (notesByFile.has(path)) return notesByFile.get(path);
+            }
+          }
+        } catch (_) {}
+        return notesByNum.get(slideNum) || '';
+      };
       const slides = [];
       const mediaImages = [];
       const _mediaBudget = { used: 0 };
       for (const sf of slideFiles) {
         const num = parseInt(sf.match(/slide(\d+)\.xml/)[1], 10);
         const slideText = await _ooxmlExtractPart(zip.file(sf), 'p', 't', _A_NS);
-        const notesText = notesByNum.get(num) || '';
+        const notesText = await _notesForSlide(sf, num);
         // Existing alt text (p:cNvPr descr="…"): authored accessibility data
         // that was previously DROPPED at extraction. Surface as [Image: …]
         // markers so remediation preserves the author's descriptions instead
