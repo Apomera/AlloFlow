@@ -725,6 +725,9 @@
             m.sphere.material.emissive.set(n.color).multiplyScalar(0.5);
             m.glow.material.color.set(n.color);
             group.remove(m.label);
+            // Free the old label's texture+material — otherwise every strand/rename
+            // edit leaks a CanvasTexture before destroy() ever runs.
+            try { if (m.label.material) { if (m.label.material.map) m.label.material.map.dispose(); m.label.material.dispose(); } } catch (e2) {}
             m.label = makeLabelSprite(THREE, n.label, n.color);
             var lp2 = m.sphere.position;
             m.label.position.set(lp2.x, lp2.y + rad + 14, lp2.z);
@@ -1001,6 +1004,27 @@
       try { if (live.parentNode) live.parentNode.removeChild(live); } catch (e) {}
       try { if (vignette.parentNode) vignette.parentNode.removeChild(vignette); } catch (e) {}
       try { if (composer && composer.dispose) composer.dispose(); } catch (e) {}
+      // Dispose every geometry/material/texture in BOTH scenes (main graph + the
+      // corner gizmo) — renderer.dispose() alone doesn't free these, so repeated
+      // open/close would climb GPU memory until the context is lost. SKIP the
+      // module-shared _glowTex: it's reused across every instance, so disposing it
+      // here would break other live (and all future) 3D views.
+      try {
+        var _disposeScene = function (sc) {
+          if (!sc || !sc.traverse) return;
+          sc.traverse(function (o) {
+            if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+            var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+            mats.forEach(function (mx) {
+              if (!mx) return;
+              if (mx.map && mx.map !== _glowTex && mx.map.dispose) { try { mx.map.dispose(); } catch (e) {} }
+              if (mx.dispose) { try { mx.dispose(); } catch (e) {} }
+            });
+          });
+        };
+        _disposeScene(root);
+        _disposeScene(gizmoScene);
+      } catch (e) {}
     });
 
     function tick() {
@@ -1112,6 +1136,7 @@
       state.cleanup.forEach(function (fn) { try { fn(); } catch (e) {} });
       state.cleanup = [];
       if (state.renderer) {
+        try { if (state.renderer.forceContextLoss) state.renderer.forceContextLoss(); } catch (e) {}
         try { state.renderer.dispose(); } catch (e) {}
         try { var dom = state.renderer.domElement; if (dom && dom.parentNode) dom.parentNode.removeChild(dom); } catch (e) {}
         state.renderer = null;
