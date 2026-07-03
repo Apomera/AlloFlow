@@ -454,3 +454,25 @@ literals — write backslash-bearing literals via the Edit tool. (3) eval-slice 
 helper defined OUTSIDE the slice — move the extraction marker up to include it. (4) A
 `git worktree add` + node_modules junction gives a safe full-suite baseline in a shared
 tree (never bare-stash); junction must be rmdir'd before `git worktree remove`.
+
+## Wave 6 deploy outcome (same evening, Aaron: "deploy.sh everything")
+
+- Deploy #1 → **@9de0fe6b**: Items C ($4 routing) + D (P5 shared-doc) live, alongside other
+  sessions' committed work (AlloHaven Ring 0, Prim3D, titration i18n). Pre-flight run by hand
+  before firing: staged-set empty, Step-6 pathspecs clean, all Step-0.6 render gates green.
+- **@95d44495**: dropped Item C's duplicate `aiFixChunked` factory key — it was ALREADY
+  exported via `_wrapAsync` (state-binding); the raw duplicate was harmless (last-wins) but
+  esbuild flagged it during the prod build. The _wrapAsync export is the one that ships.
+- Deploy #2 → **@37f02d0d**: AlloStudio hotfix **@7ffe3e9a** for the live
+  `[GLOBAL] SyntaxError: Range out of order in character class`. Root cause: the tagged-PDF
+  filename sanitizer used a RAW U+FFFF noncharacter as a regex range end
+  (`[^ backslash-w U+00C0 - U+FFFF space - ]`); some layer in browser delivery strips
+  noncharacters, collapsing the range to "U+00C0 through space" — start > end → the whole
+  module throws at parse. Fix: the equivalent backslash-u escape form (`À-￿` as
+  ASCII text) in all 5 copies (studio_module root+public mirror, ANTI root+mirror, App.jsx).
+  Live CDN copy content-verified (escape form present, no raw noncharacter, md5 == HEAD).
+- LESSONS: never ship raw noncharacters in source — and note the agent Edit/Write tool layer
+  JSON-decodes typed backslash-u escapes back into raw characters, so this class of fix must
+  be applied via a node script that builds strings with String.fromCharCode. deploy.sh
+  Step 10 verifies only doc_pipeline/view_pdf_audit/gemini_api on the CDN — hand-verify any
+  other module a deploy touches (curl + md5 vs `git show HEAD:file`).
