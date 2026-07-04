@@ -7168,6 +7168,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $('resultVideo').src = lastExport.url;
       syncResultVideoAspect(sceneOutputFormat);
       $('downloadVttBtn').hidden = !(sceneVtt && capMode === 'vtt');
+      refreshDownloadButtonLabel();
       var sceneContainerText = exportContainerLabel(sceneContainerInfo);
       var sceneReadyKind = sceneContainerInfo.converterError ? 'warn' : 'ok';
       setStatus($('resultStatus'), 'Scene export - ' + fmtClock(totalDur) + ' - ' + fmtBytes(patched.size) + ' - ' + exportFormatLabel(sceneOutputFormat) + ' - ' + sceneContainerText + (sceneCues.length ? ' - ' + sceneCues.length + ' caption cues' : ''), sceneReadyKind);
@@ -7785,6 +7786,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $('resultVideo').src = lastExport.url;
       syncResultVideoAspect(outputFormat);
       $('downloadVttBtn').hidden = !(vtt && capMode === 'vtt');
+      refreshDownloadButtonLabel();
       var readyKind = outputContainer && (outputContainer.converterError || outputContainer.fallback) ? 'warn' : 'ok';
       setStatus($('resultStatus'), fmtClock(outDur) + ' · ' + fmtBytes(outBlob.size) + ' · ' + exportFormatLabel(outputFormat) + ' · ' + exportContainerLabel(outputContainer), readyKind);
       announce('Export ready');
@@ -8242,11 +8244,32 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (/matroska/i.test(type || '')) return '.mkv';
     return '.webm';
   }
+  function exportDownloadContainerLabel(exported) {
+    var info = exported && exported.outputContainer;
+    if (info && info.container) return containerLabelForKey(info.container);
+    return containerLabelForKey(blobContainerKey(exported && exported.blob));
+  }
+  function exportDownloadExtension(exported) {
+    var info = exported && exported.outputContainer;
+    if (info && info.container === 'mp4') return '.mp4';
+    if (info && info.container === 'webm') return '.webm';
+    if (info && info.container === 'mov') return '.mov';
+    return (exported && exported.ext) || extFor(exported && exported.blob && exported.blob.type);
+  }
+  function exportDownloadFilename(exported) {
+    if (!exported) return 'teacher_video.webm';
+    return safeName(exported.title) + exportFormatFileSuffix(exported.outputFormat) + exportDownloadExtension(exported);
+  }
+  function refreshDownloadButtonLabel() {
+    if (!$('downloadBtn')) return;
+    $('downloadBtn').textContent = lastExport ? 'Download ' + exportDownloadContainerLabel(lastExport) + ' video' : 'Download video';
+  }
   $('downloadBtn').addEventListener('click', function () {
     if (!lastExport) return;
     var a = document.createElement('a');
-    a.href = lastExport.url; a.download = safeName(lastExport.title) + exportFormatFileSuffix(lastExport.outputFormat) + (lastExport.ext || '.webm');
+    a.href = lastExport.url; a.download = exportDownloadFilename(lastExport);
     document.body.appendChild(a); a.click(); a.remove();
+    setStatus($('resultStatus'), 'Downloaded ' + a.download + ' (' + exportContainerLabel(lastExport.outputContainer) + ').', lastExport.outputContainer && (lastExport.outputContainer.converterError || lastExport.outputContainer.fallback) ? 'warn' : 'ok');
   });
   $('downloadVttBtn').addEventListener('click', function () {
     if (!lastExport || !lastExport.vtt) return;

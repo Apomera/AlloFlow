@@ -61,6 +61,9 @@
     var workspaceModePair = React.useState('learn');
     var workspaceMode = workspaceModePair[0];
     var setWorkspaceMode = workspaceModePair[1];
+    var panelJumpPair = React.useState('');
+    var panelJumpTarget = panelJumpPair[0];
+    var setPanelJumpTarget = panelJumpPair[1];
     var loopPair = React.useState(false);
     var loopEnabled = loopPair[0];
     var setLoopEnabled = loopPair[1];
@@ -207,6 +210,28 @@
       { id: 'all', label: 'All', summary: 'Every Open Groove panel', sections: null }
     ];
     var workspaceModeConfig = workspaceModes.filter(function (mode) { return mode.id === workspaceMode; })[0] || workspaceModes[0];
+    var workspaceSections = [
+      { id: 'start', label: 'Starter Path' },
+      { id: 'pads', label: 'Pads' },
+      { id: 'steps', label: 'Steps' },
+      { id: 'synth', label: 'Synth Notes' },
+      { id: 'keyboard', label: 'Keyboard' },
+      { id: 'patch', label: 'Synth Patch' },
+      { id: 'harmony', label: 'Harmony' },
+      { id: 'score', label: 'Score Preview' },
+      { id: 'song', label: 'Song' },
+      { id: 'mixer', label: 'Mixer' },
+      { id: 'effects', label: 'Effects' },
+      { id: 'samples', label: 'Samples' },
+      { id: 'stems', label: 'Stem Prep' },
+      { id: 'project', label: 'Project' }
+    ];
+    var visibleWorkspaceSections = workspaceSections.filter(function (section) {
+      return !workspaceModeConfig.sections || workspaceModeConfig.sections.indexOf(section.id) >= 0;
+    });
+    var panelJumpValue = visibleWorkspaceSections.some(function (section) { return section.id === panelJumpTarget; })
+      ? panelJumpTarget
+      : (visibleWorkspaceSections[0] && visibleWorkspaceSections[0].id || '');
     var staffPitches = ['C6', 'B5', 'Bb5', 'A5', 'G5', 'F5', 'E5', 'Eb5', 'D5', 'C5', 'B4', 'Bb4', 'A4', 'G4', 'F4', 'E4', 'Eb4', 'D4', 'C4'];
     var visibleSteps = [];
     for (var i = 0; i < stepsPerBar; i++) visibleSteps.push(selectedBar * stepsPerBar + i);
@@ -360,9 +385,11 @@
     function workspaceSectionProps(sectionId, labelledBy) {
       var visible = isWorkspaceSectionVisible(sectionId);
       return {
+        id: 'og-section-' + sectionId,
         style: visible ? styles.surface : Object.assign({}, styles.surface, styles.hiddenSection),
         'aria-labelledby': labelledBy,
-        'aria-hidden': visible ? undefined : true
+        'aria-hidden': visible ? undefined : true,
+        tabIndex: visible ? -1 : undefined
       };
     }
 
@@ -370,6 +397,27 @@
       var nextMode = workspaceModes.filter(function (mode) { return mode.id === modeId; })[0] || workspaceModes[0];
       setWorkspaceMode(nextMode.id);
       ogAnnounce(nextMode.label + ' workspace');
+    }
+
+    function labelForWorkspaceSection(sectionId) {
+      var section = workspaceSections.filter(function (item) { return item.id === sectionId; })[0];
+      return section && section.label || 'panel';
+    }
+
+    function jumpToWorkspaceSection(sectionId) {
+      if (!sectionId || !root.document) return;
+      setPanelJumpTarget(sectionId);
+      var target = root.document.getElementById('og-section-' + sectionId);
+      if (!target) return;
+      if (target.focus) {
+        try {
+          target.focus({ preventScroll: true });
+        } catch (_) {
+          target.focus();
+        }
+      }
+      if (target.scrollIntoView) target.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
+      ogAnnounce('Moved to ' + labelForWorkspaceSection(sectionId));
     }
 
     function chordProgressionFor(proj) {
@@ -1918,6 +1966,16 @@
                 onClick: function () { changeWorkspaceMode(mode.id); }
               }, mode.label);
             })),
+          h('label', { style: styles.workspaceJump }, 'Jump to',
+            h('select', {
+              style: styles.workspaceJumpSelect,
+              value: panelJumpValue,
+              onChange: function (ev) { jumpToWorkspaceSection(ev.target.value); },
+              'aria-label': 'Jump to visible Open Groove panel'
+            },
+              visibleWorkspaceSections.map(function (section) {
+                return h('option', { key: section.id, value: section.id }, section.label);
+              }))),
           h('span', { style: styles.workspaceSummary }, workspaceModeConfig.summary)),
 
         h('div', { style: styles.grid },
@@ -2802,6 +2860,8 @@
     workspaceTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', minWidth: 0 },
     workspaceTab: { minHeight: '34px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '5px 6px', fontSize: '12px', fontWeight: 900, lineHeight: 1.15, overflowWrap: 'anywhere', cursor: 'pointer' },
     workspaceTabOn: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
+    workspaceJump: { minHeight: '34px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 900, minWidth: 0 },
+    workspaceJumpSelect: { minWidth: 0, width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
     workspaceSummary: { color: '#475569', fontSize: '12px', fontWeight: 800, lineHeight: 1.3, overflowWrap: 'anywhere' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '12px', padding: '12px', overflow: 'auto' },
     surface: { background: '#ffffff', border: '1px solid #d1d5db', padding: '12px', minWidth: 0 },
@@ -2980,6 +3040,8 @@
       workspaceLabel: { color: '#e2e8f0' },
       workspaceTab: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
       workspaceTabOn: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      workspaceJump: { color: '#e2e8f0' },
+      workspaceJumpSelect: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
       workspaceSummary: { color: '#cbd5e1' },
       surface: { background: '#111827', border: '1px solid #64748b' },
       meta: { color: '#cbd5e1' },
@@ -3088,6 +3150,8 @@
       workspaceLabel: { color: '#ffffff' },
       workspaceTab: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       workspaceTabOn: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      workspaceJump: { color: '#ffffff' },
+      workspaceJumpSelect: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       workspaceSummary: { color: '#ffffff' },
       surface: { background: '#000000', border: '2px solid #ffffff' },
       meta: { color: '#ffffff' },
