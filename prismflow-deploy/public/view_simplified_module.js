@@ -1472,6 +1472,11 @@
     className: "animate-spin"
   }), " Generating more...")) : /*#__PURE__*/React.createElement("div", {
     className: `w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`,
+    style: {
+      maxWidth: 'min(72ch, 100%)',
+      marginLeft: 'auto',
+      marginRight: 'auto'
+    },
     dir: getContentDirection(generatedContent?.config?.language || leveledTextLanguage)
   }, generatedContent?.data ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
@@ -1479,9 +1484,10 @@
     const rawData = generatedContent?.data;
     const _fullData = typeof rawData === 'string' ? rawData : String(rawData || '');
     const {
-      body: _bodyNoRefs,
+      body: _bodyRaw,
       references: _referencesFromContent
     } = splitReferencesFromBody(_fullData);
+    const _bodyNoRefs = String(_bodyRaw || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, (_m, _s, _inner) => '## ' + _inner.trim());
     const _refsFromInput = inputText ? splitReferencesFromBody(inputText).references : '';
     const _refsContentCount = parseReferenceItems(_referencesFromContent || '').length;
     const _refsInputCount = parseReferenceItems(_refsFromInput || '').length;

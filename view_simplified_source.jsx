@@ -560,13 +560,20 @@
                 currentTargetSentenceIdx += targetParaSentences.length;
                 return <><div className={`bg-white/60 rounded-lg p-4 border border-orange-100 hover:border-orange-300 transition-colors ${isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'text-right' : 'text-left'}`} dir={isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'rtl' : 'ltr'}><div className="md:hidden font-bold text-orange-800 text-xs uppercase tracking-wider mb-2">{leveledTextLanguage}</div><div className="text-lg text-slate-800 font-medium leading-relaxed">{renderTextContent(sourceParaSentences, rowSourceStartIdx, false)}</div></div><div className="bg-indigo-50/60 rounded-lg p-4 border border-indigo-100 hover:border-indigo-300 transition-colors relative text-left" dir="ltr"><div className="md:hidden font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 mt-2 md:mt-0">{t('common.english')}</div><div className="text-base text-slate-700 leading-relaxed">{renderTextContent(targetParaSentences, rowTargetStartIdx, false)}</div></div></>;
               })}</div>;
-          })()}{isProcessing && <div className="mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse opacity-80"><RefreshCw size={12} className="animate-spin" /> Generating more...</div>}</div> : <div className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`} dir={getContentDirection(generatedContent?.config?.language || leveledTextLanguage)}>{generatedContent?.data ? <div className="space-y-4">{(() => {
+          })()}{isProcessing && <div className="mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse opacity-80"><RefreshCw size={12} className="animate-spin" /> Generating more...</div>}</div> : <div className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`} style={{ maxWidth: 'min(72ch, 100%)', marginLeft: 'auto', marginRight: 'auto' }} dir={getContentDirection(generatedContent?.config?.language || leveledTextLanguage)}>{generatedContent?.data ? <div className="space-y-4">{(() => {
               const rawData = generatedContent?.data;
               const _fullData = typeof rawData === 'string' ? rawData : String(rawData || '');
               const {
-                body: _bodyNoRefs,
+                body: _bodyRaw,
                 references: _referencesFromContent
               } = splitReferencesFromBody(_fullData);
+              // Normalize AI heading lines wrapped in * / ** (e.g. "*Dreams*",
+              // "**How Do We Dream?**") into real Markdown headings, so the reader
+              // styles them as bold section headers instead of showing the raw
+              // asterisks. Only matches a WHOLE line that is a single * / ** span
+              // with no other asterisks — inline emphasis inside a sentence is
+              // untouched.
+              const _bodyNoRefs = String(_bodyRaw || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, (_m, _s, _inner) => '## ' + _inner.trim());
               const _refsFromInput = inputText ? splitReferencesFromBody(inputText).references : '';
               const _refsContentCount = parseReferenceItems(_referencesFromContent || '').length;
               const _refsInputCount = parseReferenceItems(_refsFromInput || '').length;
