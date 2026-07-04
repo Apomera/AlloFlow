@@ -14245,7 +14245,7 @@
       "hemoglobin": "Hemoglobin",
       "high_altitude_migrants_like_bar_headed": "Ndị na-akwaga ịdị elu dị elu dị ka Bar-headed Geese (na-efe ụkwụ 29,000 n'elu Himalaya) nwere hemoglobin pụrụ iche nwere mmasị karịa maka oxygen. Akwara ha nwere myoglobin ọzọ, na njupụta capillary ha okpukpu abụọ nke ụdị ala dị ala.",
       "sleep_in_flight": "Ụra n'Ọfụfe",
-      "some_birds_can_sleep_while_flying_usin": "Ụfọdụ nnụnụ nwere ike ịrahụ ụra ka ha na-efe, na-eji “ụra ọkара isi” — na-emechi otu ọkара isi n'otu oge. E dekọrọ Frigatebirds ka ha na-arahụ ụra nkeji 42 kwa ụbọchị n'oge ọfụfe ụbọchị 10 nke ịgafe oke osimiri, na-ewere obere ụra nke sekọnd 12 nke ọ bụla.",
+      "some_birds_can_sleep_while_flying_usin": "Ụfọdụ nnụnụ nwere ike ịrahụ ụra ka ha na-efe, na-eji “ụra ọkara isi” — na-emechi otu ọkara isi n'otu oge. E dekọrọ Frigatebirds ka ha na-arahụ ụra nkeji 42 kwa ụbọchị n'oge ọfụfe ụbọchị 10 nke ịgafe oke osimiri, na-ewere obere ụra nke sekọnd 12 nke ọ bụla.",
       "navigation_clock": "Elekere Nchọgharị",
       "birds_maintain_an_internal_circadian_c": "Nnụnụ na-edobe elekere circadian dị n'ime nke nwere izi ezi dị ịtụnanya. Elekere a na-akwụ ụgwọ mmegharị anyanwụ na mbara igwe (kompas anyanwụ e mezigharịrị oge) ma na-eso mgbanwe oge nke ogologo ehihie nke na-akpali homonụ mbugharị.",
       "zugunruhe": "Zugunruhe",
