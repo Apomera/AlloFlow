@@ -197,7 +197,7 @@
       { id: 'ask_ai_3', label: 'Ask the AI tutor 3 questions', icon: '\uD83E\uDD16', check: function(d) { return (d.aiQuestions || 0) >= 3; }, progress: function(d) { return (d.aiQuestions || 0) + '/3 questions'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;

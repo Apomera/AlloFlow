@@ -670,7 +670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       { id: 'doppler_master', label: 'Identify 5 Doppler shifts correctly', icon: '\uD83C\uDF0A', check: function(d) { return (d.dopplerCorrect || 0) >= 5; }, progress: function(d) { return (d.dopplerCorrect || 0) + '/5'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;

@@ -1374,7 +1374,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     tags: ['energy', 'physics', 'engineering', 'climate', 'renewables', 'solar', 'wind', 'hydro', 'geothermal', 'maine'],
 
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       try {
       var React = ctx.React;
       var h = React.createElement;

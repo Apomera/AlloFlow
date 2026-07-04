@@ -18682,7 +18682,7 @@ test('no a11y violations', async () => {
       { id: 'iterate', label: 'Use "Enhance" to modify an app', icon: '\u2728', check: function(d) { return (d.enhanceCount || 0) >= 1; }, progress: function(d) { return (d.enhanceCount || 0) >= 1 ? 'Enhanced!' : 'Not yet'; } },
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;

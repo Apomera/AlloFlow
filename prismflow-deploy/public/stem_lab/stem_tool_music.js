@@ -54,7 +54,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       var ArrowLeft = ctx.icons.ArrowLeft;
       var addToast = ctx.addToast;
       var t = ctx.t || function(k) { return k; };
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var setStemLabTool = function(v) { if (ctx.setStemLabTool) ctx.setStemLabTool(v); };
       var setToolSnapshots = ctx.setToolSnapshots || function() {};
       var callGemini = ctx.callGemini;

@@ -1081,7 +1081,7 @@ window.StemLab = window.StemLab || {
       { id: 'use_2_presets', label: 'Try 2 genetics presets', icon: '🔬', check: function(d) { return (d._presetsUsed || 0) >= 2; }, progress: function(d) { return (d._presetsUsed || 0) + '/2'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
 

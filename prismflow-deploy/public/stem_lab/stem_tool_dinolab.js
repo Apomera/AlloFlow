@@ -5132,7 +5132,7 @@ window.StemLab = window.StemLab || {
       { id: 'compare_two', label: 'Compare two dinosaurs side by side', icon: '⚖️', check: function (d) { return (d.compareA && d.compareB) ? true : false; }, progress: function (d) { return (d.compareA && d.compareB) ? 'done' : 'pick 2'; } }
     ],
     render: function (ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;

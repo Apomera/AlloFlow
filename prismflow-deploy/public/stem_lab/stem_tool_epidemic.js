@@ -857,7 +857,7 @@ window.StemLab = window.StemLab || {
       { id: 'view_3_tabs', label: 'Explore 3 epidemic model views', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 views'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.epidemicSim) || {};
       var callGemini = ctx.callGemini;
