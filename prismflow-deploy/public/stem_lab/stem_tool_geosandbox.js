@@ -859,6 +859,18 @@ window.StemLab = window.StemLab || {
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      // WebXR: show an "Enter VR" button only when the browser reports immersive-vr
+      // support (a headset + granted permission). No-op everywhere else.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0], setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        try {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-vr').then(function(ok) { if (alive) setXrSupported(!!ok); }).catch(function() {});
+          }
+        } catch (e) {}
+        return function() { alive = false; };
+      }, []);
       var themeCtx = React.useContext(window.AlloThemeContext || React.createContext(null));
       var theme = themeCtx ? themeCtx.theme : 'dark';
 
@@ -1378,6 +1390,17 @@ window.StemLab = window.StemLab || {
             }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA AI Sculpt'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
+            xrSupported && h('button', {
+              'aria-label': t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
+              onClick: function() {
+                var gs = window._geoScene;
+                if (gs && typeof gs.enterVR === 'function') {
+                  gs.enterVR().then(function() { if (announceToSR) announceToSR('Entered VR. Look around your model.'); }).catch(function() { if (announceToSR) announceToSR('Could not start VR.'); });
+                }
+              },
+              title: t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20'
+            }, t('stem.geosandbox.enter_vr', '🥽 VR')),
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),

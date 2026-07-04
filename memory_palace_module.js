@@ -438,6 +438,10 @@
     var reduce = false; try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
+    // WebXR: harmless in 2D (only affects rendering while a headset session is
+    // presenting); lets an "Enter VR" affordance start an immersive session so a
+    // student can stand inside the palace and walk the loci at room scale.
+    try { renderer.xr.enabled = true; } catch (e) {}
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, hgt);
     renderer.setClearColor(BG, 1);
@@ -450,6 +454,11 @@
     root.background = new THREE.Color(BG);
     try { root.fog = new THREE.FogExp2(BG, 0.00042); } catch (e) {}
     var camera = new THREE.PerspectiveCamera(58, w / hgt, 1, 60000);
+    // WebXR rig: while presenting, the headset drives the camera's LOCAL pose, so
+    // the camera lives in a rig we seat/scale to place the user in the palace. At
+    // identity (the 2D default) this is transform-neutral — camera.position stays
+    // world-space, so the existing rail/free-roam camera code is untouched.
+    var xrRig = new THREE.Group(); root.add(xrRig); xrRig.add(camera);
 
     root.add(new THREE.AmbientLight(0xffffff, 0.62));
     try { root.add(new THREE.HemisphereLight(0xcfe0ff, 0x1a2740, 0.72)); } catch (e) {}
@@ -777,6 +786,63 @@
     ctrlHint.textContent = _tr(t, 'memory_palace.controls_hint', 'WASD to walk · drag to look · ◀ ▶ for the guided tour');
     holder.appendChild(ctrlHint);
     (window.setTimeout || function () {})(function () { try { ctrlHint.style.opacity = '0'; } catch (e) {} }, 6000);
+
+    // ── WebXR: optional "Enter VR" (progressive enhancement) ──
+    // The button appears ONLY when the browser reports immersive-vr support (a
+    // headset + granted permission — e.g. the standalone deploy opened in a Quest
+    // browser). On every other device this whole block is a no-op, so the 2D walk
+    // is byte-for-byte unchanged. In VR the headset owns look + real-walk; the
+    // desktop walk is fully restored on exit. Comfort constants are on-device tunable.
+    var VR_USER_HEIGHT_M = 1.6;                       // real standing eye height (m) — tune on-device
+    function _seatUserForVR() {
+      xrRig.scale.setScalar(EYE / VR_USER_HEIGHT_M);  // 1 real metre → EYE world-units, so the palace reads room-scale
+      xrRig.position.set(0, 0, 0);                    // entry room centre is the world origin; floor at y=0
+      xrRig.rotation.set(0, 0, 0);
+    }
+    function _unseatVR() { xrRig.scale.setScalar(1); xrRig.position.set(0, 0, 0); xrRig.rotation.set(0, 0, 0); }
+    function enterVR(btn) {
+      if (!navigator.xr) return;
+      if (btn) btn.disabled = true;
+      navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
+        .then(function (session) {
+          _seatUserForVR();
+          freeMode = false;                           // headset owns the view; disable WASD/drag
+          state.xrActive = true;
+          if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
+          try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
+          Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(tick); });
+          if (live) live.textContent = _tr(t, 'memory_palace.vr_entered', 'Entered VR. Look around and walk the palace.');
+          session.addEventListener('end', function () {
+            state.xrActive = false;
+            try { renderer.setAnimationLoop(null); } catch (e) {}
+            _unseatVR();
+            if (btn) btn.disabled = false;
+            if (!state.disposed) tick();              // resume the 2D window-rAF loop
+          });
+        })
+        .catch(function () {
+          if (btn) btn.disabled = false;
+          if (live) live.textContent = _tr(t, 'memory_palace.vr_failed', 'Could not start VR.');
+        });
+    }
+    state.cleanup.push(function () {
+      try { var s = renderer.xr && renderer.xr.getSession && renderer.xr.getSession(); if (s) s.end(); } catch (e) {}
+      try { renderer.setAnimationLoop(null); } catch (e) {}
+    });
+    try {
+      if (navigator.xr && navigator.xr.isSessionSupported) {
+        navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+          if (!ok || state.disposed) return;
+          var vb = document.createElement('button');
+          vb.textContent = '🥽 ' + _tr(t, 'memory_palace.enter_vr', 'VR');
+          vb.setAttribute('aria-label', _tr(t, 'memory_palace.enter_vr_title', 'Enter VR — stand inside the palace (needs a headset)'));
+          vb.title = _tr(t, 'memory_palace.enter_vr_title', 'Enter VR — stand inside the palace (needs a headset)');
+          vb.style.cssText = 'border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:6px 13px;font-size:13px;font-weight:800;cursor:pointer;';
+          vb.onclick = function () { enterVR(vb); };
+          hud.appendChild(vb);
+        }).catch(function () {});
+      }
+    } catch (e) {}
     [hud].forEach(function (nd) { try { nd.setAttribute('aria-hidden', 'true'); } catch (e) {} });
 
     function onKeyDown(e) {
@@ -864,6 +930,10 @@
     var lookBase = new THREE.Vector3();
     function tick() {
       if (state.disposed) return;
+      // While an immersive session drives the frame loop (state.xrActive), the
+      // HEADSET owns the camera pose — skip all rail/free-roam camera writes and
+      // let the XR compositor schedule frames (no window rAF).
+      if (state.xrActive) { renderer.render(root, camera); return; }
       if (freeMode) {
         // WASD free walk on the floor plane; free-look via freeYaw/freePitch.
         if (moveF || moveR) {

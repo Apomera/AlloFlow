@@ -141,6 +141,10 @@ window.StemLab = window.StemLab || {
     camera.position.set(6, 5, 8);
     camera.lookAt(0, 0, 0);
     var renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
+    // WebXR: harmless in 2D (only affects rendering while a headset session is
+    // presenting); powers an optional "Enter VR" button so a student can stand next
+    // to their solid / AI sculpture at life size and walk around it.
+    try { renderer.xr.enabled = true; } catch (e) {}
     renderer.setSize(cnv.clientWidth, cnv.clientHeight);
     // Geometry needs crisp edges, so bloom is opt-in for this tool.
     renderer._alloComposer = null;
@@ -198,6 +202,11 @@ window.StemLab = window.StemLab || {
     shadowPlane.position.y = 0.001;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
+    // WebXR rig: while presenting, the headset drives the camera's LOCAL pose, so
+    // the camera lives in a rig we seat in front of the model. At identity (the 2D
+    // default) this is transform-neutral — OrbitControls keeps writing world-space
+    // camera pose exactly as before.
+    var xrRig = new THREE.Group(); scene.add(xrRig); xrRig.add(camera);
     // Controls
     var controls = null;
     if (THREE.OrbitControls) {
@@ -216,6 +225,11 @@ window.StemLab = window.StemLab || {
     // Animate
     var animId;
     var animate = function() {
+      // While an immersive session drives frames, the HEADSET owns the camera —
+      // skip OrbitControls + the bloom composer (mono) and just render stereo. The
+      // XR compositor schedules the frames, so no window rAF is queued here.
+      var presenting = false; try { presenting = renderer.xr && renderer.xr.isPresenting; } catch (e) {}
+      if (presenting) { renderer.render(scene, camera); return; }
       if (!renderer.domElement.isConnected) { cancelAnimationFrame(animId); return; }
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
@@ -223,7 +237,29 @@ window.StemLab = window.StemLab || {
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
     };
     animate();
-    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null };
+    // ── WebXR "Enter VR" — seats the user a few metres in front of the model and
+    //    hands the view to the headset; OrbitControls resumes on exit. VR_VIEW_DIST
+    //    is on-device tunable. Rejects if the session can't start (caller toasts). ──
+    var VR_VIEW_DIST = 5;   // metres the user stands back from the model
+    function enterVR() {
+      if (!navigator.xr) return Promise.reject(new Error('no-xr'));
+      return navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
+        .then(function (session) {
+          if (controls) controls.enabled = false;
+          xrRig.position.set(0, 0, VR_VIEW_DIST); xrRig.rotation.set(0, 0, 0); xrRig.scale.setScalar(1);
+          try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
+          try { if (animId) cancelAnimationFrame(animId); } catch (e) {}
+          Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(animate); });
+          session.addEventListener('end', function () {
+            try { renderer.setAnimationLoop(null); } catch (e) {}
+            xrRig.position.set(0, 0, 0); xrRig.rotation.set(0, 0, 0); xrRig.scale.setScalar(1);
+            if (controls) controls.enabled = true;
+            try { if (renderer.domElement.isConnected) animate(); } catch (e) {}   // resume 2D rAF
+          });
+          return session;
+        });
+    }
+    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR };
   }
 
   function updateMesh(gs, shapeType, dims, shapeColor, wireframe, opacity) {
@@ -284,6 +320,8 @@ window.StemLab = window.StemLab || {
   function cleanupScene() {
     if (window._geoScene) {
       cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
+      // End any live VR session and stop the XR frame loop before disposing the GL.
+      try { var _r = window._geoScene.renderer; if (_r && _r.xr) { var _s = _r.xr.getSession && _r.xr.getSession(); if (_s) _s.end(); _r.setAnimationLoop(null); } } catch(e){}
       try{ if(window._geoScene.renderer && window._geoScene.renderer._alloComposer){ (window._geoScene.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); window._geoScene.renderer._alloComposer=null; } }catch(e){}
       try { if (window._geoScene.sculptGroup) { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
       if (window._geoScene.renderer) window._geoScene.renderer.dispose();
@@ -821,6 +859,18 @@ window.StemLab = window.StemLab || {
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      // WebXR: show an "Enter VR" button only when the browser reports immersive-vr
+      // support (a headset + granted permission). No-op everywhere else.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0], setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        try {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-vr').then(function(ok) { if (alive) setXrSupported(!!ok); }).catch(function() {});
+          }
+        } catch (e) {}
+        return function() { alive = false; };
+      }, []);
       var themeCtx = React.useContext(window.AlloThemeContext || React.createContext(null));
       var theme = themeCtx ? themeCtx.theme : 'dark';
 
@@ -1340,6 +1390,17 @@ window.StemLab = window.StemLab || {
             }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA AI Sculpt'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
+            xrSupported && h('button', {
+              'aria-label': t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
+              onClick: function() {
+                var gs = window._geoScene;
+                if (gs && typeof gs.enterVR === 'function') {
+                  gs.enterVR().then(function() { if (announceToSR) announceToSR('Entered VR. Look around your model.'); }).catch(function() { if (announceToSR) announceToSR('Could not start VR.'); });
+                }
+              },
+              title: t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20'
+            }, t('stem.geosandbox.enter_vr', '🥽 VR')),
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
