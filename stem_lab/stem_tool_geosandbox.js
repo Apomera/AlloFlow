@@ -281,6 +281,32 @@ window.StemLab = window.StemLab || {
       } catch (e) {}
     }
     function _xrReleaseGrab() { try { if (_grab && _grab.obj) { scene.attach(_grab.obj); } _grab = null; } catch (e) {} }
+    // ── In-VR caption: a text panel pinned in front of the headset so a student
+    //    sees what the mic heard while immersed (visual confirmation matters most
+    //    in VR, where the 2D UI is out of view). Updated by the React voice flow
+    //    through window._geoScene.setVrCaption. ──
+    var _vrCapCanvas = null, _vrCapTex = null, _vrCapSprite = null;
+    function _geoSetVrCaption(text) {
+      try {
+        if (!_vrCapSprite) {
+          _vrCapCanvas = document.createElement('canvas'); _vrCapCanvas.width = 512; _vrCapCanvas.height = 128;
+          _vrCapTex = new THREE.CanvasTexture(_vrCapCanvas);
+          _vrCapSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: _vrCapTex, transparent: true, depthTest: false, depthWrite: false }));
+          _vrCapSprite.scale.set(0.95, 0.24, 1); _vrCapSprite.position.set(0, -0.5, -1.4); _vrCapSprite.renderOrder = 9998;
+          camera.add(_vrCapSprite);
+        }
+        var t = String(text || '');
+        _vrCapSprite.visible = !!t;
+        if (t) {
+          var cxx = _vrCapCanvas.getContext('2d');
+          cxx.clearRect(0, 0, 512, 128);
+          cxx.fillStyle = 'rgba(2,6,23,0.82)'; cxx.fillRect(0, 0, 512, 128);
+          cxx.fillStyle = '#e0e7ff'; cxx.font = 'bold 34px sans-serif'; cxx.textAlign = 'center'; cxx.textBaseline = 'middle';
+          cxx.fillText(t.length > 36 ? t.slice(0, 35) + '…' : t, 256, 64);
+          _vrCapTex.needsUpdate = true;
+        }
+      } catch (e) {}
+    }
     function _xrSetupControllersGeo() {
       if (_xrCtrlsGeo) return;
       _xrCtrlsGeo = [];
@@ -294,6 +320,10 @@ window.StemLab = window.StemLab || {
           (function (ctrl) {
             ctrl.addEventListener('squeezestart', function () { _grabStart(ctrl); });
             ctrl.addEventListener('squeezeend', function () { _grabEnd(ctrl); });
+            // Trigger = talk to the model: start voice capture (routes to the
+            // sculpt/stretch voice handler for the current mode). Speech mid-session
+            // is device-dependent; if it never fires this is simply inert.
+            ctrl.addEventListener('selectstart', function () { _geoHaptic(0.5, 40); try { if (window._geoVoiceTrigger) window._geoVoiceTrigger(); } catch (e) {} });
           })(c);
           xrRig.add(c); _xrCtrlsGeo.push(c);
           // grip mesh — a small controller-ish box so the student sees their hands
@@ -320,6 +350,7 @@ window.StemLab = window.StemLab || {
           session.addEventListener('end', function () {
             try { renderer.setAnimationLoop(null); } catch (e) {}
             _xrReleaseGrab();                         // reparent any grabbed object back to the scene
+            try { _geoSetVrCaption(''); if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {}
             xrRig.position.set(0, 0, 0); xrRig.rotation.set(0, 0, 0); xrRig.scale.setScalar(1);
             if (controls) controls.enabled = true;
             try { if (renderer.domElement.isConnected) animate(); } catch (e) {}   // resume 2D rAF
@@ -327,7 +358,7 @@ window.StemLab = window.StemLab || {
           return session;
         });
     }
-    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR };
+    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR, setVrCaption: _geoSetVrCaption };
   }
 
   function updateMesh(gs, shapeType, dims, shapeColor, wireframe, opacity) {
@@ -1303,19 +1334,21 @@ window.StemLab = window.StemLab || {
           else if (cmd.action === 'bigger' || cmd.action === 'smaller' || cmd.action === 'rotate' || cmd.action === 'recolor') { doManualTweak(cmd.action); if (announceToSR) announceToSR(cmd.action); }
         }).catch(function() {});
       };
+      // Mirror voice status into the in-VR caption (a no-op outside a session).
+      var _vrCap = function(txt) { try { if (window._geoScene && window._geoScene.setVrCaption) window._geoScene.setVrCaption(txt); } catch (e) {} };
       var toggleVoice = function(handler, hint) {
-        if (voiceListening) { try { if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {} setVoiceListening(false); return; }
+        if (voiceListening) { try { if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {} setVoiceListening(false); _vrCap(''); return; }
         ensureVoice(function(V) {
-          if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR('Voice input is unavailable in this browser.'); return; }
+          if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR('Voice input is unavailable in this browser.'); _vrCap('🎤 unavailable'); setTimeout(function() { _vrCap(''); }, 1800); return; }
           try {
             window._geoVoiceCtl = V.initWebSpeechCapture({
               lang: (ctx.lang || 'en') + (String(ctx.lang || 'en').indexOf('-') < 0 ? '-US' : ''),
               interimResults: true, continuous: false,
-              onTranscript: function(txt, isFinal) { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handler(txt); } },
+              onTranscript: function(txt, isFinal) { setVoiceHeard(txt); _vrCap(txt); if (isFinal) { setVoiceListening(false); handler(txt); setTimeout(function() { _vrCap(''); }, 2600); } },
               onEnd: function() { setVoiceListening(false); }
             });
-            if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); if (announceToSR) announceToSR(hint || 'Listening.'); }
-          } catch (e) { if (announceToSR) announceToSR('Voice input could not start.'); }
+            if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); _vrCap('🎤 ' + (hint || 'Listening…')); if (announceToSR) announceToSR(hint || 'Listening.'); }
+          } catch (e) { if (announceToSR) announceToSR('Voice input could not start.'); _vrCap(''); }
         });
       };
       // Voice for the HandWaver-style dimensional stretch: speak the moves
@@ -1337,6 +1370,17 @@ window.StemLab = window.StemLab || {
           else if (cmd.action === 'reset') { pushHistory(); setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) }); }); if (announceToSR) announceToSR('Construction cleared'); }
         }).catch(function() {});
       };
+      // Bridge the in-VR controller trigger to voice: while immersed there is no
+      // 2D mic to tap, so the headset's trigger starts a voice capture that routes
+      // to the sculpt or stretch handler for the current mode. Re-registered when
+      // the routing-relevant state changes so the handler stays fresh.
+      React.useEffect(function() {
+        window._geoVoiceTrigger = function() {
+          var handler = (mode === 'stretch') ? handleStretchVoiceCommand : handleVoiceCommand;
+          toggleVoice(handler, mode === 'stretch' ? 'Say a build move' : 'Say what to make');
+        };
+        return function() { try { window._geoVoiceTrigger = null; } catch (e) {} };
+      }, [mode, voiceListening, sculptRecipe, construction.selection]);
 
       // ── Wireframe toggle with badge ──
       var toggleWireframe = function() {
