@@ -91,6 +91,30 @@ describe('Prim3D.buildRefinePrompt (AI edits an existing recipe — canonical ho
   });
 });
 
+describe('Prim3D voice-directed sculpting (hands-free / accessible making)', () => {
+  it('buildSculptCommandPrompt embeds the transcript, the sculpture state, the action set, and JSON-only', () => {
+    const p = P.buildSculptCommandPrompt('make it a bit bigger', true);
+    expect(p).toMatch(/make it a bit bigger/);
+    expect(p).toMatch(/There IS already a sculpture/);
+    expect(p).toMatch(/create\|refine\|bigger\|smaller\|rotate\|recolor\|remove\|none/);
+    expect(p).toMatch(/Return ONLY the JSON/);
+    expect(P.buildSculptCommandPrompt('a rocket', false)).toMatch(/There is NO sculpture yet/);
+  });
+
+  it('parseSculptCommand accepts whitelisted actions and carries subject/instruction', () => {
+    expect(P.parseSculptCommand('{"action":"create","subject":"a friendly robot"}')).toEqual({ action: 'create', subject: 'a friendly robot', instruction: '' });
+    expect(P.parseSculptCommand('```json\n{"action":"REFINE","instruction":"add a tail"}\n```')).toEqual({ action: 'refine', subject: '', instruction: 'add a tail' });
+    expect(P.parseSculptCommand('{"action":"bigger"}').action).toBe('bigger');
+  });
+
+  it('parseSculptCommand rejects unknown actions and junk', () => {
+    expect(P.parseSculptCommand('{"action":"explode"}')).toBe(null);   // not whitelisted
+    expect(P.parseSculptCommand('not json')).toBe(null);
+    expect(P.parseSculptCommand('{}')).toBe(null);
+    expect(P.parseSculptCommand('')).toBe(null);
+  });
+});
+
 describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
   function threeStub() {
     function Group() { this.children = []; this.userData = {}; this.scale = { setScalar: () => {} }; this.add = (c) => this.children.push(c); }

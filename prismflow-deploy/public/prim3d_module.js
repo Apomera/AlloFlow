@@ -121,6 +121,43 @@
     return normalizeRecipe(parsed);
   }
 
+  // ── Voice-directed sculpting (accessible, hands-free making) ──
+  // The student SPEAKS; an LLM routes the natural-language intent into ONE
+  // structured action over the sculpting tools. This is the agentic "distributed
+  // embodiment" seam: a learner who can't sculpt by hand directs the AI to enact
+  // the form, by voice. buildSculptCommandPrompt is the ask; parseSculptCommand
+  // is the PURE, testable validator of the reply.
+  var SCULPT_ACTIONS = { create: 1, refine: 1, bigger: 1, smaller: 1, rotate: 1, recolor: 1, remove: 1, none: 1 };
+  function buildSculptCommandPrompt(transcript, hasSculpture) {
+    return [
+      'You route the spoken command of a student who is sculpting a 3D object entirely BY VOICE (hands-free).',
+      'The student just said: "' + String(transcript || '') + '"',
+      hasSculpture ? 'There IS already a sculpture on screen.' : 'There is NO sculpture yet.',
+      'Choose the single best action and return ONLY JSON of this exact shape:',
+      '{ "action": "create|refine|bigger|smaller|rotate|recolor|remove|none", "subject": "...", "instruction": "..." }',
+      'Rules:',
+      '- "create": they name a NEW object to make ("make a rocket", "I want a friendly cat") — put the object in "subject".',
+      '- "refine": change the CURRENT sculpture\'s parts ("add a tail", "make the nose pointier") — put the change in "instruction" (needs an existing sculpture).',
+      '- "bigger" / "smaller" / "rotate" / "recolor": those simple whole-object tweaks ("bigger", "turn it", "new color").',
+      '- "remove": clear it. "none": not a sculpting command.',
+      '- With NO sculpture yet, a shape word almost always means "create".',
+      'Return ONLY the JSON.'
+    ].join('\n');
+  }
+  // parseSculptCommand — PURE: model text → { action, subject, instruction } | null.
+  function parseSculptCommand(text) {
+    var parsed;
+    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
+    if (!parsed || typeof parsed !== 'object') return null;
+    var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
+    if (!SCULPT_ACTIONS[action]) return null;
+    return {
+      action: action,
+      subject: (parsed.subject != null) ? String(parsed.subject).slice(0, 120) : '',
+      instruction: (parsed.instruction != null) ? String(parsed.instruction).slice(0, 200) : ''
+    };
+  }
+
   // ── buildObject — recipe → THREE.Group (no GL context required) ──
   // opts.scale multiplies the whole assembly (1 recipe unit ≈ opts.unit world
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
@@ -174,6 +211,8 @@
     parseRecipe: parseRecipe,
     buildRecipePrompt: buildRecipePrompt,
     buildRefinePrompt: buildRefinePrompt,
+    buildSculptCommandPrompt: buildSculptCommandPrompt,
+    parseSculptCommand: parseSculptCommand,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');

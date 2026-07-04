@@ -978,6 +978,33 @@ window.StemLab = window.StemLab || {
       var _scR = React.useState(''); var sculptRefine = _scR[0], setSculptRefine = _scR[1];
       var _scB = React.useState(false); var sculptBusy = _scB[0], setSculptBusy = _scB[1];
       var _scRdy = React.useState(!!(window.AlloModules && window.AlloModules.Prim3D)); var prim3dReady = _scRdy[0], setPrim3dReady = _scRdy[1];
+      // ── Voice sculpting (hands-free making). Feature-detected on Web Speech;
+      //    the mic only shows where dictation is available — no clutter otherwise. ──
+      var _vSup = React.useState(false); var voiceSupported = _vSup[0], setVoiceSupported = _vSup[1];
+      var _vLis = React.useState(false); var voiceListening = _vLis[0], setVoiceListening = _vLis[1];
+      var _vHrd = React.useState(''); var voiceHeard = _vHrd[0], setVoiceHeard = _vHrd[1];
+      React.useEffect(function() {
+        try { if (window.SpeechRecognition || window.webkitSpeechRecognition) setVoiceSupported(true); } catch (e) {}
+        return function() { try { if (window._geoVoiceCtl) { window._geoVoiceCtl.stop(); window._geoVoiceCtl = null; } } catch (e) {} };
+      }, []);
+      var ensureVoice = function(cb) {
+        var V = window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice);
+        if (V) { cb(V); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:voice_module|prim3d_module|allo_vr_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'voice_module.js' + q; s.async = true;
+          s.onload = function() { cb(window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)); };
+          s.onerror = function() { cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      };
       var history = gd.history || [];
       var savedConstructions = gd.savedConstructions || {};
       var showSaved = gd.showSaved || false;
@@ -1224,10 +1251,10 @@ window.StemLab = window.StemLab || {
 
       // ── AI Sculpt handlers (reuse window.AlloModules.Prim3D) ──
       var _updSculpt = function(recipe) { upd('sculptRecipe', recipe); };
-      var doGenerateSculpt = function() {
+      var doGenerateSculpt = function(subjOverride) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
         if (!P3D || sculptBusy || typeof ctx.callGemini !== 'function') return;
-        var subj = (sculptPrompt || '').trim() || 'a friendly mascot';
+        var subj = (typeof subjOverride === 'string' && subjOverride.trim()) ? subjOverride.trim() : ((sculptPrompt || '').trim() || 'a friendly mascot');
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
           var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
@@ -1245,16 +1272,50 @@ window.StemLab = window.StemLab || {
         else if (kind === 'recolor') { var i = TINTS.indexOf(sculptRecipe.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
         _updSculpt(next);
       };
-      var doRefineSculpt = function() {
+      var doRefineSculpt = function(instrOverride) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
         if (!P3D || !sculptRecipe || sculptBusy || typeof ctx.callGemini !== 'function') return;
-        var instr = (sculptRefine || '').trim(); if (!instr) return;
+        var instr = (typeof instrOverride === 'string' && instrOverride.trim()) ? instrOverride.trim() : (sculptRefine || '').trim(); if (!instr) return;
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRefinePrompt(sculptRecipe, instr), false, false, 0.7).then(function(resp) {
           var nr = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
           if (nr) { _updSculpt(Object.assign({}, nr, { scale: sculptRecipe.scale, rotY: sculptRecipe.rotY, tint: sculptRecipe.tint })); setSculptRefine(''); if (announceToSR) announceToSR('Sculpture refined'); }
           setSculptBusy(false);
         }).catch(function() { setSculptBusy(false); });
+      };
+      // ── Voice-directed sculpting (hands-free / accessible making) ──
+      // Speak → an LLM routes the intent (create / refine / bigger / smaller /
+      // rotate / recolor / remove) → dispatch to the same handlers a mouse uses.
+      // The "distributed embodiment" idea made concrete: create + shape a 3D form
+      // with zero hands. Speech via the shared AlloFlowVoice module (lazy-loaded).
+      var handleVoiceCommand = function(transcript) {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        var text = (transcript || '').trim();
+        if (!P3D || !text || typeof ctx.callGemini !== 'function') return;
+        setVoiceHeard(text);
+        ctx.callGemini(P3D.buildSculptCommandPrompt(text, !!sculptRecipe), false, false, 0.2).then(function(resp) {
+          var cmd = P3D.parseSculptCommand(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR('Did not catch a sculpting command. Try “make a rocket” or “bigger”.'); return; }
+          if (cmd.action === 'create') { doGenerateSculpt(cmd.subject || text); }
+          else if (cmd.action === 'refine') { if (sculptRecipe) doRefineSculpt(cmd.instruction || text); else doGenerateSculpt(cmd.subject || text); }
+          else if (cmd.action === 'remove') { _updSculpt(null); if (announceToSR) announceToSR('Sculpture removed'); }
+          else if (cmd.action === 'bigger' || cmd.action === 'smaller' || cmd.action === 'rotate' || cmd.action === 'recolor') { doManualTweak(cmd.action); if (announceToSR) announceToSR(cmd.action); }
+        }).catch(function() {});
+      };
+      var toggleVoiceSculpt = function() {
+        if (voiceListening) { try { if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {} setVoiceListening(false); return; }
+        ensureVoice(function(V) {
+          if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR('Voice input is unavailable in this browser.'); return; }
+          try {
+            window._geoVoiceCtl = V.initWebSpeechCapture({
+              lang: (ctx.lang || 'en') + (String(ctx.lang || 'en').indexOf('-') < 0 ? '-US' : ''),
+              interimResults: true, continuous: false,
+              onTranscript: function(txt, isFinal) { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handleVoiceCommand(txt); } },
+              onEnd: function() { setVoiceListening(false); }
+            });
+            if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); if (announceToSR) announceToSR('Listening. Say what to make or how to change it.'); }
+          } catch (e) { if (announceToSR) announceToSR('Voice input could not start.'); }
+        });
       };
 
       // ── Wireframe toggle with badge ──
@@ -1574,6 +1635,15 @@ window.StemLab = window.StemLab || {
                       disabled: sculptBusy,
                       className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
                     }, sculptBusy ? t('stem.geosandbox.sculpt_working', '… Creating') : ('✨ ' + (sculptRecipe ? t('stem.geosandbox.sculpt_regenerate', 'Regenerate') : t('stem.geosandbox.sculpt_create', 'Create sculpture')))),
+                    voiceSupported && h('button', {
+                      onClick: toggleVoiceSculpt,
+                      disabled: sculptBusy,
+                      'aria-pressed': voiceListening ? 'true' : 'false',
+                      'aria-label': t('stem.geosandbox.voice_sculpt_title', 'Voice sculpt — speak to create and shape it, hands-free'),
+                      title: t('stem.geosandbox.voice_sculpt_title', 'Voice sculpt — speak to create and shape it, hands-free'),
+                      className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (voiceListening ? 'bg-rose-600 text-white animate-pulse' : 'bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80')
+                    }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_sculpt', 'Voice sculpt'))),
+                    voiceHeard && h('p', { className: 'text-[11px] text-fuchsia-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”'),
                     sculptRecipe && h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
                       h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_refine', 'Refine')),
                       h('div', { className: 'flex flex-wrap gap-1' },
