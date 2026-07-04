@@ -1956,17 +1956,23 @@ const d = labToolData.physics;
 
             React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
 
-              // Fullscreen toggle (top-right) — wrapper is already
-              // position:relative, so absolute placement works directly.
-              React.createElement("button", {
+              // Fullscreen toggle (top-right) — wrapper is already position:relative, so
+              // absolute placement works directly. Only shown when the document actually
+              // permits fullscreen: inside a sandboxed iframe (e.g. Gemini Canvas) fullscreen
+              // is blocked by Permissions Policy and requestFullscreen() THROWS synchronously
+              // ("Disallowed by permissions policy"), which would break the click — so hide the
+              // button there AND guard the call (try/catch + promise .catch) so it can't throw.
+              (document.fullscreenEnabled || document.webkitFullscreenEnabled) && React.createElement("button", {
                 'aria-label': 'Toggle fullscreen for the physics canvas',
                 title: 'Fullscreen',
                 onClick: function() {
                   var el = document.getElementById('physics-fs-wrap');
                   if (!el) return;
-                  var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
-                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  try {
+                    var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                    if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } }
+                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){}); } }
+                  } catch (e) { /* fullscreen blocked by iframe permissions policy — no-op */ }
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 10,
