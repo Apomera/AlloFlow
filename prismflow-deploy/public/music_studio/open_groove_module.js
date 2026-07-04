@@ -64,6 +64,9 @@
     var panelJumpPair = React.useState('');
     var panelJumpTarget = panelJumpPair[0];
     var setPanelJumpTarget = panelJumpPair[1];
+    var synthFamilyPair = React.useState('All');
+    var selectedSynthFamily = synthFamilyPair[0];
+    var setSelectedSynthFamily = synthFamilyPair[1];
     var loopPair = React.useState(false);
     var loopEnabled = loopPair[0];
     var setLoopEnabled = loopPair[1];
@@ -102,6 +105,15 @@
     var statePair = React.useState(initialProjectRef.current);
     var project = statePair[0];
     var setProject = statePair[1];
+    var undoStackPair = React.useState([]);
+    var undoStack = undoStackPair[0];
+    var setUndoStack = undoStackPair[1];
+    var redoStackPair = React.useState([]);
+    var redoStack = redoStackPair[0];
+    var setRedoStack = redoStackPair[1];
+    var historyLimit = 40;
+    var canUndo = undoStack.length > 0;
+    var canRedo = redoStack.length > 0;
     var selectedPair = React.useState('pad_1');
     var selectedPadId = selectedPair[0];
     var setSelectedPadId = selectedPair[1];
@@ -206,7 +218,7 @@
     var workspaceModes = [
       { id: 'learn', label: 'Learn', summary: 'Starter, beat, keyboard, harmony, score', sections: ['start', 'pads', 'steps', 'keyboard', 'harmony', 'score', 'project'] },
       { id: 'compose', label: 'Compose', summary: 'Keyboard, synth notes, harmony, score, song', sections: ['start', 'synth', 'keyboard', 'harmony', 'score', 'song', 'project'] },
-      { id: 'produce', label: 'Produce', summary: 'Pads, patch, mixer, effects, samples, stems', sections: ['pads', 'steps', 'patch', 'mixer', 'effects', 'samples', 'stems', 'project'] },
+      { id: 'produce', label: 'Produce', summary: 'Pads, instruments, mixer, effects, samples, stems', sections: ['pads', 'steps', 'patch', 'mixer', 'effects', 'samples', 'stems', 'project'] },
       { id: 'all', label: 'All', summary: 'Every Open Groove panel', sections: null }
     ];
     var workspaceModeConfig = workspaceModes.filter(function (mode) { return mode.id === workspaceMode; })[0] || workspaceModes[0];
@@ -216,7 +228,7 @@
       { id: 'steps', label: 'Steps' },
       { id: 'synth', label: 'Synth Notes' },
       { id: 'keyboard', label: 'Keyboard' },
-      { id: 'patch', label: 'Synth Patch' },
+      { id: 'patch', label: 'Instrument' },
       { id: 'harmony', label: 'Harmony' },
       { id: 'score', label: 'Score Preview' },
       { id: 'song', label: 'Song' },
@@ -289,14 +301,61 @@
       };
     }, [keyboardOctave, keyboardRecordEnabled, keyboardMode, keyboardDurationSteps, keyboardStep, selectedBar, selectedPatternId, project]);
 
+    function currentPatternIn(proj) {
+      return C.ogFindPattern && C.ogFindPattern(proj, selectedPatternId) || proj.patterns[0];
+    }
+
+    function trimHistory(stack) {
+      return stack.slice(Math.max(0, stack.length - historyLimit));
+    }
+
+    function syncSelectionForProject(next) {
+      var patterns = next && next.patterns || [];
+      var nextPattern = patterns.filter(function (item) { return item.id === selectedPatternId; })[0] || patterns[0];
+      if (nextPattern && nextPattern.id !== selectedPatternId) setSelectedPatternId(nextPattern.id);
+      if (nextPattern && selectedBar >= Math.max(1, nextPattern.bars || 1)) setSelectedBar(Math.max(0, (nextPattern.bars || 1) - 1));
+      var tracks = next && next.tracks || [];
+      var nextEffectTrack = tracks.filter(function (track) { return track.id === selectedEffectTrackId; })[0] || tracks[0];
+      if (nextEffectTrack && nextEffectTrack.id !== selectedEffectTrackId) setSelectedEffectTrackId(nextEffectTrack.id);
+      var nextDrums = tracks.filter(function (track) { return track.type === 'drumRack'; })[0];
+      var nextPad = nextDrums && (nextDrums.pads || []).filter(function (pad) { return pad.id === selectedPadId; })[0] || nextDrums && nextDrums.pads && nextDrums.pads[0];
+      if (nextPad && nextPad.id !== selectedPadId) setSelectedPadId(nextPad.id);
+    }
+
+    function commitProject(next, options) {
+      options = options || {};
+      if (options.history !== false) {
+        setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+        setRedoStack([]);
+      }
+      setProject(next);
+      syncSelectionForProject(next);
+    }
+
     function mutate(fn) {
       var next = clone(project);
       fn(next);
-      setProject(next);
+      commitProject(next);
     }
 
-    function currentPatternIn(proj) {
-      return C.ogFindPattern && C.ogFindPattern(proj, selectedPatternId) || proj.patterns[0];
+    function undoProject() {
+      if (!undoStack.length) return;
+      var previous = clone(undoStack[undoStack.length - 1]);
+      setUndoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
+      setRedoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setProject(previous);
+      syncSelectionForProject(previous);
+      ogAnnounce('Undo');
+    }
+
+    function redoProject() {
+      if (!redoStack.length) return;
+      var next = clone(redoStack[redoStack.length - 1]);
+      setRedoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
+      setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setProject(next);
+      syncSelectionForProject(next);
+      ogAnnounce('Redo');
     }
 
     function clearTransportSchedule(resetView) {
@@ -833,7 +892,7 @@
     function auditionSynthPatch() {
       triggerNote('C3', 0.8);
       if (root.setTimeout) root.setTimeout(function () { triggerNote('G3', 0.62); }, 130);
-      ogAnnounce('Synth patch preview');
+      ogAnnounce('Instrument preview');
     }
 
     function clearSelectedPad() {
@@ -1551,7 +1610,7 @@
       try {
         var text = jsonRef.current ? jsonRef.current.value : '';
         var next = C.ogParseProject(text);
-        setProject(next);
+        commitProject(next);
         if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
         restoreEmbeddedSamplesFor(next, false);
         addToast('Open Groove project loaded.', 'success');
@@ -1603,7 +1662,7 @@
 
     function resetDemo() {
       var next = C.ogMakeDemoProject ? C.ogMakeDemoProject() : C.ogCreateProject({ title: 'Open Groove Prototype' });
-      setProject(next);
+      commitProject(next);
       if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
       ogAnnounce('Demo pattern reset');
     }
@@ -1751,6 +1810,23 @@
     var synthPatch = C.ogNormalizeSynthInstrument ? C.ogNormalizeSynthInstrument(synthTrack && synthTrack.instrument) : (synthTrack && synthTrack.instrument || { oscillator: 'sawtooth', filter: { type: 'lowpass', cutoff: 6000, q: 0.7 }, envelope: { attack: 0.01, decay: 0.12, sustain: 0.65, release: 0.25 } });
     var synthPatchSummary = C.ogBuildSynthPatchSummary ? C.ogBuildSynthPatchSummary(project, synthTrack && synthTrack.id) : { label: synthPatch.oscillator };
     var synthPatchPresets = C.ogListSynthPatchPresets ? C.ogListSynthPatchPresets() : [];
+    var synthPatchFamilies = C.ogListSynthPatchFamilies ? C.ogListSynthPatchFamilies() : [];
+    var synthFamilyNames = ['All'].concat(synthPatchFamilies.map(function (group) { return group.family; }));
+    var selectedSynthFamilyValue = synthFamilyNames.indexOf(selectedSynthFamily) >= 0 ? selectedSynthFamily : 'All';
+    var visibleSynthPatchPresets = selectedSynthFamilyValue === 'All'
+      ? synthPatchPresets.slice()
+      : synthPatchPresets.filter(function (preset) { return (preset.family || 'Synth') === selectedSynthFamilyValue; });
+    if (!visibleSynthPatchPresets.length) visibleSynthPatchPresets = synthPatchPresets.slice();
+    var currentPresetVisible = visibleSynthPatchPresets.some(function (preset) { return preset.id === synthPatch.presetId; });
+    if (synthPatch.presetId && synthPatch.presetId !== 'generated' && !currentPresetVisible) {
+      var currentPreset = synthPatchPresets.filter(function (preset) { return preset.id === synthPatch.presetId; })[0];
+      if (currentPreset) visibleSynthPatchPresets = [currentPreset].concat(visibleSynthPatchPresets);
+    }
+    var selectedInstrumentProfile = synthPatch.presetId && synthPatch.presetId !== 'generated' && C.ogBuildInstrumentProfile
+      ? C.ogBuildInstrumentProfile(synthPatch.presetId)
+      : null;
+    var instrumentSampleNotes = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.recommendedNotes || [];
+    var instrumentArticulations = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.articulations || [];
     var starterGuidanceAction = function () {
       var actionId = starterGuidance && starterGuidance.actionId;
       if (actionId === 'harmony') applyProgression();
@@ -1923,6 +1999,18 @@
               'aria-label': loopEnabled ? 'Turn loop mode off' : 'Turn loop mode on'
             }, loopEnabled ? 'Loop On' : 'Loop Off'),
             h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset demo pattern' }, 'Reset'),
+            h('button', {
+              style: Object.assign({}, styles.transportButton, !canUndo ? styles.disabledButton : null),
+              onClick: undoProject,
+              disabled: !canUndo,
+              'aria-label': 'Undo last Open Groove edit'
+            }, 'Undo'),
+            h('button', {
+              style: Object.assign({}, styles.transportButton, !canRedo ? styles.disabledButton : null),
+              onClick: redoProject,
+              disabled: !canRedo,
+              'aria-label': 'Redo last Open Groove edit'
+            }, 'Redo'),
             h('label', { style: styles.tempoLabel }, 'BPM',
               h('input', { style: styles.tempoInput, type: 'number', min: 40, max: 240, value: project.bpm, onChange: function (ev) { setTempo(ev.target.value); }, 'aria-label': 'Tempo in beats per minute' })),
             h('label', { style: styles.swingLabel }, 'Swing',
@@ -2185,17 +2273,27 @@
 
           h('section', workspaceSectionProps('patch', 'og-patch-title'),
             h('div', { style: styles.sectionHeader },
-              h('h2', { id: 'og-patch-title', style: styles.h2 }, 'Synth Patch'),
+              h('h2', { id: 'og-patch-title', style: styles.h2 }, 'Instrument'),
               h('span', { style: styles.meta }, synthPatchSummary.label)),
             h('div', { style: styles.patchGrid },
+              h('label', { style: styles.fieldLabel }, 'Family',
+                h('select', {
+                  style: styles.select,
+                  value: selectedSynthFamilyValue,
+                  onChange: function (ev) { setSelectedSynthFamily(ev.target.value); },
+                  'aria-label': 'Instrument family'
+                },
+                  synthFamilyNames.map(function (family) {
+                    return h('option', { key: family, value: family }, family);
+                  }))),
               h('label', { style: styles.fieldLabel }, 'Preset',
                 h('select', {
                   style: styles.select,
                   value: synthPatch.presetId && synthPatch.presetId !== 'generated' ? synthPatch.presetId : '',
                   onChange: function (ev) { applySynthPreset(ev.target.value); },
-                  'aria-label': 'Synth patch preset'
+                  'aria-label': 'Instrument preset'
                 },
-                  [h('option', { key: 'custom', value: '' }, synthPatch.presetId === 'generated' ? 'Generated' : 'Custom')].concat(synthPatchPresets.map(function (preset) {
+                  [h('option', { key: 'custom', value: '' }, synthPatch.presetId === 'generated' ? 'Generated' : 'Custom')].concat(visibleSynthPatchPresets.map(function (preset) {
                     return h('option', { key: preset.id, value: preset.id }, preset.name);
                   })))),
               h('label', { style: styles.fieldLabel }, 'Wave',
@@ -2274,14 +2372,41 @@
                   'aria-label': 'Synth release time'
                 }),
                 h('span', { style: styles.mixerValue }, Math.round(synthPatch.envelope.release * 1000) + ' ms'))),
-            h('div', { style: styles.patchActions, role: 'toolbar', 'aria-label': 'Synth patch actions' },
+            selectedInstrumentProfile
+              ? h('div', { style: styles.instrumentProfile, role: 'note', 'aria-label': 'Instrument profile' },
+                h('div', { style: styles.instrumentProfileHeader },
+                  h('strong', null, selectedInstrumentProfile.name),
+                  h('span', { style: styles.meta }, selectedInstrumentProfile.family + ' - ' + selectedInstrumentProfile.register)),
+                h('div', { style: styles.instrumentProfileGrid },
+                  h('span', { style: styles.instrumentProfileChip }, 'Range ' + selectedInstrumentProfile.rangeLabel),
+                  h('span', { style: styles.instrumentProfileChip }, selectedInstrumentProfile.sourceLabel),
+                  h('span', { style: styles.instrumentProfileChip }, 'Notes ' + instrumentSampleNotes.join(' '))),
+                h('p', { style: styles.instrumentProfileText }, selectedInstrumentProfile.classroomUse),
+                h('p', { style: styles.instrumentProfileText }, 'Capture: ' + selectedInstrumentProfile.samplePlan.captureHint),
+                h('div', { style: styles.instrumentProfileFooter },
+                  h('span', { style: styles.instrumentProfileText }, 'Articulation: ' + instrumentArticulations.join(', ')),
+                  h('button', {
+                    style: styles.smallButton,
+                    onClick: function () {
+                      setWorkspaceMode('produce');
+                      setPanelJumpTarget('samples');
+                      ogAnnounce('Sample path selected');
+                    },
+                    'aria-label': 'Go to sample recording area for this instrument'
+                  }, 'Sample Path')))
+              : h('div', { style: styles.instrumentProfile, role: 'note', 'aria-label': 'Custom instrument profile' },
+                h('div', { style: styles.instrumentProfileHeader },
+                  h('strong', null, synthPatch.name || 'Custom Instrument'),
+                  h('span', { style: styles.meta }, 'Custom patch')),
+                h('p', { style: styles.instrumentProfileText }, synthPatch.oscillator + ' / ' + synthPatch.filter.type + ' / ' + Math.round(synthPatch.filter.cutoff) + ' Hz')),
+            h('div', { style: styles.patchActions, role: 'toolbar', 'aria-label': 'Instrument patch actions' },
               h('button', {
                 style: Object.assign({}, styles.smallButton, !C.ogRandomizeSynthInstrument ? styles.disabledButton : null),
                 onClick: randomizeSynthPatch,
                 disabled: !C.ogRandomizeSynthInstrument,
-                'aria-label': 'Create a new synth patch'
+                'aria-label': 'Create a new instrument patch'
               }, 'New Patch'),
-              h('button', { style: styles.wideButton, onClick: auditionSynthPatch, 'aria-label': 'Preview synth patch' }, 'Preview Patch'))),
+              h('button', { style: styles.wideButton, onClick: auditionSynthPatch, 'aria-label': 'Preview instrument patch' }, 'Preview Patch'))),
 
           h('section', workspaceSectionProps('harmony', 'og-harmony-title'),
             h('div', { style: styles.sectionHeader },
@@ -2936,6 +3061,12 @@
     recordButtonOn: { background: '#dcfce7', border: '1px solid #15803d', color: '#14532d', boxShadow: 'inset 0 0 0 2px #15803d' },
     patchGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: '8px' },
     patchActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px' },
+    instrumentProfile: { marginTop: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#1e293b', padding: '8px', display: 'grid', gap: '7px', fontSize: '12px', lineHeight: 1.35, overflowWrap: 'anywhere' },
+    instrumentProfileHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' },
+    instrumentProfileGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(106px, 1fr))', gap: '6px' },
+    instrumentProfileChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', padding: '4px 6px', fontWeight: 900 },
+    instrumentProfileText: { margin: 0, color: 'inherit', fontSize: '12px', fontWeight: 800 },
+    instrumentProfileFooter: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(104px, auto)', gap: '8px', alignItems: 'center' },
     timeline: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' },
     songControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', marginBottom: '10px' },
     patternLauncher: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: '8px', marginBottom: '10px' },
@@ -3050,6 +3181,8 @@
       select: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
       chip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
       theoryCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      instrumentProfile: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      instrumentProfileChip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
       bridgeHeader: { color: '#f8fafc' },
       bridgeStepCell: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
@@ -3160,6 +3293,8 @@
       select: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       chip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       theoryCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentProfile: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentProfileChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
       bridgeHeader: { color: '#ffffff' },
       bridgeStepCell: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },

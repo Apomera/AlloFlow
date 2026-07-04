@@ -217,6 +217,8 @@
       id: 'warmBass',
       name: 'Warm Bass',
       role: 'bass',
+      family: 'Bass',
+      sourceType: 'synth',
       instrument: {
         name: 'Warm Bass',
         presetId: 'warmBass',
@@ -229,6 +231,8 @@
       id: 'roundSub',
       name: 'Round Sub',
       role: 'bass',
+      family: 'Bass',
+      sourceType: 'synth',
       instrument: {
         name: 'Round Sub',
         presetId: 'roundSub',
@@ -241,6 +245,8 @@
       id: 'brightLead',
       name: 'Bright Lead',
       role: 'lead',
+      family: 'Synth',
+      sourceType: 'synth',
       instrument: {
         name: 'Bright Lead',
         presetId: 'brightLead',
@@ -253,6 +259,8 @@
       id: 'softPad',
       name: 'Soft Pad',
       role: 'pad',
+      family: 'Synth',
+      sourceType: 'synth',
       instrument: {
         name: 'Soft Pad',
         presetId: 'softPad',
@@ -265,6 +273,8 @@
       id: 'glassPluck',
       name: 'Glass Pluck',
       role: 'pluck',
+      family: 'Synth',
+      sourceType: 'synth',
       instrument: {
         name: 'Glass Pluck',
         presetId: 'glassPluck',
@@ -277,6 +287,8 @@
       id: 'classicPiano',
       name: 'Classic Piano',
       role: 'keys',
+      family: 'Keys',
+      sourceType: 'synth',
       instrument: {
         name: 'Classic Piano',
         presetId: 'classicPiano',
@@ -296,6 +308,8 @@
       id: 'electricPiano',
       name: 'Electric Piano',
       role: 'keys',
+      family: 'Keys',
+      sourceType: 'synth',
       instrument: {
         name: 'Electric Piano',
         presetId: 'electricPiano',
@@ -314,6 +328,8 @@
       id: 'tonewheelOrgan',
       name: 'Tonewheel Organ',
       role: 'keys',
+      family: 'Keys',
+      sourceType: 'synth',
       instrument: {
         name: 'Tonewheel Organ',
         presetId: 'tonewheelOrgan',
@@ -327,8 +343,447 @@
           { ratio: 3, type: 'sine', gain: 0.18 }
         ]
       }
+    },
+    {
+      id: 'soloViolin',
+      name: 'Solo Violin',
+      role: 'melody',
+      family: 'Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Solo Violin',
+        presetId: 'soloViolin',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 5200, q: 1.2 },
+        envelope: { attack: 0.055, decay: 0.16, sustain: 0.82, release: 0.58 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.82 },
+          { ratio: 2, type: 'triangle', gain: 0.2, detune: 4 },
+          { ratio: 3, type: 'sine', gain: 0.09, detune: -5 }
+        ]
+      }
+    },
+    {
+      id: 'violaSection',
+      name: 'Viola Section',
+      role: 'harmony',
+      family: 'Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Viola Section',
+        presetId: 'violaSection',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 4300, q: 0.9 },
+        envelope: { attack: 0.09, decay: 0.22, sustain: 0.84, release: 0.78 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.76 },
+          { ratio: 1.995, type: 'triangle', gain: 0.18, detune: -7 },
+          { ratio: 2.012, type: 'triangle', gain: 0.14, detune: 8 },
+          { ratio: 3, type: 'sine', gain: 0.07 }
+        ]
+      }
+    },
+    {
+      id: 'celloSection',
+      name: 'Cello Section',
+      role: 'harmony',
+      family: 'Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Cello Section',
+        presetId: 'celloSection',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 3300, q: 0.8 },
+        envelope: { attack: 0.075, decay: 0.24, sustain: 0.86, release: 0.9 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.18 },
+          { ratio: 1, type: 'sawtooth', gain: 0.78 },
+          { ratio: 2, type: 'triangle', gain: 0.16, detune: -4 },
+          { ratio: 3, type: 'sine', gain: 0.08 }
+        ]
+      }
+    },
+    {
+      id: 'stringBass',
+      name: 'String Bass',
+      role: 'bass',
+      family: 'Strings',
+      sourceType: 'synth',
+      instrument: {
+        name: 'String Bass',
+        presetId: 'stringBass',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 2100, q: 0.7 },
+        envelope: { attack: 0.04, decay: 0.25, sustain: 0.78, release: 0.62 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.28 },
+          { ratio: 1, type: 'sawtooth', gain: 0.74 },
+          { ratio: 2, type: 'triangle', gain: 0.13 },
+          { ratio: 3, type: 'sine', gain: 0.05 }
+        ]
+      }
+    },
+    {
+      id: 'flute',
+      name: 'Flute',
+      role: 'melody',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Flute',
+        presetId: 'flute',
+        oscillator: 'sine',
+        filter: { type: 'lowpass', cutoff: 7100, q: 0.6 },
+        envelope: { attack: 0.045, decay: 0.12, sustain: 0.72, release: 0.4 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.9 },
+          { ratio: 2, type: 'sine', gain: 0.08 },
+          { ratio: 3, type: 'triangle', gain: 0.04 }
+        ],
+        transient: { gain: 0.035, duration: 0.025, cutoff: 7600 }
+      }
+    },
+    {
+      id: 'clarinet',
+      name: 'Clarinet',
+      role: 'melody',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Clarinet',
+        presetId: 'clarinet',
+        oscillator: 'square',
+        filter: { type: 'lowpass', cutoff: 4700, q: 1.1 },
+        envelope: { attack: 0.035, decay: 0.1, sustain: 0.8, release: 0.35 },
+        partials: [
+          { ratio: 1, type: 'square', gain: 0.78 },
+          { ratio: 3, type: 'sine', gain: 0.2 },
+          { ratio: 5, type: 'sine', gain: 0.08 }
+        ]
+      }
+    },
+    {
+      id: 'oboe',
+      name: 'Oboe',
+      role: 'melody',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Oboe',
+        presetId: 'oboe',
+        oscillator: 'sawtooth',
+        filter: { type: 'bandpass', cutoff: 2100, q: 2.6 },
+        envelope: { attack: 0.025, decay: 0.08, sustain: 0.82, release: 0.28 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.72 },
+          { ratio: 2, type: 'triangle', gain: 0.22 },
+          { ratio: 3, type: 'sine', gain: 0.13 },
+          { ratio: 4, type: 'sine', gain: 0.07 }
+        ]
+      }
+    },
+    {
+      id: 'bassoon',
+      name: 'Bassoon',
+      role: 'bass',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Bassoon',
+        presetId: 'bassoon',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 2500, q: 1 },
+        envelope: { attack: 0.045, decay: 0.16, sustain: 0.78, release: 0.42 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.15 },
+          { ratio: 1, type: 'sawtooth', gain: 0.78 },
+          { ratio: 2, type: 'triangle', gain: 0.18 },
+          { ratio: 3, type: 'sine', gain: 0.1 }
+        ]
+      }
+    },
+    {
+      id: 'altoSax',
+      name: 'Alto Sax',
+      role: 'melody',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Alto Sax',
+        presetId: 'altoSax',
+        oscillator: 'sawtooth',
+        filter: { type: 'bandpass', cutoff: 1600, q: 1.8 },
+        envelope: { attack: 0.02, decay: 0.12, sustain: 0.78, release: 0.36 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.74 },
+          { ratio: 2, type: 'square', gain: 0.16 },
+          { ratio: 3, type: 'triangle', gain: 0.1 },
+          { ratio: 5, type: 'sine', gain: 0.04 }
+        ],
+        transient: { gain: 0.04, duration: 0.018, cutoff: 5200 }
+      }
+    },
+    {
+      id: 'tenorSax',
+      name: 'Tenor Sax',
+      role: 'melody',
+      family: 'Woodwinds',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Tenor Sax',
+        presetId: 'tenorSax',
+        oscillator: 'sawtooth',
+        filter: { type: 'bandpass', cutoff: 1150, q: 1.6 },
+        envelope: { attack: 0.024, decay: 0.14, sustain: 0.8, release: 0.42 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.12 },
+          { ratio: 1, type: 'sawtooth', gain: 0.78 },
+          { ratio: 2, type: 'square', gain: 0.14 },
+          { ratio: 3, type: 'triangle', gain: 0.08 }
+        ],
+        transient: { gain: 0.035, duration: 0.018, cutoff: 4200 }
+      }
+    },
+    {
+      id: 'trumpet',
+      name: 'Trumpet',
+      role: 'melody',
+      family: 'Brass',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Trumpet',
+        presetId: 'trumpet',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 6200, q: 1.9 },
+        envelope: { attack: 0.018, decay: 0.08, sustain: 0.84, release: 0.22 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.82 },
+          { ratio: 2, type: 'sawtooth', gain: 0.18 },
+          { ratio: 3, type: 'triangle', gain: 0.1 },
+          { ratio: 4, type: 'sine', gain: 0.05 }
+        ]
+      }
+    },
+    {
+      id: 'frenchHorn',
+      name: 'French Horn',
+      role: 'harmony',
+      family: 'Brass',
+      sourceType: 'synth',
+      instrument: {
+        name: 'French Horn',
+        presetId: 'frenchHorn',
+        oscillator: 'triangle',
+        filter: { type: 'lowpass', cutoff: 3600, q: 1.1 },
+        envelope: { attack: 0.08, decay: 0.18, sustain: 0.84, release: 0.62 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.12 },
+          { ratio: 1, type: 'triangle', gain: 0.78 },
+          { ratio: 2, type: 'sawtooth', gain: 0.18 },
+          { ratio: 3, type: 'sine', gain: 0.09 }
+        ]
+      }
+    },
+    {
+      id: 'trombone',
+      name: 'Trombone',
+      role: 'harmony',
+      family: 'Brass',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Trombone',
+        presetId: 'trombone',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 3300, q: 1.2 },
+        envelope: { attack: 0.035, decay: 0.11, sustain: 0.86, release: 0.36 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.16 },
+          { ratio: 1, type: 'sawtooth', gain: 0.8 },
+          { ratio: 2, type: 'triangle', gain: 0.16 },
+          { ratio: 3, type: 'sine', gain: 0.07 }
+        ]
+      }
+    },
+    {
+      id: 'tuba',
+      name: 'Tuba',
+      role: 'bass',
+      family: 'Brass',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Tuba',
+        presetId: 'tuba',
+        oscillator: 'triangle',
+        filter: { type: 'lowpass', cutoff: 1900, q: 0.8 },
+        envelope: { attack: 0.05, decay: 0.16, sustain: 0.88, release: 0.48 },
+        partials: [
+          { ratio: 0.5, type: 'sine', gain: 0.24 },
+          { ratio: 1, type: 'triangle', gain: 0.82 },
+          { ratio: 2, type: 'sawtooth', gain: 0.14 },
+          { ratio: 3, type: 'sine', gain: 0.06 }
+        ]
+      }
+    },
+    {
+      id: 'timpani',
+      name: 'Timpani',
+      role: 'bass',
+      family: 'Mallets & Percussion',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Timpani',
+        presetId: 'timpani',
+        oscillator: 'sine',
+        filter: { type: 'lowpass', cutoff: 1800, q: 2.2 },
+        envelope: { attack: 0.005, decay: 0.95, sustain: 0.16, release: 1.4 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.88 },
+          { ratio: 1.52, type: 'sine', gain: 0.24 },
+          { ratio: 2.13, type: 'triangle', gain: 0.12 }
+        ],
+        transient: { gain: 0.16, duration: 0.022, cutoff: 3200 }
+      }
+    },
+    {
+      id: 'marimba',
+      name: 'Marimba',
+      role: 'melody',
+      family: 'Mallets & Percussion',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Marimba',
+        presetId: 'marimba',
+        oscillator: 'sine',
+        filter: { type: 'lowpass', cutoff: 3600, q: 1.1 },
+        envelope: { attack: 0.004, decay: 0.62, sustain: 0.1, release: 0.72 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.86 },
+          { ratio: 2, type: 'triangle', gain: 0.18 },
+          { ratio: 3.98, type: 'sine', gain: 0.08 }
+        ],
+        transient: { gain: 0.14, duration: 0.012, cutoff: 5200 }
+      }
+    },
+    {
+      id: 'xylophone',
+      name: 'Xylophone',
+      role: 'melody',
+      family: 'Mallets & Percussion',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Xylophone',
+        presetId: 'xylophone',
+        oscillator: 'triangle',
+        filter: { type: 'highpass', cutoff: 720, q: 0.8 },
+        envelope: { attack: 0.003, decay: 0.32, sustain: 0.04, release: 0.36 },
+        partials: [
+          { ratio: 1, type: 'triangle', gain: 0.78 },
+          { ratio: 2.6, type: 'sine', gain: 0.18 },
+          { ratio: 4.9, type: 'sine', gain: 0.08 }
+        ],
+        transient: { gain: 0.12, duration: 0.01, cutoff: 7600 }
+      }
+    },
+    {
+      id: 'vibraphone',
+      name: 'Vibraphone',
+      role: 'harmony',
+      family: 'Mallets & Percussion',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Vibraphone',
+        presetId: 'vibraphone',
+        oscillator: 'sine',
+        filter: { type: 'lowpass', cutoff: 5200, q: 1 },
+        envelope: { attack: 0.006, decay: 0.9, sustain: 0.24, release: 1.8 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.82 },
+          { ratio: 2.02, type: 'sine', gain: 0.2, detune: 5 },
+          { ratio: 3.01, type: 'triangle', gain: 0.1, detune: -6 }
+        ],
+        transient: { gain: 0.08, duration: 0.014, cutoff: 6400 }
+      }
     }
   ];
+  var OG_INSTRUMENT_FAMILY_GUIDES = {
+    Bass: {
+      sourceLabel: 'Built-in synth',
+      captureHint: 'Record low root notes with short and sustained attacks for stronger bass mapping.',
+      articulations: ['short', 'sustain', 'accent'],
+      sampleNotes: ['C2', 'G2', 'C3'],
+      classroomUse: 'Bass lines, roots, and harmonic grounding.'
+    },
+    Synth: {
+      sourceLabel: 'Built-in synth',
+      captureHint: 'Record one clean note per octave, then shape filter and envelope for the lesson.',
+      articulations: ['short', 'sustain', 'accent'],
+      sampleNotes: ['C3', 'C4', 'C5'],
+      classroomUse: 'Sound design, melody, harmony, and electronic timbre.'
+    },
+    Keys: {
+      sourceLabel: 'Built-in modeled keys',
+      captureHint: 'Record soft, medium, and strong notes at low, middle, and high registers.',
+      articulations: ['soft', 'medium', 'strong'],
+      sampleNotes: ['C2', 'C3', 'C4', 'C5', 'C6'],
+      classroomUse: 'Harmony, chord progressions, melody, and accompaniment.'
+    },
+    Strings: {
+      sourceLabel: 'Built-in bowed-string model',
+      captureHint: 'Record long bows, short bows, and accented attacks across low, middle, and high notes.',
+      articulations: ['sustain', 'short', 'accent'],
+      sampleNotes: ['G3', 'D4', 'A4', 'E5'],
+      classroomUse: 'Orchestration, melodic contour, drones, and chord voicing.'
+    },
+    Woodwinds: {
+      sourceLabel: 'Built-in wind model',
+      captureHint: 'Record clean tongued starts and held notes, with extra care for breath and noise floor.',
+      articulations: ['tongued', 'legato', 'accent'],
+      sampleNotes: ['C4', 'G4', 'C5', 'G5'],
+      classroomUse: 'Melody, counter-melody, register color, and ensemble balance.'
+    },
+    Brass: {
+      sourceLabel: 'Built-in brass model',
+      captureHint: 'Record medium dynamics first, then add accented attacks for stronger brass phrases.',
+      articulations: ['sustain', 'staccato', 'accent'],
+      sampleNotes: ['Bb2', 'F3', 'Bb3', 'F4'],
+      classroomUse: 'Fanfares, harmonic support, bass motion, and call-and-response writing.'
+    },
+    'Mallets & Percussion': {
+      sourceLabel: 'Built-in struck-instrument model',
+      captureHint: 'Record clean single hits at several pitches and leave natural decay tails uncut.',
+      articulations: ['single hit', 'roll', 'accent'],
+      sampleNotes: ['C3', 'G3', 'C4', 'G4', 'C5'],
+      classroomUse: 'Ostinatos, melodic percussion, rhythm layers, and timbre comparison.'
+    }
+  };
+  var OG_INSTRUMENT_RANGES = {
+    warmBass: { low: 'E1', high: 'C4', register: 'low' },
+    roundSub: { low: 'C1', high: 'C3', register: 'sub bass' },
+    brightLead: { low: 'C3', high: 'C6', register: 'lead' },
+    softPad: { low: 'C2', high: 'C6', register: 'wide pad' },
+    glassPluck: { low: 'C3', high: 'C6', register: 'plucked lead' },
+    classicPiano: { low: 'A0', high: 'C8', register: 'full keyboard' },
+    electricPiano: { low: 'A0', high: 'C8', register: 'full keyboard' },
+    tonewheelOrgan: { low: 'C2', high: 'C7', register: 'manuals' },
+    soloViolin: { low: 'G3', high: 'A7', register: 'soprano string' },
+    violaSection: { low: 'C3', high: 'E6', register: 'alto string' },
+    celloSection: { low: 'C2', high: 'C6', register: 'tenor-bass string' },
+    stringBass: { low: 'E1', high: 'G4', register: 'bass string' },
+    flute: { low: 'C4', high: 'D7', register: 'soprano woodwind' },
+    clarinet: { low: 'E3', high: 'C7', register: 'single-reed woodwind' },
+    oboe: { low: 'Bb3', high: 'A6', register: 'double-reed woodwind' },
+    bassoon: { low: 'Bb1', high: 'E5', register: 'bass double reed' },
+    altoSax: { low: 'Db3', high: 'Ab5', register: 'alto reed' },
+    tenorSax: { low: 'Ab2', high: 'E5', register: 'tenor reed' },
+    trumpet: { low: 'F#3', high: 'D6', register: 'soprano brass' },
+    frenchHorn: { low: 'F2', high: 'C6', register: 'middle brass' },
+    trombone: { low: 'E2', high: 'Bb4', register: 'tenor brass' },
+    tuba: { low: 'D1', high: 'F4', register: 'bass brass' },
+    timpani: { low: 'D2', high: 'A3', register: 'pitched drum' },
+    marimba: { low: 'C2', high: 'C7', register: 'wooden mallet' },
+    xylophone: { low: 'F3', high: 'C7', register: 'bright mallet' },
+    vibraphone: { low: 'F3', high: 'F6', register: 'metal mallet' }
+  };
   var OG_MELODY_PHRASE_STYLES = [
     { id: 'balanced', name: 'Balanced', density: 0.62 },
     { id: 'sparse', name: 'Sparse', density: 0.38 },
@@ -1285,6 +1740,53 @@
       copy.instrument = ogNormalizeSynthInstrument(copy.instrument);
       return copy;
     });
+  }
+
+  function ogListSynthPatchFamilies() {
+    var groups = {};
+    ogListSynthPatchPresets().forEach(function (preset) {
+      var family = ogSafeString(preset.family, 'Synth');
+      if (!groups[family]) groups[family] = { family: family, presets: [] };
+      groups[family].presets.push(preset);
+    });
+    return Object.keys(groups).map(function (family) {
+      return groups[family];
+    });
+  }
+
+  function ogBuildInstrumentProfile(presetId) {
+    var preset = ogGetSynthPatchPreset(presetId);
+    if (!preset) return null;
+    var family = ogSafeString(preset.family, 'Synth');
+    var guide = OG_INSTRUMENT_FAMILY_GUIDES[family] || OG_INSTRUMENT_FAMILY_GUIDES.Synth;
+    var range = OG_INSTRUMENT_RANGES[preset.id] || { low: 'C3', high: 'C5', register: 'classroom range' };
+    var rangeLabel = range.low + '-' + range.high;
+    return {
+      presetId: preset.id,
+      name: preset.name,
+      family: family,
+      role: ogSafeString(preset.role, 'instrument'),
+      sourceType: ogSafeString(preset.sourceType, 'synth'),
+      sourceLabel: guide.sourceLabel,
+      lowNote: range.low,
+      highNote: range.high,
+      rangeLabel: rangeLabel,
+      register: range.register,
+      classroomUse: guide.classroomUse,
+      samplePlan: {
+        captureHint: guide.captureHint,
+        articulations: ogClone(guide.articulations || []),
+        recommendedNotes: ogClone(guide.sampleNotes || []),
+        storageHint: 'User recordings and open-license packs can be layered later without changing the composition.'
+      },
+      label: preset.name + ' / ' + family + ' / ' + rangeLabel
+    };
+  }
+
+  function ogListInstrumentProfiles() {
+    return ogListSynthPatchPresets().map(function (preset) {
+      return ogBuildInstrumentProfile(preset.id);
+    }).filter(Boolean);
   }
 
   function ogGetSynthPatchPreset(presetId) {
@@ -3705,6 +4207,9 @@
     ogSetStaffNote: ogSetStaffNote,
     ogNormalizeSynthInstrument: ogNormalizeSynthInstrument,
     ogListSynthPatchPresets: ogListSynthPatchPresets,
+    ogListSynthPatchFamilies: ogListSynthPatchFamilies,
+    ogBuildInstrumentProfile: ogBuildInstrumentProfile,
+    ogListInstrumentProfiles: ogListInstrumentProfiles,
     ogGetSynthPatchPreset: ogGetSynthPatchPreset,
     ogSetSynthInstrument: ogSetSynthInstrument,
     ogApplySynthPatchPreset: ogApplySynthPatchPreset,

@@ -2598,6 +2598,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (info.needsConverter) return (info.label || 'WebM') + ' before MP4 conversion';
     return info.label || containerLabelForKey(info.container);
   }
+  function exportContainerOutcomeStatus(info) {
+    return info && (info.converterError || info.fallback) ? 'warn' : 'complete';
+  }
+  function exportContainerOutcomeDetail(info) {
+    if (!info) return 'WebM.';
+    var detail = exportContainerLabel(info);
+    if (info.converterError) detail += ' - ' + info.converterError;
+    else if (info.fallback && sanitizeExportContainer(info.requested) === 'mp4_convert') detail += ' - Strict MP4 was requested, but WebM stayed available.';
+    else if (info.fallback) detail += ' - Requested MP4 was not available in this browser.';
+    else if (info.converter === 'ffmpeg.wasm') detail += ' - Converted locally on this device.';
+    return /\.$/.test(detail) ? detail : detail + '.';
+  }
   function shouldReencodeForContainer(choice, sourceBlob) {
     var requested = sanitizeExportContainer(choice);
     if (requested === 'auto' || requested === 'mp4_convert') return false;
@@ -8261,8 +8273,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return safeName(exported.title) + exportFormatFileSuffix(exported.outputFormat) + exportDownloadExtension(exported);
   }
   function refreshDownloadButtonLabel() {
-    if (!$('downloadBtn')) return;
-    $('downloadBtn').textContent = lastExport ? 'Download ' + exportDownloadContainerLabel(lastExport) + ' video' : 'Download video';
+    var btn = $('downloadBtn');
+    if (!btn) return;
+    if (lastExport) {
+      var label = 'Download ' + exportDownloadContainerLabel(lastExport) + ' video';
+      var filename = exportDownloadFilename(lastExport);
+      btn.textContent = label;
+      btn.setAttribute('aria-label', label + ': ' + filename);
+      btn.title = 'Downloads ' + filename;
+    } else {
+      btn.textContent = 'Download video';
+      btn.setAttribute('aria-label', 'Download video');
+      btn.removeAttribute('title');
+    }
   }
   $('downloadBtn').addEventListener('click', function () {
     if (!lastExport) return;
@@ -8360,9 +8383,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var flags = privacyFlagsForCues(cues).length;
       var sceneCount = lastExport.sceneItems ? lastExport.sceneItems.length : sceneItems.length;
       var row = document.createElement('div');
-      row.className = 'status ok';
+      var sceneContainerStatus = exportContainerOutcomeStatus(lastExport.outputContainer);
+      row.className = 'status' + (sceneContainerStatus === 'warn' ? ' warn' : ' ok');
       row.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
-      row.textContent = '[ready] Scene export - ' + sceneCount + ' scene' + (sceneCount === 1 ? '' : 's') + ', ' + fmtClock(lastExport.duration || 0) + (lastExport.outputFormat ? ', ' + exportFormatLabel(lastExport.outputFormat) : '') + (lastExport.outputContainer ? ', ' + exportContainerLabel(lastExport.outputContainer) : '') + '.';
+      row.textContent = (sceneContainerStatus === 'warn' ? '[review] ' : '[ready] ') + 'Scene export - ' + sceneCount + ' scene' + (sceneCount === 1 ? '' : 's') + ', ' + fmtClock(lastExport.duration || 0) + (lastExport.outputFormat ? ', ' + exportFormatLabel(lastExport.outputFormat) : '') + (lastExport.outputContainer ? ', ' + exportContainerOutcomeDetail(lastExport.outputContainer).replace(/\.$/, '') : '') + '.';
       host.appendChild(row);
       var caps = document.createElement('div');
       caps.className = 'status' + (flags ? ' warn' : (cues.length ? ' ok' : ''));
@@ -8403,7 +8427,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       preset: $('exportPreset').value
     });
     if (lastExport.outputFormat) {
-      items.splice(1, 0, { id: 'format', label: 'Export format', status: 'complete', detail: exportFormatLabel(lastExport.outputFormat) + ' - ' + exportFramingLabel(lastExport.outputFraming) + (lastExport.outputContainer ? ' - ' + exportContainerLabel(lastExport.outputContainer) : '') + '.' });
+      var formatDetail = exportFormatLabel(lastExport.outputFormat) + ' - ' + exportFramingLabel(lastExport.outputFraming);
+      formatDetail += lastExport.outputContainer ? ' - ' + exportContainerOutcomeDetail(lastExport.outputContainer) : '.';
+      items.splice(1, 0, { id: 'format', label: 'Export format', status: exportContainerOutcomeStatus(lastExport.outputContainer), detail: formatDetail });
     }
     items.forEach(function (item) {
       var row = document.createElement('div');
