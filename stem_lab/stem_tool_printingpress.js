@@ -20078,12 +20078,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         );
       }
 
-      // Outer wrapper. Uses both 100% and 100vh as fallbacks because the
-      // StemLab modal parent doesn't always have an explicit height — without
-      // a viewport-anchored fallback, the dark T.bg only covers content
-      // height, and the parent's lighter background shows through wherever
-      // the tool doesn't fill. Also explicitly sets margin/padding to 0 on
-      // outer container to defeat any inherited spacing.
+      // Outer wrapper. Let the shell height be content-driven so long menus
+      // keep their dark print-shop background instead of overflowing onto the
+      // host page. minHeight still fills short views to the viewport.
       // Background is layered to evoke a 1450 print shop: a warm overhead
       // glow (oil-lamp / window light over the press), a recessed floor
       // shadow at the bottom, and a faint parchment grain (SVG turbulence)
@@ -20108,8 +20105,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
           backgroundAttachment: 'fixed, fixed, scroll, scroll',
           minHeight: '100vh',
-          height: '100%',
+          height: 'auto',
           margin: 0,
+          boxSizing: 'border-box',
           color: T.text,
           fontFamily: 'Georgia, "Times New Roman", serif'
         } },
