@@ -62,10 +62,14 @@ const param = fnNode.params && fnNode.params[0];
 if (!param || param.type !== 'Identifier') { console.error('render param is not a plain identifier (destructured?) — handle by hand.'); process.exit(3); }
 const pname = param.name;
 
-// Insert `var __alloT = <param>.t || fallback`. We use the unique name __alloT
-// (never used as a local in any tool) instead of `t`, so it can never collide
-// with a tool's own `t` (time/temperature/map-index) and never clobbers it.
-// Idempotent on __alloT.
+// Insert a fallback-applying `var __alloT = function(k,fb){...}`. We use the unique
+// name __alloT (never used as a local in any tool) instead of `t`, so it can never
+// collide with a tool's own `t` (time/temperature/map-index) and never clobbers it.
+// CRITICAL: the wrapper must APPLY the fallback itself — do NOT emit the old
+// `var __alloT = <param>.t || fn` form. The host <param>.t (props.t) is a SINGLE-ARG
+// translator that returns undefined for missing keys and ignores the fallback arg, so
+// `= <param>.t ||` short-circuits to it and any missing key renders literal "undefined"
+// (the moneyMath/74-tool bug, 2026-07-04). Idempotent on __alloT.
 let already = false;
 const bodyStart = fnNode.body.start, bodyEnd = fnNode.body.end;
 const inBody = (n) => n && n.start > bodyStart && n.end < bodyEnd;
@@ -77,7 +81,7 @@ traverse(ast, {
 if (already) { console.log(tool + ': __alloT decl already present — skipping.'); process.exit(0); }
 
 const insertAt = bodyStart + 1; // right after the `{`
-const decl = '\n      var __alloT = ' + pname + '.t || function (k, fb) { return fb != null ? fb : k; };';
+const decl = '\n      var __alloT = function (k, fb) { var v; try { v = (typeof ' + pname + '.t === "function") ? ' + pname + '.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };';
 const out = code.slice(0, insertAt) + decl + code.slice(insertAt);
 console.log(tool + ': render(' + pname + ') — inserting __alloT decl' + (WRITE ? '' : ' (dry-run)') + '.');
 if (WRITE) {

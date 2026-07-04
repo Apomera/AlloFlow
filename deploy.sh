@@ -129,6 +129,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ plugin contract audited (ADVISORY: registerTool shape + required fields + ctx-surface conformance; Tool Forge gate, never blocks)."
   node dev-tools/check_forge_contract_sync.cjs --quiet
   echo "  ✓ Tool Forge vendored contract core in sync with dev-tools/forge_contract_core.js (no Tier-1/Tier-2 drift)."
+  node dev-tools/check_i18n_fallback.cjs --quiet
+  echo "  ✓ no \`__alloT = ctx.t\` fallback-dropping decls (missing keys must fall back to English, not render 'undefined')."
 fi
 
 # ── Step 1: Source commit ──────────────────────────────────────────
