@@ -1713,6 +1713,7 @@ const renderOutlineContent = (deps) => {
                             title={main}
                             t={t}
                             addToast={deps.addToast}
+                            callImagen={deps.callImagen}
                             onPersist={deps.handleConceptSpacePersist}
                             playSound={playSound}
                             onScoreUpdate={handleGameScoreUpdate}
@@ -2017,7 +2018,7 @@ function openConceptMap3D(opts) {
 // onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
 // becomes visible on any load/WebGL failure), and this component adds its own
 // static-outline fallback for the case where the modules themselves never load.
-const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onChallengeArm, onChallengeClose }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const handleRef = React.useRef(null);
@@ -2027,6 +2028,24 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
     const [arranging, setArranging] = React.useState(false);
     const [nonce, setNonce] = React.useState(0);   // bump to rebuild the scene from persisted data
     const persist = typeof onPersist === 'function' ? onPersist : null;
+    // ── Per-node art (AI image / Prim3D sculpture), same engine the Memory
+    //    Palace + Geometry Sandbox use. Hung off the click-a-node selection:
+    //    the module fires onSelectNode, we render controls, it renders the art
+    //    above the node. Persists to data.conceptArt (NOT conceptSpace, so it
+    //    never touches the arrangement) via onPersist. ──
+    const canImagen = typeof callImagen === 'function';
+    const [selectedNode, setSelectedNode] = React.useState(null);   // {id,label,category,summary,artType} | null
+    const selectedNodeRef = React.useRef(null);
+    const artRef = React.useRef({});                 // freshest data.conceptArt for merge-persist
+    artRef.current = data?.conceptArt || {};
+    const artAliveRef = React.useRef(true);
+    React.useEffect(() => () => { artAliveRef.current = false; }, []);
+    const [artType, setArtType] = React.useState('sculpture');   // 'sculpture' | 'image'
+    const [directPrompt, setDirectPrompt] = React.useState('');
+    const [directEval, setDirectEval] = React.useState(null);    // {verdict, reason, enhancedPrompt} | null
+    const [directBusy, setDirectBusy] = React.useState(null);    // 'evaluating' | 'generating' | null
+    const [refinePrompt, setRefinePrompt] = React.useState('');
+    const [refineBusy, setRefineBusy] = React.useState(false);
     // ── Strand Challenge (the 3D-native sort game) ──
     // challenge = {graph, answerKey, targets, strands} from engine.buildStrandChallenge.
     // Placements arrive through the SAME edit pipeline students already use
@@ -2056,7 +2075,12 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
 
     React.useEffect(() => {
         let alive = true;
-        _voCg3dEnsure().then((ok) => { if (alive) { if (ok) setReady(true); else setFailed(true); } });
+        _voCg3dEnsure().then((ok) => {
+            if (!alive) return;
+            if (!ok) { setFailed(true); return; }
+            // Prim3D is a best-effort sidecar (sculptures need it; images don't).
+            _voPrim3dEnsure().then(() => { if (alive) setReady(true); });
+        });
         return () => { alive = false; };
     }, []);
 
@@ -2078,6 +2102,15 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
             t,
             autoRotate: false,
             editable: challenge ? true : !!persist,
+            // Restore saved art on mount; skipped during a challenge (different graph).
+            initialNodeArt: challenge ? {} : (data?.conceptArt || {}),
+            // Selection bridge → React art panel. Clears the in-flight prompt/eval
+            // when moving to a different node so stale suggestions don't linger.
+            onSelectNode: (id, meta) => {
+                selectedNodeRef.current = meta;
+                setSelectedNode(meta);
+                setDirectEval(null); setDirectPrompt(''); setRefinePrompt('');
+            },
             onArrangementChange: challenge
                 ? ((arr) => {
                     // Collect placements; NEVER persist during a challenge.
@@ -2222,6 +2255,128 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
         });
     };
 
+    // ── Per-node art handlers (mirror the Memory Palace's Sculpt/Direct/Refine,
+    //    scoped to the clicked node instead of the walk's current locus) ──
+    const _gemText = (res) => (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+    const _asDataUrl = (s) => (typeof s === 'string' && s) ? (/^data:/i.test(s) ? s : ('data:image/png;base64,' + s)) : null;
+    // Reflect art into the live scene AND persist it under data.conceptArt, merging
+    // into the freshest store (artRef) so sequential gens never clobber each other.
+    const _persistNodeArt = (id, art) => {
+        const H = handleRef.current;
+        if (H) {
+            if (art && art.type === 'image' && H.setNodeImage) H.setNodeImage(id, art.dataUrl);
+            else if (art && art.type === 'sculpture' && H.setNodeObject) H.setNodeObject(id, art.recipe);
+            else if (!art && H.clearNodeArt) H.clearNodeArt(id);
+        }
+        if (persist) {
+            const next = { ...(artRef.current || {}) };
+            if (art) next[id] = art; else delete next[id];
+            persist(next, 'conceptArt');
+        }
+        // Switch the panel between "create" and "refine" without waiting for a re-render.
+        if (selectedNodeRef.current && selectedNodeRef.current.id === id) {
+            const meta = { ...selectedNodeRef.current, artType: art ? art.type : null };
+            selectedNodeRef.current = meta; setSelectedNode(meta);
+        }
+    };
+    const doSculptFromLabel = () => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = selectedNodeRef.current;
+        if (!P3D || !cur || !persist || directBusy || typeof window.callGemini !== 'function') return;
+        setDirectBusy('generating');
+        Promise.resolve(window.callGemini(P3D.buildRecipePrompt(cur.label), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const recipe = P3D.parseRecipe(_gemText(res));
+                if (recipe) { recipe.name = cur.label; _persistNodeArt(cur.id, { type: 'sculpture', recipe }); if (addToast) addToast(t('concept_space.art_placed') || '✨ Placed! Refine it, or click another concept.', 'success'); }
+                else if (addToast) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error');
+            })
+            .catch(() => { if (addToast && artAliveRef.current) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error'); })
+            .then(() => { if (artAliveRef.current) setDirectBusy(null); });
+    };
+    const handleArtGenerate = (finalPrompt) => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        setDirectBusy('generating'); setDirectEval(null);
+        const finish = (art) => {
+            if (!artAliveRef.current) return;
+            if (art) { _persistNodeArt(cur.id, art); if (addToast) addToast(t('concept_space.art_placed') || '✨ Placed! Refine it, or click another concept.', 'success'); setDirectPrompt(''); }
+            else if (addToast) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error');
+            setDirectBusy(null);
+        };
+        if (artType === 'sculpture') {
+            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
+                .then((res) => { const r = P3D.parseRecipe(_gemText(res)); finish(r ? { type: 'sculpture', recipe: r } : null); })
+                .catch(() => finish(null));
+        } else {
+            if (!canImagen) { setDirectBusy(null); if (addToast) addToast(t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.', 'info'); return; }
+            callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+                .then((base64) => finish(_asDataUrl(base64) ? { type: 'image', dataUrl: _asDataUrl(base64) } : null))
+                .catch(() => finish(null));
+        }
+    };
+    const handleArtSubmit = () => {
+        const cur = selectedNodeRef.current;
+        if (!cur || directBusy || typeof window.callGemini !== 'function') return;
+        const userPrompt = directPrompt.trim();
+        if (!userPrompt) return;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        // Opportunistic prompt-eval gate (reject / enhance / approve) — reuses the
+        // Palace's generic helper when it's loaded; otherwise generate directly.
+        if (!MP || !MP.buildPromptEvalPrompt || !MP.parsePromptEval) { handleArtGenerate(userPrompt); return; }
+        setDirectBusy('evaluating'); setDirectEval(null);
+        const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: '', topic: data?.main || title || '', mode: artType });
+        Promise.resolve(window.callGemini(prompt, true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const ev = MP.parsePromptEval(_gemText(res)) || { verdict: 'ok', reason: '', enhancedPrompt: userPrompt };
+                if (ev.verdict === 'ok') handleArtGenerate(ev.enhancedPrompt || userPrompt);
+                else { setDirectEval(ev); setDirectBusy(null); }
+            })
+            .catch(() => { if (artAliveRef.current) { setDirectBusy(null); handleArtGenerate(userPrompt); } });
+    };
+    const handleArtManualTweak = (kind) => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        const art = artRef.current && artRef.current[cur.id];
+        if (!art || art.type !== 'sculpture' || !art.recipe) return;
+        const TINTS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', null];
+        const rec = art.recipe; const next = { ...rec };
+        if (kind === 'bigger') next.scale = Math.min(5, (rec.scale || 1) * 1.25);
+        else if (kind === 'smaller') next.scale = Math.max(0.25, (rec.scale || 1) * 0.8);
+        else if (kind === 'rotate') next.rotY = (((rec.rotY || 0) + 45) % 360);
+        else if (kind === 'recolor') { const i = TINTS.indexOf(rec.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
+        _persistNodeArt(cur.id, { type: 'sculpture', recipe: next });
+    };
+    const handleArtRefine = () => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = selectedNodeRef.current;
+        if (!P3D || !cur || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        const art = artRef.current && artRef.current[cur.id];
+        const instr = refinePrompt.trim();
+        if (!art || art.type !== 'sculpture' || !art.recipe || !instr) return;
+        const rec = art.recipe;
+        setRefineBusy(true);
+        Promise.resolve(window.callGemini(P3D.buildRefinePrompt(rec, instr), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const newRec = P3D.parseRecipe(_gemText(res));
+                if (newRec) { _persistNodeArt(cur.id, { type: 'sculpture', recipe: { ...newRec, scale: rec.scale, rotY: rec.rotY, tint: rec.tint } }); setRefinePrompt(''); if (addToast) addToast(t('concept_space.refine_done') || '✨ Refined!', 'success'); }
+                else if (addToast) addToast(t('concept_space.refine_failed') || 'Could not refine — try rephrasing.', 'error');
+            })
+            .catch(() => { if (addToast && artAliveRef.current) addToast(t('concept_space.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
+            .then(() => { if (artAliveRef.current) setRefineBusy(false); });
+    };
+    const handleArtClear = () => {
+        const cur = selectedNodeRef.current;
+        if (!cur || !persist) return;
+        _persistNodeArt(cur.id, null);
+        if (addToast) addToast(t('concept_space.art_removed') || 'Removed.', 'info');
+    };
+    const nodeArtType = (selectedNode && selectedNode.artType) || (selectedNode && artRef.current[selectedNode.id] && artRef.current[selectedNode.id].type) || null;
+
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
@@ -2349,6 +2504,68 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onPersist, playSound, on
                     </div>
                 ) : (
                     <div ref={hostRef} className="absolute inset-0" />
+                )}
+                {!challenge && persist && selectedNode && !failed && (
+                    <div className="absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800" role="group" aria-label={t('concept_space.art_panel_aria') || 'Concept art'}>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <div className="text-xs font-extrabold text-fuchsia-700 truncate pr-2">🎨 {selectedNode.label}</div>
+                            <button onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
+                        </div>
+                        {nodeArtType ? (
+                            <div className="space-y-2">
+                                <div className="text-[11px] text-slate-500">{nodeArtType === 'sculpture' ? (t('concept_space.art_has_sculpture') || 'A sculpture floats above this concept.') : (t('concept_space.art_has_image') || 'An image floats above this concept.')}</div>
+                                {nodeArtType === 'sculpture' && (
+                                    <>
+                                        <div className="flex flex-wrap gap-1">
+                                            <button onClick={() => handleArtManualTweak('bigger')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                            <button onClick={() => handleArtManualTweak('smaller')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                            <button onClick={() => handleArtManualTweak('rotate')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                            <button onClick={() => handleArtManualTweak('recolor')} className="px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                        </div>
+                                        <form onSubmit={(e) => { e.preventDefault(); handleArtRefine(); }} className="flex gap-1">
+                                            <input value={refinePrompt} onChange={(e) => setRefinePrompt(e.target.value)} disabled={refineBusy} placeholder={t('concept_space.refine_placeholder') || 'Tell the AI what to change…'} aria-label={t('concept_space.refine_placeholder') || 'Tell the AI what to change'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                        </form>
+                                    </>
+                                )}
+                                <button onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {directBusy ? (
+                                    <div className="text-xs text-fuchsia-700 font-bold py-2 text-center" role="status">{directBusy === 'evaluating' ? (t('concept_space.art_checking') || '… Checking your idea') : (t('concept_space.art_creating') || '… Creating')}</div>
+                                ) : (
+                                    <>
+                                        <button onClick={doSculptFromLabel} disabled={typeof window.callGemini !== 'function'} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">🧊 {t('concept_space.art_sculpt_auto') || 'Sculpt from this concept'}</button>
+                                        <div className="text-[11px] text-slate-500 text-center">{t('concept_space.art_or_direct') || 'or describe your own:'}</div>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => setArtType('sculpture')} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🧊 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                                            <button onClick={() => setArtType('image')} disabled={!canImagen} title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined} className={`flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                        </div>
+                                        {directEval && directEval.verdict === 'reject' && (
+                                            <div className="text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900"><span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}</div>
+                                        )}
+                                        {directEval && directEval.verdict === 'enhance' && (
+                                            <div className="text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5">
+                                                {directEval.reason && <div className="mb-1 text-fuchsia-900">{directEval.reason}</div>}
+                                                {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-1">“{directEval.enhancedPrompt}”</div>}
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => handleArtGenerate(directEval.enhancedPrompt || directPrompt)} className="flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                                    <button onClick={() => handleArtGenerate(directPrompt)} className="px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50">{t('memory_palace.direct_use_mine') || 'Use mine'}</button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {(!directEval || directEval.verdict === 'reject') && (
+                                            <form onSubmit={(e) => { e.preventDefault(); handleArtSubmit(); }} className="flex gap-1">
+                                                <input value={directPrompt} onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }} placeholder={t('concept_space.art_prompt_placeholder') || 'e.g. a glowing brain with gears'} aria-label={t('concept_space.art_prompt_placeholder') || 'Describe the art'} className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400 outline-none" />
+                                                <button type="submit" disabled={!directPrompt.trim()} className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨</button>
+                                            </form>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
             <p className="text-xs text-slate-500 italic text-center mt-3">

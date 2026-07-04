@@ -219,3 +219,54 @@ describe('ConceptGraph3D.View (React SSR placeholder)', () => {
     expect(html).toMatch(/B — Chem/);
   });
 });
+
+describe('ConceptGraph3D.normalizeNodeArt (PURE: untrusted per-node art → safe map)', () => {
+  // Prim3D is NOT loaded in this suite, so sculpture recipes take the structural
+  // parts-array fallback (a real recipe round-trips; a shapeless one is dropped).
+  it('keeps a real data:image/ URL and a structurally-valid sculpture recipe', () => {
+    const out = CG3D.normalizeNodeArt({
+      n1: { type: 'image', dataUrl: 'data:image/png;base64,AAAA' },
+      n2: { type: 'sculpture', recipe: { parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0.5, 0] }] } },
+    });
+    expect(out.n1).toEqual({ type: 'image', dataUrl: 'data:image/png;base64,AAAA' });
+    expect(out.n2.type).toBe('sculpture');
+    expect(out.n2.recipe.parts.length).toBe(1);
+  });
+
+  it('drops unknown types, non-image URLs, and part-less recipes', () => {
+    const out = CG3D.normalizeNodeArt({
+      bad1: { type: 'gif', dataUrl: 'data:image/gif;base64,AAAA' },   // unknown type
+      bad2: { type: 'image', dataUrl: 'https://evil.example/x.png' }, // not a data:image/ URL
+      bad3: { type: 'image', dataUrl: 'data:text/html,<script>' },    // wrong data mime
+      bad4: { type: 'sculpture', recipe: { parts: [] } },             // nothing renderable
+      bad5: { type: 'sculpture' },                                    // no recipe at all
+    });
+    expect(Object.keys(out)).toHaveLength(0);
+  });
+
+  it('enforces the data-URL size bound and the node-count cap', () => {
+    const big = 'data:image/png;base64,' + 'A'.repeat(200);
+    expect(Object.keys(CG3D.normalizeNodeArt({ n: { type: 'image', dataUrl: big } }, { maxDataUrl: 50 }))).toHaveLength(0);
+    const many = {};
+    for (let i = 0; i < 10; i++) many['n' + i] = { type: 'image', dataUrl: 'data:image/png;base64,AA' };
+    expect(Object.keys(CG3D.normalizeNodeArt(many, { maxNodes: 3 }))).toHaveLength(3);
+  });
+
+  it('returns {} for junk input', () => {
+    expect(CG3D.normalizeNodeArt(null)).toEqual({});
+    expect(CG3D.normalizeNodeArt('nope')).toEqual({});
+    expect(CG3D.normalizeNodeArt({ x: 42 })).toEqual({});
+  });
+});
+
+describe('ConceptGraph3D — art handle is always present and safe', () => {
+  it('the no-WebGL fallback handle exposes setNodeImage/setNodeObject/clearNodeArt as safe no-ops', () => {
+    const div = document.createElement('div'); document.body.appendChild(div);
+    const handle = CG3D.render(div, axisGraph(), { t: (k) => k });
+    expect(typeof handle.setNodeImage).toBe('function');
+    expect(typeof handle.setNodeObject).toBe('function');
+    expect(typeof handle.clearNodeArt).toBe('function');
+    expect(() => { handle.setNodeImage('A', 'data:image/png;base64,AA'); handle.setNodeObject('A', { parts: [] }); handle.clearNodeArt('A'); }).not.toThrow();
+    handle.destroy(); div.remove();
+  });
+});

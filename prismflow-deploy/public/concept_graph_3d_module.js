@@ -291,6 +291,26 @@
     return p.then(function () { return !!(THREE.UnrealBloomPass && THREE.EffectComposer && THREE.RenderPass); }).catch(function () { return false; });
   }
 
+  // Lazy-load the shared Prim3D sculpting primitive (window.AlloModules.Prim3D)
+  // from the same CDN base this module was served from — so per-node sculptures
+  // reuse the exact recipe engine the Memory Palace and Geometry Sandbox use.
+  // Resolves the Prim3D module, or null if unavailable (image art still works).
+  function loadPrim3d() {
+    if (window.AlloModules && window.AlloModules.Prim3D) return Promise.resolve(window.AlloModules.Prim3D);
+    var base = 'https://alloflow-cdn.pages.dev/', q = '';
+    try {
+      var scr = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scr.length; i++) {
+        var src = scr[i].getAttribute('src') || '';
+        var m = src.match(/^(.*\/)(?:concept_graph_3d_module|memory_palace_module|prim3d_module|stem_lab\/stem_tool_geosandbox)\.js(\?.*)?$/);
+        if (m) { base = m[1]; q = m[2] || ''; break; }
+      }
+    } catch (e) {}
+    return _cg3dScript(base + 'prim3d_module.js' + q)
+      .then(function () { return (window.AlloModules && window.AlloModules.Prim3D) || null; })
+      .catch(function () { return null; });
+  }
+
   function _roundRect(ctx, x, y, w, h, r) {
     if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); return; }
     ctx.beginPath();
@@ -420,6 +440,80 @@
       if (introOK) { sphere.scale.setScalar(0.001); glow.material.opacity = 0; ref.intro = 4 + introSeq * 2; introSeq++; }
       nodeMeshes.push(ref); nodeById3d[n.id] = ref;
     });
+
+    // ── Per-node art (AI images / Prim3D sculptures) hung above each node ──
+    // Attached as a CHILD of the node's sphere, so it follows the node through
+    // the entrance animation and constrained-edit glides via scene-graph
+    // inheritance — no per-frame bookkeeping. Recipes/data-URLs are just data
+    // the host persists; the same Prim3D engine powers Palace + Geometry Sandbox.
+    var ART_IMG_SIZE = 64;   // world units for a square image billboard
+    function _disposeArt(m) {
+      if (!m || !m.art) return;
+      try { m.sphere.remove(m.art); } catch (e) {}
+      try {
+        if (m.art.traverse) {
+          m.art.traverse(function (o) {
+            if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+            var mm = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+            mm.forEach(function (x) { if (x) { if (x.map && x.map.dispose) x.map.dispose(); if (x.dispose) x.dispose(); } });
+          });
+        } else if (m.art.material) {
+          if (m.art.material.map && m.art.material.map.dispose) m.art.material.map.dispose();
+          if (m.art.material.dispose) m.art.material.dispose();
+        }
+      } catch (e) {}
+      m.art = null; m.artMeta = null;
+    }
+    function _placeArt(m, obj, localY) {
+      _disposeArt(m);
+      obj.position.set(0, localY, 0);
+      obj.userData.cg3dArt = true;   // decorative; excluded from node picking
+      m.sphere.add(obj);
+      m.art = obj;
+    }
+    function renderNodeImage(id, dataUrl) {
+      var m = nodeById3d[id]; if (!m || !dataUrl) return;
+      try {
+        var tex = new THREE.Texture();
+        var img = new Image();
+        img.onload = function () { if (state.disposed) return; tex.image = img; tex.needsUpdate = true; };
+        try { img.crossOrigin = 'anonymous'; } catch (e) {}
+        img.src = dataUrl;
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+        var rad = 9 * (m.node.size || 1);
+        sp.scale.set(ART_IMG_SIZE, ART_IMG_SIZE, 1);
+        _placeArt(m, sp, rad + ART_IMG_SIZE * 0.5 + 14);
+        m.artMeta = { type: 'image' };
+      } catch (e) {}
+    }
+    function renderNodeSculpture(id, recipe) {
+      var m = nodeById3d[id]; if (!m || !recipe) return;
+      var rad = 9 * (m.node.size || 1);
+      function build(P3) {
+        if (!P3 || state.disposed || !nodeById3d[id]) return;
+        try {
+          var g = P3.buildObject(THREE, recipe, { unit: rad * 1.7 });   // ~1.7 node-radii tall
+          if (g) { _placeArt(nodeById3d[id], g, rad + 8); nodeById3d[id].artMeta = { type: 'sculpture' }; }
+        } catch (e) {}
+      }
+      var P = window.AlloModules && window.AlloModules.Prim3D;
+      if (P) build(P); else loadPrim3d().then(build);
+    }
+    function clearNodeArt(id) { var m = nodeById3d[id]; if (m) _disposeArt(m); }
+    state.setNodeImage = renderNodeImage;
+    state.setNodeObject = renderNodeSculpture;
+    state.clearNodeArt = clearNodeArt;
+    // Restore persisted art, then flush any calls the host made before GL mounted.
+    (function applyInitialArt(map) {
+      map = normalizeNodeArt(map);
+      Object.keys(map).forEach(function (id) {
+        var a = map[id]; if (!a) return;
+        if (a.type === 'image' && a.dataUrl) renderNodeImage(id, a.dataUrl);
+        else if (a.type === 'sculpture' && a.recipe) renderNodeSculpture(id, a.recipe);
+      });
+    })(opts.initialNodeArt);
+    if (state.pendingArt && state.pendingArt.length) { state.pendingArt.forEach(function (c) { try { c(); } catch (e) {} }); state.pendingArt = []; }
+    state.cleanup.push(function () { nodeMeshes.forEach(_disposeArt); });
 
     // Visible focus/selection ring (WCAG 2.4.7 focus-visible for keyboard nav) — a
     // billboarded additive ring shown on the selected node; gently rotates (motion-safe).
@@ -605,6 +699,17 @@
           try { focusRing.material.color.set(fn.color); } catch (e) {}
           focusRing.visible = true;
         } else { focusRing.visible = false; }
+      }
+      // Bridge selection to the host (React), which owns the per-node art panel
+      // (AI image / Prim3D sculpture). Fires on every change, null on deselect.
+      if (typeof opts.onSelectNode === 'function') {
+        try {
+          var _sm = (selectedId && nodeById3d[selectedId]) ? nodeById3d[selectedId] : null;
+          opts.onSelectNode(_sm ? selectedId : null, _sm ? {
+            id: selectedId, label: _sm.node.label, category: _sm.node.category || '',
+            summary: _sm.node.summary || '', artType: _sm.artMeta ? _sm.artMeta.type : null
+          } : null);
+        } catch (e) {}
       }
       if (!selectedId || !nodeById3d[selectedId]) { panel.style.display = 'none'; return; }
       var n = nodeById3d[selectedId].node;
@@ -1128,6 +1233,35 @@
     window.addEventListener('resize', state.onResize);
   }
 
+  // ── normalizeNodeArt — PURE: untrusted per-node art map → safe map ──
+  // Shape: { [nodeId]: {type:'image', dataUrl} | {type:'sculpture', recipe} }.
+  // Drops unknown types, caps node count, requires a real data:image/ URL under a
+  // size bound, and validates sculpture recipes via Prim3D when it's loaded (falls
+  // back to a structural parts-array check when it isn't). Returns {} if empty.
+  function normalizeNodeArt(input, opts) {
+    opts = opts || {};
+    var out = {};
+    if (!input || typeof input !== 'object') return out;
+    var P = (window.AlloModules && window.AlloModules.Prim3D) || null;
+    var maxUrl = isNum(opts.maxDataUrl) ? opts.maxDataUrl : 3500000;   // ~3.5 MB
+    var MAX = isNum(opts.maxNodes) ? opts.maxNodes : 500;
+    var ids = Object.keys(input), count = 0;
+    for (var i = 0; i < ids.length && count < MAX; i++) {
+      var id = ids[i], a = input[id];
+      if (!a || typeof a !== 'object') continue;
+      if (a.type === 'image') {
+        if (typeof a.dataUrl === 'string' && /^data:image\//i.test(a.dataUrl) && a.dataUrl.length <= maxUrl) {
+          out[id] = { type: 'image', dataUrl: a.dataUrl }; count++;
+        }
+      } else if (a.type === 'sculpture') {
+        var r = (P && P.normalizeRecipe) ? P.normalizeRecipe(a.recipe) : a.recipe;
+        var ok = r && typeof r === 'object' && Array.isArray(r.parts) && r.parts.length;
+        if (ok) { out[id] = { type: 'sculpture', recipe: r }; count++; }
+      }
+    }
+    return out;
+  }
+
   // ── render — public imperative API. Returns { destroy, update, fellBack }. ──
   function render(container, graph, opts) {
     opts = opts || {};
@@ -1171,10 +1305,21 @@
     function flagNodes(statusById, announce) {
       try { if (state.flagNodes) state.flagNodes(statusById, announce); } catch (e) {}
     }
+    // Per-node art bridge. state.setNode* are wired once GL mounts; calls made
+    // before then are buffered and flushed in mountGL (mirrors flagNodes).
+    function _artCall(fn) {
+      if (state.setNodeImage) { try { fn(); } catch (e) {} }
+      else { (state.pendingArt = state.pendingArt || []).push(fn); }
+    }
+    var artApi = {
+      setNodeImage: function (id, dataUrl) { _artCall(function () { state.setNodeImage(id, dataUrl); }); },
+      setNodeObject: function (id, recipe) { _artCall(function () { state.setNodeObject(id, recipe); }); },
+      clearNodeArt: function (id) { _artCall(function () { state.clearNodeArt(id); }); }
+    };
 
     if (!isWebGLAvailable()) {
       showFallback(t('cg3d.no_webgl') || 'This browser cannot show the 3D view. Showing the reading-order outline instead.');
-      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes };
+      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {} };
     }
 
     var holder = document.createElement('div');
@@ -1196,7 +1341,7 @@
       showFallback(t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.');
     });
 
-    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes };
+    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt };
   }
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──
@@ -1232,6 +1377,7 @@
     version: VERSION,
     PALETTE: PALETTE,
     buildScene: buildScene,
+    normalizeNodeArt: normalizeNodeArt,
     sceneToAxisValues: sceneToAxisValues,
     navigateFocus: navigateFocus,
     describeNodeForSR: describeNodeForSR,

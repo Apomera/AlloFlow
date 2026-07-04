@@ -23108,7 +23108,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   // null clears that store.
   const handleConceptSpacePersist = (arrangement, key = 'conceptSpace') => {
       if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return;
-      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace') ? key : 'conceptSpace';
+      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace' || key === 'conceptArt') ? key : 'conceptSpace';
       const newData = { ...generatedContent.data };
       if (arrangement) newData[storeKey] = arrangement; else delete newData[storeKey];
       const updatedContent = { ...generatedContent, data: newData };
