@@ -247,7 +247,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         bg: '#1a1410', card: '#2a1f15', cardAlt: '#13100c', border: '#5c4630',
         text: '#f5ecd9', muted: '#d4c4a0', dim: '#9c8a6e',
         accent: '#c9a14a', accentHi: '#f5d77e',
-        ok: '#7fb069', warn: '#e8a04a', danger: '#c44536',
+        ok: '#7fb069', okText: '#86efac', warn: '#e8a04a',
+        danger: '#c44536', dangerText: '#f87171', dangerBgStrong: '#7c2d12',
+        infoText: '#93c5fd',
         link: '#f5d77e', ink: '#0a0805', parchment: '#f5e8c8', wood: '#6b4423'
       };
 
@@ -2288,7 +2290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, __alloT('stem.printingpress.guided_tour', '▶ Guided Tour')),
                 tourActive && h('button', {
                   onClick: function() { setTourActive(false); announce('Guided tour stopped.'); },
-                  style: btn({ padding: '12px 16px', fontSize: 13, background: T.danger, color: T.text, border: '1px solid ' + T.danger })
+                  style: btn({ padding: '12px 16px', fontSize: 13, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
                 }, __alloT('stem.printingpress.stop_tour', '⏸ Stop tour')),
                 // Parts-labels toggle: on/off, persists across state changes
                 h('button', {
@@ -3005,7 +3007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   ),
                   h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 6 } }, t.shop),
                   h('div', { style: { background: T.bg, border: '1px dashed ' + T.danger, borderRadius: 4, padding: 8, marginBottom: 6 } },
-                    h('div', { style: { fontSize: 10, color: T.danger, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, __alloT('stem.printingpress.the_error', 'The error')),
+                    h('div', { style: { fontSize: 10, color: T.dangerText, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, __alloT('stem.printingpress.the_error', 'The error')),
                     h('p', { style: { margin: 0, fontSize: 12, color: T.text, lineHeight: 1.5 } }, t.error)
                   ),
                   h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
@@ -3050,7 +3052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             // For the fi challenge, render the ligature in red so students
             // see it visually distinguished from individual sorts.
             CHALLENGE.id === 'FIRST_PROOF'
-              ? h(React.Fragment, null, 'F', h('span', { style: { color: T.danger } }, 'fi'), __alloT('stem.printingpress.rst_proof', 'RST PROOF'))
+              ? h(React.Fragment, null, 'F', h('span', { style: { color: T.dangerText } }, 'fi'), __alloT('stem.printingpress.rst_proof', 'RST PROOF'))
               : PHRASE
           ),
           // Note about the special ligature sort, only shown for the fi challenge
@@ -3458,7 +3460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                           minHeight: 100,
                           position: 'relative'
                         }
-                      }, val !== null ? val : h('span', { style: { color: T.dim, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
+                      }, val !== null ? val : h('span', { style: { color: T.border, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
                     })
                   )
                 ),
@@ -3484,7 +3486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           minHeight: 100
                         }
-                      }, val !== null ? val : h('span', { style: { color: T.dim, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
+                      }, val !== null ? val : h('span', { style: { color: T.border, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
                     })
                   )
                 )
@@ -3807,7 +3809,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             }, __alloT('stem.printingpress.walk_through_the_steps', '▶ Walk through the steps')),
             castingTour && h('button', {
               onClick: function() { setCastingTour(false); setCastingFocus(null); announce('Casting tour stopped.'); },
-              style: btn({ padding: '8px 14px', fontSize: 12, background: T.danger, color: T.text, border: '1px solid ' + T.danger })
+              style: btn({ padding: '8px 14px', fontSize: 12, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
             }, __alloT('stem.printingpress.stop', '⏸ Stop'))
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 14 } },
@@ -4392,7 +4394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // Printed Bible 1500: ~$500 today
         // Printed book 1600: ~$50 today
         var COSTS = [
-          { era: 'Hand-copied (pre-1450)', cost: 60000, color: T.danger },
+          { era: 'Hand-copied (pre-1450)', cost: 60000, color: T.danger, textColor: T.dangerText },
           { era: 'Gutenberg Bible (1455)', cost: 5000, color: T.warn },
           { era: 'Printed book (1500)', cost: 500, color: T.accent },
           { era: 'Printed book (1600)', cost: 50, color: T.ok },
@@ -4419,7 +4421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             }),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 } },
               h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.danger, borderRadius: 10, padding: 12 } },
-                h('div', { style: { fontSize: 11, color: T.danger, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.printingpress.by_hand_scribes', 'By hand (scribes)')),
+                h('div', { style: { fontSize: 11, color: T.dangerText, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.printingpress.by_hand_scribes', 'By hand (scribes)')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, marginTop: 4 } },
                   scribeWorkerYears.toLocaleString() + ' worker-years'),
                 h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 } },
@@ -4558,7 +4560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 return h('div', { key: i },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.text, marginBottom: 2 } },
                     h('span', null, c.era),
-                    h('strong', { style: { color: c.color } }, '$' + c.cost.toLocaleString())),
+                    h('strong', { style: { color: c.textColor || c.color } }, '$' + c.cost.toLocaleString())),
                   h('div', { style: { width: '100%', height: 14, background: T.cardAlt, borderRadius: 4, overflow: 'hidden', border: '1px solid ' + T.border } },
                     h('div', { style: { width: pct + '%', height: '100%', background: c.color } }))
                 );
@@ -5294,7 +5296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               [
                 { label: __alloT('stem.printingpress.pre_print_european_manuscripts_1100_14', 'Pre-print European manuscripts (1100-1450)'), survives: 5,
                   note: __alloT('stem.printingpress.single_copies_vulnerable_to_fire_mold_', 'Single copies, vulnerable to fire, mold, neglect. Most pre-print European texts are lost. Estimates vary by genre.'),
-                  color: T.danger },
+                  color: T.danger, textColor: T.dangerText },
                 { label: __alloT('stem.printingpress.gutenberg_bibles_1455_180_printed', 'Gutenberg Bibles (1455, ~180 printed)'), survives: 27,
                   note: __alloT('stem.printingpress.49_of_180_known_to_survive_in_some_for', '~49 of ~180 known to survive in some form. Sacred status protected them; cathedrals and universities preserved copies.'),
                   color: T.warn },
@@ -5306,7 +5308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   color: T.warn },
                 { label: __alloT('stem.printingpress.1990s_websites_now_30_years_old', '1990s websites (now ~30 years old)'), survives: 30,
                   note: __alloT('stem.printingpress.link_rot_server_shutdowns_format_obsol', 'Link rot, server shutdowns, format obsolescence. Internet Archive recovers a portion; much is gone or unreachable. The "Eternal September" generation of personal sites is largely vanished.'),
-                  color: T.danger },
+                  color: T.danger, textColor: T.dangerText },
                 { label: __alloT('stem.printingpress.born_digital_today_properly_archived', 'Born-digital today, properly archived'), survives: 95,
                   note: __alloT('stem.printingpress.in_principle_bit_perfect_copies_distri', 'In principle: bit-perfect copies, distributed redundancy, format migration. In practice: only if institutions actively curate. Most personal data is not curated.'),
                   color: T.ok }
@@ -5314,7 +5316,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12 } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap', gap: 6 } },
                     h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, row.label),
-                    h('div', { style: { fontSize: 14, fontWeight: 800, color: row.color, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, '~' + row.survives + '% survives')
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: row.textColor || row.color, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, '~' + row.survives + '% survives')
                   ),
                   h('div', { style: { position: 'relative', height: 8, background: T.bg, borderRadius: 4, border: '1px solid ' + T.border, overflow: 'hidden', marginBottom: 6 } },
                     h('div', { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: row.survives + '%', background: row.color, opacity: 0.85 } })
@@ -5394,11 +5396,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             __alloT('stem.printingpress.print_spread_from_mainz_outward_in_wav', 'Print spread from Mainz outward in waves. Each major center developed a specialty matched to its trade, religion, and politics. By 1500 these four cities defined what European printing looked like.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
             [
-              { city: 'Mainz', years: '1450 – 1500', flagColor: '#a83232',
+              { city: 'Mainz', years: '1450 – 1500', flagColor: '#a83232', textColor: T.dangerText,
                 specialty: 'Foundational presswork',
                 claim: 'Gutenberg + Fust + Schöffer perfected the system here. First Bibles, the Mainz Psalter (1457), the first dated colophon.',
                 fate: 'Sacked in the Diocesan War (1462), which scattered Mainz-trained printers across Europe and accidentally spread the technology.' },
-              { city: 'Strasbourg', years: '1460 – 1530', flagColor: '#3a7a3a',
+              { city: 'Strasbourg', years: '1460 – 1530', flagColor: '#3a7a3a', textColor: T.okText,
                 specialty: 'Vernacular Bibles + reform texts',
                 claim: 'Mentelin\'s shop printed the first German Bible in 1466. Free imperial city, drew refugee printers and Reformation pamphleteers.',
                 fate: 'Became a primary center for Luther\'s pamphlets after 1517. The Reformation ran on Strasbourg type for a generation.' },
@@ -5406,7 +5408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 specialty: 'Classical scholarship + portable books',
                 claim: 'Aldus Manutius\'s Aldine Press: Greek and Latin classics, italic type (1500), the portable octavo format. ~150 shops at peak.',
                 fate: 'Venice\'s trade network put Aldine books on every European desk. The Index Librorum Prohibitorum (1559) hit Venice hardest because Venice printed everything.' },
-              { city: 'Paris', years: '1470 – 1600', flagColor: '#5a7aa8',
+              { city: 'Paris', years: '1470 – 1600', flagColor: '#5a7aa8', textColor: T.infoText,
                 specialty: 'Scholarly reference + law + theology',
                 claim: 'Estienne family, Charlotte Guillard, the Sorbonne network. Latin Thesaurus and Greek New Testament with verse numbers still in use today.',
                 fate: 'Print regulation arrived early in Paris (royal censorship, 1521). Books either got the king\'s privilege or moved to Geneva and Antwerp.' }
@@ -5418,7 +5420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('h4', { style: { margin: 0, fontSize: 16, color: T.accentHi, fontFamily: 'Georgia, serif' } }, c.city),
                   h('span', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, c.years)
                 ),
-                h('div', { style: { fontSize: 11, color: c.flagColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'Georgia, serif' } },
+                h('div', { style: { fontSize: 11, color: c.textColor || c.flagColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'Georgia, serif' } },
                   c.specialty),
                 h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, c.claim),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, c.fate)
@@ -5707,7 +5709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 ancestor: 'The screw press',
                 arrow: 'descended from',
                 lineage: 'A laser printer puts ink on paper via a heated drum instead of metal type, but the job is identical: convert digital text into physical impressions. The throughput equation (impressions per hour) is what shifted; the abstraction stayed.',
-                color: T.danger },
+                color: T.danger, textColor: T.dangerText },
               { modern: 'Your e-reader (Kindle, Kobo)',
                 ancestor: 'The printed book',
                 arrow: 'descended from',
@@ -5727,7 +5729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderLeft: '3px solid ' + row.color, borderRadius: 10, padding: 12 } },
                 h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, row.modern),
                 h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontStyle: 'italic', marginBottom: 4 } }, row.arrow),
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: row.color, fontFamily: 'Georgia, serif', marginBottom: 8 } }, row.ancestor),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: row.textColor || row.color, fontFamily: 'Georgia, serif', marginBottom: 8 } }, row.ancestor),
                 h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, row.lineage)
               );
             })
@@ -5743,7 +5745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 12, color: T.accent } }, fleuron(14)),
             h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, left: 12, color: T.accent } }, fleuron(14)),
             h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, right: 12, color: T.accent } }, fleuron(14)),
-            h('div', { style: { fontSize: 60, color: T.accent, lineHeight: 0.5, fontFamily: 'Georgia, serif', marginBottom: 4, opacity: 0.5 } }, '“'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 60, color: T.wood, lineHeight: 0.5, fontFamily: 'Georgia, serif', marginBottom: 4, opacity: 0.7 } }, '“'),
             h('p', { style: { margin: '0 auto 10px', fontSize: 16, lineHeight: 1.65, color: '#3a2a1a', fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', maxWidth: 560 } },
               __alloT('stem.printingpress.printing_is_the_wonder_of_all_wonders_', 'Printing is the wonder of all wonders. It is the gift of God, by which old things may be made new and new things made known.')),
             h('div', { style: { fontSize: 12, color: '#7c2d12', fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.04em' } },
@@ -7796,7 +7798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     display: 'inline-block',
                     fontSize: Math.round(titleSize * 1.15),
                     background: 'linear-gradient(180deg, #f5d77e 0%, #d4914f 35%, #7c4f1f 100%)',
-                    color: '#fef3c7',
+                    color: T.ink,
                     padding: '2px 10px 0',
                     border: '2px solid #7c4f1f',
                     borderRadius: 3,
@@ -8930,7 +8932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   moduleMisses.map(function(m, mi) {
                     return h('div', { key: mi, style: { padding: 10, background: T.cardAlt, borderRadius: 8, marginTop: 6, fontSize: 12, lineHeight: 1.55 } },
                       h('div', { style: { color: T.text, marginBottom: 4 } }, h('strong', null, 'Q' + (m.qIdx + 1) + ': '), m.q.q),
-                      h('div', { style: { color: T.danger } }, h('span', { style: { fontWeight: 700 } }, __alloT('stem.printingpress.your_answer', 'Your answer: ')), m.q.opts[picks[m.qIdx]]),
+                      h('div', { style: { color: T.dangerText } }, h('span', { style: { fontWeight: 700 } }, __alloT('stem.printingpress.your_answer', 'Your answer: ')), m.q.opts[picks[m.qIdx]]),
                       h('div', { style: { color: T.ok, marginTop: 2 } }, h('span', { style: { fontWeight: 700 } }, __alloT('stem.printingpress.right_answer_2', 'Right answer: ')), m.q.opts[m.q.ans]),
                       h('div', { style: { color: T.muted, marginTop: 6, fontStyle: 'italic' } }, m.q.explain)
                     );
@@ -9087,7 +9089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     why: 'Anchors the question in something you just learned. Asks for analogies across history. Good prompts often build on each other.' }
                 ].map(function(p, i) {
                   return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 6, padding: 10 } },
-                    h('div', { style: { fontSize: 10, color: T.danger, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } }, __alloT('stem.printingpress.weaker', 'Weaker')),
+                    h('div', { style: { fontSize: 10, color: T.dangerText, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } }, __alloT('stem.printingpress.weaker', 'Weaker')),
                     h('div', { style: { fontSize: 12, color: T.text, fontStyle: 'italic', marginBottom: 8 } }, '"' + p.weak + '"'),
                     h('div', { style: { fontSize: 10, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } }, __alloT('stem.printingpress.stronger', 'Stronger')),
                     h('div', { style: { fontSize: 12, color: T.accentHi, fontStyle: 'italic', marginBottom: 6, fontFamily: 'Georgia, serif' } }, '"' + p.strong + '"'),
@@ -9365,13 +9367,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 { tier: 'Medium', tone: T.warn,
                   action: 'Follow a modern type designer',
                   detail: __alloT('stem.printingpress.tobias_frere_jones_erik_spiekermann_je', 'Tobias Frere-Jones, Erik Spiekermann, Jessica Hische, Tracy Jenkins. They share work-in-progress sketches, talk about historical references, and post the kind of behind-the-scenes craft that schools rarely show.') },
-                { tier: 'Stretch', tone: T.danger,
+                { tier: 'Stretch', tone: T.dangerText,
                   action: 'Design one letter',
                   detail: __alloT('stem.printingpress.open_glyphr_studio_free_browser_based_', 'Open Glyphr Studio (free, browser-based) or FontForge (free, desktop). Design the lowercase "a" for your own typeface. You will fail your first 10 attempts. You will learn more about type than from any book.') },
-                { tier: 'Stretch', tone: T.danger,
+                { tier: 'Stretch', tone: T.dangerText,
                   action: 'Print a real broadside',
                   detail: __alloT('stem.printingpress.take_the_broadside_you_composed_in_the', 'Take the broadside you composed in the Build a Broadside module, print it on heavy paper (cardstock), and post it somewhere public with permission. Watch what happens. This is what a 1450 broadside was for.') },
-                { tier: 'Stretch', tone: T.danger,
+                { tier: 'Stretch', tone: T.dangerText,
                   action: 'Read a primary source in full',
                   detail: __alloT('stem.printingpress.the_british_library_has_the_entire_gut', 'The British Library has the entire Gutenberg Bible online as a high-resolution facsimile. Spend 15 minutes scrolling. Try to read a line of Blackletter. Notice what you can and cannot decode.') }
               ].map(function(step, i) {
