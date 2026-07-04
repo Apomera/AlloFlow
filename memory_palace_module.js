@@ -930,21 +930,43 @@
     // ── WebXR Tier 2: controllers — smooth thumbstick locomotion, snap-turn,
     //    and ray-select to reveal a locus. All guarded + presenting-only, so it
     //    can't touch the 2D path. Speeds/angles are on-device tunable. ──
-    var VR_MOVE_SPEED = 2.4;    // metres/sec of smooth glide
-    var VR_SNAP_DEG = 30;       // comfort snap-turn step
-    var _xrCtrls = null, _xrSnapArmed = true, _xrRay = null, _xrTmpM = null, _xrQ = null, _xrE = null;
+    var VR_MOVE_SPEED = 2.4;      // metres/sec of smooth glide
+    var VR_SNAP_DEG = 30;         // comfort snap-turn step
+    var VR_VIGNETTE_MAX = 0.6;    // peripheral dim at full glide (motion-sickness comfort)
+    var _xrCtrls = null, _xrGrips = null, _xrSnapArmed = true, _xrRay = null, _xrTmpM = null, _xrQ = null, _xrE = null;
+    var _xrFloor = null, _teleMarker = null, _vignette = null, _teleFlash = 0, _teleTmp = null;
+    function _xrBuildAids() {
+      try {
+        if (!_teleMarker) {
+          var mg = new THREE.RingGeometry(16, 28, 32); mg.rotateX(-Math.PI / 2);   // lies flat on the floor
+          _teleMarker = new THREE.Mesh(mg, new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.9, depthWrite: false }));
+          _teleMarker.visible = false; group.add(_teleMarker);
+        }
+        if (!_vignette) {
+          // Tunnel vignette that dims the periphery while gliding (a standard VR
+          // comfort aid). Child of the camera, so it's always centred in view.
+          var vg = new THREE.RingGeometry(0.35, 2.4, 40);
+          _vignette = new THREE.Mesh(vg, new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, side: THREE.DoubleSide, depthTest: false, depthWrite: false }));
+          _vignette.position.set(0, 0, -0.5); _vignette.renderOrder = 9999; camera.add(_vignette);
+        }
+      } catch (e) {}
+    }
     function _xrSetupControllers() {
       if (_xrCtrls) return;
-      _xrCtrls = [];
+      _xrCtrls = []; _xrGrips = []; _xrBuildAids();
       try {
         for (var ci = 0; ci < 2; ci++) {
           var c = renderer.xr.getController(ci);
           var rg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
           var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
-          rl.scale.z = 400; rl.userData.decorative = true;   // aim beam (world units; picking uses the true ray)
+          rl.scale.z = 6; rl.userData.decorative = true;   // aim-beam length (rig-local; picking uses the true ray)
           c.add(rl);
-          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrRaySelect(ctrl); }); })(c);
+          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrTrigger(ctrl); }); })(c);
           xrRig.add(c); _xrCtrls.push(c);
+          // grip mesh — a small controller-ish box so the student sees their hands
+          var gp = renderer.xr.getControllerGrip(ci);
+          gp.add(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, 0.09), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6, metalness: 0.2 })));
+          xrRig.add(gp); _xrGrips.push(gp);
         }
       } catch (e) {}
     }
@@ -958,19 +980,39 @@
         }
       } catch (e) {}
     }
-    function _xrRaySelect(ctrl) {
+    function _xrCtrlRay(ctrl) {
+      if (!_xrRay) _xrRay = new THREE.Raycaster();
+      if (!_xrTmpM) _xrTmpM = new THREE.Matrix4();
+      _xrTmpM.identity().extractRotation(ctrl.matrixWorld);
+      _xrRay.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
+      _xrRay.ray.direction.set(0, 0, -1).applyMatrix4(_xrTmpM);
+      return _xrRay;
+    }
+    function _xrFloorHit(ctrl, out) {
       try {
-        if (!_xrRay) _xrRay = new THREE.Raycaster();
-        if (!_xrTmpM) _xrTmpM = new THREE.Matrix4();
-        _xrTmpM.identity().extractRotation(ctrl.matrixWorld);
-        _xrRay.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
-        _xrRay.ray.direction.set(0, 0, -1).applyMatrix4(_xrTmpM);
-        var hits = _xrRay.intersectObjects(frameMeshes, false);
+        if (!_xrFloor) _xrFloor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        var ray = _xrCtrlRay(ctrl);
+        if (ray.ray.direction.y > -0.12) return false;   // only while pointing DOWN (teleport intent, not locus aim)
+        return !!ray.ray.intersectPlane(_xrFloor, out);
+      } catch (e) { return false; }
+    }
+    // Context-sensitive trigger: point at a locus → reveal it; point at the floor
+    // → teleport there (comfort blink). Complements the thumbstick glide.
+    function _xrTrigger(ctrl) {
+      try {
+        var hits = _xrCtrlRay(ctrl).intersectObjects(frameMeshes, false);
         if (hits.length) {
           var id = hits[0].object.userData.locusId;
           try { if (state.revealLocus) state.revealLocus(id); } catch (e2) {}
           try { if (live) live.textContent = describeLocusForSR(palace, id, t); } catch (e3) {}
-          _xrHapticPulse(0.4, 40);
+          try { if (typeof opts.onLocusActivate === 'function') opts.onLocusActivate(id); } catch (e4) {}   // seam for VR recall
+          _xrHapticPulse(0.4, 40); return;
+        }
+        if (!_teleTmp) _teleTmp = new THREE.Vector3();
+        if (_xrFloorHit(ctrl, _teleTmp)) {
+          xrRig.position.x = _cl(_teleTmp.x, palace.bounds.minX + 40, palace.bounds.maxX - 40);
+          xrRig.position.z = _cl(_teleTmp.z, palace.bounds.minZ + 40, palace.bounds.maxZ - 40);
+          _teleFlash = 1; _xrHapticPulse(0.6, 30);
         }
       } catch (e) {}
     }
@@ -997,12 +1039,29 @@
           var stepW = VR_MOVE_SPEED * (xrRig.scale.x || 1) / 60;   // per-frame world units (~60 fps)
           xrRig.position.x += (fwd * -sinY + str * cosY) * stepW;
           xrRig.position.z += (fwd * -cosY + str * -sinY) * stepW;
-          var b = palace.bounds;
-          xrRig.position.x = _cl(xrRig.position.x, b.minX + 40, b.maxX - 40);
-          xrRig.position.z = _cl(xrRig.position.z, b.minZ + 40, b.maxZ - 40);
+          xrRig.position.x = _cl(xrRig.position.x, palace.bounds.minX + 40, palace.bounds.maxX - 40);
+          xrRig.position.z = _cl(xrRig.position.z, palace.bounds.minZ + 40, palace.bounds.maxZ - 40);
         }
         if (Math.abs(snap) > 0.7) { if (_xrSnapArmed) { xrRig.rotation.y -= (snap > 0 ? 1 : -1) * VR_SNAP_DEG * Math.PI / 180; _xrSnapArmed = false; } }
         else if (Math.abs(snap) < 0.3) { _xrSnapArmed = true; }
+        // Teleport aim marker: show where a downward-pointing controller would land.
+        if (_teleMarker) {
+          if (!_teleTmp) _teleTmp = new THREE.Vector3();
+          var shown = false;
+          if (_xrCtrls) for (var k = 0; k < _xrCtrls.length; k++) {
+            if (_xrFloorHit(_xrCtrls[k], _teleTmp)) {
+              _teleMarker.position.set(_cl(_teleTmp.x, palace.bounds.minX + 40, palace.bounds.maxX - 40), 2, _cl(_teleTmp.z, palace.bounds.minZ + 40, palace.bounds.maxZ - 40));
+              _teleMarker.visible = true; shown = true; break;
+            }
+          }
+          if (!shown) _teleMarker.visible = false;
+        }
+        // Comfort vignette: dim the periphery by glide speed, plus a teleport blink.
+        if (_vignette) {
+          var target = Math.min(1, Math.sqrt(mvX * mvX + mvY * mvY)) * VR_VIGNETTE_MAX;
+          if (_teleFlash > 0) { target = Math.max(target, 0.9); _teleFlash = Math.max(0, _teleFlash - 0.08); }
+          _vignette.material.opacity += (target - _vignette.material.opacity) * 0.25;
+        }
       } catch (e) {}
     }
 

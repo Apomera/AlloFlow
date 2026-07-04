@@ -296,6 +296,10 @@ window.StemLab = window.StemLab || {
             ctrl.addEventListener('squeezeend', function () { _grabEnd(ctrl); });
           })(c);
           xrRig.add(c); _xrCtrlsGeo.push(c);
+          // grip mesh — a small controller-ish box so the student sees their hands
+          var gp = renderer.xr.getControllerGrip(ci);
+          gp.add(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, 0.09), new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.6, metalness: 0.2 })));
+          xrRig.add(gp);
         }
       } catch (e) {}
     }
