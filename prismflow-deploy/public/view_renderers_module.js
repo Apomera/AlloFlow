@@ -1261,6 +1261,15 @@ function _voPrim3dEnsure() {
     return false;
   });
 }
+function _voVoiceEnsure() {
+  if (window.AlloFlowVoice || window.AlloModules && window.AlloModules.Voice) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + "voice_module.js" + loc.query).then(function() {
+    return !!(window.AlloFlowVoice || window.AlloModules && window.AlloModules.Voice);
+  }).catch(function() {
+    return false;
+  });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -2294,6 +2303,69 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [directBusy, setDirectBusy] = React.useState(null);
   const [refinePrompt, setRefinePrompt] = React.useState("");
   const [refineBusy, setRefineBusy] = React.useState(false);
+  const [voiceSupported, setVoiceSupported] = React.useState(false);
+  const [voiceListening, setVoiceListening] = React.useState(false);
+  const [voiceHeard, setVoiceHeard] = React.useState("");
+  const voiceCtlRef = React.useRef(null);
+  React.useEffect(() => {
+    try {
+      if (window.SpeechRecognition || window.webkitSpeechRecognition) setVoiceSupported(true);
+    } catch (e) {
+    }
+    return () => {
+      try {
+        if (voiceCtlRef.current) {
+          voiceCtlRef.current.stop();
+          voiceCtlRef.current = null;
+        }
+      } catch (e) {
+      }
+    };
+  }, []);
+  const handleVoiceDirect = (transcript) => {
+    const text = (transcript || "").trim();
+    if (!text) return;
+    setDirectPrompt(text);
+    handleDirectSubmit(text);
+  };
+  const toggleVoiceDirect = () => {
+    if (voiceListening) {
+      try {
+        if (voiceCtlRef.current) voiceCtlRef.current.stop();
+      } catch (e) {
+      }
+      setVoiceListening(false);
+      return;
+    }
+    _voVoiceEnsure().then((ok) => {
+      const V = window.AlloFlowVoice || window.AlloModules && window.AlloModules.Voice;
+      if (!ok || !V || !V.initWebSpeechCapture) {
+        if (addToast) addToast(t("memory_palace.voice_unavailable") || "Voice input is unavailable in this browser.", "info");
+        return;
+      }
+      try {
+        voiceCtlRef.current = V.initWebSpeechCapture({
+          lang: "en-US",
+          interimResults: true,
+          continuous: false,
+          onTranscript: (txt, isFinal) => {
+            setVoiceHeard(txt);
+            if (isFinal) {
+              setVoiceListening(false);
+              handleVoiceDirect(txt);
+            }
+          },
+          onEnd: () => setVoiceListening(false)
+        });
+        if (voiceCtlRef.current && voiceCtlRef.current.start() !== false) {
+          setVoiceListening(true);
+          setVoiceHeard("");
+        }
+      } catch (e) {
+        setVoiceListening(false);
+      }
+    });
+  };
   const handleSculpt = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
@@ -2339,11 +2411,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
     step(0);
   };
-  const handleDirectSubmit = () => {
+  const handleDirectSubmit = (promptOverride) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     const cur = currentRef.current;
     if (!MP || !MP.buildPromptEvalPrompt || !cur || cur.id === "__entry" || directBusy || typeof window.callGemini !== "function") return;
-    const userPrompt = directPrompt.trim();
+    const userPrompt = typeof promptOverride === "string" && promptOverride.trim() ? promptOverride.trim() : directPrompt.trim();
     if (!userPrompt) return;
     setDirectBusy("evaluating");
     setDirectEval(null);
@@ -2636,7 +2708,18 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       rows: 2,
       className: "w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !directPrompt.trim() || !!directBusy, className: "px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, directBusy === "evaluating" ? t("memory_palace.direct_checking") || "Checking\u2026" : directBusy === "generating" ? t("memory_palace.direct_creating") || "Creating\u2026" : t("memory_palace.direct_submit") || "Check & create"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-fuchsia-600" }, t("memory_palace.direct_note") || "The AI checks your prompt fits the fact and is school-appropriate before creating."))))), recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !directPrompt.trim() || !!directBusy, className: "px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed" }, directBusy === "evaluating" ? t("memory_palace.direct_checking") || "Checking\u2026" : directBusy === "generating" ? t("memory_palace.direct_creating") || "Creating\u2026" : t("memory_palace.direct_submit") || "Check & create"), voiceSupported && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: toggleVoiceDirect,
+      disabled: !!directBusy,
+      "aria-pressed": voiceListening ? "true" : "false",
+      title: t("memory_palace.voice_direct_title") || "Speak your prompt for this locus, hands-free",
+      className: `px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? "bg-rose-600 text-white animate-pulse" : "bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50"}`
+    },
+    voiceListening ? "\u{1F534} " + (t("memory_palace.voice_listening") || "Listening\u2026") : "\u{1F3A4} " + (t("memory_palace.voice_direct") || "Speak")
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-fuchsia-600" }, t("memory_palace.direct_note") || "The AI checks your prompt fits the fact and is school-appropriate before creating."), voiceHeard && /* @__PURE__ */ React.createElement("span", { className: "w-full text-xs text-fuchsia-500 italic" }, "\u201C", voiceHeard, "\u201D"))))), recall && finished && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-900", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, finished.perfect ? t("memory_palace.recall_perfect") || "\u{1F3DB}\u2728 Perfect walk! Every locus recalled on the first try." : (t("memory_palace.recall_summary") || "Recalled {ok} of {total} ({first} on the first try).").replace("{ok}", String(finished.firstTry + finished.eventual)).replace("{total}", String(finished.total)).replace("{first}", String(finished.firstTry))), " ", "\xB7 \u23F1 ", fmtTime(elapsed), " \xB7 ", (t("memory_palace.recall_points") || "{points} points").replace("{points}", String(finished.points))), recall && !finished && current && (current.entry ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600" }, t("memory_palace.recall_at_entry") || "Walk forward (\u25B6 or \u2192) to the first locus to begin recalling.") : /* @__PURE__ */ React.createElement("div", { className: `mt-3 rounded-xl px-4 py-3 border transition-colors ${wrongFlash ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800 mb-2" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", t("memory_palace.recall_q") || "What belongs at this locus?"), recallResultsRef.current[current.id]?.correct || recallResultsRef.current[current.id]?.revealed ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-900" }, t("memory_palace.recall_answered") || "Answered \u2014 walk on (\u25B6) or pick another frame.") : recall.mode === "bank" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, recallBank.map((chip) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: chip.id,

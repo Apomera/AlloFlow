@@ -1901,6 +1901,13 @@ function _voPrim3dEnsure() {
     .then(function () { return !!(window.AlloModules && window.AlloModules.Prim3D); })
     .catch(function () { return false; });
 }
+function _voVoiceEnsure() {
+  if (window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'voice_module.js' + loc.query)
+    .then(function () { return !!(window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)); })
+    .catch(function () { return false; });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -2887,6 +2894,39 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [directBusy, setDirectBusy] = React.useState(null);      // 'evaluating' | 'generating' | null
     const [refinePrompt, setRefinePrompt] = React.useState('');    // "tell the AI what to change" for the current sculpture
     const [refineBusy, setRefineBusy] = React.useState(false);
+    // ── Voice input for Direct-the-AI (hands-free / accessible making): walk to a
+    //    locus and SPEAK what belongs there; the spoken prompt runs through the
+    //    same eval → generate flow as typing. Feature-detected on Web Speech, so
+    //    the mic only shows where dictation exists. Speech via AlloFlowVoice. ──
+    const [voiceSupported, setVoiceSupported] = React.useState(false);
+    const [voiceListening, setVoiceListening] = React.useState(false);
+    const [voiceHeard, setVoiceHeard] = React.useState('');
+    const voiceCtlRef = React.useRef(null);
+    React.useEffect(() => {
+        try { if (window.SpeechRecognition || window.webkitSpeechRecognition) setVoiceSupported(true); } catch (e) {}
+        return () => { try { if (voiceCtlRef.current) { voiceCtlRef.current.stop(); voiceCtlRef.current = null; } } catch (e) {} };
+    }, []);
+    const handleVoiceDirect = (transcript) => {
+        const text = (transcript || '').trim();
+        if (!text) return;
+        setDirectPrompt(text);          // show what was heard in the prompt box
+        handleDirectSubmit(text);       // eval → generate at the current locus
+    };
+    const toggleVoiceDirect = () => {
+        if (voiceListening) { try { if (voiceCtlRef.current) voiceCtlRef.current.stop(); } catch (e) {} setVoiceListening(false); return; }
+        _voVoiceEnsure().then((ok) => {
+            const V = window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice);
+            if (!ok || !V || !V.initWebSpeechCapture) { if (addToast) addToast(t('memory_palace.voice_unavailable') || 'Voice input is unavailable in this browser.', 'info'); return; }
+            try {
+                voiceCtlRef.current = V.initWebSpeechCapture({
+                    lang: 'en-US', interimResults: true, continuous: false,
+                    onTranscript: (txt, isFinal) => { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handleVoiceDirect(txt); } },
+                    onEnd: () => setVoiceListening(false)
+                });
+                if (voiceCtlRef.current && voiceCtlRef.current.start() !== false) { setVoiceListening(true); setVoiceHeard(''); }
+            } catch (e) { setVoiceListening(false); }
+        });
+    };
     // Both generators process EVERY un-arted locus (no fixed cap), reveal each result
     // LIVE the moment it lands (handleRef.current.setLocus*), and persist it
     // incrementally WITHOUT bumping generatedAt — so items pop in one-by-one while you
@@ -2933,11 +2973,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
 
     // Directed generation for the CURRENT locus (the walk is the locus picker).
     // Reset the eval whenever the student edits their prompt or moves to a new locus.
-    const handleDirectSubmit = () => {
+    const handleDirectSubmit = (promptOverride) => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const cur = currentRef.current;
         if (!MP || !MP.buildPromptEvalPrompt || !cur || cur.id === '__entry' || directBusy || typeof window.callGemini !== 'function') return;
-        const userPrompt = directPrompt.trim();
+        const userPrompt = (typeof promptOverride === 'string' && promptOverride.trim()) ? promptOverride.trim() : directPrompt.trim();
         if (!userPrompt) return;
         setDirectBusy('evaluating'); setDirectEval(null);
         const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: cur.mnemonic, topic: data?.main || title || '', mode: directType });
@@ -3294,7 +3334,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         <button type="submit" disabled={!directPrompt.trim() || !!directBusy} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                             {directBusy === 'evaluating' ? (t('memory_palace.direct_checking') || 'Checking…') : directBusy === 'generating' ? (t('memory_palace.direct_creating') || 'Creating…') : (t('memory_palace.direct_submit') || 'Check & create')}
                                         </button>
+                                        {voiceSupported && (
+                                            <button type="button" onClick={toggleVoiceDirect} disabled={!!directBusy}
+                                                aria-pressed={voiceListening ? 'true' : 'false'}
+                                                title={t('memory_palace.voice_direct_title') || 'Speak your prompt for this locus, hands-free'}
+                                                className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${voiceListening ? 'bg-rose-600 text-white animate-pulse' : 'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50'}`}>
+                                                {voiceListening ? ('🔴 ' + (t('memory_palace.voice_listening') || 'Listening…')) : ('🎤 ' + (t('memory_palace.voice_direct') || 'Speak'))}
+                                            </button>
+                                        )}
                                         <span className="text-xs text-fuchsia-600">{t('memory_palace.direct_note') || 'The AI checks your prompt fits the fact and is school-appropriate before creating.'}</span>
+                                        {voiceHeard && <span className="w-full text-xs text-fuchsia-500 italic">“{voiceHeard}”</span>}
                                     </div>
                                 </form>
                             )}
