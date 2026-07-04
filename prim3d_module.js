@@ -158,6 +158,37 @@
     };
   }
 
+  // ── Voice-directed dimensional stretch (HandWaver point→line→plane→solid) ──
+  // The most embodiment-resonant target: a learner who can't gesture instead
+  // SPEAKS the dimensional moves ("add a point", "stretch it up", "sweep it
+  // across", "pull it out") and the agent enacts the point→segment→rect→prism
+  // build. Same PURE/testable seam shape as the sculpt router.
+  var STRETCH_ACTIONS = { point: 1, stretch: 1, undo: 1, reset: 1, none: 1 };
+  var STRETCH_AXES = { x: 1, y: 1, z: 1 };
+  function buildStretchCommandPrompt(transcript, selType) {
+    return [
+      'A student is building a shape BY VOICE by stretching lower dimensions into higher ones: point → segment(line) → rectangle(plane) → prism(solid).',
+      'The student just said: "' + String(transcript || '') + '"',
+      'Currently selected object: ' + (selType ? String(selType) : 'none') + '.',
+      'Return ONLY JSON: { "action": "point|stretch|undo|reset|none", "axis": "x|y|z" }',
+      'Rules:',
+      '- "point": start a new point ("add a point", "start", "give me a dot").',
+      '- "stretch": extend the selected object into the next dimension along an axis. Put the axis in "axis": x = left/right/across/width, y = up/down/tall/height, z = forward/back/out/depth. ("stretch it up" → y; "sweep it sideways" → x; "pull it out" → z).',
+      '- "undo": undo the last step. "reset": clear everything. "none": not a build command.',
+      'Return ONLY the JSON.'
+    ].join('\n');
+  }
+  // parseStretchCommand — PURE: model text → { action, axis } | null.
+  function parseStretchCommand(text) {
+    var parsed;
+    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
+    if (!parsed || typeof parsed !== 'object') return null;
+    var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
+    if (!STRETCH_ACTIONS[action]) return null;
+    var axis = (typeof parsed.axis === 'string') ? parsed.axis.toLowerCase().trim() : '';
+    return { action: action, axis: STRETCH_AXES[axis] ? axis : 'y' };   // default up
+  }
+
   // ── buildObject — recipe → THREE.Group (no GL context required) ──
   // opts.scale multiplies the whole assembly (1 recipe unit ≈ opts.unit world
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
@@ -213,6 +244,8 @@
     buildRefinePrompt: buildRefinePrompt,
     buildSculptCommandPrompt: buildSculptCommandPrompt,
     parseSculptCommand: parseSculptCommand,
+    buildStretchCommandPrompt: buildStretchCommandPrompt,
+    parseStretchCommand: parseStretchCommand,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');

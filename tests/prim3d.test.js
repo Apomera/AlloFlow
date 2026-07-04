@@ -115,6 +115,30 @@ describe('Prim3D voice-directed sculpting (hands-free / accessible making)', () 
   });
 });
 
+describe('Prim3D voice-directed stretch (HandWaver point→line→plane→solid by voice)', () => {
+  it('buildStretchCommandPrompt embeds transcript, selection, the point→prism ladder, axes, and JSON-only', () => {
+    const p = P.buildStretchCommandPrompt('stretch it up into a line', 'point');
+    expect(p).toMatch(/stretch it up into a line/);
+    expect(p).toMatch(/Currently selected object: point/);
+    expect(p).toMatch(/point.*segment.*rectangle.*prism/i);
+    expect(p).toMatch(/point\|stretch\|undo\|reset\|none/);
+    expect(p).toMatch(/Return ONLY the JSON/);
+  });
+
+  it('parseStretchCommand validates action + axis, defaulting a bad/missing axis to y (up)', () => {
+    expect(P.parseStretchCommand('{"action":"point"}')).toEqual({ action: 'point', axis: 'y' });
+    expect(P.parseStretchCommand('{"action":"stretch","axis":"X"}')).toEqual({ action: 'stretch', axis: 'x' });
+    expect(P.parseStretchCommand('{"action":"stretch","axis":"sideways"}').axis).toBe('y');   // unknown axis → default
+    expect(P.parseStretchCommand('{"action":"undo"}').action).toBe('undo');
+  });
+
+  it('parseStretchCommand rejects unknown actions and junk', () => {
+    expect(P.parseStretchCommand('{"action":"fold"}')).toBe(null);
+    expect(P.parseStretchCommand('nope')).toBe(null);
+    expect(P.parseStretchCommand('{}')).toBe(null);
+  });
+});
+
 describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
   function threeStub() {
     function Group() { this.children = []; this.userData = {}; this.scale = { setScalar: () => {} }; this.add = (c) => this.children.push(c); }

@@ -1044,13 +1044,14 @@ window.StemLab = window.StemLab || {
         geoSound('shapeChange');
         if (announceToSR) announceToSR('Point added. Select an axis and stretch to create a segment.');
       }
-      function performStretch() {
+      function performStretch(axisOverride) {
+        var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
         var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
         if (!sel) { addToast('Select an object first', 'error'); return; }
         var newObj;
-        if (sel.type === 'point')        newObj = stretchPoint(sel, stretchAxis, stretchLength);
-        else if (sel.type === 'segment') newObj = stretchSegment(sel, stretchAxis, stretchLength);
-        else if (sel.type === 'rect')    newObj = stretchRect(sel, stretchAxis, stretchLength);
+        if (sel.type === 'point')        newObj = stretchPoint(sel, ax, stretchLength);
+        else if (sel.type === 'segment') newObj = stretchSegment(sel, ax, stretchLength);
+        else if (sel.type === 'rect')    newObj = stretchRect(sel, ax, stretchLength);
         else { addToast('Cannot stretch a solid further in this dimension', 'info'); return; }
         pushHistory();
         newObj.id = nextObjId(construction.objects);
@@ -1302,7 +1303,7 @@ window.StemLab = window.StemLab || {
           else if (cmd.action === 'bigger' || cmd.action === 'smaller' || cmd.action === 'rotate' || cmd.action === 'recolor') { doManualTweak(cmd.action); if (announceToSR) announceToSR(cmd.action); }
         }).catch(function() {});
       };
-      var toggleVoiceSculpt = function() {
+      var toggleVoice = function(handler, hint) {
         if (voiceListening) { try { if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {} setVoiceListening(false); return; }
         ensureVoice(function(V) {
           if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR('Voice input is unavailable in this browser.'); return; }
@@ -1310,12 +1311,31 @@ window.StemLab = window.StemLab || {
             window._geoVoiceCtl = V.initWebSpeechCapture({
               lang: (ctx.lang || 'en') + (String(ctx.lang || 'en').indexOf('-') < 0 ? '-US' : ''),
               interimResults: true, continuous: false,
-              onTranscript: function(txt, isFinal) { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handleVoiceCommand(txt); } },
+              onTranscript: function(txt, isFinal) { setVoiceHeard(txt); if (isFinal) { setVoiceListening(false); handler(txt); } },
               onEnd: function() { setVoiceListening(false); }
             });
-            if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); if (announceToSR) announceToSR('Listening. Say what to make or how to change it.'); }
+            if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); if (announceToSR) announceToSR(hint || 'Listening.'); }
           } catch (e) { if (announceToSR) announceToSR('Voice input could not start.'); }
         });
+      };
+      // Voice for the HandWaver-style dimensional stretch: speak the moves
+      // ("add a point", "stretch it up", "sweep it across", "pull it out") and
+      // the agent enacts point→segment→rect→prism. The accessible route to the
+      // hands-on "making" of geometry.
+      var handleStretchVoiceCommand = function(transcript) {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        var text = (transcript || '').trim();
+        if (!P3D || !text || typeof ctx.callGemini !== 'function') return;
+        setVoiceHeard(text);
+        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+        ctx.callGemini(P3D.buildStretchCommandPrompt(text, sel ? sel.type : ''), false, false, 0.2).then(function(resp) {
+          var cmd = P3D.parseStretchCommand(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR('Try “add a point”, “stretch it up”, or “pull it out”.'); return; }
+          if (cmd.action === 'point') addPoint([0, 0, 0]);
+          else if (cmd.action === 'stretch') { if (construction.selection) performStretch(cmd.axis); else addPoint([0, 0, 0]); }
+          else if (cmd.action === 'undo') doStretchUndo();
+          else if (cmd.action === 'reset') { pushHistory(); setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) }); }); if (announceToSR) announceToSR('Construction cleared'); }
+        }).catch(function() {});
       };
 
       // ── Wireframe toggle with badge ──
@@ -1636,7 +1656,7 @@ window.StemLab = window.StemLab || {
                       className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
                     }, sculptBusy ? t('stem.geosandbox.sculpt_working', '… Creating') : ('✨ ' + (sculptRecipe ? t('stem.geosandbox.sculpt_regenerate', 'Regenerate') : t('stem.geosandbox.sculpt_create', 'Create sculpture')))),
                     voiceSupported && h('button', {
-                      onClick: toggleVoiceSculpt,
+                      onClick: function() { toggleVoice(handleVoiceCommand, 'Listening. Say what to make or how to change it.'); },
                       disabled: sculptBusy,
                       'aria-pressed': voiceListening ? 'true' : 'false',
                       'aria-label': t('stem.geosandbox.voice_sculpt_title', 'Voice sculpt — speak to create and shape it, hands-free'),
@@ -1671,6 +1691,17 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, t('stem.geosandbox.dimensional_stretch_builder', '📐 Dimensional Stretch Builder')),
               h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
                 t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
+              ),
+              // Voice build (hands-free HandWaver stretch): speak the dimensional moves
+              (voiceSupported && typeof ctx.callGemini === 'function') && h('div', { className: 'space-y-1' },
+                h('button', {
+                  onClick: function() { toggleVoice(handleStretchVoiceCommand, 'Listening. Say “add a point”, then “stretch it up”, “sweep across”, or “pull it out”.'); },
+                  'aria-pressed': voiceListening ? 'true' : 'false',
+                  'aria-label': t('stem.geosandbox.voice_build_title', 'Voice build — speak the stretches to build point to line to plane to solid, hands-free'),
+                  title: t('stem.geosandbox.voice_build_title', 'Voice build — speak the stretches to build point to line to plane to solid, hands-free'),
+                  className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' + (voiceListening ? 'bg-rose-600 text-white animate-pulse' : 'bg-slate-900/50 text-purple-200 border border-purple-500/40 hover:bg-slate-900/80')
+                }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_build', 'Voice build'))),
+                voiceHeard && h('p', { className: 'text-[11px] text-purple-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”')
               ),
               // Step 1: Place point
               h('button', {

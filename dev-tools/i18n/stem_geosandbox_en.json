@@ -44,6 +44,8 @@
   "sculpt_refine_placeholder": "Tell the AI what to change…",
   "dimensional_stretch_builder": "📐 Dimensional Stretch Builder",
   "build_geometry_by_stretching_a_point_i": "Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.",
+  "voice_build_title": "Voice build — speak the stretches to build point to line to plane to solid, hands-free",
+  "voice_build": "Voice build",
   "add_a_point_at_origin": "Add a point at origin",
   "place_point_at_origin": "⊙ Place point at origin",
   "stretch_axis": "Stretch axis:",
