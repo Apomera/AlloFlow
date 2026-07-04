@@ -79,6 +79,18 @@ describe('Prim3D.buildRecipePrompt (the sandbox ask)', () => {
   });
 });
 
+describe('Prim3D.buildRefinePrompt (AI edits an existing recipe — canonical home for reuse)', () => {
+  it('embeds the current recipe JSON, the instruction, the shape whitelist, and JSON-only', () => {
+    const recipe = { name: 'Kettle', parts: [{ shape: 'sphere', size: [0.5], position: [0, 0.5, 0], color: '#ff0000' }] };
+    const p = P.buildRefinePrompt(recipe, 'make it taller and add a spout');
+    expect(p).toMatch(/Kettle/);
+    expect(p).toMatch(/make it taller and add a spout/);
+    expect(p).toMatch(/box, sphere, cylinder, cone, torus/);
+    expect(p).toMatch(/Return ONLY the updated JSON/);
+    expect(p).toMatch(/4-24 parts/);
+  });
+});
+
 describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
   function threeStub() {
     function Group() { this.children = []; this.userData = {}; this.scale = { setScalar: () => {} }; this.add = (c) => this.children.push(c); }

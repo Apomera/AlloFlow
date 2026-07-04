@@ -226,10 +226,12 @@
     };
   }
 
-  // Refine an EXISTING sculpture recipe by a student instruction — Gemini edits
-  // the JSON in place. PURE builder; parse the reply with Prim3D.parseRecipe.
+  // Refine an EXISTING sculpture recipe by a student instruction. The canonical
+  // implementation now lives in Prim3D (so the sculpting primitive is reusable);
+  // delegate to it, with an inline fallback if Prim3D isn't loaded.
   function buildRefinePrompt(recipe, instruction, opts) {
-    opts = opts || {};
+    var P = window.AlloModules && window.AlloModules.Prim3D;
+    if (P && typeof P.buildRefinePrompt === 'function') return P.buildRefinePrompt(recipe, instruction, opts);
     var json = '';
     try { json = JSON.stringify(recipe); } catch (e) { json = '{}'; }
     return [

@@ -87,6 +87,25 @@
     ].join('\n');
   }
 
+  // ── buildRefinePrompt — PURE: ask the AI to EDIT an existing recipe ──
+  // Canonical home for recipe-editing (moved here from memory_palace so the
+  // sculpting primitive is self-contained for reuse). Parse the reply with parseRecipe.
+  function buildRefinePrompt(recipe, instruction, opts) {
+    opts = opts || {};
+    var json = '';
+    try { json = JSON.stringify(recipe); } catch (e) { json = '{}'; }
+    return [
+      'Here is a small 3D object built from primitive shapes, as JSON:',
+      json,
+      'The student wants this change: "' + String(instruction || '') + '"',
+      'Modify the JSON to make that change while keeping it a recognizable, charming low-poly object.',
+      'Use ONLY box, sphere, cylinder, cone, torus. Keep the SAME JSON shape:',
+      '{ "name": "...", "parts": [ { "shape": "box", "size": [w,h,d], "position": [x,y,z], "rotation": [rx,ry,rz], "color": "#rrggbb" } ] }',
+      'Rules: 4-' + MAX_PARTS + ' parts; y is UP; the object STANDS ON y=0; sizes/positions in the same small range as the input; school-appropriate; no text.',
+      'Return ONLY the updated JSON.'
+    ].join('\n');
+  }
+
   function _stripToJson(text) {
     var s = String(text || '').trim();
     s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -154,6 +173,7 @@
     normalizeRecipe: normalizeRecipe,
     parseRecipe: parseRecipe,
     buildRecipePrompt: buildRecipePrompt,
+    buildRefinePrompt: buildRefinePrompt,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');
