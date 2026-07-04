@@ -78,6 +78,34 @@ window.StemLab = window.StemLab || {
       var h = React.createElement;
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
+      // WebXR: "Enter VR" shows ONLY with a headset present, reactive to
+      // connect/unplug (devicechange) — fly through the galaxy at room scale.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+        check();
+        var dc = function() { check(); };
+        try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+        return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+      }, []);
+      var ensureAlloVR = function(cb) {
+        if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+          s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+          s.onerror = function(){ cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      };
       var setStemLabTool = ctx.setStemLabTool;
       var setStemLabTab = ctx.setStemLabTab;
       var stemLabTab = ctx.stemLabTab || 'explore';
@@ -1339,12 +1367,39 @@ if (!window._galaxyHasLoadedOnce) {
 
             animate();
 
+            // ── WebXR (optional): fly THROUGH the galaxy at room scale (thumbstick
+            //    glide + teleport across the disk + comfort vignette). Loads AlloVR
+            //    only when a headset is present; presenting-only, so 2D is untouched.
+            //    The galaxy is ~2 world-units, so the rig is scaled DOWN to make it
+            //    huge around you (on-device tunable). ──
+            try {
+              if (navigator.xr && navigator.xr.isSessionSupported) {
+                navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+                  if (!ok || !canvasEl.isConnected) return;
+                  ensureAlloVR(function(V) {
+                    if (!V || !canvasEl.isConnected) return;
+                    try {
+                      window._galaxyVR = V.enable({
+                        THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+                        seat: { position: [0, 0, 0.8], scale: 0.08, moveSpeed: 3.0 },
+                        bounds: { minX: -1.5, maxX: 1.5, minZ: -1.5, maxZ: 1.5 },
+                        render: function() { if (composer) { try { composer.render(); return; } catch (e) {} } renderer.render(scene, camera); },
+                        pauseLoop: function() { if (animId) { cancelAnimationFrame(animId); animId = null; } },
+                        resumeLoop: function() { animate(); }
+                      });
+                    } catch(e){}
+                  });
+                }).catch(function(){});
+              }
+            } catch(e){}
+
             var ro = new ResizeObserver(function () { W = canvasEl.offsetWidth; H = canvasEl.offsetHeight; camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H); });
 
             ro.observe(canvasEl);
 
             canvasEl._galaxyCleanup = function () {
 
+              try { if (window._galaxyVR && window._galaxyVR.destroy) window._galaxyVR.destroy(); window._galaxyVR = null; } catch(e){}
               if (animId) cancelAnimationFrame(animId);
 
               canvasEl.removeEventListener('mousedown', onGalDown);
@@ -1974,6 +2029,13 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
 
                 React.createElement("div", { className: "flex gap-1.5 mt-2" },
+
+                  xrSupported && React.createElement("button", {
+                    "aria-label": t('vr.enter_title', 'Enter VR (needs a headset)'),
+                    title: t('vr.enter_title', 'Enter VR (needs a headset)'),
+                    onMouseDown: function (e) { e.preventDefault(); e.stopPropagation(); if (window._galaxyVR && window._galaxyVR.enterVR) window._galaxyVR.enterVR(); },
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold select-none bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
+                  }, '🥽 ' + t('vr.enter', 'VR')),
 
                   React.createElement("button", { "aria-label": "Toggle cosmic time-lapse playback",
 
