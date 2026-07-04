@@ -1594,6 +1594,20 @@ window.StemLab = window.StemLab || {
               title: t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20'
             }, t('stem.geosandbox.enter_vr', '🥽 VR')),
+            h('button', {
+              'aria-label': t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
+              onClick: function() {
+                // Top-level window (Video-Studio / Access-Lens escape-hatch), so WebXR
+                // works even when the AlloFlow app is inside Gemini Canvas's sandboxed iframe.
+                var url = 'https://alloflow-cdn.pages.dev/immersive_geometry/immersive_geometry.html?v=1';
+                var w = null;
+                try { w = window.open(url, 'alloflow-immersive-geometry', 'width=1180,height=820'); } catch (_) { w = null; }
+                if (!w) { if (announceToSR) announceToSR(t('stem.geosandbox.open_immersive_blocked', 'The immersive window was blocked. Allow pop-ups for this page, then try again.')); return; }
+                if (announceToSR) announceToSR(t('stem.geosandbox.open_immersive_sr', 'Opened the Immersive Geometry Lab in a new window.'));
+              },
+              title: t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-violet-600/20'
+            }, t('stem.geosandbox.open_immersive', '🌐 Immersive Lab')),
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
