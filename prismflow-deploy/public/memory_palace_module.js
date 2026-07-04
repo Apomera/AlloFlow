@@ -508,31 +508,53 @@
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l };
+      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh };
     });
 
     // Sculpted 3D objects at loci (Prim3D recipes from the 🗿 Sculpt flow, or a
-    // haven decoration's recipe3d) — a pedestal + primitive-assembly figure
-    // beside each furnished frame. Prim3D is loaded by the host; a missing
-    // module or an unrenderable recipe degrades to nothing, never an error.
+    // haven decoration's recipe3d) — a pedestal + primitive-assembly figure beside
+    // each frame. placeSculpture is reused for the initial pass AND live one-by-one
+    // reveal (state.setLocusObject) during generation. Prim3D missing / unrenderable
+    // recipe ⇒ nothing, never an error.
     var objects = (opts && opts.objects) || {};
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
-    if (P3D && objects) {
-      palace.loci.forEach(function (l) {
-        if (l.id === '__entry' || !objects[l.id]) return;
-        try {
-          var fig = P3D.buildObject(THREE, objects[l.id], { unit: 70 });
-          if (!fig) return;
-          var px = l.framePos.x + 90;
-          var pz = l.framePos.z + l.faceDir * 90;
-          var ped = new THREE.Mesh(new THREE.CylinderGeometry(30, 36, 44, 18),
-            new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
-          ped.position.set(px, 22, pz); group.add(ped);
-          fig.position.set(px, 44, pz);
-          group.add(fig);
-        } catch (e) {}
-      });
+    var SCULPT_UNIT = 90;                    // a touch bigger than the original 70
+    var _sculptedIds = {};                   // guard against placing a locus twice
+    function placeSculpture(l, recipe) {
+      if (!P3D || !l || l.id === '__entry' || _sculptedIds[l.id] || !recipe) return;
+      try {
+        var fig = P3D.buildObject(THREE, recipe, { unit: SCULPT_UNIT });
+        if (!fig) return;
+        var px = l.framePos.x + 100;
+        var pz = l.framePos.z + l.faceDir * 100;
+        var ped = new THREE.Mesh(new THREE.CylinderGeometry(34, 40, 46, 18),
+          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
+        ped.position.set(px, 23, pz); group.add(ped);
+        fig.position.set(px, 46, pz);
+        group.add(fig);
+        _sculptedIds[l.id] = true;
+      } catch (e) {}
     }
+    if (P3D && objects) {
+      palace.loci.forEach(function (l) { if (objects[l.id]) placeSculpture(l, objects[l.id]); });
+    }
+    // ── Live one-by-one reveal API (called as furnish/sculpt generate each item,
+    //    so results appear as they finish instead of all-at-once after a remount) ──
+    state.setLocusImage = function (id, img) {
+      var ref = frameRefs[id];
+      if (!ref || !ref.mat || !img) return;
+      try {
+        var oldMap = ref.mat.map;
+        var tx = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined, function () {});
+        if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding;
+        ref.mat.map = tx; ref.mat.needsUpdate = true;
+        if (oldMap && oldMap.dispose && oldMap !== tx) { try { oldMap.dispose(); } catch (e) {} }   // free the placeholder card
+      } catch (e) {}
+    };
+    state.setLocusObject = function (id, recipe) {
+      var l = locusById(palace, id);
+      if (l) placeSculpture(l, recipe);
+    };
 
     // Landmarks: one giant primitive structure per room (opts.landmarks =
     // { roomKey: Prim3D recipe }) rendered at building scale against the back
@@ -736,10 +758,18 @@
       }
       dragging = false; el.style.cursor = 'grab';
     }
+    // Scroll to zoom the lens (narrower FOV = zoom in) — lets you zoom into a
+    // sculpture or frame from where you stand, in either walk mode.
+    function onWheel(e) {
+      e.preventDefault();
+      camera.fov = Math.max(22, Math.min(78, camera.fov + (e.deltaY > 0 ? 3 : -3)));
+      camera.updateProjectionMatrix();
+    }
     el.style.cursor = 'grab';
     el.addEventListener('pointerdown', onDown);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+    el.addEventListener('wheel', onWheel, { passive: false });
 
     state.cleanup.push(function () {
       el.removeEventListener('keydown', onKeyDown);
@@ -747,6 +777,7 @@
       el.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      el.removeEventListener('wheel', onWheel);
       [hud, live, instr, ctrlHint].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
     });
 
@@ -862,6 +893,8 @@
     function goTo(idx) { try { if (state.goTo) state.goTo(idx); } catch (e) {} }
     function revealLocus(id) { try { if (state.revealLocus) state.revealLocus(id); } catch (e) {} }
     function setLocusStatus(id, status) { try { if (state.setLocusStatus) state.setLocusStatus(id, status); } catch (e) {} }
+    function setLocusImage(id, img) { try { if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
+    function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
     function showFallback(msg) {
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
@@ -873,7 +906,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -895,7 +928,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};

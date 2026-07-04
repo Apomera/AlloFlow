@@ -2383,6 +2383,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const aliveRef = React.useRef(true);           // false after unmount → skip late persists
     const finishedRef = React.useRef(false);       // synchronous double-finish guard for recall
     const recallTimersRef = React.useRef([]);      // pending auto-advance timers, cleared on exit/unmount
+    const genCancelRef = React.useRef(false);      // Stop button → halt an in-progress furnish/sculpt
     React.useEffect(() => () => {
         aliveRef.current = false;
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
@@ -2651,25 +2652,27 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const objects3d = data?.memoryPalace?.objects || {};
     const objectCount = Object.keys(objects3d).length;
     const [sculpting, setSculpting] = React.useState(null);   // {done, total} | null
+    // Both generators process EVERY un-arted locus (no fixed cap), reveal each result
+    // LIVE the moment it lands (handleRef.current.setLocus*), and persist it
+    // incrementally WITHOUT bumping generatedAt — so items pop in one-by-one while you
+    // walk, the scene never remounts (your position is kept), and a mid-run close keeps
+    // whatever was already made. The Stop button flips genCancelRef.
     const handleSculpt = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!MP || !P3D || !persist || sculpting || typeof window.callGemini !== 'function') return;
+        if (!MP || !P3D || !persist || sculpting || furnishing || typeof window.callGemini !== 'function') return;
         const palace = MP.buildPalace(data || {});
-        const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]).slice(0, 12);
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && !objects3d[l.id]);
         if (!targets.length) { if (addToast) addToast(t('memory_palace.sculpt_done_already') || 'Every locus already has a sculpture.', 'info'); return; }
+        genCancelRef.current = false;
         setSculpting({ done: 0, total: targets.length });
-        const out = {};
-        let failures = 0;
+        let done = 0, failures = 0;
         const step = (i) => {
-            if (i >= targets.length) {
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
                 setSculpting(null);
-                if (Object.keys(out).length && aliveRef.current) {
-                    persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), ...out }, generatedAt: Date.now() }, 'memoryPalace');
-                    setNonce((n) => n + 1);
-                }
-                if (addToast) {
-                    if (failures) addToast((t('memory_palace.sculpt_partial') || 'Sculpted {ok} loci; {fail} could not be designed.').replace('{ok}', String(Object.keys(out).length)).replace('{fail}', String(failures)), 'info');
+                if (addToast && aliveRef.current) {
+                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    else if (failures) addToast((t('memory_palace.sculpt_partial') || 'Sculpted {ok} loci; {fail} could not be designed.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
                     else addToast(t('memory_palace.sculpt_done') || '🗿 Sculptures placed! Walk the route to meet them.', 'success');
                 }
                 return;
@@ -2678,35 +2681,36 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             const subject = l.mnemonic || l.label;
             Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
                 .then((res) => {
+                    if (!aliveRef.current) return;
                     const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
                     const recipe = P3D.parseRecipe(text);
-                    if (recipe) out[l.id] = recipe; else failures += 1;
+                    if (recipe) {
+                        done += 1;
+                        if (handleRef.current && handleRef.current.setLocusObject) handleRef.current.setLocusObject(l.id, recipe);
+                        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [l.id]: recipe } }, 'memoryPalace');
+                    } else failures += 1;
                 })
                 .catch(() => { failures += 1; })
-                .then(() => { setSculpting({ done: i + 1, total: targets.length }); step(i + 1); });
+                .then(() => { if (aliveRef.current) { setSculpting({ done: i + 1, total: targets.length }); step(i + 1); } });
         };
         step(0);
     };
 
     const handleFurnish = () => {
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
-        if (!MP || !canImagen || !persist || furnishing) return;
+        if (!MP || !canImagen || !persist || furnishing || sculpting) return;
         const palace = MP.buildPalace(data || {});
-        const targets = palace.loci.filter((l) => l.id !== '__entry' && !images[l.id]).slice(0, 16);
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && !images[l.id]);
         if (!targets.length) { if (addToast) addToast(t('memory_palace.furnish_done_already') || 'Every locus already has an image.', 'info'); return; }
+        genCancelRef.current = false;
         setFurnishing({ done: 0, total: targets.length });
-        const out = {};
-        let failures = 0;
+        let done = 0, failures = 0;
         const step = (i) => {
-            if (i >= targets.length) {
+            if (i >= targets.length || genCancelRef.current || !aliveRef.current) {
                 setFurnishing(null);
-                if (Object.keys(out).length && aliveRef.current) {
-                    // Merge into the LIVE store (mpRef) so images never clobber sculptures or mastery.
-                    persist({ ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), ...out }, generatedAt: Date.now() }, 'memoryPalace');
-                    setNonce((n) => n + 1);
-                }
-                if (addToast) {
-                    if (failures) addToast((t('memory_palace.furnish_partial') || 'Furnished {ok} loci; {fail} could not be generated.').replace('{ok}', String(Object.keys(out).length)).replace('{fail}', String(failures)), 'info');
+                if (addToast && aliveRef.current) {
+                    if (genCancelRef.current) addToast((t('memory_palace.gen_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+                    else if (failures) addToast((t('memory_palace.furnish_partial') || 'Furnished {ok} loci; {fail} could not be generated.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
                     else addToast(t('memory_palace.furnish_done') || '🖼 Palace furnished! Walk the route to lock the images in.', 'success');
                 }
                 return;
@@ -2714,9 +2718,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             const l = targets[i];
             const subject = l.mnemonic || l.label;
             callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
-                .then((base64) => { if (base64) out[l.id] = base64; })
+                .then((base64) => {
+                    if (!aliveRef.current || !base64) { if (!base64) failures += 1; return; }
+                    done += 1;
+                    if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(l.id, base64);
+                    persist({ ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } }, 'memoryPalace');
+                })
                 .catch(() => { failures += 1; })
-                .then(() => { setFurnishing({ done: i + 1, total: targets.length }); step(i + 1); });
+                .then(() => { if (aliveRef.current) { setFurnishing({ done: i + 1, total: targets.length }); step(i + 1); } });
         };
         step(0);
     };
@@ -2795,6 +2804,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     🗿 {sculpting
                                         ? (t('memory_palace.sculpting') || 'Sculpting {done}/{total}…').replace('{done}', String(sculpting.done)).replace('{total}', String(sculpting.total))
                                         : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
+                                </button>
+                            )}
+                            {(furnishing || sculpting) && (
+                                <button
+                                    onClick={() => { genCancelRef.current = true; }}
+                                    className="flex items-center gap-1 bg-white text-red-600 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
+                                    title={t('memory_palace.gen_stop_tooltip') || 'Stop generating — keep what has been made so far'}
+                                >
+                                    ⏹ {t('memory_palace.gen_stop') || 'Stop'}
                                 </button>
                             )}
                             {hasContent && !failed && persist && (imageCount > 0 || objectCount > 0) && !furnishing && !sculpting && (
