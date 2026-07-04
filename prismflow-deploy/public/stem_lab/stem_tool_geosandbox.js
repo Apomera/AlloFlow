@@ -100,6 +100,28 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(s);
   }
 
+  // Lazy-load the shared Prim3D sculpting primitive (window.AlloModules.Prim3D) —
+  // it's a CDN sidecar, not globally present. buildObject(THREE, …) takes THREE as
+  // an argument so it works with this tool's r128. cb(true/false).
+  function ensurePrim3d(cb) {
+    if (window.AlloModules && window.AlloModules.Prim3D) { cb(true); return; }
+    var base = 'https://alloflow-cdn.pages.dev/', q = '';
+    try {
+      var scr = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scr.length; i++) {
+        var src = scr[i].getAttribute('src') || '';
+        var m = src.match(/^(.*\/)(?:stem_lab\/stem_tool_geosandbox|memory_palace_module|concept_graph_3d_module|prim3d_module)\.js(\?.*)?$/);
+        if (m) { base = m[1]; q = m[2] || ''; break; }
+      }
+    } catch (e) {}
+    try {
+      var el = document.createElement('script'); el.src = base + 'prim3d_module.js' + q; el.async = true;
+      el.onload = function() { cb(!!(window.AlloModules && window.AlloModules.Prim3D)); };
+      el.onerror = function() { cb(false); };
+      document.head.appendChild(el);
+    } catch (e) { cb(false); }
+  }
+
   // ── Scene management ──
   function initScene(cnv) {
     var THREE = window.THREE;
@@ -263,6 +285,7 @@ window.StemLab = window.StemLab || {
     if (window._geoScene) {
       cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
       try{ if(window._geoScene.renderer && window._geoScene.renderer._alloComposer){ (window._geoScene.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); window._geoScene.renderer._alloComposer=null; } }catch(e){}
+      try { if (window._geoScene.sculptGroup) { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
       if (window._geoScene.renderer) window._geoScene.renderer.dispose();
       if (window._geoScene.controls) window._geoScene.controls.dispose();
       window._geoScene = null;
@@ -829,8 +852,14 @@ window.StemLab = window.StemLab || {
       var opacity = gd.opacity != null ? gd.opacity : 1;
 
       // v2 additions ─────────────────────────────────────────────
-      var mode = gd.mode || 'single'; // 'single' | 'stretch'
+      var mode = gd.mode || 'single'; // 'single' | 'stretch' | 'sculpt'
       var construction = gd.construction || { objects: [], selection: null };
+      // ── AI Sculpt (v3, reuses window.AlloModules.Prim3D) ──
+      var sculptRecipe = gd.sculptRecipe || null;
+      var _scP = React.useState(''); var sculptPrompt = _scP[0], setSculptPrompt = _scP[1];
+      var _scR = React.useState(''); var sculptRefine = _scR[0], setSculptRefine = _scR[1];
+      var _scB = React.useState(false); var sculptBusy = _scB[0], setSculptBusy = _scB[1];
+      var _scRdy = React.useState(!!(window.AlloModules && window.AlloModules.Prim3D)); var prim3dReady = _scRdy[0], setPrim3dReady = _scRdy[1];
       var history = gd.history || [];
       var savedConstructions = gd.savedConstructions || {};
       var showSaved = gd.showSaved || false;
@@ -1075,6 +1104,41 @@ window.StemLab = window.StemLab || {
         }
       };
 
+      // ── AI Sculpt handlers (reuse window.AlloModules.Prim3D) ──
+      var _updSculpt = function(recipe) { upd('sculptRecipe', recipe); };
+      var doGenerateSculpt = function() {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!P3D || sculptBusy || typeof ctx.callGemini !== 'function') return;
+        var subj = (sculptPrompt || '').trim() || 'a friendly mascot';
+        setSculptBusy(true);
+        ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
+          var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          if (recipe) { recipe.name = subj.slice(0, 80); _updSculpt(recipe); if (announceToSR) announceToSR('Sculpture created'); }
+          setSculptBusy(false);
+        }).catch(function() { setSculptBusy(false); });
+      };
+      var doManualTweak = function(kind) {
+        if (!sculptRecipe) return;
+        var TINTS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', null];
+        var next = Object.assign({}, sculptRecipe);
+        if (kind === 'bigger') next.scale = Math.min(5, (sculptRecipe.scale || 1) * 1.25);
+        else if (kind === 'smaller') next.scale = Math.max(0.25, (sculptRecipe.scale || 1) * 0.8);
+        else if (kind === 'rotate') next.rotY = (((sculptRecipe.rotY || 0) + 45) % 360);
+        else if (kind === 'recolor') { var i = TINTS.indexOf(sculptRecipe.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
+        _updSculpt(next);
+      };
+      var doRefineSculpt = function() {
+        var P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!P3D || !sculptRecipe || sculptBusy || typeof ctx.callGemini !== 'function') return;
+        var instr = (sculptRefine || '').trim(); if (!instr) return;
+        setSculptBusy(true);
+        ctx.callGemini(P3D.buildRefinePrompt(sculptRecipe, instr), false, false, 0.7).then(function(resp) {
+          var nr = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
+          if (nr) { _updSculpt(Object.assign({}, nr, { scale: sculptRecipe.scale, rotY: sculptRecipe.rotY, tint: sculptRecipe.tint })); setSculptRefine(''); if (announceToSR) announceToSR('Sculpture refined'); }
+          setSculptBusy(false);
+        }).catch(function() { setSculptBusy(false); });
+      };
+
       // ── Wireframe toggle with badge ──
       var toggleWireframe = function() {
         var newWf = !wireframe;
@@ -1160,24 +1224,27 @@ window.StemLab = window.StemLab || {
 
         // Single-shape mode: render the primitive.
         // Stretch mode: hide primitive and render the construction group instead.
+        // Clear the two groups the active mode won't use, so only one is ever shown.
+        var _clearSculpt = function() { if (window._geoScene.sculptGroup) { window._geoScene.scene.remove(window._geoScene.sculptGroup); try { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sculptGroup = null; } };
+        var _clearConstruction = function() { if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); window._geoScene.constructionGroup = null; } };
+        var _clearMesh = function() { if (window._geoScene.mesh) { window._geoScene.scene.remove(window._geoScene.mesh); window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); window._geoScene.mesh = null; } };
         if (mode === 'single') {
-          // Remove construction group if present
-          if (window._geoScene.constructionGroup) {
-            window._geoScene.scene.remove(window._geoScene.constructionGroup);
-            window._geoScene.constructionGroup = null;
-          }
+          _clearConstruction(); _clearSculpt();
           updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
+        } else if (mode === 'sculpt') {
+          _clearMesh(); _clearConstruction(); _clearSculpt();
+          var P3D = window.AlloModules && window.AlloModules.Prim3D;
+          if (!P3D) { ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); }); }
+          else if (sculptRecipe) {
+            try {
+              var sg = P3D.buildObject(window.THREE, sculptRecipe, { unit: 2.6 });   // ~2.5 units tall on the grid
+              if (sg) { sg.position.y = 0; sg.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } }); window._geoScene.sculptGroup = sg; window._geoScene.scene.add(sg); }
+            } catch (e) {}
+          }
         } else {
-          // Stretch mode: clear the primitive mesh
-          if (window._geoScene.mesh) {
-            window._geoScene.scene.remove(window._geoScene.mesh);
-            window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
-            window._geoScene.mesh = null;
-          }
-          // Rebuild construction group
-          if (window._geoScene.constructionGroup) {
-            window._geoScene.scene.remove(window._geoScene.constructionGroup);
-          }
+          // Stretch mode
+          _clearMesh(); _clearSculpt();
+          if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); }
           window._geoScene.constructionGroup = buildConstructionGroup(window.THREE, construction.objects, construction.selection);
           window._geoScene.scene.add(window._geoScene.constructionGroup);
         }
@@ -1191,7 +1258,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction)]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -1258,7 +1325,19 @@ window.StemLab = window.StemLab || {
               title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
                 (mode === 'stretch' ? 'bg-purple-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
-            }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode'))
+            }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode')),
+            h('button', {
+              role: 'tab',
+              'aria-selected': mode === 'sculpt',
+              onClick: function() {
+                if (!(window.AlloModules && window.AlloModules.Prim3D)) ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); });
+                upd('mode', 'sculpt');
+                if (announceToSR) announceToSR('AI sculpt mode. Describe an object and the AI builds it from primitive shapes.');
+              },
+              title: t('stem.geosandbox.sculpt_mode_title', 'AI Sculpt: describe an object, the AI builds it from primitives \u2014 then refine it'),
+              className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
+                (mode === 'sculpt' ? 'bg-fuchsia-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+            }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA AI Sculpt'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
@@ -1344,6 +1423,48 @@ window.StemLab = window.StemLab || {
                   );
                 })
               )
+            ),
+
+            // ── v3: AI SCULPT PANEL — reuses window.AlloModules.Prim3D ──
+            mode === 'sculpt' && h('div', { className: 'bg-gradient-to-br from-fuchsia-900/40 to-pink-900/30 rounded-xl p-3 border border-fuchsia-500/40 space-y-3' },
+              h('div', { className: 'text-xs font-bold text-fuchsia-200 uppercase tracking-wider' }, t('stem.geosandbox.ai_sculpt', '🧊 AI Sculpt')),
+              h('p', { className: 'text-[11px] text-fuchsia-200/80 leading-relaxed' }, t('stem.geosandbox.ai_sculpt_help', 'Describe an object — the AI designs it from primitive shapes (box, sphere, cylinder, cone, torus). Then refine it by hand or by asking.')),
+              (typeof ctx.callGemini !== 'function')
+                ? h('p', { className: 'text-[11px] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI Sculpt needs the Gemini API.'))
+                : h(React.Fragment, null,
+                    h('input', {
+                      type: 'text', value: sculptPrompt,
+                      onChange: function(e) { setSculptPrompt(e.target.value); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') doGenerateSculpt(); },
+                      placeholder: t('stem.geosandbox.sculpt_placeholder', 'e.g. a rocket ship, a friendly robot…'),
+                      'aria-label': t('stem.geosandbox.sculpt_placeholder', 'Describe an object to sculpt'),
+                      className: 'w-full text-sm p-2 rounded-lg bg-slate-900/60 border border-fuchsia-500/40 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-fuchsia-400 outline-none'
+                    }),
+                    h('button', {
+                      onClick: doGenerateSculpt,
+                      disabled: sculptBusy,
+                      className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
+                    }, sculptBusy ? t('stem.geosandbox.sculpt_working', '… Creating') : ('✨ ' + (sculptRecipe ? t('stem.geosandbox.sculpt_regenerate', 'Regenerate') : t('stem.geosandbox.sculpt_create', 'Create sculpture')))),
+                    sculptRecipe && h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
+                      h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_refine', 'Refine')),
+                      h('div', { className: 'flex flex-wrap gap-1' },
+                        [['bigger', '🔍+ ' + t('stem.geosandbox.sculpt_bigger', 'Bigger')], ['smaller', '🔍− ' + t('stem.geosandbox.sculpt_smaller', 'Smaller')], ['rotate', '⟳ ' + t('stem.geosandbox.sculpt_rotate', 'Rotate')], ['recolor', '🎨 ' + t('stem.geosandbox.sculpt_recolor', 'Recolor')]].map(function(bt) {
+                          return h('button', { key: bt[0], onClick: function() { doManualTweak(bt[0]); }, className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80' }, bt[1]);
+                        })
+                      ),
+                      h('div', { className: 'flex gap-1' },
+                        h('input', {
+                          type: 'text', value: sculptRefine,
+                          onChange: function(e) { setSculptRefine(e.target.value); },
+                          onKeyDown: function(e) { if (e.key === 'Enter') doRefineSculpt(); },
+                          placeholder: t('stem.geosandbox.sculpt_refine_placeholder', 'Tell the AI what to change…'),
+                          'aria-label': t('stem.geosandbox.sculpt_refine_placeholder', 'Tell the AI what to change'),
+                          className: 'flex-1 min-w-0 text-xs p-1.5 rounded-lg bg-slate-900/60 border border-fuchsia-500/40 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-fuchsia-400 outline-none'
+                        }),
+                        h('button', { onClick: doRefineSculpt, disabled: sculptBusy, className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
+                      )
+                    )
+                  )
             ),
 
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
