@@ -225,6 +225,29 @@ describe('MemoryPalace — spaced-repetition mastery (pure scheduling)', () => {
   });
 });
 
+describe('MemoryPalace — directed-generation prompt gate (pure)', () => {
+  it('buildPromptEvalPrompt names the fact, the student prompt, the verdicts, and JSON-only', () => {
+    const p = MP.buildPromptEvalPrompt({ userPrompt: 'a blue whale', itemLabel: 'Evaporation', mnemonic: 'a giant kettle', topic: 'Water Cycle', mode: 'image' });
+    expect(p).toMatch(/Evaporation/);
+    expect(p).toMatch(/a blue whale/);
+    expect(p).toMatch(/a giant kettle/);
+    expect(p).toMatch(/Water Cycle/);
+    expect(p).toMatch(/"reject"/);
+    expect(p).toMatch(/"enhance"/);
+    expect(p).toMatch(/Return ONLY JSON/);
+    expect(MP.buildPromptEvalPrompt({ mode: 'sculpture' })).toMatch(/3D sculpture/);
+  });
+  it('parsePromptEval accepts the three verdicts, strips fences, clamps, rejects junk', () => {
+    expect(MP.parsePromptEval('```json\n{"verdict":"ok","enhancedPrompt":"x"}\n```')).toEqual({ verdict: 'ok', reason: '', enhancedPrompt: 'x' });
+    const enh = MP.parsePromptEval('{"verdict":"ENHANCE","reason":"too vague","enhancedPrompt":"a vivid giant kettle boiling a lake"}');
+    expect(enh.verdict).toBe('enhance');
+    expect(enh.enhancedPrompt).toMatch(/kettle/);
+    expect(MP.parsePromptEval('{"verdict":"reject","reason":"off topic"}')).toMatchObject({ verdict: 'reject', reason: 'off topic', enhancedPrompt: '' });
+    expect(MP.parsePromptEval('{"verdict":"maybe"}')).toBe(null);   // invalid verdict
+    expect(MP.parsePromptEval('not json')).toBe(null);
+  });
+});
+
 describe('MemoryPalace — graceful degradation (no WebGL in jsdom)', () => {
   it('isWebGLAvailable() is false under jsdom', () => {
     expect(MP.isWebGLAvailable()).toBe(false);

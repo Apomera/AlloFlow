@@ -2652,6 +2652,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const objects3d = data?.memoryPalace?.objects || {};
     const objectCount = Object.keys(objects3d).length;
     const [sculpting, setSculpting] = React.useState(null);   // {done, total} | null
+    // ── Direct-the-AI mode: the student writes the prompt; an AI stage rejects /
+    //    enhances / approves it before generating (generation effect + prompt craft). ──
+    const [directMode, setDirectMode] = React.useState(false);
+    const [directType, setDirectType] = React.useState('image');   // 'image' | 'sculpture'
+    const [directPrompt, setDirectPrompt] = React.useState('');
+    const [directEval, setDirectEval] = React.useState(null);      // {verdict, reason, enhancedPrompt} | null
+    const [directBusy, setDirectBusy] = React.useState(null);      // 'evaluating' | 'generating' | null
     // Both generators process EVERY un-arted locus (no fixed cap), reveal each result
     // LIVE the moment it lands (handleRef.current.setLocus*), and persist it
     // incrementally WITHOUT bumping generatedAt — so items pop in one-by-one while you
@@ -2694,6 +2701,55 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 .then(() => { if (aliveRef.current) { setSculpting({ done: i + 1, total: targets.length }); step(i + 1); } });
         };
         step(0);
+    };
+
+    // Directed generation for the CURRENT locus (the walk is the locus picker).
+    // Reset the eval whenever the student edits their prompt or moves to a new locus.
+    const handleDirectSubmit = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const cur = currentRef.current;
+        if (!MP || !MP.buildPromptEvalPrompt || !cur || cur.id === '__entry' || directBusy || typeof window.callGemini !== 'function') return;
+        const userPrompt = directPrompt.trim();
+        if (!userPrompt) return;
+        setDirectBusy('evaluating'); setDirectEval(null);
+        const prompt = MP.buildPromptEvalPrompt({ userPrompt, itemLabel: cur.label, mnemonic: cur.mnemonic, topic: data?.main || title || '', mode: directType });
+        Promise.resolve(window.callGemini(prompt, true))
+            .then((res) => {
+                if (!aliveRef.current) return;
+                const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                const ev = MP.parsePromptEval(text) || { verdict: 'ok', reason: '', enhancedPrompt: userPrompt };
+                if (ev.verdict === 'ok') { handleDirectGenerate(ev.enhancedPrompt || userPrompt); }
+                else { setDirectEval(ev); setDirectBusy(null); }   // reject → retry; enhance → let them choose
+            })
+            .catch(() => { if (aliveRef.current) { setDirectBusy(null); if (addToast) addToast(t('memory_palace.direct_eval_failed') || 'Could not check the prompt — try again.', 'error'); } });
+    };
+    const handleDirectGenerate = (finalPrompt) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!MP || !cur || cur.id === '__entry' || !persist) return;
+        setDirectBusy('generating'); setDirectEval(null);
+        const done = (store, key, val) => {
+            if (!aliveRef.current) return;
+            if (val) {
+                if (handleRef.current) { if (key === 'images' && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, val); else if (handleRef.current.setLocusObject) handleRef.current.setLocusObject(cur.id, val); }
+                persist({ ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } }, 'memoryPalace');
+                if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
+                setDirectPrompt('');
+            } else if (addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
+            setDirectBusy(null);
+        };
+        if (directType === 'sculpture') {
+            if (!P3D || typeof window.callGemini !== 'function') { setDirectBusy(null); return; }
+            Promise.resolve(window.callGemini(P3D.buildRecipePrompt(finalPrompt), true))
+                .then((res) => { const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || ''); done('objects', 'objects', P3D.parseRecipe(text)); })
+                .catch(() => done('objects', 'objects', null));
+        } else {
+            if (!canImagen) { setDirectBusy(null); return; }
+            callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+                .then((base64) => done('images', 'images', base64))
+                .catch(() => done('images', 'images', null));
+        }
     };
 
     const handleFurnish = () => {
@@ -2782,6 +2838,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
                                 </button>
                             )}
+                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${directMode ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
+                                    title={t('memory_palace.direct_tooltip') || 'Direct the AI yourself: write the prompt for each locus and the AI checks it before creating'}
+                                >
+                                    ✍️ {t('memory_palace.direct_toggle') || 'Direct the AI'}
+                                </button>
+                            )}
                             {hasContent && !failed && canImagen && persist && (
                                 <button
                                     onClick={handleFurnish}
@@ -2862,7 +2927,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     <div ref={hostRef} className="absolute inset-0" />
                 )}
             </div>
-            {!recall && current && !current.entry && (
+            {!recall && !directMode && current && !current.entry && (
                 <div className="mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
                     <div className="text-xs font-bold text-indigo-700 mb-0.5">
                         {(t('memory_palace.locus_of') || 'Locus {idx} of {total}').replace('{idx}', String(current.idx)).replace('{total}', String(current.total))} — {current.label}
@@ -2871,6 +2936,58 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         <div className="text-sm text-indigo-900">
                             <span className="font-bold">{t('memory_palace.picture_this') || 'Picture this:'}</span> {current.mnemonic}
                         </div>
+                    )}
+                </div>
+            )}
+            {directMode && !recall && hasContent && !failed && (
+                <div className="mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3">
+                    {(!current || current.entry) ? (
+                        <div className="text-sm text-fuchsia-900">{t('memory_palace.direct_at_entry') || '✍️ Walk to a locus (▶ or WASD), then direct the AI to create its image or sculpture.'}</div>
+                    ) : (
+                        <>
+                            <div className="text-xs font-bold text-fuchsia-800 mb-1">
+                                {(t('memory_palace.direct_for') || 'Direct the AI for: {label}').replace('{label}', current.label)}
+                            </div>
+                            {current.mnemonic && <div className="text-xs text-fuchsia-700 italic mb-2">{t('memory_palace.picture_this') || 'Picture this:'} {current.mnemonic}</div>}
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-bold text-fuchsia-800">{t('memory_palace.direct_make') || 'Make:'}</span>
+                                <button onClick={() => setDirectType('image')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>
+                                <button onClick={() => setDirectType('sculpture')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'sculpture' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🗿 {t('memory_palace.direct_sculpture') || 'Sculpture'}</button>
+                            </div>
+                            {directEval && directEval.verdict === 'reject' && (
+                                <div className="mb-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
+                                    <span className="font-bold">{t('memory_palace.direct_rejected') || 'Let’s adjust:'}</span> {directEval.reason}
+                                </div>
+                            )}
+                            {directEval && directEval.verdict === 'enhance' && (
+                                <div className="mb-2 text-sm text-fuchsia-900 bg-white border border-fuchsia-200 rounded-lg px-3 py-2" role="status" aria-live="polite">
+                                    {directEval.reason && <div className="mb-1">{directEval.reason}</div>}
+                                    {directEval.enhancedPrompt && <div className="italic text-fuchsia-800 mb-2">“{directEval.enhancedPrompt}”</div>}
+                                    <div className="flex gap-2 flex-wrap">
+                                        <button onClick={() => handleDirectGenerate(directEval.enhancedPrompt || directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50">✨ {t('memory_palace.direct_use_enhanced') || 'Use the improved version'}</button>
+                                        <button onClick={() => handleDirectGenerate(directPrompt)} disabled={!!directBusy} className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50 disabled:opacity-50">{t('memory_palace.direct_use_mine') || 'Use mine as-is'}</button>
+                                    </div>
+                                </div>
+                            )}
+                            {(!directEval || directEval.verdict === 'reject') && (
+                                <form onSubmit={(e) => { e.preventDefault(); handleDirectSubmit(); }}>
+                                    <textarea
+                                        value={directPrompt}
+                                        onChange={(e) => { setDirectPrompt(e.target.value); if (directEval) setDirectEval(null); }}
+                                        placeholder={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here…'}
+                                        aria-label={t('memory_palace.direct_placeholder') || 'Describe what the AI should create here'}
+                                        rows={2}
+                                        className="w-full text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                    />
+                                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                        <button type="submit" disabled={!directPrompt.trim() || !!directBusy} className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            {directBusy === 'evaluating' ? (t('memory_palace.direct_checking') || 'Checking…') : directBusy === 'generating' ? (t('memory_palace.direct_creating') || 'Creating…') : (t('memory_palace.direct_submit') || 'Check & create')}
+                                        </button>
+                                        <span className="text-xs text-fuchsia-600">{t('memory_palace.direct_note') || 'The AI checks your prompt fits the fact and is school-appropriate before creating.'}</span>
+                                    </div>
+                                </form>
+                            )}
+                        </>
                     )}
                 </div>
             )}

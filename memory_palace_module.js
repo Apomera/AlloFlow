@@ -190,6 +190,42 @@
     return _lev(e, g) <= tol;
   }
 
+  // ── Directed-generation prompt gate (advanced mode) ─────────────────
+  // The student writes their OWN prompt for a locus; an AI stage evaluates it
+  // BEFORE generating: reject (off-topic / not classroom-appropriate), enhance
+  // (on-topic but too vague → enriched), or ok. PURE builder + parser; the host
+  // owns callGemini. Pedagogy: generation effect + prompt-craft literacy + a safety gate.
+  function buildPromptEvalPrompt(opts) {
+    opts = opts || {};
+    var kind = opts.mode === 'sculpture' ? 'a small 3D sculpture' : 'an illustration';
+    return [
+      'You are helping a K-12 student direct an AI to create ' + kind + ' for one spot ("locus") in their memory palace.',
+      (opts.topic ? 'Topic / unit: ' + opts.topic : ''),
+      'The locus must help them remember this fact: "' + String(opts.itemLabel || '') + '".',
+      (opts.mnemonic ? 'A suggested mnemonic image for it: "' + opts.mnemonic + '".' : ''),
+      'The student wrote this prompt for the AI: "' + String(opts.userPrompt || '') + '"',
+      'Judge the student prompt and reply with ONE verdict:',
+      '- "reject": it is off-topic (unrelated to the fact), or not appropriate/safe for a school classroom. Give a short, kind reason and a nudge toward the fact.',
+      '- "enhance": it is on-topic and appropriate but too vague or thin to make a VIVID, memorable image. Keep the student\'s idea and enrich it with concrete visual detail (clear subject, colors, composition, a memorable exaggeration tied to the fact). Return the improved prompt.',
+      '- "ok": it is already clear, appropriate, and vivid.',
+      'Return ONLY JSON: { "verdict": "ok"|"enhance"|"reject", "reason": "one or two short sentences for the student", "enhancedPrompt": "the improved or original prompt; omit for reject" }'
+    ].filter(Boolean).join('\n');
+  }
+  function parsePromptEval(text) {
+    var s = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    var a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) s = s.slice(a, b + 1);
+    var parsed; try { parsed = JSON.parse(s); } catch (e) { return null; }
+    if (!parsed || typeof parsed !== 'object') return null;
+    var v = String(parsed.verdict || '').toLowerCase();
+    if (v !== 'ok' && v !== 'enhance' && v !== 'reject') return null;
+    return {
+      verdict: v,
+      reason: (parsed.reason != null) ? String(parsed.reason).slice(0, 400) : '',
+      enhancedPrompt: (parsed.enhancedPrompt != null) ? String(parsed.enhancedPrompt).slice(0, 600) : ''
+    };
+  }
+
   // results: {locusId: {attempts, correct, revealed}} → totals + points.
   // First-try recalls score full marks; eventual recalls half; reveals nothing.
   function scoreRecall(results) {
@@ -942,6 +978,8 @@
     buildRecallBank: buildRecallBank,
     matchAnswer: matchAnswer,
     scoreRecall: scoreRecall,
+    buildPromptEvalPrompt: buildPromptEvalPrompt,
+    parsePromptEval: parsePromptEval,
     updateMastery: updateMastery,
     dueLoci: dueLoci,
     masteryStrength: masteryStrength,
