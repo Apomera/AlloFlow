@@ -1040,13 +1040,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             effectivePrompt = await this._webSearchAugment(prompt);
         }
 
-        const payload = {
-            model: this.models.default,
-            messages: [{ role: 'user', content: effectivePrompt }],
-            max_tokens: maxTokens,
-            ...(json ? { response_format: { type: 'json_object' } } : {}),
-            ...(temperature !== null ? { temperature } : {}),
-        };
+        const payload = this.backend === 'ollama'
+            ? {
+                model: this.models.default,
+                messages: [{ role: 'user', content: effectivePrompt }],
+                stream: false,
+                ...(json ? { format: 'json' } : {}),
+                options: {
+                    num_predict: maxTokens,
+                    ...(temperature !== null ? { temperature } : {}),
+                },
+            }
+            : {
+                model: this.models.default,
+                messages: [{ role: 'user', content: effectivePrompt }],
+                max_tokens: maxTokens,
+                ...(json ? { response_format: { type: 'json_object' } } : {}),
+                ...(temperature !== null ? { temperature } : {}),
+            };
 
         const headers = { 'Content-Type': 'application/json' };
         if (this.apiKey) {
@@ -1078,7 +1089,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     async _webSearchAugment(prompt) {
         try {
             if (typeof window !== 'undefined' && window.WebSearchProvider) {
-                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10, searchQuery);
+                const { contextPrompt, groundingMetadata } = await window.WebSearchProvider.search(prompt, 10);
                 if (contextPrompt) {
                     this._lastSearchMetadata = groundingMetadata;
                     return contextPrompt + prompt;

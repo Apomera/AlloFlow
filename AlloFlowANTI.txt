@@ -319,9 +319,69 @@ const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
 if (typeof window !== 'undefined') {
     window.callGeminiAudio = callGeminiAudio;
 }
+function _readAlloAiUserConfig() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+    try {
+        return JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
+    } catch (_) {
+        return null;
+    }
+}
+function _usesLocalTextBackend(config) {
+    return Boolean(!_isCanvasEnv && config && config.backend && config.backend !== 'gemini');
+}
+function _installLocalTextBridge(aiInstance, aiConfig) {
+    if (!_usesLocalTextBackend(aiConfig) || !aiInstance || typeof aiInstance.generateText !== 'function') return false;
+    const backend = aiConfig.backend;
+    const localCallGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null) => {
+        try {
+            return await aiInstance.generateText(prompt, {
+                json: Boolean(jsonMode),
+                search: Boolean(useSearch),
+                temperature: temperature == null ? null : Number(temperature),
+            });
+        } catch (err) {
+            warnLog('[LocalAI] ' + backend + ' text generation failed:', err && err.message ? err.message : err);
+            throw err;
+        }
+    };
+    localCallGemini._alloflowBackend = backend;
+    callGemini = localCallGemini;
+    if (typeof window !== 'undefined') {
+        window.callGemini = localCallGemini;
+        window.__alloActiveAIBackend = {
+            backend,
+            baseUrl: aiConfig.baseUrl || '',
+            model: aiConfig.models?.default || '',
+            providerId: aiConfig.providerId || backend,
+            source: aiConfig.source || 'alloflow',
+        };
+    }
+    return true;
+}
+function _installLocalTextBridgeFromStorage() {
+    const userConfig = _readAlloAiUserConfig();
+    if (!_usesLocalTextBackend(userConfig) || !AIProvider) return false;
+    const aiInstance = new AIProvider({
+        backend: userConfig.backend,
+        apiKey: userConfig.apiKey || '',
+        baseUrl: userConfig.baseUrl || undefined,
+        isCanvasEnv: _isCanvasEnv,
+        models: userConfig.models || (typeof window !== 'undefined' ? window.GEMINI_MODELS : undefined),
+        ttsProvider: userConfig.ttsProvider || 'auto',
+        imageProvider: userConfig.imageProvider || 'auto',
+        fetchWithRetry: fetchWithExponentialBackoff,
+        optimizeImage: optimizeImage,
+        debugLog: debugLog,
+        warnLog: warnLog,
+    });
+    return _installLocalTextBridge(aiInstance, userConfig);
+}
 function _upgradeGeminiAPI() {
     const factory = window.AlloModules && window.AlloModules.createGeminiAPI;
     if (!factory) return;
+    const storedAiConfig = _readAlloAiUserConfig();
+    const wantsLocalTextBridge = _usesLocalTextBackend(storedAiConfig);
     const api = factory({
         apiKey, _isCanvasEnv, GEMINI_MODELS,
         fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog,
@@ -339,11 +399,14 @@ function _upgradeGeminiAPI() {
         // can call them without taking a direct dependency on the factory.
         window.listAvailableGeminiModels = api.listAvailableModels;
         window.probeGeminiModelHealth = api.probeModelHealth;
+        if (wantsLocalTextBridge) {
+            _installLocalTextBridgeFromStorage();
+        }
         // One-shot, non-blocking boot health probe: detect a dead/renamed DEFAULT model up front
         // (e.g. gemini-3-flash-preview removed) so the user gets an honest banner instead of every
         // document failing mid-run. The probe surfaces a banner itself on auth/quota/config; runs
         // still recover via the now-genuinely-different fallback. Fire-and-forget — never blocks boot.
-        if (!window.__alloModelProbeFired && api.probeModelHealth) {
+        if (!wantsLocalTextBridge && !window.__alloModelProbeFired && api.probeModelHealth) {
             window.__alloModelProbeFired = true;
             Promise.resolve().then(() => api.probeModelHealth(GEMINI_MODELS.default))
                 .then((r) => { if (r && r.kind && r.kind !== 'ok' && r.kind !== 'skipped') warnLog('[GeminiAPI] boot model probe — default ' + GEMINI_MODELS.default + ': ' + r.kind); })
@@ -13907,6 +13970,10 @@ const parseTaggedContent = (text) => {
   const _aiConfigKey = _isCanvasEnv ? ('canvas|' + (apiKey || '')) : ('local|' + (apiKey || '') + '|' + JSON.stringify(_aiUserConfig || null));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ai = React.useMemo(() => AIProvider ? new AIProvider(_aiConfig) : _aiConfig, [_aiConfigKey]);
+  React.useEffect(() => {
+    _installLocalTextBridge(ai, _aiConfig);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ai, _aiConfigKey]);
 
   const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
