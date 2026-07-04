@@ -229,7 +229,7 @@ window.StemLab = window.StemLab || {
       // skip OrbitControls + the bloom composer (mono) and just render stereo. The
       // XR compositor schedules the frames, so no window rAF is queued here.
       var presenting = false; try { presenting = renderer.xr && renderer.xr.isPresenting; } catch (e) {}
-      if (presenting) { renderer.render(scene, camera); return; }
+      if (presenting) { _xrGrabFrame(); renderer.render(scene, camera); return; }
       if (!renderer.domElement.isConnected) { cancelAnimationFrame(animId); return; }
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
@@ -237,6 +237,68 @@ window.StemLab = window.StemLab || {
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
     };
     animate();
+    // ── WebXR Tier 2: controllers — grip-GRAB the model (one hand = 6DOF move +
+    //    rotate; two hands = scale by the distance between them). Guarded +
+    //    presenting-only; never touches the 2D path. ──
+    var _xrCtrlsGeo = null, _grab = null;   // _grab = {ctrl, obj, two:{ctrlB,startDist,startScale}|null}
+    function _geoTarget() { var gs = window._geoScene; return (gs && (gs.sculptGroup || gs.mesh)) || null; }
+    function _ctrlDist(a, b) {
+      try { var pa = new THREE.Vector3().setFromMatrixPosition(a.matrixWorld), pb = new THREE.Vector3().setFromMatrixPosition(b.matrixWorld); return pa.distanceTo(pb); } catch (e) { return 1; }
+    }
+    function _geoHaptic(i, ms) {
+      try { var sess = renderer.xr.getSession && renderer.xr.getSession(); if (!sess) return; var srcs = sess.inputSources || []; for (var k = 0; k < srcs.length; k++) { var g = srcs[k].gamepad; if (g && g.hapticActuators && g.hapticActuators[0]) { try { g.hapticActuators[0].pulse(i, ms); } catch (e) {} } } } catch (e) {}
+    }
+    function _grabStart(ctrl) {
+      try {
+        var obj = _geoTarget(); if (!obj) return;
+        if (_grab && _grab.obj === obj && _grab.ctrl !== ctrl) {
+          _grab.two = { ctrlB: ctrl, startDist: _ctrlDist(_grab.ctrl, ctrl) || 1, startScale: obj.scale.x || 1 };   // second hand → scale
+        } else {
+          ctrl.attach(obj);                          // 6DOF follow (three preserves world transform)
+          _grab = { ctrl: ctrl, obj: obj, two: null };
+        }
+        _geoHaptic(0.5, 30);
+      } catch (e) {}
+    }
+    function _grabEnd(ctrl) {
+      try {
+        if (!_grab) return;
+        if (_grab.two && _grab.two.ctrlB === ctrl) { _grab.two = null; return; }   // release 2nd hand, keep holding
+        if (_grab.ctrl === ctrl) {
+          var obj = _grab.obj;
+          if (_grab.two) { var b = _grab.two.ctrlB; try { b.attach(obj); } catch (e) {} _grab = { ctrl: b, obj: obj, two: null }; }   // hand off to the other hand
+          else { try { scene.attach(obj); } catch (e) {} _grab = null; }
+        }
+      } catch (e) {}
+    }
+    function _xrGrabFrame() {
+      try {
+        if (_grab && _grab.two && _grab.obj) {
+          var d = _ctrlDist(_grab.ctrl, _grab.two.ctrlB);
+          var s = Math.max(0.2, Math.min(8, (_grab.two.startScale || 1) * (d / (_grab.two.startDist || d))));
+          _grab.obj.scale.setScalar(s);
+        }
+      } catch (e) {}
+    }
+    function _xrReleaseGrab() { try { if (_grab && _grab.obj) { scene.attach(_grab.obj); } _grab = null; } catch (e) {} }
+    function _xrSetupControllersGeo() {
+      if (_xrCtrlsGeo) return;
+      _xrCtrlsGeo = [];
+      try {
+        for (var ci = 0; ci < 2; ci++) {
+          var c = renderer.xr.getController(ci);
+          var rg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+          var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
+          rl.scale.z = 5;
+          c.add(rl);
+          (function (ctrl) {
+            ctrl.addEventListener('squeezestart', function () { _grabStart(ctrl); });
+            ctrl.addEventListener('squeezeend', function () { _grabEnd(ctrl); });
+          })(c);
+          xrRig.add(c); _xrCtrlsGeo.push(c);
+        }
+      } catch (e) {}
+    }
     // ── WebXR "Enter VR" — seats the user a few metres in front of the model and
     //    hands the view to the headset; OrbitControls resumes on exit. VR_VIEW_DIST
     //    is on-device tunable. Rejects if the session can't start (caller toasts). ──
@@ -249,9 +311,11 @@ window.StemLab = window.StemLab || {
           xrRig.position.set(0, 0, VR_VIEW_DIST); xrRig.rotation.set(0, 0, 0); xrRig.scale.setScalar(1);
           try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
           try { if (animId) cancelAnimationFrame(animId); } catch (e) {}
+          _xrSetupControllersGeo();                  // Tier 2: grip-grab move/rotate/scale
           Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(animate); });
           session.addEventListener('end', function () {
             try { renderer.setAnimationLoop(null); } catch (e) {}
+            _xrReleaseGrab();                         // reparent any grabbed object back to the scene
             xrRig.position.set(0, 0, 0); xrRig.rotation.set(0, 0, 0); xrRig.scale.setScalar(1);
             if (controls) controls.enabled = true;
             try { if (renderer.domElement.isConnected) animate(); } catch (e) {}   // resume 2D rAF

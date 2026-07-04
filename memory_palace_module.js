@@ -810,6 +810,7 @@
           state.xrActive = true;
           if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
           try { renderer.xr.setReferenceSpaceType('local-floor'); } catch (e) {}
+          _xrSetupControllers();                      // Tier 2: thumbstick locomotion + ray-select
           Promise.resolve(renderer.xr.setSession(session)).then(function () { renderer.setAnimationLoop(tick); });
           if (live) live.textContent = _tr(t, 'memory_palace.vr_entered', 'Entered VR. Look around and walk the palace.');
           session.addEventListener('end', function () {
@@ -926,14 +927,94 @@
       [hud, live, instr, ctrlHint].forEach(function (nd) { try { if (nd.parentNode) nd.parentNode.removeChild(nd); } catch (e) {} });
     });
 
+    // ── WebXR Tier 2: controllers — smooth thumbstick locomotion, snap-turn,
+    //    and ray-select to reveal a locus. All guarded + presenting-only, so it
+    //    can't touch the 2D path. Speeds/angles are on-device tunable. ──
+    var VR_MOVE_SPEED = 2.4;    // metres/sec of smooth glide
+    var VR_SNAP_DEG = 30;       // comfort snap-turn step
+    var _xrCtrls = null, _xrSnapArmed = true, _xrRay = null, _xrTmpM = null, _xrQ = null, _xrE = null;
+    function _xrSetupControllers() {
+      if (_xrCtrls) return;
+      _xrCtrls = [];
+      try {
+        for (var ci = 0; ci < 2; ci++) {
+          var c = renderer.xr.getController(ci);
+          var rg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+          var rl = new THREE.Line(rg, new THREE.LineBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.85 }));
+          rl.scale.z = 400; rl.userData.decorative = true;   // aim beam (world units; picking uses the true ray)
+          c.add(rl);
+          (function (ctrl) { ctrl.addEventListener('selectstart', function () { _xrRaySelect(ctrl); }); })(c);
+          xrRig.add(c); _xrCtrls.push(c);
+        }
+      } catch (e) {}
+    }
+    function _xrHapticPulse(intensity, ms) {
+      try {
+        var sess = renderer.xr.getSession && renderer.xr.getSession(); if (!sess) return;
+        var srcs = sess.inputSources || [];
+        for (var i = 0; i < srcs.length; i++) {
+          var g = srcs[i].gamepad;
+          if (g && g.hapticActuators && g.hapticActuators[0]) { try { g.hapticActuators[0].pulse(intensity, ms); } catch (e) {} }
+        }
+      } catch (e) {}
+    }
+    function _xrRaySelect(ctrl) {
+      try {
+        if (!_xrRay) _xrRay = new THREE.Raycaster();
+        if (!_xrTmpM) _xrTmpM = new THREE.Matrix4();
+        _xrTmpM.identity().extractRotation(ctrl.matrixWorld);
+        _xrRay.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
+        _xrRay.ray.direction.set(0, 0, -1).applyMatrix4(_xrTmpM);
+        var hits = _xrRay.intersectObjects(frameMeshes, false);
+        if (hits.length) {
+          var id = hits[0].object.userData.locusId;
+          try { if (state.revealLocus) state.revealLocus(id); } catch (e2) {}
+          try { if (live) live.textContent = describeLocusForSR(palace, id, t); } catch (e3) {}
+          _xrHapticPulse(0.4, 40);
+        }
+      } catch (e) {}
+    }
+    function _xrLocomotion() {
+      try {
+        var sess = renderer.xr.getSession && renderer.xr.getSession(); if (!sess) return;
+        var srcs = sess.inputSources || [];
+        var mvX = 0, mvY = 0, snap = 0;
+        for (var i = 0; i < srcs.length; i++) {
+          var g = srcs[i].gamepad; if (!g || !g.axes) continue;
+          var ax = g.axes;
+          var sx = ax.length >= 4 ? ax[2] : (ax[0] || 0);   // xr-standard thumbstick, else touchpad
+          var sy = ax.length >= 4 ? ax[3] : (ax[1] || 0);
+          if (srcs[i].handedness === 'right') { snap = sx; }
+          else { mvX += sx; mvY += sy; }                     // left/unknown hand glides
+        }
+        if (Math.abs(mvX) < 0.2) mvX = 0;
+        if (Math.abs(mvY) < 0.2) mvY = 0;
+        if (mvX || mvY) {
+          if (!_xrQ) { _xrQ = new THREE.Quaternion(); _xrE = new THREE.Euler(0, 0, 0, 'YXZ'); }
+          camera.getWorldQuaternion(_xrQ); _xrE.setFromQuaternion(_xrQ, 'YXZ');
+          var yaw = _xrE.y, sinY = Math.sin(yaw), cosY = Math.cos(yaw);
+          var fwd = -mvY, str = mvX;                          // stick up = forward, stick right = strafe right
+          var stepW = VR_MOVE_SPEED * (xrRig.scale.x || 1) / 60;   // per-frame world units (~60 fps)
+          xrRig.position.x += (fwd * -sinY + str * cosY) * stepW;
+          xrRig.position.z += (fwd * -cosY + str * -sinY) * stepW;
+          var b = palace.bounds;
+          xrRig.position.x = _cl(xrRig.position.x, b.minX + 40, b.maxX - 40);
+          xrRig.position.z = _cl(xrRig.position.z, b.minZ + 40, b.maxZ - 40);
+        }
+        if (Math.abs(snap) > 0.7) { if (_xrSnapArmed) { xrRig.rotation.y -= (snap > 0 ? 1 : -1) * VR_SNAP_DEG * Math.PI / 180; _xrSnapArmed = false; } }
+        else if (Math.abs(snap) < 0.3) { _xrSnapArmed = true; }
+      } catch (e) {}
+    }
+
     // ── tick: ease camera along the rails; apply drag look-around ──
     var lookBase = new THREE.Vector3();
     function tick() {
       if (state.disposed) return;
       // While an immersive session drives the frame loop (state.xrActive), the
       // HEADSET owns the camera pose — skip all rail/free-roam camera writes and
-      // let the XR compositor schedule frames (no window rAF).
-      if (state.xrActive) { renderer.render(root, camera); return; }
+      // let the XR compositor schedule frames (no window rAF). Controllers still
+      // drive locomotion (thumbstick) each frame.
+      if (state.xrActive) { _xrLocomotion(); renderer.render(root, camera); return; }
       if (freeMode) {
         // WASD free walk on the floor plane; free-look via freeYaw/freePitch.
         if (moveF || moveR) {
