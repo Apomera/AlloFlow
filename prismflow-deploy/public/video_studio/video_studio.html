@@ -152,9 +152,21 @@
   .scene-dot { width: 9px; height: 9px; border-radius: 999px; margin-top: 5px; background: var(--dim); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); }
   .scene-preview { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #020617; }
   .scene-preview canvas { display: block; width: 100%; aspect-ratio: 16 / 9; background: #020617; }
+  .scene-storyboard { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 2px; }
+  .scene-story { flex: 0 0 118px; min-height: 70px; text-align: left; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 7px 8px; cursor: pointer; font: inherit; line-height: 1.2; }
+  .scene-story:hover, .scene-story:focus-visible { border-color: var(--accent2); }
+  .scene-story strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .scene-story span { display: block; color: var(--dim); font-size: 11px; margin-top: 3px; }
+  .scene-story .scene-mini { height: 18px; border-radius: 5px; margin-bottom: 6px; background: linear-gradient(135deg, rgba(99,102,241,0.42), rgba(20,184,166,0.28)); border: 1px solid rgba(255,255,255,0.12); }
   @media (max-width: 760px) { .scene-row { grid-template-columns: auto 1fr; } .scene-row .row { grid-column: 1 / -1; } }
   .status { min-height: 20px; font-size: 13px; color: var(--dim); margin-top: 8px; }
   .status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.warn { color: var(--warn); }
+  .export-plan { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; margin: 10px 0; background: var(--panel2); }
+  .export-plan strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 4px; }
+  .export-plan span { display: block; color: var(--dim); font-size: 13px; line-height: 1.35; }
+  .export-progress-detail { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 8px; background: var(--panel2); }
+  .export-progress-detail strong { display: block; color: var(--text); font-size: 13px; }
+  .export-progress-detail span { display: block; color: var(--dim); font-size: 13px; margin-top: 3px; }
   progress { width: 100%; height: 10px; accent-color: var(--accent); }
   .banner { background: rgba(99,102,241,0.12); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 12px; margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
@@ -382,7 +394,19 @@
               <option value="mute">Mute scene audio</option>
             </select>
             <label><input type="checkbox" id="sceneAudioFade" checked> Fade clip edges</label>
+            <label for="sceneFraming">Framing</label>
+            <select id="sceneFraming" aria-label="Scene clip framing">
+              <option value="fit">Fit full clip</option>
+              <option value="fill">Fill frame</option>
+            </select>
+            <label for="sceneTransitionSpeed">Speed</label>
+            <select id="sceneTransitionSpeed" aria-label="Scene transition speed">
+              <option value="0.45">Quick</option>
+              <option value="0.7" selected>Standard</option>
+              <option value="1.1">Slow</option>
+            </select>
           </div>
+          <div id="sceneStoryboard" class="scene-storyboard" aria-label="Scene storyboard"></div>
           <div class="scene-preview" id="scenePreviewBox" hidden>
             <canvas id="scenePreviewCanvas" width="960" height="540" aria-label="Scene preview canvas"></canvas>
           </div>
@@ -716,9 +740,41 @@
           <option value="small">Small web upload</option>
           <option value="burned">Burned captions</option>
           <option value="student_family">Student/family version</option>
+          <option value="social_vertical">Social vertical clip</option>
+          <option value="social_square">Social square post</option>
           <option value="archive">Archive-quality project</option>
           <option value="accessibility">Accessibility packet</option>
         </select>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label for="exportFormat">Format</label>
+        <select id="exportFormat" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+          <option value="original">Original / source shape</option>
+          <option value="landscape_1080">Landscape 16:9 - 1080p</option>
+          <option value="landscape_720">Landscape 16:9 - 720p</option>
+          <option value="vertical_1080">Vertical 9:16 - Reels / Shorts / TikTok</option>
+          <option value="square_1080">Square 1:1 - feed post</option>
+          <option value="portrait_1080">Portrait 4:5 - feed post</option>
+        </select>
+        <label for="exportFraming">Framing</label>
+        <select id="exportFraming" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+          <option value="fit">Fit full video</option>
+          <option value="fill">Fill frame / crop edges</option>
+        </select>
+        <span class="status" id="exportFormatStatus" style="margin-top:0">Original keeps the source shape when possible.</span>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <label for="exportContainer">Container</label>
+        <select id="exportContainer" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
+          <option value="auto">Auto - MP4 when available</option>
+          <option value="mp4">MP4 if this browser supports it</option>
+          <option value="mp4_convert">Strict MP4 - local converter</option>
+          <option value="webm">WebM - most reliable</option>
+        </select>
+        <span class="status" id="exportContainerStatus" style="margin-top:0">Auto chooses the best browser-supported container.</span>
+        <span class="status" id="exportContainerHelp" style="margin-top:0">Auto fits most exports. WebM is most reliable. Strict MP4 runs on this device when a site requires MP4.</span>
+      </div>
+      <div class="row" style="margin-bottom:10px">
         <label><input type="checkbox" id="titleCardChk"> 2.5s title card at the start</label>
         <label>Title card look:
           <select id="titleCardStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
@@ -786,11 +842,21 @@
         </label>
         <span class="status caption-note" id="captionA11yStatus"></span>
       </div>
+      <div class="export-plan" id="exportPlan" aria-live="polite">
+        <strong>Export plan</strong>
+        <span id="exportPlanSummary">Choose a take to see the export plan.</span>
+        <span id="exportPlanDetail"></span>
+      </div>
       <div class="row">
         <button class="action" id="exportBtn">🎬 Prepare export</button>
+        <button class="quiet" id="exportCancelBtn" hidden>Cancel MP4 conversion</button>
         <span class="status" id="exportStatus"></span>
       </div>
       <progress id="exportProgress" max="100" value="0" hidden style="margin-top:10px"></progress>
+      <div class="export-progress-detail" id="exportProgressDetail" hidden aria-live="polite">
+        <strong id="exportProgressTitle">Preparing export</strong>
+        <span id="exportProgressText">Keep this window visible while Video Studio finishes the file.</span>
+      </div>
     </div>
     <div class="card" id="resultCard" hidden>
       <h2>Finished video</h2>
@@ -2387,6 +2453,409 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function setStatus(el, msg, cls) { el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
   function fmtClock(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function fmtBytes(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
+  var VIDEO_EXPORT_FORMATS = {
+    original: { label: 'Original / source shape', note: 'Keeps the source shape when possible.' },
+    landscape_1080: { label: 'Landscape 16:9 1080p', width: 1920, height: 1080, note: 'Best for YouTube, LMS, and wide players.' },
+    landscape_720: { label: 'Landscape 16:9 720p', width: 1280, height: 720, note: 'Good for quick uploads and smaller files.' },
+    vertical_1080: { label: 'Vertical 9:16', width: 1080, height: 1920, note: 'For Reels, Shorts, TikTok, and phone-first clips.' },
+    square_1080: { label: 'Square 1:1', width: 1080, height: 1080, note: 'For feed posts and compact embeds.' },
+    portrait_1080: { label: 'Portrait 4:5', width: 1080, height: 1350, note: 'For taller feed posts without going full vertical.' }
+  };
+  function evenPixel(n) {
+    return Math.max(2, Math.round((Number(n) || 2) / 2) * 2);
+  }
+  function sanitizeExportFormat(key) {
+    return VIDEO_EXPORT_FORMATS[key] ? key : 'original';
+  }
+  function sanitizeExportFraming(key) {
+    return ({ fit: 1, fill: 1 })[key] ? key : 'fit';
+  }
+  function currentExportFormatKey() {
+    return sanitizeExportFormat($('exportFormat') ? $('exportFormat').value : 'original');
+  }
+  function currentExportFraming() {
+    return sanitizeExportFraming($('exportFraming') ? $('exportFraming').value : 'fit');
+  }
+  function exportCanvasSizeFor(key, sourceW, sourceH) {
+    key = sanitizeExportFormat(key);
+    var preset = VIDEO_EXPORT_FORMATS[key] || VIDEO_EXPORT_FORMATS.original;
+    if (key !== 'original') {
+      return { key: key, label: preset.label, width: evenPixel(preset.width), height: evenPixel(preset.height), note: preset.note };
+    }
+    var srcW = Math.max(2, Number(sourceW) || 1280);
+    var srcH = Math.max(2, Number(sourceH) || 720);
+    var width = Math.min(1920, srcW);
+    var height = width * srcH / srcW;
+    return { key: key, label: preset.label, width: evenPixel(width), height: evenPixel(height), note: preset.note };
+  }
+  function exportFormatLabel(format) {
+    var f = format || exportCanvasSizeFor('original', 1280, 720);
+    return f.label + (f.width && f.height ? ' (' + f.width + 'x' + f.height + ')' : '');
+  }
+  function exportFormatFileSuffix(format) {
+    var key = format && sanitizeExportFormat(format.key);
+    return key && key !== 'original' ? '_' + key.replace(/_1080$/, '').replace(/_/g, '-') : '';
+  }
+  function exportFramingLabel(key) {
+    return sanitizeExportFraming(key) === 'fill' ? 'fills the frame and may crop edges' : 'fits the full video with padding when needed';
+  }
+  function exportVideoBitrate(width, height) {
+    var pixels = Math.max(1, (Number(width) || 1280) * (Number(height) || 720));
+    return Math.max(1800000, Math.min(6500000, Math.round(2500000 * pixels / (1280 * 720))));
+  }
+  var VIDEO_EXPORT_CONTAINERS = {
+    auto: { label: 'Auto', note: 'Uses MP4 when this browser can record it, otherwise WebM.' },
+    mp4: { label: 'MP4', note: 'Requests MP4 from the browser and falls back to WebM when unsupported.' },
+    mp4_convert: { label: 'Strict MP4 - local converter', note: 'Uses MP4 when available, otherwise converts locally on this device after rendering.' },
+    webm: { label: 'WebM', note: 'Most reliable browser export.' }
+  };
+  var MP4_EXPORT_MIMES = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1.4D401E,mp4a.40.2',
+    'video/mp4;codecs=avc1.64003E,mp4a.40.2',
+    'video/mp4;codecs=h264,aac',
+    'video/mp4'
+  ];
+  var WEBM_EXPORT_MIMES = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  var FFMPEG_STUDIO_URL = 'vendor/ffmpeg/ffmpeg/index.js';
+  var FFMPEG_CORE_URL = 'vendor/ffmpeg/core/ffmpeg-core.js';
+  var FFMPEG_CORE_WASM_URL = 'vendor/ffmpeg/core/ffmpeg-core.wasm';
+  var mp4ConverterPromise = null;
+  var mp4ConverterProgress = null;
+  var activeMp4Converter = null;
+  var mp4ConversionCanceled = false;
+  function sanitizeExportContainer(key) {
+    return VIDEO_EXPORT_CONTAINERS[key] ? key : 'auto';
+  }
+  function currentExportContainer() {
+    return sanitizeExportContainer($('exportContainer') ? $('exportContainer').value : 'auto');
+  }
+  function canRecordMime(mime) {
+    try { return !!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime)); } catch (_) { return false; }
+  }
+  function chooseExportMime(preference) {
+    var requested = sanitizeExportContainer(preference);
+    var candidates = requested === 'webm' ? WEBM_EXPORT_MIMES : MP4_EXPORT_MIMES.concat(WEBM_EXPORT_MIMES);
+    for (var i = 0; i < candidates.length; i++) {
+      if (!canRecordMime(candidates[i])) continue;
+      var isMp4 = /^video\/mp4/i.test(candidates[i]);
+      return {
+        requested: requested,
+        mime: candidates[i],
+        container: isMp4 ? 'mp4' : 'webm',
+        label: isMp4 ? 'MP4' : 'WebM',
+        fallback: requested === 'mp4' && !isMp4,
+        needsConverter: requested === 'mp4_convert' && !isMp4
+      };
+    }
+    return {
+      requested: requested,
+      mime: '',
+      container: 'browser-default',
+      label: 'Browser default',
+      fallback: requested === 'mp4',
+      needsConverter: requested === 'mp4_convert'
+    };
+  }
+  function blobContainerKey(blobOrType) {
+    var type = typeof blobOrType === 'string' ? blobOrType : (blobOrType && blobOrType.type) || '';
+    if (/mp4|m4v/i.test(type)) return 'mp4';
+    if (/webm/i.test(type)) return 'webm';
+    if (/quicktime/i.test(type)) return 'mov';
+    if (/matroska/i.test(type)) return 'mkv';
+    return 'source';
+  }
+  function blobIsMp4(blob) {
+    return blobContainerKey(blob) === 'mp4';
+  }
+  function containerLabelForKey(key) {
+    if (key === 'mp4') return 'MP4';
+    if (key === 'webm') return 'WebM';
+    if (key === 'mov') return 'MOV';
+    if (key === 'mkv') return 'MKV';
+    return 'source container';
+  }
+  function containerInfoForBlob(blob, requested, extra) {
+    var key = blobContainerKey(blob);
+    return Object.assign({
+      requested: sanitizeExportContainer(requested),
+      container: key,
+      label: containerLabelForKey(key),
+      mime: (blob && blob.type) || '',
+      fallback: false,
+      needsConverter: false
+    }, extra || {});
+  }
+  function outputContainerInfoForBlob(blob, requested, extra) {
+    var info = containerInfoForBlob(blob, requested, extra);
+    if (sanitizeExportContainer(requested) === 'mp4' && info.container !== 'mp4') info.fallback = true;
+    return info;
+  }
+  function exportContainerLabel(info) {
+    if (!info) return 'WebM';
+    if (info.converter === 'ffmpeg.wasm') return 'MP4 via local converter';
+    if (info.fallback) return (info.label || exportContainerLabel(containerInfoForBlob({ type: info.mime || '' }))) + ' fallback';
+    if (info.needsConverter) return (info.label || 'WebM') + ' before MP4 conversion';
+    return info.label || containerLabelForKey(info.container);
+  }
+  function shouldReencodeForContainer(choice, sourceBlob) {
+    var requested = sanitizeExportContainer(choice);
+    if (requested === 'auto' || requested === 'mp4_convert') return false;
+    var info = chooseExportMime(requested);
+    if (!info.mime || info.container === 'browser-default') return false;
+    return blobContainerKey(sourceBlob) !== info.container;
+  }
+  function finalizeRecordedVideoBlob(raw, duration) {
+    if (!raw || !raw.size || !/webm/i.test(raw.type || '')) return Promise.resolve(raw);
+    return raw.arrayBuffer().then(function (buf) {
+      return new Blob([vsPatchWebmDuration(new Uint8Array(buf), duration * 1000)], { type: raw.type || 'video/webm' });
+    }).catch(function () { return raw; });
+  }
+  function localStudioUrl(path) {
+    return new URL(path, document.baseURI).href;
+  }
+  function mp4AbortError() {
+    var err = new Error('MP4 conversion canceled');
+    err.name = 'AbortError';
+    return err;
+  }
+  function mp4ConverterTroubleshootingMessage(err) {
+    var msg = String(err && (err.message || err) || '');
+    if (/canceled|aborted/i.test(msg)) return 'MP4 conversion canceled.';
+    if (/memory|allocation|out of bounds|maximum call stack/i.test(msg)) return 'MP4 conversion ran out of browser memory. Try a shorter clip, a smaller export size, or WebM.';
+    if (/fetch|import|module|404|wasm|worker|network/i.test(msg)) return 'Local MP4 converter files were unavailable. Your video will still export as WebM; Strict MP4 can work after the converter files are included with the app.';
+    return 'MP4 conversion was unavailable in this browser. Your video will still export as WebM.';
+  }
+  function throwIfMp4Canceled() {
+    if (mp4ConversionCanceled) throw mp4AbortError();
+  }
+  function setMp4ConversionUi(active, message, pct) {
+    if ($('exportCancelBtn')) $('exportCancelBtn').hidden = !active;
+    if ($('exportProgressDetail')) $('exportProgressDetail').hidden = !active;
+    if ($('exportProgressTitle')) $('exportProgressTitle').textContent = active ? 'Building MP4' : 'Preparing export';
+    if ($('exportProgressText')) $('exportProgressText').textContent = message || 'Video Studio is converting the finished video into MP4.';
+    if ($('exportProgress')) {
+      $('exportProgress').hidden = !active;
+      if (!active) $('exportProgress').value = 0;
+      else if (isFinite(Number(pct))) $('exportProgress').value = Math.max(0, Math.min(100, Number(pct)));
+      else $('exportProgress').removeAttribute('value');
+    }
+  }
+  function resetMp4Converter() {
+    try { if (activeMp4Converter) activeMp4Converter.terminate(); } catch (_) {}
+    activeMp4Converter = null;
+    mp4ConverterPromise = null;
+  }
+  function cancelMp4Conversion() {
+    mp4ConversionCanceled = true;
+    resetMp4Converter();
+    setMp4ConversionUi(false);
+    setStatus($('exportStatus'), 'MP4 conversion canceled.', 'warn');
+    announce('MP4 conversion canceled');
+  }
+  async function loadMp4Converter(onProgress) {
+    mp4ConverterProgress = onProgress || null;
+    if (mp4ConverterPromise) return mp4ConverterPromise;
+    mp4ConverterPromise = (async function () {
+      if (mp4ConverterProgress) mp4ConverterProgress('Loading the local MP4 converter...');
+      var lib = await import(localStudioUrl(FFMPEG_STUDIO_URL));
+      var ffmpeg = new lib.FFmpeg();
+      activeMp4Converter = ffmpeg;
+      ffmpeg.on('progress', function (ev) {
+        if (!mp4ConverterProgress) return;
+        var pct = Math.max(0, Math.min(100, Math.round((Number(ev.progress) || 0) * 100)));
+        mp4ConverterProgress('Converting to MP4' + (pct ? ' - ' + pct + '%' : '...'), pct);
+      });
+      ffmpeg.on('log', function (ev) {
+        if (!mp4ConverterProgress || !ev || !ev.message) return;
+        if (/frame=|time=|speed=|Output #|video:/i.test(ev.message)) mp4ConverterProgress('Converting to MP4...');
+      });
+      await ffmpeg.load({
+        coreURL: localStudioUrl(FFMPEG_CORE_URL),
+        wasmURL: localStudioUrl(FFMPEG_CORE_WASM_URL)
+      });
+      throwIfMp4Canceled();
+      return ffmpeg;
+    })();
+    try { return await mp4ConverterPromise; }
+    catch (e) {
+      mp4ConverterPromise = null;
+      if (mp4ConverterProgress) mp4ConverterProgress(mp4ConverterTroubleshootingMessage(e), 0);
+      throw e;
+    }
+  }
+  async function convertBlobToMp4(blob, onProgress) {
+    if (!blob || !blob.size) throw new Error('no video data to convert');
+    mp4ConversionCanceled = false;
+    var ffmpeg = await loadMp4Converter(onProgress);
+    throwIfMp4Canceled();
+    var stamp = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    var inputName = 'input_' + stamp + extFor(blob.type || 'video/webm');
+    var outputName = 'output_' + stamp + '.mp4';
+    if (onProgress) onProgress('Preparing local MP4 conversion...', 0);
+    await ffmpeg.writeFile(inputName, new Uint8Array(await blob.arrayBuffer()));
+    throwIfMp4Canceled();
+    var args = [
+      '-i', inputName,
+      '-map', '0:v:0',
+      '-map', '0:a?',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-pix_fmt', 'yuv420p',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-movflags', 'faststart',
+      outputName
+    ];
+    var code = await ffmpeg.exec(args);
+    throwIfMp4Canceled();
+    if (code) throw new Error('the MP4 converter stopped before finishing');
+    var data = await ffmpeg.readFile(outputName);
+    try { await ffmpeg.deleteFile(inputName); } catch (_) {}
+    try { await ffmpeg.deleteFile(outputName); } catch (_) {}
+    if (onProgress) onProgress('MP4 conversion complete.', 100);
+    return new Blob([data], { type: 'video/mp4' });
+  }
+  async function maybeConvertStrictMp4(blob, requested, statusEl) {
+    if (sanitizeExportContainer(requested) !== 'mp4_convert' || blobIsMp4(blob)) {
+      return { blob: blob, containerInfo: outputContainerInfoForBlob(blob, requested) };
+    }
+    mp4ConversionCanceled = false;
+    try {
+      setMp4ConversionUi(true, 'Loading the local MP4 converter. Longer videos may take a minute.', 0);
+      var converted = await convertBlobToMp4(blob, function (msg, pct) {
+        setMp4ConversionUi(true, msg, pct);
+        if (statusEl) setStatus(statusEl, msg, 'warn');
+      });
+      return {
+        blob: converted,
+        containerInfo: containerInfoForBlob(converted, requested, { converter: 'ffmpeg.wasm' })
+      };
+    } catch (e) {
+      if (mp4ConversionCanceled || (e && e.name === 'AbortError') || /canceled|terminated/i.test(String(e && e.message || e || ''))) {
+        setMp4ConversionUi(false);
+        throw mp4AbortError();
+      }
+      var friendly = mp4ConverterTroubleshootingMessage(e);
+      if (statusEl) setStatus(statusEl, friendly, 'warn');
+      return {
+        blob: blob,
+        containerInfo: containerInfoForBlob(blob, requested, { fallback: true, converterError: friendly })
+      };
+    } finally {
+      setMp4ConversionUi(false);
+    }
+  }
+  function refreshExportFormatStatus() {
+    if (!$('exportFormatStatus')) return;
+    var key = currentExportFormatKey();
+    var preset = VIDEO_EXPORT_FORMATS[key] || VIDEO_EXPORT_FORMATS.original;
+    var dims = key === 'original' ? '' : ' ' + preset.width + 'x' + preset.height + '.';
+    setStatus($('exportFormatStatus'), preset.label + ':' + dims + ' ' + preset.note + ' Framing ' + exportFramingLabel(currentExportFraming()) + '.');
+  }
+  function refreshExportContainerStatus() {
+    if (!$('exportContainerStatus')) return;
+    var choice = currentExportContainer();
+    var info = chooseExportMime(choice);
+    if (choice === 'webm') {
+      setStatus($('exportContainerStatus'), 'WebM selected: the most reliable browser export path.', 'ok');
+    } else if (choice === 'mp4_convert') {
+      if (info.container === 'mp4') setStatus($('exportContainerStatus'), 'Strict MP4 selected: this browser can export MP4 directly.', 'ok');
+      else setStatus($('exportContainerStatus'), 'Strict MP4 selected: Video Studio will load the local converter on this device if the browser renders WebM first.', 'warn');
+    } else if (info.container === 'mp4') {
+      setStatus($('exportContainerStatus'), (choice === 'auto' ? 'Auto will export MP4 in this browser.' : 'MP4 export is supported in this browser.'), 'ok');
+    } else if (choice === 'mp4') {
+      setStatus($('exportContainerStatus'), 'This browser exports WebM reliably; choose Strict MP4 to convert locally.', 'warn');
+    } else {
+      setStatus($('exportContainerStatus'), 'Auto will use WebM here because browser MP4 recording is not available.', 'warn');
+    }
+  }
+  function exportContainerPlanLabel(choice, info) {
+    choice = sanitizeExportContainer(choice);
+    info = info || chooseExportMime(choice);
+    if (choice === 'webm') return 'WebM';
+    if (choice === 'mp4_convert') return info.container === 'mp4' ? 'MP4 direct' : 'MP4 via local converter';
+    if (choice === 'mp4') return info.container === 'mp4' ? 'MP4' : 'WebM fallback';
+    return info.container === 'mp4' ? 'MP4 auto' : 'WebM auto';
+  }
+  function exportCaptionPlanLabel(capMode, cueCount) {
+    if (capMode === 'none') return cueCount ? 'captions excluded' : 'no captions';
+    if (capMode === 'burn') return cueCount ? 'burned captions' : 'burned captions selected';
+    return cueCount ? 'separate captions' : 'captions file if added';
+  }
+  function exportRenderReasonsForTake(t) {
+    if (!t) return [];
+    var reasons = [];
+    var capMode = $('capMode') ? $('capMode').value : 'vtt';
+    var trimS = Number($('trimStart') && $('trimStart').value) || 0;
+    var trimE = Number($('trimEnd') && $('trimEnd').value) || 0;
+    var audioCfg = t.audio || null;
+    var musicBed = t.musicBed ? vsSanitizeMusicBed(t.musicBed, t.duration || 0) : null;
+    var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length) || !!(musicBed && musicBed.blob);
+    if (currentExportFormatKey() !== 'original') reasons.push('new size');
+    if (shouldReencodeForContainer(currentExportContainer(), t.blob)) reasons.push('container change');
+    if ($('titleCardChk') && $('titleCardChk').checked) reasons.push('title card');
+    if (capMode === 'burn') reasons.push('burned captions');
+    if (trimS > 0.05 || trimE > 0.05) reasons.push('trim');
+    if ((t.zooms || []).some(function (z) { return z && Number(z.scale) > 1; })) reasons.push('zoom');
+    if (vsSanitizeTeachingInserts(t.inserts || [], t.duration || 0).length) reasons.push('visual inserts');
+    if (!audioIsDefault(audioCfg) || hasMixins) reasons.push('audio mix');
+    return reasons;
+  }
+  function refreshExportDecisionPreview() {
+    if (!$('exportPlanSummary') || !$('exportPlanDetail')) return;
+    var t = currentTake();
+    if (!t) {
+      $('exportPlanSummary').textContent = 'Choose a take to see the export plan.';
+      $('exportPlanDetail').textContent = 'The plan updates as you choose captions, size, and container.';
+      return;
+    }
+    var sourceW = $('editVideo') && $('editVideo').videoWidth ? $('editVideo').videoWidth : 1280;
+    var sourceH = $('editVideo') && $('editVideo').videoHeight ? $('editVideo').videoHeight : 720;
+    var format = exportCanvasSizeFor(currentExportFormatKey(), sourceW, sourceH);
+    var containerChoice = currentExportContainer();
+    var mimeInfo = chooseExportMime(containerChoice);
+    var capMode = $('capMode') ? $('capMode').value : 'vtt';
+    var cueCount = (t.captions || []).length;
+    var captionText = exportCaptionPlanLabel(capMode, cueCount);
+    var reasons = exportRenderReasonsForTake(t);
+    var strictConvert = containerChoice === 'mp4_convert' && !blobIsMp4(t.blob) && (!(reasons.length && mimeInfo.container === 'mp4'));
+    var containerText = strictConvert ? 'MP4 via local converter' : exportContainerPlanLabel(containerChoice, mimeInfo);
+    var work = reasons.length ? 'Re-render' : 'Direct save';
+    if (strictConvert) work += ' + local MP4 conversion';
+    $('exportPlanSummary').textContent = exportFormatLabel(format) + ' - ' + containerText + ' - ' + captionText + ' - ' + work;
+    var detail = reasons.length ? ('Re-render reason: ' + reasons.slice(0, 5).join(', ') + (reasons.length > 5 ? ', more' : '') + '.') : 'No video re-render expected unless the browser needs a container handoff.';
+    if (strictConvert && (Number(t.duration) || 0) >= 300) detail += ' This video is ' + fmtClock(t.duration || 0) + '; local MP4 conversion may take several minutes and use more memory.';
+    else if (strictConvert) detail += ' Strict MP4 conversion runs on this device and may take a little longer.';
+    if (containerChoice === 'mp4' && mimeInfo.container !== 'mp4') detail += ' This browser cannot record MP4 directly, so WebM fallback is expected.';
+    $('exportPlanDetail').textContent = detail;
+  }
+  function syncResultVideoAspect(format) {
+    if (!$('resultVideo')) return;
+    if (format && format.width && format.height) $('resultVideo').style.aspectRatio = format.width + ' / ' + format.height;
+    else $('resultVideo').style.aspectRatio = '';
+  }
+  function drawVideoIntoFrame(ctx, video, w, hgt, framing, zoomState) {
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, w, hgt);
+    var srcW = video.videoWidth || w;
+    var srcH = video.videoHeight || hgt;
+    var sx = 0, sy = 0, sw = srcW, sh = srcH;
+    var zs = zoomState || {};
+    if (Number(zs.scale) > 1.001) {
+      sw = srcW / zs.scale;
+      sh = srcH / zs.scale;
+      sx = Math.max(0, Math.min(srcW - sw, (Number(zs.x) || 0.5) * srcW - sw / 2));
+      sy = Math.max(0, Math.min(srcH - sh, (Number(zs.y) || 0.5) * srcH - sh / 2));
+    }
+    var fill = sanitizeExportFraming(framing) === 'fill';
+    var scale = fill ? Math.max(w / sw, hgt / sh) : Math.min(w / sw, hgt / sh);
+    var dw = sw * scale;
+    var dh = sh * scale;
+    var dx = (w - dw) / 2;
+    var dy = (hgt - dh) / 2;
+    try { ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh); } catch (_) {}
+  }
 
   // ── Opener handshake (veraPDF pattern, reversed roles) ──
   var opener = window.opener || null;
@@ -2651,29 +3120,46 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('capMode').value = tpl.capMode || 'vtt';
     $('captionStyle').value = tpl.captionStyle || 'clean-card';
     $('exportPreset').value = tpl.preset || 'lms';
+    setExportFormatChoice('original', 'fit');
     setEditorFocusMode(editorFocusForTemplate(key), false);
     syncCaptionStylePreview();
     updateEditCaptionPreview();
+    refreshExportDecisionPreview();
     setStatus($('exportStatus'), tpl.note || 'Template applied.', 'ok');
     announce('Video template applied');
   }
+  function setExportFormatChoice(format, framing, container) {
+    if ($('exportFormat')) $('exportFormat').value = sanitizeExportFormat(format);
+    if ($('exportFraming')) $('exportFraming').value = sanitizeExportFraming(framing);
+    if (container && $('exportContainer')) $('exportContainer').value = sanitizeExportContainer(container);
+  }
   function applyExportPreset(key) {
-    if (key === 'small') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'tutorial-step'; $('capMode').value = 'vtt'; $('captionStyle').value = 'lower-third'; setStatus($('exportStatus'), 'Small upload preset: keeps captions separate and avoids forced title-card re-encode.', 'ok'); }
-    else if (key === 'burned') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'bold-contrast'; $('capMode').value = 'burn'; $('captionStyle').value = 'clean-card'; setStatus($('exportStatus'), 'Burned captions preset: captions become part of the video.', 'ok'); }
-    else if (key === 'student_family') { $('titleCardChk').checked = true; $('titleCardStyle').value = 'calm-family'; $('capMode').value = 'burn'; $('captionStyle').value = 'clean-card'; setStatus($('exportStatus'), 'Student/family preset: title card plus burned captions for simple playback on any device.', 'ok'); }
-    else if (key === 'archive') { $('titleCardChk').checked = true; $('titleCardStyle').value = 'clean-classroom'; $('capMode').value = 'vtt'; $('captionStyle').value = 'open-subtitle'; setStatus($('exportStatus'), 'Archive preset: title card plus separate captions; use Project bundle after export for a re-openable file.', 'ok'); }
-    else if (key === 'accessibility') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'bold-contrast'; $('capMode').value = 'vtt'; $('captionStyle').value = 'high-contrast'; setStatus($('exportStatus'), 'Accessibility preset: separate captions and transcript packet after export.', 'ok'); }
-    else { $('titleCardChk').checked = true; $('titleCardStyle').value = 'clean-classroom'; $('capMode').value = 'vtt'; $('captionStyle').value = 'clean-card'; setStatus($('exportStatus'), 'LMS-ready preset: title card plus separate captions.', 'ok'); }
+    if (key === 'small') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'tutorial-step'; $('capMode').value = 'vtt'; $('captionStyle').value = 'lower-third'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'Small upload preset: keeps captions separate and avoids forced title-card re-encode.', 'ok'); }
+    else if (key === 'burned') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'bold-contrast'; $('capMode').value = 'burn'; $('captionStyle').value = 'clean-card'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'Burned captions preset: captions become part of the video.', 'ok'); }
+    else if (key === 'student_family') { $('titleCardChk').checked = true; $('titleCardStyle').value = 'calm-family'; $('capMode').value = 'burn'; $('captionStyle').value = 'clean-card'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'Student/family preset: title card plus burned captions for simple playback on any device.', 'ok'); }
+    else if (key === 'social_vertical') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'bold-contrast'; $('capMode').value = 'burn'; $('captionStyle').value = 'lower-third'; setExportFormatChoice('vertical_1080', 'fill'); setStatus($('exportStatus'), 'Social vertical preset: 9:16 video with burned captions for phone-first sharing.', 'ok'); }
+    else if (key === 'social_square') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'tutorial-step'; $('capMode').value = 'burn'; $('captionStyle').value = 'clean-card'; setExportFormatChoice('square_1080', 'fill'); setStatus($('exportStatus'), 'Social square preset: 1:1 video with burned captions for feed posts.', 'ok'); }
+    else if (key === 'archive') { $('titleCardChk').checked = true; $('titleCardStyle').value = 'clean-classroom'; $('capMode').value = 'vtt'; $('captionStyle').value = 'open-subtitle'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'Archive preset: title card plus separate captions; use Project bundle after export for a re-openable file.', 'ok'); }
+    else if (key === 'accessibility') { $('titleCardChk').checked = false; $('titleCardStyle').value = 'bold-contrast'; $('capMode').value = 'vtt'; $('captionStyle').value = 'high-contrast'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'Accessibility preset: separate captions and transcript packet after export.', 'ok'); }
+    else { $('titleCardChk').checked = true; $('titleCardStyle').value = 'clean-classroom'; $('capMode').value = 'vtt'; $('captionStyle').value = 'clean-card'; setExportFormatChoice('original', 'fit'); setStatus($('exportStatus'), 'LMS-ready preset: title card plus separate captions.', 'ok'); }
     syncCaptionStylePreview();
     updateEditCaptionPreview();
+    refreshExportFormatStatus();
+    refreshExportContainerStatus();
+    refreshExportDecisionPreview();
   }
   $('applyTemplateBtn').addEventListener('click', function () { applyTemplate($('templateSelect').value); });
   $('exportPreset').addEventListener('change', function () { applyExportPreset($('exportPreset').value); renderResultReadiness(); });
-  $('titleCardStyle').addEventListener('change', function () { if ($('thumbStyle') && $('thumbStyle').value === 'match') refreshThumbnailPreview(); renderResultReadiness(); });
-  $('capMode').addEventListener('change', renderResultReadiness);
+  ['exportFormat', 'exportFraming', 'exportContainer'].forEach(function (id) { if ($(id)) $(id).addEventListener('change', function () { refreshExportFormatStatus(); refreshExportContainerStatus(); refreshExportDecisionPreview(); renderResultReadiness(); saveSceneDraftSoon(); }); });
+  $('titleCardStyle').addEventListener('change', function () { if ($('thumbStyle') && $('thumbStyle').value === 'match') refreshThumbnailPreview(); refreshExportDecisionPreview(); renderResultReadiness(); });
+  if ($('titleCardChk')) $('titleCardChk').addEventListener('change', function () { refreshExportDecisionPreview(); renderResultReadiness(); });
+  $('capMode').addEventListener('change', function () { refreshExportDecisionPreview(); renderResultReadiness(); });
   ['captionStyle', 'captionSize', 'captionFont', 'captionPosition', 'captionBackground', 'captionOpacity'].forEach(function (id) {
     if ($(id)) $(id).addEventListener('change', function () { syncCaptionStylePreview(); updateEditCaptionPreview(); renderResultReadiness(); });
   });
+  refreshExportFormatStatus();
+  refreshExportContainerStatus();
+  refreshExportDecisionPreview();
   $('flowRecord').addEventListener('click', function () { applyTemplate('mini_lesson'); setWorkflowStatus('Workflow: record a lesson. Next: choose screen/tab and press Start recording.', 'ok'); srcMode = 'screen'; syncSrcButtons(); showTab('tabRecord'); $('startBtn').focus(); });
   $('flowImport').addEventListener('click', function () { setWorkflowStatus('Workflow: edit an existing video. Next: choose a video or .allopack project.', 'ok'); $('importInput').click(); });
   $('flowCaption').addEventListener('click', function () { applyTemplate('caption_only'); setWorkflowStatus('Workflow: caption cleanup. Next: import a video, then run local auto-caption or import VTT/SRT.', 'ok'); $('importInput').click(); });
@@ -2960,7 +3446,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   function finalizeTake() {
     var dur = elapsed;
-    var raw = new Blob(recChunks, { type: 'video/webm' });
+    var rawType = (rec && rec.mimeType) || 'video/webm';
+    var raw = new Blob(recChunks, { type: rawType });
     recChunks = [];
     teardownStreams();
     $('pauseBtn').hidden = true; $('stopBtn').hidden = true;
@@ -2971,13 +3458,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('recStatus'), 'That take was empty — nothing was captured.', 'warn');
       return;
     }
-    raw.arrayBuffer().then(function (buf) {
-      var patched = vsPatchWebmDuration(new Uint8Array(buf), dur * 1000);
-      var blob = new Blob([patched], { type: 'video/webm' });
+    finalizeRecordedVideoBlob(raw, dur).then(function (blob) {
       var take = {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
-        blob: blob, url: URL.createObjectURL(blob), type: 'video/webm',
+        blob: blob, url: URL.createObjectURL(blob), type: blob.type || rawType,
         duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
       };
       takes.push(take);
@@ -5572,7 +6057,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('editVideo').addEventListener('seeked', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
   $('editVideo').addEventListener('loadedmetadata', function () { updateEditCaptionPreview(); updateEditOverlayPreview(); renderTimelineLanes(); });
   window.addEventListener('resize', drawWave);
-  ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('input', drawWave); });
+  ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('input', function () { drawWave(); refreshExportDecisionPreview(); }); });
   function waveSeekTo(clientX) {
     var t = currentTake(); if (!t) return;
     var r = $('waveCanvas').getBoundingClientRect();
@@ -5659,7 +6144,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             $('editVideo').src = '';
             aiNarrSegments = [];
             resetPreviewAudio();
-            renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); renderLocalization(); renderFinishChecklist(); renderResultReadiness(); renderSelectedInspector(); drawWave(); updateEditOverlayPreview();
+            renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); renderLocalization(); renderFinishChecklist(); renderResultReadiness(); refreshExportDecisionPreview(); renderSelectedInspector(); drawWave(); updateEditOverlayPreview();
           }
         }
         renderTakes();
@@ -5696,6 +6181,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     renderLocalization();
     renderFinishChecklist();
     renderResultReadiness();
+    refreshExportDecisionPreview();
     renderSelectedInspector();
     if (!resourceCuesLoaded) refreshResourceCues(); else renderResourceCueList();
     drawWave();
@@ -5715,8 +6201,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var labels = { cut: 'Cut', dissolve: 'Soft dissolve', black: 'Fade through black', white: 'Dip through white' };
     return labels[key] || labels.cut;
   }
+  function sceneTransitionSpeedOption(value) {
+    var n = Number(value);
+    if (!isFinite(n)) return '0.7';
+    if (n <= 0.55) return '0.45';
+    if (n >= 0.9) return '1.1';
+    return '0.7';
+  }
+  function sceneTransitionSeconds() {
+    var raw = $('sceneTransitionSpeed') ? Number($('sceneTransitionSpeed').value) : 0.7;
+    return Math.max(0.2, Math.min(1.5, isFinite(raw) ? raw : 0.7));
+  }
   function sceneTransitionDuration(key) {
-    return key && key !== 'cut' ? 0.7 : 0;
+    return key && key !== 'cut' ? sceneTransitionSeconds() : 0;
   }
   function sceneItemTake(item) {
     return item && item.takeId ? takes.find(function (t) { return t.id === item.takeId; }) || null : null;
@@ -5726,6 +6223,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function sanitizeSceneAudioMode(key) {
     return ({ keep: 1, normalize: 1, mute: 1 })[key] ? key : 'keep';
+  }
+  function sanitizeSceneFraming(key) {
+    return ({ fit: 1, fill: 1 })[key] ? key : 'fit';
+  }
+  function sceneFramingMode() {
+    return sanitizeSceneFraming($('sceneFraming') ? $('sceneFraming').value : 'fit');
   }
   function sanitizeSceneItem(raw, idx) {
     var item = raw || {};
@@ -5789,6 +6292,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         defaultTransition: sceneDefaultTransition(),
         audioMode: $('sceneAudioMode') ? $('sceneAudioMode').value : 'keep',
         audioFade: !$('sceneAudioFade') || $('sceneAudioFade').checked,
+        framing: sceneFramingMode(),
+        transitionSpeed: sceneTransitionSeconds(),
+        outputFormat: currentExportFormatKey(),
+        outputContainer: currentExportContainer(),
         items: sceneSerializableItems()
       };
       localStorage.setItem(SCENE_STORE, JSON.stringify(payload));
@@ -5804,6 +6311,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if ($('sceneDefaultTransition')) $('sceneDefaultTransition').value = sanitizeSceneTransition(data.defaultTransition);
       if ($('sceneAudioMode')) $('sceneAudioMode').value = sanitizeSceneAudioMode(data.audioMode);
       if ($('sceneAudioFade')) $('sceneAudioFade').checked = data.audioFade !== false;
+      if ($('sceneFraming')) $('sceneFraming').value = sanitizeSceneFraming(data.framing || (data.visual && data.visual.framing));
+      if ($('sceneTransitionSpeed')) $('sceneTransitionSpeed').value = sceneTransitionSpeedOption(data.transitionSpeed || (data.visual && data.visual.transitionSpeed));
+      var draftFormat = data.outputFormat || (data.visual && data.visual.outputFormat && data.visual.outputFormat.key);
+      if ($('exportFormat') && draftFormat) $('exportFormat').value = sanitizeExportFormat(draftFormat);
+      var draftContainer = data.outputContainer || (data.visual && data.visual.outputContainer);
+      if ($('exportContainer') && draftContainer) $('exportContainer').value = sanitizeExportContainer(draftContainer);
+      refreshExportFormatStatus();
+      refreshExportContainerStatus();
     } catch (_) {}
     sceneDraftReady = true;
   }
@@ -5926,6 +6441,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!host) return;
     host.innerHTML = '';
     if ($('sceneReadinessList')) $('sceneReadinessList').innerHTML = '';
+    if ($('sceneStoryboard')) $('sceneStoryboard').innerHTML = '';
     if (!sceneItems.length) {
       host.innerHTML = '<p class="status">No scenes yet. Add the selected take or add a card to begin.</p>';
       setStatus($('sceneStatus'), takes.length ? 'Build a sequence from selected takes and cards.' : 'Record or import a take before building a sequence.');
@@ -5936,6 +6452,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     sceneItems.forEach(function (item, idx) {
       var row = document.createElement('div');
       row.className = 'scene-row';
+      row.dataset.sceneIndex = String(idx);
       var badge = document.createElement('span');
       badge.className = 'scene-index';
       badge.textContent = String(idx + 1);
@@ -6045,8 +6562,49 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
     var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); }).length;
     setStatus($('sceneStatus'), sceneItems.length + ' scene' + (sceneItems.length === 1 ? '' : 's') + ' - about ' + fmtClock(sceneTotalDuration()) + (missing ? ' - ' + missing + ' missing take' + (missing === 1 ? '' : 's') : ''), missing ? 'warn' : 'ok');
+    renderSceneStoryboard();
     renderSceneReadiness();
     saveSceneDraftSoon();
+  }
+  function renderSceneStoryboard() {
+    var host = $('sceneStoryboard');
+    if (!host) return;
+    host.innerHTML = '';
+    if (!sceneItems.length) return;
+    sceneItems.forEach(function (item, idx) {
+      var take = sceneItemTake(item);
+      var label = item.type === 'clip' ? (take ? take.name : 'Missing take') : sceneCardCaptionText(item);
+      var captionCount = item.type === 'clip' ? (take && take.captions ? take.captions.length : 0) : 1;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'scene-story';
+      btn.setAttribute('aria-label', 'Jump to scene ' + (idx + 1) + ': ' + label);
+      var mini = document.createElement('div');
+      mini.className = 'scene-mini';
+      if (item.type === 'card') mini.style.background = item.cardType === 'pause' ? 'linear-gradient(135deg, rgba(245,158,11,0.45), rgba(14,165,233,0.25))' : 'linear-gradient(135deg, rgba(20,184,166,0.42), rgba(99,102,241,0.28))';
+      var strong = document.createElement('strong');
+      strong.textContent = (idx + 1) + '. ' + label;
+      var span = document.createElement('span');
+      span.textContent = fmtClock(sceneItemDuration(item)) + (idx ? ' - ' + sceneTransitionLabel(item.transition) : ' - Start');
+      var cap = document.createElement('span');
+      cap.textContent = captionCount + ' caption cue' + (captionCount === 1 ? '' : 's');
+      btn.appendChild(mini);
+      btn.appendChild(strong);
+      btn.appendChild(span);
+      btn.appendChild(cap);
+      btn.addEventListener('click', function () {
+        var target = document.querySelector('.scene-row[data-scene-index="' + idx + '"]');
+        if (!target) return;
+        target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        target.classList.add('scene-drop-target');
+        setTimeout(function () { target.classList.remove('scene-drop-target'); }, 900);
+        var focusable = target.querySelector('input, select, button');
+        if (focusable) {
+          try { focusable.focus({ preventScroll: true }); } catch (_) { focusable.focus(); }
+        }
+      });
+      host.appendChild(btn);
+    });
   }
   function scenePlanSnapshot() {
     var meta = sceneTimelineData(sceneItems);
@@ -6056,6 +6614,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       audio: {
         mode: sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep'),
         fadeEdges: !$('sceneAudioFade') || $('sceneAudioFade').checked
+      },
+      visual: {
+        framing: sceneFramingMode(),
+        transitionSpeed: sceneTransitionSeconds(),
+        outputFormat: exportCanvasSizeFor(currentExportFormatKey(), 1280, 720),
+        outputContainer: currentExportContainer()
       },
       scenes: sceneItems.map(function (item, idx) {
         var take = sceneItemTake(item);
@@ -6127,6 +6691,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }).filter(function (item) { return item.type === 'card' || item.takeId; });
     if ($('sceneAudioMode') && data && data.audio) $('sceneAudioMode').value = sanitizeSceneAudioMode(data.audio.mode);
     if ($('sceneAudioFade') && data && data.audio) $('sceneAudioFade').checked = data.audio.fadeEdges !== false;
+    var visual = data && data.visual ? data.visual : (data || {});
+    if ($('sceneFraming') && visual.framing != null) $('sceneFraming').value = sanitizeSceneFraming(visual.framing);
+    if ($('sceneTransitionSpeed') && visual.transitionSpeed != null) $('sceneTransitionSpeed').value = sceneTransitionSpeedOption(visual.transitionSpeed);
+    if ($('exportFormat') && visual.outputFormat && visual.outputFormat.key) $('exportFormat').value = sanitizeExportFormat(visual.outputFormat.key);
+    if ($('exportContainer') && visual.outputContainer) $('exportContainer').value = sanitizeExportContainer(visual.outputContainer);
+    refreshExportFormatStatus();
+    refreshExportContainerStatus();
     if (sceneItems[0]) sceneItems[0].transition = 'cut';
     renderSceneBuilder();
     setStatus($('sceneStatus'), (label || 'Scene plan') + ' loaded. Missing clips stay marked until their source takes are opened.', 'ok');
@@ -6161,7 +6732,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   if ($('scenePreviewBtn')) $('scenePreviewBtn').addEventListener('click', previewSceneBuilder);
   if ($('sceneStopPreviewBtn')) $('sceneStopPreviewBtn').addEventListener('click', stopScenePreview);
   if ($('sceneDefaultTransition')) $('sceneDefaultTransition').addEventListener('change', saveSceneDraftSoon);
-  ['sceneAudioMode', 'sceneAudioFade'].forEach(function (id) { if ($(id)) $(id).addEventListener('change', saveSceneDraftSoon); });
+  ['sceneAudioMode', 'sceneAudioFade', 'sceneFraming'].forEach(function (id) { if ($(id)) $(id).addEventListener('change', saveSceneDraftSoon); });
+  if ($('sceneTransitionSpeed')) $('sceneTransitionSpeed').addEventListener('change', function () { renderSceneBuilder(); });
   if ($('sceneClearBtn')) $('sceneClearBtn').addEventListener('click', function () { stopScenePreview(); sceneItems = []; clearSceneDraft(); renderSceneBuilder(); });
   if ($('sceneExportBtn')) $('sceneExportBtn').addEventListener('click', exportSceneMontage);
 
@@ -6186,17 +6758,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function sceneNextFrame() {
     return new Promise(function (resolve) { requestAnimationFrame(resolve); });
   }
-  function drawSceneVideo(ctx, video, w, hgt) {
-    ctx.fillStyle = '#020617';
-    ctx.fillRect(0, 0, w, hgt);
-    var vw = video.videoWidth || w;
-    var vh = video.videoHeight || hgt;
-    var scale = Math.min(w / vw, hgt / vh);
-    var dw = vw * scale;
-    var dh = vh * scale;
-    var dx = (w - dw) / 2;
-    var dy = (hgt - dh) / 2;
-    try { ctx.drawImage(video, dx, dy, dw, dh); } catch (_) {}
+  function drawSceneVideo(ctx, video, w, hgt, mode) {
+    drawVideoIntoFrame(ctx, video, w, hgt, mode);
   }
   function drawSceneCard(ctx, w, hgt, item, progress) {
     var title = String(item.text || (item.cardType === 'pause' ? 'Pause and think' : 'New section')).trim();
@@ -6238,6 +6801,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var items = sceneItems.map(function (item, idx) { var copy = Object.assign({}, item); if (idx === 0) copy.transition = 'cut'; return copy; });
     var meta = sceneTimelineData(items);
     var captionStyle = vsResolveCaptionStyle(currentCaptionStyleKey(), currentCaptionCustomization());
+    var previewFraming = sceneFramingMode();
     var state = scenePreviewState = { stopped: false, raf: 0, video: null };
     if ($('scenePreviewBtn')) $('scenePreviewBtn').disabled = true;
     if ($('sceneStopPreviewBtn')) $('sceneStopPreviewBtn').hidden = false;
@@ -6264,7 +6828,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           try { await v.play(); } catch (_) {}
           while (!state.stopped) {
             var local = Math.max(0, Math.min(dur, (v.currentTime || 0) - start));
-            drawSceneVideo(ctx, v, cv.width, cv.height);
+            drawSceneVideo(ctx, v, cv.width, cv.height, previewFraming);
             drawSceneBoundaries(ctx, cv.width, cv.height, items, i, local, dur);
             drawSceneCaption(ctx, cv.width, cv.height, meta.cues || [], done + local, captionStyle);
             if (local >= dur - 0.03 || (v.currentTime || 0) >= end - 0.03 || v.ended) break;
@@ -6447,13 +7011,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return copy;
     });
     var cv = document.createElement('canvas');
-    cv.width = 1280;
-    cv.height = 720;
+    var sceneOutputFormat = exportCanvasSizeFor(currentExportFormatKey(), 1280, 720);
+    var sceneOutputContainer = currentExportContainer();
+    var sceneMimeInfo = chooseExportMime(sceneOutputContainer);
+    cv.width = sceneOutputFormat.width;
+    cv.height = sceneOutputFormat.height;
     var ctx = cv.getContext('2d');
     var stream = cv.captureStream(30);
     var canvasTrack = stream.getVideoTracks()[0] || null;
     var sceneAudioMode = sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep');
     var sceneAudioFade = !$('sceneAudioFade') || $('sceneAudioFade').checked;
+    var sceneFraming = sceneFramingMode();
     var ac = null, dest = null;
     try {
       ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -6493,7 +7061,6 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         item._video = v;
       }
       if (sceneAudioMode !== 'mute' && dest && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
-      var mime = pickMime();
       var totalDur = exportItems.reduce(function (sum, item) { return sum + Math.max(0.1, item._duration || sceneItemDuration(item)); }, 0);
       var sceneMeta = sceneTimelineData(exportItems);
       var sceneCues = sceneMeta.cues || [];
@@ -6508,11 +7075,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       scenePlan.duration = totalDur;
       scenePlan.captions = sceneCues;
       scenePlan.chapters = sceneChapters;
-      var mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined);
+      scenePlan.visual = Object.assign({}, scenePlan.visual || {}, { outputFormat: sceneOutputFormat, outputContainer: sceneOutputContainer });
+      var mr = new MediaRecorder(stream, sceneMimeInfo.mime ? { mimeType: sceneMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(cv.width, cv.height) } : undefined);
       var chunks = [];
       var recorded = new Promise(function (resolve) {
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
-        mr.onstop = function () { resolve(new Blob(chunks, { type: 'video/webm' })); };
+        mr.onstop = function () { resolve(new Blob(chunks, { type: mr.mimeType || sceneMimeInfo.mime || 'video/webm' })); };
       });
       ctx.fillStyle = '#020617';
       ctx.fillRect(0, 0, cv.width, cv.height);
@@ -6538,7 +7106,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               var gainNow = sceneAudioGainAt(sceneAudioMode, sceneAudioFade, local, dur);
               try { scene._gain.gain.setTargetAtTime(gainNow, ac.currentTime, 0.025); } catch (_) { scene._gain.gain.value = gainNow; }
             }
-            drawSceneVideo(ctx, vid, cv.width, cv.height);
+            drawSceneVideo(ctx, vid, cv.width, cv.height, sceneFraming);
             drawSceneBoundaries(ctx, cv.width, cv.height, exportItems, si, local, dur);
             if (burnSceneCaptions) drawSceneCaption(ctx, cv.width, cv.height, sceneCues, done + local, captionStyle);
             try { if (canvasTrack && canvasTrack.requestFrame) canvasTrack.requestFrame(); } catch (_) {}
@@ -6568,11 +7136,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       await new Promise(function (resolve) { setTimeout(resolve, 420); });
       try { mr.stop(); } catch (_) {}
       var raw = await recorded;
-      var patched = raw;
-      try {
-        var buf = await raw.arrayBuffer();
-        patched = new Blob([vsPatchWebmDuration(new Uint8Array(buf), totalDur * 1000)], { type: 'video/webm' });
-      } catch (_) {}
+      var patched = await finalizeRecordedVideoBlob(raw, totalDur);
+      var sceneContainerResult = await maybeConvertStrictMp4(patched, sceneOutputContainer, $('exportStatus'));
+      patched = sceneContainerResult.blob;
+      var sceneContainerInfo = sceneContainerResult.containerInfo || containerInfoForBlob(patched, sceneOutputContainer);
       if (!patched.size) throw new Error('browser did not produce scene video data');
       var title = ($('titleInput') && $('titleInput').value.trim()) || 'Scene sequence';
       if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
@@ -6582,13 +7149,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         title: title,
         duration: totalDur,
         url: URL.createObjectURL(patched),
-        ext: '.webm',
+        ext: extFor(patched.type),
         takeId: 'scene',
         isScene: true,
         sceneItems: exportItems.map(function (item) { return { type: item.type, cardType: item.cardType, takeId: item.takeId, text: item.text, start: item._start || item.start || 0, end: item._end || item.end || 0, duration: item._duration || item.duration || 0, transition: item.transition || 'cut' }; }),
         sceneCues: sceneCues,
         sceneChapters: sceneChapters,
         scenePlan: scenePlan,
+        outputFormat: sceneOutputFormat,
+        outputFraming: sceneFraming,
+        outputContainer: sceneContainerInfo,
         captionStyle: captionStyleKey,
         captionCustom: captionCustom,
         titleCardStyle: $('titleCardStyle') ? $('titleCardStyle').value : 'clean-classroom',
@@ -6596,18 +7166,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       };
       $('resultCard').hidden = false;
       $('resultVideo').src = lastExport.url;
+      syncResultVideoAspect(sceneOutputFormat);
       $('downloadVttBtn').hidden = !(sceneVtt && capMode === 'vtt');
-      setStatus($('resultStatus'), 'Scene export - ' + fmtClock(totalDur) + ' - ' + fmtBytes(patched.size) + (sceneCues.length ? ' - ' + sceneCues.length + ' caption cues' : ''));
-      setStatus($('sceneStatus'), 'Scene export ready.', 'ok');
-      setStatus($('exportStatus'), 'Scene export ready (' + fmtBytes(patched.size) + ').', 'ok');
+      var sceneContainerText = exportContainerLabel(sceneContainerInfo);
+      var sceneReadyKind = sceneContainerInfo.converterError ? 'warn' : 'ok';
+      setStatus($('resultStatus'), 'Scene export - ' + fmtClock(totalDur) + ' - ' + fmtBytes(patched.size) + ' - ' + exportFormatLabel(sceneOutputFormat) + ' - ' + sceneContainerText + (sceneCues.length ? ' - ' + sceneCues.length + ' caption cues' : ''), sceneReadyKind);
+      setStatus($('sceneStatus'), sceneContainerInfo.converterError ? 'Scene export ready, but MP4 conversion was not available; kept ' + sceneContainerText + '.' : 'Scene export ready.', sceneReadyKind);
+      setStatus($('exportStatus'), 'Scene export ready (' + fmtBytes(patched.size) + ', ' + exportFormatLabel(sceneOutputFormat) + ', ' + sceneContainerText + ').', sceneReadyKind);
       announce('Scene export ready');
       setupThumbnailAfterExport();
       renderFinishChecklist();
       renderResultReadiness();
       showTab('tabExport');
     } catch (e) {
-      setStatus($('sceneStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
-      setStatus($('exportStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
+      if (e && e.name === 'AbortError') {
+        setStatus($('sceneStatus'), 'Scene export canceled.', 'warn');
+        setStatus($('exportStatus'), 'Scene export canceled.', 'warn');
+      } else {
+        setStatus($('sceneStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
+        setStatus($('exportStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
+      }
     } finally {
       if ($('exportProgress')) $('exportProgress').hidden = true;
       exportItems.forEach(function (item) { try { if (item._video) { item._video.pause(); item._video.removeAttribute('src'); item._video.load(); } } catch (_) {} });
@@ -6638,6 +7216,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var t = currentTake(); if (!t) return;
       var r = vsComputeSegments(t.duration, Number($('trimStart').value), Number($('trimEnd').value));
       setStatus($('trimStatus'), 'Kept: ' + vsFormatTimestamp(r.segments[0].start).slice(3) + ' → ' + vsFormatTimestamp(r.segments[0].end).slice(3) + ' (' + fmtClock(r.duration) + ')');
+      refreshExportDecisionPreview();
     });
   });
 
@@ -6663,6 +7242,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           else c[field] = Number(inp.value) || 0;
           saveDraft(t);
           updateEditCaptionPreview();
+          refreshExportDecisionPreview();
         });
         td.appendChild(inp); return td;
       };
@@ -6679,6 +7259,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     renderTranscript();
     renderFinishChecklist();
     updateEditCaptionPreview();
+    refreshExportDecisionPreview();
   }
   function transcriptTextFromCues(cues, title) {
     var lines = [];
@@ -7144,6 +7725,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Export ──
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}
   $('exportBtn').addEventListener('click', doExport);
+  if ($('exportCancelBtn')) $('exportCancelBtn').addEventListener('click', cancelMp4Conversion);
 
   async function doExport() {
     var t = currentTake();
@@ -7153,6 +7735,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var captionStyleKey = currentCaptionStyleKey();
     var captionCustom = currentCaptionCustomization();
     var titleCardStyleKey = $('titleCardStyle') ? $('titleCardStyle').value : 'clean-classroom';
+    var exportFormatKey = currentExportFormatKey();
+    var exportFraming = currentExportFraming();
+    var exportContainer = currentExportContainer();
     var wantTitleCard = $('titleCardChk').checked;
     var trimS = Number($('trimStart').value) || 0;
     var trimE = Number($('trimEnd').value) || 0;
@@ -7164,12 +7749,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var audioCfg = t.audio || null;
     var musicBed = t.musicBed ? vsSanitizeMusicBed(t.musicBed, t.duration || 0) : null;
     var hasMixins = !!(t.narration && t.narration.blob) || !!(t.audioClips && t.audioClips.length) || !!(musicBed && musicBed.blob);
-    var needReencode = wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
+    var needReencode = exportFormatKey !== 'original' || shouldReencodeForContainer(exportContainer, t.blob) || wantTitleCard || capMode === 'burn' || trimS > 0.05 || trimE > 0.05 || zooms.length > 0 || inserts.length > 0 || !audioIsDefault(audioCfg) || hasMixins;
     $('exportBtn').disabled = true;
     try {
-      var outBlob, outDur;
+      var outBlob, outDur, outputFormat = null, outputContainer = null;
       if (!needReencode) {
         outDur = t.duration;
+        outputFormat = { key: 'original', label: VIDEO_EXPORT_FORMATS.original.label, note: VIDEO_EXPORT_FORMATS.original.note };
         var srcType = t.type || t.blob.type || 'video/webm';
         if (/webm/i.test(srcType)) {
           // Recorded takes are already Duration-patched (patching again is a
@@ -7179,26 +7765,35 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         } else {
           outBlob = t.blob; // mp4/mov import: pass through, keep its container
         }
-        setStatus($('exportStatus'), 'No re-encode needed — keeping the original file.', 'ok');
+        outputContainer = outputContainerInfoForBlob(outBlob, exportContainer, { passThrough: true });
+        setStatus($('exportStatus'), 'No re-encode needed - keeping the original file.', outputContainer.fallback ? 'warn' : 'ok');
       } else {
-        setStatus($('exportStatus'), 'Re-encoding… keep this window visible (browsers throttle hidden tabs).', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey);
-        outBlob = res.blob; outDur = res.duration;
-        setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ').', 'ok');
+        setStatus($('exportStatus'), 'Re-encoding for ' + (VIDEO_EXPORT_FORMATS[exportFormatKey] || VIDEO_EXPORT_FORMATS.original).label + '... keep this window visible.', 'warn');
+        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
+        outBlob = res.blob; outDur = res.duration; outputFormat = res.outputFormat || exportCanvasSizeFor(exportFormatKey, 1280, 720); exportFraming = res.outputFraming || exportFraming; outputContainer = res.outputContainer || outputContainerInfoForBlob(outBlob, exportContainer);
+        setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ', ' + exportFormatLabel(outputFormat) + ', ' + exportContainerLabel(outputContainer) + ').', outputContainer.fallback ? 'warn' : 'ok');
+      }
+      if (exportContainer === 'mp4_convert') {
+        var strictResult = await maybeConvertStrictMp4(outBlob, exportContainer, $('exportStatus'));
+        outBlob = strictResult.blob;
+        outputContainer = strictResult.containerInfo || outputContainerInfoForBlob(outBlob, exportContainer);
       }
       var vtt = (capMode !== 'none' && cues.length) ? vsBuildVtt(cues) : null;
       if (lastExport && lastExport.url) { try { URL.revokeObjectURL(lastExport.url); } catch (_) {} }
-      lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type), takeId: t.id, captionStyle: captionStyleKey, captionCustom: captionCustom, titleCardStyle: titleCardStyleKey, thumb: null };
+      lastExport = { blob: outBlob, vtt: vtt, title: title, duration: outDur, url: URL.createObjectURL(outBlob), ext: extFor(outBlob.type), takeId: t.id, outputFormat: outputFormat, outputFraming: exportFraming, outputContainer: outputContainer, captionStyle: captionStyleKey, captionCustom: captionCustom, titleCardStyle: titleCardStyleKey, thumb: null };
       $('resultCard').hidden = false;
       $('resultVideo').src = lastExport.url;
+      syncResultVideoAspect(outputFormat);
       $('downloadVttBtn').hidden = !(vtt && capMode === 'vtt');
-      setStatus($('resultStatus'), fmtClock(outDur) + ' · ' + fmtBytes(outBlob.size));
+      var readyKind = outputContainer && (outputContainer.converterError || outputContainer.fallback) ? 'warn' : 'ok';
+      setStatus($('resultStatus'), fmtClock(outDur) + ' · ' + fmtBytes(outBlob.size) + ' · ' + exportFormatLabel(outputFormat) + ' · ' + exportContainerLabel(outputContainer), readyKind);
       announce('Export ready');
       setupThumbnailAfterExport();
       renderFinishChecklist();
       renderResultReadiness();
     } catch (e) {
-      setStatus($('exportStatus'), 'Export failed — ' + (e && e.message || e), 'bad');
+      if (e && e.name === 'AbortError') setStatus($('exportStatus'), 'Export canceled.', 'warn');
+      else setStatus($('exportStatus'), 'Export failed — ' + (e && e.message || e), 'bad');
     }
     $('exportBtn').disabled = false;
   }
@@ -7423,13 +8018,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
-  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey) {
+  function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, outputOptions) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
       v.addEventListener('error', function () { reject(new Error('could not decode the take')); });
       v.addEventListener('loadedmetadata', function () {
-        var w = Math.min(1920, v.videoWidth || 1280), hgt = Math.round(w * (v.videoHeight || 720) / (v.videoWidth || 1280));
+        var opts = outputOptions || {};
+        var outputFormat = exportCanvasSizeFor(opts.format || 'original', v.videoWidth || 1280, v.videoHeight || 720);
+        var outputFraming = sanitizeExportFraming(opts.framing || 'fit');
+        var outputContainerChoice = sanitizeExportContainer(opts.container || 'auto');
+        var outputMimeInfo = chooseExportMime(outputContainerChoice);
+        var w = outputFormat.width, hgt = outputFormat.height;
         var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
         var ctx = cv.getContext('2d');
         var ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -7466,9 +8066,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         });
         var stream = cv.captureStream(30);
         if ((!removeAudio || mixItems.length) && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
-        var mime = pickMime();
         var mr;
-        try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { reject(e); return; }
+        try { mr = new MediaRecorder(stream, outputMimeInfo.mime ? { mimeType: outputMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(w, hgt) } : undefined); } catch (e) { reject(e); return; }
         var chunks = [];
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
         var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
@@ -7485,10 +8084,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var totalDur = cardDur + (seg.end - seg.start);
         mr.onstop = function () {
           try { ac.close(); } catch (_) {}
-          var raw = new Blob(chunks, { type: 'video/webm' });
-          raw.arrayBuffer().then(function (buf) {
-            resolve({ blob: new Blob([vsPatchWebmDuration(new Uint8Array(buf), totalDur * 1000)], { type: 'video/webm' }), duration: totalDur });
-          });
+          var raw = new Blob(chunks, { type: mr.mimeType || outputMimeInfo.mime || 'video/webm' });
+          finalizeRecordedVideoBlob(raw, totalDur).then(function (blob) {
+            resolve({
+              blob: blob,
+              duration: totalDur,
+              outputFormat: outputFormat,
+              outputFraming: outputFraming,
+              outputContainer: outputContainerInfoForBlob(blob, outputContainerChoice, { fallback: outputMimeInfo.fallback, needsConverter: outputMimeInfo.needsConverter })
+            });
+          }, reject);
         };
         var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
         var startedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
@@ -7587,15 +8192,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             // Zoom keyframes use take-absolute time (v.currentTime), so a
             // trimmed start doesn't shift where the teacher aimed them.
             var zs = vsZoomState(zooms || [], v.currentTime);
-            if (zs.scale > 1.001) {
-              var srcW = v.videoWidth || w, srcH = v.videoHeight || hgt;
-              var sw2 = srcW / zs.scale, sh2 = srcH / zs.scale;
-              var sx2 = Math.max(0, Math.min(srcW - sw2, zs.x * srcW - sw2 / 2));
-              var sy2 = Math.max(0, Math.min(srcH - sh2, zs.y * srcH - sh2 / 2));
-              ctx.drawImage(v, sx2, sy2, sw2, sh2, 0, 0, w, hgt);
-            } else {
-              ctx.drawImage(v, 0, 0, w, hgt);
-            }
+            drawVideoIntoFrame(ctx, v, w, hgt, outputFraming, zs);
             drawTeachingInserts(ctx, w, hgt, insertList, v.currentTime);
             drawCaption(v.currentTime - seg.start);
             if (v.currentTime >= seg.end || v.ended) {
@@ -7648,7 +8245,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('downloadBtn').addEventListener('click', function () {
     if (!lastExport) return;
     var a = document.createElement('a');
-    a.href = lastExport.url; a.download = safeName(lastExport.title) + (lastExport.ext || '.webm');
+    a.href = lastExport.url; a.download = safeName(lastExport.title) + exportFormatFileSuffix(lastExport.outputFormat) + (lastExport.ext || '.webm');
     document.body.appendChild(a); a.click(); a.remove();
   });
   $('downloadVttBtn').addEventListener('click', function () {
@@ -7742,7 +8339,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var row = document.createElement('div');
       row.className = 'status ok';
       row.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
-      row.textContent = '[ready] Scene export - ' + sceneCount + ' scene' + (sceneCount === 1 ? '' : 's') + ', ' + fmtClock(lastExport.duration || 0) + '.';
+      row.textContent = '[ready] Scene export - ' + sceneCount + ' scene' + (sceneCount === 1 ? '' : 's') + ', ' + fmtClock(lastExport.duration || 0) + (lastExport.outputFormat ? ', ' + exportFormatLabel(lastExport.outputFormat) : '') + (lastExport.outputContainer ? ', ' + exportContainerLabel(lastExport.outputContainer) : '') + '.';
       host.appendChild(row);
       var caps = document.createElement('div');
       caps.className = 'status' + (flags ? ' warn' : (cues.length ? ' ok' : ''));
@@ -7782,6 +8379,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       localizationCount: (take.localizations || []).length,
       preset: $('exportPreset').value
     });
+    if (lastExport.outputFormat) {
+      items.splice(1, 0, { id: 'format', label: 'Export format', status: 'complete', detail: exportFormatLabel(lastExport.outputFormat) + ' - ' + exportFramingLabel(lastExport.outputFraming) + (lastExport.outputContainer ? ' - ' + exportContainerLabel(lastExport.outputContainer) : '') + '.' });
+    }
     items.forEach(function (item) {
       var row = document.createElement('div');
       row.className = 'status' + (item.status === 'complete' ? ' ok' : item.status === 'warn' ? ' warn' : '');
@@ -7842,7 +8442,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
       var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
+      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);
