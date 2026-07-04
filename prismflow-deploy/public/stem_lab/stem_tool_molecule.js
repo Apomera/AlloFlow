@@ -189,6 +189,18 @@ window.StemLab = window.StemLab || {
           const threeControlsRef = useRef(null);
           const threeResourcesRef = useRef(null);
           const animationFrameIdRef = useRef(null);
+          const vrRef = useRef(null);
+          // WebXR: the "Enter VR" button shows ONLY while a headset is present, and
+          // reacts to connect/unplug live (devicechange) — no clutter without one.
+          const _xrSup = useState(false); const xrSupported = _xrSup[0]; const setXrSupported = _xrSup[1];
+          React.useEffect(function() {
+            var alive = true;
+            var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+            check();
+            var dc = function() { check(); };
+            try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+            return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+          }, []);
           // INCOMPLETE FEATURE (stubbed to prevent a render crash): commit 49aa0e5f
           // added drawVisualShelf(...) calls for the reactions-mode "Visual Molecule
           // Shelf" but never a definition. Stubbed to null so the tool renders; the
@@ -339,6 +351,26 @@ window.StemLab = window.StemLab || {
             };
           }, []);
 
+          // Lazy-load the shared AlloVR layer from this tool's CDN base (only when a
+          // headset is present, so non-VR users never download it).
+          const ensureAlloVR = function(cb) {
+            if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+            var base = 'https://alloflow-cdn.pages.dev/', q = '';
+            try {
+              var scr = document.querySelectorAll('script[src]');
+              for (var i = 0; i < scr.length; i++) {
+                var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                if (m) { base = m[1]; q = m[2] || ''; break; }
+              }
+            } catch (e) {}
+            try {
+              var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+              s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+              s.onerror = function(){ cb(null); };
+              document.head.appendChild(s);
+            } catch (e) { cb(null); }
+          };
+
           const initThree = function(canvas) {
             if (!window.THREE || !window.THREE.OrbitControls) return;
             try {
@@ -425,6 +457,32 @@ window.StemLab = window.StemLab || {
               scene.add(threeResourcesRef.current.atomGroup);
 
               startLoop();
+
+              // ── WebXR (optional): stand next to the molecule at life size, walk
+              //    around it, and grip-grab it to rotate/scale. Loads AlloVR only
+              //    when a headset is present; presenting-only, so 2D is untouched. ──
+              try {
+                if (navigator.xr && navigator.xr.isSessionSupported) {
+                  navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+                    if (!ok) return;
+                    ensureAlloVR(function(V) {
+                      if (!V || !threeRendererRef.current || !threeSceneRef.current) return;
+                      try { if (vrRef.current && vrRef.current.destroy) vrRef.current.destroy(); } catch(e){}
+                      try {
+                        vrRef.current = V.enable({
+                          THREE: THREE, renderer: threeRendererRef.current, scene: threeSceneRef.current, camera: threeCameraRef.current,
+                          seat: { position: [0, 0, 10], scale: 1 },
+                          bounds: { minX: -15, maxX: 15, minZ: -15, maxZ: 15 },
+                          grab: function() { return threeResourcesRef.current && threeResourcesRef.current.atomGroup; },
+                          render: function() { var r = threeRendererRef.current, s = threeSceneRef.current, c = threeCameraRef.current; if (!r || !s || !c) return; var ac = r._alloComposer; if (ac) { try { ac.render(); return; } catch(e) { r._alloComposer = null; } } r.render(s, c); },
+                          pauseLoop: function() { if (animationFrameIdRef.current) { cancelAnimationFrame(animationFrameIdRef.current); animationFrameIdRef.current = null; } },
+                          resumeLoop: function() { startLoop(); }
+                        });
+                      } catch(e){}
+                    });
+                  }).catch(function(){});
+                }
+              } catch(e){}
             } catch(e) {
               console.error("Error in initThree", e);
             }
@@ -657,6 +715,7 @@ window.StemLab = window.StemLab || {
 
           const disposeThree = function() {
             try {
+              try { if (vrRef.current && vrRef.current.destroy) vrRef.current.destroy(); vrRef.current = null; } catch(e){}
               if (animationFrameIdRef.current) {
                 cancelAnimationFrame(animationFrameIdRef.current);
                 animationFrameIdRef.current = null;
@@ -1471,7 +1530,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       className: "absolute bottom-3 right-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
                       style: { background: "rgba(248,250,252,0.9)", color: "#0f172a", borderColor: "rgba(203,213,225,0.8)" },
                       'aria-label': __alloT('stem.molecule.reset_view', 'Reset View')
-                    }, __alloT('stem.molecule.reset_camera', '🔄 Reset Camera'))
+                    }, __alloT('stem.molecule.reset_camera', '🔄 Reset Camera')),
+                    xrSupported && React.createElement("button", {
+                      onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
+                      className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[10px] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      style: { background: "#4f46e5", color: "#fff", borderColor: "rgba(79,70,229,0.8)" },
+                      'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                      title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
+                    }, '🥽 ' + __alloT('vr.enter', 'VR'))
                   )
                 : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
                     (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),

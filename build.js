@@ -493,6 +493,14 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Reusable WebXR layer (allovr/1) — feature-detected Enter-VR + rig +
+        // controllers + locomotion + comfort vignette + grab, for any three.js
+        // STEM scene. Lazy sidecar (loaded only when a headset is present).
+        name: 'AlloVR',
+        filename: 'allo_vr_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         // Giant primitive landmarks (landmark/1) — one per room in the 3D worlds;
         // renders via Prim3D at building scale. Lazy sidecar of the haven walk.
         name: 'Landmark',

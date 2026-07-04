@@ -1298,6 +1298,17 @@
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      // WebXR: "Enter VR" shows ONLY while a headset is present (reactive to
+      // connect/unplug via devicechange) — no clutter for the 2D majority.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+        check();
+        var dc = function() { check(); };
+        try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+        return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+      }, []);
       var upd = function (key, val) {
         if (typeof key === 'object') { ctx.updateMulti('geometryWorld', key); }
         else { ctx.update('geometryWorld', key, val); }
@@ -1644,6 +1655,26 @@
 
       // ── Engine refs (stored on window to persist across renders) ──
       var engineKey = '__geoWorldEngine';
+
+      // Lazy-load the shared AlloVR layer from this tool's CDN base (only when a
+      // headset is present, so non-VR users never download it).
+      function ensureAlloVR(cb) {
+        if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+          s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+          s.onerror = function(){ cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      }
 
       // ── Initialize 3D engine ──
       function initEngine(container) {
@@ -4070,6 +4101,32 @@
 
         window[engineKey] = engine;
 
+        // ── WebXR (optional): walk THROUGH the geometry world at room scale —
+        //    thumbstick glide + teleport + comfort vignette. Loads AlloVR only when
+        //    a headset is present; presenting-only, so the 2D world is untouched.
+        //    (Grabbing/stretching shapes in-VR is the natural Tier-4 follow-up — the
+        //    HandWaver/IMRE angle for Justin Dimmel.) ──
+        try {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+              if (!ok || engine._destroyed) return;
+              ensureAlloVR(function(V) {
+                if (!V || engine._destroyed || !engine.renderer) return;
+                try {
+                  engine.vr = V.enable({
+                    THREE: THREE, renderer: engine.renderer, scene: engine.scene, camera: engine.camera,
+                    seat: { position: [0, 0, 6], scale: 1 },
+                    bounds: { minX: -35, maxX: 35, minZ: -35, maxZ: 35 },
+                    render: function() { if (engine.composer) { try { engine.composer.render(); return; } catch (e) { engine.composer = null; } } engine.renderer.render(engine.scene, engine.camera); },
+                    pauseLoop: function() { if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; } },
+                    resumeLoop: function() { try { animate(); } catch (e) {} }
+                  });
+                } catch(e){}
+              });
+            }).catch(function(){});
+          }
+        } catch(e){}
+
         // Auto-load default lesson
         engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
         } catch(e) {
@@ -4084,6 +4141,7 @@
         var engine = window[engineKey];
         if (engine) {
           engine._destroyed = true;
+          try { if (engine.vr && engine.vr.destroy) engine.vr.destroy(); engine.vr = null; } catch(e){}
           if (engine._rafId) cancelAnimationFrame(engine._rafId); // stop the FPS render loop on teardown
           // Remove every listener registered during initEngine. Without this
           // step, document-scoped handlers (mousemove / keydown / keyup /
@@ -6632,7 +6690,19 @@
                   border: '1px solid rgba(167,139,250,0.55)', color: '#c4b5fd',
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
                 }
-              }, '⛶')
+              }, '⛶'),
+              xrSupported && el('button', {
+                'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                title: __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                onClick: function(ev) { ev.stopPropagation(); var eng = window[engineKey]; if (eng && eng.vr && eng.vr.enterVR) eng.vr.enterVR(); },
+                style: {
+                  position: 'absolute', top: 8, left: 8, zIndex: 100,
+                  height: 32, padding: '0 12px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  background: '#4f46e5', border: '1px solid rgba(129,140,248,0.6)', color: '#fff',
+                  fontSize: 13, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, '🥽 ' + __alloT('vr.enter', 'VR'))
             ),
             // === H7b'' inquiry widget: transformation discovery ===
             (function() {
