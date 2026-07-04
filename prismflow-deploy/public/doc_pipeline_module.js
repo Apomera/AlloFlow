@@ -18342,19 +18342,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
         // Safety-net deterministic WCAG gap closures
         accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
-        // ── STEM image intelligence (2026-06-10) ── Vision classifies each
-        // embedded image (equation/chart/diagram/photo/decorative): spoken-math
-        // alt + LaTeX/MathML for equations, AI-ESTIMATED-labeled data tables
-        // for charts. Runs once, capped at 10 Vision calls, fail-soft to a
-        // no-op. AI passes already ran, so AI usage is already consented.
-        let stemImageIntel = null;
-        try {
-          stemImageIntel = await describeAndClassifyImages(accessibleHtml, { cap: 10 });
-          if (stemImageIntel && stemImageIntel.classified > 0) {
-            accessibleHtml = stemImageIntel.html;
-            warnLog(`[PDF Fix] STEM image intelligence: ${stemImageIntel.classified} image(s) classified (${stemImageIntel.equations} equation(s), ${stemImageIntel.charts} chart(s)) in ${stemImageIntel.visionCalls} Vision call(s)`);
-          }
-        } catch (_) { stemImageIntel = null; }
+        // H1 (2026-07-03): STEM image intelligence MOVED to after the deferred-image token restore (below).
+        // HERE the extracted figures still carry __ALLOFLOW_DATAURL_FINAL_N__ placeholder tokens (not real
+        // data: URLs), so describeAndClassifyImages filtered to zero images and the equation->spoken-math /
+        // chart->data-table / image-of-text enrichment silently never ran on any extracted figure.
         // Re-run axe after safety-net fixes
         const safetyAxe = await runAxeAudit(accessibleHtml);
         if (safetyAxe) axeResults = safetyAxe;
@@ -18839,6 +18830,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         const _tokenCountBefore = _placedIdx.length;
         const _expectedTokens = Object.keys(_deferredImageMap).length;
         _pipeLog('Images', 'Restored ' + _tokenCountBefore + '/' + _expectedTokens + ' image data URL(s) from placeholder tokens');
+        // H1 (2026-07-03): NOW that the deferred-image tokens are real data: URLs, run STEM image
+        // intelligence — Vision classifies each figure (equation->spoken-math alt + LaTeX/MathML, chart->
+        // AI-estimated data table, image-of-text->transcription). Capped at 10 Vision calls, fail-soft. It
+        // gates naturally on "the doc has images" (we're inside the deferred-image block); AI already ran so
+        // usage is consented. The final audit already scored above, so this only ENRICHES the shipped HTML.
+        try {
+          const _stemIntel = await describeAndClassifyImages(accessibleHtml, { cap: 10 });
+          if (_stemIntel && _stemIntel.classified > 0) {
+            accessibleHtml = _stemIntel.html;
+            warnLog(`[PDF Fix] STEM image intelligence: ${_stemIntel.classified} image(s) classified (${_stemIntel.equations} equation(s), ${_stemIntel.charts} chart(s)) in ${_stemIntel.visionCalls} Vision call(s)`);
+          }
+        } catch (_) {}
         if (_droppedIdx.length > 0) {
           warnLog('[Images] WARNING: ' + _droppedIdx.length + ' image placeholder token(s) were missing before restoration — an AI pass dropped figures at indexes: ' + _droppedIdx.join(', '));
           // Fallback re-injection: the actual image bytes still live in _deferredImageMap; append
@@ -24802,7 +24805,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const orphanContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 8);
         if (orphanContentWords.length >= 3) {
           let docMatched = 0;
-          orphanContentWords.forEach(w => { if (fullDocText.indexOf(w) !== -1) docMatched++; });
+          orphanContentWords.forEach(w => { const _wc = String(w).replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, ''); if (_wc && new RegExp('\\b' + escapeRe(_wc) + '\\b', 'i').test(fullDocText)) docMatched++; }); // L3: word-boundary, not substring ("states" is not "statements")
           if (docMatched / orphanContentWords.length >= 0.8) {
             usedSentenceIndices.add(sentIdx);
             restored.push({ word: m.word, sentence: targetSentence, anchorScore: 0, alreadyPresent: true, matchedVia: 'whole-doc-orphan' });
@@ -24826,7 +24829,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       const targetContentWords = normalize(targetSentence).split(' ').filter(w => w.length >= 5).slice(0, 8);
       if (targetContentWords.length >= 3) {
         let docMatched = 0;
-        targetContentWords.forEach(w => { if (fullDocText.indexOf(w) !== -1) docMatched++; });
+        targetContentWords.forEach(w => { const _wc = String(w).replace(/^[^a-z0-9]+|[^a-z0-9]+$/gi, ''); if (_wc && new RegExp('\\b' + escapeRe(_wc) + '\\b', 'i').test(fullDocText)) docMatched++; }); // L3: word-boundary, not substring
         if (docMatched / targetContentWords.length >= 0.8) {
           usedSentenceIndices.add(sentIdx);
           restored.push({ word: m.word, sentence: targetSentence, anchorScore: Math.round(bestScore * 100) / 100, alreadyPresent: true, matchedVia: 'whole-doc' });
