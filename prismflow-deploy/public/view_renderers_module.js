@@ -2029,6 +2029,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     palaceRef.current = MP.buildPalace(data || {});
     handleRef.current = MP.render(hostRef.current, data, {
       t,
+      theme: data?.memoryPalace?.theme || "gallery",
       images: data?.memoryPalace?.images || {},
       objects: data?.memoryPalace?.objects || {},
       mastery: recall ? void 0 : data?.memoryPalace?.mastery || {},
@@ -2052,7 +2053,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       }
       handleRef.current = null;
     };
-  }, [ready, failed, dataKey, nonce, recall]);
+  }, [ready, failed, dataKey, nonce, recall, data?.memoryPalace?.theme || "gallery"]);
+  const paletteTheme = data?.memoryPalace?.theme || "gallery";
+  const handleSetTheme = (thm) => {
+    if (!persist || thm === paletteTheme) return;
+    persist({ ...mpRef.current || {}, theme: thm }, "memoryPalace");
+  };
   React.useEffect(() => {
     if (!recall || finished) return void 0;
     const iv = setInterval(() => {
@@ -2540,7 +2546,24 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5BC} ",
     furnishing ? (t("memory_palace.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("memory_palace.furnish") || "Furnish with AI images"
-  ), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200", role: "group", "aria-label": t("memory_palace.theme_label") || "Palace setting" }, (window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS || ["gallery", "pasture", "space"]).map((thm) => {
+    const on = paletteTheme === thm;
+    const icon = thm === "gallery" ? "\u{1F3DB}" : thm === "pasture" ? "\u{1F33F}" : "\u{1FA90}";
+    const label = thm === "gallery" ? t("memory_palace.theme_gallery") || "Gallery" : thm === "pasture" ? t("memory_palace.theme_pasture") || "Pasture" : t("memory_palace.theme_space") || "Space";
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: thm,
+        onClick: () => handleSetTheme(thm),
+        "aria-pressed": on ? "true" : "false",
+        title: label,
+        className: `px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${on ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+      },
+      icon,
+      " ",
+      label
+    );
+  })), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSculpt,

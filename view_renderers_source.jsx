@@ -2669,6 +2669,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         palaceRef.current = MP.buildPalace(data || {});
         handleRef.current = MP.render(hostRef.current, data, {
             t,
+            theme: data?.memoryPalace?.theme || 'gallery',
             images: data?.memoryPalace?.images || {},
             objects: data?.memoryPalace?.objects || {},
             mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
@@ -2690,7 +2691,15 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             handleRef.current = null;
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ready, failed, dataKey, nonce, recall]);
+    }, [ready, failed, dataKey, nonce, recall, (data?.memoryPalace?.theme || 'gallery')]);
+
+    // Environment theme (gallery / pasture / space) — persists in data.memoryPalace
+    // and remounts the scene (theme rebuilds the whole environment).
+    const paletteTheme = data?.memoryPalace?.theme || 'gallery';
+    const handleSetTheme = (thm) => {
+        if (!persist || thm === paletteTheme) return;
+        persist({ ...(mpRef.current || {}), theme: thm }, 'memoryPalace');
+    };
 
     // Stopwatch (count-up; freezes when the walk is scored).
     React.useEffect(() => {
@@ -3122,6 +3131,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         ? (t('memory_palace.furnishing') || 'Furnishing {done}/{total}…').replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))
                                         : (t('memory_palace.furnish') || 'Furnish with AI images')}
                                 </button>
+                            )}
+                            {hasContent && !failed && persist && (
+                                <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
+                                    {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
+                                        const on = paletteTheme === thm;
+                                        const icon = thm === 'gallery' ? '🏛' : thm === 'pasture' ? '🌿' : '🪐';
+                                        const label = thm === 'gallery' ? (t('memory_palace.theme_gallery') || 'Gallery') : thm === 'pasture' ? (t('memory_palace.theme_pasture') || 'Pasture') : (t('memory_palace.theme_space') || 'Space');
+                                        return (
+                                            <button key={thm} onClick={() => handleSetTheme(thm)} aria-pressed={on ? 'true' : 'false'} title={label}
+                                                className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${on ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}>
+                                                {icon} {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             )}
                             {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
                                 <button

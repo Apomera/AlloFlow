@@ -36,6 +36,15 @@
   var VERSION = 'palace/1';
   var PALETTE = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#06b6d4', '#a855f7', '#84cc16', '#ec4899'];
   var BG = 0x0b1020;
+  // Environment themes: 'gallery' is the classic museum look; 'pasture' and
+  // 'space' give open-world variety (no walls, different sky/ground/light).
+  // mountGL reads these to set background, fog, lights, sky/ground, walls, floor.
+  var THEMES = {
+    gallery: { bg: 0x0b1020, fog: 0.00042, fogColor: 0x0b1020, walls: true, ground: 0, stars: 0x93c5fd, starCount: 420, ambient: 0.62, hemi: [0xcfe0ff, 0x1a2740, 0.72], sun: [0xffffff, 0.6], floorMul: 0.4 },
+    pasture: { bg: 0x8ec9ea, fog: 0.00018, fogColor: 0xd6ecff, walls: false, ground: 0x4f7f43, stars: 0, starCount: 0, ambient: 0.9, hemi: [0xcdeaff, 0x3c5a2c, 0.95], sun: [0xfff3d6, 0.95], floorMul: 0.62 },
+    space: { bg: 0x02030a, fog: 0, fogColor: 0x02030a, walls: false, ground: 0, stars: 0xc3d4ff, starCount: 900, ambient: 0.34, hemi: [0x232f4d, 0x05060a, 0.5], sun: [0x9db4ff, 0.5], floorMul: 0.32 }
+  };
+  var THEME_KEYS = ['gallery', 'pasture', 'space'];
   var THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js';
   var SR_ONLY = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;';
 
@@ -468,10 +477,11 @@
     holder.appendChild(renderer.domElement);
     state.renderer = renderer;
 
+    var theme = THEMES[opts && opts.theme] || THEMES.gallery;
     var root = new THREE.Scene();
     state.scene = root;   // exposed so destroy() can traverse + dispose the whole graph
-    root.background = new THREE.Color(BG);
-    try { root.fog = new THREE.FogExp2(BG, 0.00042); } catch (e) {}
+    root.background = new THREE.Color(theme.bg);
+    try { if (theme.fog > 0) root.fog = new THREE.FogExp2(theme.fogColor, theme.fog); } catch (e) {}
     var camera = new THREE.PerspectiveCamera(58, w / hgt, 1, 60000);
     // WebXR rig: while presenting, the headset drives the camera's LOCAL pose, so
     // the camera lives in a rig we seat/scale to place the user in the palace. At
@@ -479,23 +489,34 @@
     // world-space, so the existing rail/free-roam camera code is untouched.
     var xrRig = new THREE.Group(); root.add(xrRig); xrRig.add(camera);
 
-    root.add(new THREE.AmbientLight(0xffffff, 0.62));
-    try { root.add(new THREE.HemisphereLight(0xcfe0ff, 0x1a2740, 0.72)); } catch (e) {}
+    root.add(new THREE.AmbientLight(0xffffff, theme.ambient));
+    try { root.add(new THREE.HemisphereLight(theme.hemi[0], theme.hemi[1], theme.hemi[2])); } catch (e) {}
     // Overhead "sun" so floors and rooms read from above in the overview (🗺) — the
     // per-room point lights sit near the ceiling, leaving the overhead view dim.
-    try { var _sun = new THREE.DirectionalLight(0xffffff, 0.6); _sun.position.set(0.3, 1, 0.25); root.add(_sun); } catch (e) {}
+    try { var _sun = new THREE.DirectionalLight(theme.sun[0], theme.sun[1]); _sun.position.set(0.3, 1, 0.25); root.add(_sun); } catch (e) {}
 
-    // Starfield above the open-roofed palace (a dream-space, not a building sim).
+    // Open-world ground (pasture): a big soft plane under the palace.
     try {
-      var SN = 420, sp3 = new Float32Array(SN * 3);
-      var span = Math.max(2000, palace.bounds.width * 1.6);
-      for (var si = 0; si < SN; si++) {
-        sp3[si * 3] = palace.bounds.minX + Math.random() * span;
-        sp3[si * 3 + 1] = WALL_H + 300 + Math.random() * 2200;
-        sp3[si * 3 + 2] = -span / 2 + Math.random() * span;
+      if (theme.ground) {
+        var gr = new THREE.Mesh(new THREE.PlaneGeometry(palace.bounds.width * 3, palace.bounds.width * 3),
+          new THREE.MeshStandardMaterial({ color: new THREE.Color(theme.ground), roughness: 1 }));
+        gr.rotation.x = -Math.PI / 2; gr.position.y = -2; root.add(gr);
       }
-      var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
-      root.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0x93c5fd, size: 7, transparent: true, opacity: 0.5, depthWrite: false })));
+    } catch (e) {}
+
+    // Starfield above the open-roofed palace (gallery + space; a dream-space, not a building sim).
+    try {
+      if (theme.starCount > 0) {
+        var SN = theme.starCount, sp3 = new Float32Array(SN * 3);
+        var span = Math.max(2000, palace.bounds.width * 1.6);
+        for (var si = 0; si < SN; si++) {
+          sp3[si * 3] = palace.bounds.minX + Math.random() * span;
+          sp3[si * 3 + 1] = WALL_H + 300 + Math.random() * 2200;
+          sp3[si * 3 + 2] = -span / 2 + Math.random() * span;
+        }
+        var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
+        root.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: theme.stars, size: 7, transparent: true, opacity: 0.5, depthWrite: false })));
+      }
     } catch (e) {}
 
     var group = new THREE.Group(); root.add(group);
@@ -516,12 +537,12 @@
         var m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(lenX, 8), WALL_H, Math.max(lenZ, 8)), wallMat);
         m.position.set(x, WALL_H / 2, z); rg.add(m);
       }
-      // Floor: dark room-accent tint.
+      // Floor: room-accent tint (brighter in open-world themes).
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.4), roughness: 0.9 }));
-      floor.rotation.x = -Math.PI / 2; rg.add(floor);
-      if (ri === 0) {
-        // The hub is an open central plaza (floor + plinth only) so the spokes read.
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(theme.floorMul), roughness: 0.9 }));
+      floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; rg.add(floor);
+      if (ri === 0 || !theme.walls) {
+        // Hub is an open plaza; open-world themes (pasture/space) drop walls too.
       } else {
         // Long walls (the two sides loci hang on) + solid far wall + hub-facing
         // near wall with a central doorway.
@@ -1254,6 +1275,7 @@
   window.AlloModules.MemoryPalace = {
     version: VERSION,
     PALETTE: PALETTE,
+    THEME_KEYS: THEME_KEYS,
     buildPalace: buildPalace,
     navigateRoute: navigateRoute,
     describeLocusForSR: describeLocusForSR,
