@@ -607,7 +607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       { id: 'optimal_80', label: 'Score 80%+ optimal decisions in a mission', icon: '\uD83E\uDDE0', check: function(d) { return (d.spaceExplorer || {}).bestOptimalPct >= 80; }, progress: function(d) { return ((d.spaceExplorer || {}).bestOptimalPct || 0) + '% best'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = window.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};

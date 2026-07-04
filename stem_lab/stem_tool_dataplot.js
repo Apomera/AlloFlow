@@ -209,7 +209,7 @@ window.StemLab = window.StemLab || {
       { id: 'view_residuals', label: 'View residuals to evaluate fit quality', icon: '\uD83D\uDD2C', check: function(d) { return d.showResiduals || false; }, progress: function(d) { return d.showResiduals ? 'Viewing!' : 'Toggle residuals'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;

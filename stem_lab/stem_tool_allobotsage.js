@@ -1481,7 +1481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       { id: 'ai_first_bank',     label: 'Generate AI questions for a spell', icon: '\u2728', check: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); return Object.keys(c).some(function(k) { return (c[k] || []).length > 0; }); }, progress: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); var total = Object.keys(c).reduce(function(t, k) { return t + (c[k] || []).length; }, 0); return total + ' AI questions'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = window.React;
       var h = React.createElement;

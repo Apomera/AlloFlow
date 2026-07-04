@@ -8882,7 +8882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       { id: 'complete_lesson', label: 'Complete a flight lesson', icon: '\uD83D\uDCDA', check: function(d) { return (d.lessonsCompleted || 0) >= 1; }, progress: function(d) { return (d.lessonsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;

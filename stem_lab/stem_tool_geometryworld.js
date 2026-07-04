@@ -1291,7 +1291,7 @@
       { id: 'build_10', label: 'Place 10 blocks in the world', icon: '\uD83E\uDDF1', check: function(d) { return (d.blocksPlaced || 0) >= 10; }, progress: function(d) { return Math.min(d.blocksPlaced || 0, 10) + '/10 blocks'; } }
     ],
     render: function (ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var el = React.createElement;
       var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};

@@ -219,7 +219,7 @@ window.StemLab = window.StemLab || {
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
       var t = ctx.t;
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var callGemini = ctx.callGemini;
 
       // ── State via toolData ──

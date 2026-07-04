@@ -1009,6 +1009,9 @@ window.StemLab = window.StemLab || {
       var _scR = React.useState(''); var sculptRefine = _scR[0], setSculptRefine = _scR[1];
       var _scB = React.useState(false); var sculptBusy = _scB[0], setSculptBusy = _scB[1];
       var _scRdy = React.useState(!!(window.AlloModules && window.AlloModules.Prim3D)); var prim3dReady = _scRdy[0], setPrim3dReady = _scRdy[1];
+      var _scEd = React.useState(false); var sculptEdit = _scEd[0], setSculptEdit = _scEd[1];       // hand-editing a recipe?
+      var _scSel = React.useState(null); var selPart = _scSel[0], setSelPart = _scSel[1];             // selected part index
+      var _scUndo = React.useState([]); var sculptUndo = _scUndo[0], setSculptUndo = _scUndo[1];      // edit undo stack (session)
       // ── Voice sculpting (hands-free making). Feature-detected on Web Speech;
       //    the mic only shows where dictation is available — no clutter otherwise. ──
       var _vSup = React.useState(false); var voiceSupported = _vSup[0], setVoiceSupported = _vSup[1];
@@ -1038,6 +1041,7 @@ window.StemLab = window.StemLab || {
       };
       var history = gd.history || [];
       var savedConstructions = gd.savedConstructions || {};
+      var savedSculpts = gd.savedSculpts || {};
       var showSaved = gd.showSaved || false;
       var unitId = gd.unitId || 'unit';
       var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
@@ -1315,6 +1319,88 @@ window.StemLab = window.StemLab || {
           setSculptBusy(false);
         }).catch(function() { setSculptBusy(false); });
       };
+
+      // ── Manual sculpting: build from scratch OR hand-edit an AI sculpt ────────
+      // A recipe is { name, parts:[{shape,size,position,rotation,color}], scale,rotY,tint }.
+      // These edit recipe.parts directly; the render effect re-runs on the recipe
+      // (its deps include JSON.stringify(sculptRecipe)), so the 3D object updates live.
+      var SCULPT_SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus'];
+      var SCULPT_PART_COLORS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#ffffff', '#94a3b8'];
+      function _pushSculptUndo() {
+        var snap = sculptRecipe ? JSON.parse(JSON.stringify(sculptRecipe)) : null;
+        setSculptUndo(function(st) { var n = st.concat([snap]); return n.length > 20 ? n.slice(n.length - 20) : n; });
+      }
+      function undoSculptEdit() {
+        if (!sculptUndo.length) return;
+        var prev = sculptUndo[sculptUndo.length - 1];
+        _updSculpt(prev);
+        setSculptUndo(sculptUndo.slice(0, -1));
+        if (prev && prev.parts) { if (selPart != null && selPart >= prev.parts.length) setSelPart(prev.parts.length ? prev.parts.length - 1 : null); }
+        else setSelPart(null);
+        if (announceToSR) announceToSR('Undo');
+      }
+      function _setParts(newParts, msg) {
+        var base = sculptRecipe || { name: 'my sculpt' };
+        _updSculpt(Object.assign({}, base, { parts: newParts }));
+        if (msg && announceToSR) announceToSR(msg);
+      }
+      function startFromScratch() {
+        _pushSculptUndo();
+        _updSculpt({ name: 'my sculpt', parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#60a5fa' }] });
+        setSelPart(0); setSculptEdit(true);
+        if (announceToSR) announceToSR('New sculpt started with one box. Add parts and shape them by hand.');
+      }
+      function addPart(shape) {
+        var parts = (sculptRecipe && sculptRecipe.parts) ? sculptRecipe.parts.slice() : [];
+        if (parts.length >= 14) { if (addToast) addToast('Reached the maximum number of parts', 'info'); return; }
+        _pushSculptUndo();
+        parts.push({ shape: SCULPT_SHAPES.indexOf(shape) >= 0 ? shape : 'box', size: [0.8, 0.8, 0.8], position: [0, 0.5 + parts.length * 0.05, 0], rotation: [0, 0, 0], color: SCULPT_PART_COLORS[parts.length % SCULPT_PART_COLORS.length] });
+        setSelPart(parts.length - 1);
+        _setParts(parts, 'Added a ' + (shape || 'box'));
+      }
+      function _editSel(fn, msg) {
+        if (!sculptRecipe || !sculptRecipe.parts || selPart == null || !sculptRecipe.parts[selPart]) return;
+        _pushSculptUndo();
+        var parts = sculptRecipe.parts.map(function(p, i) { return i === selPart ? fn(JSON.parse(JSON.stringify(p))) : p; });
+        _setParts(parts, msg);
+      }
+      function nudgePart(axis, dir) { _editSel(function(p) { var i = { x: 0, y: 1, z: 2 }[axis]; var pos = (p.position || [0, 0, 0]).slice(); pos[i] = Math.round((pos[i] + dir * 0.2) * 100) / 100; p.position = pos; return p; }); }
+      function scaleSelPart(f) { _editSel(function(p) { p.size = (p.size || [1, 1, 1]).map(function(s) { return Math.max(0.1, Math.min(4, Math.round(s * f * 100) / 100)); }); return p; }, f > 1 ? 'Bigger' : 'Smaller'); }
+      function rotateSelPart() { _editSel(function(p) { var r = (p.rotation || [0, 0, 0]).slice(); r[1] = (r[1] + 15) % 360; p.rotation = r; return p; }, 'Rotated'); }
+      function recolorSelPart() { _editSel(function(p) { var i = SCULPT_PART_COLORS.indexOf(p.color); p.color = SCULPT_PART_COLORS[(i + 1) % SCULPT_PART_COLORS.length]; return p; }, 'Recolored'); }
+      function reshapeSelPart() { _editSel(function(p) { var i = SCULPT_SHAPES.indexOf(p.shape); p.shape = SCULPT_SHAPES[(i + 1) % SCULPT_SHAPES.length]; return p; }, 'Changed shape'); }
+      function deleteSelPart() {
+        if (!sculptRecipe || !sculptRecipe.parts || selPart == null) return;
+        _pushSculptUndo();
+        var parts = sculptRecipe.parts.filter(function(_p, i) { return i !== selPart; });
+        if (parts.length) { _setParts(parts, 'Part deleted'); setSelPart(Math.max(0, selPart - 1)); }
+        else { _updSculpt(null); setSelPart(null); setSculptEdit(false); if (announceToSR) announceToSR('All parts deleted'); }
+      }
+
+      // ── Saved-sculpts gallery (mirrors saveConstruction/load/delete) ──
+      function saveSculpt(rawName) {
+        if (!sculptRecipe) return;
+        var base = String(rawName || (sculptRecipe && sculptRecipe.name) || 'sculpt').trim().slice(0, 40) || 'sculpt';
+        var name = base, n = 2;
+        while (savedSculpts[name]) { name = base + ' ' + n; n++; }
+        var snap = JSON.parse(JSON.stringify(sculptRecipe)); snap.savedAt = Date.now();
+        var next = Object.assign({}, savedSculpts); next[name] = snap;
+        setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { savedSculpts: next }) }); });
+        if (addToast) addToast('💾 Saved "' + name + '"', 'success');
+        if (announceToSR) announceToSR('Saved sculpt ' + name);
+      }
+      function loadSculpt(name) {
+        var snap = savedSculpts[name]; if (!snap) return;
+        _pushSculptUndo();
+        _updSculpt(JSON.parse(JSON.stringify(snap)));
+        setSelPart(null);
+        if (announceToSR) announceToSR('Loaded sculpt ' + name);
+      }
+      function deleteSculpt(name) {
+        var next = Object.assign({}, savedSculpts); delete next[name];
+        setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { savedSculpts: next }) }); });
+        if (announceToSR) announceToSR('Deleted ' + name);
+      }
       // ── Voice-directed sculpting (hands-free / accessible making) ──
       // Speak → an LLM routes the intent (create / refine / bigger / smaller /
       // rotate / recolor / remove) → dispatch to the same handlers a mouse uses.
@@ -1741,7 +1827,81 @@ window.StemLab = window.StemLab || {
                         h('button', { onClick: doRefineSculpt, disabled: sculptBusy, className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
                       )
                     )
+                  ),
+
+              // ── Manual primitive editor: build from scratch OR hand-edit an AI sculpt ──
+              h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
+                h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  h('button', {
+                    onClick: function() { if (!sculptRecipe) startFromScratch(); else setSculptEdit(!sculptEdit); },
+                    'aria-pressed': (sculptRecipe && sculptEdit) ? 'true' : 'false',
+                    className: 'px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ' + ((sculptRecipe && sculptEdit) ? 'bg-fuchsia-600 text-white' : 'bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80')
+                  }, sculptRecipe ? ('✋ ' + (sculptEdit ? t('stem.geosandbox.sculpt_editing', 'Editing by hand') : t('stem.geosandbox.sculpt_edit', 'Edit by hand'))) : ('🆕 ' + t('stem.geosandbox.sculpt_scratch', 'Build from scratch'))),
+                  (sculptRecipe && sculptEdit && sculptUndo.length > 0) && h('button', {
+                    onClick: undoSculptEdit,
+                    className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-900/50 text-fuchsia-200 border border-fuchsia-500/40 hover:bg-slate-900/80'
+                  }, '↶ ' + t('stem.geosandbox.sculpt_undo', 'Undo'))
+                ),
+                (sculptEdit && sculptRecipe && sculptRecipe.parts) && h('div', { className: 'space-y-2 bg-slate-900/40 rounded-lg p-2' },
+                  h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_parts', 'Parts — tap one to select, then shape it')),
+                  h('div', { className: 'flex flex-wrap gap-1' },
+                    sculptRecipe.parts.map(function(pp, i) {
+                      return h('button', {
+                        key: i,
+                        onClick: function() { setSelPart(i); },
+                        className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (selPart === i ? 'bg-fuchsia-600/40 border-fuchsia-400 text-white' : 'bg-slate-800/60 border-slate-600/40 text-slate-200 hover:bg-slate-800')
+                      },
+                        h('span', { className: 'w-2.5 h-2.5 rounded-full inline-block', style: { backgroundColor: pp.color || '#ffffff' } }),
+                        (i + 1) + ' ' + (pp.shape || 'box')
+                      );
+                    })
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-1' },
+                    h('span', { className: 'text-[11px] text-fuchsia-200/70' }, t('stem.geosandbox.sculpt_add', 'Add:')),
+                    SCULPT_SHAPES.map(function(s) {
+                      return h('button', { key: s, onClick: function() { addPart(s); }, className: 'px-2 py-1 rounded-full text-[11px] font-bold bg-slate-800/60 text-fuchsia-100 border border-fuchsia-500/30 hover:bg-slate-800' }, '＋ ' + s);
+                    })
+                  ),
+                  (selPart != null && sculptRecipe.parts[selPart]) && h('div', { className: 'space-y-1.5 pt-1.5 border-t border-fuchsia-500/20' },
+                    h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, t('stem.geosandbox.sculpt_selected', 'Selected part') + ' ' + (selPart + 1)),
+                    h('div', { className: 'flex flex-wrap gap-1' },
+                      [['x', -1, '◀ X'], ['x', 1, 'X ▶'], ['y', 1, '▲ Y'], ['y', -1, 'Y ▼'], ['z', -1, 'Z −'], ['z', 1, 'Z ＋']].map(function(m, k) {
+                        return h('button', { key: k, onClick: function() { nudgePart(m[0], m[1]); }, 'aria-label': 'Move ' + m[0] + (m[1] > 0 ? ' positive' : ' negative'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, m[2]);
+                      })
+                    ),
+                    h('div', { className: 'flex flex-wrap gap-1' },
+                      h('button', { onClick: function() { scaleSelPart(1.15); }, 'aria-label': t('stem.geosandbox.sculpt_part_bigger', 'Make part bigger'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍＋'),
+                      h('button', { onClick: function() { scaleSelPart(0.87); }, 'aria-label': t('stem.geosandbox.sculpt_part_smaller', 'Make part smaller'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🔍−'),
+                      h('button', { onClick: rotateSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_rotate', 'Rotate part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '⟳'),
+                      h('button', { onClick: recolorSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_recolor', 'Recolor part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '🎨'),
+                      h('button', { onClick: reshapeSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_reshape', 'Change part shape'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-800/60 text-slate-100 border border-slate-600/40 hover:bg-slate-800' }, '◆ ' + t('stem.geosandbox.sculpt_shape', 'shape')),
+                      h('button', { onClick: deleteSelPart, 'aria-label': t('stem.geosandbox.sculpt_part_delete', 'Delete selected part'), className: 'px-2 py-1 rounded text-[11px] font-bold bg-rose-900/40 text-rose-200 border border-rose-500/40 hover:bg-rose-900/60' }, '🗑')
+                    )
                   )
+                )
+              ),
+
+              // ── Saved-sculpts gallery ──
+              h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
+                h('div', { className: 'flex items-center justify-between gap-2' },
+                  h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, '🖼 ' + t('stem.geosandbox.sculpt_gallery', 'Saved sculpts') + ' (' + Object.keys(savedSculpts).length + ')'),
+                  sculptRecipe && h('button', {
+                    onClick: function() { saveSculpt(sculptRecipe.name); },
+                    'aria-label': t('stem.geosandbox.sculpt_save', 'Save this sculpt'),
+                    className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700'
+                  }, '💾 ' + t('stem.geosandbox.sculpt_save_2', 'Save'))
+                ),
+                (Object.keys(savedSculpts).length === 0)
+                  ? h('p', { className: 'text-[11px] text-fuchsia-200/60' }, t('stem.geosandbox.sculpt_gallery_empty', 'No saved sculpts yet — make one, then press Save.'))
+                  : h('div', { className: 'flex flex-wrap gap-1' },
+                      Object.keys(savedSculpts).map(function(nm) {
+                        return h('div', { key: nm, className: 'flex items-center rounded-lg overflow-hidden border border-fuchsia-500/30 bg-slate-800/60' },
+                          h('button', { onClick: function() { loadSculpt(nm); }, title: t('stem.geosandbox.sculpt_load', 'Load') + ' ' + nm, className: 'px-2 py-1 text-[11px] font-bold text-fuchsia-100 hover:bg-slate-800 max-w-[120px] truncate' }, nm),
+                          h('button', { onClick: function() { deleteSculpt(nm); }, 'aria-label': t('stem.geosandbox.sculpt_delete', 'Delete') + ' ' + nm, className: 'px-1.5 py-1 text-[11px] text-rose-300 hover:bg-rose-900/40 border-l border-fuchsia-500/30' }, '×')
+                        );
+                      })
+                    )
+              )
             ),
 
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──

@@ -95,7 +95,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // tryAward: achievement hook (no-op until achievement system is wired in the hub)
       var tryAward = ctx.tryAward || function() {};
       var ArrowLeft = ctx.icons.ArrowLeft;

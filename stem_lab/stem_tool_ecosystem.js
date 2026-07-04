@@ -615,7 +615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       { id: 'use_all_graph_views', label: 'View all graph types (population, phase, energy)', icon: '\uD83D\uDCCA', check: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length + '/3 views'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;

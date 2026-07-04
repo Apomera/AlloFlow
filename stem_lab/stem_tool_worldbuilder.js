@@ -152,7 +152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
       { id: 'explore_world', label: 'Enter and explore a world', icon: '\uD83C\uDF0D', check: function(d) { return !!d.selectedWorld; }, progress: function(d) { return d.selectedWorld ? 'Exploring!' : 'Choose a world'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData['worldBuilder']) || {};

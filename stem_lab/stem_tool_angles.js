@@ -145,7 +145,7 @@ window.StemLab = window.StemLab || {
       { id: 'explore_challenges', label: 'Try the angle challenges tab', icon: '\uD83C\uDFAF', check: function(d) { return d.activeTab === 'challenges'; }, progress: function(d) { return d.activeTab === 'challenges' ? 'Exploring!' : 'Open challenges tab'; } }
     ],
     render: function(ctx) {
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;
