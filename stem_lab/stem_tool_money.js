@@ -70,7 +70,14 @@ window.StemLab = window.StemLab || {
       var StemAIHintButton = ctx.StemAIHintButton || null;
       var generateStemAI = ctx.generateStemAI || function(){};
       var t = ctx.t || function(s) { return s; };
-      var __alloT = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // ctx.t is the app-wide single-arg translator (t(key) -> translation or undefined);
+      // it ignores a fallback arg. Wrap it so __alloT(key, fallback) actually falls back to
+      // the English string for any key not (yet) in the loaded pack — otherwise missing keys
+      // render as literal "undefined" (the moneyMath cash/cart/grade/currency labels bug).
+      var __alloT = function (k, fb) {
+        var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
+        return (v == null || v === '' || v === k) ? (fb != null ? fb : k) : v;
+      };
       
       // State bridge: map labToolData/setLabToolData to ctx.toolData/setToolData
       var labToolData = { moneyMath: (ctx.toolData && ctx.toolData._moneyMath) || {} };
