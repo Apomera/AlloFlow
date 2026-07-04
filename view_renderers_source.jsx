@@ -2659,6 +2659,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [directPrompt, setDirectPrompt] = React.useState('');
     const [directEval, setDirectEval] = React.useState(null);      // {verdict, reason, enhancedPrompt} | null
     const [directBusy, setDirectBusy] = React.useState(null);      // 'evaluating' | 'generating' | null
+    const [refinePrompt, setRefinePrompt] = React.useState('');    // "tell the AI what to change" for the current sculpture
+    const [refineBusy, setRefineBusy] = React.useState(false);
     // Both generators process EVERY un-arted locus (no fixed cap), reveal each result
     // LIVE the moment it lands (handleRef.current.setLocus*), and persist it
     // incrementally WITHOUT bumping generatedAt — so items pop in one-by-one while you
@@ -2750,6 +2752,51 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 .then((base64) => done('images', 'images', base64))
                 .catch(() => done('images', 'images', null));
         }
+    };
+
+    // Refine the CURRENT locus's sculpture. Manual tweaks mutate whole-object
+    // transforms (scale/rotY/tint — no AI, instant); AI refine asks Gemini to edit
+    // the recipe's parts. Both replace the sculpture live and persist.
+    const _persistObject = (id, recipe) => {
+        if (handleRef.current && handleRef.current.replaceLocusObject) handleRef.current.replaceLocusObject(id, recipe);
+        persist({ ...(mpRef.current || {}), objects: { ...((mpRef.current && mpRef.current.objects) || {}), [id]: recipe } }, 'memoryPalace');
+    };
+    const handleManualTweak = (kind) => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
+        if (!rec) return;
+        const TINTS = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', null];
+        const next = { ...rec };
+        if (kind === 'bigger') next.scale = Math.min(5, (rec.scale || 1) * 1.25);
+        else if (kind === 'smaller') next.scale = Math.max(0.25, (rec.scale || 1) * 0.8);
+        else if (kind === 'rotate') next.rotY = (((rec.rotY || 0) + 45) % 360);
+        else if (kind === 'recolor') { const i = TINTS.indexOf(rec.tint || null); next.tint = TINTS[(i + 1) % TINTS.length]; }
+        _persistObject(cur.id, next);
+    };
+    const handleAiRefine = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!MP || !P3D || !cur || cur.id === '__entry' || !persist || refineBusy || typeof window.callGemini !== 'function') return;
+        const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
+        const instr = refinePrompt.trim();
+        if (!rec || !instr) return;
+        setRefineBusy(true);
+        Promise.resolve(window.callGemini(MP.buildRefinePrompt(rec, instr), true))
+            .then((res) => {
+                if (!aliveRef.current) return;
+                const text = (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
+                const newRec = P3D.parseRecipe(text);
+                if (newRec) {
+                    // keep the student's manual scale/spin/tint on top of the AI's new parts
+                    _persistObject(cur.id, { ...newRec, scale: rec.scale, rotY: rec.rotY, tint: rec.tint });
+                    setRefinePrompt('');
+                    if (addToast) addToast(t('memory_palace.refine_done') || '✨ Refined!', 'success');
+                } else if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error');
+            })
+            .catch(() => { if (addToast) addToast(t('memory_palace.refine_failed') || 'Could not refine — try rephrasing.', 'error'); })
+            .then(() => { if (aliveRef.current) setRefineBusy(false); });
     };
 
     const handleFurnish = () => {
@@ -2949,6 +2996,29 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 {(t('memory_palace.direct_for') || 'Direct the AI for: {label}').replace('{label}', current.label)}
                             </div>
                             {current.mnemonic && <div className="text-xs text-fuchsia-700 italic mb-2">{t('memory_palace.picture_this') || 'Picture this:'} {current.mnemonic}</div>}
+                            {objects3d[current.id] && (
+                                <div className="mb-3 pb-3 border-b border-fuchsia-200">
+                                    <div className="text-xs font-bold text-fuchsia-800 mb-1.5">{t('memory_palace.refine_title') || 'Refine this sculpture'}</div>
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                        <button onClick={() => handleManualTweak('bigger')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍+ {t('memory_palace.refine_bigger') || 'Bigger'}</button>
+                                        <button onClick={() => handleManualTweak('smaller')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🔍− {t('memory_palace.refine_smaller') || 'Smaller'}</button>
+                                        <button onClick={() => handleManualTweak('rotate')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
+                                        <button onClick={() => handleManualTweak('recolor')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
+                                    </div>
+                                    <form onSubmit={(e) => { e.preventDefault(); handleAiRefine(); }} className="flex gap-2">
+                                        <input
+                                            value={refinePrompt}
+                                            onChange={(e) => setRefinePrompt(e.target.value)}
+                                            placeholder={t('memory_palace.refine_placeholder') || 'Tell the AI what to change… (e.g. add a red hat)'}
+                                            aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
+                                            className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                        />
+                                        <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xs font-bold text-fuchsia-800">{t('memory_palace.direct_make') || 'Make:'}</span>
                                 <button onClick={() => setDirectType('image')} className={`px-2.5 py-1 rounded-full text-xs font-bold border ${directType === 'image' ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300'}`}>🖼 {t('memory_palace.direct_image') || 'Image'}</button>

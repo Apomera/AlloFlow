@@ -246,6 +246,14 @@ describe('MemoryPalace — directed-generation prompt gate (pure)', () => {
     expect(MP.parsePromptEval('{"verdict":"maybe"}')).toBe(null);   // invalid verdict
     expect(MP.parsePromptEval('not json')).toBe(null);
   });
+  it('buildRefinePrompt embeds the current recipe JSON, the instruction, and the shape rules', () => {
+    const recipe = { name: 'Kettle', parts: [{ shape: 'sphere', size: [0.5], position: [0, 0.5, 0], color: '#ff0000' }] };
+    const p = MP.buildRefinePrompt(recipe, 'make it taller and add a handle');
+    expect(p).toMatch(/Kettle/);
+    expect(p).toMatch(/make it taller and add a handle/);
+    expect(p).toMatch(/box, sphere, cylinder, cone, torus/);
+    expect(p).toMatch(/Return ONLY the updated JSON/);
+  });
 });
 
 describe('MemoryPalace — graceful degradation (no WebGL in jsdom)', () => {

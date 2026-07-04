@@ -226,6 +226,24 @@
     };
   }
 
+  // Refine an EXISTING sculpture recipe by a student instruction — Gemini edits
+  // the JSON in place. PURE builder; parse the reply with Prim3D.parseRecipe.
+  function buildRefinePrompt(recipe, instruction, opts) {
+    opts = opts || {};
+    var json = '';
+    try { json = JSON.stringify(recipe); } catch (e) { json = '{}'; }
+    return [
+      'Here is a small 3D object built from primitive shapes, as JSON:',
+      json,
+      'The student wants this change: "' + String(instruction || '') + '"',
+      'Modify the JSON to make that change while keeping it a recognizable, charming low-poly object.',
+      'Use ONLY box, sphere, cylinder, cone, torus. Keep the SAME JSON shape:',
+      '{ "name": "...", "parts": [ { "shape": "box", "size": [w,h,d], "position": [x,y,z], "rotation": [rx,ry,rz], "color": "#rrggbb" } ] }',
+      'Rules: 4-24 parts; y is UP; the object STANDS ON y=0; sizes/positions in the same small range as the input; school-appropriate; no text.',
+      'Return ONLY the updated JSON.'
+    ].join('\n');
+  }
+
   // results: {locusId: {attempts, correct, revealed}} → totals + points.
   // First-try recalls score full marks; eventual recalls half; reveals nothing.
   function scoreRecall(results) {
@@ -556,6 +574,7 @@
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     var SCULPT_UNIT = 90;                    // a touch bigger than the original 70
     var _sculptedIds = {};                   // guard against placing a locus twice
+    var _sculptRefs = {};                    // id → {ped, fig} so refine can replace them
     function placeSculpture(l, recipe) {
       if (!P3D || !l || l.id === '__entry' || _sculptedIds[l.id] || !recipe) return;
       try {
@@ -569,6 +588,19 @@
         fig.position.set(px, 46, pz);
         group.add(fig);
         _sculptedIds[l.id] = true;
+        _sculptRefs[l.id] = { ped: ped, fig: fig };
+      } catch (e) {}
+    }
+    function _disposeObj(o) {
+      try {
+        group.remove(o);
+        o.traverse && o.traverse(function (n) {
+          if (n.geometry && n.geometry.dispose) { try { n.geometry.dispose(); } catch (e) {} }
+          var mats = n.material ? (Array.isArray(n.material) ? n.material : [n.material]) : [];
+          mats.forEach(function (mx) { if (mx && mx.dispose) { try { if (mx.map && mx.map.dispose) mx.map.dispose(); mx.dispose(); } catch (e) {} } });
+        });
+        if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+        if (o.material && o.material.dispose) { try { o.material.dispose(); } catch (e) {} }
       } catch (e) {}
     }
     if (P3D && objects) {
@@ -590,6 +622,15 @@
     state.setLocusObject = function (id, recipe) {
       var l = locusById(palace, id);
       if (l) placeSculpture(l, recipe);
+    };
+    // Replace a locus's sculpture in place (refinement): dispose the old figure +
+    // pedestal, then place the new recipe.
+    state.replaceLocusObject = function (id, recipe) {
+      var l = locusById(palace, id);
+      if (!l) return;
+      var ref = _sculptRefs[id];
+      if (ref) { _disposeObj(ref.fig); _disposeObj(ref.ped); delete _sculptRefs[id]; delete _sculptedIds[id]; }
+      placeSculpture(l, recipe);
     };
 
     // Landmarks: one giant primitive structure per room (opts.landmarks =
@@ -931,6 +972,7 @@
     function setLocusStatus(id, status) { try { if (state.setLocusStatus) state.setLocusStatus(id, status); } catch (e) {} }
     function setLocusImage(id, img) { try { if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
     function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
+    function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function showFallback(msg) {
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
@@ -942,7 +984,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -964,7 +1006,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -980,6 +1022,7 @@
     scoreRecall: scoreRecall,
     buildPromptEvalPrompt: buildPromptEvalPrompt,
     parsePromptEval: parsePromptEval,
+    buildRefinePrompt: buildRefinePrompt,
     updateMastery: updateMastery,
     dueLoci: dueLoci,
     masteryStrength: masteryStrength,

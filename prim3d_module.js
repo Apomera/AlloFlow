@@ -31,6 +31,7 @@
   function isNum(v) { return typeof v === 'number' && !isNaN(v); }
   function clamp(v, lo, hi, d) { return isNum(v) ? Math.max(lo, Math.min(hi, v)) : d; }
   function color(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : FALLBACK_COLOR; }
+  function color2(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : null; }   // null when absent/invalid
 
   // ── normalizeRecipe — PURE: untrusted JSON → safe, renderable recipe ──
   // Unknown shapes are dropped; sizes/positions clamped to a sane sculpting
@@ -61,7 +62,11 @@
     return {
       version: VERSION,
       name: (input.name != null) ? String(input.name).slice(0, 80) : '',
-      parts: parts
+      parts: parts,
+      // Optional whole-object transforms (manual refinement — never rewrites parts):
+      scale: clamp(input.scale, 0.25, 5, 1),
+      rotY: isNum(input.rotY) ? (((input.rotY % 360) + 360) % 360) : 0,
+      tint: color2(input.tint)   // null = no recolor
     };
   }
 
@@ -125,7 +130,18 @@
       group.add(mesh);
     });
     if (!group.children.length) return null;
-    group.scale.setScalar(unit);
+    // Whole-object refinement transforms (from manual tweaks): scale, spin, recolor.
+    group.scale.setScalar(unit * (isNum(r.scale) ? r.scale : 1));
+    if (isNum(r.rotY) && r.rotY) group.rotation.y = r.rotY * Math.PI / 180;
+    if (r.tint) {
+      try {
+        var tc = new THREE.Color(r.tint);
+        group.traverse(function (o) {
+          var mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+          mats.forEach(function (mx) { if (mx && mx.color && mx.color.multiply) { try { mx.color.multiply(tc); } catch (e) {} } });
+        });
+      } catch (e) {}
+    }
     group.userData.prim3dName = r.name || '';
     return group;
   }
