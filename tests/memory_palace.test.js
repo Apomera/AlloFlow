@@ -32,13 +32,19 @@ function sampleData() {
 }
 
 describe('MemoryPalace.buildPalace (pure palace model)', () => {
-  it('creates an entry hall plus one room per branch, in corridor order', () => {
+  it('creates an entry hall plus one room per branch, on radial spokes off the hub', () => {
     const p = MP.buildPalace(sampleData());
     expect(p.rooms.map((r) => r.key)).toEqual(['__entry', 'b0', 'b1']);
     expect(p.rooms.map((r) => r.label)).toEqual(['The Water Cycle', 'Sky Room', 'Ground Room']);
-    // rooms march along +X
-    expect(p.rooms[1].center.x).toBeGreaterThan(p.rooms[0].center.x);
-    expect(p.rooms[2].center.x).toBeGreaterThan(p.rooms[1].center.x);
+    // hub-and-spokes: the hub is central; each branch room sits out on its own spoke
+    const hub = p.rooms[0].center;
+    expect(Math.hypot(hub.x, hub.z)).toBe(0);
+    const dist = (c) => Math.hypot(c.x - hub.x, c.z - hub.z);
+    expect(dist(p.rooms[1].center)).toBeGreaterThan(500);
+    expect(dist(p.rooms[2].center)).toBeGreaterThan(500);
+    // the two spoke rooms point in different directions (not stacked on one line)
+    expect(p.rooms[1].angle).not.toBe(p.rooms[2].angle);
+    expect(Math.hypot(p.rooms[1].center.x - p.rooms[2].center.x, p.rooms[1].center.z - p.rooms[2].center.z)).toBeGreaterThan(500);
   });
 
   it('route = entrance then every item in reading order, ids matching adaptGenerated', () => {

@@ -3,8 +3,9 @@
  *
  * P1 of docs/memory_palace_3d_design.md. Turns a generated {main, branches} outline
  * (branches = rooms, items = the facts to memorize, branch.mnemonics[] = vivid
- * image descriptions) into a walkable palace: one room per branch along a corridor,
- * framed loci on the walls in reading order, first-person camera on rails.
+ * image descriptions) into a walkable palace: a central hub with one room per
+ * branch radiating out on spokes, framed loci on the walls in reading order,
+ * first-person camera on rails.
  *
  * DESIGN RULES (same contract as concept_graph_3d_module.js):
  *   1. The LINEAR ROUTE is the accessible source of truth. buildPalace() emits it;
@@ -66,38 +67,56 @@
     };
     loci.push(entryStop); route.push('__entry');
 
+    // Hub-and-spokes: rooms radiate from the central entry hub like spokes of a
+    // wheel (each room rotated so its doorway faces the hub), instead of a single
+    // linear corridor. Radius scales with the room count so N rooms fit around the
+    // hub without overlapping it or each other. Room-local layout (loci on the two
+    // long walls, doorway on the hub-facing end) is unchanged; we just rotate each
+    // room by its spoke angle and rotate the loci world positions to match — so the
+    // route, loci ids, camera rails, and recall all keep working.
+    var N = Math.max(1, branches.length);
+    var SPOKE_R = Math.max(ROOM_W * 1.4, (N * ROOM_D) / (2 * Math.PI) * 1.25 + ROOM_W / 2);
     branches.forEach(function (b, bi) {
       var roomIdx = bi + 1;
-      var cx = roomIdx * ROOM_W;
+      var ang = (2 * Math.PI * bi) / N;                 // spoke angle (room's rotation.y)
+      var ca = Math.cos(ang), sa = Math.sin(ang);
+      var cx = SPOKE_R * ca, cz = -SPOKE_R * sa;        // room center, out along local +x
       var color = PALETTE[bi % PALETTE.length];
       var title = (b && b.title != null) ? String(b.title) : ('Room ' + roomIdx);
-      rooms.push({ key: 'b' + bi, label: title, index: roomIdx, center: { x: cx, z: 0 }, color: color });
+      rooms.push({ key: 'b' + bi, label: title, index: roomIdx, center: { x: cx, z: cz }, angle: ang, color: color });
       var items = (b && Array.isArray(b.items)) ? b.items : [];
       var mnems = (b && Array.isArray(b.mnemonics)) ? b.mnemonics : [];
       var slots = Math.max(1, Math.ceil(items.length / 2));
+      // rotate a room-local (lx,lz) offset by the spoke angle into world (matches
+      // three.js rotation.y = ang applied to the room group in mountGL).
+      var rot = function (lx, lz) { return { x: cx + lx * ca + lz * sa, z: cz - lx * sa + lz * ca }; };
       items.forEach(function (it, ii) {
-        var side = ii % 2 === 0 ? -1 : 1;               // alternate left/right walls
+        var side = ii % 2 === 0 ? -1 : 1;               // alternate the two long walls
         var slot = Math.floor(ii / 2);
-        var fx = cx - ROOM_W / 2 + ((slot + 1) * ROOM_W) / (slots + 1);
-        var fz = side * (ROOM_D / 2 - 6);
+        var lx = -ROOM_W / 2 + ((slot + 1) * ROOM_W) / (slots + 1);   // along the room length
+        var lz = side * (ROOM_D / 2 - 6);                             // on a long wall
+        var faceDir = -side;                            // frame faces into the room
+        var fp = rot(lx, lz);
+        var cp = rot(lx, lz - side * CAM_BACK);         // camera backs off toward the interior
         var id = 'b' + bi + '_i' + ii;                  // matches adaptGenerated ids
         loci.push({
           id: id, roomIdx: roomIdx, branchIdx: bi, itemIdx: ii,
           label: _itemText(it),
           mnemonic: (mnems[ii] != null) ? String(mnems[ii]) : '',
-          framePos: { x: fx, y: EYE + 20, z: fz }, faceDir: -side,   // frame faces into the room
-          camPos: { x: fx, y: EYE, z: fz - side * CAM_BACK },
-          lookAt: { x: fx, y: EYE + 20, z: fz }
+          framePos: { x: fp.x, y: EYE + 20, z: fp.z }, faceDir: faceDir,
+          faceYaw: ang + (faceDir > 0 ? 0 : Math.PI),   // frame world y-rotation
+          camPos: { x: cp.x, y: EYE, z: cp.z },
+          lookAt: { x: fp.x, y: EYE + 20, z: fp.z }
         });
         route.push(id);
       });
     });
 
-    var minX = -ROOM_W / 2, maxX = (rooms.length - 0.5) * ROOM_W;
+    var reach = SPOKE_R + ROOM_D / 2 + 80;               // radial extent (square bounds around the hub)
     return {
       version: VERSION, title: main,
       rooms: rooms, loci: loci, route: route,
-      bounds: { minX: minX, maxX: maxX, minZ: -ROOM_D / 2, maxZ: ROOM_D / 2, width: maxX - minX }
+      bounds: { minX: -reach, maxX: reach, minZ: -reach, maxZ: reach, width: 2 * reach }
     };
   }
 
@@ -489,24 +508,34 @@
     }
 
     palace.rooms.forEach(function (room, ri) {
-      var cx = room.center.x;
+      var cx = room.center.x, cz = room.center.z, ang = room.angle || 0;
+      // Each room lives in its own group, positioned on its spoke and rotated to
+      // face the hub, so floor + walls are built in simple room-local coordinates.
+      var rg = new THREE.Group(); rg.position.set(cx, 0, cz); rg.rotation.y = ang; group.add(rg);
+      function addLocalWall(x, z, lenX, lenZ) {
+        var m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(lenX, 8), WALL_H, Math.max(lenZ, 8)), wallMat);
+        m.position.set(x, WALL_H / 2, z); rg.add(m);
+      }
       // Floor: dark room-accent tint.
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
         new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.4), roughness: 0.9 }));
-      floor.rotation.x = -Math.PI / 2; floor.position.set(cx, 0, 0); group.add(floor);
-      // Long walls (top/bottom in plan = ±z).
-      addWall(cx, -ROOM_D / 2, ROOM_W, 10);
-      addWall(cx, ROOM_D / 2, ROOM_W, 10);
-      // End walls with doorways between consecutive rooms (gap of DOOR_W centered).
-      var segZ = (ROOM_D - DOOR_W) / 2;
-      var leftX = cx - ROOM_W / 2, rightX = cx + ROOM_W / 2;
-      if (ri === 0) addWall(leftX, 0, 10, ROOM_D);                       // palace back wall
-      addWall(rightX, -(DOOR_W / 2 + segZ / 2), 10, segZ);               // doorway wall (shared or exit)
-      addWall(rightX, (DOOR_W / 2 + segZ / 2), 10, segZ);
-      // Room accent light + name sprite.
-      try { var pl = new THREE.PointLight(new THREE.Color(room.color), 0.55, ROOM_W * 1.4); pl.position.set(cx, WALL_H - 40, 0); group.add(pl); } catch (e) {}
+      floor.rotation.x = -Math.PI / 2; rg.add(floor);
+      if (ri === 0) {
+        // The hub is an open central plaza (floor + plinth only) so the spokes read.
+      } else {
+        // Long walls (the two sides loci hang on) + solid far wall + hub-facing
+        // near wall with a central doorway.
+        addLocalWall(0, -ROOM_D / 2, ROOM_W, 10);
+        addLocalWall(0, ROOM_D / 2, ROOM_W, 10);
+        addLocalWall(ROOM_W / 2, 0, 10, ROOM_D);                             // far end wall (solid)
+        var segZ = (ROOM_D - DOOR_W) / 2;
+        addLocalWall(-ROOM_W / 2, -(DOOR_W / 2 + segZ / 2), 10, segZ);       // near wall, doorway to the hub
+        addLocalWall(-ROOM_W / 2, (DOOR_W / 2 + segZ / 2), 10, segZ);
+      }
+      // Room accent light + name sprite (world coords; sprites always face the camera).
+      try { var pl = new THREE.PointLight(new THREE.Color(room.color), 0.55, ROOM_W * 1.4); pl.position.set(cx, WALL_H - 40, cz); group.add(pl); } catch (e) {}
       var name = makeLabelSprite(THREE, room.label, room.color, 30);
-      name.position.set(cx, WALL_H + 40, 0); group.add(name);
+      name.position.set(cx, WALL_H + 40, cz); group.add(name);
     });
 
     // Entry plinth (the palace title).
@@ -532,7 +561,7 @@
       var color = (room && room.color) || '#6366f1';
       var g2 = new THREE.Group();
       g2.position.set(l.framePos.x, l.framePos.y, l.framePos.z);
-      g2.rotation.y = l.faceDir > 0 ? 0 : Math.PI;   // face into the room
+      g2.rotation.y = (l.faceYaw != null) ? l.faceYaw : (l.faceDir > 0 ? 0 : Math.PI);   // face into the (radial) room
       // Frame border + canvas.
       var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.4, metalness: 0.3 });
       var border = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W + 18, FRAME_H + 18, 6), borderMat);
@@ -852,7 +881,7 @@
       if (lk === 'w' || lk === 'a' || lk === 's' || lk === 'd') {   // free walk
         e.preventDefault();
         if (lk === 'w') moveF = 1; else if (lk === 's') moveF = -1;
-        else if (lk === 'a') moveR = -1; else if (lk === 'd') moveR = 1;
+        else if (lk === 'a') moveR = 1; else if (lk === 'd') moveR = -1;   // A = strafe left, D = strafe right
         enterFree();
         return;
       }
