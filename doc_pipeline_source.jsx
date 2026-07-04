@@ -6871,8 +6871,13 @@ var createDocPipeline = function(deps) {
       parts.push('## ' + name + '\n\n' + md);
     }
     if (!parts.length) throw new Error('no tabular data found in the workbook');
+    let _xlsxText = parts.join('\n\n');
+    // #10 (2026-07-03): truncatedRows was RETURNED but never read — a >200-row sheet lost rows SILENTLY.
+    // Surface the truncation IN the text so it's visible in the remediated output + counted by the fidelity
+    // nets, not just a discarded return field.
+    if (truncated > 0) _xlsxText += '\n\n> Note: ' + truncated.toLocaleString() + ' additional data row(s) beyond the first ' + maxRows + ' per sheet were not included in this conversion — open the original spreadsheet for the full data.';
     return {
-      text: parts.join('\n\n'),
+      text: _xlsxText,
       sheets: parts.length,
       truncatedRows: truncated,
     };
@@ -8531,6 +8536,9 @@ var createDocPipeline = function(deps) {
       const hits = [];
       let bm;
       while ((bm = _blipRe.exec(partXml)) !== null && hits.length < 60) hits.push({ rid: bm[1], idx: bm.index });
+      // #10 (2026-07-03): the 60-image cap dropped images 61+ SILENTLY (unlike the size/EMF/budget skips
+      // below). If the loop exited on the cap, bm holds the consumed-but-unpushed 61st blip — disclose it.
+      const _cappedAt60 = hits.length >= 60 && bm !== null;
       const _xmlDecode = (s) => String(s).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'");
       for (let _hi = 0; _hi < hits.length; _hi++) {
         const hit = hits[_hi];
@@ -8559,6 +8567,7 @@ var createDocPipeline = function(deps) {
         budget.used += rawLen;
         out.push({ alt, slideNum, src: 'data:' + mime + ';base64,' + b64img });
       }
+      if (_cappedAt60) out.push({ alt: '', slideNum, skipped: true, reason: 'more than 60 images in this part — images beyond the first 60 were not extracted' });
     } catch (_) { /* media collection is additive — never fail extraction over it */ }
     return out;
   };
@@ -22734,8 +22743,12 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           titleStr ? 'Document title set: "' + titleStr.slice(0, 60) + '"' : 'No document /Title — readers will fall back to filename');
       } catch (_) { _addCheck('Document', 'Title', 'warn', 'Could not read document title'); }
       try {
-        const vp = catalog.get(PDFName.of('ViewerPreferences'));
-        const ddt = vp && vp.get ? vp.get(PDFName.of('DisplayDocTitle')) : null;
+        // #9 (2026-07-03): lookup() RESOLVES an indirect /ViewerPreferences (Word/LibreOffice/InDesign
+        // commonly write it as a ref) — the write side above and the round-trip check both resolve it; the
+        // old get() returned a raw PDFRef with no .get -> ddt null -> a spurious "fail" for a value that WAS
+        // written correctly, dragging down conformancePct in the report the user files.
+        const vp = catalog.lookup(PDFName.of('ViewerPreferences'));
+        const ddt = vp && vp.lookup ? vp.lookup(PDFName.of('DisplayDocTitle')) : (vp && vp.get ? vp.get(PDFName.of('DisplayDocTitle')) : null);
         const ddtTrue = ddt && String(ddt) === 'true';
         _addCheck('Document', 'DisplayDocTitle', ddtTrue ? 'pass' : 'fail',
           ddtTrue ? 'Window chrome will show document title (PDF/UA §7.1)' : 'ViewerPreferences /DisplayDocTitle not set true');
