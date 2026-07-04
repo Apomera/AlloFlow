@@ -1,8 +1,5 @@
 {
-  "name": "alloflow-desktop",
-  "version": "0.1.0",
   "private": true,
-  "main": "desktop/electron/main.cjs",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -73,36 +70,19 @@
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
     "desktop": "node desktop/runtime/alloflow-desktop-runtime.cjs",
     "desktop:check": "node desktop/runtime/alloflow-desktop-runtime.cjs --check",
-    "desktop:smoke": "node desktop/runtime/alloflow-desktop-runtime.cjs --smoke --port 0",
-    "desktop:electron:check": "node desktop/electron/check.cjs",
-    "desktop:native": "electron desktop/electron/main.cjs",
-    "desktop:icon:build": "node desktop/scripts/build-allobot-icon.cjs",
-    "desktop:web:build": "node desktop/scripts/build-desktop-web.cjs",
-    "desktop:package:win": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --win nsis --x64 --arm64",
-    "desktop:package:win-arm64": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --win nsis --arm64",
-    "desktop:package:win-x64": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --win nsis --x64",
-    "desktop:package:mac": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --mac dmg zip --x64 --arm64",
-    "desktop:package:mac-arm64": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --mac dmg zip --arm64",
-    "desktop:package:mac-x64": "npm run desktop:icon:build && npm run desktop:web:build && electron-builder --config electron-builder.desktop.json --mac dmg zip --x64",
-    "desktop:verify:artifacts": "node desktop/scripts/verify-desktop-artifacts.cjs"
+    "desktop:smoke": "node desktop/runtime/alloflow-desktop-runtime.cjs --smoke --port 0"
   },
   "dependencies": {
-    "acorn": "^8.16.0",
-    "electron-log": "^5.4.4",
-    "electron-updater": "^6.8.9"
+    "acorn": "^8.16.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
-    "@ffmpeg/core": "^0.12.10",
-    "@ffmpeg/ffmpeg": "^0.12.15",
     "@playwright/test": "^1.60.0",
     "@vitest/coverage-v8": "^4.1.5",
     "accessibility-checker-engine": "^3.1.83",
     "axe-core": "^4.12.1",
     "diff": "^9.0.0",
-    "electron": "^37.4.0",
-    "electron-builder": "^26.15.3",
     "eslint-scope": "^9.1.2",
     "jsdom": "^29.1.0",
     "playwright": "^1.59.1",
