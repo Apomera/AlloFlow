@@ -499,6 +499,18 @@ const d = labToolData.physics;
 
               targets.forEach(function (t) { t.hit = false; });
 
+              // Persist launch state to the canvas element IMMEDIATELY (not just in draw()).
+              // The Launch button's onClick also calls upd() (predict-then-launch scoring), which
+              // triggers a React re-render. canvasRef is recreated every render (unstable), so the
+              // re-render re-fires it → _physCleanup() cancels the pending frame + re-inits, and the
+              // re-init RESTORES anim state from canvasEl._* (lines ~347-353). draw() hasn't run
+              // since this launch, so without persisting here the restore reverts launched→false and
+              // ball→null and the projectile never flies (the "Launch does nothing" regression).
+              canvasEl._ball = ball;
+              canvasEl._launched = true;
+              canvasEl._trails = trails;
+              canvasEl._impactParticles = impactParticles;
+
               // Canvas Narration: launch event
               if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'launch', {
                 first: 'Projectile launched at ' + angle + ' degrees with a velocity of ' + vel + ' meters per second. Gravity is ' + grav + ' meters per second squared.' + (drag > 0 ? ' Air resistance is on.' : ''),
@@ -1954,25 +1966,28 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', margin: 0, borderRadius: 0, background: '#0f172a' } : { height: "420px" } },
 
-              // Fullscreen toggle (top-right) — wrapper is already position:relative, so
-              // absolute placement works directly. Only shown when the document actually
-              // permits fullscreen: inside a sandboxed iframe (e.g. Gemini Canvas) fullscreen
-              // is blocked by Permissions Policy and requestFullscreen() THROWS synchronously
-              // ("Disallowed by permissions policy"), which would break the click — so hide the
-              // button there AND guard the call (try/catch + promise .catch) so it can't throw.
-              (document.fullscreenEnabled || document.webkitFullscreenEnabled) && React.createElement("button", {
-                'aria-label': 'Toggle fullscreen for the physics canvas',
-                title: 'Fullscreen',
+              // Fullscreen toggle (top-right). Real OS fullscreen only works where the host iframe
+              // grants it (document.fullscreenEnabled). Inside a sandboxed iframe (e.g. Gemini
+              // Canvas) it's blocked by Permissions Policy — requestFullscreen() rejects/throws
+              // "Disallowed by permissions policy" — so fall back to a CSS "fill the frame" mode
+              // toggled via state (physFsMode): the wrapper goes position:fixed/100vw/100vh and,
+              // because the canvas is width/height:100%, the re-render re-measures it to fill.
+              React.createElement("button", {
+                'aria-label': (d.physFsMode ? 'Exit fullscreen' : 'Fullscreen') + ' for the physics canvas',
+                title: d.physFsMode ? 'Exit fullscreen' : 'Fullscreen',
                 onClick: function() {
                   var el = document.getElementById('physics-fs-wrap');
-                  if (!el) return;
-                  try {
-                    var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
-                    if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } }
-                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){}); } }
-                  } catch (e) { /* fullscreen blocked by iframe permissions policy — no-op */ }
+                  if (d.physFsMode) { upd('physFsMode', false); return; }        // exit CSS fill-frame
+                  var inReal = el && (document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el);
+                  if (inReal) { try { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } } catch (e) {} return; }
+                  var rq = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
+                  if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+                    // real fullscreen where the host permits it; if it still rejects, fall back to CSS
+                    try { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){ upd('physFsMode', true); }); return; } catch (e) {}
+                  }
+                  upd('physFsMode', true);                                        // sandboxed iframe — CSS fill-frame
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 10,
@@ -1982,7 +1997,7 @@ const d = labToolData.physics;
                   border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd',
                   fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                 }
-              }, '⛶'),
+              }, d.physFsMode ? '✕' : '⛶'),
 
               React.createElement("canvas", {
 
