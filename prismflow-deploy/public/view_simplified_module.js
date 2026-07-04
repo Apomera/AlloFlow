@@ -220,6 +220,10 @@
   var ConfettiExplosion = props.ConfettiExplosion;
   var ComplexityGauge = props.ComplexityGauge;
   var SourceReferencesPanel = props.SourceReferencesPanel;
+  // Word-level popups must sit ABOVE the z-[200] immersive overlay while it is
+  // open, else Define/Phonics render behind it in the standard view.
+  const _popupZ = isImmersiveReaderActive ? 'z-[220]' : 'z-[100]';
+  const _popupBackdropZ = isImmersiveReaderActive ? 'z-[210]' : 'z-[90]';
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
@@ -731,7 +735,7 @@
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
   }), isEditingLeveledText ? t('common.done_editing') : t('common.edit'))))), definitionData && /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[100] bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-75 duration-300 ease-out",
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-64 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-75 duration-300 ease-out`,
     style: {
       top: Math.min(window.innerHeight - 300, definitionData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
@@ -780,13 +784,13 @@
     onKeyDown: e => {
       if (e.key === 'Escape') e.currentTarget.click();
     },
-    className: "fixed inset-0 z-[90]",
+    className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closeDefinition
   }), phonicsData && /*#__PURE__*/React.createElement("div", {
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "phonics-popup-title",
-    className: "fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200",
+    className: `fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200`,
     style: {
       top: Math.min(window.innerHeight - 300, phonicsData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 300, phonicsData.x - 20) + 'px'
@@ -862,10 +866,10 @@
     onKeyDown: e => {
       if (e.key === 'Escape') e.currentTarget.click();
     },
-    className: "fixed inset-0 z-[90]",
+    className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closePhonics
   }), selectionMenu && /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[100] flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200",
+    className: `fixed ${_popupZ} flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200`,
     style: {
       top: selectionMenu.y - 50 + 'px',
       left: selectionMenu.x + 'px',
@@ -944,13 +948,13 @@
   }), " ", t('text_tools.add_term')))), /*#__PURE__*/React.createElement("div", {
     className: "w-2 h-2 bg-slate-800 rotate-45"
   })), selectionMenu && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[90] bg-transparent",
+    className: `fixed inset-0 ${_popupBackdropZ} bg-transparent`,
     onMouseDown: e => {
       setSelectionMenu(null);
       setIsCustomReviseOpen(false);
     }
   }), revisionData && /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[100] bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200",
+    className: `fixed ${_popupZ} bg-white p-4 rounded-xl shadow-2xl border border-indigo-200 w-72 max-h-[50vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200`,
     style: {
       top: Math.min(window.innerHeight - 300, revisionData.y + 20) + 'px',
       left: Math.min(window.innerWidth - 300, Math.max(20, revisionData.x - 140)) + 'px'
@@ -995,7 +999,7 @@
     onKeyDown: e => {
       if (e.key === 'Escape') e.currentTarget.click();
     },
-    className: "fixed inset-0 z-[90] bg-black/5",
+    className: `fixed inset-0 ${_popupBackdropZ} bg-black/5`,
     onClick: closeRevision
   }), isTeacherMode && !isCompareMode && !isZenMode && generatedContent && ['simplified', 'quiz', 'sentence-frames', 'glossary'].includes(generatedContent.type) && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100 shadow-sm mb-6 mx-1",
