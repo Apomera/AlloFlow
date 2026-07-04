@@ -105,6 +105,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
       var GripVertical = ctx.icons.GripVertical;
       var announceToSR = ctx.announceToSR;
       var awardStemXP = ctx.awardXP;
+      // WebXR: "Enter VR" shows ONLY with a headset present, reactive to connect/
+      // unplug (devicechange) — stand among the planets, fly through the system.
+      var _xrSup = React.useState(false); var xrSupported = _xrSup[0], setXrSupported = _xrSup[1];
+      React.useEffect(function() {
+        var alive = true;
+        var check = function() { try { if (navigator.xr && navigator.xr.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then(function(ok){ if (alive) setXrSupported(!!ok); }).catch(function(){}); } catch(e){} };
+        check();
+        var dc = function() { check(); };
+        try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', dc); } catch(e){}
+        return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
+      }, []);
+      var ensureAlloVR = function(cb) {
+        if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+        var base = 'https://alloflow-cdn.pages.dev/', q = '';
+        try {
+          var scr = document.querySelectorAll('script[src]');
+          for (var i = 0; i < scr.length; i++) {
+            var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+            if (m) { base = m[1]; q = m[2] || ''; break; }
+          }
+        } catch (e) {}
+        try {
+          var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+          s.onload = function(){ cb(window.AlloModules && window.AlloModules.AlloVR); };
+          s.onerror = function(){ cb(null); };
+          document.head.appendChild(s);
+        } catch (e) { cb(null); }
+      };
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
@@ -1673,6 +1701,7 @@ const d = labToolData.solarSystem || {};
               function cleanupSolarCanvas() {
                 if (!solarAlive) return;
                 solarAlive = false;
+                try { if (window._solarVR && window._solarVR.destroy) window._solarVR.destroy(); window._solarVR = null; } catch (e) {}
                 cancelSolarFrame();
 
                 canvas.removeEventListener('pointerdown', onSolarDown);
@@ -1985,6 +2014,33 @@ const d = labToolData.solarSystem || {};
               };
 
               animate();
+
+              // ── WebXR (optional): stand among the planets and fly through the
+              //    solar system (thumbstick glide + teleport across the orbital
+              //    plane + comfort vignette). Loads AlloVR only when a headset is
+              //    present; presenting-only, so the 2D view is untouched. The
+              //    custom camera control is paused with the loop, so the headset
+              //    owns the view in VR. ──
+              try {
+                if (navigator.xr && navigator.xr.isSessionSupported) {
+                  navigator.xr.isSessionSupported('immersive-vr').then(function(ok) {
+                    if (!ok || !solarAlive) return;
+                    ensureAlloVR(function(V) {
+                      if (!V || !solarAlive || !renderer) return;
+                      try {
+                        window._solarVR = V.enable({
+                          THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+                          seat: { position: [0, 8, 55], scale: 1, moveSpeed: 6 },
+                          bounds: { minX: -170, maxX: 170, minZ: -170, maxZ: 170 },
+                          render: function() { if (composer) { try { composer.render(); return; } catch (e) { composer = null; } } renderer.render(scene, camera); },
+                          pauseLoop: function() { cancelSolarFrame(); },
+                          resumeLoop: function() { scheduleSolarFrame(); }
+                        });
+                      } catch (e) {}
+                    });
+                  }).catch(function(){});
+                }
+              } catch (e) {}
 
             }
 
@@ -5895,6 +5951,15 @@ const d = labToolData.solarSystem || {};
 
               }),
 
+              // WebXR "Enter VR" — overlay, shown only when a headset is present.
+              (!d.webglError && xrSupported) && React.createElement("button", {
+                onClick: function() { if (window._solarVR && window._solarVR.enterVR) window._solarVR.enterVR(); },
+                'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                title: __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
+                className: "absolute top-3 right-3 z-10 px-3 py-1.5 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md",
+                style: { boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }
+              }, '🥽 ' + __alloT('vr.enter', 'VR')),
+
               // Floating planet labels
 
               React.createElement("div", { className: "solar-labels", style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' } }),
@@ -9464,6 +9529,30 @@ const d = labToolData.solarSystem || {};
 
                         scene.add(roverGroup);
 
+                        var thrustTrailMesh = null;
+                        var thrustTrailLife = null;
+                        var thrustTrailIdx = 0;
+                        if (isFluid) {
+                          var thrustTrailGeo = new THREE.BufferGeometry();
+                          var thrustTrailPos = new Float32Array(90 * 3);
+                          thrustTrailLife = new Float32Array(90);
+                          for (var tti = 0; tti < 90; tti++) {
+                            thrustTrailPos[tti * 3] = 0;
+                            thrustTrailPos[tti * 3 + 1] = -999;
+                            thrustTrailPos[tti * 3 + 2] = 0;
+                            thrustTrailLife[tti] = 0;
+                          }
+                          thrustTrailGeo.setAttribute('position', new THREE.BufferAttribute(thrustTrailPos, 3));
+                          thrustTrailMesh = new THREE.Points(thrustTrailGeo, new THREE.PointsMaterial({
+                            color: isOcean ? 0x7dd3fc : 0xfbbf24,
+                            size: isOcean ? 0.10 : 0.08,
+                            transparent: true,
+                            opacity: isOcean ? 0.42 : 0.34,
+                            depthWrite: false
+                          }));
+                          scene.add(thrustTrailMesh);
+                        }
+
                         // ═══ GAS GIANT ATMOSPHERE SIMULATION ═══
                         var gasAtmo = null;
                         var gasSamples = [];
@@ -10413,7 +10502,7 @@ const d = labToolData.solarSystem || {};
 
                           (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 V view \u2022 M mission \u2022 H hud \u2022 N nav</div>';
+                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -10616,6 +10705,8 @@ const d = labToolData.solarSystem || {};
 
                         };
 
+                        var scaleFactor = isOcean ? 100 : isGas ? 100 : 50; // meters per unit for display
+
                         var pois = POI_DATA[sel.name] || [];
 
                         var discoveredPOIs = {};
@@ -10714,6 +10805,8 @@ const d = labToolData.solarSystem || {};
 
                           var discCount = Object.keys(discoveredPOIs).length;
 
+                          var discoveryCer = buildDroneCER('discovery', poi.name, poi.fact, poi.desc);
+
                           discCard.innerHTML =
 
                             '<div style="font-weight:bold;font-size:13px;color:#fbbf24;margin-bottom:4px">\uD83D\uDD0D DISCOVERY: ' + poi.name + '</div>' +
@@ -10721,6 +10814,16 @@ const d = labToolData.solarSystem || {};
                             '<div style="color:#e2e8f0;margin-bottom:4px;line-height:1.4">' + poi.desc + '</div>' +
 
                             '<div style="color:#67e8f9;font-size:10px;font-style:italic;border-top:1px solid rgba(251,191,36,0.2);padding-top:4px">\uD83D\uDCA1 ' + poi.fact + '</div>' +
+
+                            '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(56,189,248,0.18);display:grid;gap:3px;font-size:9.5px;line-height:1.35">' +
+
+                            '<div><span style="color:#38bdf8;font-weight:bold">Claim</span> ' + discoveryCer.claim + '</div>' +
+
+                            '<div><span style="color:#fbbf24;font-weight:bold">Evidence</span> ' + discoveryCer.evidence + '</div>' +
+
+                            '<div><span style="color:#a78bfa;font-weight:bold">Reasoning</span> ' + discoveryCer.reasoning + '</div>' +
+
+                            '</div>' +
 
                             '<div style="color:#34d399;font-size:10px;font-weight:bold;margin-top:4px">\u2B50 +10 XP \u2022 ' + discCount + '/' + totalPOIs + ' discovered</div>';
 
@@ -10731,6 +10834,10 @@ const d = labToolData.solarSystem || {};
                           // Award XP
 
                           if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 10);
+
+                          recordDroneJournal('Discovery', poi.name, poi.desc + ' ' + poi.fact, discoveryCer, true);
+
+                          refreshMissionPanel();
 
                           if (discTimeout) clearTimeout(discTimeout);
 
@@ -10750,7 +10857,7 @@ const d = labToolData.solarSystem || {};
 
                         var missionCard = document.createElement('div');
 
-                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
+                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:440px;width:90%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
 
                         var missionIcon = isOcean ? '\uD83D\uDEA4' : isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
 
@@ -10802,6 +10909,180 @@ const d = labToolData.solarSystem || {};
 
                         var missionVisible = false;
 
+                        var missionStats = { scanned: false, photographed: false, sampled: false, nav: false, route: false, journaled: false };
+                        var droneJournalEntries = (journalEntries || []).filter(function (entry) {
+                          return entry && entry.planet === sel.name && entry.source === 'drone';
+                        }).slice(-8).reverse();
+
+                        function droneEscapeHtml(value) {
+                          return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+                            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+                          });
+                        }
+
+                        function getCurrentFieldZone() {
+                          if (isOcean && oceanAtmo) return oceanAtmo.getZone(playerPos.y).name;
+                          if (isGas && gasAtmo) return gasAtmo.getZone(playerPos.y).name;
+                          return sel.terrainType || 'surface';
+                        }
+
+                        function getSampleCount() {
+                          var list = isOcean ? oceanSamples : isGas ? gasSamples : (typeof geoSamples !== 'undefined' ? geoSamples : []);
+                          return list && list.length ? list.length : 0;
+                        }
+
+                        function buildDroneCER(kind, title, evidence, detail) {
+                          var fieldContext = getCurrentFieldZone();
+                          var claim = kind === 'scan'
+                            ? 'The local environment can be described from live sensor evidence.'
+                            : kind === 'photo'
+                              ? 'A visual record can support a later scientific explanation.'
+                              : kind === 'sample'
+                                ? 'A collected specimen can reveal what this world is made of.'
+                                : kind === 'nav'
+                                  ? 'Coordinates and bearings can guide a rover or probe to an evidence site.'
+                                  : kind === 'route'
+                                    ? 'A planned route can be tested against live position and distance evidence.'
+                                    : 'This landmark is evidence of the planet changing over time.';
+                          var reason = isOcean
+                            ? 'Depth, pressure, temperature, and life signs change together, so location matters when interpreting ocean evidence.'
+                            : isGas
+                              ? 'Pressure, wind, chemistry, and depth zones reveal how a gas giant changes below the visible clouds.'
+                              : 'Surface shape, composition, and nearby landmarks help connect observations to geologic history.';
+                          return {
+                            claim: claim,
+                            evidence: evidence || detail || (title + ' observed in ' + fieldContext + '.'),
+                            reasoning: reason
+                          };
+                        }
+
+                        var journalPanel = document.createElement('div');
+                        journalPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,24,0.98));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:18px;color:#e2e8f0;font-family:system-ui;font-size:12px;pointer-events:auto;z-index:16;border:1px solid rgba(52,211,153,0.38);max-width:520px;width:92%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(52,211,153,0.24),0 14px 34px rgba(7,11,24,0.72)';
+                        canvasEl.parentElement.appendChild(journalPanel);
+                        var journalVisible = false;
+
+                        function refreshJournalPanel() {
+                          if (!journalPanel) return;
+                          var rows = droneJournalEntries.length ? droneJournalEntries.map(function (entry) {
+                            return '<div style="border:1px solid rgba(52,211,153,0.18);background:rgba(15,23,42,0.62);border-radius:12px;padding:10px;margin-bottom:8px">' +
+                              '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:5px">' +
+                              '<div style="font-weight:800;color:#86efac;font-size:12px">' + droneEscapeHtml(entry.kind || 'Field note') + ': ' + droneEscapeHtml(entry.title || sel.name) + '</div>' +
+                              '<div style="font-size:9px;color:#94a3b8;white-space:nowrap">' + droneEscapeHtml(entry.time || '') + '</div>' +
+                              '</div>' +
+                              '<div style="font-size:10px;color:#cbd5e1;line-height:1.45;margin-bottom:6px">' + droneEscapeHtml(entry.observation || '') + '</div>' +
+                              '<div style="display:grid;grid-template-columns:1fr;gap:4px;font-size:10px;line-height:1.35">' +
+                              '<div><span style="color:#38bdf8;font-weight:800">Claim</span> ' + droneEscapeHtml(entry.claim || '') + '</div>' +
+                              '<div><span style="color:#fbbf24;font-weight:800">Evidence</span> ' + droneEscapeHtml(entry.evidence || '') + '</div>' +
+                              '<div><span style="color:#a78bfa;font-weight:800">Reasoning</span> ' + droneEscapeHtml(entry.reasoning || '') + '</div>' +
+                              '</div>' +
+                              '</div>';
+                          }).join('') : '<div style="text-align:center;color:#64748b;padding:20px;border:1px dashed rgba(52,211,153,0.24);border-radius:12px">No field notes yet. Discover a landmark, press G to scan, take a photo, or collect a sample.</div>';
+                          journalPanel.innerHTML =
+                            '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">' +
+                            '<div><div style="font-weight:900;color:#86efac;font-size:15px">\uD83D\uDCD3 Drone Field Journal</div><div style="font-size:10px;color:#94a3b8">' + droneEscapeHtml(sel.name) + ' evidence log</div></div>' +
+                            '<div style="font-size:10px;color:#94a3b8">Press J to close</div>' +
+                            '</div>' + rows;
+                        }
+
+                        function markMissionStat(key) {
+                          if (!missionStats[key]) {
+                            missionStats[key] = true;
+                            refreshMissionPanel();
+                          }
+                        }
+
+                        function recordDroneJournal(kind, title, observation, cer, silent) {
+                          cer = cer || buildDroneCER(kind, title, observation, observation);
+                          var entry = {
+                            planet: sel.name,
+                            source: 'drone',
+                            kind: kind,
+                            title: title,
+                            observation: observation,
+                            claim: cer.claim,
+                            evidence: cer.evidence,
+                            reasoning: cer.reasoning,
+                            zone: getCurrentFieldZone(),
+                            timestamp: Date.now(),
+                            time: new Date().toLocaleTimeString()
+                          };
+                          droneJournalEntries.unshift(entry);
+                          if (droneJournalEntries.length > 8) droneJournalEntries = droneJournalEntries.slice(0, 8);
+                          var updatedJournal = (journalEntries || []).concat([entry]);
+                          journalEntries = updatedJournal;
+                          upd('journalEntries', updatedJournal);
+                          markMissionStat('journaled');
+                          refreshJournalPanel();
+                          if (!silent && addToast) addToast('\uD83D\uDCD3 Field journal note saved: ' + title, 'success');
+                        }
+
+                        function recordSampleEvidence(name, type, fact, context) {
+                          markMissionStat('sampled');
+                          recordDroneJournal('Sample', name, fact, buildDroneCER('sample', name, (type ? type + ': ' : '') + fact, context || fact), true);
+                          refreshMissionPanel();
+                        }
+
+                        function missionTaskRow(done, label, detail) {
+                          return '<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(148,163,184,0.08)">' +
+                            '<span style="color:' + (done ? '#34d399' : '#94a3b8') + ';font-weight:900">' + (done ? '\u2611' : '\u2610') + '</span>' +
+                            '<div style="min-width:0"><div style="color:' + (done ? '#86efac' : '#e2e8f0') + ';font-weight:700;font-size:11px">' + droneEscapeHtml(label) + '</div>' +
+                            '<div style="color:#94a3b8;font-size:9px;line-height:1.35">' + droneEscapeHtml(detail || '') + '</div></div>' +
+                            '</div>';
+                        }
+
+                        function refreshMissionPanel() {
+                          if (!missionCard) return;
+                          var discoveredCount = Object.keys(discoveredPOIs || {}).length;
+                          var requiredDiscoveries = Math.min(2, Math.max(1, totalPOIs));
+                          var sampleCount = getSampleCount();
+                          var journalCount = droneJournalEntries.length;
+                          var navDone = navCompletedCount || 0;
+                          var routeTotal = (typeof plotterWaypoints !== 'undefined' && plotterWaypoints) ? plotterWaypoints.length : 0;
+                          var routeReached = typeof plotterActiveWP !== 'undefined' ? Math.min(plotterActiveWP || 0, routeTotal) : 0;
+                          var routeDone = missionStats.route || (routeTotal >= 2 && routeReached >= routeTotal);
+                          var taskStates = [
+                            discoveredCount >= requiredDiscoveries,
+                            missionStats.scanned,
+                            missionStats.photographed,
+                            missionStats.sampled || sampleCount > 0,
+                            missionStats.nav || navDone > 0,
+                            routeDone,
+                            missionStats.journaled || journalCount > 0
+                          ];
+                          var completeCount = taskStates.filter(Boolean).length;
+                          var pct = Math.round((completeCount / taskStates.length) * 100);
+                          missionCard.innerHTML =
+                            '<div style="text-align:center;margin-bottom:12px">' +
+                            '<div style="font-size:32px;margin-bottom:4px">' + missionIcon + '</div>' +
+                            '<div style="font-weight:bold;font-size:16px;color:#7dd3fc;letter-spacing:1px">Field Mission Briefing</div>' +
+                            '<div style="color:#94a3b8;font-size:11px">' + droneEscapeHtml(missionType) + ' - ' + droneEscapeHtml(sel.name) + '</div>' +
+                            '</div>' +
+                            '<div style="background:rgba(56,189,248,0.10);border-radius:12px;padding:10px 12px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.16)">' +
+                            '<div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:7px"><span style="font-weight:800;color:#38bdf8">Mission progress</span><span style="color:#86efac;font-weight:900">' + completeCount + '/' + taskStates.length + '</span></div>' +
+                            '<div style="height:7px;background:rgba(15,23,42,0.75);border-radius:999px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#38bdf8,#34d399);border-radius:999px"></div></div>' +
+                            '</div>' +
+                            '<div style="background:rgba(15,23,42,0.52);border-radius:12px;padding:8px 12px;margin-bottom:10px;border:1px solid rgba(148,163,184,0.14)">' +
+                            '<div style="font-weight:800;color:#fbbf24;margin-bottom:4px">\uD83C\uDFAF Objectives</div>' +
+                            missionTaskRow(taskStates[0], 'Discover ' + requiredDiscoveries + ' landmark' + (requiredDiscoveries === 1 ? '' : 's'), discoveredCount + '/' + totalPOIs + ' points of interest found') +
+                            missionTaskRow(taskStates[1], 'Run an environment scan', 'Press G to collect sensor evidence and a CER note') +
+                            missionTaskRow(taskStates[2], 'Capture photo evidence', 'Press C to save a visual observation to the log') +
+                            missionTaskRow(taskStates[3], isOcean ? 'Collect a marine specimen' : isGas ? 'Collect an atmospheric sample' : 'Collect a geology sample', sampleCount + ' sample' + (sampleCount === 1 ? '' : 's') + ' collected') +
+                            missionTaskRow(taskStates[4], 'Complete a navigation challenge', navDone + ' challenge' + (navDone === 1 ? '' : 's') + ' completed with N') +
+                            missionTaskRow(taskStates[5], 'Complete a plotted route', routeTotal >= 2 ? routeReached + '/' + routeTotal + ' waypoints reached with P' : 'Press P to plot at least 2 waypoints') +
+                            missionTaskRow(taskStates[6], 'Build a field journal', journalCount + ' evidence note' + (journalCount === 1 ? '' : 's') + ' saved') +
+                            '</div>' +
+                            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">' +
+                            '<div style="background:rgba(251,191,36,0.10);border-radius:9px;padding:7px;text-align:center;border:1px solid rgba(251,191,36,0.16)"><div style="color:#fbbf24;font-weight:900;font-size:14px">' + discoveredCount + '/' + totalPOIs + '</div><div style="color:#94a3b8;font-size:9px">Discoveries</div></div>' +
+                            '<div style="background:rgba(167,139,250,0.10);border-radius:9px;padding:7px;text-align:center;border:1px solid rgba(167,139,250,0.16)"><div style="color:#c4b5fd;font-weight:900;font-size:14px">' + navDone + '</div><div style="color:#94a3b8;font-size:9px">Nav</div></div>' +
+                            '<div style="background:rgba(52,211,153,0.10);border-radius:9px;padding:7px;text-align:center;border:1px solid rgba(52,211,153,0.16)"><div style="color:#86efac;font-weight:900;font-size:14px">' + journalCount + '</div><div style="color:#94a3b8;font-size:9px">Notes</div></div>' +
+                            '</div>' +
+                            (completeCount === taskStates.length ? '<div style="margin-bottom:10px;padding:8px 10px;border-radius:10px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.24);color:#bbf7d0;font-size:10px;line-height:1.45;text-align:center">Mission packet complete: discoveries, sensor data, visual evidence, samples, navigation, route planning, and journal notes are ready for discussion.</div>' : '') +
+                            '<div style="text-align:center;color:#64748b;font-size:10px">M mission \u2022 J journal \u2022 G scan \u2022 C photo \u2022 N nav \u2022 P plot \u2022 F sample</div>';
+                        }
+
+                        refreshJournalPanel();
+                        refreshMissionPanel();
+
 
 
                         // Telemetry tracking state
@@ -10814,10 +11095,6 @@ const d = labToolData.solarSystem || {};
                         var _milestoneNames = ['Scout', 'Explorer', 'Voyager', 'Pathfinder', 'Pioneer', 'Odyssey', 'Legend'];
 
                         var lastSpeed = 0;
-
-                        var scaleFactor = isOcean ? 100 : isGas ? 100 : 50; // meters per unit for display
-
-
 
                         // â"€â"€ Science Fact Ticker (bottom of canvas, expanded) â"€â"€
 
@@ -10995,8 +11272,14 @@ const d = labToolData.solarSystem || {};
 
                           // Build scan data from current location/zone
                           var scanHTML = '';
+                          var scanTitle = '';
+                          var scanEvidence = '';
+                          var scanDetail = '';
                           if (isOcean && oceanAtmo) {
                             var oz = oceanAtmo.getZone(playerPos.y);
+                            scanTitle = oz.name;
+                            scanEvidence = oz.temp + ', ' + oz.pressure + ', life signs: ' + (oz.life || []).join(', ');
+                            scanDetail = oz.science;
                             scanHTML = '<div style="color:#00b4ff;font-weight:bold;margin-bottom:4px">' + oz.name + '</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + oz.temp + '</div><div>\uD83D\uDCA8 ' + oz.pressure + '</div>' +
@@ -11005,6 +11288,9 @@ const d = labToolData.solarSystem || {};
                               '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + oz.science + '</div>';
                           } else if (isGas && gasAtmo) {
                             var gz = gasAtmo.getZone(playerPos.y);
+                            scanTitle = gz.name;
+                            scanEvidence = gz.temp + ', ' + gz.pressure + ', winds ' + gz.windSpeed + ' km/h, gases: ' + (gz.gases || []).join(', ');
+                            scanDetail = gz.science;
                             scanHTML = '<div style="color:#fbbf24;font-weight:bold;margin-bottom:4px">' + gz.name + '</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\uD83C\uDF21 ' + gz.temp + '</div><div>\uD83D\uDCA8 ' + gz.pressure + '</div>' +
@@ -11020,6 +11306,9 @@ const d = labToolData.solarSystem || {};
                               var d2 = Math.sqrt(Math.pow(playerPos.x - p.x, 2) + Math.pow(playerPos.z - p.z, 2)) * scaleFactor;
                               if (d2 < nearestPOIDist2) { nearestPOIDist2 = d2; nearestPOIName = p.name; }
                             });
+                            scanTitle = sel.name + ' Surface Analysis';
+                            scanEvidence = 'Elevation ' + elev + 'm, nearest landmark ' + nearestPOIName + ' at ' + Math.round(nearestPOIDist2) + 'm, gravity ' + (sel.gravity || '?') + '.';
+                            scanDetail = sel.surfaceDesc || sel.fact;
                             scanHTML = '<div style="color:#67e8f9;font-weight:bold;margin-bottom:4px">' + sel.name + ' Surface Analysis</div>' +
                               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:left;margin-bottom:6px">' +
                               '<div>\u2696\uFE0F ' + (sel.gravity || '?') + '</div><div>\uD83C\uDF21 ' + sel.temp + '</div>' +
@@ -11028,8 +11317,34 @@ const d = labToolData.solarSystem || {};
                               '<div style="color:#fbbf24;font-size:10px;margin-bottom:4px">\uD83D\uDD2D Nearest landmark: ' + nearestPOIName + '</div>' +
                               '<div style="color:#94a3b8;font-size:10px;font-style:italic">' + (sel.surfaceDesc || sel.fact) + '</div>';
                           }
+
+                          var beaconSignals = (typeof getBeaconSignals === 'function') ? getBeaconSignals().sort(function (a, b) { return b.signal - a.signal; }) : [];
+                          if (beaconSignals.length) {
+                            var topSignals = beaconSignals.slice(0, 3);
+                            var signalSummary = topSignals.map(function (sig) {
+                              return sig.name + ' ' + sig.signal + '% (' + Math.round(sig.dist) + 'm)';
+                            }).join(' | ');
+                            scanEvidence += (scanEvidence ? ' | ' : '') + 'Beacon triangulation: ' + signalSummary + '.';
+                            scanHTML += '<div style="margin-top:7px;padding:6px 7px;border-radius:8px;background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.20);text-align:left">' +
+                              '<div style="color:#c4b5fd;font-weight:800;font-size:10px;margin-bottom:3px">Signal triangulation</div>' +
+                              topSignals.map(function (sig) {
+                                var hex = '#' + sig.color.toString(16).padStart(6, '0');
+                                return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#cbd5e1"><span style="color:' + hex + '">' + sig.name + '</span><span>' + sig.signal + '% / ' + Math.round(sig.dist) + 'm</span></div>';
+                              }).join('') +
+                              '<div style="color:#94a3b8;font-size:9px;margin-top:4px">Stronger signals usually mean the rover or probe is closer to that beacon.</div>' +
+                              '</div>';
+                          }
+                          var scanCer = buildDroneCER('scan', scanTitle, scanEvidence, scanDetail);
+                          scanHTML += '<div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(56,189,248,0.20);display:grid;gap:3px;text-align:left;font-size:10px;line-height:1.35">' +
+                            '<div><span style="color:#38bdf8;font-weight:800">Claim</span> ' + scanCer.claim + '</div>' +
+                            '<div><span style="color:#fbbf24;font-weight:800">Evidence</span> ' + scanCer.evidence + '</div>' +
+                            '<div><span style="color:#a78bfa;font-weight:800">Reasoning</span> ' + scanCer.reasoning + '</div>' +
+                            '</div>';
                           if (scanBody) scanBody.innerHTML = scanHTML;
                           if (scanResult) scanResult.style.opacity = '1';
+
+                          markMissionStat('scanned');
+                          recordDroneJournal('Scan', scanTitle, scanDetail, scanCer, true);
 
                           // Auto-dismiss after 5 seconds
                           setTimeout(function() {
@@ -11044,6 +11359,8 @@ const d = labToolData.solarSystem || {};
                         var thirdPerson = false;
 
                         var tpOffset = new THREE.Vector3(0, 3, 6);
+                        var currentHeadingLabel = 'N';
+                        var currentHeadingDeg = 0;
 
                         canvasEl.addEventListener('keydown', function (e) {
 
@@ -11067,9 +11384,23 @@ const d = labToolData.solarSystem || {};
 
                             missionVisible = !missionVisible;
 
+                            refreshMissionPanel();
+
                             missionCard.style.display = missionVisible ? 'block' : 'none';
 
                             setTimeout(function () { missionCard.style.opacity = missionVisible ? '1' : '0'; }, 10);
+
+                          }
+
+                          if (e.key === 'j' || e.key === 'J') {
+
+                            journalVisible = !journalVisible;
+
+                            refreshJournalPanel();
+
+                            journalPanel.style.display = journalVisible ? 'block' : 'none';
+
+                            setTimeout(function () { journalPanel.style.opacity = journalVisible ? '1' : '0'; }, 10);
 
                           }
 
@@ -11139,7 +11470,7 @@ const d = labToolData.solarSystem || {};
                             photoCard.innerHTML = thumbHtml +
                               '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:14px">\uD83D\uDCF8</span><span style="font-weight:bold;font-size:11px;color:#38bdf8">PHOTO CAPTURED</span></div>' +
                               '<div style="font-size:9px;color:#94a3b8">' + sel.name + ' \u2022 ' + photoLabel + '</div>' +
-                              '<div style="font-size:9px;color:#64748b">' + dirLabel + ' ' + Math.round(deg) + '\u00B0 \u2022 ' + timestamp + '</div>' +
+                              '<div style="font-size:9px;color:#64748b">' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0 \u2022 ' + timestamp + '</div>' +
                               '<div style="font-size:9px;color:#4ade80;margin-top:3px">\u2B50 +5 XP \u2022 Added to mission log</div>' +
                               (thumbDataUrl ? '<div style="margin-top:6px;text-align:center"><a download="' + sel.name.replace(/\s/g, '_') + '_photo.jpg" href="' + thumbDataUrl + '" style="font-size:9px;color:#38bdf8;text-decoration:underline;cursor:pointer">\u2B07 Save Photo</a></div>' : '');
                             canvasEl.parentElement.appendChild(photoCard);
@@ -11148,7 +11479,9 @@ const d = labToolData.solarSystem || {};
                             setTimeout(function() { if (photoCard.parentElement) photoCard.parentElement.removeChild(photoCard); }, 6500);
                             // Award XP
                             if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 5);
-                            addMissionEntry('\uD83D\uDCF8 Photo: ' + sel.name + ' ' + photoLabel + ' heading ' + dirLabel);
+                            addMissionEntry('\uD83D\uDCF8 Photo: ' + sel.name + ' ' + photoLabel + ' heading ' + currentHeadingLabel);
+                            markMissionStat('photographed');
+                            recordDroneJournal('Photo', 'Photo evidence: ' + sel.name, photoLabel + ' at heading ' + currentHeadingLabel + ' ' + Math.round(currentHeadingDeg) + '\u00B0.', buildDroneCER('photo', sel.name + ' photo', 'Image captured at ' + photoLabel + ' while facing ' + currentHeadingLabel + '.', 'A timestamped image gives students evidence they can cite later.'), true);
                           }
 
                         });
@@ -11311,6 +11644,10 @@ const d = labToolData.solarSystem || {};
 
                             if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 15);
 
+                            markMissionStat('nav');
+
+                            recordDroneJournal('Navigation', ch.skill, 'Reached target using ' + ch.skill + '. Final range: ' + nDist.toFixed(0) + ' m.', buildDroneCER('nav', ch.skill, 'Target reached within ' + nDist.toFixed(0) + ' m after following the displayed bearing.', ch.prompt), true);
+
                             navChallengeActive = false;
 
                             if (navTargetMesh) { navTargetMesh.material.color.setHex(0x34d399); navTargetMesh.material.opacity = 0.7; }
@@ -11333,7 +11670,7 @@ const d = labToolData.solarSystem || {};
 
                         // â"€â"€ Course Plotter System (P key) â"€â"€
 
-                        var plotterVisible = false, plotterWaypoints = [], plotterRouteLine = null, plotterActiveWP = 0;
+                        var plotterVisible = false, plotterWaypoints = [], plotterRouteLine = null, plotterActiveWP = 0, plotterRouteComplete = false;
 
                         var plotterPanel = document.createElement('div');
 
@@ -11367,6 +11704,10 @@ const d = labToolData.solarSystem || {};
 
                         canvasEl.parentElement.appendChild(plotterPanel);
 
+                        var routeCoach = document.createElement('div');
+                        routeCoach.style.cssText = 'position:absolute;top:74px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(15,23,42,0.92),rgba(7,11,24,0.95));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;color:#e2e8f0;font-family:system-ui;font-size:10px;pointer-events:none;z-index:12;border:1px solid rgba(129,140,248,0.38);max-width:320px;width:70%;display:none;opacity:0;transition:opacity 0.25s;box-shadow:inset 0 1px 0 rgba(129,140,248,0.25),0 8px 24px rgba(7,11,24,0.58)';
+                        canvasEl.parentElement.appendChild(routeCoach);
+
 
 
                         // Wire plotter buttons
@@ -11391,11 +11732,13 @@ const d = labToolData.solarSystem || {};
 
                         plotterPanel.querySelector('#wp-clear').addEventListener('click', function () {
 
-                          plotterWaypoints = []; plotterActiveWP = 0;
+                          plotterWaypoints = []; plotterActiveWP = 0; plotterRouteComplete = false;
 
                           if (plotterRouteLine) { scene.remove(plotterRouteLine); plotterRouteLine = null; }
 
                           plotterWPMeshes.forEach(function (m) { scene.remove(m); }); plotterWPMeshes = [];
+
+                          if (routeCoach) { routeCoach.style.opacity = '0'; routeCoach.style.display = 'none'; }
 
                           refreshPlotterUI();
 
@@ -11407,9 +11750,13 @@ const d = labToolData.solarSystem || {};
 
                           plotterActiveWP = 0;
 
+                          plotterRouteComplete = false;
+
                           drawPlotterRoute();
 
                           trailPositions = []; // reset trail for comparison
+
+                          if (routeCoach) { routeCoach.style.display = 'block'; setTimeout(function () { routeCoach.style.opacity = '1'; }, 10); }
 
                         });
 
@@ -11431,20 +11778,26 @@ const d = labToolData.solarSystem || {};
 
                           // Calculate total distance
 
-                          var total = 0;
-
-                          for (var wi = 1; wi < plotterWaypoints.length; wi++) {
-
-                            var ddx = plotterWaypoints[wi].x - plotterWaypoints[wi - 1].x, ddz = plotterWaypoints[wi].z - plotterWaypoints[wi - 1].z;
-
-                            total += Math.sqrt(ddx * ddx + ddz * ddz) * scaleFactor;
-
-                          }
+                          var total = getPlotterRouteDistanceMeters();
 
                           var statsDiv = plotterPanel.querySelector('#plotter-stats');
 
-                          if (statsDiv) statsDiv.innerHTML = '\uD83D\uDCCF Total distance: <span style="color:#38bdf8">' + total.toFixed(0) + ' m</span> \u2022 Waypoints: ' + plotterWaypoints.length + '/5';
+                          if (statsDiv) {
+                            var routeStatus = plotterWaypoints.length >= 2
+                              ? (plotterRouteComplete ? ' \u2022 Route complete' : ' \u2022 Next WP: ' + (Math.min(plotterActiveWP + 1, plotterWaypoints.length)) + '/' + plotterWaypoints.length)
+                              : '';
+                            statsDiv.innerHTML = '\uD83D\uDCCF Total distance: <span style="color:#38bdf8">' + total.toFixed(0) + ' m</span> \u2022 Waypoints: ' + plotterWaypoints.length + '/5' + routeStatus;
+                          }
 
+                        }
+
+                        function getPlotterRouteDistanceMeters() {
+                          var total = 0;
+                          for (var wi = 1; wi < plotterWaypoints.length; wi++) {
+                            var ddx = plotterWaypoints[wi].x - plotterWaypoints[wi - 1].x, ddz = plotterWaypoints[wi].z - plotterWaypoints[wi - 1].z;
+                            total += Math.sqrt(ddx * ddx + ddz * ddz) * scaleFactor;
+                          }
+                          return total;
                         }
 
                         function drawPlotterRoute() {
@@ -11479,10 +11832,67 @@ const d = labToolData.solarSystem || {};
 
                             mp.position.set(wp.x, isOcean ? -8 : isGas ? 3 : 0.5, wp.z);
 
+                            mp._baseScale = 1;
+
                             scene.add(mp); plotterWPMeshes.push(mp);
 
                           });
 
+                        }
+
+                        function updatePlotterRouteProgress() {
+                          if (!routeCoach) return;
+                          if (!plotterWaypoints || plotterWaypoints.length < 2 || plotterRouteComplete) return;
+                          if (plotterActiveWP >= plotterWaypoints.length) return;
+
+                          var wp = plotterWaypoints[plotterActiveWP];
+                          var dx = wp.x - playerPos.x, dz = wp.z - playerPos.z;
+                          var distWorld = Math.sqrt(dx * dx + dz * dz);
+                          var distMeters = distWorld * scaleFactor;
+                          var bearing = ((Math.atan2(wp.x - playerPos.x, -(wp.z - playerPos.z)) * 180 / Math.PI) % 360 + 360) % 360;
+                          routeCoach.style.display = 'block';
+                          routeCoach.style.opacity = '1';
+                          routeCoach.innerHTML =
+                            '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:5px">' +
+                            '<span style="font-weight:900;color:#c4b5fd">Plotted Route</span>' +
+                            '<span style="color:#94a3b8">' + (plotterActiveWP + 1) + '/' + plotterWaypoints.length + '</span>' +
+                            '</div>' +
+                            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;text-align:center">' +
+                            '<div style="background:rgba(129,140,248,0.12);border-radius:8px;padding:5px"><div style="color:#c4b5fd;font-weight:900">' + Math.round(distMeters) + 'm</div><div style="color:#94a3b8;font-size:8px">to waypoint</div></div>' +
+                            '<div style="background:rgba(56,189,248,0.10);border-radius:8px;padding:5px"><div style="color:#67e8f9;font-weight:900">' + Math.round(bearing) + '\u00B0</div><div style="color:#94a3b8;font-size:8px">bearing</div></div>' +
+                            '</div>';
+
+                          plotterWPMeshes.forEach(function (mesh, idx) {
+                            if (!mesh) return;
+                            var pulse = idx === plotterActiveWP ? 1.0 + Math.abs(Math.sin(tick3d * 0.08)) * 0.55 : 1;
+                            mesh.scale.setScalar(pulse);
+                          });
+
+                          if (distWorld < Math.max(2.2, 120 / scaleFactor)) {
+                            var reachedIdx = plotterActiveWP;
+                            plotterActiveWP++;
+                            if (plotterWPMeshes[reachedIdx] && plotterWPMeshes[reachedIdx].material) {
+                              plotterWPMeshes[reachedIdx].material.color.setHex(0x34d399);
+                              plotterWPMeshes[reachedIdx].material.opacity = 0.95;
+                              plotterWPMeshes[reachedIdx].scale.setScalar(1.25);
+                            }
+                            refreshPlotterUI();
+
+                            if (plotterActiveWP >= plotterWaypoints.length) {
+                              plotterRouteComplete = true;
+                              markMissionStat('route');
+                              var totalMeters = getPlotterRouteDistanceMeters();
+                              if (typeof awardStemXP === 'function') awardStemXP('solarSystem', 20);
+                              recordDroneJournal('Route', 'Plotted traverse complete', 'Reached ' + plotterWaypoints.length + ' planned waypoints over ' + Math.round(totalMeters) + ' m.', buildDroneCER('route', 'Plotted route', 'Completed ' + plotterWaypoints.length + ' waypoints using bearings and distance readouts.', 'Route planning connects coordinate math with movement through the environment.'), true);
+                              if (addToast) addToast('Route complete: waypoint plan added to the field journal.', 'success');
+                              routeCoach.innerHTML = '<div style="font-weight:900;color:#86efac;margin-bottom:4px">Route complete</div><div style="color:#cbd5e1">Reached ' + plotterWaypoints.length + ' waypoints over ' + Math.round(totalMeters) + ' m. Field journal updated.</div>';
+                              setTimeout(function () {
+                                if (plotterRouteComplete && routeCoach) { routeCoach.style.opacity = '0'; setTimeout(function () { if (routeCoach) routeCoach.style.display = 'none'; }, 260); }
+                              }, 3500);
+                            } else if (addToast) {
+                              addToast('Waypoint reached: continue to WP ' + (plotterActiveWP + 1) + '.', 'success');
+                            }
+                          }
                         }
 
 
@@ -12076,6 +12486,7 @@ const d = labToolData.solarSystem || {};
                                   if (addToast) addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.gas + ') \u2014 ' + sd.fact, 'success');
                                   awardXP(sd.xp, 'Gas sample: ' + sd.name);
                                   playBeep();
+                                  recordSampleEvidence(sd.name, sd.gas, sd.fact, zone.name);
 
                                   // Update inventory panel
                                   var sampleListEl = document.getElementById('gas-sample-list');
@@ -12155,6 +12566,7 @@ const d = labToolData.solarSystem || {};
                                 if (typeof addToast === 'function') addToast(sd.icon + ' Collected: ' + sd.name + ' (' + sd.type + ') \u2014 ' + sd.fact, 'success');
                                 if (typeof awardStemXP === 'function') awardStemXP('solarSystem', sd.xp);
                                 if (typeof playBeep === 'function') playBeep();
+                                recordSampleEvidence(sd.name, sd.type, sd.fact, oZone.name);
                                 var sListEl = document.getElementById('ocean-sample-list');
                                 var sEmptyEl = document.getElementById('ocean-sample-empty');
                                 if (sEmptyEl) sEmptyEl.style.display = 'none';
@@ -12551,6 +12963,7 @@ const d = labToolData.solarSystem || {};
                                   if (typeof addToast === 'function') addToast(gsd.icon + ' Collected: ' + gsd.name + ' (' + gsd.type + ') \u2014 ' + gsd.fact, 'success');
                                   if (typeof awardStemXP === 'function') awardStemXP('solarSystem', gsd.xp);
                                   if (typeof playBeep === 'function') playBeep();
+                                  recordSampleEvidence(gsd.name, gsd.type, gsd.fact, sel.name + ' surface');
                                 }
                                 // Proximity hint
                                 if (gDist < 3.5 && !orb._collected && tick3d % 30 === 0) {
@@ -12571,6 +12984,32 @@ const d = labToolData.solarSystem || {};
                                 }
                               });
                             }
+                          }
+
+                          // Fluid vehicle wake: bubbles for ocean dives, ionized trail for atmospheric probes
+                          if (isFluid && thrustTrailMesh && thrustTrailLife) {
+                            var wakeArr = thrustTrailMesh.geometry.attributes.position.array;
+                            var wakeMoving = moveState.forward || moveState.back || moveState.left || moveState.right || moveState.up || moveState.down;
+                            if ((wakeMoving || tick3d % 18 === 0) && tick3d % 2 === 0) {
+                              var wakeIdx = thrustTrailIdx * 3;
+                              wakeArr[wakeIdx] = playerPos.x + Math.sin(yaw) * 0.9 + (Math.random() - 0.5) * 0.35;
+                              wakeArr[wakeIdx + 1] = playerPos.y - 0.35 + (Math.random() - 0.5) * 0.24;
+                              wakeArr[wakeIdx + 2] = playerPos.z + Math.cos(yaw) * 0.9 + (Math.random() - 0.5) * 0.35;
+                              thrustTrailLife[thrustTrailIdx] = isOcean ? 80 : 58;
+                              thrustTrailIdx = (thrustTrailIdx + 1) % 90;
+                            }
+                            for (var wti = 0; wti < 90; wti++) {
+                              if (thrustTrailLife[wti] > 0) {
+                                thrustTrailLife[wti]--;
+                                wakeArr[wti * 3] += (Math.random() - 0.5) * 0.018;
+                                wakeArr[wti * 3 + 1] += isOcean ? 0.018 : -0.004;
+                                wakeArr[wti * 3 + 2] += (Math.random() - 0.5) * 0.018;
+                              } else {
+                                wakeArr[wti * 3 + 1] = -999;
+                              }
+                            }
+                            thrustTrailMesh.geometry.attributes.position.needsUpdate = true;
+                            thrustTrailMesh.material.opacity = wakeMoving ? (isOcean ? 0.50 : 0.42) : (isOcean ? 0.25 : 0.20);
                           }
 
                           // Diamond rain
@@ -12600,6 +13039,9 @@ const d = labToolData.solarSystem || {};
                           var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
                           var dirLabel = dirs[Math.round(deg / 45) % 8];
+
+                          currentHeadingLabel = dirLabel;
+                          currentHeadingDeg = deg;
 
                           compass.textContent = dirLabel;
 
@@ -12826,7 +13268,7 @@ const d = labToolData.solarSystem || {};
 
                           if (tick3d % 5 === 0) updateTrail();
 
-                          if (tick3d % 10 === 0) { checkNavCompletion(); checkBadges(); }
+                          if (tick3d % 10 === 0) { checkNavCompletion(); updatePlotterRouteProgress(); checkBadges(); }
 
                           // Scanner + photo cooldowns
                           if (scannerCooldown > 0) scannerCooldown--;
@@ -13038,9 +13480,19 @@ const d = labToolData.solarSystem || {};
 
                           if (!isFluid) {
 
-                            roverGroup.position.y = _terrainHeightAt(playerPos.x, playerPos.z); // wheels follow terrain
+                            var roverGround = _terrainHeightAt(playerPos.x, playerPos.z);
+                            roverGroup.position.y = roverGround; // wheels follow terrain
 
                             roverGroup.rotation.y = yaw + Math.PI; // face movement direction
+
+                            var fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
+                            var rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
+                            var frontH = _terrainHeightAt(playerPos.x + fwdX, playerPos.z + fwdZ);
+                            var backH = _terrainHeightAt(playerPos.x - fwdX, playerPos.z - fwdZ);
+                            var rightH = _terrainHeightAt(playerPos.x + rightX, playerPos.z + rightZ);
+                            var leftH = _terrainHeightAt(playerPos.x - rightX, playerPos.z - rightZ);
+                            roverGroup.rotation.x = Math.max(-0.22, Math.min(0.22, (backH - frontH) * 0.10));
+                            roverGroup.rotation.z = Math.max(-0.18, Math.min(0.18, (rightH - leftH) * 0.10));
 
                           } else {
 
@@ -13134,13 +13586,19 @@ const d = labToolData.solarSystem || {};
 
                           if (missionCard.parentElement) missionCard.parentElement.removeChild(missionCard);
 
+                          if (journalPanel.parentElement) journalPanel.parentElement.removeChild(journalPanel);
+
                           if (discTimeout) clearTimeout(discTimeout);
 
                           if (navCard.parentElement) navCard.parentElement.removeChild(navCard);
 
                           if (plotterPanel.parentElement) plotterPanel.parentElement.removeChild(plotterPanel);
 
+                          if (routeCoach.parentElement) routeCoach.parentElement.removeChild(routeCoach);
+
                           if (trailLine) scene.remove(trailLine);
+
+                          if (thrustTrailMesh) scene.remove(thrustTrailMesh);
 
                           if (navTargetMesh) scene.remove(navTargetMesh);
 
