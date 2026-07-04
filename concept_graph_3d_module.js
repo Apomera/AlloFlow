@@ -867,28 +867,45 @@
     window.addEventListener('pointerup', onUp);
     el.addEventListener('wheel', onWheel, { passive: false });
 
-    // ── Legend overlay (ties colour/axes/edges to MEANING) ──
+    // ── Legend overlay (ties colour/axes/edges to MEANING) — collapsible ──
     var legend = document.createElement('div');
-    legend.style.cssText = 'position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(2,6,23,0.78);border:1px solid #1e293b;border-radius:10px;padding:8px 11px;font-size:11px;color:#cbd5e1;max-width:240px;line-height:1.5;';
+    legend.style.cssText = 'position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(2,6,23,0.82);border:1px solid #1e293b;border-radius:10px;font-size:11px;color:#cbd5e1;max-width:240px;line-height:1.5;overflow:hidden;';
+    var legHeader = document.createElement('button');
+    legHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;box-sizing:border-box;border:none;background:transparent;color:#f1f5f9;font-weight:800;font-size:11px;cursor:pointer;padding:7px 11px;';
+    var legTitle = document.createElement('span'); legTitle.textContent = t('cg3d.legend_title') || 'Legend';
+    var legChevron = document.createElement('span'); legChevron.textContent = '▾'; legChevron.style.cssText = 'opacity:0.7;';
+    legHeader.appendChild(legTitle); legHeader.appendChild(legChevron);
+    var legBody = document.createElement('div'); legBody.style.cssText = 'padding:0 11px 9px;';
+    legend.appendChild(legHeader); legend.appendChild(legBody);
+    var legCollapsed = false;
+    legHeader.onclick = function () { legCollapsed = !legCollapsed; legBody.style.display = legCollapsed ? 'none' : 'block'; legChevron.textContent = legCollapsed ? '▸' : '▾'; legHeader.setAttribute('aria-expanded', legCollapsed ? 'false' : 'true'); };
     (function () {
       var strands = (scene.lanes || []).filter(function (l) { return l.key != null; });
-      if (strands.length) {
-        var sh = document.createElement('div'); sh.style.cssText = 'font-weight:800;color:#f1f5f9;margin-bottom:3px;'; sh.textContent = t('cg3d.legend_strands') || 'Strands (depth)'; legend.appendChild(sh);
+      var hasUncat = (scene.nodes || []).some(function (n) { return n.category == null; });
+      if (strands.length || hasUncat) {
+        var sh = document.createElement('div'); sh.style.cssText = 'font-weight:800;color:#f1f5f9;margin-bottom:3px;'; sh.textContent = t('cg3d.legend_strands') || 'Strands (depth)'; legBody.appendChild(sh);
         strands.forEach(function (l) {
           var row = document.createElement('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px;';
           var sw = document.createElement('span'); sw.style.cssText = 'display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:' + PALETTE[l.index % PALETTE.length] + ';';
           var lb = document.createElement('span'); lb.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; lb.textContent = l.label;
-          row.appendChild(sw); row.appendChild(lb); legend.appendChild(row);
+          row.appendChild(sw); row.appendChild(lb); legBody.appendChild(row);
         });
+        // The central topic / any un-stranded node — explained so it isn't a mystery grey dot.
+        if (hasUncat) {
+          var row2 = document.createElement('div'); row2.style.cssText = 'display:flex;align-items:center;gap:6px;';
+          var sw2 = document.createElement('span'); sw2.style.cssText = 'display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:' + UNCATEGORIZED + ';';
+          var lb2 = document.createElement('span'); lb2.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; lb2.textContent = t('cg3d.legend_topic') || 'Topic / center';
+          row2.appendChild(sw2); row2.appendChild(lb2); legBody.appendChild(row2);
+        }
       }
       if (scene.axes) {
-        var ah = document.createElement('div'); ah.style.cssText = 'font-weight:800;color:#f1f5f9;margin:6px 0 3px;'; ah.textContent = t('cg3d.legend_axes') || 'Axes'; legend.appendChild(ah);
-        ['x', 'y', 'z'].forEach(function (ax) { if (scene.axes[ax] && scene.axes[ax].label) { var d = document.createElement('div'); d.style.cssText = 'color:#94a3b8;'; d.textContent = ax + ' = ' + scene.axes[ax].label; legend.appendChild(d); } });
+        var ah = document.createElement('div'); ah.style.cssText = 'font-weight:800;color:#f1f5f9;margin:6px 0 3px;'; ah.textContent = t('cg3d.legend_axes') || 'Axes'; legBody.appendChild(ah);
+        ['x', 'y', 'z'].forEach(function (ax) { if (scene.axes[ax] && scene.axes[ax].label) { var d = document.createElement('div'); d.style.cssText = 'color:#94a3b8;'; d.textContent = ax + ' = ' + scene.axes[ax].label; legBody.appendChild(d); } });
       }
       var ek = document.createElement('div'); ek.style.cssText = 'margin-top:6px;color:#94a3b8;';
       ek.textContent = (t('cg3d.legend_help') || 'Flowing line = teaching order · dashed amber = prerequisite. Hover to focus · click a node to center.')
         + (opts.editable ? ' ' + (_tr(t, 'cg3d.legend_edit', 'Drag a node to move it — its place is saved.')) : '');
-      legend.appendChild(ek);
+      legBody.appendChild(ek);
     })();
     holder.appendChild(legend);
 

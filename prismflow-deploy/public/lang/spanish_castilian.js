@@ -5182,6 +5182,8 @@
     "show_prereqs": "Mostrar requisitos previos",
     "open": "Abrir",
     "reset": "Restablecer vista",
+    "legend_title": "Leyenda",
+    "legend_topic": "Tema / centro",
     "legend_strands": "Hilos temáticos (profundidad)",
     "legend_axes": "Ejes",
     "legend_help": "Línea fluida = orden de enseñanza · ámbar discontinua = requisito previo. Pasa el cursor para enfocar · haz clic en un nodo para centrarlo.",
