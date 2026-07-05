@@ -9559,6 +9559,34 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent?.id]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [history, setHistory] = useState([]);
+  // Guided-mode auto-advance for generators the dispatcher's typeToGuidedId map never
+  // covered: anchor-chart / note-taking / dbq run through the dispatcher tail but were
+  // omitted from its map, alignment-report still maps to the retired combined '_final'
+  // step, and personas generate inside personas_module which has no guided wiring at
+  // all — so those steps showed ✅ but never moved on. Watching history here also
+  // indexes against guidedActiveSteps (the dispatcher compares full-list indices, so
+  // customized subset tours never matched). Same 1.2s pause as the dispatcher's own
+  // advance; its guard (prev === step at fire time) makes the two paths non-stacking.
+  const _guidedHistLenRef = useRef(0);
+  useEffect(() => {
+    const len = Array.isArray(history) ? history.length : 0;
+    const prevLen = _guidedHistLenRef.current;
+    _guidedHistLenRef.current = len;
+    // Exactly-one-item growth: a project restore swaps in a whole array at once and
+    // must not fast-forward the tour.
+    if (!guidedMode || len !== prevLen + 1) return;
+    const HISTORY_ADVANCE_STEPS = { 'anchor-chart': 'anchor-chart', 'note-taking': 'note-taking', 'dbq': 'dbq', 'alignment-report': 'alignment', 'persona': 'persona' };
+    const newest = history[len - 1];
+    const stepId = newest && HISTORY_ADVANCE_STEPS[newest.type];
+    const current = guidedActiveSteps[guidedStep];
+    if (!stepId || !current || current.id !== stepId) return;
+    if (guidedStep >= guidedActiveSteps.length - 1) return;
+    const timer = setTimeout(() => {
+      setGuidedStep(prev => (prev === guidedStep ? prev + 1 : prev));
+      addToast(t('guided.history_hint'), 'info');
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [history, guidedMode, guidedStep]);
   // ── Fluency export helpers (Round 7 follow-up, recovered from word_sounds_module
   //    + student_analytics_module closures where they lived but were never exposed).
   //    Used by view_misc_panels_module.js's FluencyModePanel via shorthand props. ──

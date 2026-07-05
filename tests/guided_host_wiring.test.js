@@ -44,6 +44,32 @@ describe('Guided Mode host wiring', () => {
     expect(phaseO).toContain("safeSetItem('allo_wizard_completed', 'true')");
   });
 
+  it('auto-advances the guided step for generators the dispatcher map misses', () => {
+    // anchor-chart / note-taking / dbq / alignment-report / persona never advanced:
+    // the first three were omitted from the dispatcher's typeToGuidedId map,
+    // alignment-report mapped to the retired '_final' step, and personas generate
+    // inside personas_module with no guided wiring. The host watches history instead.
+    const start = app.indexOf('const HISTORY_ADVANCE_STEPS = {');
+    expect(start).toBeGreaterThan(-1);
+    const end = app.indexOf('};', start);
+    const block = app.slice(start, end);
+    for (const [type, stepId] of [
+      ['anchor-chart', 'anchor-chart'],
+      ['note-taking', 'note-taking'],
+      ['dbq', 'dbq'],
+      ['alignment-report', 'alignment'],
+      ['persona', 'persona'],
+    ]) {
+      expect(block).toContain(`'${type}': '${stepId}'`);
+    }
+    // The effect must index into the ACTIVE (possibly subset) step list, not GUIDED_STEPS.
+    const effectStart = app.indexOf('const _guidedHistLenRef');
+    expect(effectStart).toBeGreaterThan(-1);
+    const effect = app.slice(effectStart, app.indexOf('[history, guidedMode, guidedStep]', effectStart));
+    expect(effect).toContain('guidedActiveSteps[guidedStep]');
+    expect(effect).toContain('len !== prevLen + 1');
+  });
+
   it('keeps Guided Next step separate from explicit Skip step controls', () => {
     expect(banner).toContain('{!isLast && stepDone && <button');
     expect(banner).toContain('{!isLast && !stepDone && guidedStep > 0 && <button');
