@@ -109,7 +109,14 @@ jobs:
           npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
       - name: Build macOS x64 and ARM64 packages
         working-directory: desktop
-        run: npm run package:mac:ci
+        env:
+          # No signing identity on unsigned CI builds — don't hunt the keychain.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          # Missing secrets arrive as EMPTY env vars; electron-builder treats an
+          # empty CSC_LINK as a real path and dies with "<projectDir> not a file".
+          if [ -z "$CSC_LINK" ]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
+          npm run package:mac:ci
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-macos
