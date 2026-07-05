@@ -1,0 +1,96 @@
+{
+  "appId": "com.alloflow.desktop",
+  "productName": "AlloFlow Desktop",
+  "copyright": "Copyright (c) 2026 AlloFlow",
+  "directories": {
+    "output": "dist",
+    "buildResources": "build-resources"
+  },
+  "files": [
+    "**/*",
+    "package.json",
+    "!.local/**",
+    "!dist/**"
+  ],
+  "extraResources": [
+    {
+      "from": "build-resources/icon.ico",
+      "to": "icon.ico"
+    },
+    {
+      "from": "schoolbox",
+      "to": "schoolbox"
+    },
+    {
+      "from": "app-build",
+      "to": "app-build"
+    }
+  ],
+  "asar": true,
+  "npmRebuild": false,
+  "extraMetadata": {
+    "main": "electron/main.cjs"
+  },
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "Apomera",
+      "repo": "AlloFlow"
+    }
+  ],
+  "win": {
+    "icon": "build-resources/icon.ico",
+    "target": [
+      {
+        "target": "portable",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      },
+      {
+        "target": "nsis",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      }
+    ]
+  },
+  "portable": {
+    "artifactName": "AlloFlow-Desktop-${version}-${arch}-portable.${ext}"
+  },
+  "nsis": {
+    "artifactName": "AlloFlow-Desktop-${version}-${arch}-setup.${ext}",
+    "include": "build-resources/installer.nsh",
+    "oneClick": false,
+    "perMachine": false,
+    "allowElevation": false,
+    "allowToChangeInstallationDirectory": true,
+    "packElevateHelper": false,
+    "runAfterFinish": true,
+    "createDesktopShortcut": false,
+    "createStartMenuShortcut": true,
+    "shortcutName": "AlloFlow Desktop"
+  },
+  "mac": {
+    "category": "public.app-category.education",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      },
+      {
+        "target": "zip",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      }
+    ],
+    "artifactName": "AlloFlow-Desktop-${version}-${arch}.${ext}"
+  }
+}
