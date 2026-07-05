@@ -1794,11 +1794,21 @@ const handleSaveReflection = async (deps) => {
             }
           `;
     const result = await callGemini(prompt, true);
-    let grading = { score: 85, feedback: "Good reflection!", xpBonus: 20 };
+    // Honest fallback: if grading JSON can't be parsed, do NOT fabricate
+    // a score — award participation XP and say feedback was unavailable.
+    // (The view hides the score tile when score is not a number.)
+    let grading = null;
     try {
       grading = JSON.parse(cleanJson(result));
     } catch (e) {
-      warnLog("Grading JSON parse error, using default", e);
+      warnLog("Grading JSON parse error — presenting without a score", e);
+    }
+    if (!grading || typeof grading !== "object" || typeof grading.score !== "number") {
+      grading = {
+        score: null,
+        feedback: t("persona.grading_unavailable") || "Your reflection was saved. Automatic feedback was unavailable this time — your teacher can review it.",
+        xpBonus: 20
+      };
     }
     const totalXP = 10 + (grading.xpBonus || 0);
     const formattedChatLog = personaState.chatHistory.map((m) => `**${m.role === "user" ? "Student" : m.speakerName || subjectName}:**
@@ -1810,18 +1820,19 @@ ${m.text}`).join("\n\n---\n\n");
 
 `;
     }
+    const scoreSuffix = typeof grading.score === "number" ? ` (Score: ${grading.score}/100)` : "";
     const fullData = `${formattedChatLog}
 
 ---
 
 ${metaHeader}${personaReflectionInput}
 
-> **Teacher Bot Feedback:** ${grading.feedback} (Score: ${grading.score}/100)`;
+> **Teacher Bot Feedback:** ${grading.feedback}${scoreSuffix}`;
     const newItem = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type: "udl-advice",
       data: fullData,
-      meta: `Reflection on ${subjectName} (Score: ${grading.score})`,
+      meta: typeof grading.score === "number" ? `Reflection on ${subjectName} (Score: ${grading.score})` : `Reflection on ${subjectName}`,
       title: `Reflection: ${subjectName}`,
       timestamp: /* @__PURE__ */ new Date(),
       config: {}
@@ -1845,29 +1856,11 @@ ${metaHeader}${personaReflectionInput}
       subjectName
     });
   } catch (err) {
+    // Transient failure (network/API): keep the chat, the reflection text,
+    // and the open panel so the student can just press Submit again — this
+    // used to wipe the whole session and dump them out.
     warnLog("Reflection grading failed", err);
     addToast(t("toasts.reflection_grade_error"), "error");
-    const formattedChatLog = personaState.chatHistory.map((m) => `**${m.role === "user" ? "Student" : m.speakerName || subjectName}:**
-${m.text}`).join("\n\n---\n\n");
-    const fullData = `${formattedChatLog}
-
----
-
-### \u{1F4DD} Student Reflection
-${personaReflectionInput}`;
-    const newItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: "udl-advice",
-      data: fullData,
-      meta: `Reflection on ${subjectName}`,
-      title: `Reflection: ${subjectName}`,
-      timestamp: /* @__PURE__ */ new Date(),
-      config: {}
-    };
-    setHistory((prev) => [...prev, newItem]);
-    setIsPersonaReflectionOpen(false);
-    setPersonaReflectionInput("");
-    setPersonaState((prev) => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: "single" }));
   } finally {
     setIsGradingReflection(false);
   }

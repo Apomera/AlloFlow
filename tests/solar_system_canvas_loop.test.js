@@ -47,4 +47,38 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).not.toContain('font-weight:700;letter-spacing:0.05em;pointer-events:none;text-shadow:0 1px 3px');
     });
   });
+
+  it('defines drone display scale before drawing POI distance labels', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const scaleIndex = source.indexOf('var scaleFactor = isOcean ? 100 : isGas ? 100 : 50;');
+      const labelIndex = source.indexOf("var distLabel = Math.round(Math.sqrt(poi.x * poi.x + poi.z * poi.z) * scaleFactor) + 'm from origin';");
+
+      expect(scaleIndex, `${filePath} should define scaleFactor`).toBeGreaterThan(-1);
+      expect(labelIndex, `${filePath} should draw POI distance labels`).toBeGreaterThan(-1);
+      expect(scaleIndex, `${filePath} must initialize scaleFactor before POI labels to avoid NaNm`).toBeLessThan(labelIndex);
+    });
+  });
+
+  it('wires drone mode mission pedagogy and vehicle feedback', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('Drone Field Journal');
+      expect(source).toContain('function buildDroneCER');
+      expect(source).toContain('function recordSampleEvidence');
+      expect(source).toContain('Signal triangulation');
+      expect(source).toContain('function updatePlotterRouteProgress');
+      expect(source).toContain("recordDroneJournal('Scan'");
+      expect(source).toContain("recordDroneJournal('Photo'");
+      expect(source).toContain("recordDroneJournal('Navigation'");
+      expect(source).toContain("recordDroneJournal('Route'");
+      expect(source).toContain('route: false');
+      expect(source).toContain('var thrustTrailMesh = null;');
+      expect(source).toContain('currentHeadingLabel = dirLabel;');
+      expect(source).toContain('J journal');
+      expect(source).toContain('P plot');
+      expect(source).toContain('roverGroup.rotation.x = Math.max(-0.22');
+    });
+  });
 });

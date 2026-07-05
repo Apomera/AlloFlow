@@ -6,6 +6,14 @@ let OS;
 let OA;
 let UI;
 
+function countByteSequence(bytes, sequence) {
+  let count = 0;
+  for (let i = 0; i <= bytes.length - sequence.length; i += 1) {
+    if (sequence.every((value, index) => bytes[i + index] === value)) count += 1;
+  }
+  return count;
+}
+
 beforeAll(() => {
   loadAlloModule('music_studio/open_groove_core.js');
   loadAlloModule('music_studio/open_groove_scheduler.js');
@@ -141,6 +149,50 @@ describe('Open Groove project core', () => {
     expect(OG.ogBuildNotationPreview(project, pattern.id).notes).toHaveLength(0);
   });
 
+  it('builds a playable keyboard layout and marks notes in the project key', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const layout = OG.ogBuildKeyboardLayout(project, { octave: 3, octaves: 2 });
+    expect(layout).toMatchObject({ octave: 3, octaves: 2, keyName: 'C Minor', keyCount: 24 });
+    expect(layout.keys[0]).toMatchObject({ pitch: 'C3', midi: 48, isBlack: false, inKey: true, computerKey: 'Z' });
+    expect(layout.keys.find(key => key.pitch === 'C#3')).toMatchObject({ isBlack: true, inKey: false, computerKey: 'S' });
+    expect(layout.keys.find(key => key.pitch === 'D#3')).toMatchObject({ isBlack: true, inKey: true });
+  });
+
+  it('builds diatonic keyboard triads with composition names', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const chord = OG.ogBuildKeyboardChord(project, 'C4');
+    expect(chord).toMatchObject({
+      root: 'C',
+      rootPitch: 'C4',
+      quality: 'minor',
+      symbol: 'Cm',
+      roman: 'i',
+      nashville: '1',
+      label: 'i / Cm'
+    });
+    expect(chord.pitches).toEqual(['C4', 'D#4', 'G4']);
+    expect(chord.midi).toEqual([60, 63, 67]);
+  });
+
+  it('records keyboard notes with source metadata on grid steps', () => {
+    const project = OG.ogCreateProject();
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const note = OG.ogSetNoteStep(project, pattern.id, synth.id, 'C4', 2, 16, {
+      on: true,
+      velocity: 0.64,
+      role: 'keyboard',
+      source: 'hardwareMidi'
+    });
+    expect(note).toMatchObject({
+      pitch: 'C4',
+      role: 'keyboard',
+      source: 'hardwareMidi',
+      velocity: 0.64
+    });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).notes[0]).toMatchObject({ pitch: 'C4', startBeat: 1.5 });
+  });
+
   it('stores normalized synth patch controls on synth tracks', () => {
     const project = OG.ogCreateProject();
     const synth = project.tracks[1];
@@ -167,6 +219,21 @@ describe('Open Groove project core', () => {
     const presets = OG.ogListSynthPatchPresets();
     expect(presets.map(preset => preset.name)).toContain('Warm Bass');
     expect(presets.map(preset => preset.name)).toContain('Classic Piano');
+    expect(presets.map(preset => preset.name)).toContain('Solo Violin');
+    expect(presets.map(preset => preset.name)).toContain('Flute');
+    expect(presets.map(preset => preset.name)).toContain('Trumpet');
+    const families = OG.ogListSynthPatchFamilies();
+    expect(families.find(group => group.family === 'Strings').presets.map(preset => preset.id)).toContain('soloViolin');
+    expect(families.find(group => group.family === 'Woodwinds').presets.map(preset => preset.id)).toContain('clarinet');
+    expect(families.find(group => group.family === 'Brass').presets.map(preset => preset.id)).toContain('trombone');
+    const violinProfile = OG.ogBuildInstrumentProfile('soloViolin');
+    expect(violinProfile).toMatchObject({
+      name: 'Solo Violin',
+      family: 'Strings',
+      rangeLabel: 'G3-A7'
+    });
+    expect(violinProfile.samplePlan.articulations).toContain('sustain');
+    expect(OG.ogListInstrumentProfiles().map(profile => profile.presetId)).toContain('trumpet');
     expect(OG.ogGetSynthPatchPreset('classicPiano').instrument.partials.length).toBeGreaterThan(1);
     const presetPatch = OG.ogApplySynthPatchPreset(projectA, synthA.id, 'glassPluck');
     expect(presetPatch).toMatchObject({
@@ -178,6 +245,14 @@ describe('Open Groove project core', () => {
     expect(OG.ogBuildSynthPatchSummary(projectA, synthA.id)).toMatchObject({
       patchName: 'Glass Pluck',
       presetId: 'glassPluck'
+    });
+    const brassProject = OG.ogCreateProject({ title: 'Band Lesson' });
+    const brassPatch = OG.ogApplySynthPatchPreset(brassProject, brassProject.tracks[1].id, 'trumpet');
+    expect(brassPatch).toMatchObject({
+      name: 'Trumpet',
+      presetId: 'trumpet',
+      oscillator: 'sawtooth',
+      filter: { type: 'lowpass' }
     });
 
     const generatedA = OG.ogRandomizeSynthInstrument(projectA, synthA.id, { seed: 'lesson-1' });
@@ -216,6 +291,24 @@ describe('Open Groove project core', () => {
     expect(bytes).toContain(60);
     expect(bytes).toContain(0x99);
     expect(bytes).toContain(38);
+  });
+
+  it('exports an arrangement MIDI file with repeated song sections', () => {
+    const project = OG.ogCreateProject({ bpm: 120, ppq: 960 });
+    const pattern = project.patterns[0];
+    const drums = project.tracks[0];
+    const synth = project.tracks[1];
+    OG.ogAppendEvent(project, pattern.id, { type: 'note', trackId: synth.id, pitch: 'C4', startTick: 0, durationTicks: 960, velocity: 1 });
+    OG.ogSetDrumStep(project, pattern.id, drums.id, 'pad_1', 0, 16, { on: true, velocity: 0.9 });
+    project.arrangement = [];
+    OG.ogAddArrangementSection(project, project.scenes[0].id, { startBar: 1, bars: 8, label: 'Two passes' });
+
+    const midi = OG.ogBuildArrangementMidiFile(project);
+    const bytes = Array.from(midi);
+    expect(String.fromCharCode(...bytes.slice(0, 4))).toBe('MThd');
+    expect(String.fromCharCode(...bytes.slice(14, 18))).toBe('MTrk');
+    expect(countByteSequence(bytes, [0x90, 60])).toBe(2);
+    expect(countByteSequence(bytes, [0x99, 36])).toBe(2);
   });
 
   it('builds scales, chords, and chord progressions as structured composition data', () => {
@@ -303,6 +396,55 @@ describe('Open Groove project core', () => {
     });
     expect(rest).toMatchObject({ rest: true, removed: 1 });
     expect(OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id }).measures[0].notes).toHaveLength(0);
+  });
+
+  it('bridges notation notes to grid steps, scale names, chords, and performance offsets', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const pattern = project.patterns[0];
+    const drums = project.tracks[0];
+    const synth = project.tracks[1];
+    OG.ogAppendEvent(project, pattern.id, {
+      type: 'chord',
+      trackId: synth.id,
+      root: 'C',
+      quality: 'minor',
+      startTick: 0,
+      durationTicks: OG.ogTicksPerMeasure(project)
+    });
+    OG.ogSetDrumStep(project, pattern.id, drums.id, 'pad_1', 2, 16, { on: true });
+    OG.ogAppendEvent(project, pattern.id, {
+      type: 'note',
+      trackId: synth.id,
+      pitch: 'Eb4',
+      startTick: 500,
+      durationTicks: 480,
+      notationStartTick: 480,
+      notationDurationTicks: 480,
+      velocity: 0.7
+    });
+
+    const bridge = OG.ogBuildNotationGridBridge(project, pattern.id, {
+      trackId: synth.id,
+      stepsPerBar: 16,
+      selectedBar: 0
+    });
+    expect(bridge).toMatchObject({ keyName: 'C Minor', stepsPerBar: 16, performedOffsetCount: 1, offGridCount: 0 });
+    expect(bridge.notes[0]).toMatchObject({
+      pitch: 'Eb4',
+      bar: 1,
+      startBeat: 1.5,
+      step: 3,
+      localStep: 2,
+      durationSteps: 2,
+      timingOffsetTicks: 20,
+      gridOffsetTicks: 0,
+      solfege: 'Mi',
+      nashville: '3',
+      chordRoman: 'i'
+    });
+    expect(bridge.measures[0].steps[2]).toMatchObject({ noteCount: 1, drumCount: 1 });
+    expect(bridge.measures[0].steps[2].notes[0]).toMatchObject({ pitch: 'Eb4', solfege: 'Mi' });
+    expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
   it('writes scale-aware melody phrases as notation-safe events', () => {
@@ -393,6 +535,84 @@ describe('Open Groove project core', () => {
       startTick: OG.ogTicksPerMeasure(project) * 4
     });
     expect(OG.ogNextArrangementStartBar(project)).toBe(9);
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('builds pattern launcher summaries for pattern and song workflow', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
+    const pattern = project.patterns[0];
+    const drums = project.tracks[0];
+    const synth = project.tracks[1];
+
+    OG.ogSetDrumStep(project, pattern.id, drums.id, 'pad_1', 0, 16, { on: true });
+    OG.ogAppendEvent(project, pattern.id, {
+      type: 'chord',
+      trackId: synth.id,
+      root: 'C',
+      quality: 'minor',
+      startTick: 0,
+      durationTicks: OG.ogTicksPerMeasure(project)
+    });
+    OG.ogSetNoteStep(project, pattern.id, synth.id, 'C4', 0, 16, { on: true });
+    OG.ogSetAutomationPoint(project, pattern.id, synth.id, 'effect.delay.mix', 4, 16, 0.5);
+    const variation = OG.ogDuplicatePattern(project, pattern.id, 'Variation');
+    const scene = OG.ogAddScene(project, { name: 'Variation Scene', patternIds: [variation.id] });
+    OG.ogAddArrangementSection(project, scene.id, { startBar: 5, bars: 4 });
+
+    const launcher = OG.ogBuildPatternLauncher(project, { activePatternId: variation.id });
+    expect(launcher).toMatchObject({
+      patternCount: 2,
+      sceneCount: 2,
+      sectionCount: 2,
+      activePatternId: variation.id
+    });
+    expect(launcher.patterns[0]).toMatchObject({
+      slot: 'A',
+      active: false,
+      drumHitCount: 1,
+      noteCount: 1,
+      chordCount: 1,
+      automationCount: 1,
+      sceneCount: 1,
+      sectionCount: 1
+    });
+    expect(launcher.patterns[0].firstChord).toMatchObject({ roman: 'i', symbol: 'Cm' });
+    expect(launcher.patterns[1]).toMatchObject({
+      slot: 'B',
+      active: true,
+      drumHitCount: 1,
+      noteCount: 1,
+      chordCount: 1,
+      sceneCount: 1,
+      sectionCount: 1
+    });
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('applies named song forms with reusable pattern variants', () => {
+    const project = OG.ogCreateProject();
+    const pattern = project.patterns[0];
+    const forms = OG.ogListSongFormPresets();
+    expect(forms.map(form => form.id)).toContain('verse-hook');
+
+    const summary = OG.ogApplySongFormPreset(project, 'verse-hook', {
+      patternId: pattern.id,
+      replace: true
+    });
+    expect(summary).toMatchObject({
+      presetId: 'verse-hook',
+      sectionCount: 6,
+      totalBars: 40,
+      sourcePatternId: pattern.id
+    });
+    expect(summary.createdPatternIds).toHaveLength(1);
+    expect(project.patterns).toHaveLength(2);
+
+    const timeline = OG.ogBuildArrangementTimeline(project);
+    expect(timeline.map(section => section.label)).toEqual(['Intro', 'Verse', 'Hook', 'Verse 2', 'Hook 2', 'Outro']);
+    expect(timeline[1]).toMatchObject({ role: 'A', variant: 'A', startBar: 5, bars: 8, endBar: 12 });
+    expect(timeline[2]).toMatchObject({ role: 'B', variant: 'B', startBar: 13, bars: 8, endBar: 20 });
+    expect(timeline[2].patternIds).toEqual([summary.createdPatternIds[0]]);
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
@@ -741,6 +961,24 @@ describe('Open Groove scheduler', () => {
     expect(plan[0]).toMatchObject({ sceneId: project.scenes[0].id, patternId: pattern.id, arrangementTick: 0 });
     expect(plan.find(item => item.sceneId === scene.id)).toMatchObject({
       patternId: variation.id,
+      arrangementTick: OG.ogTicksPerMeasure(project) * 4,
+      time: 8
+    });
+  });
+
+  it('repeats pattern material across longer arrangement sections', () => {
+    const project = OG.ogCreateProject({ bpm: 120 });
+    const pattern = project.patterns[0];
+    const drums = project.tracks[0];
+    OG.ogSetDrumStep(project, pattern.id, drums.id, 'pad_1', 0, 16, { on: true });
+    project.arrangement = [];
+    OG.ogAddArrangementSection(project, project.scenes[0].id, { startBar: 1, bars: 8, label: 'Repeat' });
+
+    const hits = OS.ogBuildArrangementPlaybackPlan(project).filter(item => item.type === 'drumHit');
+    expect(hits).toHaveLength(2);
+    expect(hits.map(hit => hit.patternRepeatIndex)).toEqual([0, 1]);
+    expect(hits[1]).toMatchObject({
+      sectionOffsetTick: OG.ogTicksPerMeasure(project) * 4,
       arrangementTick: OG.ogTicksPerMeasure(project) * 4,
       time: 8
     });

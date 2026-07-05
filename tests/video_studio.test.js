@@ -11,7 +11,7 @@
 // and the pack-reference guard that keeps video BYTES out of pack JSON.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
@@ -60,6 +60,9 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('id="sceneLoadPlanBtn"');
     expect(html).toContain('id="scenePreviewBtn"');
     expect(html).toContain('id="sceneAudioMode"');
+    expect(html).toContain('id="sceneFraming"');
+    expect(html).toContain('id="sceneTransitionSpeed"');
+    expect(html).toContain('id="sceneStoryboard"');
     expect(html).toContain('id="sceneApplyTemplateBtn"');
     expect(html).toContain('id="sceneUseBundledPlanBtn"');
     expect(html).toContain('id="sceneReadinessList"');
@@ -74,6 +77,9 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('function loadSceneDraft');
     expect(html).toContain('function previewSceneBuilder');
     expect(html).toContain('function sceneAudioGainAt');
+    expect(html).toContain('function sceneFramingMode');
+    expect(html).toContain('function sceneTransitionSeconds');
+    expect(html).toContain('function renderSceneStoryboard');
     expect(html).toContain('function reorderSceneItems');
     expect(html).toContain('function duplicateSceneItem');
     expect(html).toContain('function applySceneTemplate');
@@ -85,6 +91,84 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('scenePlan: scenePlan');
     expect(html).toContain("name: 'scene_plan.json'");
     expect(html).toContain('Project bundle downloaded. It will reopen the assembled scene as one editable take.');
+  });
+  it('keeps social-size export controls wired into video and scene exports', () => {
+    const html = popup();
+    expect(html).toContain('id="exportFormat"');
+    expect(html).toContain('id="exportFraming"');
+    expect(html).toContain('id="exportFormatStatus"');
+    expect(html).toContain('id="exportContainer"');
+    expect(html).toContain('id="exportContainerStatus"');
+    expect(html).toContain('id="exportContainerHelp"');
+    expect(html).toContain('id="exportPlan"');
+    expect(html).toContain('id="exportPlanSummary"');
+    expect(html).toContain('id="exportPlanDetail"');
+    expect(html).toContain('id="exportCancelBtn"');
+    expect(html).toContain('id="exportProgressDetail"');
+    expect(html).toContain('value="vertical_1080"');
+    expect(html).toContain('value="square_1080"');
+    expect(html).toContain('value="portrait_1080"');
+    expect(html).toContain('value="auto"');
+    expect(html).toContain('value="mp4"');
+    expect(html).toContain('value="mp4_convert"');
+    expect(html).toContain('value="webm"');
+    expect(html).toContain('Strict MP4 - local converter');
+    expect(html).toContain('Strict MP4 runs on this device');
+    expect(html).toContain('local MP4 conversion may take several minutes and use more memory');
+    expect(html).toContain('value="social_vertical"');
+    expect(html).toContain('value="social_square"');
+    expect(html).toContain('function exportCanvasSizeFor');
+    expect(html).toContain('function drawVideoIntoFrame');
+    expect(html).toContain('function exportVideoBitrate');
+    expect(html).toContain('function chooseExportMime');
+    expect(html).toContain('function finalizeRecordedVideoBlob');
+    expect(html).toContain('function convertBlobToMp4');
+    expect(html).toContain('function maybeConvertStrictMp4');
+    expect(html).toContain('function setMp4ConversionUi');
+    expect(html).toContain('function cancelMp4Conversion');
+    expect(html).toContain('function mp4ConverterTroubleshootingMessage');
+    expect(html).toContain('MP4 conversion ran out of browser memory');
+    expect(html).toContain('Local MP4 converter files were unavailable');
+    expect(html).toContain('Your video will still export as WebM');
+    expect(html).toContain('function exportContainerOutcomeStatus');
+    expect(html).toContain('function exportContainerOutcomeDetail');
+    expect(html).toContain('Strict MP4 was requested, but WebM stayed available.');
+    expect(html).toContain("status: exportContainerOutcomeStatus(lastExport.outputContainer)");
+    expect(html).toContain('function exportDownloadFilename');
+    expect(html).toContain('function refreshDownloadButtonLabel');
+    expect(html).toContain("btn.setAttribute('aria-label', label + ': ' + filename)");
+    expect(html).toContain("btn.title = 'Downloads ' + filename");
+    expect(html).toContain('Downloaded ');
+    expect(html).toContain('function refreshExportDecisionPreview');
+    expect(html).toContain('function exportRenderReasonsForTake');
+    expect(html).toContain("e.name === 'AbortError'");
+    expect(html).toContain('vendor/ffmpeg/ffmpeg/index.js');
+    expect(html).toContain('vendor/ffmpeg/core/ffmpeg-core.wasm');
+    expect(html).toContain("outputFormat: outputFormat");
+    expect(html).toContain("outputFormat: sceneOutputFormat");
+    expect(html).toContain("outputContainer: outputContainer");
+    expect(html).toContain("outputContainer: sceneContainerInfo");
+    expect(html).toContain("outputContainer: lastExport.outputContainer");
+    expect(html).toContain('exportFormatFileSuffix');
+  });
+  it('keeps the strict MP4 converter files available in root and deploy mirrors', () => {
+    const pairs = [
+      ['video_studio/vendor/ffmpeg/ffmpeg/index.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/index.js'],
+      ['video_studio/vendor/ffmpeg/ffmpeg/worker.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/worker.js'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.js'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm'],
+      ['video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'],
+    ];
+    pairs.forEach(([rootFile, deployFile]) => {
+      const rootSize = statSync(resolve(process.cwd(), rootFile)).size;
+      const deploySize = statSync(resolve(process.cwd(), deployFile)).size;
+      expect(rootSize).toBeGreaterThan(rootFile.endsWith('.wasm') ? 1_000_000 : 10);
+      expect(deploySize).toBe(rootSize);
+    });
+    const notice = readFileSync(resolve(process.cwd(), 'video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'), 'utf-8');
+    expect(notice).toContain('@ffmpeg/ffmpeg');
+    expect(notice).toContain('@ffmpeg/core');
+    expect(notice).toContain('GPL-2.0-or-later');
   });
 });
 

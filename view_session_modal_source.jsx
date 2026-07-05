@@ -56,6 +56,7 @@ function SessionModal({
   const Users = window.Users || noop;
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
+  const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
 
   return (
     <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
@@ -80,6 +81,18 @@ function SessionModal({
             <Copy size={10}/> {t('session.click_to_copy')}
           </div>
         </div>
+        {lanJoinUrl && (
+          <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+            <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
+            <button
+              aria-label={t('common.copy')}
+              onClick={() => copyToClipboard(lanJoinUrl)}
+              className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
+            >
+              {lanJoinUrl} <Copy size={12}/>
+            </button>
+          </div>
+        )}
         <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
           <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
           <button

@@ -40,6 +40,7 @@ function SessionModal({
   const Users = window.Users || noop;
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
+  const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : "";
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, t("session.live_instruction")), /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -49,7 +50,17 @@ function SessionModal({
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-7xl font-black text-indigo-600 tracking-widest font-mono" }, activeSessionCode),
     /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Copy, { size: 10 }), " ", t("session.click_to_copy"))
-  ), /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
+  ), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.copy"),
+      onClick: () => copyToClipboard(lanJoinUrl),
+      className: "w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
+    },
+    lanJoinUrl,
+    " ",
+    /* @__PURE__ */ React.createElement(Copy, { size: 12 })
+  )), /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),

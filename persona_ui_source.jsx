@@ -470,12 +470,12 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         <div className="w-full max-w-[260px] px-2">
             <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1">
                 <span>{t('persona.rapport_label')}</span>
-                <span className={`${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{character.rapport || 30}%</span>
+                <span className={`${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{character.rapport ?? character.initialRapport ?? 30}%</span>
             </div>
             <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
                     className={`h-full transition-all duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`}
-                    style={{ width: `${character.rapport || 30}%` }}
+                    style={{ width: `${character.rapport ?? character.initialRapport ?? 30}%` }}
                 ></div>
             </div>
         </div>
@@ -485,7 +485,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
             </h4>
             <div className="space-y-2">
                 {sortedQuests.map((q, i) => {
-                    const currentRapport = character.rapport || 10;
+                    const currentRapport = character.rapport ?? character.initialRapport ?? 30;
                     const isLocked = currentRapport < q.difficulty;
                     return (
                         <div key={i} className={`

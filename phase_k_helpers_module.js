@@ -7,6 +7,27 @@ var useRef = React.useRef;
 var useMemo = React.useMemo;
 var useCallback = React.useCallback;
 var Fragment = React.Fragment;
+// Persona TTS voice direction — shared by the live-play path and the preload
+// path in playSequence so every segment of a message generates with the SAME
+// instruction. Gemini TTS is stateless per request (it cannot hear earlier
+// audio), so the consistency levers are: an identical instruction on every
+// call, a moderate accent ask, and lower sampling temperature (tts_module).
+const buildPersonaVoiceInstruction = (speakingChar) => {
+  if (speakingChar && speakingChar.voiceProfile) {
+    const stableProfile = String(speakingChar.voiceProfile).replace(/\b(thick|heavy|strong|exaggerated|pronounced)\b(?=(?:\s+[A-Za-z-]+){0,4}\s+accent)/gi, "subtle").replace(/[,;]\s*[^,;.]*\b(?:lapses?|slips?|switch(?:es|ing)?)\s+into\b[^,;.]*/gi, "");
+    const nationalityHint = speakingChar.nationality ? ` They are ${speakingChar.nationality}.` : "";
+    return `[Voice direction: ${stableProfile}.${nationalityHint} Use a mild, natural version of this accent and keep the exact same voice, accent, pacing, and tone from the first word to the last — expressive but steady, never exaggerated, never drifting toward a different accent.]`;
+  }
+  if (speakingChar && speakingChar.name) {
+    const natHint = speakingChar.nationality ? ` Use a subtle, consistent ${speakingChar.nationality} accent.` : "";
+    return `[Speak as ${speakingChar.name}${speakingChar.role ? ", " + speakingChar.role : ""}${speakingChar.year ? " from " + speakingChar.year : ""}.${natHint} Keep the exact same voice, accent, and tone for every sentence.]`;
+  }
+  return `[Speak in a warm, expressive voice. Keep the exact same voice, accent, and tone for every sentence.]`;
+};
+const resolvePersonaSpeakingChar = (personaState, activeSpeaker, speakerName) => {
+  const isPanelMode = personaState.selectedCharacters && personaState.selectedCharacters.length > 0;
+  return isPanelMode ? speakerName && personaState.selectedCharacters.find((c) => c.name === speakerName) || personaState.selectedCharacters.find((c) => c.voice === activeSpeaker) : personaState.selectedCharacter;
+};
 const playSequence = async (index, sentences, sessionId, mode = "standard", voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, deps) => {
   const { isPlaying, isPaused, isMuted, selectedVoice, voiceSpeed, voiceVolume, currentUiLanguage, leveledTextLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, sourceLength, sourceTone, textFormat, inputText, leveledTextCustomInstructions, standardsInput, targetStandards, dokLevel, history, generatedContent, pdfFixResult, fluencyAssessments, currentFluencyText, isFluencyRecording, fluencyAudioBlob, studentNickname, activeSessionCode, activeSessionAppId, appId, apiKey, studentResponses, studentReflections, socraticMessages, socraticInput, isSocraticThinking, socraticChatHistory, studentProjectSettings, persistedLessonDNA, isAutoConfigEnabled, resourceCount, fullPackTargetGroup, rosterKey, enableEmojiInline, isShowMeMode, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, playbackSessionRef, audioRef, isPlayingRef, playbackRateRef, persistentVoiceMapRef, lastReadTurnRef, projectFileInputRef, fluencyRecorderRef, fluencyChunksRef, fluencyStreamRef, setIsPlaying, setIsPaused, setPlayingContentId, setError, setSocraticMessages, setSocraticInput, setIsSocraticThinking, setSocraticChatHistory, setIsFluencyRecording, setFluencyAssessments, setFluencyAudioBlob, setCurrentFluencyText, setStudentReflections, setInputText, setIsExtracting, setGenerationStep, setIsProcessing, setActiveView, setGeneratedContent, setHistory, setSelectedLanguages, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callTTS, cleanJson, safeJsonParse, fetchTTSBytes, addBlobUrl, stopPlayback, splitTextToSentences, sanitizeTruncatedCitations, normalizeResourceLinks, extractSourceTextForProcessing, getReadableContent, handleGenerate, handleScoreUpdate, flyToElement, getStageElementId, detectClimaxArchetype, pcmToWav, pcmToMp3, storageDB, AVAILABLE_VOICES, SOCRATIC_SYSTEM_PROMPT, _isCanvasEnv, _ttsState, personaState, adventureState, glossaryAudioCache, playingContentId, aiSafetyFlags, focusData, gameCompletions, globalPoints, isCanvas, labelChallengeResults, pasteEvents, wordSoundsHistory, adventureChanceMode, adventureCustomInstructions, adventureDifficulty, adventureFreeResponseEnabled, adventureInputMode, adventureLanguageMode, completedActivities, escapeRoomState, externalCBMScores, fidelityLog, flashcardEngagement, interventionLogs, isIndependentMode, phonemeMastery, pointHistory, probeHistory, saveFileName, saveType, studentProgressLog, surveyResponses, timeOnTask, wordSoundsAudioLibrary, wordSoundsBadges, wordSoundsConfusionPatterns, wordSoundsDailyProgress, wordSoundsFamilies, wordSoundsScore, focusMode, latestGlossary, toFocusText, personaReflectionInput, fluencyStatus, fluencyTimeLimit, selectedGrammarErrors, audioBufferRef, activeBlobUrlsRef, alloBotRef, isSystemAudioActiveRef, lastHandleSpeakRef, playbackTimeoutRef, recognitionRef, fluencyStartTimeRef, setIsGeneratingAudio, setPlaybackState, setDoc, setIsProgressSyncing, setLastProgressSync, setIsSaveActionPulsing, setLastJsonFileSave, setShowSaveModal, setStudentProgressLog, setIsGradingReflection, setIsPersonaReflectionOpen, setPersonaReflectionInput, setPersonaState, setReflectionFeedback, setShowReadThisPage, setFluencyFeedback, setFluencyResult, setFluencyStatus, setFluencyTimeRemaining, setFluencyTranscript, setShowFluencyConfetti, setSelectedGrammarErrors, releaseBlob, getSideBySideContent, playSequence: playSequence2, sessionCounter, SafetyContentChecker, db, doc, getFocusRatio, MathSymbol, getDefaultTitle, handleRestoreView, highlightGlossaryTerms, playSound, handleAiSafetyFlag, analyzeFluencyWithGemini, calculateLocalFluencyMetrics, applyGlobalCitations, chunkText, stickers } = deps;
   try {
@@ -100,17 +121,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
     if (mode === "persona" && activeSpeaker && activeSpeaker !== selectedVoice) {
       const geminiAvailable = !_isCanvasEnv || Date.now() >= _ttsState.rateLimitedUntil;
       if (geminiAvailable) {
-        let voiceInstruction = `[speak in character as ${activeSpeaker}]`;
-        const isPanelMode = personaState.selectedCharacters && personaState.selectedCharacters.length > 0;
-        const speakingChar = isPanelMode ? speakerName && personaState.selectedCharacters.find((c) => c.name === speakerName) || personaState.selectedCharacters.find((c) => c.voice === activeSpeaker) : personaState.selectedCharacter;
-        if (speakingChar && speakingChar.voiceProfile) {
-          const nationalityHint = speakingChar.nationality ? ` This person is ${speakingChar.nationality} \u2014 their accent MUST reflect this nationality throughout.` : "";
-          voiceInstruction = `[CRITICAL VOICE DIRECTION: ${speakingChar.voiceProfile}.${nationalityHint} You MUST speak with this exact accent consistently for every word. Do NOT default to a neutral American accent.]`;
-        } else if (speakingChar && speakingChar.name) {
-          const natHint = speakingChar.nationality ? ` Speak with a ${speakingChar.nationality} accent.` : "";
-          voiceInstruction = `[Speak as ${speakingChar.name}${speakingChar.role ? ", " + speakingChar.role : ""}${speakingChar.year ? " from " + speakingChar.year : ""}.${natHint} Stay in character with a consistent accent and tone.]`;
-        }
-        textToSpeak = voiceInstruction + " " + textToSpeak;
+        const speakingChar = resolvePersonaSpeakingChar(personaState, activeSpeaker, speakerName);
+        textToSpeak = buildPersonaVoiceInstruction(speakingChar) + " " + textToSpeak;
       }
     }
     textToSpeak = textToSpeak.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1").replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, "").replace(/\[Source\s+\d+\]/gi, "").replace(/\[\d+\]/g, "").replace(/^#{1,6}\s+/gm, "").replace(/\*\*/g, "").replace(/\*/g, "").replace(/__|_/g, "").replace(/~~/g, "").replace(/`/g, "").replace(/^>\s?/gm, "").replace(/^[-*+]\s/gm, "").replace(/^\d+\.\s/gm, "").replace(/\s+/g, " ").trim();
@@ -291,7 +303,8 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
         if (activeSpeaker && activeSpeaker !== selectedVoice) {
           const geminiAvail = !_isCanvasEnv || Date.now() >= _ttsState.rateLimitedUntil;
           if (geminiAvail) {
-            textToPreload = `[speak in character as ${activeSpeaker}] ${textToPreload}`;
+            const preloadChar = resolvePersonaSpeakingChar(personaState, activeSpeaker, speakerName);
+            textToPreload = buildPersonaVoiceInstruction(preloadChar) + " " + textToPreload;
           }
         }
       }
@@ -506,10 +519,36 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps) => {
       const _msg = personaState.chatHistory[_msgIdx];
       if (_msg && _msg.speakerName) personaSpeakerName = _msg.speakerName;
     }
+    let effectiveStartIndex = startIndex;
+    let personaChunkRanges = null;
+    if (contentId.startsWith("persona-message-")) {
+      const _chunks = [];
+      const _ranges = [];
+      let _cur = "";
+      let _curStart = 0;
+      cleanSentences.forEach((s, i) => {
+        if (_cur && _cur.length + s.length + 1 > 400) {
+          _chunks.push(_cur);
+          _ranges.push([_curStart, i]);
+          _cur = s;
+          _curStart = i;
+        } else {
+          _cur = _cur ? _cur + " " + s : s;
+        }
+      });
+      if (_cur) {
+        _chunks.push(_cur);
+        _ranges.push([_curStart, cleanSentences.length]);
+      }
+      const _chunkIdx = _ranges.findIndex((r) => startIndex >= r[0] && startIndex < r[1]);
+      effectiveStartIndex = _chunkIdx >= 0 ? _chunkIdx : 0;
+      personaChunkRanges = _ranges;
+      cleanSentences = _chunks;
+    }
     setPlayingContentId(contentId);
     setIsPlaying(true);
     setIsPaused(false);
-    setPlaybackState({ sentences: cleanSentences, currentIdx: startIndex });
+    setPlaybackState({ sentences: cleanSentences, currentIdx: effectiveStartIndex, chunkRanges: personaChunkRanges });
     let mode = "standard";
     let voiceMap = {};
     let activeSpeaker = selectedVoice;
@@ -570,7 +609,7 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps) => {
       }
     }
     console.log("[handleSpeak] Using playSequence(, deps) - mode:", mode, "sentences:", cleanSentences.length, "speaker:", personaSpeakerName);
-    playSequence2(startIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, personaSpeakerName, deps);
+    playSequence2(effectiveStartIndex, cleanSentences, sessionId, mode, voiceMap, activeSpeaker, null, 0, personaSpeakerName, deps);
   } else {
     setIsGeneratingAudio(true);
     setPlayingContentId(contentId);
@@ -1755,11 +1794,21 @@ const handleSaveReflection = async (deps) => {
             }
           `;
     const result = await callGemini(prompt, true);
-    let grading = { score: 85, feedback: "Good reflection!", xpBonus: 20 };
+    // Honest fallback: if grading JSON can't be parsed, do NOT fabricate
+    // a score — award participation XP and say feedback was unavailable.
+    // (The view hides the score tile when score is not a number.)
+    let grading = null;
     try {
       grading = JSON.parse(cleanJson(result));
     } catch (e) {
-      warnLog("Grading JSON parse error, using default", e);
+      warnLog("Grading JSON parse error — presenting without a score", e);
+    }
+    if (!grading || typeof grading !== "object" || typeof grading.score !== "number") {
+      grading = {
+        score: null,
+        feedback: t("persona.grading_unavailable") || "Your reflection was saved. Automatic feedback was unavailable this time — your teacher can review it.",
+        xpBonus: 20
+      };
     }
     const totalXP = 10 + (grading.xpBonus || 0);
     const formattedChatLog = personaState.chatHistory.map((m) => `**${m.role === "user" ? "Student" : m.speakerName || subjectName}:**
@@ -1771,18 +1820,19 @@ ${m.text}`).join("\n\n---\n\n");
 
 `;
     }
+    const scoreSuffix = typeof grading.score === "number" ? ` (Score: ${grading.score}/100)` : "";
     const fullData = `${formattedChatLog}
 
 ---
 
 ${metaHeader}${personaReflectionInput}
 
-> **Teacher Bot Feedback:** ${grading.feedback} (Score: ${grading.score}/100)`;
+> **Teacher Bot Feedback:** ${grading.feedback}${scoreSuffix}`;
     const newItem = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type: "udl-advice",
       data: fullData,
-      meta: `Reflection on ${subjectName} (Score: ${grading.score})`,
+      meta: typeof grading.score === "number" ? `Reflection on ${subjectName} (Score: ${grading.score})` : `Reflection on ${subjectName}`,
       title: `Reflection: ${subjectName}`,
       timestamp: /* @__PURE__ */ new Date(),
       config: {}
@@ -1806,29 +1856,11 @@ ${metaHeader}${personaReflectionInput}
       subjectName
     });
   } catch (err) {
+    // Transient failure (network/API): keep the chat, the reflection text,
+    // and the open panel so the student can just press Submit again — this
+    // used to wipe the whole session and dump them out.
     warnLog("Reflection grading failed", err);
     addToast(t("toasts.reflection_grade_error"), "error");
-    const formattedChatLog = personaState.chatHistory.map((m) => `**${m.role === "user" ? "Student" : m.speakerName || subjectName}:**
-${m.text}`).join("\n\n---\n\n");
-    const fullData = `${formattedChatLog}
-
----
-
-### \u{1F4DD} Student Reflection
-${personaReflectionInput}`;
-    const newItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: "udl-advice",
-      data: fullData,
-      meta: `Reflection on ${subjectName}`,
-      title: `Reflection: ${subjectName}`,
-      timestamp: /* @__PURE__ */ new Date(),
-      config: {}
-    };
-    setHistory((prev) => [...prev, newItem]);
-    setIsPersonaReflectionOpen(false);
-    setPersonaReflectionInput("");
-    setPersonaState((prev) => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: "single" }));
   } finally {
     setIsGradingReflection(false);
   }

@@ -176,13 +176,13 @@ const createPersonas = (deps) => {
               Include the nationality field in the JSON.
 
               VOICE PROFILE:
-              For each character, write a "voiceProfile" string describing EXACTLY how they should sound aloud. This MUST include:
-              1. Their specific accent based on nationality (e.g., "thick Viennese German accent" not just "European accent")
+              For each character, write a "voiceProfile" string describing how they should sound aloud. This MUST include:
+              1. Their specific accent based on nationality, always described as "subtle, consistent" (e.g., "subtle, consistent Viennese German accent" not just "European accent"). NEVER use intensifiers like "thick", "heavy", or "strong" — the TTS engine renders exaggerated accents unpredictably, flipping between full character and neutral from sentence to sentence. A subtle accent renders the same way every time.
               2. Speaking pace (measured, rapid, deliberate)
               3. Emotional tone (warm, stern, passionate, contemplative)
-              4. Speech mannerisms (uses pauses, speaks in metaphors, formal diction, etc.)
-              Example for Freud: "Speaks with a thick Viennese German accent, measured and deliberate pace, contemplative and analytical tone, frequently pauses to consider before speaking, uses medical terminology naturally, occasionally lapses into German phrases."
-              Example for MLK Jr: "Speaks with a Southern American Baptist preacher's cadence, powerful and rhythmic delivery, builds from quiet reflection to passionate crescendo, uses biblical allusions and repetition for emphasis."
+              4. Delivery mannerisms (uses pauses, formal diction, builds to emphasis, etc.). NEVER instruct switching into another language or inserting foreign phrases — the voice must read only the written text.
+              Example for Freud: "Speaks with a subtle, consistent Viennese German accent, measured and deliberate pace, contemplative and analytical tone, frequently pauses to consider before speaking."
+              Example for MLK Jr: "Speaks with a warm Southern American cadence, powerful and rhythmic delivery, builds from quiet reflection to passionate emphasis, uses repetition for emphasis."
               Return ONLY a JSON array of objects with this exact structure:
               [
                   {
@@ -760,7 +760,10 @@ const createPersonas = (deps) => {
             addToast, t,
             handleScoreUpdate, playSound,
         } = liveRef.current;
-        if (!userText.trim() || (personaState.selectedCharacters || []).length < 2) return;
+        if (!userText || !userText.trim() || (personaState.selectedCharacters || []).length < 2) return;
+        // Re-entry guard: the send button disables on isLoading but Enter,
+        // suggestion chips, and auto-send can still fire mid-request.
+        if (personaState.isLoading) return;
         const charA = personaState.selectedCharacters[0];
         const charB = personaState.selectedCharacters[1];
         setPersonaInput('');
@@ -775,10 +778,10 @@ const createPersonas = (deps) => {
         const prompt = `
           You are a Debate Moderator simulating a discussion between two historical figures.
           Character A: ${charA.name} (${charA.role}).
-          - Current Rapport: ${charA.rapport || 30}/100.
+          - Current Rapport: ${charA.rapport ?? charA.initialRapport ?? 30}/100.
           - Objectives: ${JSON.stringify(charA.quests || [])}
           Character B: ${charB.name} (${charB.role}).
-          - Current Rapport: ${charB.rapport || 30}/100.
+          - Current Rapport: ${charB.rapport ?? charB.initialRapport ?? 30}/100.
           - Objectives: ${JSON.stringify(charB.quests || [])}
           Topic: "${sourceTopic || "General Discussion"}",
           Conversation History:
@@ -817,6 +820,21 @@ const createPersonas = (deps) => {
             if (xpEarned > 0) {
                 handleScoreUpdate(xpEarned, "Panel Debate Insight", generatedContent?.id);
             }
+            // Side effects (image-edit API calls, toasts, sounds) run OUTSIDE
+            // the state updater: React may invoke updaters more than once
+            // (StrictMode double-render), which double-fired all of them.
+            const newHarmonyPreview = Math.max(0, Math.min(100, (personaState.harmonyScore ?? 10) + harmonyDelta));
+            const earnsHarmonizer = newHarmonyPreview >= 50 && !(personaState.earnedBadges || []).includes('harmonizer');
+            if (data.dialogue && Array.isArray(data.dialogue)) {
+                data.dialogue.forEach(turn => {
+                    if (turn.visualReaction && turn.speaker) {
+                        const charIndex = personaState.selectedCharacters.findIndex(c => c.name === turn.speaker);
+                        if (charIndex !== -1) {
+                            updatePanelCharacterReaction(charIndex, turn.visualReaction);
+                        }
+                    }
+                });
+            }
             setPersonaState(prev => {
                 const currentA = prev.selectedCharacters[0];
                 const currentB = prev.selectedCharacters[1];
@@ -827,7 +845,7 @@ const createPersonas = (deps) => {
                     if (!up) return { ...char, accumulatedXP: (char.accumulatedXP || 0) + (charXpReward || 0) };
                     return {
                         ...char,
-                        rapport: Math.max(0, Math.min(100, (char.rapport || 10) + (up.rapportChange || 0))),
+                        rapport: Math.max(0, Math.min(100, (char.rapport ?? char.initialRapport ?? 30) + (up.rapportChange || 0))),
                         quests: char.quests ? char.quests.map(q => q.id === up.completedQuestId ? { ...q, isCompleted: true } : q) : [],
                         accumulatedXP: (char.accumulatedXP || 0) + (charXpReward || 0)
                     };
@@ -842,21 +860,9 @@ const createPersonas = (deps) => {
                     speakerName: turn.speaker,
                     visualReaction: turn.visualReaction
                 }));
-                if (data.dialogue && Array.isArray(data.dialogue)) {
-                    data.dialogue.forEach(turn => {
-                        if (turn.visualReaction && turn.speaker) {
-                            const charIndex = prev.selectedCharacters.findIndex(c => c.name === turn.speaker);
-                            if (charIndex !== -1) {
-                                updatePanelCharacterReaction(charIndex, turn.visualReaction);
-                            }
-                        }
-                    });
-                }
                 const newBadges = [...(prev.earnedBadges || [])];
                 if (newHarmony >= 50 && !newBadges.includes('harmonizer')) {
                     newBadges.push('harmonizer');
-                    addToast(`🤝 ${t('persona.badges.harmonizer')}!`, "success");
-                    playSound('correct');
                 }
                 return {
                     ...prev,
@@ -867,6 +873,10 @@ const createPersonas = (deps) => {
                     earnedBadges: newBadges
                 };
             });
+            if (earnsHarmonizer) {
+                addToast(`🤝 ${t('persona.badges.harmonizer')}!`, "success");
+                playSound('correct');
+            }
             if (data.updates?.harmony?.scoreChange > 0) {
                 addToast(`Synthesis! Harmony +${data.updates.harmony.scoreChange}`, "success");
                 playSound('correct');
@@ -897,7 +907,8 @@ const createPersonas = (deps) => {
             handleScoreUpdate, playSound,
         } = liveRef.current;
         const textToSend = overrideInput || personaInput;
-        if (!textToSend.trim()) return;
+        if (!textToSend || !textToSend.trim()) return;
+        if (personaState.isLoading) return;
         if (personaState.mode === 'panel' && personaState.selectedCharacters.length === 2) {
             handlePanelChatSubmit(textToSend);
             return;
@@ -966,8 +977,21 @@ const createPersonas = (deps) => {
               }
             `;
             const resultRaw = await window.callGemini(prompt, true);
-            const resultParsed = JSON.parse(cleanJson(resultRaw));
-            const responseText = resultParsed.response || resultRaw;
+            let resultParsed = null;
+            try {
+                resultParsed = JSON.parse(cleanJson(resultRaw));
+            } catch (parseErr) {
+                try { resultParsed = safeJsonParse(resultRaw); } catch (_) {}
+            }
+            if (!resultParsed || typeof resultParsed !== 'object' || Array.isArray(resultParsed) || typeof resultParsed.response !== 'string' || !resultParsed.response.trim()) {
+                // Model drifted from the JSON contract — salvage the reply as
+                // plain text (no rapport/quest updates) rather than dropping
+                // the whole turn with a "figure went silent" error.
+                const salvaged = String(resultRaw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+                if (!salvaged) throw new Error('Empty persona response');
+                resultParsed = { response: salvaged, rapportChange: 0, completedQuestId: null };
+            }
+            const responseText = resultParsed.response;
             const finalHistory = [...historyContextForPrompt, { role: 'user', text: textToSend }, { role: 'model', text: responseText }];
             const delta = parseInt(resultParsed.rapportChange) || 0;
             let actualReward = 0;
@@ -1000,8 +1024,13 @@ const createPersonas = (deps) => {
             } else if (delta < 0) {
                 addToast(`Rapport Decreased (${delta})`, "error");
             }
+            // Badge toasts/sounds fire OUTSIDE the updater — React may invoke
+            // updaters more than once (StrictMode double-render).
+            const newRapportPreview = Math.max(0, Math.min(100, currentRapport + delta));
+            const closureBadges = personaState.earnedBadges || [];
+            const earnsFirstInsight = delta >= 5 && !closureBadges.includes('first_insight');
+            const earnsRapportBuilder = newRapportPreview >= 50 && !closureBadges.includes('rapport_builder');
             setPersonaState(prev => {
-                const delta = parseInt(resultParsed.rapportChange) || 0;
                 const newRapport = Math.max(0, Math.min(100, currentRapport + delta));
                 const updatedQuests = (prev.selectedCharacter.quests || []).map(q => {
                     if (resultParsed.completedQuestId === q.id) {
@@ -1012,13 +1041,9 @@ const createPersonas = (deps) => {
                 const newBadges = [...(prev.earnedBadges || [])];
                 if (delta >= 5 && !newBadges.includes('first_insight')) {
                     newBadges.push('first_insight');
-                    addToast(`🎯 ${t('persona.badges.first_insight')}!`, "success");
-                    playSound('correct');
                 }
                 if (newRapport >= 50 && !newBadges.includes('rapport_builder')) {
                     newBadges.push('rapport_builder');
-                    addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
-                    playSound('correct');
                 }
                 return {
                     ...prev,
@@ -1033,6 +1058,14 @@ const createPersonas = (deps) => {
                     }
                 };
             });
+            if (earnsFirstInsight) {
+                addToast(`🎯 ${t('persona.badges.first_insight')}!`, "success");
+                playSound('correct');
+            }
+            if (earnsRapportBuilder) {
+                addToast(`💡 ${t('persona.badges.rapport_builder')}!`, "success");
+                playSound('correct');
+            }
             if (resultParsed.completedQuestId) {
                 addToast(t('persona.toasts.secret_unlocked'), "success");
                 playSound('correct');
@@ -1079,13 +1112,19 @@ const createPersonas = (deps) => {
     const handleSavePersonaChat = () => {
         const { personaState, setHistory, addToast, t } = liveRef.current;
         if (personaState.chatHistory.length === 0 || !personaState.selectedCharacter) return;
-        const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : personaState.selectedCharacter.name}:**\n${m.text}`).join('\n\n---\n\n');
+        // Panel messages carry speakerName — honor it so Character B's lines
+        // aren't attributed to Character A in the saved transcript.
+        const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}:**\n${m.text}`).join('\n\n---\n\n');
+        const isPanelSave = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
+        const saveTitle = isPanelSave
+            ? `Interview: ${personaState.selectedCharacters[0].name} & ${personaState.selectedCharacters[1].name}`
+            : `Interview: ${personaState.selectedCharacter.name}`;
         const newItem = {
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             type: 'udl-advice',
             data: chatLog,
             meta: `Historical Interview (${personaState.selectedCharacter.year})`,
-            title: `Interview: ${personaState.selectedCharacter.name}`,
+            title: saveTitle,
             timestamp: new Date(),
             config: {}
         };

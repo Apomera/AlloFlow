@@ -103,6 +103,12 @@ const createTTS = (deps) => {
               contents: [{ parts: [{ text: promptText }] }],
               generationConfig: {
                 responseModalities: ["AUDIO"],
+                // Lower sampling temperature: the default (~1.0) re-rolls the
+                // voice acting on every request, so back-to-back persona calls
+                // with the identical voice direction drift in accent/delivery.
+                // 0.7 keeps renditions stable while still expressive. Gated so
+                // a 400 rejecting the field disables it globally (see below).
+                ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
                 speechConfig: {
                   voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } }
                 }
@@ -136,6 +142,11 @@ const createTTS = (deps) => {
                   throw new Error(`TTS Transient Error (${response.status})`);
                 }
                 const errorBody = await response.text().catch(() => '');
+                if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+                    state.ttsTemperatureUnsupported = true;
+                    console.warn('[TTS] API rejected temperature param — disabled; caller retry will go without it.');
+                    throw new Error('TTS Transient Error (400 temperature)');
+                }
                 console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
               }
@@ -149,6 +160,7 @@ const createTTS = (deps) => {
                               contents: [{ parts: [{ text: `Please say the word: ${text}` }] }],
                               generationConfig: {
                                   responseModalities: ["AUDIO"],
+                                  ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
                                   speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } } }
                               }
                           };
@@ -477,6 +489,7 @@ const createTTS = (deps) => {
                       contents: [{ parts: [{ text: (text.length > 10 ? 'Read the following text aloud naturally, do not perform sound effects or noises: ' : '') + text }] }],
                       generationConfig: {
                         responseModalities: ["AUDIO"],
+                        ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
                         speechConfig: {
                           voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } }
                         }
@@ -499,6 +512,11 @@ const createTTS = (deps) => {
                         throw new Error(`TTS Transient Error (${response.status})`);
                       }
                       const errorBody = await response.text().catch(() => '');
+                      if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+                          state.ttsTemperatureUnsupported = true;
+                          console.warn('[TTS-Bot] API rejected temperature param — disabled; retry will go without it.');
+                          throw new Error('TTS Transient Error (400 temperature)');
+                      }
                       console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
                       throw new Error(`API Error: ${response.status} ${response.statusText}`);
                     }

@@ -270,34 +270,39 @@
       (section.patternIds || []).forEach(function (patternId) {
         var pattern = C.ogFindPattern(project, patternId);
         if (!pattern) return;
-        var patternLength = C.ogPatternLengthTicks(project, pattern);
-        var items = ogBuildPlaybackPlan(project, {
-          patternId: pattern.id,
-          fromTick: 0,
-          toTick: Math.min(patternLength, sectionLengthTicks),
-          originTick: 0,
-          originTime: 0,
-          bpm: bpm,
-          stepsPerBar: options.stepsPerBar || 16
-        });
-        items.forEach(function (item) {
-          var arrangementTick = section.startTick + item.playTick;
-          if (arrangementTick < originTick) return;
-          var next = Object.assign({}, item, {
-            id: section.sceneId + ':' + pattern.id + ':' + item.id + ':' + section.index,
-            sourceId: item.id,
-            sceneId: section.sceneId,
-            sceneName: section.sceneName,
-            sectionIndex: section.index,
+        var patternLength = Math.max(1, C.ogPatternLengthTicks(project, pattern));
+        for (var sectionOffsetTick = 0, repeatIndex = 0; sectionOffsetTick < sectionLengthTicks; sectionOffsetTick += patternLength, repeatIndex += 1) {
+          var repeatLength = Math.min(patternLength, sectionLengthTicks - sectionOffsetTick);
+          var items = ogBuildPlaybackPlan(project, {
             patternId: pattern.id,
-            patternTick: item.patternTick,
-            playTick: item.playTick,
-            scheduledTick: arrangementTick,
-            arrangementTick: arrangementTick,
-            time: originTime + ogTicksToSeconds(arrangementTick - originTick, bpm, ppq)
+            fromTick: 0,
+            toTick: repeatLength,
+            originTick: 0,
+            originTime: 0,
+            bpm: bpm,
+            stepsPerBar: options.stepsPerBar || 16
           });
-          plan.push(next);
-        });
+          items.forEach(function (item) {
+            var arrangementTick = section.startTick + sectionOffsetTick + item.playTick;
+            if (arrangementTick < originTick) return;
+            var next = Object.assign({}, item, {
+              id: section.sceneId + ':' + pattern.id + ':' + item.id + ':' + section.index + ':' + repeatIndex,
+              sourceId: item.id,
+              sceneId: section.sceneId,
+              sceneName: section.sceneName,
+              sectionIndex: section.index,
+              sectionOffsetTick: sectionOffsetTick,
+              patternRepeatIndex: repeatIndex,
+              patternId: pattern.id,
+              patternTick: item.patternTick,
+              playTick: sectionOffsetTick + item.playTick,
+              scheduledTick: arrangementTick,
+              arrangementTick: arrangementTick,
+              time: originTime + ogTicksToSeconds(arrangementTick - originTick, bpm, ppq)
+            });
+            plan.push(next);
+          });
+        }
       });
     });
 

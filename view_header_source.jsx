@@ -99,6 +99,7 @@ function HeaderBar(props) {
     sessionUnsubscribeRef, setActiveSessionCode, setHistory,
     setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
     setPendingRole, setRunTour, setGuidedMode, setGuidedStep, setGuidedSelectedIds,
+    guidedStep, guidedMode, resetGuidedProgress,
     setSelectedVoice, setSessionData, setShowAIBackendModal,
     setBridgeSendOpen, setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowLearningHub, setShowNotebook, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
@@ -140,17 +141,35 @@ function HeaderBar(props) {
     setShowSetupPathMenu(false);
     setShowWizard(true);
   };
-  const startGuidedModeFromHeader = () => {
-    if (typeof setGuidedSelectedIds === 'function') setGuidedSelectedIds(null);
-    if (typeof setGuidedStep === 'function') setGuidedStep(0);
+  // Header entry used to silently reset the tour to step 0 while the LaunchPad/coach
+  // entries resumed the preserved step. Now: resume when there's progress, with an
+  // explicit "Start over" secondary action; fresh start otherwise.
+  const _guidedHasProgress = typeof guidedStep === 'number' && guidedStep > 0;
+  const restartGuidedModeFromHeader = () => {
+    if (typeof resetGuidedProgress === 'function') resetGuidedProgress();
+    else {
+      if (typeof setGuidedSelectedIds === 'function') setGuidedSelectedIds(null);
+      if (typeof setGuidedStep === 'function') setGuidedStep(0);
+    }
     if (typeof setGuidedMode === 'function') setGuidedMode(true);
     setShowSetupPathMenu(false);
     setShowWizard(false);
     if (typeof addToast === 'function') addToast(t('guided.started_from_header') || 'Guided Mode started.', 'success');
   };
+  const startGuidedModeFromHeader = () => {
+    if (!_guidedHasProgress) { restartGuidedModeFromHeader(); return; }
+    if (typeof setGuidedMode === 'function') setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === 'function') addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
+  };
+  const isDesktopBundledApp = typeof window !== 'undefined' && !!window._isDesktopBundledApp;
+  const isLocalVoiceMode = ai?._ttsProvider === 'local'
+    || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai' || ai?.backend === 'lmstudio'));
+  const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
 
   return (
-      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
+      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-max ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
         <div className="w-full max-w-[98%] mx-auto relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
@@ -388,7 +407,7 @@ function HeaderBar(props) {
                                                     onChange={(e) => {
                                                       const voice = e.target.value;
                                                       setSelectedVoice(voice);
-                                                      if (_isCanvasEnv && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+                                                      if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
                                                         window.__kokoroTTSDownloading = true;
                                                         addToast('Downloading Kokoro voice model (~40MB)...', 'info');
                                                         window.__loadKokoroTTS().then(ok => {
@@ -417,8 +436,15 @@ function HeaderBar(props) {
                                                                 <option value="browser">{t('header.voice_browser_default') || 'Browser Default'}</option>
                                                             </optgroup>
                                                         </>
-                                                    ) : (ai?._ttsProvider === 'local' || (ai?._ttsProvider !== 'gemini' && ai?._ttsProvider !== 'browser' && (ai?.backend === 'ollama' || ai?.backend === 'localai'))) ? (
+                                                    ) : isLocalVoiceMode ? (
                                                         <>
+                                                            {isDesktopBundledApp && (
+                                                                <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (loading/local)"}>
+                                                                    {KOKORO_VOICES.map(v => (
+                                                                        <option key={v.id} value={v.id}>{v.label}</option>
+                                                                    ))}
+                                                                </optgroup>
+                                                            )}
                                                             <optgroup label="🎤 Edge TTS Voices">
                                                                 {EDGE_TTS_VOICES.map(v => (
                                                                     <option key={v.id} value={v.id}>{v.label}</option>
@@ -435,7 +461,7 @@ function HeaderBar(props) {
                                                     )}
                                                 </select>
                                                 {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
-                                                {_isCanvasEnv && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
+                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
                                                     <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
                                                         <label className={`text-[11px] uppercase font-bold ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} block mb-1.5`}>{t('header.voice_quality_label') || 'Voice Quality'}</label>
                                                         <div className="flex gap-1">
@@ -1043,9 +1069,18 @@ function HeaderBar(props) {
                   data-help-key="header_guided_mode_start"
                   className="w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
                 >
-                  <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} />{t('launch_pad.guided_title') || 'Guided Mode'}</span>
-                  <span className="block text-xs text-emerald-100 mt-1 leading-relaxed">{t('toolbar.guided_mode_setup_desc') || 'Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.'}</span>
+                  <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} />{_guidedHasProgress ? (t('toolbar.guided_mode_resume') || 'Resume Guided Mode') : (t('launch_pad.guided_title') || 'Guided Mode')}</span>
+                  <span className="block text-xs text-emerald-100 mt-1 leading-relaxed">{_guidedHasProgress ? (t('toolbar.guided_mode_resume_desc') || 'Pick the tour back up where you left off.') : (t('toolbar.guided_mode_setup_desc') || 'Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.')}</span>
                 </button>
+                {_guidedHasProgress && (
+                  <button
+                    type="button"
+                    onClick={restartGuidedModeFromHeader}
+                    className="w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+                  >
+                    <span className="text-xs font-bold text-slate-200">{t('toolbar.guided_mode_start_over') || 'Start the tour over from step 1'}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

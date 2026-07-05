@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-03T20:24:09.696Z
+Generated: 2026-07-04T05:16:38.919Z
 
 ## Scope
 
@@ -17,8 +17,8 @@ Generated: 2026-07-03T20:24:09.696Z
 | Marker failures | 0 |
 | Monitored first-screen findings | 33 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 1 |
-| Any source/public/build drift | 1 |
+| Source/public drift | 0 |
+| Any source/public/build drift | 0 |
 | Monitored file drift | 0 |
 
 ## Visual Marker Coverage
@@ -86,9 +86,7 @@ Generated: 2026-07-03T20:24:09.696Z
 
 ## Sync Drift
 
-| Status | File | Monitored | Hashes |
-| --- | --- | --- | --- |
-| source-public-drift | `stem_tool_rocks.js` | no | source `BD8972314264`, public `AAD3D827749D`, build `AAD3D827749D` |
+All source, public, and local build STEM tool copies match.
 
 ## Gate Policy
 

@@ -285,7 +285,8 @@
           const currentGlobalIdx = sentenceCounter;
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-          const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+          const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
@@ -394,7 +395,7 @@
     "aria-label": t('common.enter_persona_input'),
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && handlePanelChatSubmit(personaInput),
+    onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput),
     className: "flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600",
     placeholder: t('persona.panel_question_placeholder'),
     disabled: personaState.isLoading
@@ -430,7 +431,7 @@
     className: "text-slate-600 text-sm"
   }, reflectionFeedback.subjectName)), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto space-y-4"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, typeof reflectionFeedback.score === 'number' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-5xl font-black text-indigo-600 mb-2"
@@ -458,7 +459,7 @@
   }), " ", t('persona.teacher_feedback') || 'Teacher Feedback'), /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
-      __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
+      __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6"
@@ -794,7 +795,8 @@
           const currentGlobalIdx = sentenceCounter;
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-          const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+          const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
@@ -842,7 +844,7 @@
     type: "text",
     value: personaInput,
     onChange: e => setPersonaInput(e.target.value),
-    onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(),
+    onKeyDown: e => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit(),
     placeholder: t('persona.character_question_placeholder', {
       name: personaState.selectedCharacter?.name
     }),
@@ -880,7 +882,7 @@
     className: "text-slate-600 text-sm"
   }, reflectionFeedback.subjectName)), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto space-y-4"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, typeof reflectionFeedback.score === 'number' && /*#__PURE__*/React.createElement("div", {
     className: "bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-5xl font-black text-indigo-600 mb-2"
@@ -908,7 +910,7 @@
   }), " ", t('persona.teacher_feedback') || 'Teacher Feedback'), /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none",
     dangerouslySetInnerHTML: {
-      __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
+      __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>')
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-6"

@@ -548,12 +548,12 @@ const CharacterColumn = React.memo(({
     className: "flex justify-between text-[11px] font-bold text-slate-600 uppercase mb-1"
   }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", {
     className: `${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`
-  }, character.rapport || 30, "%")), /*#__PURE__*/React.createElement("div", {
+  }, character.rapport ?? character.initialRapport ?? 30, "%")), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400"
   }, /*#__PURE__*/React.createElement("div", {
     className: `h-full transition-all duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`,
     style: {
-      width: `${character.rapport || 30}%`
+      width: `${character.rapport ?? character.initialRapport ?? 30}%`
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-[280px] text-left flex-1 overflow-y-auto custom-scrollbar mt-4 px-1"
@@ -564,7 +564,7 @@ const CharacterColumn = React.memo(({
   }), " ", t('persona.objectives_label')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, sortedQuests.map((q, i) => {
-    const currentRapport = character.rapport || 10;
+    const currentRapport = character.rapport ?? character.initialRapport ?? 30;
     const isLocked = currentRapport < q.difficulty;
     return /*#__PURE__*/React.createElement("div", {
       key: i,

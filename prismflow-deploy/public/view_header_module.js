@@ -156,6 +156,9 @@ function HeaderBar(props) {
     setGuidedMode,
     setGuidedStep,
     setGuidedSelectedIds,
+    guidedStep,
+    guidedMode,
+    resetGuidedProgress,
     setSelectedVoice,
     setSessionData,
     setShowAIBackendModal,
@@ -243,13 +246,27 @@ function HeaderBar(props) {
     setShowSetupPathMenu(false);
     setShowWizard(true);
   };
-  const startGuidedModeFromHeader = () => {
-    if (typeof setGuidedSelectedIds === "function") setGuidedSelectedIds(null);
-    if (typeof setGuidedStep === "function") setGuidedStep(0);
+  const _guidedHasProgress = typeof guidedStep === "number" && guidedStep > 0;
+  const restartGuidedModeFromHeader = () => {
+    if (typeof resetGuidedProgress === "function") resetGuidedProgress();
+    else {
+      if (typeof setGuidedSelectedIds === "function") setGuidedSelectedIds(null);
+      if (typeof setGuidedStep === "function") setGuidedStep(0);
+    }
     if (typeof setGuidedMode === "function") setGuidedMode(true);
     setShowSetupPathMenu(false);
     setShowWizard(false);
     if (typeof addToast === "function") addToast(t("guided.started_from_header") || "Guided Mode started.", "success");
+  };
+  const startGuidedModeFromHeader = () => {
+    if (!_guidedHasProgress) {
+      restartGuidedModeFromHeader();
+      return;
+    }
+    if (typeof setGuidedMode === "function") setGuidedMode(true);
+    setShowSetupPathMenu(false);
+    setShowWizard(false);
+    if (typeof addToast === "function") addToast(t("guided.resumed") || "Resumed your guided tutorial.", "success");
   };
   const isDesktopBundledApp = typeof window !== "undefined" && !!window._isDesktopBundledApp;
   const isLocalVoiceMode = ai?._ttsProvider === "local" || ai?._ttsProvider !== "gemini" && ai?._ttsProvider !== "browser" && (ai?.backend === "ollama" || ai?.backend === "localai" || ai?.backend === "lmstudio");
@@ -976,8 +993,16 @@ function HeaderBar(props) {
           "data-help-key": "header_guided_mode_start",
           className: "w-full text-start rounded-xl border border-emerald-300/30 bg-emerald-500/15 hover:bg-emerald-500/25 px-4 py-3 transition-colors"
         },
-        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16 }), t("launch_pad.guided_title") || "Guided Mode"),
-        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-100 mt-1 leading-relaxed" }, t("toolbar.guided_mode_setup_desc") || "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.")
+        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16 }), _guidedHasProgress ? t("toolbar.guided_mode_resume") || "Resume Guided Mode" : t("launch_pad.guided_title") || "Guided Mode"),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-emerald-100 mt-1 leading-relaxed" }, _guidedHasProgress ? t("toolbar.guided_mode_resume_desc") || "Pick the tour back up where you left off." : t("toolbar.guided_mode_setup_desc") || "Highlight one tool at a time and build a resource pack with prompts, examples, and progress checks.")
+      ), _guidedHasProgress && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: restartGuidedModeFromHeader,
+          className: "w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-200" }, t("toolbar.guided_mode_start_over") || "Start the tour over from step 1")
       ))
     )
   ));

@@ -19,6 +19,10 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 **No subscriptions. No student accounts. No PII collected.**
 
+**Official website:** [apomera.github.io/AlloFlow](https://apomera.github.io/AlloFlow/)
+
+**Search identity:** AlloFlow is a free open-source AI classroom assistant for differentiated instruction, UDL, accessibility, AAC communication, STEM/SEL tools, RTI, and local-first school deployments.
+
 **Current codebase review:** The July 3, 2026 audit found 111 STEM tool files, 116 registered STEM plugin IDs, 70 SEL tools, 151 top-level build modules, 413 test files, and roughly 2.70M canonical-ish source lines after excluding deploy mirrors and generated source/module pairs. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), and [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md).
 
 🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**

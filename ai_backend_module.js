@@ -885,7 +885,7 @@ class AIProvider {
         if (this.backend === 'ollama' && !config.models?.vision) {
             this.models.vision = 'moondream';
         }
-        if ((this.backend === 'ollama' || this.backend === 'localai') && !config.models?.tts) {
+        if ((this.backend === 'ollama' || this.backend === 'localai' || this.backend === 'lmstudio') && !config.models?.tts) {
             this.models.tts = 'kokoro';
         }
 

@@ -58,6 +58,15 @@
     var themeMode = themePair[0];
     var setThemeMode = themePair[1];
     var styles = getOpenGrooveStyles(themeMode);
+    var workspaceModePair = React.useState('learn');
+    var workspaceMode = workspaceModePair[0];
+    var setWorkspaceMode = workspaceModePair[1];
+    var panelJumpPair = React.useState('');
+    var panelJumpTarget = panelJumpPair[0];
+    var setPanelJumpTarget = panelJumpPair[1];
+    var synthFamilyPair = React.useState('All');
+    var selectedSynthFamily = synthFamilyPair[0];
+    var setSelectedSynthFamily = synthFamilyPair[1];
     var loopPair = React.useState(false);
     var loopEnabled = loopPair[0];
     var setLoopEnabled = loopPair[1];
@@ -96,12 +105,47 @@
     var statePair = React.useState(initialProjectRef.current);
     var project = statePair[0];
     var setProject = statePair[1];
+    var undoStackPair = React.useState([]);
+    var undoStack = undoStackPair[0];
+    var setUndoStack = undoStackPair[1];
+    var redoStackPair = React.useState([]);
+    var redoStack = redoStackPair[0];
+    var setRedoStack = redoStackPair[1];
+    var historyLimit = 40;
+    var canUndo = undoStack.length > 0;
+    var canRedo = redoStack.length > 0;
     var selectedPair = React.useState('pad_1');
     var selectedPadId = selectedPair[0];
     var setSelectedPadId = selectedPair[1];
     var selectedBarPair = React.useState(0);
     var selectedBar = selectedBarPair[0];
     var setSelectedBar = selectedBarPair[1];
+    var keyboardOctavePair = React.useState(3);
+    var keyboardOctave = keyboardOctavePair[0];
+    var setKeyboardOctave = keyboardOctavePair[1];
+    var keyboardStepPair = React.useState(0);
+    var keyboardStep = keyboardStepPair[0];
+    var setKeyboardStep = keyboardStepPair[1];
+    var keyboardRecordPair = React.useState(false);
+    var keyboardRecordEnabled = keyboardRecordPair[0];
+    var setKeyboardRecordEnabled = keyboardRecordPair[1];
+    var keyboardModePair = React.useState('single');
+    var keyboardMode = keyboardModePair[0];
+    var setKeyboardMode = keyboardModePair[1];
+    var keyboardDurationPair = React.useState(1);
+    var keyboardDurationSteps = keyboardDurationPair[0];
+    var setKeyboardDurationSteps = keyboardDurationPair[1];
+    var midiStatusPair = React.useState({
+      supported: !!(root.navigator && root.navigator.requestMIDIAccess),
+      connected: false,
+      inputCount: 0,
+      label: root.navigator && root.navigator.requestMIDIAccess ? 'MIDI ready' : 'MIDI unavailable'
+    });
+    var midiStatus = midiStatusPair[0];
+    var setMidiStatus = midiStatusPair[1];
+    var songFormPair = React.useState('verse-hook');
+    var selectedSongFormId = songFormPair[0];
+    var setSelectedSongFormId = songFormPair[1];
     var effectTrackPair = React.useState(initialProjectRef.current.tracks[1] && initialProjectRef.current.tracks[1].id || initialProjectRef.current.tracks[0] && initialProjectRef.current.tracks[0].id || '');
     var selectedEffectTrackId = effectTrackPair[0];
     var setSelectedEffectTrackId = effectTrackPair[1];
@@ -158,6 +202,8 @@
     var recorderRef = React.useRef(null);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
+    var midiAccessRef = React.useRef(null);
+    var midiHandlerRef = React.useRef(null);
     var pattern = C.ogFindPattern && C.ogFindPattern(project, selectedPatternId) || project.patterns[0];
     var drumTrack = project.tracks.find(function (track) { return track.type === 'drumRack'; });
     var synthTrack = project.tracks.find(function (track) { return track.type === 'synth'; });
@@ -165,6 +211,39 @@
     var selectedAsset = selectedPad && selectedPad.assetId && C.ogFindAsset ? C.ogFindAsset(project, selectedPad.assetId) : null;
     var stepsPerBar = 16;
     var synthPitches = ['C4', 'Bb3', 'G3', 'Eb3', 'C3', 'Bb2', 'G2', 'C2'];
+    var keyboardLayout = C.ogBuildKeyboardLayout ? C.ogBuildKeyboardLayout(project, { octave: keyboardOctave, octaves: 2 }) : { keys: [] };
+    var keyboardModeLabel = keyboardMode === 'triad' ? 'Triad assist' : 'Single notes';
+    var keyboardLengthOptions = [1, 2, 4, 8].filter(function (steps) { return steps <= stepsPerBar; });
+    if (keyboardLengthOptions.indexOf(keyboardDurationSteps) === -1) keyboardLengthOptions.push(keyboardDurationSteps);
+    var workspaceModes = [
+      { id: 'learn', label: 'Learn', summary: 'Starter, beat, keyboard, harmony, score', sections: ['start', 'pads', 'steps', 'keyboard', 'harmony', 'score', 'project'] },
+      { id: 'compose', label: 'Compose', summary: 'Keyboard, synth notes, harmony, score, song', sections: ['start', 'synth', 'keyboard', 'harmony', 'score', 'song', 'project'] },
+      { id: 'produce', label: 'Produce', summary: 'Pads, instruments, mixer, effects, samples, stems', sections: ['pads', 'steps', 'patch', 'mixer', 'effects', 'samples', 'stems', 'project'] },
+      { id: 'all', label: 'All', summary: 'Every Open Groove panel', sections: null }
+    ];
+    var workspaceModeConfig = workspaceModes.filter(function (mode) { return mode.id === workspaceMode; })[0] || workspaceModes[0];
+    var workspaceSections = [
+      { id: 'start', label: 'Starter Path' },
+      { id: 'pads', label: 'Pads' },
+      { id: 'steps', label: 'Steps' },
+      { id: 'synth', label: 'Synth Notes' },
+      { id: 'keyboard', label: 'Keyboard' },
+      { id: 'patch', label: 'Instrument' },
+      { id: 'harmony', label: 'Harmony' },
+      { id: 'score', label: 'Score Preview' },
+      { id: 'song', label: 'Song' },
+      { id: 'mixer', label: 'Mixer' },
+      { id: 'effects', label: 'Effects' },
+      { id: 'samples', label: 'Samples' },
+      { id: 'stems', label: 'Stem Prep' },
+      { id: 'project', label: 'Project' }
+    ];
+    var visibleWorkspaceSections = workspaceSections.filter(function (section) {
+      return !workspaceModeConfig.sections || workspaceModeConfig.sections.indexOf(section.id) >= 0;
+    });
+    var panelJumpValue = visibleWorkspaceSections.some(function (section) { return section.id === panelJumpTarget; })
+      ? panelJumpTarget
+      : (visibleWorkspaceSections[0] && visibleWorkspaceSections[0].id || '');
     var staffPitches = ['C6', 'B5', 'Bb5', 'A5', 'G5', 'F5', 'E5', 'Eb5', 'D5', 'C5', 'B4', 'Bb4', 'A4', 'G4', 'F4', 'E4', 'Eb4', 'D4', 'C4'];
     var visibleSteps = [];
     for (var i = 0; i < stepsPerBar; i++) visibleSteps.push(selectedBar * stepsPerBar + i);
@@ -188,14 +267,95 @@
       };
     }, []);
 
-    function mutate(fn) {
-      var next = clone(project);
-      fn(next);
-      setProject(next);
-    }
+    React.useEffect(function () {
+      midiHandlerRef.current = handleMidiMessage;
+    });
+
+    React.useEffect(function () {
+      return function () {
+        var access = midiAccessRef.current;
+        if (access && access.inputs) {
+          access.inputs.forEach(function (input) {
+            input.onmidimessage = null;
+          });
+        }
+        if (access) access.onstatechange = null;
+      };
+    }, []);
+
+    React.useEffect(function () {
+      function handleComputerKey(ev) {
+        if (!ev || ev.repeat || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+        var target = ev.target || {};
+        var tag = String(target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable) return;
+        var keyName = String(ev.key || '').toUpperCase();
+        var key = (keyboardLayout.keys || []).find(function (item) { return item.computerKey === keyName; });
+        if (!key) return;
+        ev.preventDefault();
+        playKeyboardPitch(key.pitch, 0.74, 'computerKeyboard');
+      }
+      if (root.addEventListener) root.addEventListener('keydown', handleComputerKey);
+      return function () {
+        if (root.removeEventListener) root.removeEventListener('keydown', handleComputerKey);
+      };
+    }, [keyboardOctave, keyboardRecordEnabled, keyboardMode, keyboardDurationSteps, keyboardStep, selectedBar, selectedPatternId, project]);
 
     function currentPatternIn(proj) {
       return C.ogFindPattern && C.ogFindPattern(proj, selectedPatternId) || proj.patterns[0];
+    }
+
+    function trimHistory(stack) {
+      return stack.slice(Math.max(0, stack.length - historyLimit));
+    }
+
+    function syncSelectionForProject(next) {
+      var patterns = next && next.patterns || [];
+      var nextPattern = patterns.filter(function (item) { return item.id === selectedPatternId; })[0] || patterns[0];
+      if (nextPattern && nextPattern.id !== selectedPatternId) setSelectedPatternId(nextPattern.id);
+      if (nextPattern && selectedBar >= Math.max(1, nextPattern.bars || 1)) setSelectedBar(Math.max(0, (nextPattern.bars || 1) - 1));
+      var tracks = next && next.tracks || [];
+      var nextEffectTrack = tracks.filter(function (track) { return track.id === selectedEffectTrackId; })[0] || tracks[0];
+      if (nextEffectTrack && nextEffectTrack.id !== selectedEffectTrackId) setSelectedEffectTrackId(nextEffectTrack.id);
+      var nextDrums = tracks.filter(function (track) { return track.type === 'drumRack'; })[0];
+      var nextPad = nextDrums && (nextDrums.pads || []).filter(function (pad) { return pad.id === selectedPadId; })[0] || nextDrums && nextDrums.pads && nextDrums.pads[0];
+      if (nextPad && nextPad.id !== selectedPadId) setSelectedPadId(nextPad.id);
+    }
+
+    function commitProject(next, options) {
+      options = options || {};
+      if (options.history !== false) {
+        setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+        setRedoStack([]);
+      }
+      setProject(next);
+      syncSelectionForProject(next);
+    }
+
+    function mutate(fn) {
+      var next = clone(project);
+      fn(next);
+      commitProject(next);
+    }
+
+    function undoProject() {
+      if (!undoStack.length) return;
+      var previous = clone(undoStack[undoStack.length - 1]);
+      setUndoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
+      setRedoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setProject(previous);
+      syncSelectionForProject(previous);
+      ogAnnounce('Undo');
+    }
+
+    function redoProject() {
+      if (!redoStack.length) return;
+      var next = clone(redoStack[redoStack.length - 1]);
+      setRedoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
+      setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setProject(next);
+      syncSelectionForProject(next);
+      ogAnnounce('Redo');
     }
 
     function clearTransportSchedule(resetView) {
@@ -275,6 +435,48 @@
         ev.preventDefault();
         first.focus();
       }
+    }
+
+    function isWorkspaceSectionVisible(sectionId) {
+      return !workspaceModeConfig.sections || workspaceModeConfig.sections.indexOf(sectionId) >= 0;
+    }
+
+    function workspaceSectionProps(sectionId, labelledBy) {
+      var visible = isWorkspaceSectionVisible(sectionId);
+      return {
+        id: 'og-section-' + sectionId,
+        style: visible ? styles.surface : Object.assign({}, styles.surface, styles.hiddenSection),
+        'aria-labelledby': labelledBy,
+        'aria-hidden': visible ? undefined : true,
+        tabIndex: visible ? -1 : undefined
+      };
+    }
+
+    function changeWorkspaceMode(modeId) {
+      var nextMode = workspaceModes.filter(function (mode) { return mode.id === modeId; })[0] || workspaceModes[0];
+      setWorkspaceMode(nextMode.id);
+      ogAnnounce(nextMode.label + ' workspace');
+    }
+
+    function labelForWorkspaceSection(sectionId) {
+      var section = workspaceSections.filter(function (item) { return item.id === sectionId; })[0];
+      return section && section.label || 'panel';
+    }
+
+    function jumpToWorkspaceSection(sectionId) {
+      if (!sectionId || !root.document) return;
+      setPanelJumpTarget(sectionId);
+      var target = root.document.getElementById('og-section-' + sectionId);
+      if (!target) return;
+      if (target.focus) {
+        try {
+          target.focus({ preventScroll: true });
+        } catch (_) {
+          target.focus();
+        }
+      }
+      if (target.scrollIntoView) target.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
+      ogAnnounce('Moved to ' + labelForWorkspaceSection(sectionId));
     }
 
     function chordProgressionFor(proj) {
@@ -376,6 +578,99 @@
       var engine = ensureAudioEngine(false);
       if (!engine) return;
       A.ogPlayNote(engine, { pitch: pitch, midi: C.ogNoteNameToMidi(pitch), velocity: velocity || 0.75, instrument: synthTrack && synthTrack.instrument }, engine.ctx.currentTime + 0.01, 0.22);
+    }
+
+    function keyboardPerformanceFor(pitch) {
+      if (keyboardMode === 'triad' && C.ogBuildKeyboardChord) {
+        try {
+          var chord = C.ogBuildKeyboardChord(project, pitch);
+          return { pitches: chord.pitches || [pitch], label: chord.label || chord.symbol || pitch };
+        } catch (_) {}
+      }
+      return { pitches: [pitch], label: pitch };
+    }
+
+    function recordKeyboardNotes(pitches, velocity, source) {
+      if (!pattern || !synthTrack || !C.ogSetNoteStep) return;
+      var step = selectedBar * stepsPerBar + Math.max(0, Math.min(stepsPerBar - 1, keyboardStep));
+      var durationSteps = Math.max(1, Math.min(stepsPerBar, Math.round(Number(keyboardDurationSteps) || 1)));
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (!nextPattern || !nextSynth) return;
+        var durationTicks = Math.round(C.ogTicksPerMeasure(next) / stepsPerBar) * durationSteps;
+        (pitches || []).forEach(function (pitch) {
+          C.ogSetNoteStep(next, nextPattern.id, nextSynth.id, pitch, step, stepsPerBar, {
+            on: true,
+            velocity: velocity || 0.75,
+            durationTicks: durationTicks,
+            role: keyboardMode === 'triad' ? 'keyboardChord' : 'keyboard',
+            source: source || 'virtualKeyboard'
+          });
+        });
+      });
+      setKeyboardStep(function (value) { return (Math.max(0, value) + 1) % stepsPerBar; });
+    }
+
+    function playKeyboardPitch(pitch, velocity, source) {
+      if (!pitch) return;
+      var performance = keyboardPerformanceFor(pitch);
+      (performance.pitches || [pitch]).forEach(function (nextPitch) {
+        triggerNote(nextPitch, velocity || 0.75);
+      });
+      if (keyboardRecordEnabled) recordKeyboardNotes(performance.pitches, velocity || 0.75, source);
+      ogAnnounce(performance.label + (keyboardRecordEnabled ? ' recorded' : ' played'));
+    }
+
+    function playKeyboardMidi(midi, velocity, source) {
+      if (!C.ogMidiToNoteName) return;
+      var pitch = C.ogMidiToNoteName(midi);
+      playKeyboardPitch(pitch, velocity || 0.75, source);
+    }
+
+    function handleMidiMessage(ev) {
+      var data = ev && ev.data || [];
+      var command = data[0] & 240;
+      var midi = data[1];
+      var velocity = data[2] || 0;
+      if (command === 144 && velocity > 0 && midi != null) playKeyboardMidi(midi, velocity / 127, 'hardwareMidi');
+    }
+
+    function wireMidiInputs(access) {
+      var inputs = [];
+      if (access && access.inputs) {
+        access.inputs.forEach(function (input) {
+          inputs.push(input);
+          input.onmidimessage = function (ev) {
+            if (midiHandlerRef.current) midiHandlerRef.current(ev);
+          };
+        });
+      }
+      setMidiStatus({
+        supported: true,
+        connected: inputs.length > 0,
+        inputCount: inputs.length,
+        label: inputs.length ? (inputs[0].name || inputs[0].id || 'MIDI input') : 'No MIDI inputs'
+      });
+      return inputs.length;
+    }
+
+    function connectMidiInput() {
+      if (!root.navigator || !root.navigator.requestMIDIAccess) {
+        setMidiStatus({ supported: false, connected: false, inputCount: 0, label: 'MIDI unavailable' });
+        addToast('MIDI input is not available in this browser.', 'info');
+        return;
+      }
+      root.navigator.requestMIDIAccess({ sysex: false }).then(function (access) {
+        midiAccessRef.current = access;
+        var count = wireMidiInputs(access);
+        access.onstatechange = function () { wireMidiInputs(access); };
+        addToast(count ? 'MIDI input connected.' : 'No MIDI input found.', count ? 'success' : 'info');
+        ogAnnounce(count ? 'MIDI input connected' : 'No MIDI input found');
+      }, function (err) {
+        setMidiStatus({ supported: true, connected: false, inputCount: 0, label: 'MIDI blocked' });
+        addToast('MIDI connection failed: ' + (err && err.message || 'permission blocked'), 'error');
+      });
     }
 
     function toggleNote(pitch, step) {
@@ -597,7 +892,7 @@
     function auditionSynthPatch() {
       triggerNote('C3', 0.8);
       if (root.setTimeout) root.setTimeout(function () { triggerNote('G3', 0.62); }, 130);
-      ogAnnounce('Synth patch preview');
+      ogAnnounce('Instrument preview');
     }
 
     function clearSelectedPad() {
@@ -763,6 +1058,23 @@
       });
       if (createdPatternId) choosePattern(createdPatternId);
       addToast((sceneName || 'Variation') + ' created and added to the song.', 'success');
+    }
+
+    function buildSongForm() {
+      if (!pattern || !C.ogApplySongFormPreset) return;
+      var summary = null;
+      var focusPatternId = null;
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        summary = C.ogApplySongFormPreset(next, selectedSongFormId, {
+          patternId: nextPattern.id,
+          replace: true
+        });
+        focusPatternId = summary && summary.createdPatternIds && summary.createdPatternIds[0] || nextPattern.id;
+      });
+      if (focusPatternId) choosePattern(focusPatternId);
+      addToast((summary && summary.name || 'Song form') + ' built with ' + (summary && summary.sectionCount || 0) + ' sections.', 'success');
+      ogAnnounce('Song form built');
     }
 
     function setKeyTonic(value) {
@@ -1298,7 +1610,7 @@
       try {
         var text = jsonRef.current ? jsonRef.current.value : '';
         var next = C.ogParseProject(text);
-        setProject(next);
+        commitProject(next);
         if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
         restoreEmbeddedSamplesFor(next, false);
         addToast('Open Groove project loaded.', 'success');
@@ -1317,14 +1629,29 @@
       }
     }
 
+    function safeProjectFilename(suffix) {
+      var safeTitle = String(project.title || 'open-groove').replace(/[^\w -]+/g, '').trim().replace(/ +/g, '-') || 'open-groove';
+      return safeTitle + (suffix || '');
+    }
+
     function downloadMidi() {
       try {
-        var safeTitle = String(project.title || 'open-groove').replace(/[^\w -]+/g, '').trim().replace(/ +/g, '-') || 'open-groove';
         var midi = C.ogBuildMidiFile(project, pattern.id);
-        downloadBytes(safeTitle + '.mid', midi, 'audio/midi');
-        addToast('MIDI file exported.', 'success');
+        downloadBytes(safeProjectFilename('-pattern.mid'), midi, 'audio/midi');
+        addToast('Pattern MIDI exported.', 'success');
       } catch (err) {
         addToast('MIDI export failed: ' + (err && err.message || 'unknown error'), 'error');
+      }
+    }
+
+    function downloadSongMidi() {
+      try {
+        if (!C.ogBuildArrangementMidiFile) throw new Error('Song MIDI export is not available.');
+        var midi = C.ogBuildArrangementMidiFile(project);
+        downloadBytes(safeProjectFilename('-song.mid'), midi, 'audio/midi');
+        addToast('Song MIDI exported.', 'success');
+      } catch (err) {
+        addToast('Song MIDI export failed: ' + (err && err.message || 'unknown error'), 'error');
       }
     }
 
@@ -1335,7 +1662,7 @@
 
     function resetDemo() {
       var next = C.ogMakeDemoProject ? C.ogMakeDemoProject() : C.ogCreateProject({ title: 'Open Groove Prototype' });
-      setProject(next);
+      commitProject(next);
       if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
       ogAnnounce('Demo pattern reset');
     }
@@ -1358,6 +1685,12 @@
       height: 158,
       slotsPerMeasure: 8
     }) : null;
+    var notationBridge = C.ogBuildNotationGridBridge ? C.ogBuildNotationGridBridge(project, pattern && pattern.id, {
+      trackId: synthTrack && synthTrack.id,
+      stepsPerBar: stepsPerBar,
+      selectedBar: selectedBar
+    }) : { keyName: compositionNames.keyName, measures: [], notes: [], offGridCount: 0, performedOffsetCount: 0 };
+    var bridgeMeasure = notationBridge.measures && notationBridge.measures[selectedBar] || { steps: [], notes: [] };
     var scaleNotes = compositionNames.scaleDegrees && compositionNames.scaleDegrees.length
       ? compositionNames.scaleDegrees.map(function (degree) { return degree.note; })
       : C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
@@ -1408,6 +1741,12 @@
       { id: 'ascending', name: 'Ascending' },
       { id: 'callResponse', name: 'Call / Response' }
     ];
+    var songFormPresets = C.ogListSongFormPresets ? C.ogListSongFormPresets() : [
+      { id: 'loop-sketch', name: 'Loop Sketch' },
+      { id: 'verse-hook', name: 'Verse / Hook' },
+      { id: 'aaba', name: 'AABA' },
+      { id: 'build-drop', name: 'Build / Drop' }
+    ];
     var grooveHitCount = pattern.events.filter(function (event) {
       return event.type === 'drumHit' && event.role === 'groove';
     }).length;
@@ -1415,6 +1754,12 @@
       return event.type === 'note' && event.role === 'melody';
     }).length;
     var arrangementTimeline = C.ogBuildArrangementTimeline ? C.ogBuildArrangementTimeline(project) : [];
+    var patternLauncher = C.ogBuildPatternLauncher ? C.ogBuildPatternLauncher(project, { activePatternId: pattern && pattern.id }) : {
+      patternCount: project.patterns && project.patterns.length || 0,
+      sceneCount: project.scenes && project.scenes.length || 0,
+      sectionCount: arrangementTimeline.length,
+      patterns: []
+    };
     var songBars = arrangementTimeline.reduce(function (max, section) { return Math.max(max, section.endBar || 0); }, 0);
     var starterStatus = C.ogBuildOnboardingStatus ? C.ogBuildOnboardingStatus(project, pattern && pattern.id) : {
       beatReady: pattern.events.some(function (event) { return event.type === 'drumHit'; }),
@@ -1465,6 +1810,23 @@
     var synthPatch = C.ogNormalizeSynthInstrument ? C.ogNormalizeSynthInstrument(synthTrack && synthTrack.instrument) : (synthTrack && synthTrack.instrument || { oscillator: 'sawtooth', filter: { type: 'lowpass', cutoff: 6000, q: 0.7 }, envelope: { attack: 0.01, decay: 0.12, sustain: 0.65, release: 0.25 } });
     var synthPatchSummary = C.ogBuildSynthPatchSummary ? C.ogBuildSynthPatchSummary(project, synthTrack && synthTrack.id) : { label: synthPatch.oscillator };
     var synthPatchPresets = C.ogListSynthPatchPresets ? C.ogListSynthPatchPresets() : [];
+    var synthPatchFamilies = C.ogListSynthPatchFamilies ? C.ogListSynthPatchFamilies() : [];
+    var synthFamilyNames = ['All'].concat(synthPatchFamilies.map(function (group) { return group.family; }));
+    var selectedSynthFamilyValue = synthFamilyNames.indexOf(selectedSynthFamily) >= 0 ? selectedSynthFamily : 'All';
+    var visibleSynthPatchPresets = selectedSynthFamilyValue === 'All'
+      ? synthPatchPresets.slice()
+      : synthPatchPresets.filter(function (preset) { return (preset.family || 'Synth') === selectedSynthFamilyValue; });
+    if (!visibleSynthPatchPresets.length) visibleSynthPatchPresets = synthPatchPresets.slice();
+    var currentPresetVisible = visibleSynthPatchPresets.some(function (preset) { return preset.id === synthPatch.presetId; });
+    if (synthPatch.presetId && synthPatch.presetId !== 'generated' && !currentPresetVisible) {
+      var currentPreset = synthPatchPresets.filter(function (preset) { return preset.id === synthPatch.presetId; })[0];
+      if (currentPreset) visibleSynthPatchPresets = [currentPreset].concat(visibleSynthPatchPresets);
+    }
+    var selectedInstrumentProfile = synthPatch.presetId && synthPatch.presetId !== 'generated' && C.ogBuildInstrumentProfile
+      ? C.ogBuildInstrumentProfile(synthPatch.presetId)
+      : null;
+    var instrumentSampleNotes = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.recommendedNotes || [];
+    var instrumentArticulations = selectedInstrumentProfile && selectedInstrumentProfile.samplePlan && selectedInstrumentProfile.samplePlan.articulations || [];
     var starterGuidanceAction = function () {
       var actionId = starterGuidance && starterGuidance.actionId;
       if (actionId === 'harmony') applyProgression();
@@ -1621,10 +1983,12 @@
     },
       h('div', { style: styles.shell },
         h('div', { style: styles.header },
-          h('div', null,
-            h('div', { style: styles.eyebrow }, 'Milestone 0'),
-            h('strong', { id: 'og-dialog-title', style: styles.title }, 'Open Groove Studio'),
-            h('div', { id: 'og-dialog-subtitle', style: styles.subtitle }, 'Music learning tool for rhythm, synthesis, and composition')),
+          h('div', { style: styles.headerTop },
+            h('div', { style: styles.headerTitleBlock },
+              h('div', { style: styles.eyebrow }, 'Milestone 0'),
+              h('strong', { id: 'og-dialog-title', style: styles.title }, 'Open Groove Studio'),
+              h('div', { id: 'og-dialog-subtitle', style: styles.subtitle }, 'Music learning tool for rhythm, synthesis, and composition')),
+            h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X')),
           h('div', { style: styles.transport, role: 'toolbar', 'aria-label': 'Transport' },
             h('button', { style: styles.transportButton, onClick: playLoop, disabled: playing, 'aria-label': 'Play pattern' }, 'Play'),
             h('button', { style: styles.transportButton, onClick: stopLoop, 'aria-label': 'Stop pattern' }, 'Stop'),
@@ -1635,6 +1999,18 @@
               'aria-label': loopEnabled ? 'Turn loop mode off' : 'Turn loop mode on'
             }, loopEnabled ? 'Loop On' : 'Loop Off'),
             h('button', { style: styles.transportButton, onClick: resetDemo, 'aria-label': 'Reset demo pattern' }, 'Reset'),
+            h('button', {
+              style: Object.assign({}, styles.transportButton, !canUndo ? styles.disabledButton : null),
+              onClick: undoProject,
+              disabled: !canUndo,
+              'aria-label': 'Undo last Open Groove edit'
+            }, 'Undo'),
+            h('button', {
+              style: Object.assign({}, styles.transportButton, !canRedo ? styles.disabledButton : null),
+              onClick: redoProject,
+              disabled: !canRedo,
+              'aria-label': 'Redo last Open Groove edit'
+            }, 'Redo'),
             h('label', { style: styles.tempoLabel }, 'BPM',
               h('input', { style: styles.tempoInput, type: 'number', min: 40, max: 240, value: project.bpm, onChange: function (ev) { setTempo(ev.target.value); }, 'aria-label': 'Tempo in beats per minute' })),
             h('label', { style: styles.swingLabel }, 'Swing',
@@ -1649,8 +2025,7 @@
               },
                 h('option', { value: 'light' }, 'Light'),
                 h('option', { value: 'dark' }, 'Dark'),
-                h('option', { value: 'contrast' }, 'High Contrast'))),
-            h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X'))),
+                h('option', { value: 'contrast' }, 'High Contrast'))))),
 
         h('div', { style: styles.playheadPanel, role: 'group', 'aria-label': 'Playback position' },
           h('div', {
@@ -1666,8 +2041,33 @@
           h('div', { style: styles.playheadStatus, role: 'status', 'aria-live': 'polite' },
             transportView.label + (transportView.loop ? ' - loop enabled' : ''))),
 
+        h('div', { style: styles.workspaceBar, role: 'group', 'aria-label': 'Workspace focus' },
+          h('span', { style: styles.workspaceLabel }, 'Workspace'),
+          h('div', { style: styles.workspaceTabs, role: 'group', 'aria-label': 'Open Groove workspace views' },
+            workspaceModes.map(function (mode) {
+              var selected = mode.id === workspaceModeConfig.id;
+              return h('button', {
+                key: mode.id,
+                style: Object.assign({}, styles.workspaceTab, selected ? styles.workspaceTabOn : null),
+                'aria-pressed': selected,
+                'aria-label': mode.label + ' workspace view',
+                onClick: function () { changeWorkspaceMode(mode.id); }
+              }, mode.label);
+            })),
+          h('label', { style: styles.workspaceJump }, 'Jump to',
+            h('select', {
+              style: styles.workspaceJumpSelect,
+              value: panelJumpValue,
+              onChange: function (ev) { jumpToWorkspaceSection(ev.target.value); },
+              'aria-label': 'Jump to visible Open Groove panel'
+            },
+              visibleWorkspaceSections.map(function (section) {
+                return h('option', { key: section.id, value: section.id }, section.label);
+              }))),
+          h('span', { style: styles.workspaceSummary }, workspaceModeConfig.summary)),
+
         h('div', { style: styles.grid },
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-start-title' },
+          h('section', workspaceSectionProps('start', 'og-start-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-start-title', style: styles.h2 }, 'Starter Path'),
               h('span', { style: styles.meta, role: 'status', 'aria-live': 'polite' }, starterStatus.completed + ' / ' + starterStatus.total)),
@@ -1698,7 +2098,7 @@
               h('button', { style: styles.smallButton, onClick: createPatternVariation }, 'New Variation'),
               h('button', { style: styles.wideButton, onClick: appendCurrentSection }, 'Add Section'))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-pads-title' },
+          h('section', workspaceSectionProps('pads', 'og-pads-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-pads-title', style: styles.h2 }, 'Pads'),
               h('span', { style: styles.meta }, project.bpm + ' BPM')),
@@ -1714,7 +2114,7 @@
                 }, h('span', { style: styles.padIndex }, String(pad.index + 1)), h('span', { style: styles.padName }, pad.name));
               }))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-steps-title' },
+          h('section', workspaceSectionProps('steps', 'og-steps-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-steps-title', style: styles.h2 }, 'Steps'),
               h('span', { style: styles.meta }, selectedPad ? selectedPad.name + ' - bar ' + (selectedBar + 1) : 'Pad')),
@@ -1780,7 +2180,7 @@
               h('span', null, (storageReport.humanizedHitCount || 0) + ' nudged'),
               h('span', null, validation.length ? validation.length + ' checks' : 'valid'))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-synth-title' },
+          h('section', workspaceSectionProps('synth', 'og-synth-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-synth-title', style: styles.h2 }, 'Synth Notes'),
               h('span', { style: styles.meta }, synthTrack ? synthTrack.name : 'Synth')),
@@ -1801,19 +2201,99 @@
                     })));
               }))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-patch-title' },
+          h('section', workspaceSectionProps('keyboard', 'og-keyboard-title'),
             h('div', { style: styles.sectionHeader },
-              h('h2', { id: 'og-patch-title', style: styles.h2 }, 'Synth Patch'),
+              h('h2', { id: 'og-keyboard-title', style: styles.h2 }, 'Keyboard'),
+              h('span', { style: styles.meta }, midiStatus.label + ' - ' + keyboardModeLabel.toLowerCase() + (keyboardRecordEnabled ? ' - record' : ''))),
+            h('div', { style: styles.keyboardControls, role: 'group', 'aria-label': 'Keyboard controls' },
+              h('label', { style: styles.compactField }, 'Octave',
+                h('select', {
+                  style: styles.select,
+                  value: keyboardOctave,
+                  onChange: function (ev) { setKeyboardOctave(Number(ev.target.value)); },
+                  'aria-label': 'Keyboard octave'
+                },
+                  [1, 2, 3, 4, 5, 6].map(function (octave) {
+                    return h('option', { key: octave, value: octave }, 'C' + octave);
+                  }))),
+              h('label', { style: styles.compactField }, 'Mode',
+                h('select', {
+                  style: styles.select,
+                  value: keyboardMode,
+                  onChange: function (ev) { setKeyboardMode(ev.target.value === 'triad' ? 'triad' : 'single'); },
+                  'aria-label': 'Keyboard play mode'
+                },
+                  h('option', { value: 'single' }, 'Single'),
+                  h('option', { value: 'triad' }, 'Triad'))),
+              h('label', { style: styles.compactField }, 'Length',
+                h('select', {
+                  style: styles.select,
+                  value: keyboardDurationSteps,
+                  onChange: function (ev) { setKeyboardDurationSteps(Math.max(1, Math.min(stepsPerBar, Number(ev.target.value) || 1))); },
+                  'aria-label': 'Keyboard note length'
+                },
+                  keyboardLengthOptions.map(function (steps) {
+                    return h('option', { key: steps, value: steps }, steps + (steps === 1 ? ' step' : ' steps'));
+                  }))),
+              h('label', { style: styles.compactField }, 'Step',
+                h('input', {
+                  style: styles.mixerSlider,
+                  type: 'range',
+                  min: 1,
+                  max: stepsPerBar,
+                  value: keyboardStep + 1,
+                  onChange: function (ev) { setKeyboardStep(Math.max(0, Math.min(stepsPerBar - 1, Number(ev.target.value) - 1))); },
+                  'aria-label': 'Keyboard record step'
+                }),
+                h('span', { style: styles.mixerValue }, String(keyboardStep + 1))),
+              h('button', {
+                style: Object.assign({}, styles.smallButton, keyboardRecordEnabled ? styles.recordButtonOn : null),
+                onClick: function () { setKeyboardRecordEnabled(!keyboardRecordEnabled); },
+                'aria-pressed': keyboardRecordEnabled,
+                'aria-label': keyboardRecordEnabled ? 'Turn keyboard recording off' : 'Turn keyboard recording on'
+              }, keyboardRecordEnabled ? 'Record On' : 'Record Off'),
+              h('button', {
+                style: Object.assign({}, styles.smallButton, !midiStatus.supported ? styles.disabledButton : null),
+                onClick: connectMidiInput,
+                disabled: !midiStatus.supported,
+                'aria-label': 'Connect MIDI input'
+              }, midiStatus.connected ? 'MIDI Ready' : 'Connect MIDI')),
+            h('div', { style: styles.keyboardKeys, role: 'group', 'aria-label': 'Virtual piano keyboard' },
+              (keyboardLayout.keys || []).map(function (key) {
+                return h('button', {
+                  key: key.midi,
+                  style: Object.assign({}, styles.keyboardKey, key.isBlack ? styles.keyboardKeyBlack : styles.keyboardKeyWhite, key.inKey ? null : styles.keyboardKeyOutside),
+                  onClick: function () { playKeyboardPitch(key.pitch, 0.75, 'virtualKeyboard'); },
+                  'aria-label': (keyboardMode === 'triad' ? 'Play triad from ' : 'Play ') + key.pitch + (keyboardRecordEnabled ? ' and record to step ' + (keyboardStep + 1) : '')
+                },
+                  h('strong', null, key.note),
+                  h('span', null, key.octave),
+                  h('span', { style: styles.keyboardKeyHint }, key.computerKey || ''));
+              }))),
+
+          h('section', workspaceSectionProps('patch', 'og-patch-title'),
+            h('div', { style: styles.sectionHeader },
+              h('h2', { id: 'og-patch-title', style: styles.h2 }, 'Instrument'),
               h('span', { style: styles.meta }, synthPatchSummary.label)),
             h('div', { style: styles.patchGrid },
+              h('label', { style: styles.fieldLabel }, 'Family',
+                h('select', {
+                  style: styles.select,
+                  value: selectedSynthFamilyValue,
+                  onChange: function (ev) { setSelectedSynthFamily(ev.target.value); },
+                  'aria-label': 'Instrument family'
+                },
+                  synthFamilyNames.map(function (family) {
+                    return h('option', { key: family, value: family }, family);
+                  }))),
               h('label', { style: styles.fieldLabel }, 'Preset',
                 h('select', {
                   style: styles.select,
                   value: synthPatch.presetId && synthPatch.presetId !== 'generated' ? synthPatch.presetId : '',
                   onChange: function (ev) { applySynthPreset(ev.target.value); },
-                  'aria-label': 'Synth patch preset'
+                  'aria-label': 'Instrument preset'
                 },
-                  [h('option', { key: 'custom', value: '' }, synthPatch.presetId === 'generated' ? 'Generated' : 'Custom')].concat(synthPatchPresets.map(function (preset) {
+                  [h('option', { key: 'custom', value: '' }, synthPatch.presetId === 'generated' ? 'Generated' : 'Custom')].concat(visibleSynthPatchPresets.map(function (preset) {
                     return h('option', { key: preset.id, value: preset.id }, preset.name);
                   })))),
               h('label', { style: styles.fieldLabel }, 'Wave',
@@ -1892,16 +2372,43 @@
                   'aria-label': 'Synth release time'
                 }),
                 h('span', { style: styles.mixerValue }, Math.round(synthPatch.envelope.release * 1000) + ' ms'))),
-            h('div', { style: styles.patchActions, role: 'toolbar', 'aria-label': 'Synth patch actions' },
+            selectedInstrumentProfile
+              ? h('div', { style: styles.instrumentProfile, role: 'note', 'aria-label': 'Instrument profile' },
+                h('div', { style: styles.instrumentProfileHeader },
+                  h('strong', null, selectedInstrumentProfile.name),
+                  h('span', { style: styles.meta }, selectedInstrumentProfile.family + ' - ' + selectedInstrumentProfile.register)),
+                h('div', { style: styles.instrumentProfileGrid },
+                  h('span', { style: styles.instrumentProfileChip }, 'Range ' + selectedInstrumentProfile.rangeLabel),
+                  h('span', { style: styles.instrumentProfileChip }, selectedInstrumentProfile.sourceLabel),
+                  h('span', { style: styles.instrumentProfileChip }, 'Notes ' + instrumentSampleNotes.join(' '))),
+                h('p', { style: styles.instrumentProfileText }, selectedInstrumentProfile.classroomUse),
+                h('p', { style: styles.instrumentProfileText }, 'Capture: ' + selectedInstrumentProfile.samplePlan.captureHint),
+                h('div', { style: styles.instrumentProfileFooter },
+                  h('span', { style: styles.instrumentProfileText }, 'Articulation: ' + instrumentArticulations.join(', ')),
+                  h('button', {
+                    style: styles.smallButton,
+                    onClick: function () {
+                      setWorkspaceMode('produce');
+                      setPanelJumpTarget('samples');
+                      ogAnnounce('Sample path selected');
+                    },
+                    'aria-label': 'Go to sample recording area for this instrument'
+                  }, 'Sample Path')))
+              : h('div', { style: styles.instrumentProfile, role: 'note', 'aria-label': 'Custom instrument profile' },
+                h('div', { style: styles.instrumentProfileHeader },
+                  h('strong', null, synthPatch.name || 'Custom Instrument'),
+                  h('span', { style: styles.meta }, 'Custom patch')),
+                h('p', { style: styles.instrumentProfileText }, synthPatch.oscillator + ' / ' + synthPatch.filter.type + ' / ' + Math.round(synthPatch.filter.cutoff) + ' Hz')),
+            h('div', { style: styles.patchActions, role: 'toolbar', 'aria-label': 'Instrument patch actions' },
               h('button', {
                 style: Object.assign({}, styles.smallButton, !C.ogRandomizeSynthInstrument ? styles.disabledButton : null),
                 onClick: randomizeSynthPatch,
                 disabled: !C.ogRandomizeSynthInstrument,
-                'aria-label': 'Create a new synth patch'
+                'aria-label': 'Create a new instrument patch'
               }, 'New Patch'),
-              h('button', { style: styles.wideButton, onClick: auditionSynthPatch, 'aria-label': 'Preview synth patch' }, 'Preview Patch'))),
+              h('button', { style: styles.wideButton, onClick: auditionSynthPatch, 'aria-label': 'Preview instrument patch' }, 'Preview Patch'))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-harmony-title' },
+          h('section', workspaceSectionProps('harmony', 'og-harmony-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-harmony-title', style: styles.h2 }, 'Harmony'),
               h('span', { style: styles.meta }, (project.key && project.key.tonic || 'C') + ' ' + (project.key && project.key.mode || 'minor'))),
@@ -1958,7 +2465,7 @@
               h('span', null, 'Bar ' + (selectedBar + 1))),
             h('button', { style: styles.wideButton, onClick: applyProgression }, 'Seed 4-bar chord bed')),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-score-title' },
+          h('section', workspaceSectionProps('score', 'og-score-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-score-title', style: styles.h2 }, 'Score Preview'),
               h('span', { style: styles.meta }, (namedMeasure.notes && namedMeasure.notes.length || 0) + ' notes in bar ' + (selectedBar + 1))),
@@ -1997,6 +2504,48 @@
                     h('option', { value: 'e' }, 'Eighth'),
                     h('option', { value: 's' }, 'Sixteenth')))),
               renderEngravedStaff()),
+            h('div', { style: styles.bridgePanel, role: 'group', 'aria-label': 'Notation to step bridge' },
+              h('div', { style: styles.bridgeHeader },
+                h('strong', null, 'Notation Bridge'),
+                h('span', { style: styles.meta }, notationBridge.keyName + ' - ' + (bridgeMeasure.noteCount || 0) + ' notes')),
+              h('div', { style: styles.bridgeSteps, role: 'group', 'aria-label': 'Selected bar notation steps' },
+                (bridgeMeasure.steps || []).map(function (cell) {
+                  var hasNotes = cell.noteCount > 0;
+                  var hasDrums = cell.drumCount > 0;
+                  var firstNote = hasNotes && cell.notes[0] || null;
+                  return h('button', {
+                    key: 'bridge-step-' + cell.index,
+                    style: Object.assign({}, styles.bridgeStepCell, hasNotes ? styles.bridgeStepCellOn : null, hasDrums && !hasNotes ? styles.bridgeStepCellDrum : null),
+                    onClick: function () {
+                      if (firstNote && firstNote.pitch) {
+                        setStaffPitch(firstNote.pitch);
+                        triggerNote(firstNote.pitch, 0.68);
+                      }
+                    },
+                    'aria-label': 'Step ' + (cell.index + 1) + (hasNotes ? ', ' + cell.notes.map(function (note) { return note.pitch; }).join(', ') : hasDrums ? ', drum hit' : ', empty')
+                  },
+                    h('span', { style: styles.bridgeStepNumber }, String(cell.index + 1)),
+                    h('span', { style: styles.bridgeStepContent },
+                      hasNotes
+                        ? cell.notes.slice(0, 2).map(function (note) {
+                          return h('span', { key: note.id, style: styles.bridgeNotePill }, note.pitch.replace(/\d+$/, '') + (note.solfege ? ' ' + note.solfege : ''));
+                        })
+                        : hasDrums ? 'drum' : ''));
+                })),
+              h('div', { style: styles.bridgeRows, role: 'list', 'aria-label': 'Selected bar notation mappings' },
+                (bridgeMeasure.notes || []).length ? bridgeMeasure.notes.slice(0, 6).map(function (note) {
+                  var timing = note.timingOffsetTicks ? (note.timingOffsetTicks > 0 ? '+' : '') + note.timingOffsetTicks + ' ticks' : note.onGrid ? 'on grid' : (note.gridOffsetTicks > 0 ? '+' : '') + note.gridOffsetTicks + ' grid';
+                  return h('div', { key: note.id, style: styles.bridgeRow, role: 'listitem' },
+                    h('strong', null, note.pitch),
+                    h('span', null, 'Step ' + note.step),
+                    h('span', null, (note.solfege || '-') + ' / ' + (note.nashville || '-')),
+                    h('span', null, note.chordRoman || note.chordSymbol || '-'),
+                    h('span', null, timing));
+                }) : h('span', { style: styles.muted }, 'No notation notes in this bar.')),
+              h('div', { style: styles.stats },
+                h('span', null, notationBridge.notes.length + ' mapped notes'),
+                h('span', null, notationBridge.offGridCount + ' off grid'),
+                h('span', null, notationBridge.performedOffsetCount + ' performance offsets'))),
             h('div', { style: styles.notationComposer },
               h('label', { style: styles.fieldLabel }, 'Notation Input',
                 h('textarea', {
@@ -2021,7 +2570,7 @@
               })),
             h('div', { style: styles.license }, licenseReport.exportSafe ? 'Built-in sounds are export-safe.' : licenseReport.warnings[0])),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-song-title' },
+          h('section', workspaceSectionProps('song', 'og-song-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-song-title', style: styles.h2 }, 'Song'),
               h('span', { style: styles.meta }, songBars + ' bars')),
@@ -2053,7 +2602,35 @@
             h('div', { style: styles.songControls, role: 'toolbar', 'aria-label': 'Song arrangement tools' },
               h('button', { style: styles.smallButton, onClick: appendCurrentSection }, 'Add Section'),
               h('button', { style: styles.smallButton, onClick: createPatternVariation }, 'New Variation'),
+              h('label', { style: styles.compactField }, 'Form',
+                h('select', {
+                  value: selectedSongFormId,
+                  onChange: function (ev) { setSelectedSongFormId(ev.target.value); },
+                  style: styles.select,
+                  'aria-label': 'Song form preset'
+                },
+                  songFormPresets.map(function (preset) {
+                    return h('option', { key: preset.id, value: preset.id }, preset.name);
+                  }))),
+              h('button', { style: styles.smallButton, onClick: buildSongForm }, 'Build Form'),
               h('button', { style: styles.wideButton, onClick: playSong }, 'Play Song')),
+            h('div', { style: styles.patternLauncher, role: 'group', 'aria-label': 'Pattern launcher' },
+              (patternLauncher.patterns || []).map(function (item) {
+                var chordLabel = item.firstChord && (item.firstChord.roman + ' ' + item.firstChord.symbol) || item.chordCount + ' chords';
+                return h('button', {
+                  key: item.id,
+                  style: Object.assign({}, styles.patternPad, item.active ? styles.patternPadActive : null),
+                  onClick: function () { choosePattern(item.id); },
+                  'aria-pressed': item.active,
+                  'aria-label': 'Select ' + item.name + ', ' + item.bars + ' bars, ' + item.drumHitCount + ' drum hits, ' + item.noteCount + ' notes'
+                },
+                  h('span', { style: styles.patternSlot }, item.slot),
+                  h('strong', null, item.name),
+                  h('span', null, item.bars + ' bars'),
+                  h('span', null, item.drumHitCount + ' hits / ' + item.noteCount + ' notes'),
+                  h('span', null, chordLabel),
+                  h('span', null, item.sectionCount + ' sections'));
+              })),
             h('div', { style: styles.songTimeline },
               arrangementTimeline.length ? arrangementTimeline.map(function (section, index) {
                 var active = pattern && section.patternIds.indexOf(pattern.id) >= 0;
@@ -2069,7 +2646,7 @@
                   h('span', null, section.sceneName));
               }) : h('span', { style: styles.muted }, 'No song sections yet.'))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-mixer-title' },
+          h('section', workspaceSectionProps('mixer', 'og-mixer-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-mixer-title', style: styles.h2 }, 'Mixer'),
               h('span', { style: styles.meta }, mixerSnapshot.soloActive ? 'solo active' : 'all tracks')),
@@ -2116,7 +2693,7 @@
                   }, 'Solo'));
               }))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-effects-title' },
+          h('section', workspaceSectionProps('effects', 'og-effects-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-effects-title', style: styles.h2 }, 'Effects'),
               h('span', { style: styles.meta }, (selectedEffectTrack && selectedEffectTrack.name || 'Track') + ' - ' + automationSnapshot.pointCount + ' points')),
@@ -2230,7 +2807,7 @@
                   'aria-label': 'Clear automation point'
                 }, 'Clear Point')))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-samples-title' },
+          h('section', workspaceSectionProps('samples', 'og-samples-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-samples-title', style: styles.h2 }, 'Samples'),
               h('span', { style: styles.meta }, sampleAssets.length + ' assets')),
@@ -2272,7 +2849,7 @@
             h('div', { style: licenseReport.exportSafe ? styles.license : styles.warning },
               (licenseReport.exportSafe ? 'Export rights clear.' : licenseReport.warnings.join(' ')) + ' Embedded: ' + storageReport.embeddedCount + ' / ' + Math.round((storageReport.embeddedBytes || 0) / 1024) + ' KB' + ' Slices: ' + (storageReport.slicedPadCount || 0))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-stems-title' },
+          h('section', workspaceSectionProps('stems', 'og-stems-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-stems-title', style: styles.h2 }, 'Stem Prep'),
               h('span', { style: styles.meta }, stemGroups.length + ' sets')),
@@ -2322,7 +2899,7 @@
                   h('span', null, group.groupId));
               }) : h('span', { style: styles.muted }, 'No stem sets prepared yet.'))),
 
-          h('section', { style: styles.surface, 'aria-labelledby': 'og-project-title' },
+          h('section', workspaceSectionProps('project', 'og-project-title'),
             h('div', { style: styles.sectionHeader },
               h('h2', { id: 'og-project-title', style: styles.h2 }, 'Project'),
               h('span', { style: styles.meta }, project.title)),
@@ -2332,7 +2909,8 @@
               h('button', { style: styles.smallButton, onClick: loadProjectFromText }, 'Load Text'),
               h('button', { style: styles.smallButton, onClick: downloadProject }, 'Download'),
               h('button', { style: styles.smallButton, onClick: prepareMusicXml }, 'MusicXML'),
-              h('button', { style: styles.smallButton, onClick: downloadMidi }, 'MIDI')),
+              h('button', { style: styles.smallButton, onClick: downloadMidi }, 'Pattern MIDI'),
+              h('button', { style: styles.smallButton, onClick: downloadSongMidi }, 'Song MIDI')),
             h('textarea', {
               ref: jsonRef,
               defaultValue: '',
@@ -2374,42 +2952,51 @@
       padding: '18px'
     },
     header: {
-      minHeight: '64px',
       padding: '12px 16px',
       borderBottom: '1px solid #d1d5db',
-      display: 'flex',
-      gap: '12px',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexWrap: 'wrap',
+      display: 'grid',
+      gap: '10px',
+      alignItems: 'stretch',
       background: '#ffffff'
     },
+    headerTop: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', minWidth: 0 },
+    headerTitleBlock: { minWidth: 0, overflowWrap: 'anywhere' },
     eyebrow: { fontSize: '11px', color: '#0f766e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0 },
-    title: { fontSize: '20px', letterSpacing: 0 },
-    subtitle: { color: '#475569', fontSize: '12px', fontWeight: 700, marginTop: '2px' },
-    transport: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' },
-    transportButton: { minHeight: '38px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 12px', fontWeight: 800, cursor: 'pointer' },
+    title: { display: 'block', fontSize: '20px', lineHeight: 1.2, letterSpacing: 0 },
+    subtitle: { color: '#475569', fontSize: '12px', fontWeight: 700, lineHeight: 1.35, marginTop: '2px' },
+    transport: { display: 'flex', alignItems: 'stretch', gap: '8px', flexWrap: 'wrap', minWidth: 0, width: '100%' },
+    transportButton: { minHeight: '40px', minWidth: '78px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '6px 12px', fontWeight: 800, lineHeight: 1.15, whiteSpace: 'normal', boxSizing: 'border-box', cursor: 'pointer' },
     loopButtonOn: { background: '#ccfbf1', border: '1px solid #0f766e', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
-    tempoLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
-    tempoInput: { width: '70px', height: '34px', border: '1px solid #9ca3af', padding: '0 8px', fontWeight: 800 },
-    swingLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
-    swingSlider: { width: '92px', accentColor: '#0f766e' },
+    tempoLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 96px', maxWidth: '132px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
+    tempoInput: { width: '72px', minHeight: '34px', border: '1px solid #9ca3af', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
+    swingLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '2 1 168px', maxWidth: '230px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
+    swingSlider: { flex: '1 1 78px', minWidth: '78px', accentColor: '#0f766e' },
     swingValue: { minWidth: '34px', color: '#475569', fontSize: '12px', fontWeight: 900 },
-    themeLabel: { minHeight: '38px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 800 },
-    themeSelect: { minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800 },
-    iconButton: { width: '38px', height: '38px', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, cursor: 'pointer' },
+    themeLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 154px', maxWidth: '232px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
+    themeSelect: { maxWidth: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
+    iconButton: { flex: '0 0 auto', width: '40px', minWidth: '40px', height: '40px', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, lineHeight: 1, cursor: 'pointer' },
     playheadPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '10px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#f8fafc' },
     playheadTrack: { position: 'relative', minHeight: '16px', border: '1px solid #64748b', background: '#e2e8f0', overflow: 'hidden' },
     playheadFill: { position: 'absolute', inset: '0 auto 0 0', background: '#0f766e' },
     playheadLine: { position: 'absolute', top: '-3px', bottom: '-3px', width: '3px', background: '#111827', transform: 'translateX(-1px)' },
     playheadStatus: { color: '#334155', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
+    workspaceBar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '8px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#ffffff' },
+    workspaceLabel: { color: '#334155', fontSize: '12px', fontWeight: 900 },
+    workspaceTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', minWidth: 0 },
+    workspaceTab: { minHeight: '34px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '5px 6px', fontSize: '12px', fontWeight: 900, lineHeight: 1.15, overflowWrap: 'anywhere', cursor: 'pointer' },
+    workspaceTabOn: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
+    workspaceJump: { minHeight: '34px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 900, minWidth: 0 },
+    workspaceJumpSelect: { minWidth: 0, width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
+    workspaceSummary: { color: '#475569', fontSize: '12px', fontWeight: 800, lineHeight: 1.3, overflowWrap: 'anywhere' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '12px', padding: '12px', overflow: 'auto' },
     surface: { background: '#ffffff', border: '1px solid #d1d5db', padding: '12px', minWidth: 0 },
+    hiddenSection: { display: 'none' },
     sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' },
     h2: { margin: 0, fontSize: '16px', letterSpacing: 0 },
     meta: { color: '#475569', fontSize: '12px', fontWeight: 700, overflowWrap: 'anywhere' },
     formRow: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' },
     fieldLabel: { display: 'grid', gap: '4px', color: '#334155', fontSize: '12px', fontWeight: 800 },
+    compactField: { display: 'grid', gap: '4px', color: '#334155', fontSize: '11px', fontWeight: 900, minWidth: 0 },
     select: { width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800 },
     chipRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' },
     chip: { minWidth: '34px', minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', fontSize: '12px', fontWeight: 900 },
@@ -2420,6 +3007,17 @@
     staffEditor: { display: 'grid', gap: '8px', marginBottom: '10px' },
     staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
+    bridgePanel: { display: 'grid', gap: '8px', marginBottom: '10px' },
+    bridgeHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', color: '#0f172a', fontSize: '13px' },
+    bridgeSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(42px, 1fr))', gap: '5px' },
+    bridgeStepCell: { minHeight: '48px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', display: 'grid', alignContent: 'space-between', gap: '3px', padding: '5px', textAlign: 'left', cursor: 'pointer' },
+    bridgeStepCellOn: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', boxShadow: 'inset 0 0 0 1px #0f766e' },
+    bridgeStepCellDrum: { border: '1px solid #a16207', background: '#fef3c7', color: '#78350f' },
+    bridgeStepNumber: { fontSize: '10px', fontWeight: 900, color: 'inherit' },
+    bridgeStepContent: { display: 'grid', gap: '2px', minHeight: '18px', fontSize: '10px', fontWeight: 900, overflowWrap: 'anywhere' },
+    bridgeNotePill: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '16px', border: '1px solid currentColor', padding: '0 3px', fontSize: '10px', lineHeight: 1.1 },
+    bridgeRows: { display: 'grid', gap: '5px' },
+    bridgeRow: { display: 'grid', gridTemplateColumns: 'minmax(46px, 0.7fr) repeat(4, minmax(54px, 1fr))', gap: '5px', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', fontWeight: 800, overflowWrap: 'anywhere' },
     notationComposer: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(118px, 0.45fr)', gap: '8px', alignItems: 'end', marginBottom: '8px' },
     notationTextarea: { width: '100%', minHeight: '54px', resize: 'vertical', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '7px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
     barTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' },
@@ -2453,10 +3051,28 @@
     noteSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(24px, 1fr))', gap: '4px' },
     noteStep: { height: '30px', border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#111827', fontSize: '12px', fontWeight: 900, cursor: 'pointer' },
     noteStepOn: { background: '#67e8f9', border: '1px solid #0e7490' },
+    keyboardControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(94px, 1fr))', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    keyboardKeys: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(42px, 1fr))', gap: '4px', alignItems: 'stretch' },
+    keyboardKey: { minHeight: '74px', border: '1px solid #94a3b8', padding: '7px 4px', display: 'grid', alignContent: 'space-between', justifyItems: 'center', gap: '3px', fontSize: '12px', fontWeight: 900, cursor: 'pointer', overflowWrap: 'anywhere' },
+    keyboardKeyWhite: { background: '#ffffff', color: '#0f172a' },
+    keyboardKeyBlack: { background: '#111827', color: '#ffffff', border: '1px solid #111827' },
+    keyboardKeyOutside: { boxShadow: 'inset 0 -4px 0 #fbbf24' },
+    keyboardKeyHint: { minHeight: '16px', color: 'inherit', opacity: 0.72, fontSize: '10px', fontWeight: 900 },
+    recordButtonOn: { background: '#dcfce7', border: '1px solid #15803d', color: '#14532d', boxShadow: 'inset 0 0 0 2px #15803d' },
     patchGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))', gap: '8px' },
     patchActions: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px' },
+    instrumentProfile: { marginTop: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#1e293b', padding: '8px', display: 'grid', gap: '7px', fontSize: '12px', lineHeight: 1.35, overflowWrap: 'anywhere' },
+    instrumentProfileHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' },
+    instrumentProfileGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(106px, 1fr))', gap: '6px' },
+    instrumentProfileChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', padding: '4px 6px', fontWeight: 900 },
+    instrumentProfileText: { margin: 0, color: 'inherit', fontSize: '12px', fontWeight: 800 },
+    instrumentProfileFooter: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(104px, auto)', gap: '8px', alignItems: 'center' },
     timeline: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' },
     songControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', marginBottom: '10px' },
+    patternLauncher: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: '8px', marginBottom: '10px' },
+    patternPad: { minHeight: '112px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#111827', padding: '8px', display: 'grid', gap: '5px', alignContent: 'start', textAlign: 'left', fontSize: '12px', lineHeight: 1.2, fontWeight: 800, cursor: 'pointer', overflowWrap: 'anywhere' },
+    patternPadActive: { border: '1px solid #0f766e', background: '#ccfbf1', boxShadow: 'inset 0 0 0 2px #0f766e' },
+    patternSlot: { width: '28px', minHeight: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #0f766e', background: '#ecfeff', color: '#0f172a', fontWeight: 900 },
     songTimeline: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' },
     songSection: { minHeight: '78px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#111827', padding: '8px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px', textAlign: 'left', fontSize: '12px', fontWeight: 800, cursor: 'pointer' },
     songSectionActive: { background: '#dcfce7', border: '1px solid #15803d', boxShadow: 'inset 0 0 0 2px #15803d' },
@@ -2491,7 +3107,7 @@
     learningNote: { margin: '0 0 10px', color: '#334155', fontSize: '12px', lineHeight: 1.45 },
     barCell: { minHeight: '74px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px', fontSize: '12px' },
     license: { marginTop: '10px', color: '#166534', fontWeight: 800, fontSize: '12px' },
-    projectButtons: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', marginBottom: '10px' },
+    projectButtons: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(98px, 1fr))', gap: '6px', marginBottom: '10px' },
     smallButton: { minHeight: '32px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '0 10px', fontWeight: 800, cursor: 'pointer' },
     wideButton: { width: '100%', minHeight: '34px', border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', padding: '0 10px', fontWeight: 900, cursor: 'pointer' },
     disabledButton: { opacity: 0.45, cursor: 'not-allowed' },
@@ -2551,13 +3167,28 @@
       playheadFill: { background: '#2dd4bf' },
       playheadLine: { background: '#facc15' },
       playheadStatus: { color: '#e2e8f0' },
+      workspaceBar: { background: '#111827', borderBottom: '1px solid #64748b' },
+      workspaceLabel: { color: '#e2e8f0' },
+      workspaceTab: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
+      workspaceTabOn: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      workspaceJump: { color: '#e2e8f0' },
+      workspaceJumpSelect: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
+      workspaceSummary: { color: '#cbd5e1' },
       surface: { background: '#111827', border: '1px solid #64748b' },
       meta: { color: '#cbd5e1' },
       fieldLabel: { color: '#e2e8f0' },
+      compactField: { color: '#e2e8f0' },
       select: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
       chip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
       theoryCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      instrumentProfile: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      instrumentProfileChip: { border: '1px solid #94a3b8', background: '#1e293b', color: '#f8fafc' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
+      bridgeHeader: { color: '#f8fafc' },
+      bridgeStepCell: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
+      bridgeStepCellOn: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 1px #5eead4' },
+      bridgeStepCellDrum: { border: '1px solid #fde68a', background: '#713f12', color: '#fef3c7' },
+      bridgeRow: { borderTop: '1px solid #64748b', color: '#e2e8f0' },
       notationTextarea: { border: '1px solid #94a3b8', background: '#020617', color: '#f8fafc' },
       barTab: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       barTabOn: { background: '#115e59', border: '1px solid #5eead4', color: '#ecfeff' },
@@ -2577,6 +3208,13 @@
       noteLabel: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
       noteStep: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
       noteStepOn: { background: '#38bdf8', border: '1px solid #bae6fd', color: '#082f49' },
+      keyboardKeyWhite: { background: '#e2e8f0', color: '#0f172a', border: '1px solid #cbd5e1' },
+      keyboardKeyBlack: { background: '#020617', color: '#f8fafc', border: '1px solid #94a3b8' },
+      keyboardKeyOutside: { boxShadow: 'inset 0 -4px 0 #facc15' },
+      recordButtonOn: { background: '#14532d', border: '1px solid #86efac', color: '#dcfce7', boxShadow: 'inset 0 0 0 2px #86efac' },
+      patternPad: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
+      patternPadActive: { border: '1px solid #5eead4', background: '#134e4a', boxShadow: 'inset 0 0 0 2px #5eead4' },
+      patternSlot: { border: '1px solid #5eead4', background: '#020617', color: '#ecfeff' },
       songSection: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
       songSectionActive: { background: '#14532d', border: '1px solid #86efac', boxShadow: 'inset 0 0 0 2px #86efac' },
       mixerRow: { border: '1px solid #64748b', background: '#1f2937' },
@@ -2641,13 +3279,28 @@
       playheadFill: { background: '#ffff00' },
       playheadLine: { background: '#00ffff' },
       playheadStatus: { color: '#ffffff' },
+      workspaceBar: { background: '#000000', borderBottom: '2px solid #ffffff' },
+      workspaceLabel: { color: '#ffffff' },
+      workspaceTab: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      workspaceTabOn: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      workspaceJump: { color: '#ffffff' },
+      workspaceJumpSelect: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      workspaceSummary: { color: '#ffffff' },
       surface: { background: '#000000', border: '2px solid #ffffff' },
       meta: { color: '#ffffff' },
       fieldLabel: { color: '#ffffff' },
+      compactField: { color: '#ffffff' },
       select: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       chip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       theoryCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentProfile: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      instrumentProfileChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
+      bridgeHeader: { color: '#ffffff' },
+      bridgeStepCell: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      bridgeStepCellOn: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      bridgeStepCellDrum: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
+      bridgeRow: { borderTop: '2px solid #ffffff', color: '#ffffff' },
       notationTextarea: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       barTab: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       barTabOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },
@@ -2667,6 +3320,13 @@
       noteLabel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       noteStep: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       noteStepOn: { background: '#00ffff', border: '2px solid #ffffff', color: '#000000' },
+      keyboardKeyWhite: { background: '#ffffff', color: '#000000', border: '2px solid #ffffff' },
+      keyboardKeyBlack: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff' },
+      keyboardKeyOutside: { boxShadow: 'inset 0 -5px 0 #ffff00' },
+      recordButtonOn: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      patternPad: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      patternPadActive: { background: '#ffff00', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
+      patternSlot: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
       songSection: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       songSectionActive: { background: '#00ff66', border: '2px solid #ffffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
       mixerRow: { border: '2px solid #ffffff', background: '#000000' },

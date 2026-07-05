@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-03T20:24:09.696Z",
+  "generatedAt": "2026-07-04T05:16:38.919Z",
   "source": {
     "stemToolFileCount": 111,
     "registeredToolCount": 114,
@@ -13,8 +13,8 @@
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 24,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 1,
-    "sourcePublicDriftCount": 1,
+    "syncDriftCount": 0,
+    "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
   },
   "loadErrors": [],
@@ -314,14 +314,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 21637,
+      "htmlBytes": 21653,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 21637
+        "htmlBytes": 21653
       }
     },
     {
@@ -465,7 +465,7 @@
       "marker": "data-printingpress-command",
       "label": "PrintingPress shop dashboard",
       "ok": true,
-      "htmlBytes": 45047,
+      "htmlBytes": 45069,
       "issues": [
         {
           "toolId": "printingPress",
@@ -485,7 +485,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 45047
+        "htmlBytes": 45069
       }
     },
     {
@@ -510,14 +510,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25543,
+      "htmlBytes": 25529,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25543
+        "htmlBytes": 25529
       }
     },
     {
@@ -632,7 +632,7 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 142539,
+      "htmlBytes": 142272,
       "issues": [
         {
           "toolId": "birdLab",
@@ -657,7 +657,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 142539
+        "htmlBytes": 142272
       }
     },
     {
@@ -699,7 +699,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17203,
+      "htmlBytes": 17205,
       "issues": [
         {
           "toolId": "playlab",
@@ -728,7 +728,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 17203
+        "htmlBytes": 17205
       }
     },
     {
@@ -902,14 +902,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47687,
+      "htmlBytes": 47636,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47687
+        "htmlBytes": 47636
       }
     },
     {
@@ -954,14 +954,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 69049,
+      "htmlBytes": 69070,
       "issues": [],
       "metrics": {
         "buttons": 58,
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 69049
+        "htmlBytes": 69070
       }
     },
     {
@@ -1158,44 +1158,8 @@
     }
   ],
   "sync": {
-    "drift": [
-      {
-        "file": "stem_tool_rocks.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "BD8972314264",
-          "public": "AAD3D827749D",
-          "build": "AAD3D827749D"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
-    "sourcePublicDrift": [
-      {
-        "file": "stem_tool_rocks.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "BD8972314264",
-          "public": "AAD3D827749D",
-          "build": "AAD3D827749D"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
+    "drift": [],
+    "sourcePublicDrift": [],
     "monitoredDrift": []
   },
   "topFindings": [

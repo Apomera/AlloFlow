@@ -247,7 +247,9 @@ function PersonaChatView(props) {
                                                                             const currentGlobalIdx = sentenceCounter;
                                                                             sentenceCounter++;
                                                                             const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-                                                                            const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+                                                                            // TTS plays multi-sentence chunks for voice consistency; chunkRanges maps chunk idx → sentence range
+                                                                            const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+                                                                            const isActive = isMessagePlaying && (_activeRange ? (currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1]) : currentGlobalIdx === playbackState.currentIdx);
                                                                             const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
                                                                             const isHeader = s.trim().startsWith('#') || isHtmlHeader;
                                                                             const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
@@ -376,7 +378,7 @@ function PersonaChatView(props) {
                                             <input aria-label={t('common.enter_persona_input')}
                                                 value={personaInput}
                                                 onChange={(e) => setPersonaInput(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handlePanelChatSubmit(personaInput)}
+                                                onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit(personaInput)}
                                                 className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
                                                 placeholder={t('persona.panel_question_placeholder')}
                                                 disabled={personaState.isLoading}
@@ -410,10 +412,12 @@ function PersonaChatView(props) {
                                             <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto space-y-4">
+                                            {typeof reflectionFeedback.score === 'number' && (
                                             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
                                                 <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
                                                 <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
                                             </div>
+                                            )}
                                             <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
                                                 <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"><Star size={24} className="fill-current" /></div>
                                                 <div>
@@ -423,7 +427,7 @@ function PersonaChatView(props) {
                                             </div>
                                             <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
-                                                <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
+                                                <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                             </div>
                                         </div>
                                         <div className="mt-6">
@@ -752,7 +756,8 @@ function PersonaChatView(props) {
                                                              const currentGlobalIdx = sentenceCounter;
                                                              sentenceCounter++;
                                                              const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-                                                             const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+                                                             const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+                                                             const isActive = isMessagePlaying && (_activeRange ? (currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1]) : currentGlobalIdx === playbackState.currentIdx);
                                                              const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
                                                              const isHeader = s.trim().startsWith('#') || isHtmlHeader;
                                                              const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
@@ -828,7 +833,7 @@ function PersonaChatView(props) {
                                     type="text"
                                     value={personaInput}
                                     onChange={(e) => setPersonaInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit()}
+                                    onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePersonaChatSubmit()}
                                     placeholder={t('persona.character_question_placeholder', {name: personaState.selectedCharacter?.name})}
                                     className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
                                     autoFocus
@@ -863,10 +868,12 @@ function PersonaChatView(props) {
                                         <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto space-y-4">
+                                        {typeof reflectionFeedback.score === 'number' && (
                                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
                                             <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
                                             <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
                                         </div>
+                                        )}
                                         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
                                             <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md">
                                                 <Star size={24} className="fill-current" />
@@ -880,7 +887,7 @@ function PersonaChatView(props) {
                                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                                                 <MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}
                                             </h4>
-                                            <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
+                                            <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
                                         </div>
                                     </div>
                                     <div className="mt-6">
