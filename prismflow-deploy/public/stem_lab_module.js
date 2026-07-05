@@ -3920,6 +3920,11 @@
                 id: 'dataLab', icon: '\uD83D\uDCCA', label: 'Data Lab',
                 desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
                 color: 'indigo', ready: true
+              },
+              {
+                id: 'simShelf', icon: '\uD83E\uDDEA', label: 'Sim Shelf',
+                desc: 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
+                color: 'amber', ready: true
               }
             ];
             // ── Tool search filter ──
@@ -3932,7 +3937,8 @@
               anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
               solarSystem: 'solar system explorer planets astronomy space orbit orrery',
               accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
-              dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes'
+              dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
+              simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive'
             };
             function _normalizeToolSearchText(value) {
               return String(value || '')
@@ -5369,7 +5375,10 @@
             arccity: true,
             // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
             // (launcher + AI bridge live in stem_tool_datalab.js).
-            dataLab: true
+            dataLab: true,
+            // Jul 2026: Sim Shelf — PhET companion window + POE coach
+            // (launcher + AI bridge live in stem_tool_simshelf.js).
+            simShelf: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

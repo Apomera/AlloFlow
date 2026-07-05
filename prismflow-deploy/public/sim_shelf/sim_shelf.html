@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Sim Shelf</title>
+<!--
+  AlloFlow Sim Shelf — PhET simulations + Predict-Explore-Explain coach
+  (companion window).
+
+  Opened by stem_lab/stem_tool_simshelf.js with window.open (the escape-hatch
+  pattern: a TOP-LEVEL browsing context, unaffected by Gemini Canvas's
+  sandboxed iframe).
+
+  The simulations are PhET Interactive Simulations from the University of
+  Colorado Boulder (phet.colorado.edu) — free, open, and among the most
+  rigorously researched educational software anywhere. Credit and thanks to
+  the PhET team. Sims load from phet.colorado.edu via their standard embed
+  URLs (internet required; several sims also ship PhET's own inclusive
+  features — keyboard navigation, interactive descriptions, sonification).
+
+  The AlloFlow layer is a PREDICT → EXPLORE → EXPLAIN coach (the well-
+  evidenced POE model). The sim is a sealed box to us — no internals — so the
+  coach brackets it: students commit a prediction BEFORE exploring, then
+  explain what they observed, and (only when the teacher has AI hints on) the
+  opener AlloFlow window relays a Socratic comparison of prediction vs.
+  observation. With AI off or standalone, built-in reflection prompts do the
+  bracketing. Nothing here is persisted; predictions live in this window only.
+-->
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #f59e0b; --accent2: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11.5px; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
+  .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
+  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #fcd34d; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
+  .ai-state .on { color: var(--ok); font-weight: 700; }
+  .ai-state .off { color: var(--warn); font-weight: 700; }
+  .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button[aria-selected="true"] { background: #78350f; color: #fde68a; border-color: var(--accent); }
+  .steps button.done { color: var(--ok); }
+  .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  .locked { background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
+  .locked b { color: var(--ok); }
+  ul.hints { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
+  .feedback { background: var(--panel2); border: 1px solid #4c1d95; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
+  .sim { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
+  .sim iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+  .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; }
+  .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .simcard:hover { border-color: var(--accent); }
+  .simcard .emoji { font-size: 26px; }
+  .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
+  .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
+  @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧪 Sim Shelf</h1>
+  <span class="sub">PhET Interactive Simulations (University of Colorado Boulder) + AlloFlow Predict-Explore-Explain coach</span>
+  <select id="simSelect" aria-label="Choose a simulation"><option value="">Choose a simulation…</option></select>
+</header>
+<div class="wrap">
+  <aside class="coach" aria-label="Predict Explore Explain coach">
+    <h2>Lab coach</h2>
+    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="steps" role="tablist" aria-label="Lab steps">
+      <button id="tabPredict" role="tab" aria-selected="true">1 · Predict</button>
+      <button id="tabExplore" role="tab" aria-selected="false">2 · Explore</button>
+      <button id="tabExplain" role="tab" aria-selected="false">3 · Explain</button>
+    </div>
+    <div class="body" id="coachBody">
+      <div class="qcard">Pick a simulation to start. The coach will ask you to <b>predict before you touch anything</b> — that’s where the learning hides.</div>
+    </div>
+    <div class="privacy">Predictions and explanations live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
+  </aside>
+  <main class="sim" aria-label="Simulation">
+    <iframe id="simFrame" title="PhET simulation" allow="fullscreen"></iframe>
+    <div class="picker" id="picker">
+      <h2>Pick a simulation — each one is a tiny laboratory. Predict first, then play.</h2>
+      <div class="grid" id="pickerGrid"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Curated PhET catalog (standard embed URLs; several include PhET's own
+  //    inclusive features like keyboard nav + interactive description) ──────
+  var SIMS = [
+    { slug: 'forces-and-motion-basics', emoji: '🛒', name: 'Forces & Motion: Basics', topics: 'push, pull, friction, net force', grades: '3–8',
+      predict: 'Two teams pull a cart in tug-of-war. If the left team has one MORE puller than the right, what happens to the cart — and what happens if both teams are equal?',
+      hints: ['Try the Net Force tab first', 'Watch the sum-of-forces arrow', 'Then try Friction: what stops a sliding box?'],
+      explain: 'What did the cart actually do when forces were unequal vs. equal? When did things stop moving?' },
+    { slug: 'energy-skate-park-basics', emoji: '🛹', name: 'Energy Skate Park: Basics', topics: 'kinetic & potential energy, conservation', grades: '4–9',
+      predict: 'A skater starts at the TOP of a U-ramp. How high will they reach on the other side — higher, lower, or the same? What if there’s friction?',
+      hints: ['Turn on the bar graph', 'Drag the skater higher and lower', 'Add friction on the Friction tab'],
+      explain: 'Where was kinetic energy biggest? Where was potential biggest? What did friction change?' },
+    { slug: 'projectile-motion', emoji: '🎯', name: 'Projectile Motion', topics: 'trajectories, angle, air resistance', grades: '6–12',
+      predict: 'To hit a target far away, is 45° always the best launch angle? What will air resistance do to that answer?',
+      hints: ['Fire at 30°, 45°, 60° with the same speed', 'Turn air resistance on and repeat', 'Try a heavier projectile'],
+      explain: 'Which angle went farthest with air off — and with air on? Why might they differ?' },
+    { slug: 'wave-on-a-string', emoji: '〰️', name: 'Wave on a String', topics: 'amplitude, frequency, reflection', grades: '5–10',
+      predict: 'If you wiggle the string FASTER (higher frequency), what happens to the distance between wave crests?',
+      hints: ['Try Oscillate mode', 'Change frequency, watch wavelength', 'Try a fixed end vs a loose end — what reflects?'],
+      explain: 'What happened to wavelength as frequency rose? What surprised you about reflections?' },
+    { slug: 'circuit-construction-kit-dc-virtual-lab', emoji: '🔋', name: 'Circuit Kit (DC)', topics: 'circuits, current, voltage, resistance', grades: '5–12',
+      predict: 'Two bulbs: wired one-after-another (series) vs side-by-side (parallel). Which setup makes brighter bulbs — and what happens when you unscrew one?',
+      hints: ['Build both circuits', 'Add an ammeter — where is current biggest?', 'Remove one bulb from each circuit'],
+      explain: 'Which was brighter and why do you think so? What happened to the OTHER bulb when one was removed?' },
+    { slug: 'bending-light', emoji: '🌈', name: 'Bending Light', topics: 'refraction, reflection, Snell’s law', grades: '6–12',
+      predict: 'A laser goes from air into water at an angle. Does the beam bend TOWARD or AWAY from the surface line (normal)? What about water into air?',
+      hints: ['Shine air → water, then water → air', 'Find the angle where light stops leaving the water', 'Try the prism tab with white light'],
+      explain: 'Which way did it bend each time? What happened at steep angles from water to air?' },
+    { slug: 'states-of-matter-basics', emoji: '🧊', name: 'States of Matter: Basics', topics: 'particles, temperature, phase change', grades: '4–9',
+      predict: 'When ice melts into water, what changes about the PARTICLES themselves — their size, their speed, or their arrangement?',
+      hints: ['Heat and cool each substance', 'Watch particle motion closely at each phase', 'Compare neon vs water'],
+      explain: 'What actually changed as things melted and boiled? What stayed the same?' },
+    { slug: 'balancing-chemical-equations', emoji: '⚖️', name: 'Balancing Chemical Equations', topics: 'conservation of atoms, coefficients', grades: '7–12',
+      predict: 'In a chemical reaction, can atoms disappear? If H₂ + O₂ → H₂O won’t balance as written, what are you allowed to change — and what must you never change?',
+      hints: ['Use the balance-scale view', 'Only coefficients budge — never subscripts', 'Try the game mode when ready'],
+      explain: 'What rule kept every equation honest? What was your trick for the hard one?' },
+    { slug: 'ph-scale-basics', emoji: '🧪', name: 'pH Scale: Basics', topics: 'acids, bases, dilution', grades: '6–10',
+      predict: 'If you add water to something very acidic (like lemon juice), does its pH go up, down, or stay the same? Can water alone make it a base?',
+      hints: ['Test a few liquids', 'Dilute an acid with lots of water', 'Watch how far pH can move'],
+      explain: 'What did dilution really do — and what could it never do?' },
+    { slug: 'density', emoji: '🛁', name: 'Density', topics: 'mass, volume, floating & sinking', grades: '5–9',
+      predict: 'A small heavy block and a big light block: which floats? What single number decides it?',
+      hints: ['Compare same-mass vs same-volume blocks', 'Watch the water displacement', 'Find something that JUST barely floats'],
+      explain: 'What number decided float-or-sink? How did the water level help you measure?' },
+    { slug: 'gravity-and-orbits', emoji: '🪐', name: 'Gravity and Orbits', topics: 'gravity, orbits, mass', grades: '5–10',
+      predict: 'If the Sun suddenly got twice as heavy, what would happen to Earth’s orbit? And if gravity switched off entirely?',
+      hints: ['Toggle gravity off — watch the path', 'Drag the Sun’s mass up and down', 'Try the Moon view'],
+      explain: 'What actually happened to the orbit in each experiment? What kept surprising you?' },
+    { slug: 'natural-selection', emoji: '🐰', name: 'Natural Selection', topics: 'mutation, selection, environment', grades: '6–12',
+      predict: 'White bunnies on white snow, then the world turns brown. What happens to the bunny population over generations — and why?',
+      hints: ['Add a fur-color mutation', 'Introduce wolves', 'Switch the environment color'],
+      explain: 'Which traits won in which world? What did the predators actually change?' },
+    { slug: 'fraction-matcher', emoji: '🍕', name: 'Fraction Matcher', topics: 'equivalent fractions, number sense', grades: '2–6',
+      predict: 'Can two fractions with totally different numbers — like 2/4 and 3/6 — be the SAME amount? How would you prove it with a picture?',
+      hints: ['Match pictures to numbers', 'Look for different names of the same amount', 'Try mixed numbers when ready'],
+      explain: 'How did you spot equivalent fractions quickly? What picture convinced you most?' },
+    { slug: 'area-model-multiplication', emoji: '🟩', name: 'Area Model Multiplication', topics: 'multiplication, partial products', grades: '3–7',
+      predict: 'Why might 23 × 15 be easier if you split it into 20×15 plus 3×15? What picture shows that split?',
+      hints: ['Build 23 × 15 as a rectangle', 'Split it into friendly pieces', 'Compare with the standard algorithm'],
+      explain: 'How did the rectangle explain the shortcut? Where do the “partial products” live in the picture?' },
+    { slug: 'graphing-lines', emoji: '📈', name: 'Graphing Lines', topics: 'slope, intercept, y = mx + b', grades: '6–10',
+      predict: 'In y = mx + b, what happens to the line if you make m negative? If you only change b?',
+      hints: ['Play with the slope tool', 'Race in Line Game mode', 'Make two lines that never touch'],
+      explain: 'What does m really control? What does b really control? How do parallel lines relate?' },
+    { slug: 'plinko-probability', emoji: '🎲', name: 'Plinko Probability', topics: 'probability, distributions', grades: '6–12',
+      predict: 'Drop 100 balls through the peg board. Will they land evenly across the bins, or pile up somewhere? Sketch your guess.',
+      hints: ['Drop one ball, then hundreds', 'Watch the histogram grow', 'Move the drop position'],
+      explain: 'What shape appeared and why might middle paths be more common than edge paths?' }
+  ];
+
+  // PhET locale support: swap the _en suffix when AlloFlow passes a language
+  // it publishes. Fallback is always English.
+  var PHET_LOCALES = { en: 'en', es: 'es', fr: 'fr', pt: 'pt', ar: 'ar', zh: 'zh_CN', vi: 'vi', ru: 'ru', de: 'de', ht: 'ht', so: 'so', uk: 'uk' };
+  var params = new URLSearchParams(window.location.search);
+  var locale = PHET_LOCALES[(params.get('lang') || 'en').split('-')[0]] || 'en';
+
+  function simUrl(slug) {
+    return 'https://phet.colorado.edu/sims/html/' + slug + '/latest/' + slug + '_' + locale + '.html';
+  }
+
+  // ── State (in-memory only) ──────────────────────────────────────────
+  var current = null;           // current sim object
+  var perSim = {};              // slug → {prediction, locked, explanation, feedback}
+  var step = 'predict';
+  var aiAvailable = false, openerOk = false, busy = false;
+
+  var simFrame = document.getElementById('simFrame');
+  var picker = document.getElementById('picker');
+  var pickerGrid = document.getElementById('pickerGrid');
+  var simSelect = document.getElementById('simSelect');
+  var coachBody = document.getElementById('coachBody');
+  var aiStateEl = document.getElementById('aiState');
+  var tabs = { predict: document.getElementById('tabPredict'), explore: document.getElementById('tabExplore'), explain: document.getElementById('tabExplain') };
+
+  // ── Opener AI bridge (Video Studio / Data Lab pattern) ──────────────
+  var pending = {};
+  function toOpener(payload) {
+    try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
+    return false;
+  }
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'allosimshelf-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
+    if (data.type === 'allosimshelf-ai-response' && data.id && pending[data.id]) {
+      var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
+    }
+  });
+  function askAi(simName, prediction, explanation) {
+    var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return new Promise(function (resolve) {
+      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000) };
+      var sent = toOpener({ type: 'allosimshelf-ai-request', id: id, sim: simName, prediction: prediction, explanation: explanation });
+      if (!sent) { var e = pending[id]; delete pending[id]; if (e) clearTimeout(e.timer); resolve(null); }
+    });
+  }
+
+  var REFLECT_BANK = [
+    'Where exactly did your prediction and the sim disagree? Pin down the one moment it surprised you.',
+    'If a younger student made your original prediction, what experiment in this sim would you show them first?',
+    'What is one variable you did NOT change yet? Predict its effect — then go test it.',
+    'Say your explanation out loud without the word “it”. Naming the things precisely often reveals the gap.',
+    'What would have to be true about the world for your ORIGINAL prediction to have been right?'
+  ];
+  var reflectIndex = Math.floor(Math.random() * REFLECT_BANK.length);
+  function nextReflect() { reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length; return REFLECT_BANK[reflectIndex]; }
+
+  function renderAiState() {
+    aiStateEl.innerHTML = openerOk
+      ? (aiAvailable ? 'AlloFlow connected · AI coach <span class="on">on</span>' : 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in reflection prompts')
+      : 'Standalone — built-in reflection prompts (open from AlloFlow for the AI coach)';
+  }
+
+  // ── Coach panel rendering ───────────────────────────────────────────
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function setStep(next) {
+    step = next;
+    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    renderCoach();
+  }
+
+  function renderCoach() {
+    coachBody.innerHTML = '';
+    if (!current) {
+      coachBody.appendChild(el('div', { class: 'qcard' }, 'Pick a simulation to start. The coach will ask you to predict before you touch anything — that’s where the learning hides.'));
+      return;
+    }
+    var mem = perSim[current.slug] = perSim[current.slug] || { prediction: '', locked: false, explanation: '', feedback: '' };
+    if (mem.locked) tabs.predict.classList.add('done'); else tabs.predict.classList.remove('done');
+
+    if (step === 'predict') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🔮 ' + current.predict));
+      if (mem.locked) {
+        var lockedBox = el('div', { class: 'locked' });
+        lockedBox.innerHTML = '<b>Your prediction is locked in:</b>\n';
+        lockedBox.appendChild(document.createTextNode(mem.prediction));
+        coachBody.appendChild(lockedBox);
+        var toExplore = el('button', { class: 'go' }, 'On to Explore →');
+        toExplore.addEventListener('click', function () { setStep('explore'); });
+        coachBody.appendChild(toExplore);
+      } else {
+        var ta = el('textarea', { id: 'predictText', 'aria-label': 'Your prediction', placeholder: 'I predict… because…' });
+        ta.value = mem.prediction;
+        ta.addEventListener('input', function () { mem.prediction = ta.value; });
+        coachBody.appendChild(ta);
+        var lock = el('button', { class: 'go' }, '🔒 Lock in my prediction');
+        lock.addEventListener('click', function () {
+          if (!mem.prediction.trim()) { ta.focus(); return; }
+          mem.locked = true;
+          toOpener({ type: 'allosimshelf-predicted' });
+          setStep('explore');
+        });
+        coachBody.appendChild(lock);
+        coachBody.appendChild(el('div', { class: 'qcard' }, 'Why lock it? Committing to a guess BEFORE you experiment is what turns playing into science.'));
+      }
+    } else if (step === 'explore') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🧭 Explore freely. Some things to try:'));
+      var ul = el('ul', { class: 'hints' });
+      current.hints.forEach(function (hint) { ul.appendChild(el('li', null, hint)); });
+      coachBody.appendChild(ul);
+      if (mem.locked) {
+        var remind = el('div', { class: 'locked' });
+        remind.innerHTML = '<b>You predicted:</b>\n';
+        remind.appendChild(document.createTextNode(mem.prediction));
+        coachBody.appendChild(remind);
+      }
+      var toExplain = el('button', { class: 'go' }, 'I’ve explored — Explain →');
+      toExplain.addEventListener('click', function () { setStep('explain'); });
+      coachBody.appendChild(toExplain);
+    } else {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '📝 ' + current.explain));
+      var ta2 = el('textarea', { id: 'explainText', 'aria-label': 'What actually happened', placeholder: 'What actually happened was…' });
+      ta2.value = mem.explanation;
+      ta2.addEventListener('input', function () { mem.explanation = ta2.value; });
+      coachBody.appendChild(ta2);
+      var askBtn = el('button', { class: 'go', id: 'debriefBtn' }, aiAvailable && openerOk ? '✨ Compare with my prediction' : '🤔 Give me a reflection prompt');
+      askBtn.addEventListener('click', function () {
+        if (busy) return;
+        if (!(aiAvailable && openerOk)) {
+          mem.feedback = nextReflect();
+          renderCoach();
+          return;
+        }
+        if (!mem.explanation.trim()) { ta2.focus(); return; }
+        busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
+        askAi(current.name, mem.prediction, mem.explanation).then(function (res) {
+          var text = res && !res.error && res.text ? String(res.text).trim() : '';
+          mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
+          busy = false;
+          renderCoach();
+        });
+      });
+      coachBody.appendChild(askBtn);
+      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+    }
+  }
+
+  Object.keys(tabs).forEach(function (k) {
+    tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+  });
+
+  // ── Sim picker ──────────────────────────────────────────────────────
+  function loadSim(slug) {
+    current = SIMS.find(function (s) { return s.slug === slug; }) || null;
+    if (!current) return;
+    picker.style.display = 'none';
+    simFrame.src = simUrl(current.slug);
+    simSelect.value = current.slug;
+    document.title = 'AlloFlow Sim Shelf — ' + current.name;
+    toOpener({ type: 'allosimshelf-simopened', sim: current.slug });
+    setStep(perSim[current.slug] && perSim[current.slug].locked ? 'explore' : 'predict');
+  }
+
+  SIMS.forEach(function (sim) {
+    var opt = el('option', { value: sim.slug }, sim.emoji + ' ' + sim.name);
+    simSelect.appendChild(opt);
+    var card = el('button', { class: 'simcard', type: 'button' });
+    card.appendChild(el('div', { class: 'emoji' }, sim.emoji));
+    card.appendChild(el('div', { class: 'name' }, sim.name));
+    card.appendChild(el('div', { class: 'meta' }, sim.topics + ' · grades ' + sim.grades));
+    card.addEventListener('click', function () { loadSim(sim.slug); });
+    pickerGrid.appendChild(card);
+  });
+  simSelect.addEventListener('change', function () { if (simSelect.value) loadSim(simSelect.value); });
+
+  // ── Boot ────────────────────────────────────────────────────────────
+  var requested = params.get('sim');
+  if (requested && SIMS.some(function (s) { return s.slug === requested; })) loadSim(requested);
+  var hello = function () { toOpener({ type: 'allosimshelf-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(renderAiState, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allosimshelf-closed' }); });
+})();
+</script>
+</body>
+</html>

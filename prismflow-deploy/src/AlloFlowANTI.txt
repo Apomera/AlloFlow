@@ -5198,6 +5198,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Data Lab — CODAP (Concord Consortium, MIT) companion window
         // with a Socratic tutor; this tool is the launcher + AI bridge.
         'stem_lab/stem_tool_datalab.js',
+        // Jul 2026: Sim Shelf — PhET (CU Boulder) companion window with a
+        // Predict→Explore→Explain coach; launcher + AI bridge in the tool.
+        'stem_lab/stem_tool_simshelf.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
