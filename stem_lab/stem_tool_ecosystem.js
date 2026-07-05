@@ -1074,9 +1074,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // ── Canvas ref callback (MAJOR ENHANCEMENTS) ──
       var canvasRef = function(canvas) {
         if (!canvas) {
-          if (typeof window !== 'undefined' && window._ecosystemCanvasCleanup) window._ecosystemCanvasCleanup();
+          // React fires an inline ref (null)-then-(node) on EVERY re-render. Without
+          // deferral the whole simulation is torn down and rebuilt each time the sim
+          // pushes React state (e.g. livePopHistory) — resetting creatures continuously
+          // (the stutter). Defer teardown so an immediate re-attach cancels it; a real
+          // unmount (null with no re-attach) still cleans up after the timeout.
+          if (typeof window !== 'undefined') {
+            if (window._ecoCleanupTimer) return;
+            window._ecoCleanupTimer = setTimeout(function() {
+              window._ecoCleanupTimer = null;
+              if (window._ecosystemCanvasCleanup) window._ecosystemCanvasCleanup();
+            }, 60);
+          }
           return;
         }
+        if (typeof window !== 'undefined' && window._ecoCleanupTimer) { clearTimeout(window._ecoCleanupTimer); window._ecoCleanupTimer = null; }
         if (canvas._ecoInit) {
           if (canvas._ecoSchedule) canvas._ecoSchedule();
           return;

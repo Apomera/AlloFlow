@@ -401,11 +401,14 @@ window.StemLab = window.StemLab || {
         if (tab !== 'build' && tab !== 'transcribe') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var W = cv.width = cv.offsetWidth * 2;
-        var H = cv.height = cv.offsetHeight * 2;
-        ctx2d.scale(2, 2);
-        var w = W / 2, hh = H / 2;
-        var _tick = 0;
+        // React re-fires this inline ref on every re-render; setting cv.width (even to
+        // the same value) reallocates + CLEARS the canvas and resets the ctx transform.
+        // Only resize when the size actually changed, and persist the animation tick on
+        // the node — otherwise the helix wobble snaps back to 0 on every render (stutter).
+        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
+        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
+        var w = cv.offsetWidth, hh = cv.offsetHeight;
+        var _tick = cv._dnaTick || 0;
         var _animId = null;
         var currentAnimStep = animStep;
         var hoveredIndex = -1;
@@ -601,6 +604,7 @@ window.StemLab = window.StemLab || {
           ctx2d.fillText('Coding', startX - 18, midY + 45);
 
           _tick++;
+          cv._dnaTick = _tick; // persist across ref re-fires so the wobble stays continuous
           _animId = requestAnimationFrame(draw);
         }
         draw();
@@ -634,9 +638,9 @@ window.StemLab = window.StemLab || {
         if (tab !== 'replicate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var W = cv.width = cv.offsetWidth * 2;
-        var H = cv.height = cv.offsetHeight * 2;
-        ctx2d.scale(2, 2);
+        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
+        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
+        var W = _tw, H = _th;
         var w = W / 2, h2 = H / 2;
         var _tick = 0; var _animId = null;
         var currentReplStep = replStep;
@@ -723,9 +727,9 @@ window.StemLab = window.StemLab || {
         if (tab !== 'translate') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var W = cv.width = cv.offsetWidth * 2;
-        var H = cv.height = cv.offsetHeight * 2;
-        ctx2d.scale(2, 2);
+        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
+        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
+        var W = _tw, H = _th;
         var w = W / 2, hh = H / 2;
         var _tick = 0;
         var _animId = null;
@@ -1177,9 +1181,9 @@ window.StemLab = window.StemLab || {
         if (tab !== 'crispr') return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var W = cv.width = cv.offsetWidth * 2;
-        var H = cv.height = cv.offsetHeight * 2;
-        ctx2d.scale(2, 2);
+        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
+        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
+        var W = _tw, H = _th;
         var w = W / 2, h2 = H / 2;
         var _tick = 0; var _animId = null;
 
@@ -1483,9 +1487,9 @@ window.StemLab = window.StemLab || {
         if (!cv) return;
         var ctx2d = cv.getContext('2d');
         if (!ctx2d) return;
-        var W = cv.width = cv.offsetWidth * 2;
-        var H = cv.height = cv.offsetHeight * 2;
-        ctx2d.scale(2, 2);
+        var _tw = cv.offsetWidth * 2, _th = cv.offsetHeight * 2;
+        if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }
+        var W = _tw, H = _th;
         var w = W / 2, h2 = H / 2;
         var _tick = 0; var _animId = null;
         var start = Date.now();
