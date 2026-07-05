@@ -6680,7 +6680,7 @@
                   if (!fsEl) return;
                   var inFull = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
                   if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                  else { var rq = fsEl.requestFullscreen || fsEl.webkitRequestFullscreen || fsEl.mozRequestFullScreen; if (rq) rq.call(fsEl); }
+                  else { if (window.__alloStemFS) window.__alloStemFS(fsEl); }
                 },
                 style: {
                   position: 'absolute', top: 8, right: 8, zIndex: 100,

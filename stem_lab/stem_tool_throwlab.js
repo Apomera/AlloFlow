@@ -5072,7 +5072,7 @@ window.StemLab = window.StemLab || {
                 if (!el) return;
                 var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
                 if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
-                else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                else { if (window.__alloStemFS) window.__alloStemFS(el); }
               },
               style: {
                 position: 'absolute', top: 8, right: 8, zIndex: 5,

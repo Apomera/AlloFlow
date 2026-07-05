@@ -5922,7 +5922,7 @@ var d = labToolData.dissection || {};
               }, d.viewDorsal ? '\uD83D\uDD04 Ventral' : '\uD83D\uDD04 Dorsal'),
 
               React.createElement("button", { "aria-label": "Enter fullscreen canvas mode",
-                onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
+                onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (window.__alloStemFS) window.__alloStemFS(c); } catch (e) {} },
                 title: 'Fullscreen' + ' — Expand canvas to full screen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all active:scale-[0.97]"
               }, '\u26F6 ' + 'Fullscreen'),

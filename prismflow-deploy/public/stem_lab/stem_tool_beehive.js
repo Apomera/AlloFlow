@@ -18122,8 +18122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 if (inFull) {
                   (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
                 } else {
-                  var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-                  if (req) req.call(el);
+                  if (window.__alloStemFS) window.__alloStemFS(el);
                 }
               },
               'aria-label': __alloT('stem.beehive.toggle_fullscreen_canvas', 'Toggle fullscreen canvas'),

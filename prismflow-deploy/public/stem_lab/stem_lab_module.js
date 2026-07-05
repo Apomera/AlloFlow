@@ -94,6 +94,53 @@
       };
     }
 
+    // ── Shared "safe fullscreen" toggle for STEM tool canvases ──
+    // Real OS fullscreen only works where the host iframe grants it (document.fullscreenEnabled).
+    // Inside a sandboxed iframe (e.g. Gemini Canvas) requestFullscreen() rejects/throws
+    // "Disallowed by permissions policy" — which, left unhandled, breaks the button (the bug
+    // reported on the physics tool). window.__alloStemFS(el) toggles: in real fullscreen → exit;
+    // in CSS fill-frame → exit; else → try real (guarded, .catch), else a CSS "fill the frame"
+    // mode (wrapper → fixed/100vw/100vh with !important so React re-renders don't revert it, plus
+    // a window resize event so canvases that listen re-measure, and Escape to exit). Never throws.
+    if (typeof window !== 'undefined' && !window.__alloStemFS) {
+      var _stemFsProps = { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', width: '100vw', height: '100vh', margin: '0', 'border-radius': '0', 'z-index': '99998', background: '#0f172a' };
+      var _stemFsExit = function(el) {
+        if (!el) return;
+        el.__alloFsOn = false;
+        var s = el.style, saved = el.__alloFsSaved || {};
+        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
+        try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      var _stemFsEnter = function(el) {
+        el.__alloFsSaved = {}; el.__alloFsOn = true;
+        var s = el.style;
+        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
+        el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
+        try { document.addEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      window.__alloStemFS = function(el) {
+        if (!el) return;
+        try {
+          var realEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          if (realEl) {
+            var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+            if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function() {}); }
+            return;
+          }
+          if (el.__alloFsOn) { _stemFsExit(el); return; }
+          var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+          if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+            var pr = rq.call(el);
+            if (pr && pr.catch) pr.catch(function() { _stemFsEnter(el); });
+            return;
+          }
+          _stemFsEnter(el);
+        } catch (e) { try { if (!el.__alloFsOn) _stemFsEnter(el); } catch (e2) {} }
+      };
+    }
+
     // ── StemLab Plugin Registry (Phase 2) ──
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
@@ -549,6 +596,26 @@
             '[data-stem-lab] .bg-purple-50 { background-color: #3b0764 !important; }',
             '[data-stem-lab] .bg-emerald-50 { background-color: #064e3b !important; }',
             '[data-stem-lab] .bg-gradient-to-br.from-slate-50 { background: #0f172a !important; }',
+            // ── Fill the theme-remap gaps that left "a few panels" bright in dark mode ──
+            // (1) solid light-tint cards missing above (amber/orange/cyan/… + the -100 tints)
+            '[data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-amber-100, [data-stem-lab] .bg-orange-100, [data-stem-lab] .bg-yellow-100 { background-color: #422006 !important; }',
+            '[data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-blue-100, [data-stem-lab] .bg-indigo-100, [data-stem-lab] .bg-cyan-100, [data-stem-lab] .bg-sky-100 { background-color: #1e3a5f !important; }',
+            '[data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-green-100, [data-stem-lab] .bg-emerald-100, [data-stem-lab] .bg-teal-100 { background-color: #064e3b !important; }',
+            '[data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-red-100, [data-stem-lab] .bg-rose-100, [data-stem-lab] .bg-pink-100 { background-color: #4c0519 !important; }',
+            '[data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-purple-100, [data-stem-lab] .bg-violet-100, [data-stem-lab] .bg-fuchsia-100 { background-color: #3b0764 !important; }',
+            '[data-stem-lab] .bg-gray-50, [data-stem-lab] .bg-gray-100, [data-stem-lab] .bg-zinc-50, [data-stem-lab] .bg-neutral-50, [data-stem-lab] .bg-stone-50 { background-color: #111827 !important; }',
+            // (2) gradient cards: any light `from-*-50` start → neutral dark (only .from-slate-50 was covered).
+            //     `~=` matches the exact class token so `from-*-500` gradients (e.g. buttons) are untouched.
+            '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-zinc-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #1e293b !important; }',
+            // (3) lighten dark accent text (600–800) so headings/values stay legible on the darkened cards.
+            '[data-stem-lab] .text-blue-800, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #93c5fd !important; }',
+            '[data-stem-lab] .text-indigo-800, [data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600 { color: #a5b4fc !important; }',
+            '[data-stem-lab] .text-sky-800, [data-stem-lab] .text-sky-700, [data-stem-lab] .text-sky-600, [data-stem-lab] .text-cyan-800, [data-stem-lab] .text-cyan-700, [data-stem-lab] .text-cyan-600 { color: #7dd3fc !important; }',
+            '[data-stem-lab] .text-amber-800, [data-stem-lab] .text-amber-700, [data-stem-lab] .text-amber-600, [data-stem-lab] .text-yellow-800, [data-stem-lab] .text-yellow-700, [data-stem-lab] .text-yellow-600 { color: #fcd34d !important; }',
+            '[data-stem-lab] .text-orange-800, [data-stem-lab] .text-orange-700, [data-stem-lab] .text-orange-600 { color: #fdba74 !important; }',
+            '[data-stem-lab] .text-green-800, [data-stem-lab] .text-green-700, [data-stem-lab] .text-green-600, [data-stem-lab] .text-emerald-800, [data-stem-lab] .text-emerald-700, [data-stem-lab] .text-emerald-600, [data-stem-lab] .text-teal-800, [data-stem-lab] .text-teal-700, [data-stem-lab] .text-teal-600 { color: #6ee7b7 !important; }',
+            '[data-stem-lab] .text-purple-800, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-800, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-fuchsia-700, [data-stem-lab] .text-fuchsia-600 { color: #c4b5fd !important; }',
+            '[data-stem-lab] .text-rose-800, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-800, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fca5a5 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }',
           ].join('\n');
         } else if (isContrast) {
@@ -557,8 +624,12 @@
             '[data-stem-lab] .bg-slate-200, [data-stem-lab] .bg-slate-300 { background-color: #1a1a1a !important; color: #ffffff !important; }',
             '[data-stem-lab] .text-slate-900, [data-stem-lab] .text-slate-800, [data-stem-lab] .text-slate-700, [data-stem-lab] .text-slate-600, [data-stem-lab] .text-slate-500 { color: #ffffff !important; }',
             '[data-stem-lab] .text-indigo-700, [data-stem-lab] .text-indigo-600, [data-stem-lab] .text-blue-700, [data-stem-lab] .text-blue-600 { color: #fbbf24 !important; }',
+            // all other dark accent text → amber (mirror the -50 gap fix for contrast mode)
+            '[data-stem-lab] .text-amber-700, [data-stem-lab] .text-amber-600, [data-stem-lab] .text-orange-700, [data-stem-lab] .text-orange-600, [data-stem-lab] .text-green-700, [data-stem-lab] .text-green-600, [data-stem-lab] .text-emerald-700, [data-stem-lab] .text-emerald-600, [data-stem-lab] .text-teal-700, [data-stem-lab] .text-teal-600, [data-stem-lab] .text-cyan-700, [data-stem-lab] .text-cyan-600, [data-stem-lab] .text-sky-700, [data-stem-lab] .text-sky-600, [data-stem-lab] .text-purple-700, [data-stem-lab] .text-purple-600, [data-stem-lab] .text-violet-700, [data-stem-lab] .text-violet-600, [data-stem-lab] .text-rose-700, [data-stem-lab] .text-rose-600, [data-stem-lab] .text-pink-700, [data-stem-lab] .text-pink-600, [data-stem-lab] .text-red-700, [data-stem-lab] .text-red-600 { color: #fbbf24 !important; }',
             '[data-stem-lab] .border-slate-200, [data-stem-lab] .border-slate-100, [data-stem-lab] .border-slate-300 { border-color: #fbbf24 !important; }',
-            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            '[data-stem-lab] .bg-indigo-50, [data-stem-lab] .bg-blue-50, [data-stem-lab] .bg-green-50, [data-stem-lab] .bg-yellow-50, [data-stem-lab] .bg-red-50, [data-stem-lab] .bg-purple-50, [data-stem-lab] .bg-emerald-50, [data-stem-lab] .bg-amber-50, [data-stem-lab] .bg-orange-50, [data-stem-lab] .bg-cyan-50, [data-stem-lab] .bg-sky-50, [data-stem-lab] .bg-teal-50, [data-stem-lab] .bg-lime-50, [data-stem-lab] .bg-rose-50, [data-stem-lab] .bg-pink-50, [data-stem-lab] .bg-violet-50, [data-stem-lab] .bg-fuchsia-50, [data-stem-lab] .bg-gray-50 { background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
+            // gradient cards → solid black + amber border in contrast mode
+            '[data-stem-lab] [class~="from-white"], [data-stem-lab] [class~="from-slate-50"], [data-stem-lab] [class~="from-gray-50"], [data-stem-lab] [class~="from-amber-50"], [data-stem-lab] [class~="from-orange-50"], [data-stem-lab] [class~="from-yellow-50"], [data-stem-lab] [class~="from-blue-50"], [data-stem-lab] [class~="from-indigo-50"], [data-stem-lab] [class~="from-sky-50"], [data-stem-lab] [class~="from-cyan-50"], [data-stem-lab] [class~="from-green-50"], [data-stem-lab] [class~="from-emerald-50"], [data-stem-lab] [class~="from-teal-50"], [data-stem-lab] [class~="from-lime-50"], [data-stem-lab] [class~="from-purple-50"], [data-stem-lab] [class~="from-violet-50"], [data-stem-lab] [class~="from-fuchsia-50"], [data-stem-lab] [class~="from-pink-50"], [data-stem-lab] [class~="from-rose-50"] { background-image: none !important; background-color: #000000 !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] input, [data-stem-lab] textarea, [data-stem-lab] select { background-color: #000000 !important; color: #ffffff !important; border: 2px solid #fbbf24 !important; }',
             '[data-stem-lab] button { border: 1px solid #fbbf24 !important; }',
           ].join('\n');

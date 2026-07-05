@@ -2733,7 +2733,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       var el = document.getElementById('calc-viz-wrap');
                       if (!el) return;
                       if (document.fullscreenElement) { document.exitFullscreen(); }
-                      else if (el.requestFullscreen) { el.requestFullscreen(); }
+                      else { if (window.__alloStemFS) window.__alloStemFS(el); }
                     },
                     title: 'Toggle fullscreen',
                     'aria-label': 'Toggle fullscreen',

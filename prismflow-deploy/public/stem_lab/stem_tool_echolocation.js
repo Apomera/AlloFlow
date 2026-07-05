@@ -1682,8 +1682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
                   if (ex) ex.call(document);
                 } else {
-                  var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-                  if (rq) rq.call(el);
+                  if (window.__alloStemFS) window.__alloStemFS(el);
                 }
               },
               style: {
@@ -2046,8 +2045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
                     if (ex) ex.call(document);
                   } else {
-                    var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-                    if (rq) rq.call(el);
+                    if (window.__alloStemFS) window.__alloStemFS(el);
                   }
                 },
                 style: {

@@ -3402,7 +3402,7 @@
               try { setTimeout(function () { focusId('lumen-present-trigger'); }, 0); } catch (eR) { }
             };
             var goFullscreen = function () {
-              try { var el = document.getElementById('lumen-present-overlay'); if (el && el.requestFullscreen) el.requestFullscreen(); } catch (eF) { }
+              try { var el = document.getElementById('lumen-present-overlay'); if (window.__alloStemFS) window.__alloStemFS(el); } catch (eF) { }
             };
             // A focusable sentinel — onFocus bounces to the opposite end so Tab/Shift+Tab
             // WRAP inside the overlay (a focus trap without useEffect/useRef, which this

@@ -10334,13 +10334,7 @@ const d = labToolData.solarSystem || {};
 
                           if (!document.fullscreenElement) {
 
-                            if (container.requestFullscreen) { container.requestFullscreen(); }
-
-                            else if (container.mozRequestFullScreen) { container.mozRequestFullScreen(); }
-
-                            else if (container.webkitRequestFullscreen) { container.webkitRequestFullscreen(); }
-
-                            else if (container.msRequestFullscreen) { container.msRequestFullscreen(); }
+                            if (window.__alloStemFS) window.__alloStemFS(container);
 
                             fsToggle.innerHTML = '\xDF'; // shrink icon approximation
 
