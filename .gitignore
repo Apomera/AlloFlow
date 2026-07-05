@@ -165,6 +165,8 @@ coverage/
 
 # AlloFlow Desktop local runtime state
 desktop/.local/
+desktop/app-build/
+desktop/dist/
 
 # Proposal drafts (same rationale as outreach_*.md — personal docs, not app code)
 el_proposal*.md
@@ -177,3 +179,4 @@ dev-tools/i18n/lang_staleness/
 dev-tools/stem_i18n_report/user_facing.csv
 dev-tools/stem_i18n_report/inventory.json
 dev-tools/stem_i18n_report/ui_strings_stem_*.json
+desktop/.local/
