@@ -177,7 +177,17 @@ function UDLGuideModal(props) {
         setActiveBlueprint(null);
       }
     }
-  )), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
+  )), msg.type === "choices" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: cIdx,
+      type: "button",
+      disabled: isChatProcessing || idx !== udlMessages.length - 1,
+      onClick: () => handleSendUDLMessage(choice.value),
+      className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${chatStyles.button}`
+    },
+    choice.label
+  )))), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.refresh"),

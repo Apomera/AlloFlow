@@ -22,13 +22,13 @@ function UDLGuideModal(props) {
     renderFormattedText, saveFullChat, saveUDLAdvice, setActiveBlueprint,
     setAiStandardQuery, setAiStandardRegion, setIsBotVisible, setIsConversationMode,
     setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
-    setUdlStandardFramework, setUdlStandardGrade, showUDLGuide, suggestedStandards,
+    setUdlStandardFramework, setUdlStandardGrade, showStemLab, showUDLGuide, suggestedStandards,
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
   if (!(showUDLGuide)) return null;
   return (
-        <div className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
+        <div style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
             <div className="flex items-center gap-2 font-bold">
                <HelpCircle size={18} /> {t('chat_guide.header')}
@@ -113,6 +113,24 @@ function UDLGuideModal(props) {
                               setActiveBlueprint(null);
                           }}
                       />
+                  </div>
+              )}
+              {msg.type === 'choices' && (
+                  <div className={`max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none`}>
+                      {renderFormattedText(msg.text)}
+                      <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={t('chat_guide.header')}>
+                          {(msg.choices || []).map((choice, cIdx) => (
+                              <button
+                                  key={cIdx}
+                                  type="button"
+                                  disabled={isChatProcessing || idx !== udlMessages.length - 1}
+                                  onClick={() => handleSendUDLMessage(choice.value)}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${chatStyles.button}`}
+                              >
+                                  {choice.label}
+                              </button>
+                          ))}
+                      </div>
                   </div>
               )}
               {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (

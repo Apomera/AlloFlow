@@ -19271,20 +19271,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               lastBotQuestion: hasInput ? "mode_selection" : "cold_start",
               isFlowActive: true
           });
-          let msg = "";
           if (hasInput) {
               const snippet = sourceTopic || inputText.substring(0, 40).replace(/\n/g, ' ') + "...";
-              msg = t('chat_guide.flow.initial_prompt_context', {
+              const msg = t('chat_guide.flow.initial_prompt_context', {
                   snippet: snippet,
                   option_step: t('chat_guide.flow.option_step'),
                   option_pack: t('chat_guide.flow.option_pack'),
                   keyword_step: t('chat_guide.flow.keyword_step'),
                   keyword_pack: t('chat_guide.flow.keyword_pack')
               });
+              // 'choices' message → UDLGuideModal renders Step/Pack buttons; a
+              // button click (or typed keyword) routes deterministically in
+              // udl_chat, so "pack" can never be misread as the export command.
+              setUdlMessages(prev => [...prev, {
+                  role: 'model', type: 'choices', stage: 'initial_choice', text: msg,
+                  choices: [
+                      { label: t('chat_guide.flow.option_step') || 'Step-by-Step', value: 'step',
+                        keywords: ['step', (t('chat_guide.flow.keyword_step') || '').toLowerCase()].filter(Boolean) },
+                      { label: t('chat_guide.flow.option_pack') || 'Full Pack', value: 'pack',
+                        keywords: ['pack', 'full', 'auto', (t('chat_guide.flow.keyword_pack') || '').toLowerCase()].filter(Boolean) }
+                  ]
+              }]);
           } else {
-              msg = t('chat_guide.flow.start_scratch');
+              setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.flow.start_scratch') }]);
           }
-          setUdlMessages(prev => [...prev, { role: 'model', text: msg }]);
       } else {
           setGuidedFlowState({
               currentStage: null,
@@ -26646,7 +26656,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           isShowMeMode, isSpotlightMode, isUDLGuideExpanded, renderFormattedText, saveFullChat,
           saveUDLAdvice, setActiveBlueprint, setAiStandardQuery, setAiStandardRegion, setIsBotVisible,
           setIsConversationMode, setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
-          setUdlStandardFramework, setUdlStandardGrade, showUDLGuide, suggestedStandards, t,
+          setUdlStandardFramework, setUdlStandardGrade, showStemLab, showUDLGuide, suggestedStandards, t,
           theme, udlInput, udlInputRef, udlMessages, udlScrollRef,
           udlStandardFramework, udlStandardGrade
         })}
