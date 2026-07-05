@@ -231,6 +231,11 @@ const managedLanShare = {
 
 const lanSessions = new Map();
 const lanSessionSubscribers = new Map();
+// LAN doc store: chunked session assets (resources manifests, ref:: images)
+// written by the teacher app's uploadSessionAssets and read back by student
+// hydration. Same in-memory + TTL model as lanSessions; no SSE (read-once).
+const lanDocs = new Map();
+const MAX_LAN_DOCS = 4000;
 
 let secretStorage = {
   id: 'local-config',
@@ -740,6 +745,15 @@ function sanitizeLanSessionCode(value) {
   return String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
 }
 
+// Asset keys come from the app's makeSessionAssetId (sanitized parts joined
+// with "_", ≤420 chars, plus "_chunk_N" suffixes). Reject instead of mangle:
+// silently rewriting a key would orphan the chunk pointers stored inside
+// parent docs.
+function sanitizeLanDocKey(value) {
+  const key = String(value || '');
+  return /^[A-Za-z0-9_-]{1,512}$/.test(key) ? key : '';
+}
+
 function isDeleteFieldSentinel(value) {
   return value && typeof value === 'object' && value.__op === 'deleteField';
 }
@@ -996,6 +1010,54 @@ function deleteLanSession(code) {
   const existed = lanSessions.delete(cleanCode);
   notifyLanSessionSubscribers(cleanCode);
   return existed;
+}
+
+function compactLanDocs() {
+  const now = Date.now();
+  for (const [key, entry] of lanDocs.entries()) {
+    if (entry.expiresAtMs && entry.expiresAtMs < now) lanDocs.delete(key);
+  }
+}
+
+function serializeLanDoc(key) {
+  compactLanDocs();
+  const entry = lanDocs.get(key);
+  if (!entry) return null;
+  return {
+    id: key,
+    data: cloneJson(entry.data || {}),
+    createdAt: entry.createdAt,
+    updatedAt: entry.updatedAt,
+    expiresAt: entry.expiresAt,
+  };
+}
+
+function upsertLanDoc(key, data, options = {}, config = readConfig()) {
+  const cleanKey = sanitizeLanDocKey(key);
+  if (!cleanKey) throw new Error('That asset key is not usable (letters, digits, _ and - only).');
+  compactLanDocs();
+  const existing = lanDocs.get(cleanKey);
+  if (!existing && lanDocs.size >= MAX_LAN_DOCS) {
+    throw new Error('The LAN asset store is full. End old class sessions or restart sharing to clear it.');
+  }
+  const now = new Date();
+  const live = getLiveSessionConfig(config);
+  const ttlMinutes = sanitizePort(live.lan?.ttlMinutes, DEFAULT_CONFIG.liveSession.lan.ttlMinutes);
+  const nextData = options.merge && existing
+    ? deepMerge(existing.data || {}, data || {})
+    : cloneJson(data || {});
+  lanDocs.set(cleanKey, {
+    data: nextData,
+    createdAt: existing?.createdAt || now.toISOString(),
+    updatedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + ttlMinutes * 60 * 1000).toISOString(),
+    expiresAtMs: now.getTime() + ttlMinutes * 60 * 1000,
+  });
+  return serializeLanDoc(cleanKey);
+}
+
+function deleteLanDoc(key) {
+  return lanDocs.delete(sanitizeLanDocKey(key));
 }
 
 function notifyLanSessionSubscribers(code) {
@@ -2225,6 +2287,33 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  // LAN doc store (chunked session assets). Private runtime = the teacher's
+  // app, so create/replace/delete are allowed here and only here.
+  const lanDocMatch = url.pathname.match(/^\/api\/lan-docs\/([A-Za-z0-9_-]{1,512})$/);
+  if (lanDocMatch) {
+    const key = lanDocMatch[1];
+    if (req.method === 'GET') {
+      const docEntry = serializeLanDoc(sanitizeLanDocKey(key));
+      if (!docEntry) {
+        jsonResponse(res, 404, { error: 'Class asset not found.' });
+        return;
+      }
+      jsonResponse(res, 200, { doc: docEntry });
+      return;
+    }
+    if (req.method === 'PUT' || req.method === 'POST') {
+      const body = await readRequestJson(req);
+      jsonResponse(res, 200, { doc: upsertLanDoc(key, body.doc || body.data || {}, body.options || {}, config) });
+      return;
+    }
+    if (req.method === 'DELETE') {
+      jsonResponse(res, 200, { deleted: deleteLanDoc(key) });
+      return;
+    }
+    jsonResponse(res, 405, { error: 'Unsupported LAN doc method.' });
+    return;
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/schoolbox/setup') {
     const box = getSchoolBoxConfig(config);
     if (box.mode === 'district-server') {
@@ -2349,6 +2438,28 @@ async function handlePublicLanApi(req, res, url) {
     }
   }
 
+  // LAN doc store, student side: hydration reads only. Same PIN gate as the
+  // session endpoints — assets carry teacher resources, which is exactly the
+  // content the PIN protects.
+  const lanDocMatch = url.pathname.match(/^\/api\/lan-docs\/([A-Za-z0-9_-]{1,512})$/);
+  if (lanDocMatch && !lanPinMatches(url.searchParams.get('pin') || req.headers['x-allo-lan-pin'])) {
+    jsonResponse(res, 401, { error: 'This class needs a join PIN. Ask your teacher for it.', pinRequired: true });
+    return;
+  }
+  if (lanDocMatch) {
+    if (req.method === 'GET') {
+      const docEntry = serializeLanDoc(sanitizeLanDocKey(lanDocMatch[1]));
+      if (!docEntry) {
+        jsonResponse(res, 404, { error: 'Class asset not found.' });
+        return;
+      }
+      jsonResponse(res, 200, { doc: docEntry });
+      return;
+    }
+    jsonResponse(res, 403, { error: 'Only the teacher desktop can write class assets.' });
+    return;
+  }
+
   jsonResponse(res, 404, { error: 'Unknown LAN share endpoint.' });
 }
 
@@ -2471,6 +2582,20 @@ async function runSmoke(args) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ updates: { 'roster.student.name': 'Learner' } }),
     }).then((response) => response.json());
+    // LAN doc store (chunked session assets): teacher writes privately,
+    // students read through the share listener, never write.
+    const docPut = await fetch(baseUrl + '/api/lan-docs/asset_smoke_1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc: { kind: 'sessionResource', resource: { id: 'r1' } } }),
+    }).then((response) => response.json());
+    const docGet = await fetch(baseUrl + '/api/lan-docs/asset_smoke_1').then((response) => response.json());
+    const publicDocGet = await fetch(shareUrl + '/api/lan-docs/asset_smoke_1').then((response) => response.json());
+    const publicDocPutStatus = await fetch(shareUrl + '/api/lan-docs/asset_smoke_1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc: { kind: 'tampered' } }),
+    }).then((response) => response.status);
     const schoolBox = await fetch(baseUrl + '/api/schoolbox/status').then((response) => response.json());
     if (health.status !== 'ok') throw new Error('Health endpoint did not return ok.');
     if (!Array.isArray(providers.providers)) throw new Error('Providers endpoint did not return a provider list.');
@@ -2481,6 +2606,10 @@ async function runSmoke(args) {
     if (publicCreateStatus !== 403) throw new Error('Public LAN share allowed session creation.');
     if (publicPatch.session?.data?.roster?.student?.name !== 'Learner') throw new Error('Public LAN share could not patch a session.');
     if (!schoolBox || !schoolBox.implemented) throw new Error('School Box endpoint did not return implemented status.');
+    if (docPut.doc?.id !== 'asset_smoke_1') throw new Error('LAN doc create failed.');
+    if (docGet.doc?.data?.resource?.id !== 'r1') throw new Error('LAN doc read failed.');
+    if (publicDocGet.doc?.data?.kind !== 'sessionResource') throw new Error('Public LAN share could not read a class asset.');
+    if (publicDocPutStatus !== 403) throw new Error('Public LAN share allowed asset writes.');
     // ── Classroom PIN gate (latched at share start) ──
     await stopLanShare();
     const pinnedConfig = deepMerge(readConfig(), { liveSession: { lan: { sharePort: 0, pin: 'SMOKE-PIN' } } });
@@ -2489,6 +2618,10 @@ async function runSmoke(args) {
     const noPinStatus = await fetch(pinnedUrl + '/api/lan-sessions/SMOKE1').then((response) => response.status);
     const wrongPinStatus = await fetch(pinnedUrl + '/api/lan-sessions/SMOKE1?pin=WRONG').then((response) => response.status);
     const goodPin = await fetch(pinnedUrl + '/api/lan-sessions/SMOKE1?pin=SMOKE-PIN').then((response) => response.json());
+    const docNoPinStatus = await fetch(pinnedUrl + '/api/lan-docs/asset_smoke_1').then((response) => response.status);
+    const docGoodPin = await fetch(pinnedUrl + '/api/lan-docs/asset_smoke_1', {
+      headers: { 'x-allo-lan-pin': 'SMOKE-PIN' },
+    }).then((response) => response.json());
     const joinNoPin = await fetch(pinnedUrl + '/join/SMOKE1').then((response) => response.text());
     const joinGoodPin = await fetch(pinnedUrl + '/join/SMOKE1?pin=SMOKE-PIN').then((response) => response.text());
     if (noPinStatus !== 401) throw new Error('PIN gate did not reject a missing pin (got ' + noPinStatus + ').');
@@ -2496,6 +2629,8 @@ async function runSmoke(args) {
     if (goodPin.session?.id !== 'SMOKE1') throw new Error('PIN gate rejected the correct pin.');
     if (!/name="pin"/.test(joinNoPin)) throw new Error('Join page did not ask for the PIN.');
     if (!/allo_lan_join/.test(joinGoodPin)) throw new Error('Join page with a correct PIN did not serve the app link.');
+    if (docNoPinStatus !== 401) throw new Error('Doc PIN gate did not reject a missing pin (got ' + docNoPinStatus + ').');
+    if (docGoodPin.doc?.id !== 'asset_smoke_1') throw new Error('Doc PIN gate rejected the correct pin (header form).');
     console.log('[AlloFlow Desktop] Smoke passed at ' + baseUrl + ' (incl. LAN share isolation + PIN gate)');
   } finally {
     await stopLanShare().catch(() => {});

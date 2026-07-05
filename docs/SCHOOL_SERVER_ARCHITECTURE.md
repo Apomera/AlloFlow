@@ -53,7 +53,10 @@ construction, one contract to maintain.
 4. Firewall: 443 in from school network(s) only. No internet exposure required.
 
 ## Build order (next sessions)
-1. **In-app LAN adapter** (blocks everything; lanApiBase/lanPin already seeded).
+1. **In-app LAN adapter** — **runtime half SHIPPED 2026-07-05** (incl. new
+   `/api/lan-docs/{key}` asset bridge); app half validated (18-assert harness)
+   and staged at `desktop/app-adapter/` awaiting a free `AlloFlowANTI.txt`
+   (two-anchor insert, instructions in that folder's README).
 2. Extract `schoolbox-server` from the runtime (share-listener code path + store
    interface); smoke test = existing `--smoke` asserts run against the container.
 3. Compose profile + nginx redaction config + teacher-token gate.

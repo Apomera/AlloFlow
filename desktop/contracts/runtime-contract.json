@@ -55,6 +55,13 @@
       "networkReachability": "Local by default while the Desktop command center is bound to 127.0.0.1. Cross-device student joining uses an explicit LAN Share listener that exposes only /app/, /join/{code}, and LAN session bridge endpoints.",
       "joinRoute": "/join/{code}",
       "sessionRoutes": ["/api/lan-sessions", "/api/lan-sessions/{code}", "/api/lan-sessions/{code}/events"],
+      "docRoutes": {
+        "routes": ["/api/lan-docs/{key}"],
+        "purpose": "Chunked session assets (resources manifests, ref:: images) written by the app's uploadSessionAssets externalization and read back by student hydration — the LAN stand-in for the Firestore session_assets collection.",
+        "keyFormat": "[A-Za-z0-9_-]{1,512}; invalid keys are rejected, never rewritten",
+        "publicAccess": "GET only, behind the same join PIN as session endpoints; create/replace/delete are private-runtime (teacher) only",
+        "storage": "in-memory with the same TTL as LAN sessions; capped at 4000 docs (writes fail loudly when full)"
+      },
       "joinPin": {
         "configKey": "liveSession.lan.pin",
         "behavior": "Optional classroom join PIN. Latched onto the share listener when LAN sharing starts (change the PIN, then restart sharing to apply). When latched, the public join page asks for the PIN before serving the app link + session config, and public session read/patch/events endpoints require it via ?pin= or the x-allo-lan-pin header (401 with pinRequired:true otherwise). The validated PIN is forwarded to the app inside alloflow_live_session_config as lanPin for the future in-app LAN adapter.",
@@ -123,6 +130,9 @@
     { "method": "PATCH", "path": "/api/lan-sessions/{code}", "purpose": "Apply dotted-field classroom session updates" },
     { "method": "DELETE", "path": "/api/lan-sessions/{code}", "purpose": "End a LAN classroom session" },
     { "method": "GET", "path": "/api/lan-sessions/{code}/events", "purpose": "Subscribe to LAN classroom session updates with server-sent events" },
+    { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: PIN-gated)" },
+    { "method": "PUT", "path": "/api/lan-docs/{key}", "purpose": "Create or replace a session asset doc (private runtime only; POST accepted as alias)" },
+    { "method": "DELETE", "path": "/api/lan-docs/{key}", "purpose": "Delete a session asset doc (private runtime only; TTL cleans up otherwise)" },
     { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Embedded School Box Docker stack readiness and service status" },
     { "method": "POST", "path": "/api/schoolbox/setup", "purpose": "Create or update docker/.env for the desktop-managed School Box stack" },
     { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Start the desktop-managed School Box Docker stack" },
