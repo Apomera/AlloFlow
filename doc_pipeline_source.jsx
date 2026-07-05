@@ -806,6 +806,77 @@ var _stripRestoreMarkdown = function (s) {
     .trim();
 };
 
+// ── #F (2026-07-05): page-edge running-head / folio strip (repetition-based, per-page) ──
+// The 7/5 scanned-book test showed the folio usually rides INSIDE a running-head line ("192 Appendix E",
+// "Consumer-Responsive Report Writing 89") — a shape no whole-line-number strip can catch. Those tokens
+// polluted the OCR ground truth: the body correctly omits running heads, so the numeric-fidelity net
+// falsely reported "3 numbers changed (90, 192, 193)", and a head interposed in a page-break hyphen split
+// ("reevalu- / 92 HIGH-IMPACT… / ated") blocked the rejoin, orphaning fragments like "ated-in".
+// Detector: a page-EDGE line (first/last 2 non-empty lines) whose DIGITLESS text repeats on 2+ pages is a
+// running head/foot ("192 Appendix E" ≡ "Appendix E 193" ≡ "appendix e"); a BARE 1-4-digit edge line is a
+// folio once any such pattern exists doc-wide. Repetition is structural — nothing to calibrate — and R4's
+// protections stand: a mid-page score column or a lone title-page year never repeats at page edges.
+// Digit-bearing edge lines only, so a REAL repeated heading ("APPENDIX E") is never touched. Pure; the
+// collected folio numbers feed the numeric net + the body-leak check. Operates on page TEXTS only — the
+// per-page word boxes that draw the searchable layer are untouched.
+var _stripPageEdgeArtifacts = function (pageTexts) {
+  var texts = (pageTexts || []).map(function (t) { return String(t == null ? '' : t); });
+  var folios = [];
+  if (texts.length < 2) return { texts: texts, folios: folios }; // repetition needs 2+ pages
+  var EDGE = 2;
+  var _digitless = function (line) { return line.toLowerCase().replace(/\d{1,4}/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim(); };
+  var _isBareNum = function (line) { return /^\s*\d{1,4}\s*$/.test(line); };
+  // Pass 1: census of page-edge lines across all pages.
+  var keyPages = new Map(); // digitless key -> Set(pageIdx)
+  var perPage = texts.map(function (t, pi) {
+    var lines = t.split('\n');
+    var edgeIdx = new Set();
+    var firstIdx = -1, lastIdx = -1;
+    var seen = 0;
+    for (var i = 0; i < lines.length && seen < EDGE; i++) { if (lines[i].trim()) { if (firstIdx === -1) firstIdx = i; edgeIdx.add(i); seen++; } }
+    seen = 0;
+    for (var j = lines.length - 1; j >= 0 && seen < EDGE; j--) { if (lines[j].trim()) { if (lastIdx === -1) lastIdx = j; edgeIdx.add(j); seen++; } }
+    edgeIdx.forEach(function (i2) {
+      var ln = lines[i2];
+      if (_isBareNum(ln)) return; // bare numbers handled in pass 2, gated on a PROVEN head pattern
+      if (!/\d/.test(ln)) return; // digit-bearing candidates only — never a real repeated heading
+      var k = _digitless(ln);
+      if (k.length >= 4) {
+        if (!keyPages.has(k)) keyPages.set(k, new Set());
+        keyPages.get(k).add(pi);
+      }
+    });
+    return { lines: lines, edgeIdx: edgeIdx, firstIdx: firstIdx, lastIdx: lastIdx };
+  });
+  var repeatedKeys = new Set();
+  keyPages.forEach(function (set, k) { if (set.size >= 2) repeatedKeys.add(k); });
+  // Bare-number folio stripping is DOUBLY gated (R4's score-column/lone-year protections must stand):
+  // (a) the doc must have a PROVEN repeated running-head pattern, and (b) the bare number must be the
+  // very FIRST or LAST non-empty line of its page (the folio position). A score column whose value
+  // lands near a page top, or a title-page year on line 2, never satisfies both.
+  var stripBare = repeatedKeys.size > 0;
+  // Pass 2: strip matching edge lines; collect their page numbers.
+  var outTexts = perPage.map(function (pp) {
+    var kept = [];
+    pp.lines.forEach(function (ln, i3) {
+      if (pp.edgeIdx.has(i3)) {
+        if (_isBareNum(ln)) {
+          if (stripBare && (i3 === pp.firstIdx || i3 === pp.lastIdx)) { folios.push(ln.trim()); return; }
+        } else if (/\d/.test(ln)) {
+          var k2 = _digitless(ln);
+          if (k2.length >= 4 && repeatedKeys.has(k2)) {
+            (ln.match(/\d{1,4}/g) || []).forEach(function (n) { folios.push(n); });
+            return;
+          }
+        }
+      }
+      kept.push(ln);
+    });
+    return kept.join('\n');
+  });
+  return { texts: outTexts, folios: Array.from(new Set(folios)) };
+};
+
 var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
@@ -8447,13 +8518,21 @@ var createDocPipeline = function(deps) {
     // "content may be missing" error + false numeric-fidelity alarms on every page-2 score/date. When Vision
     // collapsed to one page AND its blob won a page (it already contains all the pages), fullText is that
     // blob ONCE. The per-page `merged` array (word boxes for the searchable layer) is left untouched.
+    // #F (2026-07-05): strip repeated page-edge running heads/folios BEFORE the join — here, where page
+    // boundaries still exist. The 7/5 test showed folios riding INSIDE running-head lines ("192 Appendix E",
+    // "Consumer-Responsive Report Writing 89") that no whole-line-number strip can catch; they polluted the
+    // ground truth -> false "3 numbers changed (90, 192, 193)" alarms + a blocked hyphen fusion (the
+    // "ated-in" orphan). Repetition across pages is the detector — no thresholds to calibrate.
+    const _edge = _stripPageEdgeArtifacts(merged.map(p => p.text));
     let _fullText;
     if ((visionPages || []).length === 1 && (tessPages || []).length > 1 && merged.some(p => p.source === 'vision')) {
+      // Pseudo-page blob: page boundaries are unknown inside it, so the edge strip can't apply — but the
+      // folio census from the Tesseract side still informs downstream nets via detectedFolios.
       _fullText = (visionPages[0] && visionPages[0].text) || merged.map(p => p.text).filter(Boolean).join('\n\n');
     } else {
-      _fullText = merged.map(p => p.text).filter(Boolean).join('\n\n');
+      _fullText = _edge.texts.filter(Boolean).join('\n\n');
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -16045,6 +16124,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           _tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === 'number' && p.pageNum >= _rs && p.pageNum <= _re);
         }
         const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);
+        // #F (2026-07-05): remember the running-head/folio numbers the page-edge strip detected, so the
+        // integrity nets can flag one that leaked INTO the body ("his factual 194 memory") instead of
+        // falsely flagging the stripped ones as lost values.
+        try { window.__alloDetectedFolios = (rec && rec.detectedFolios) || []; } catch (_) {}
         // P2-a: clean the reconciled OCR ground text (drop standalone folios, rejoin page-break
         // hyphenation) before it feeds the transform / restore / integrity. rec.pages (the word boxes
         // for the positioned searchable layer) is left untouched below, so this can't desync it.
@@ -18581,6 +18664,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // actually fine (e.g. an 88% reading where ~12% was just rejoined hyphens / collapsed space).
       let integrityCoverage = null;
       let integrityWarning = null;
+      let _folioLeakWarn = null; // #F (2026-07-05): a detected page folio leaked inline into the body
       let _numericLossWarn = null; // (2026-06-20) numeric value-fidelity losses — carried out of the
       // integrity try so they can ALSO be pushed into the persistent fidelity panel + fidelityLimited,
       // not just integrityWarning. A silently-changed NUMBER is the worst case for an assessment report;
@@ -18678,6 +18762,25 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             warnLog('[Integrity] VALUE-FIDELITY — ' + _valWarn);
           }
         } catch (_valErr) { warnLog('[Integrity] value-fidelity check failed (non-critical): ' + (_valErr && _valErr.message)); }
+        // #F (2026-07-05): the REVERSE of the numeric check for page folios — a running-head page number
+        // the edge strip removed from the ground truth that nonetheless appears in the BODY is a leaked
+        // folio the AI transcription carried inline ("his factual 194 memory is fine"). Only detected-folio
+        // values are eligible, filename digits are excluded (our own footer embeds the filename), and a
+        // number that also exists as real source content is skipped — so a genuine score can't false-flag.
+        try {
+          const _folios = (typeof window !== 'undefined' && Array.isArray(window.__alloDetectedFolios)) ? window.__alloDetectedFolios : [];
+          if (_folios.length) {
+            const _outPlainF = htmlToPlainText(_finalForIntegrity);
+            const _fnameNums = new Set(String(_fileName || '').match(/\d{1,4}/g) || []);
+            const _leaked = _folios.filter((n) => !_fnameNums.has(n)
+              && new RegExp('(^|[^0-9])' + n + '([^0-9]|$)').test(_outPlainF)
+              && !new RegExp('(^|[^0-9])' + n + '([^0-9]|$)').test(_srcRaw || ''));
+            if (_leaked.length) {
+              _folioLeakWarn = 'Page number(s) ' + _leaked.join(', ') + ' from the scanned pages appear inline in the output text — a running-head/folio the AI transcription carried into a sentence. Search the document for the stray number(s) and delete them.';
+              warnLog('[Integrity] FOLIO-LEAK — ' + _folioLeakWarn);
+            }
+          }
+        } catch (_) {}
       } catch (integrityErr) {
         warnLog('[Integrity] check failed (non-critical):', integrityErr?.message);
       }
@@ -18696,6 +18799,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // SAME persistent notes the panel renders + that drive fidelityLimited, so the score carries the
       // amber asterisk and the panel lists the specific values — instead of it living only in a toast.
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
+      if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
       // OCR confidence (2026-06-29): low-confidence OCR pages are ALREADY computed
       // (window.__lastOcrLowConfidencePages, mean Tesseract conf <60) but were only surfaced as a transient
       // toast/banner. Push a durable WARN into the same notes the panel renders so a likely-garbled scan
@@ -19301,8 +19405,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     const _escRB = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const _fidelityItems = (() => {
       const out = [];
-      if (opts && opts.integrityWarning) out.push(String(opts.integrityWarning));
-      if (opts && Array.isArray(opts.fidelityNotes)) opts.fidelityNotes.forEach((n) => { if (n && n.msg) out.push(String(n.msg)); });
+      const _iw = (opts && opts.integrityWarning) ? String(opts.integrityWarning) : '';
+      if (_iw) out.push(_iw);
+      // #F (2026-07-05): the numeric/placement warnings are BOTH concatenated into integrityWarning AND
+      // pushed as their own fidelity notes — rendering both duplicated the bullet in the downloadable
+      // report ("3 source numeric value(s)…" twice). Skip a note whose text the warning already contains.
+      if (opts && Array.isArray(opts.fidelityNotes)) opts.fidelityNotes.forEach((n) => {
+        if (n && n.msg && !(_iw && _iw.indexOf(String(n.msg)) !== -1)) out.push(String(n.msg));
+      });
       return out;
     })();
     const _fidelityBlock = _fidelityItems.length
@@ -24546,7 +24656,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         const strong = doc.createElement('strong');
         strong.textContent = u.word;
         li.appendChild(strong);
-        li.appendChild(doc.createTextNode(' — source context: "' + u.context + '"'));
+        // #F (2026-07-05): H2 records an unindexed word with an EMPTY context — render that honestly
+        // instead of a bare `source context: ""` (which reads as broken output).
+        li.appendChild(doc.createTextNode(u.context ? (' — source context: "' + u.context + '"') : ' — exact source position could not be determined'));
         if (ul) ul.appendChild(li);
       });
     }
@@ -31269,6 +31381,7 @@ window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent;
 window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; // static: LaTeX→spoken English (2026-07-02, Item E), unit-tested
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
+window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested
 window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsToChunks; // static: $4 violation→chunk router (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
