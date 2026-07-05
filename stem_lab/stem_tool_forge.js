@@ -308,7 +308,7 @@
     "    var ctx = props.ctx, React = ctx.React, h = React.createElement;",
     "    var st = React.useState((ctx.toolData && ctx.toolData.myTool && ctx.toolData.myTool.count) || 0);",
     "    var count = st[0], setCount = st[1];",
-    "    var t = function (k, f) { return (typeof ctx.t === 'function') ? ctx.t(k, f) : f; };",
+    "    var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };",
     "    var dark = !!ctx.isDark;",
     "    return h('div', { style: { padding: 16, color: dark ? '#e5e7eb' : '#111827' } },",
     "      h('p', { style: { marginTop: 0 } }, t('stem.myTool.intro', 'Tap the button to begin.')),",
@@ -519,7 +519,8 @@
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useCallback = React.useCallback;
 
     var dark = !!ctx.isDark, hc = !!ctx.isContrast;
-    var t = function (k, f) { return (typeof ctx.t === 'function') ? ctx.t(k, f) : f; };
+    // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+    var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };
 
     var seed = (ctx.toolData && ctx.toolData.forge && ctx.toolData.forge.src) || SKELETON;
     var s_door = useState('code'); var door = s_door[0], setDoor = s_door[1];

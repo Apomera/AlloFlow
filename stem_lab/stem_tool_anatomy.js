@@ -249,7 +249,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       { id: 'toggle_layers', label: 'Use the layer toggle to reveal internal structures', icon: '\uD83D\uDD2C', check: function(d) { var l = d.visibleLayers || {}; return Object.keys(l).length >= 2; }, progress: function(d) { return Object.keys(d.visibleLayers || {}).length >= 2 ? 'Explored!' : 'Toggle layers'; } }
     ],
     render: function(ctx) {
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -4744,7 +4745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ),
                 h('span', { style: { color: sys.accent } }, filtered.length + ' structures')
               ),
-              h('canvas', { 'aria-label': t('stem.anatomy.anatomy_visualization', 'Anatomy visualization'),
+              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': t('stem.anatomy.anatomy_visualization', 'Anatomy visualization'),
                 ref: canvasRef,
                 onClick: handleClick,
                 onMouseMove: handleMouseMove,

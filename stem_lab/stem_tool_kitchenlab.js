@@ -1969,7 +1969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   setKL({ handwashStart: null });
                 }
               },
-              style: { padding: '10px 18px', background: started ? '#dc2626' : '#16a34a', color: 'white',
+              style: { padding: '10px 18px', background: started ? '#b91c1c' : '#15803d', color: 'white',
                 border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
               started ? '⏹ Stop' : '▶ Start 20s timer'),
             h('div', { style: { flex: 1, minWidth: 200 } },

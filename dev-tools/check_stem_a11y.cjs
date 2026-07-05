@@ -196,7 +196,10 @@ window.StemLab = {
         minHeight: 'calc(100vh - 32px)'
       },
       'data-stem-tool-shell': id
-    }, rendered);
+    },
+      // mirrors the real shell's sr-only tool-name H1 (stem_lab_module.js)
+      ctx.React.createElement('h1', { style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, (tool.label || id)),
+      rendered);
   },
   setupHiDPI: function (canvas, logicalW, logicalH) {
     if (!canvas) return;
@@ -565,7 +568,9 @@ function auditMarkup(toolId, html, tool) {
   Array.from(doc.querySelectorAll('canvas')).forEach(function (el, idx) {
     const name = accessibleName(el, doc);
     const role = attr(el, 'role');
-    if (!role || !meaningfulName(name)) {
+    // aria-hidden canvases are removed from the a11y tree, so they need no
+    // accessible name (matches the canvas-focus check below, which also skips them).
+    if (attr(el, 'aria-hidden') !== 'true' && (!role || !meaningfulName(name))) {
       issues.push(issue(toolId, 'warning', 'canvas-name', 'Canvas lacks a tool-specific role/accessible name before host fallback runs.', {
         index: idx,
         selector: cssPath(el),

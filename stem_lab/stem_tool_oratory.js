@@ -2916,7 +2916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\uD83D\uDCC8'), t('stem.oratory.pitch_contour', 'Pitch Contour')),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.the_melody_of_your_speech_rising_pitch', 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.')),
-              h('canvas', { ref: pitchCanvasRef,
+              h('canvas', { tabIndex: 0, ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -2946,7 +2946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\u23F1\uFE0F'), t('stem.oratory.pacing', 'Pacing')),
                 h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.how_fast_you_are_speaking_in_words_per', 'How fast you are speaking in words per minute.')),
-                h('canvas', { ref: pacingCanvasRef,
+                h('canvas', { tabIndex: 0, ref: pacingCanvasRef,
                   width: 280,
                   height: 160,
                   className: 'w-full rounded-lg',
@@ -2959,7 +2959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\uD83D\uDD0A'), t('stem.oratory.volume', 'Volume')),
                 h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.your_speaking_volume_and_steadiness_ov', 'Your speaking volume and steadiness over time.')),
-                h('canvas', { ref: volumeCanvasRef,
+                h('canvas', { tabIndex: 0, ref: volumeCanvasRef,
                   width: 280,
                   height: 70,
                   className: 'w-full rounded-lg',
@@ -2973,7 +2973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\u23F8\uFE0F'), t('stem.oratory.pause_detection', 'Pause Detection')),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.good_speakers_use_pauses_aim_for_20_30', 'Good speakers use pauses! Aim for 20-30% pauses in your speech.')),
-              h('canvas', { ref: pauseCanvasRef,
+              h('canvas', { tabIndex: 0, ref: pauseCanvasRef,
                 width: 600,
                 height: 55,
                 className: 'w-full rounded-lg',
@@ -3045,7 +3045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Session comparison chart
                 fluencySessions.length > 0 && h('div', { className: 'mt-3' },
                   h('h4', { className: headingClass + ' text-xs mb-2' }, t('stem.oratory.session_history', 'Session History')),
-                  h('canvas', { ref: fluencyChartCanvasRef,
+                  h('canvas', { tabIndex: 0, ref: fluencyChartCanvasRef,
                     width: 500,
                     height: 150,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3090,7 +3090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
 
                 // Vowel space canvas
-                h('canvas', { ref: vowelCanvasRef,
+                h('canvas', { tabIndex: 0, ref: vowelCanvasRef,
                   width: 500,
                   height: 400,
                   className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3174,7 +3174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
                     // Playback prosody canvas
                     playbackIdx >= 0 && savedRecordings[playbackIdx] && h('div', { className: 'mt-2' },
-                      h('canvas', { ref: playbackCanvasRef,
+                      h('canvas', { tabIndex: 0, ref: playbackCanvasRef,
                         width: 600,
                         height: 120,
                         className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3217,7 +3217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             })
                           )
                         ),
-                        h('canvas', { ref: compareCanvasRef,
+                        h('canvas', { tabIndex: 0, ref: compareCanvasRef,
                           width: 600,
                           height: 150,
                           className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3541,7 +3541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Target pattern canvas
                 h('div', { className: 'mb-3' },
                   h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.target_pitch_pattern_green_zone_target', 'Target pitch pattern (green zone = target, orange = your pitch):')),
-                  h('canvas', { ref: patternCanvasRef,
+                  h('canvas', { tabIndex: 0, ref: patternCanvasRef,
                     width: 500,
                     height: 120,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3670,7 +3670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
               h('span', { className: subTextClass },
                 isRecording ? 'Listening... speak now!' : 'Click to activate your microphone.')),
-            h('canvas', { ref: pitchCanvasRef,
+            h('canvas', { tabIndex: 0, ref: pitchCanvasRef,
               width: 600,
               height: 120,
               className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3782,7 +3782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-2' }, t('stem.oratory.prosody_comparison', 'Prosody Comparison')),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.dashed_line_model_solid_line_your_spee', 'Dashed line = model, solid line = your speech. Try to make them match!')),
-              h('canvas', { ref: pitchCanvasRef,
+              h('canvas', { tabIndex: 0, ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),

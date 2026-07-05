@@ -1842,7 +1842,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (on ? 'border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-200 shadow-sm' : 'border-slate-600 bg-slate-800/60 text-slate-300 hover:border-fuchsia-600')
 
-                    }, rm.label, React.createElement("span", { className: "block text-[9px] font-semibold opacity-70" }, rm.hint));
+                    }, rm.label, React.createElement("span", { className: "block text-[10px] font-semibold opacity-70" }, rm.hint));
 
                   })
 
@@ -3492,7 +3492,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     Object.keys(ORIGINS).map(function (k) {
 
-                      return React.createElement("span", { key: k, className: "flex items-center gap-1 text-[9px] font-semibold text-slate-300" },
+                      return React.createElement("span", { key: k, className: "flex items-center gap-1 text-[10px] font-semibold text-slate-300" },
 
                         React.createElement("span", { style: { width: 7, height: 7, borderRadius: 2, background: ORIGINS[k].color, display: 'inline-block' } }),
 
@@ -3520,13 +3520,13 @@ if (!window._galaxyHasLoadedOnce) {
 
                         React.createElement("span", { className: "text-sm" }, f.e),
 
-                        React.createElement("span", { className: "text-[9px] leading-tight text-slate-300" }, f.txt, React.createElement("span", { className: "block font-bold", style: { color: f.c } }, f.src)));
+                        React.createElement("span", { className: "text-[10px] leading-tight text-slate-300" }, f.txt, React.createElement("span", { className: "block font-bold", style: { color: f.c } }, f.src)));
 
                     })
 
                   ),
 
-                  React.createElement("p", { className: "text-[9px] text-slate-500 italic mt-2 leading-relaxed" }, "Colors show each element's dominant source today — many have more than one. Gold's neutron-star origin was confirmed in 2017, when telescopes watched the glow of freshly forged heavy elements after gravitational-wave event GW170817.")
+                  React.createElement("p", { className: "text-[10px] text-slate-500 italic mt-2 leading-relaxed" }, "Colors show each element's dominant source today — many have more than one. Gold's neutron-star origin was confirmed in 2017, when telescopes watched the glow of freshly forged heavy elements after gravitational-wave event GW170817.")
 
                 );
 

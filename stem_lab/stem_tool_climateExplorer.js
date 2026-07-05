@@ -261,7 +261,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('climateExplorer', n); };
       var getStemXP = ctx.getXP;
@@ -1701,7 +1702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Results
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.08))', border: '1px solid rgba(34,197,94,0.2)', marginTop: 8 } },
               // Canvas donut chart
-              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
+              el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
                 'aria-label': t('stem.climateExplorer.interactive_climate_explorer_carbon_fo', 'Interactive climate explorer carbon footprint donut chart visualization'), role: 'img',
                 style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
               // Legend
@@ -2062,7 +2063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 )
               ),
               // Canvas emissions timeline
-              el('canvas', { ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
+              el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
                 'aria-label': t('stem.climateExplorer.interactive_climate_explorer_emissions', 'Interactive climate explorer emissions timeline visualization'), role: 'img',
                 style: { width: '100%', height: 160, display: 'block', borderRadius: 8, marginBottom: 12, background: 'rgba(0,0,0,0.15)' } }),
 
@@ -2101,7 +2102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             ),
             // Chart
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(96,165,250,0.2)', marginBottom: 16 } },
-              el('canvas', { ref: function(cv) {
+              el('canvas', { tabIndex: 0, role: 'img', 'aria-label': 'Climate data chart showing the selected indicator over time.', ref: function(cv) {
                 if (!cv) return;
                 var dpr = window.devicePixelRatio || 1;
                 var w = cv.offsetWidth || 600, h = 260;

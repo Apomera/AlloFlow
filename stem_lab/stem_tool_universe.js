@@ -1643,7 +1643,7 @@ var d = labToolData.universe || {};
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: '#050510' } },
 
-              React.createElement("canvas", { "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } })
+              React.createElement("canvas", { tabIndex: 0, "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } })
 
             ),
 
@@ -1903,7 +1903,7 @@ var d = labToolData.universe || {};
               ),
               d.showHR && React.createElement("div", null,
                 React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "The HR Diagram plots stars by temperature (x) and luminosity (y). Most stars fall on the Main Sequence diagonal."),
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
                   'aria-label': 'Hertzsprung-Russell diagram plotting stars by surface temperature on the horizontal axis and luminosity on the vertical axis, with most stars falling on the main sequence diagonal',
                   style: { width: '100%', height: '320px', display: 'block', borderRadius: '8px' },
@@ -2033,7 +2033,7 @@ var d = labToolData.universe || {};
               ),
               d.showDark && React.createElement("div", { className: "space-y-2" },
                 // Pie chart canvas
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
                   'aria-label': 'Pie chart showing the composition of the universe: 68 percent dark energy, 27 percent dark matter, and 5 percent ordinary matter',
                   style: { width: '100%', height: '180px', display: 'block', borderRadius: '8px' },
@@ -2361,7 +2361,7 @@ var d = labToolData.universe || {};
               ),
               d.showBlackHole && React.createElement("div", { className: "space-y-1.5" },
                 // Visual canvas
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
                   'aria-label': 'Animated black hole anatomy diagram showing the singularity, event horizon, photon sphere, and accretion disk swirling around a central black hole',
                   style: { width: '100%', height: '240px', display: 'block', borderRadius: '8px' },
@@ -2847,7 +2847,7 @@ var d = labToolData.universe || {};
               d.showLensing && React.createElement("div", { className: "space-y-2" },
                 React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-1" }, "Einstein predicted that massive objects bend light. This gravitational lensing lets us see behind galaxies, magnify distant objects, and map invisible dark matter."),
                 // Animated lensing canvas
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
                   'aria-label': 'Animated gravitational lensing visualization showing how a massive foreground galaxy bends light from a distant background source, producing arcs and Einstein rings',
                   style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
@@ -3030,7 +3030,7 @@ var d = labToolData.universe || {};
               ),
               d.showRedshift && React.createElement("div", { className: "space-y-2" },
                 // Animated Doppler canvas
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
                   'aria-label': 'Animated redshift and blueshift Doppler effect demonstration: top half shows a galaxy approaching with light waves compressed to blue, bottom half shows a galaxy receding with light waves stretched to red',
                   style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },

@@ -705,10 +705,10 @@ var d = (labToolData.companionPlanting) || {};
               ? (gardenAlerts[0] ? gardenAlerts[0].action : 'Advance the season')
               : 'Review the harvest and begin another cycle';
           var workspaceTabs = [
-            { id: 'operate', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.', intent: 'Keep the simulation loop front and center.', accent: '#059669', soft: '#ecfdf5', border: '#a7f3d0' },
+            { id: 'operate', label: 'Garden Ops', desc: 'Plant, manage, and harvest the live bed.', intent: 'Keep the simulation loop front and center.', accent: '#047857', soft: '#ecfdf5', border: '#a7f3d0' },
             { id: 'science', label: 'Science Lab', desc: 'Three Sisters evidence, soil science, and quiz.', intent: 'Unpack why the garden system works.', accent: '#4f46e5', soft: '#eef2ff', border: '#c7d2fe' },
             { id: 'systems', label: 'Systems', desc: 'Food miles, water, carbon, and regenerative practices.', intent: 'Connect the bed to larger food systems.', accent: '#0f766e', soft: '#f0fdfa', border: '#99f6e4' },
-            { id: 'reference', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.', intent: 'Look up practical garden knowledge on demand.', accent: '#d97706', soft: '#fffbeb', border: '#fde68a' },
+            { id: 'reference', label: 'Field Guide', desc: 'Pairs, pests, soil, rotation, calendar, and culture.', intent: 'Look up practical garden knowledge on demand.', accent: '#b45309', soft: '#fffbeb', border: '#fde68a' },
             { id: 'inquiry', label: 'Inquiry', desc: 'Run a density-ratio investigation.', intent: 'Experiment with crop balance before explaining the pattern.', accent: '#7c3aed', soft: '#f5f3ff', border: '#ddd6fe' }
           ];
           var activeWorkspace = workspaceTabs.filter(function(tab) { return tab.id === gardenWorkspace; })[0] || workspaceTabs[0];
@@ -6437,7 +6437,7 @@ var d = (labToolData.companionPlanting) || {};
                       })
                     )
                   ),
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
 
                   ref: canvasRef,
 

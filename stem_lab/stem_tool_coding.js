@@ -432,7 +432,8 @@
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -2234,7 +2235,7 @@
               React.createElement("div", { className: "flex flex-col gap-3" },
                 // Grid Canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-500/30 bg-[#0f172a]", style: { height: '380px' } },
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
                     "data-robot-canvas": "true",
                     role: "img", "aria-label": describeRobotGrid(),
                     style: { width: '100%', height: '100%', display: 'block' },
@@ -2603,7 +2604,7 @@
             playgroundMode === 'turtle' && React.createElement("div", { className: "flex flex-col gap-3" },
               // Canvas
               React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   ref: canvasRef, width: 500, height: 500,
                   role: "img", "aria-label": describeTurtleCanvas(),
                   onClick: canvasClickHandler,

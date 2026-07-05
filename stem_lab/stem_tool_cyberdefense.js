@@ -110,7 +110,8 @@
       { id: 'warroom_perfect_defense', label: 'Zero assets lost on Threat Hunter difficulty', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return !!d.warRoomPerfectDefense; }, progress: function(d) { return d.warRoomPerfectDefense ? 'Achieved!' : 'In progress'; } }
     ],
     render: function (ctx) {
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
     var React = ctx.React;
     var el = React.createElement;
     var announceToSR = ctx.announceToSR;

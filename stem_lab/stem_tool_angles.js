@@ -634,7 +634,7 @@ window.StemLab = window.StemLab || {
         var py = cy + (rayLen * 0.7) * Math.sin(-pr);
         return h('g', { key: 'pin' + i },
           h('circle', { cx: px, cy: py, r: 10, fill: '#fbbf24', fillOpacity: 0.7, stroke: '#f59e0b', strokeWidth: 1.5 }),
-          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[8px] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
+          h('text', { x: px, y: py + 3, textAnchor: 'middle', className: 'text-[10px] fill-amber-900 font-bold select-none' }, pin.deg + '\u00B0')
         );
       });
 
@@ -1516,7 +1516,7 @@ window.StemLab = window.StemLab || {
             // (reading 'map')" and crashed the whole protractor tool on render.
             if (!g.tabs) return renderBtn(g, g.color || 'slate');
             return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              h('span', { 'aria-hidden': 'true', className: 'text-[9px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
+              h('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
           })

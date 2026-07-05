@@ -86,7 +86,8 @@ window.StemLab = window.StemLab || {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -368,7 +369,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var _muted = isDark || isContrast ? '#94a3b8' : '#475569';
 
-          var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
+          var _btnBg = '#0e7490'; // cyan-700 both themes: white label clears 4.5:1 (was cyan-500/600 → 2.9/3.7)
 
           var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
 

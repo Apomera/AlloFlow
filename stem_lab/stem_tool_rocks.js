@@ -1811,6 +1811,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("canvas", {
 
+                  role: "img", tabIndex: 0, "aria-label": "Rock cycle diagram — click a rock type or process to explore how rocks transform.",
                   "data-rocks-canvas": "true",
 
                   ref: function (el) {
@@ -1925,7 +1926,7 @@ const d = labToolData.rocks || {};
 
                   // Texture canvas
 
-                  React.createElement("canvas", { ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: textureRef, role: "img", "aria-label": "Rock texture close-up", style: { width: '100px', height: '100px', borderRadius: '12px', border: '2px solid #e5e7eb' } }),
 
                   React.createElement("div", { className: "flex-1" },
 
@@ -2117,7 +2118,7 @@ const d = labToolData.rocks || {};
                     ),
                     React.createElement("div", { className: "flex flex-col md:flex-row gap-3 items-center" },
                       React.createElement("div", { className: "w-full md:w-1/3 flex flex-col items-center" },
-                        React.createElement("canvas", { ref: coolingRef, style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
+                        React.createElement("canvas", { ref: coolingRef, role: "img", tabIndex: 0, "aria-label": "Crystal cooling-rate diagram — slower cooling grows larger crystals.", style: { width: '130px', height: '80px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'block', background: '#1e293b' } }),
                         React.createElement("button", {
                           disabled: isAnimActive,
                           onClick: startCooling,
@@ -2130,7 +2131,7 @@ const d = labToolData.rocks || {};
                             return React.createElement("button", {
                               key: s.id,
                               onClick: function() { updMulti({ coolingSpeed: s.id, coolingProgress: 0, coolingAnimActive: false }); sfxRockClick(); },
-                              className: "p-1 rounded text-[9px] font-bold text-center border transition-all " +
+                              className: "p-1 rounded text-[10px] font-bold text-center border transition-all " +
                                 (coolingSpeed === s.id ? "bg-amber-100 border-amber-500 text-amber-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-200")
                             }, s.label);
                           })
@@ -2810,7 +2811,7 @@ const d = labToolData.rocks || {};
 
                 React.createElement("div", { className: "flex gap-3 items-start" },
 
-                  React.createElement("canvas", { ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
+                  React.createElement("canvas", { tabIndex: 0, ref: mineralCrossSectionRef, role: "img", "aria-label": "Mineral cross-section", style: { width: '140px', height: '100px', borderRadius: '10px', flexShrink: 0 } }),
 
                   React.createElement("div", { className: "flex-1 min-w-0" },
 
@@ -2933,7 +2934,7 @@ const d = labToolData.rocks || {};
                           (isSelected ? "bg-violet-100 border-violet-500 text-violet-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-violet-200")
                       },
                         React.createElement("div", null, tool.label),
-                        React.createElement("div", { className: "text-[9px] text-slate-400 font-mono mt-0.5" }, "H: " + tool.h)
+                        React.createElement("div", { className: "text-[10px] text-slate-400 font-mono mt-0.5" }, "H: " + tool.h)
                       );
                     })
                   ),
@@ -4551,7 +4552,7 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: canvasRef, "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+              React.createElement("canvas", { ref: canvasRef, role: "img", tabIndex: 0, "aria-label": "Rock sample close-up" + (d.selectedRock ? " of " + d.selectedRock : "") + " — click to inspect.", "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
             ),
 
@@ -4717,7 +4718,7 @@ const d = labToolData.rockCycle || {};
                       return React.createElement("button", {
                         key: agent.id,
                         onClick: function() { upd("geologicalAgent", agent.id); sfxRockClick(); },
-                        className: "p-1 rounded text-[9px] font-black text-center border transition-all " +
+                        className: "p-1 rounded text-[10px] font-black text-center border transition-all " +
                           (isSel ? "bg-orange-100 border-orange-500 text-orange-800" : "transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:border-orange-200")
                       }, agent.label);
                     })
@@ -5056,7 +5057,7 @@ const d = labToolData.rockCycle || {};
                           if (typeof awardStemXP === 'function') awardStemXP(5, 'Concept studied: ' + d.rcQuiz.concept);
                           if (typeof addToast === 'function') addToast({ type: 'success', title: 'Concept Studied!', message: 'You studied ' + d.rcQuiz.concept + ' (+5 RP)' });
                         },
-                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[9px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
+                        className: "px-2 py-1 bg-orange-700 hover:bg-orange-800 text-white font-bold rounded text-[10px] shrink-0 self-start sm:self-center transition-all hover:scale-105 active:scale-[0.97]"
                       }, "📖 Study Term (+5 RP)")
                     );
                   })()

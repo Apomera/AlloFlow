@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-07-03T21:07:40.376Z",
+  "generatedAt": "2026-07-05T18:41:11.089Z",
   "source": {
-    "stemToolFileCount": 111,
-    "registeredToolCount": 114
+    "stemToolFileCount": 113,
+    "registeredToolCount": 116
   },
-  "toolCount": 114,
+  "toolCount": 116,
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 120,
+    "issueCount": 19,
     "errorCount": 0,
-    "warningCount": 104,
-    "noticeCount": 16,
-    "toolsWithIssues": 57,
+    "warningCount": 1,
+    "noticeCount": 18,
+    "toolsWithIssues": 18,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 50,
+    "toolsWithWarnings": 1,
     "toolsWithCanvas": 35,
     "shellCoverage": {
-      "standardShellTools": 114,
+      "standardShellTools": 116,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -29,15 +29,15 @@
         "noticeCount": 0
       },
       "general": {
-        "toolCount": 5,
+        "toolCount": 7,
         "errorCount": 0,
-        "warningCount": 3,
-        "noticeCount": 6
+        "warningCount": 0,
+        "noticeCount": 8
       },
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 19,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "Games": {
@@ -49,13 +49,13 @@
       "science": {
         "toolCount": 46,
         "errorCount": 0,
-        "warningCount": 45,
+        "warningCount": 0,
         "noticeCount": 4
       },
       "technology": {
         "toolCount": 2,
         "errorCount": 0,
-        "warningCount": 8,
+        "warningCount": 1,
         "noticeCount": 0
       },
       "strategy": {
@@ -67,13 +67,13 @@
       "explore": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 0,
         "noticeCount": 4
       },
       "creative": {
         "toolCount": 6,
         "errorCount": 0,
-        "warningCount": 10,
+        "warningCount": 0,
         "noticeCount": 1
       },
       "Literacy": {
@@ -85,13 +85,13 @@
       "applied": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "life-skills": {
         "toolCount": 7,
         "errorCount": 0,
-        "warningCount": 5,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "tech": {
@@ -103,13 +103,13 @@
       "biology": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 4,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "Life Science": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "creativity": {
@@ -133,7 +133,7 @@
       "data": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "life-earth-science": {
@@ -145,7 +145,7 @@
       "history-engineering": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "physics-chemistry": {
@@ -157,7 +157,7 @@
       "art": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 2,
+        "warningCount": 0,
         "noticeCount": 0
       },
       "Simulations": {
@@ -170,140 +170,33 @@
   },
   "topFindings": [
     {
-      "code": "canvas-focus",
-      "severity": "warning",
-      "count": 26,
-      "toolCount": 18,
-      "exampleTools": [
-        "anatomy",
-        "artStudio",
-        "beehive",
-        "brainAtlas",
-        "climateExplorer",
-        "codingPlayground",
-        "companionPlanting",
-        "epidemicSim",
-        "musicSynth",
-        "oratory",
-        "plateTectonics",
-        "rockCycle"
-      ],
-      "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
-    },
-    {
-      "code": "tiny-text",
-      "severity": "warning",
-      "count": 16,
-      "toolCount": 16,
-      "exampleTools": [
-        "birdLab",
-        "cell",
-        "dissection",
-        "dnaLab",
-        "galaxy",
-        "inequality",
-        "molecule",
-        "moonMission",
-        "multtable",
-        "protractor",
-        "rockCycle",
-        "solarSystem"
-      ],
-      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
-    },
-    {
-      "code": "canvas-name",
-      "severity": "warning",
-      "count": 15,
-      "toolCount": 12,
-      "exampleTools": [
-        "anatomy",
-        "climateExplorer",
-        "dissection",
-        "epidemicSim",
-        "graphCalc",
-        "musicSynth",
-        "plateTectonics",
-        "rockCycle",
-        "rocks",
-        "unitConvert",
-        "volume",
-        "waterCycle"
-      ],
-      "recommendation": "Give each canvas a tool-specific role and aria-label, not only the host fallback."
-    },
-    {
-      "code": "heading",
-      "severity": "warning",
-      "count": 12,
-      "toolCount": 12,
-      "exampleTools": [
-        "archStudio",
-        "astronomy",
-        "cellularLab",
-        "cephalopodLab",
-        "funcGrapher",
-        "geoSandbox",
-        "geometryWorld",
-        "graphCalc",
-        "kitchenLab",
-        "lumen",
-        "physics",
-        "wave"
-      ],
-      "recommendation": "Start each tool with a semantic heading so screen-reader users can orient quickly."
-    },
-    {
       "code": "inline-contrast",
       "severity": "warning",
-      "count": 32,
-      "toolCount": 12,
+      "count": 1,
+      "toolCount": 1,
       "exampleTools": [
-        "algebraCAS",
-        "appLab",
-        "cell",
-        "cellularLab",
-        "companionPlanting",
-        "dataStudio",
-        "dnaLab",
-        "fireEcology",
-        "kitchenLab",
-        "llmLiteracy",
-        "typingPractice",
-        "waterCycle"
+        "appLab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
     },
     {
-      "code": "svg-name",
-      "severity": "warning",
-      "count": 3,
-      "toolCount": 3,
-      "exampleTools": [
-        "birdLab",
-        "molecule",
-        "printingPress"
-      ],
-      "recommendation": "Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title."
-    },
-    {
       "code": "metadata",
       "severity": "notice",
-      "count": 13,
-      "toolCount": 13,
+      "count": 15,
+      "toolCount": 15,
       "exampleTools": [
         "accessLens",
         "archStudio",
         "birdLab",
         "codingPlayground",
         "cyberDefense",
+        "dataLab",
         "dinoLab",
         "evoLab",
         "geologyExplorer",
         "geometryWorld",
         "nutritionLab",
-        "rockCycle",
-        "rocks"
+        "rockCycle"
       ],
       "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
     },
@@ -356,7 +249,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Audit websites and documents for WCAG 2.1 AA accessibility compliance. Learn about digital accessibility by analyzing real-world content.",
-      "renderedBytes": 7120,
+      "renderedBytes": 7286,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -369,7 +262,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -384,7 +277,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.",
-      "renderedBytes": 5262,
+      "renderedBytes": 5414,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -397,7 +290,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -419,11 +312,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive algebra with equation builder, balance scale, and step-by-step AI solving",
-      "renderedBytes": 6938,
+      "renderedBytes": 7089,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 14,
@@ -432,49 +325,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "algebraCAS",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 20,
-          "selector": "div > div > div:nth-of-type(3) > button:nth-of-type(1)",
-          "ratio": 4.47,
-          "color": "#fff",
-          "background": "#6366f1",
-          "text": "🔍 Solve"
-        },
-        {
-          "toolId": "algebraCAS",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 31,
-          "selector": "div > div > div:nth-of-type(5) > div:nth-of-type(1) > button:nth-of-type(1)",
-          "ratio": 4.47,
-          "color": "#fff",
-          "background": "#6366f1",
-          "text": "🔍 Solve"
-        },
-        {
-          "toolId": "algebraCAS",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 37,
-          "selector": "div > div > div:nth-of-type(5) > div:nth-of-type(2) > button",
-          "ratio": 4.47,
-          "color": "#fff",
-          "background": "#6366f1",
-          "text": "▶ Solve"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "alloBotSage",
@@ -484,7 +340,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "A cozy sci-fi roguelite where AlloBot’s spells unlock as you master other STEM Lab tools. Cast by demonstrating what you learned.",
-      "renderedBytes": 41894,
+      "renderedBytes": 42058,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -497,7 +353,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -512,11 +368,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 10 body systems with layered anatomical visualization",
-      "renderedBytes": 32942,
+      "renderedBytes": 33129,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 66,
@@ -525,29 +381,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "anatomy",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
-        },
-        {
-          "toolId": "anatomy",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "appLab",
@@ -557,7 +396,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Describe an app or science demo and AI builds it instantly. Edit the code, iterate, and export.",
-      "renderedBytes": 13403,
+      "renderedBytes": 13550,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -570,7 +409,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -581,7 +420,7 @@
           "severity": "warning",
           "code": "inline-contrast",
           "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 27,
+          "index": 28,
           "selector": "div > div:nth-of-type(3) > div:nth-of-type(1) > div > button:nth-of-type(1)",
           "ratio": 2.05,
           "color": "#9ca3af",
@@ -598,7 +437,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pilot your skiff to your Bagaduce River lease. Deploy droppers, monitor water quality, harvest mussels, learn IALA-B buoyage + lease tiers + climate stressors in a 3D sim.",
-      "renderedBytes": 58061,
+      "renderedBytes": 58233,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -611,7 +450,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -626,7 +465,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build and run a virtual fish tank to learn the nitrogen cycle, water chemistry, fish anatomy, species care, and marine ecology.",
-      "renderedBytes": 29442,
+      "renderedBytes": 29595,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -639,7 +478,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -654,7 +493,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Author functions to fire light-beams, clear walls, and re-light a neon city.",
-      "renderedBytes": 23495,
+      "renderedBytes": 23644,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -667,7 +506,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -682,11 +521,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 25709,
+      "renderedBytes": 25869,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 83,
@@ -695,18 +534,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "archStudio",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
         {
           "toolId": "archStudio",
           "severity": "notice",
@@ -723,7 +556,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visual multiplication with area model grids, distributive property, partial products, sound effects, and badges.",
-      "renderedBytes": 20095,
+      "renderedBytes": 20246,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -736,7 +569,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -751,11 +584,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore the math behind art: color theory, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
-      "renderedBytes": 8055,
+      "renderedBytes": 8232,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 24,
@@ -764,21 +597,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "artStudio",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div.space-y-4:nth-of-type(4) > div.flex.gap-4 > canvas.rounded-xl.border-2"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "assessmentLiteracy",
@@ -788,7 +612,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Learn how cognitive, personality, career, and employer tests actually work — build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.",
-      "renderedBytes": 6285,
+      "renderedBytes": 6449,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -801,7 +625,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -816,11 +640,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine + extendable. Printable observing checklists.",
-      "renderedBytes": 278,
+      "renderedBytes": 444,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -829,19 +653,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "astronomy",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "atcTower",
@@ -851,7 +668,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.",
-      "renderedBytes": 16103,
+      "renderedBytes": 16253,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -864,7 +681,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -879,7 +696,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Diagnose, repair, and maintain a vehicle. OBD-II code reading, listening / fluid / visual diagnosis, 7 step-by-step repair scenarios (oil change, brakes, alternator, tires, air filter, A/C, timing belt), tool selection mini-game, safety modules (jack stands, electrical, refrigerant). Career data for ASE certification + Maine vocational pathways. Pairs with RoadReady (you DRIVE the car). Educational only — get certified at ase.com.",
-      "renderedBytes": 23999,
+      "renderedBytes": 24156,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -892,7 +709,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -907,7 +724,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore the chemistry, ratios, and heat science that make baking work",
-      "renderedBytes": 11164,
+      "renderedBytes": 11315,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -920,7 +737,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -935,7 +752,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Base-10 blocks, abacus, slide rule & place value quiz.",
-      "renderedBytes": 14810,
+      "renderedBytes": 14969,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -948,7 +765,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -963,11 +780,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colony dynamics, nectar flow, and the science of superorganisms",
-      "renderedBytes": 62239,
+      "renderedBytes": 62410,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 65,
@@ -976,21 +793,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 8,
+        "headings": 9,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "beehive",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#beehive-canvas-wrap > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "behaviorLab",
@@ -1000,7 +808,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.",
-      "renderedBytes": 10873,
+      "renderedBytes": 11026,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1013,7 +821,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1028,7 +836,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Side-view bike physics sandbox + gearing math lab + hands-on repair simulator. Teaches Newton's laws, mechanical advantage, and real maintenance skills.",
-      "renderedBytes": 14360,
+      "renderedBytes": 14530,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1041,7 +849,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 12,
+        "headings": 13,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1056,43 +864,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 142539,
+      "renderedBytes": 141462,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 2,
       "metrics": {
         "buttons": 127,
         "roleButtons": 0,
         "fields": 0,
         "canvases": 0,
-        "svgs": 2,
+        "svgs": 1,
         "images": 0,
-        "headings": 127,
+        "headings": 128,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 2
       },
       "issues": [
-        {
-          "toolId": "birdLab",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 1,
-          "selector": "div.birdlab-shell.p-6 > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
-        },
-        {
-          "toolId": "birdLab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
         {
           "toolId": "birdLab",
           "severity": "notice",
@@ -1126,11 +916,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore an interactive brain model: regions, functions, neurotransmitter synapses, EEG waves, and a labeling quiz.",
-      "renderedBytes": 15172,
+      "renderedBytes": 15346,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 31,
@@ -1139,21 +929,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "brainAtlas",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.brainatlas-tool-shell.max-w-6xl > div.brainatlas-main-stack:nth-of-type(5) > div.brainatlas-canvas-shell:nth-of-type(1) > div.brainatlas-canvas-stage:nth-of-type(2) > canvas.brainatlas-canvas.border-2"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "bridgeLab",
@@ -1163,7 +944,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.",
-      "renderedBytes": 39836,
+      "renderedBytes": 39999,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1176,7 +957,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1191,7 +972,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Riemann sums, derivatives, and guided discovery missions",
-      "renderedBytes": 20826,
+      "renderedBytes": 20975,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1204,7 +985,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1219,11 +1000,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 11 living micro-organisms in a simulated petri dish",
-      "renderedBytes": 21637,
+      "renderedBytes": 21824,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 39,
@@ -1232,35 +1013,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
-        "tinyTextClassHits": 16,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "cell",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 16,
-          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(1) > div.mb-1.flex > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 3.3,
-          "color": "#fff",
-          "background": "#16a34a",
-          "text": "Active"
-        },
-        {
-          "toolId": "cell",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 16,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "cellularLab",
@@ -1270,11 +1028,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Watch complexity emerge from tiny rules: Conway's Game of Life (draw cells, stamp gliders & a Gosper gun, play/step/wrap) plus elementary 1-D Wolfram rules 0–255 with live rule tables and space-time diagrams. Pattern gallery + Wolfram-class explainer.",
-      "renderedBytes": 13063,
+      "renderedBytes": 13226,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
@@ -1283,55 +1041,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "cellularLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
-        {
-          "toolId": "cellularLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 55,
-          "selector": "div#cell-panel > div > div:nth-of-type(2) > button:nth-of-type(1)",
-          "ratio": 1.92,
-          "color": "#ffffff",
-          "background": "#34d399",
-          "text": "▶ Play"
-        },
-        {
-          "toolId": "cellularLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 60,
-          "selector": "div#cell-panel > div > div:nth-of-type(3) > button:nth-of-type(1)",
-          "ratio": 1.92,
-          "color": "#ffffff",
-          "background": "#34d399",
-          "text": "✏️ Draw"
-        },
-        {
-          "toolId": "cellularLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 62,
-          "selector": "div#cell-panel > div > div:nth-of-type(3) > button:nth-of-type(3)",
-          "ratio": 1.92,
-          "color": "#ffffff",
-          "background": "#34d399",
-          "text": "🔁 Wrap: on"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "cephalopodLab",
@@ -1341,11 +1056,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations.",
-      "renderedBytes": 13568,
+      "renderedBytes": 13723,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 17,
@@ -1354,19 +1069,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "cephalopodLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "chemBalance",
@@ -1376,7 +1084,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Balance equations, explore reactions, stoichiometry, molecular models & lab safety",
-      "renderedBytes": 8754,
+      "renderedBytes": 8908,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1389,7 +1097,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1404,7 +1112,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build series & parallel circuits with Ohm's Law",
-      "renderedBytes": 21941,
+      "renderedBytes": 22097,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1417,7 +1125,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1432,11 +1140,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Carbon calculator, renewables simulator, climate justice & solutions.",
-      "renderedBytes": 33302,
+      "renderedBytes": 33472,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 39,
@@ -1445,29 +1153,12 @@
         "canvases": 2,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "climateExplorer",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div > div:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "climateExplorer",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div > div:nth-of-type(6) > div > div:nth-of-type(7) > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "codingPlayground",
@@ -1477,11 +1168,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 25306,
+      "renderedBytes": 25476,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 57,
@@ -1490,20 +1181,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 9,
+        "headings": 10,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "codingPlayground",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.grid.gap-4 > div.flex.flex-col:nth-of-type(6) > div.bg-slate-900.rounded-xl:nth-of-type(1) > canvas.w-full.rounded-lg"
-        },
         {
           "toolId": "codingPlayground",
           "severity": "notice",
@@ -1520,11 +1203,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Grow a Three Sisters garden by season, manage soil and pests, and learn which plants help or harm each other.",
-      "renderedBytes": 17869,
+      "renderedBytes": 18045,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 20,
@@ -1533,45 +1216,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "companionPlanting",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(4) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
-        },
-        {
-          "toolId": "companionPlanting",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 8,
-          "selector": "div.space-y-3:nth-of-type(2) > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(1) > div.flex.items-center:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 3.77,
-          "color": "#ffffff",
-          "background": "#059669",
-          "text": "Active"
-        },
-        {
-          "toolId": "companionPlanting",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 18,
-          "selector": "div.space-y-3:nth-of-type(2) > div.grid.gap-2:nth-of-type(2) > button.rounded-lg.border:nth-of-type(4) > div.flex.items-center > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 3.07,
-          "color": "#d97706",
-          "background": "#fffbeb",
-          "text": "Open"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "coordinate",
@@ -1581,7 +1231,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges.",
-      "renderedBytes": 10034,
+      "renderedBytes": 10190,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1594,7 +1244,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1609,7 +1259,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 10841,
+      "renderedBytes": 10999,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -1622,7 +1272,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1637,6 +1287,41 @@
       ]
     },
     {
+      "id": "dataLab",
+      "label": "Data Lab",
+      "category": "general",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.",
+      "renderedBytes": 1864,
+      "standardShell": true,
+      "issueCount": 1,
+      "errorCount": 0,
+      "warningCount": 0,
+      "noticeCount": 1,
+      "metrics": {
+        "buttons": 1,
+        "roleButtons": 0,
+        "fields": 0,
+        "canvases": 0,
+        "svgs": 0,
+        "images": 0,
+        "headings": 2,
+        "links": 0,
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": [
+        {
+          "toolId": "dataLab",
+          "severity": "notice",
+          "code": "metadata",
+          "message": "Tool registry category is missing or generic."
+        }
+      ]
+    },
+    {
       "id": "dataPlot",
       "label": "Data Plotter",
       "category": "creative",
@@ -1644,7 +1329,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Plot data, calculate regression & R²",
-      "renderedBytes": 11792,
+      "renderedBytes": 11945,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1657,7 +1342,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1672,11 +1357,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build bar, pie, line, scatter, and histogram charts from your data and explore stats like mean, median, and trendlines.",
-      "renderedBytes": 11128,
+      "renderedBytes": 11280,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 24,
@@ -1685,49 +1370,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 5,
-          "selector": "div > div.p-4.space-y-4 > div.flex.gap-2:nth-of-type(2) > button.flex-1.p-2:nth-of-type(1)",
-          "ratio": 3.68,
-          "color": "#fff",
-          "background": "#0891b2",
-          "text": "📊Bar Chart"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 31,
-          "selector": "div > div.p-4.space-y-4 > div.flex.gap-2:nth-of-type(4) > button.px-2.py-1:nth-of-type(1)",
-          "ratio": 3.68,
-          "color": "#fff",
-          "background": "#0891b2",
-          "text": "— None"
-        },
-        {
-          "toolId": "dataStudio",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 50,
-          "selector": "div > div.p-4.space-y-4 > div.rounded-2xl.p-3:nth-of-type(7) > div.flex.gap-2:nth-of-type(2) > button.px-3.py-1.5",
-          "ratio": 3.68,
-          "color": "#fff",
-          "background": "#0891b2",
-          "text": "+ Add"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "decomposer",
@@ -1737,7 +1385,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
-      "renderedBytes": 17655,
+      "renderedBytes": 17815,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1750,7 +1398,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1765,7 +1413,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 424134,
+      "renderedBytes": 423921,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -1778,7 +1426,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1800,11 +1448,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 16023,
+      "renderedBytes": 16200,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 21,
@@ -1813,33 +1461,12 @@
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dissection",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-3.max-h-[calc(100vh-180px)] > div.flex.gap-3:nth-of-type(3) > div.flex-1:nth-of-type(1) > canvas.w-full.rounded-xl",
-          "width": "500",
-          "height": "600"
-        },
-        {
-          "toolId": "dissection",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dnaLab",
@@ -1849,11 +1476,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build, replicate, transcribe, translate, mutate, CRISPR-edit, forensics & more.",
-      "renderedBytes": 38423,
+      "renderedBytes": 38578,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 103,
@@ -1862,59 +1489,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
-        "tinyTextClassHits": 7,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 9,
-          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(2) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 3.58,
-          "color": "#059669",
-          "background": "#ecfdf5",
-          "text": "Path"
-        },
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 14,
-          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(3) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 4.41,
-          "color": "#dc2626",
-          "background": "#fef2f2",
-          "text": "Path"
-        },
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 19,
-          "selector": "div.grid.gap-4 > div.grid.gap-2:nth-of-type(2) > div.rounded-lg.border:nth-of-type(4) > div.mb-1.flex:nth-of-type(1) > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 3.07,
-          "color": "#d97706",
-          "background": "#fffbeb",
-          "text": "Path"
-        },
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 7,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "echoTrainer",
@@ -1924,7 +1504,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Navigate virtual spaces using only spatial audio echoes. 3D first-person with Three.js. Emit clicks, listen for reflections off walls and moving agents, find the goal. Real HRTF binaural audio — wear headphones!",
-      "renderedBytes": 29244,
+      "renderedBytes": 29399,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1937,7 +1517,7 @@
         "canvases": 1,
         "svgs": 2,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1952,7 +1532,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "See the world through sound — bat sonar vision, sound wave physics, Doppler effect & acoustic ecology",
-      "renderedBytes": 9489,
+      "renderedBytes": 9646,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1965,7 +1545,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1980,7 +1560,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
-      "renderedBytes": 11367,
+      "renderedBytes": 11521,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1993,7 +1573,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 7,
+        "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2008,7 +1588,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Model predator-prey dynamics with Lotka–Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.",
-      "renderedBytes": 23592,
+      "renderedBytes": 23752,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2021,7 +1601,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2036,11 +1616,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.",
-      "renderedBytes": 89119,
+      "renderedBytes": 89305,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 21,
@@ -2049,29 +1629,12 @@
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "epidemicSim",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
-        },
-        {
-          "toolId": "epidemicSim",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "evoLab",
@@ -2081,7 +1644,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).",
-      "renderedBytes": 38175,
+      "renderedBytes": 38334,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2094,7 +1657,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 22,
+        "headings": 23,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2116,11 +1679,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 22778,
+      "renderedBytes": 22987,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 29,
@@ -2129,37 +1692,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "fireEcology",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 11,
-          "selector": "div > div > div:nth-of-type(4) > div:nth-of-type(1) > button:nth-of-type(1)",
-          "ratio": 3.56,
-          "color": "#fff",
-          "background": "#ea580c",
-          "text": "🌍 Indigenous Knowledge"
-        },
-        {
-          "toolId": "fireEcology",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 126,
-          "selector": "div > div > div:nth-of-type(7) > div:nth-of-type(2) > button",
-          "ratio": 2.77,
-          "color": "#fff",
-          "background": "#0ea5e9",
-          "text": "Ask"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "firstResponse",
@@ -2169,7 +1707,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Recognize and respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only — get certified at redcross.org or heart.org.",
-      "renderedBytes": 1926,
+      "renderedBytes": 2085,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2182,7 +1720,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 3,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2197,7 +1735,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, and Gulf of Maine fish ID + DMR regs in an immersive 3D sim.",
-      "renderedBytes": 20395,
+      "renderedBytes": 20572,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2210,7 +1748,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2225,7 +1763,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Educational flight simulator — learn aerodynamics, navigation, and world geography by flying between real airports.",
-      "renderedBytes": 41565,
+      "renderedBytes": 41715,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2238,7 +1776,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2253,7 +1791,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Author, validate, and preview new STEM Lab / SEL Hub plugins — describe one in plain language (AI builds a conforming plugin) or hand-code against the contract, with a live in-sandbox render-smoke and the same contract gate the deploy pipeline runs. Teacher / developer tool.",
-      "renderedBytes": 459,
+      "renderedBytes": 610,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2266,7 +1804,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2281,7 +1819,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
-      "renderedBytes": 15194,
+      "renderedBytes": 15347,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2294,7 +1832,7 @@
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2309,7 +1847,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive fraction visualizer with pie/bar models, operations, equivalents, converter, fraction wall, and challenge mode.",
-      "renderedBytes": 15192,
+      "renderedBytes": 15345,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2322,7 +1860,7 @@
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2337,11 +1875,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Graph and explore mathematical functions interactively",
-      "renderedBytes": 244,
+      "renderedBytes": 401,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -2350,19 +1888,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "funcGrapher",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "galaxy",
@@ -2372,11 +1903,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
-      "renderedBytes": 22154,
+      "renderedBytes": 22313,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 30,
@@ -2385,23 +1916,12 @@
         "canvases": 1,
         "svgs": 3,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "galaxy",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "gameStudio",
@@ -2411,7 +1931,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build, play & learn 2D game design",
-      "renderedBytes": 46718,
+      "renderedBytes": 46877,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2424,7 +1944,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2439,7 +1959,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive maps and quizzes for countries, capitals, continents, landmarks, distances, a 3D globe, and an AI quiz builder.",
-      "renderedBytes": 7044,
+      "renderedBytes": 7203,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2452,7 +1972,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2467,11 +1987,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 3D shapes with interactive controls. Volume, surface area, challenge mode, and STL export.",
-      "renderedBytes": 511,
+      "renderedBytes": 668,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -2480,19 +2000,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "geoSandbox",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "geologyExplorer",
@@ -2502,7 +2015,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 12307,
+      "renderedBytes": 12464,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2515,7 +2028,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2537,7 +2050,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore theorems, construct proofs, discover geometric relationships",
-      "renderedBytes": 7980,
+      "renderedBytes": 8129,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2550,7 +2063,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2565,11 +2078,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1580,
+      "renderedBytes": 1743,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 0,
@@ -2578,18 +2091,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "geometryWorld",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
         {
           "toolId": "geometryWorld",
           "severity": "notice",
@@ -2606,11 +2113,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Graph functions, analyze zeros and intersections, explore transformations",
-      "renderedBytes": 13799,
+      "renderedBytes": 13960,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 26,
@@ -2619,27 +2126,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "graphCalc",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.graphcalc-shell > div:nth-of-type(3) > div:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "graphCalc",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "inequality",
@@ -2649,11 +2141,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.",
-      "renderedBytes": 15408,
+      "renderedBytes": 15568,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 30,
@@ -2662,23 +2154,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "inequality",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "kitchenLab",
@@ -2688,11 +2169,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Cooking & food safety life skills with culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice / julienne / chiffonade / brunoise), heat techniques (sauté / sear / simmer / braise / roast / fry / steam), the Maillard reaction, top-9 allergens. Real-time recipe simulator + gamified cooking competition coming in v0.2. Sister tool to NutritionLab and BakingScience.",
-      "renderedBytes": 38610,
+      "renderedBytes": 38762,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 8,
@@ -2701,31 +2182,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "kitchenLab",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        },
-        {
-          "toolId": "kitchenLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 109,
-          "selector": "div:nth-of-type(3) > div > div:nth-of-type(4) > div:nth-of-type(3) > button",
-          "ratio": 3.3,
-          "color": "white",
-          "background": "#16a34a",
-          "text": "▶ Start 20s timer"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "learningLab",
@@ -2735,7 +2197,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The science of how learning works. Bloom's Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking, education-career pathways. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0). Honest about contested claims. Maine education programs + EL Education context.",
-      "renderedBytes": 15715,
+      "renderedBytes": 15868,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2748,7 +2210,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2763,7 +2225,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Essential knowledge for adulting — taxes, data literacy, contracts, car care, laundry science, home systems, and critical thinking.",
-      "renderedBytes": 14738,
+      "renderedBytes": 14894,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2776,7 +2238,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2791,11 +2253,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.",
-      "renderedBytes": 28992,
+      "renderedBytes": 29148,
       "standardShell": true,
-      "issueCount": 7,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 7,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 12,
@@ -2804,97 +2266,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 35,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(1)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🔤Tokenizer explorer"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 37,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(2)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🌡️Temperature dialed"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 39,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(3)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "✏️Prompt crafter"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 41,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(4)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🎯Perfect eye (unassisted)"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 43,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(5)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🧭UDL thinker"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 45,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(6)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🎓Lab graduate"
-        },
-        {
-          "toolId": "llmLiteracy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 47,
-          "selector": "main#llm-literacy-main > div > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(7)",
-          "ratio": 2.34,
-          "color": "#94a3b8",
-          "background": "#f1f5f9",
-          "text": "🗺️Full explorer"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "logicLab",
@@ -2904,7 +2281,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Propositional Logic, Proofs & Reasoning",
-      "renderedBytes": 24991,
+      "renderedBytes": 25141,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2917,7 +2294,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2932,11 +2309,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Turn any dataset into an honest, provenance-bound finding you can defend — chart and claim as one object.",
-      "renderedBytes": 9267,
+      "renderedBytes": 9413,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
@@ -2945,19 +2322,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "lumen",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "microbiology",
@@ -2967,7 +2337,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (incl. COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM, plus a virtual-microscope slide-swap with rendered E. coli / Streptococcus / Paramecium / Plasmodium / T4 phage), antibiotic resistance evolution (interactive petri-dish selection-pressure sim), the human + soil + ocean microbiome, immune system + vaccines, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), classic case studies (Snow's 1854 cholera map as walkable interactive, Fleming's penicillin, MRSA, COVID/mRNA, FMT), AP-style quiz, printable lab safety + key microbes card.",
-      "renderedBytes": 43472,
+      "renderedBytes": 43629,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2980,7 +2350,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2995,7 +2365,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "V-formation aerodynamics, wind currents, bird migration routes & flight physics",
-      "renderedBytes": 15550,
+      "renderedBytes": 15715,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3008,7 +2378,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 7,
+        "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3023,11 +2393,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
-      "renderedBytes": 34584,
+      "renderedBytes": 34876,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 103,
@@ -3036,31 +2406,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 7,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "molecule",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 0,
-          "selector": "div > div.max-w-5xl.mx-auto:nth-of-type(1) > div:nth-of-type(5) > svg.w-full.bg-gradient-to-b"
-        },
-        {
-          "toolId": "molecule",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 7,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "moneyMath",
@@ -3070,7 +2421,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coins, bills, making change, grocery store sim, currency exchange, tips, budget, and personal finance.",
-      "renderedBytes": 20980,
+      "renderedBytes": 21131,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3083,7 +2434,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 7,
+        "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3098,11 +2449,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13356,
+      "renderedBytes": 13467,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 8,
@@ -3111,23 +2462,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moonMission",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "multtable",
@@ -3137,11 +2477,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive 12×12 grid with quiz modes, speed runs, streaks, badges & AI tutor.",
-      "renderedBytes": 28952,
+      "renderedBytes": 29114,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
@@ -3150,23 +2490,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "multtable",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "musicSynth",
@@ -3176,11 +2505,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Play a piano, build beats, and learn the science of sound with real-time waveform visualization.",
-      "renderedBytes": 47673,
+      "renderedBytes": 48037,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 94,
@@ -3189,45 +2518,12 @@
         "canvases": 2,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 1,
-          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "numberline",
@@ -3237,7 +2533,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive number line with markers, 6 challenge types, skip counting, and AI tutor.",
-      "renderedBytes": 16580,
+      "renderedBytes": 16732,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3250,7 +2546,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3265,7 +2561,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first (\"what your body uses food for\"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.",
-      "renderedBytes": 23951,
+      "renderedBytes": 24124,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3278,7 +2574,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 16,
+        "headings": 17,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3300,7 +2596,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "AP Physics 2 geometric + wave optics: ray diagrams, Snell's law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.",
-      "renderedBytes": 20319,
+      "renderedBytes": 20470,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3313,7 +2609,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3328,11 +2624,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Real-time speech prosody visualization — pitch, pacing, volume & intonation practice",
-      "renderedBytes": 11390,
+      "renderedBytes": 11594,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 16,
@@ -3341,45 +2637,12 @@
         "canvases": 4,
         "svgs": 0,
         "images": 0,
-        "headings": 10,
+        "headings": 11,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "oratory",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#oratory-panel-visualizer > div.space-y-4 > div.bg-slate-800.border:nth-of-type(3) > canvas.w-full.rounded-lg"
-        },
-        {
-          "toolId": "oratory",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#oratory-panel-visualizer > div.space-y-4 > div.grid.grid-cols-1:nth-of-type(4) > div.bg-slate-800.border:nth-of-type(1) > canvas.w-full.rounded-lg"
-        },
-        {
-          "toolId": "oratory",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div#oratory-panel-visualizer > div.space-y-4 > div.grid.grid-cols-1:nth-of-type(4) > div.bg-slate-800.border:nth-of-type(2) > canvas.w-full.rounded-lg"
-        },
-        {
-          "toolId": "oratory",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div#oratory-panel-visualizer > div.space-y-4 > div.bg-slate-800.border:nth-of-type(5) > canvas.w-full.rounded-lg"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "petsLab",
@@ -3389,7 +2652,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses, service animals. Cross-species pet training that assumes BehaviorLab's operant theory and applies it to real homes. UDL-aligned via Service & Support Animals coverage.",
-      "renderedBytes": 29447,
+      "renderedBytes": 29607,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3402,7 +2665,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3417,11 +2680,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Launch projectiles, explore kinematics, and learn Newtons laws",
-      "renderedBytes": 240,
+      "renderedBytes": 398,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -3430,19 +2693,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "physics",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "plateTectonics",
@@ -3452,11 +2708,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
-      "renderedBytes": 23334,
+      "renderedBytes": 23816,
       "standardShell": true,
-      "issueCount": 8,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 7,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 22,
@@ -3465,68 +2721,12 @@
         "canvases": 6,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 2
       },
       "issues": [
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "canvas#geology-earth-canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 2,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 3,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 4,
-          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 4,
-          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
-        },
         {
           "toolId": "plateTectonics",
           "severity": "notice",
@@ -3554,7 +2754,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 17335,
+      "renderedBytes": 17483,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3567,7 +2767,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 1
@@ -3596,11 +2796,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "The Gutenberg-style screw press as a working simulation, plus the materials science, mechanical engineering, economics, history, and typography it touches. Compose your own type, ink the forme, pull the bar, see the impression. Built for interdisciplinary middle-school work. Sources: Gutenberg Museum (Mainz), British Library, Library of Congress, Smithsonian, Aldine Press scholarship, Eisenstein, Johns, Bringhurst.",
-      "renderedBytes": 45047,
+      "renderedBytes": 45242,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 25,
@@ -3609,21 +2809,12 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "printingPress",
-          "severity": "warning",
-          "code": "svg-name",
-          "message": "SVG is neither aria-hidden nor named.",
-          "index": 1,
-          "selector": "div > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > svg"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "probability",
@@ -3633,7 +2824,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coin flips, dice, spinners, real sports stats & custom experiments.",
-      "renderedBytes": 20164,
+      "renderedBytes": 20320,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3646,7 +2837,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3661,11 +2852,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Measure and construct angles. Classify acute, right, obtuse, and reflex.",
-      "renderedBytes": 28021,
+      "renderedBytes": 28182,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 69,
@@ -3674,23 +2865,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 6,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "protractor",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 6,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "punnett",
@@ -3700,7 +2880,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Genetics lab: crosses, pedigrees, population genetics, DNA translation",
-      "renderedBytes": 27199,
+      "renderedBytes": 27358,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3713,7 +2893,7 @@
         "canvases": 0,
         "svgs": 2,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3728,7 +2908,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25543,
+      "renderedBytes": 25690,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3741,7 +2921,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3756,7 +2936,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "How each renewable energy source actually works — the physics and engineering. Solar PV, wind (Betz limit), hydro (head + flow), geothermal, CSP, wave/tidal, biomass, and storage. Live sliders driven by the real formulas. Cited to NREL, IEA, IRENA, DOE.",
-      "renderedBytes": 12883,
+      "renderedBytes": 13038,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3769,7 +2949,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 4,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3784,7 +2964,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40507,
+      "renderedBytes": 40718,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3797,7 +2977,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3812,11 +2992,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 5850,
+      "renderedBytes": 6081,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 13,
@@ -3825,38 +3005,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 3,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "rockCycle",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-3xl.mx-auto > div.relative.rounded-xl:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "rockCycle",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-3xl.mx-auto > div.relative.rounded-xl:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "rockCycle",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 3,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
         {
           "toolId": "rockCycle",
           "severity": "notice",
@@ -3873,11 +3027,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 6201,
+      "renderedBytes": 6466,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 9,
@@ -3886,28 +3040,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "rocks",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div:nth-of-type(4) > div.relative.rounded-xl:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "rocks",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-4xl.mx-auto > div:nth-of-type(4) > div.relative.rounded-xl:nth-of-type(1) > canvas"
-        },
         {
           "toolId": "rocks",
           "severity": "notice",
@@ -3924,7 +3062,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Applied K-12 behavior practice — what school psychs and educators actually do with operant-conditioning science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (the slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab (which teaches the science) and Disability Voices in SEL Hub (which centers the people the field has been done to).",
-      "renderedBytes": 21459,
+      "renderedBytes": 21623,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3937,7 +3075,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -3952,7 +3090,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore band gaps, doping, junctions, transistors, gates, I-V curves, wafer fab, LEDs, solar cells, quantum wells, memory & amplifiers.",
-      "renderedBytes": 16753,
+      "renderedBytes": 16910,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3965,12 +3103,47 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": []
+    },
+    {
+      "id": "simShelf",
+      "label": "Sim Shelf",
+      "category": "general",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "A shelf of PhET simulations — the most researched sims in education — wrapped in a Predict → Explore → Explain coach. Lock in a guess before you touch anything, experiment freely, then let the coach compare what you predicted with what you saw.",
+      "renderedBytes": 1941,
+      "standardShell": true,
+      "issueCount": 1,
+      "errorCount": 0,
+      "warningCount": 0,
+      "noticeCount": 1,
+      "metrics": {
+        "buttons": 1,
+        "roleButtons": 0,
+        "fields": 0,
+        "canvases": 0,
+        "svgs": 0,
+        "images": 0,
+        "headings": 2,
+        "links": 0,
+        "tinyTextClassHits": 0,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": [
+        {
+          "toolId": "simShelf",
+          "severity": "notice",
+          "code": "metadata",
+          "message": "Tool registry category is missing or generic."
+        }
+      ]
     },
     {
       "id": "singing",
@@ -3980,11 +3153,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pitch training, vocal range, vibrato analysis, interval singing & music theory",
-      "renderedBytes": 12317,
+      "renderedBytes": 12495,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 29,
@@ -3993,29 +3166,12 @@
         "canvases": 2,
         "svgs": 0,
         "images": 0,
-        "headings": 7,
+        "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "singing",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#singing-panel-pitch > div.space-y-4 > div.bg-slate-800.border:nth-of-type(3) > canvas.w-full.rounded"
-        },
-        {
-          "toolId": "singing",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#singing-panel-pitch > div.space-y-4 > div.bg-slate-800.border:nth-of-type(4) > canvas.w-full.rounded"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "skatelab",
@@ -4025,7 +3181,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 69049,
+      "renderedBytes": 69212,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4038,7 +3194,7 @@
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4053,11 +3209,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore a 3D model of the Sun, 8 planets, and dwarf planets — fly to surfaces, view interiors, run missions, and learn Kepler's laws.",
-      "renderedBytes": 16664,
+      "renderedBytes": 16827,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 25,
@@ -4066,23 +3222,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "solarSystem",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "spaceColony",
@@ -4092,7 +3237,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.",
-      "renderedBytes": 11683,
+      "renderedBytes": 11837,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4105,7 +3250,7 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4120,7 +3265,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Roguelike missions across the solar system. AI-generated challenges, real science, and strategic resource management.",
-      "renderedBytes": 11710,
+      "renderedBytes": 11865,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4133,7 +3278,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4148,7 +3293,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.",
-      "renderedBytes": 14034,
+      "renderedBytes": 14189,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4161,7 +3306,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4176,7 +3321,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Cross-campaign launcher across multiple regions and biomes. 5 deep Maine campaigns plus 10 cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone wolves, Akagera Rwanda lions), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray–Darling Basin), climate (Marshall Islands atolls, Bangladesh delta). Same universal mechanics taught through grounded regional case studies. Family Pairing Insights unlock as you complete Maine + cross-region scenarios in the same mechanic family.",
-      "renderedBytes": 3504,
+      "renderedBytes": 3680,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4189,7 +3334,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4204,7 +3349,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources cited inline (CDC, USCG, AAP, NAA, ASAN, NOAA, USA Swimming, Cold Water Boot Camp). Educational only — find a Water Safety Instructor for actual swim training.",
-      "renderedBytes": 13874,
+      "renderedBytes": 14022,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4217,7 +3362,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
+        "headings": 6,
         "links": 1,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4232,7 +3377,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47688,
+      "renderedBytes": 47840,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4245,7 +3390,7 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4260,7 +3405,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Virtual titration lab with S-curve graphing, safety drills, incident simulator, equipment guide, and dilution calculator.",
-      "renderedBytes": 11979,
+      "renderedBytes": 12133,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4273,7 +3418,7 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -4288,11 +3433,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30470,
+      "renderedBytes": 30626,
       "standardShell": true,
-      "issueCount": 5,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 5,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 25,
@@ -4301,73 +3446,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 1,
+        "headings": 2,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "typingPractice",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 48,
-          "selector": "div:nth-of-type(1) > button.tp-drill-card > div:nth-of-type(1) > div:nth-of-type(2) > span",
-          "ratio": 4.1,
-          "color": "#a3a3a3",
-          "background": "#334155",
-          "text": "Tier 0"
-        },
-        {
-          "toolId": "typingPractice",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 119,
-          "selector": "div:nth-of-type(8) > button.tp-drill-card > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(2)",
-          "ratio": 4.1,
-          "color": "#a3a3a3",
-          "background": "#334155",
-          "text": "Tier 7"
-        },
-        {
-          "toolId": "typingPractice",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 128,
-          "selector": "div:nth-of-type(9) > button.tp-drill-card > div:nth-of-type(1) > div:nth-of-type(2) > span",
-          "ratio": 4.1,
-          "color": "#a3a3a3",
-          "background": "#334155",
-          "text": "Open"
-        },
-        {
-          "toolId": "typingPractice",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 137,
-          "selector": "div:nth-of-type(10) > button.tp-drill-card > div:nth-of-type(1) > div:nth-of-type(2) > span",
-          "ratio": 4.1,
-          "color": "#a3a3a3",
-          "background": "#334155",
-          "text": "Open"
-        },
-        {
-          "toolId": "typingPractice",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 147,
-          "selector": "div:nth-of-type(11) > button.tp-drill-card > div:nth-of-type(1) > div:nth-of-type(2) > span",
-          "ratio": 4.1,
-          "color": "#a3a3a3",
-          "background": "#334155",
-          "text": "Open"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "unitConvert",
@@ -4377,11 +3461,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts",
-      "renderedBytes": 8900,
+      "renderedBytes": 9129,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 21,
@@ -4390,29 +3474,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "unitConvert",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-2xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "unitConvert",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-2xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "universe",
@@ -4422,11 +3489,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Journey through cosmic time from the Big Bang to heat death, exploring epochs, distance scales, galaxies, exoplanets, and dark matter.",
-      "renderedBytes": 32029,
+      "renderedBytes": 32200,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 54,
@@ -4435,21 +3502,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "universe",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(2) > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "volume",
@@ -4459,11 +3517,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "3D cube building with volume, surface area, badges & AI tutor.",
-      "renderedBytes": 31125,
+      "renderedBytes": 31357,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 26,
@@ -4472,39 +3530,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "volume",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(13) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "volume",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4.max-w-3xl > div.mt-5.rounded-2xl:nth-of-type(13) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "volume",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "waterCycle",
@@ -4514,11 +3545,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 18180,
+      "renderedBytes": 18419,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 18,
@@ -4527,51 +3558,12 @@
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 6,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "canvas#wcCanvas"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "canvas#wcCanvas"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 15,
-          "selector": "div > div.wc-explorer-root.max-w-3xl > div.wc-stage-rack.flex:nth-of-type(6) > button.px-2.5.py-1.5:nth-of-type(1)",
-          "ratio": 2.15,
-          "color": "white",
-          "background": "#f59e0b",
-          "text": "1☀ stem.water_cycle.evaporation"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 6,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "wave",
@@ -4581,11 +3573,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Animate sound and water waves across Free, Standing, Ripple Tank, Reflection, Longitudinal, Doppler, and Spectrum modes.",
-      "renderedBytes": 250,
+      "renderedBytes": 405,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 0,
@@ -4594,19 +3586,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 0,
+        "headings": 1,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "wave",
-          "severity": "warning",
-          "code": "heading",
-          "message": "No semantic heading rendered for this tool."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "weldLab",
@@ -4616,11 +3601,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Vocational welding simulator covering MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld bead geometry, defect identification, AWS welding symbols, OSHA-aligned PPE, and Maine career pathways (Bath Iron Works, EMCC welding program, AWS certification ladder). Real procedural and conceptual content for skilled-trades exploration — not a watered-down toy.",
-      "renderedBytes": 34259,
+      "renderedBytes": 34438,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 1,
       "metrics": {
         "buttons": 26,
@@ -4629,22 +3614,12 @@
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 26,
+        "headings": 27,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
       "issues": [
-        {
-          "toolId": "weldLab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        },
         {
           "toolId": "weldLab",
           "severity": "notice",
@@ -4661,11 +3636,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Literary RPG — explore worlds, craft items, build structures, and battle through the strength of your prose.",
-      "renderedBytes": 12526,
+      "renderedBytes": 12678,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 14,
@@ -4674,23 +3649,12 @@
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 4,
+        "headings": 5,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "worldBuilder",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     }
   ]
 }

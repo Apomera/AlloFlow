@@ -261,7 +261,8 @@
       { id: 'all_modes', label: 'Use all 4 CAS modes (solve, factor, simplify, expand)', icon: '\uD83C\uDF1F', check: function(d) { var m = d._modesUsed || {}; return !!(m.solve && m.factor && m.simplify && m.expand); }, progress: function(d) { var m = d._modesUsed || {}; return Object.keys(m).length + '/4 modes'; } }
     ],
     render: function(ctx) {
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -344,8 +345,8 @@
         var BORDER = 'rgba(99,102,241,0.2)';
         var ACCENT = '#a5b4fc';
         var MUTED = '#94a3b8';
-        var BTN_BG = 'linear-gradient(135deg,#6366f1,#8b5cf6)';
-        var BTN_FLAT = '#6366f1';
+        var BTN_BG = 'linear-gradient(135deg,#4f46e5,#7c3aed)';
+        var BTN_FLAT = '#4f46e5';
         var BTN_TEXT = '#fff';
 
         var cardStyle = { background: CARD, border: '1px solid ' + BORDER, borderRadius: '12px', padding: '12px' };

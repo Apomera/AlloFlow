@@ -1565,7 +1565,7 @@ window.StemLab = window.StemLab || {
               t('stem.multtable.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.multtable.explain_mastery_learning_thresholds', 'Explain mastery learning thresholds.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.multtable.design_note_discrete_3_state_mastery_m', 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.'))
+            h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.multtable.design_note_discrete_3_state_mastery_m', 'Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.'))
           );
         })()
         )  // end of Practice tab wrapper

@@ -534,7 +534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // dolphin, steadiness of the anchor.
           h('div', { 'aria-hidden': 'true',
             style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
-            h('svg', { width: 38, height: 46, viewBox: '0 0 38 46',
+            h('svg', { width: 38, height: 46, viewBox: '0 0 38 46', 'aria-hidden': 'true',
               style: { display: 'block', opacity: 0.7 } },
               // Anchor shaft
               h('line', { x1: 19, y1: 6, x2: 19, y2: 38, stroke: T.accent, strokeWidth: 2, strokeLinecap: 'round' }),

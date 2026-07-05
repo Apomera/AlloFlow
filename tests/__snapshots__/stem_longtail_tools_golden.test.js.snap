@@ -35,7 +35,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 57,
   "inputs": 0,
   "lengthBucket": 126,
-  "sha": "e4f80e5f967a8e0e",
+  "sha": "6b4596346c4b98c5",
   "svgs": 0,
 }
 `;
@@ -45,7 +45,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 20,
   "inputs": 0,
   "lengthBucket": 89,
-  "sha": "fd50a86a89624c58",
+  "sha": "7ac89987df7f33c1",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 13,
   "inputs": 0,
   "lengthBucket": 144,
-  "sha": "007165c395cb1416",
+  "sha": "bb5e94ca266cc765",
   "svgs": 0,
 }
 `;
@@ -125,7 +125,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 16,
   "inputs": 0,
   "lengthBucket": 56,
-  "sha": "d7c5e6260d72d3eb",
+  "sha": "adc4eaf5d5de0f93",
   "svgs": 0,
 }
 `;
@@ -165,7 +165,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 29,
   "inputs": 0,
   "lengthBucket": 60,
-  "sha": "617fdeed2c4eaf6c",
+  "sha": "708ac736b34c1068",
   "svgs": 0,
 }
 `;
@@ -185,7 +185,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 36,
   "inputs": 0,
   "lengthBucket": 151,
-  "sha": "d34371edf4daaa5b",
+  "sha": "9db0d36134ffc24c",
   "svgs": 0,
 }
 `;
@@ -195,7 +195,7 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 15,
   "inputs": 7,
   "lengthBucket": 62,
-  "sha": "be17112a5e48ede3",
+  "sha": "a067214b0d2a7bcd",
   "svgs": 1,
 }
 `;

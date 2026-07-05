@@ -768,7 +768,7 @@
 
             // Center — Canvas
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
+              h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), tabIndex: 0, style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default' },
                 onMouseMove: function(e) { if (!d.traceMode) return; var rect = e.currentTarget.getBoundingClientRect(); var px = (e.clientX - rect.left) / rect.width * (e.currentTarget.width / (window.devicePixelRatio || 1)); if (e.currentTarget._toMathX) upd('traceX', e.currentTarget._toMathX(px)); },
                 onMouseLeave: function() { if (d.traceMode) upd('traceX', null); } }),
               showWindow ? h('div', { style: { padding: '8px 12px', background: gcPanel, borderTop: '1px solid ' + gcBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },

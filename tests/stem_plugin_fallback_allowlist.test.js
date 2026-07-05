@@ -31,7 +31,9 @@ describe('STEM plugin fallback allowlist', () => {
   it('includes every real plugin-only registration so tiles do not render blank', () => {
     const registered = collectRegisteredStemPluginIds();
     const intentionalNonFallback = new Set([
-      'arccity', // inline-rendered legacy tool
+      // 'arccity' was wrongly exempted here as "inline-rendered legacy tool" —
+      // it never had an inline handler, so its tile rendered a blank content
+      // area (fixed Jul 5 2026 by adding it to _pluginOnlyTools). Now enforced.
       'forge', // Tool Forge lives behind teacher-gated custom handling
       'myTool', // Tool Forge example/template registration
     ]);

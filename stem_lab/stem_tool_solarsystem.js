@@ -2139,7 +2139,7 @@ const d = labToolData.solarSystem || {};
                   d.orreryMode ? "\uD83C\uDF0D 3D Explorer" : "\uD83C\uDF0C Open Orrery Lab",
                   // Small "NEW" badge for never-opened users, helps discoverability.
                   !hasDiscovered ? React.createElement("span", {
-                    className: "absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-md border border-amber-600/30",
+                    className: "absolute -top-1 -right-1 bg-amber-400 text-slate-900 text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-md border border-amber-600/30",
                     "aria-hidden": "true"
                   }, "NEW") : null
                 );
@@ -15106,7 +15106,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-' + Math.min(stages.length, 5) + ' gap-1' },
                                           stages.map(function(st, si) {
-                                            return React.createElement('button', { key: si, onClick: function() { upd('stellarPhase', st.at); }, className: 'p-1.5 rounded text-[9px] font-bold ' + (Math.abs(phase - st.at) < 5 ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')), style: { borderLeft: '3px solid ' + st.color } }, st.label);
+                                            return React.createElement('button', { key: si, onClick: function() { upd('stellarPhase', st.at); }, className: 'p-1.5 rounded text-[10px] font-bold ' + (Math.abs(phase - st.at) < 5 ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')), style: { borderLeft: '3px solid ' + st.color } }, st.label);
                                           })
                                         )
                                       );
@@ -15738,7 +15738,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-3 gap-1' },
                                           [['Sun + Earth', 1.0, 1.0], ['Sun + Mars', 1.0, 1.52], ['Proxima + b', 0.0017, 0.05], ['Kepler-186 + f', 0.05, 0.43], ['HD 40307 + g', 0.23, 0.6], ['TRAPPIST-1 + e', 0.0005, 0.029]].map(function(preset) {
-                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
+                                            return React.createElement('button', { key: preset[0], onClick: function() { upd('hzLum', preset[1]); upd('hzDist', preset[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200') }, preset[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -15883,7 +15883,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex flex-wrap gap-1 mt-1' },
                                           [['Vernal Equinox', 0], ['Summer Solstice', 90], ['Autumnal Equinox', 180], ['Winter Solstice', 270]].map(function(sp) {
-                                            return React.createElement('button', { key: sp[0], onClick: function() { upd('dayNightSeason', sp[1]); }, className: 'px-2 py-1 rounded text-[9px] font-bold ' + (Math.abs(season - sp[1]) < 5 ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, sp[0]);
+                                            return React.createElement('button', { key: sp[0], onClick: function() { upd('dayNightSeason', sp[1]); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (Math.abs(season - sp[1]) < 5 ? 'bg-blue-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, sp[0]);
                                           })
                                         )
                                       );
@@ -15953,7 +15953,7 @@ const d = labToolData.solarSystem || {};
                                             ['L4', 'Trojan asteroids — stable', '#22c55e'],
                                             ['L5', 'Trojan asteroids — stable', '#22c55e']
                                           ].map(function(L) {
-                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[9px] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
+                                            return React.createElement('div', { key: L[0], className: 'p-1 rounded text-[10px] ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), style: { borderLeft: '3px solid ' + L[2] } },
                                               React.createElement('div', { className: 'font-bold' }, L[0]),
                                               React.createElement('div', null, L[1])
                                             );
@@ -16180,7 +16180,7 @@ const d = labToolData.solarSystem || {};
                                             { l: 'Window', v: dest === 'mars' ? 'Every 26 months' : dest === 'jupiter' ? 'Every 13 months' : 'Frequent', c: 'emerald' }
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                              React.createElement('div', { className: 'font-bold text-[9px]' }, s.l),
+                                              React.createElement('div', { className: 'font-bold text-[10px]' }, s.l),
                                               React.createElement('div', { className: 'text-[10px]' }, s.v)
                                             );
                                           })
@@ -16396,7 +16396,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Approaching', -30000], ['At rest', 0], ['Receding', 30000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('dopplerVel', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -16772,7 +16772,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Binoculars', 5], ['Beginner', 10], ['Mid-range', 20], ['Pro Amateur', 35], ['Hubble', 240], ['JWST', 650]].slice(0, 6).map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[8px] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('scopeAp', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (Math.abs(aperture - p[1]) < 2 ? 'bg-cyan-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -16850,7 +16850,7 @@ const d = labToolData.solarSystem || {};
                                             { l: 'Temp', v: tempC.toFixed(0) + '°C', c: 'orange' }
                                           ].map(function(s) {
                                             return React.createElement('div', { key: s.l, className: 'p-1.5 rounded text-center ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                              React.createElement('div', { className: 'font-bold text-[9px]' }, s.l),
+                                              React.createElement('div', { className: 'font-bold text-[10px]' }, s.l),
                                               React.createElement('div', { className: 'text-[10px]' }, s.v)
                                             );
                                           })
@@ -17007,7 +17007,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Mars (lost)', 5, 70], ['Earth (now)', 70, 50], ['Jupiter (strongest)', 100, 50]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('magStr', p[1]); upd('magSolar', p[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17200,7 +17200,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 grid grid-cols-5 gap-1' },
                                           DESTS.map(function(des, idx) {
-                                            return React.createElement('button', { key: idx, onClick: function() { upd('lyDist', idx); }, className: 'p-1 rounded text-[8px] font-bold ' + (dist === idx ? 'bg-indigo-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, des.name);
+                                            return React.createElement('button', { key: idx, onClick: function() { upd('lyDist', idx); }, className: 'p-1 rounded text-[10px] font-bold ' + (dist === idx ? 'bg-indigo-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, des.name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -17278,7 +17278,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-3 gap-1' },
                                           [['Equator', 0, 80], ['Mid-North', 45, 172], ['Arctic Circle', 67, 172], ['Antarctic Circle', -67, 172], ['Maine (Portland)', 43.7, 172], ['North Pole', 90, 172]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('sunLat', p[1]); upd('sunDoy', p[2]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('sunLat', p[1]); upd('sunDoy', p[2]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18554,7 +18554,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Pebble', 0.5], ['Chelyabinsk', 20], ['Tunguska', 50], ['Chicxulub', 10000]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('impSize', p[1]); }, className: 'p-1 rounded text-[9px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('impSize', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
@@ -18733,7 +18733,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
                                           [['Earth (e=0.017)', 0.017], ['Halley (e=0.97)', 0.97], ['Mercury (e=0.21)', 0.21], ['Hale-Bopp (e=0.995)', 0.995]].map(function(p) {
-                                            return React.createElement('button', { key: p[0], onClick: function() { upd('cobEcc', p[1]); }, className: 'p-1 rounded text-[8px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
+                                            return React.createElement('button', { key: p[0], onClick: function() { upd('cobEcc', p[1]); }, className: 'p-1 rounded text-[10px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, p[0]);
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },

@@ -1086,6 +1086,7 @@
             h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.unitconvert.metric_prefixes_powers_of_10_from_atom', 'ðŸ”¬ Metric Prefixes â€” Powers of 10 from atoms to galaxies')),
             h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0c1a2e', aspectRatio: '16/5' } },
               h('canvas', {
+                role: 'img', tabIndex: 0, 'aria-label': 'Unit conversion scale visualization.',
                 ref: function(cvEl) {
                   if (!cvEl) {
                     try { if (window.__alloMetricPrefixCleanup) window.__alloMetricPrefixCleanup(); } catch (e) {}
