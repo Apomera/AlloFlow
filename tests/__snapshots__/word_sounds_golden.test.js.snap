@@ -4544,7 +4544,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <span class="text-xs uppercase font-bold text-slate-600 tracking-wider">Sound Sort</span>
 <span class="text-xl font-black text-violet-600">Sound Family</span>
 </div>
-<button aria-label="common.hear_target_sound" title="common.hear_target_sound" class="ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors">
+<button aria-label="common.replay_instructions" title="common.replay_instructions" class="ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
 </button>
