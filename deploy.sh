@@ -131,6 +131,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ Tool Forge vendored contract core in sync with dev-tools/forge_contract_core.js (no Tier-1/Tier-2 drift)."
   node dev-tools/check_i18n_fallback.cjs --quiet
   echo "  ✓ no \`__alloT = ctx.t\` fallback-dropping decls (missing keys must fall back to English, not render 'undefined')."
+  node dev-tools/gen_docsuite_theme.cjs --check
+  echo "  ✓ docsuite theme CSS current (new color utilities in scanned files regenerate the scoped remap — stale block = pastel-in-dark modals; 2026-07-05 gate)."
 fi
 
 # ── Step 0.7: CDN-deployability gate ───────────────────────────────
