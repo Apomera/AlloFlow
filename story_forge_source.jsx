@@ -2922,8 +2922,13 @@ show();
 
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
 
+  // Canvas is theme-aware (2026-07-05, maintainer report "light mode = too much dark background"):
+  // the header/stepper/footer chrome is already light, but the content canvas was hardcoded
+  // bg-slate-900/95 — so light mode showed white bars sandwiching a near-black canvas, and the
+  // phase headings (text-slate-800, directly on the canvas) were dark-on-dark. Light ('default')
+  // now gets a soft slate-100 canvas; dark/contrast keep the dark canvas (host remap handles text).
   return (
-    <div ref={modalRootRef} tabIndex={-1} className={`sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
+    <div ref={modalRootRef} tabIndex={-1} className={`sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] ${hostTheme === 'default' ? 'bg-slate-100/95' : 'bg-slate-900/95'} backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
       {/* Screen reader playback announcements */}
@@ -3130,7 +3135,7 @@ show();
               {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
               <div className="bg-white rounded-2xl border-2 border-violet-100 p-5 shadow-sm">
                 <h4 className="text-sm font-bold text-violet-700 uppercase tracking-wider mb-1 flex items-center gap-2">
-                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-400 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
+                  <Sparkles size={16} /> Story Shape <span className="text-[10px] font-medium text-slate-500 normal-case tracking-normal">(optional — the emotional ups &amp; downs)</span>
                 </h4>
                 <p className="text-[11px] text-slate-500 mb-3">Pick the shape of your character's fortune over time — a lens to play with. Great stories bend the rules!</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -3762,7 +3767,7 @@ show();
                       </div>
                       {pm.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {pm.strengths}</p>}
                       {pm.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {pm.tips}</p>}
-                      <p className="text-[10px] text-slate-400 italic mt-1">Formative AI feedback to guide practice — not a graded or normed score.</p>
+                      <p className="text-[10px] text-slate-500 italic mt-1">Formative AI feedback to guide practice — not a graded or normed score.</p>
                       <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label={t("a11y.dismiss_penmanship_feedback")}>{t("ui_common.dismiss")}</button>
                     </div>
                     );
@@ -4714,7 +4719,7 @@ show();
                 {/* Story Arc — emotional fortune curve (Vonnegut shapes) */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-400 font-medium">· fortune over time</span></div>
+                    <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Story Arc <span className="normal-case tracking-normal text-slate-500 font-medium">· fortune over time</span></div>
                     {onCallGemini && (
                       <button type="button" data-sf-focusable onClick={suggestValenceArc} disabled={valenceLoading}
                         className="text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1">
@@ -4762,7 +4767,7 @@ show();
                             {match.weak ? 'Closest shape (loosely): ' : 'Your story looks like a '}<span className="font-black">{match.emoji} {match.label}</span>{match.weak ? '' : '!'} <span className="text-slate-500 font-medium">— a craft lens, not a rule.</span>
                           </div>
                         ) : (
-                          <div className="mt-2 text-[11px] text-slate-400 italic">Drag a point or tap "Suggest arc" to map your story's emotional ups &amp; downs.</div>
+                          <div className="mt-2 text-[11px] text-slate-500 italic">Drag a point or tap "Suggest arc" to map your story's emotional ups &amp; downs.</div>
                         )}
                       </>
                     );
