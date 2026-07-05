@@ -377,3 +377,13 @@ describe('MemoryPalace — decorate handle contract', () => {
     h.destroy();
   });
 });
+
+describe('MemoryPalace — CC0 collectible references', () => {
+  it('the fallback handle tolerates { glbItem } object refs without throwing', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), { objects: { b0_i0: { glbItem: 'sprout' } } });
+    expect(() => h.setLocusObject('b0_i0', { glbItem: 'sprout', scale: 1.5 })).not.toThrow();
+    expect(() => h.replaceLocusObject('b0_i0', { glbItem: 'lantern' })).not.toThrow();
+    h.destroy();
+  });
+});

@@ -1908,6 +1908,13 @@ function _voVoiceEnsure() {
     .then(function () { return !!(window.AlloFlowVoice || (window.AlloModules && window.AlloModules.Voice)); })
     .catch(function () { return false; });
 }
+function _voGlbEnsure() {
+  if (window.AlloModules && window.AlloModules.GlbLibrary) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + 'glb_library_module.js' + loc.query)
+    .then(function () { return !!(window.AlloModules && window.AlloModules.GlbLibrary); })
+    .catch(function () { return false; });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -2844,6 +2851,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             if (!alive) return;
             if (!ok) { setFailed(true); return; }
             _voPrim3dEnsure().then(() => { if (alive) setReady(true); });
+            // CC0 collectibles library (Tier D) — best-effort sidecar like Prim3D;
+            // the Decorate panel's Collectibles row appears only if it loads.
+            _voGlbEnsure().then((g) => { if (alive) setGlbReady(!!g); });
         });
         return () => { alive = false; };
     }, []);
@@ -3077,6 +3087,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     //    works offline; the walk is the locus picker (same contract as Direct).
     //    Choosing your own cue is itself encoding work (choice + generation effect).
     const [decorMode, setDecorMode] = React.useState(false);
+    const [glbReady, setGlbReady] = React.useState(false);
+    // Place a CC0-library collectible: persist a tiny { glbItem } REFERENCE (not
+    // the mesh) — the palace resolves it via GlbLibrary.loadModel, which uses the
+    // real .glb when the catalog has one and the item's Prim3D fallback otherwise.
+    const handlePlaceCollectible = (item) => {
+        const cur = currentRef.current;
+        if (!item || !cur || cur.id === '__entry' || !persist) return;
+        _persistObject(cur.id, { glbItem: item.id });
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
     const handlePlacePreset = (presetId) => {
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
         const cur = currentRef.current;
@@ -3283,7 +3303,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!MP || !P3D || !cur || cur.id === '__entry' || !persist || refineBusy || typeof window.callGemini !== 'function') return;
         const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
         const instr = refinePrompt.trim();
-        if (!rec || !instr) return;
+        if (!rec || !instr || rec.glbItem) return;   // library items have no editable parts
         setRefineBusy(true);
         Promise.resolve(window.callGemini(MP.buildRefinePrompt(rec, instr), true))
             .then((res) => {
@@ -3564,18 +3584,20 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         <button onClick={() => handleManualTweak('rotate')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">⟳ {t('memory_palace.refine_rotate') || 'Rotate'}</button>
                                         <button onClick={() => handleManualTweak('recolor')} className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100">🎨 {t('memory_palace.refine_recolor') || 'Recolor'}</button>
                                     </div>
-                                    <form onSubmit={(e) => { e.preventDefault(); handleAiRefine(); }} className="flex gap-2">
-                                        <input
-                                            value={refinePrompt}
-                                            onChange={(e) => setRefinePrompt(e.target.value)}
-                                            placeholder={t('memory_palace.refine_placeholder') || 'Tell the AI what to change… (e.g. add a red hat)'}
-                                            aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
-                                            className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
-                                        />
-                                        <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                            {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
-                                        </button>
-                                    </form>
+                                    {!objects3d[current.id].glbItem && (
+                                        <form onSubmit={(e) => { e.preventDefault(); handleAiRefine(); }} className="flex gap-2">
+                                            <input
+                                                value={refinePrompt}
+                                                onChange={(e) => setRefinePrompt(e.target.value)}
+                                                placeholder={t('memory_palace.refine_placeholder') || 'Tell the AI what to change… (e.g. add a red hat)'}
+                                                aria-label={t('memory_palace.refine_placeholder') || 'Tell the AI what to change'}
+                                                className="flex-1 text-sm p-2 rounded-lg border border-fuchsia-300 focus:ring-2 focus:ring-fuchsia-400 outline-none bg-white"
+                                            />
+                                            <button type="submit" disabled={!refinePrompt.trim() || refineBusy} className="px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                {refineBusy ? (t('memory_palace.direct_creating') || 'Creating…') : ('✨ ' + (t('memory_palace.refine_apply') || 'Refine'))}
+                                            </button>
+                                        </form>
+                                    )}
                                 </div>
                             )}
                             <div className="flex items-center gap-2 mb-2">
@@ -3649,6 +3671,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                                 <button key={p.id} onClick={() => handlePlacePreset(p.id)} title={label}
                                                     className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
                                                     {p.emoji} {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {glbReady && !!(window.AlloModules && window.AlloModules.GlbLibrary) && (
+                                <div className="mb-2">
+                                    <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_collectibles') || 'Collectibles (open 3D library)'}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {window.AlloModules.GlbLibrary.listCatalog().filter((it) => it.id !== 'trophy').map((it) => {
+                                            const emoji = { sprout: '🌱', boulder: '🪨', lantern: '🏮', companion: '🐾' }[it.id] || '📦';
+                                            const label = t('memory_palace.collect_' + it.id) || it.label;
+                                            return (
+                                                <button key={it.id} onClick={() => handlePlaceCollectible(it)} title={label}
+                                                    className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                    {emoji} {label}
                                                 </button>
                                             );
                                         })}

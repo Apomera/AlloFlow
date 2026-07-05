@@ -1270,6 +1270,15 @@ function _voVoiceEnsure() {
     return false;
   });
 }
+function _voGlbEnsure() {
+  if (window.AlloModules && window.AlloModules.GlbLibrary) return Promise.resolve(true);
+  var loc = _voCg3dSelfBase();
+  return _voCg3dLoadScript(loc.base + "glb_library_module.js" + loc.query).then(function() {
+    return !!(window.AlloModules && window.AlloModules.GlbLibrary);
+  }).catch(function() {
+    return false;
+  });
+}
 function _voCg3dEnsure() {
   if (window.AlloModules && window.AlloModules.ConceptGraph3D && window.AlloModules.ConceptGraphEngine) return Promise.resolve(true);
   var loc = _voCg3dSelfBase();
@@ -2223,6 +2232,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       _voPrim3dEnsure().then(() => {
         if (alive) setReady(true);
       });
+      _voGlbEnsure().then((g) => {
+        if (alive) setGlbReady(!!g);
+      });
     });
     return () => {
       alive = false;
@@ -2507,6 +2519,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const objectCount = Object.keys(objects3d).length;
   const [sculpting, setSculpting] = React.useState(null);
   const [decorMode, setDecorMode] = React.useState(false);
+  const [glbReady, setGlbReady] = React.useState(false);
+  const handlePlaceCollectible = (item) => {
+    const cur = currentRef.current;
+    if (!item || !cur || cur.id === "__entry" || !persist) return;
+    _persistObject(cur.id, { glbItem: item.id });
+    if (addToast) addToast(t("memory_palace.decorate_placed") || "\u{1F381} Placed! Saved with this palace.", "success");
+  };
   const handlePlacePreset = (presetId) => {
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
     const cur = currentRef.current;
@@ -2765,7 +2784,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (!MP || !P3D || !cur || cur.id === "__entry" || !persist || refineBusy || typeof window.callGemini !== "function") return;
     const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
     const instr = refinePrompt.trim();
-    if (!rec || !instr) return;
+    if (!rec || !instr || rec.glbItem) return;
     setRefineBusy(true);
     Promise.resolve(window.callGemini(MP.buildRefinePrompt(rec, instr), true)).then((res) => {
       if (!aliveRef.current) return;
@@ -2984,7 +3003,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F501} ",
     t("memory_palace.review_now") || "Review now"
-  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3DB}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("memory_palace.empty_title") || "No palace to walk yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("memory_palace.empty_body") || "Generate this organizer from a source text and the facts will become rooms and loci you can walk through.")) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" })), !recall && !directMode && current && !current.entry && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700 mb-0.5" }, (t("memory_palace.locus_of") || "Locus {idx} of {total}").replace("{idx}", String(current.idx)).replace("{total}", String(current.total)), " \u2014 ", current.label), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.picture_this") || "Picture this:"), " ", current.mnemonic)), directMode && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-fuchsia-50 border border-fuchsia-200 rounded-xl px-4 py-3" }, !current || current.entry ? /* @__PURE__ */ React.createElement("div", { className: "text-sm text-fuchsia-900" }, t("memory_palace.direct_at_entry") || "\u270D\uFE0F Walk to a locus (\u25B6 or WASD), then direct the AI to create its image or sculpture.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1" }, (t("memory_palace.direct_for") || "Direct the AI for: {label}").replace("{label}", current.label)), current.mnemonic && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 italic mb-2" }, t("memory_palace.picture_this") || "Picture this:", " ", current.mnemonic), objects3d[current.id] && /* @__PURE__ */ React.createElement("div", { className: "mb-3 pb-3 border-b border-fuchsia-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-fuchsia-800 mb-1.5" }, t("memory_palace.refine_title") || "Refine this sculpture"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("bigger"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("smaller"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("rotate"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleManualTweak("recolor"), className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), !objects3d[current.id].glbItem && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleAiRefine();
   }, className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
@@ -3034,6 +3053,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors"
       },
       p.emoji,
+      " ",
+      label
+    );
+  }))), glbReady && !!(window.AlloModules && window.AlloModules.GlbLibrary) && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_collectibles") || "Collectibles (open 3D library)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, window.AlloModules.GlbLibrary.listCatalog().filter((it) => it.id !== "trophy").map((it) => {
+    const emoji = { sprout: "\u{1F331}", boulder: "\u{1FAA8}", lantern: "\u{1F3EE}", companion: "\u{1F43E}" }[it.id] || "\u{1F4E6}";
+    const label = t("memory_palace.collect_" + it.id) || it.label;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: it.id,
+        onClick: () => handlePlaceCollectible(it),
+        title: label,
+        className: "px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors"
+      },
+      emoji,
       " ",
       label
     );

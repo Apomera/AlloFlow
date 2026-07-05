@@ -567,18 +567,26 @@
       }
     } catch (e) {}
 
-    // Starfield above the open-roofed palace (gallery + space; a dream-space, not a building sim).
+    // Starfield above the open-roofed palace (gallery + space; a dream-space, not
+    // a building sim). Two half-count layers whose opacities pulse out of phase →
+    // a gentle whole-sky twinkle for the cost of two uniform writes per frame.
+    var _starMats = [];
     try {
       if (theme.starCount > 0) {
-        var SN = theme.starCount, sp3 = new Float32Array(SN * 3);
         var span = Math.max(2000, palace.bounds.width * 1.6);
-        for (var si = 0; si < SN; si++) {
-          sp3[si * 3] = palace.bounds.minX + Math.random() * span;
-          sp3[si * 3 + 1] = WALL_H + 300 + Math.random() * 2200;
-          sp3[si * 3 + 2] = -span / 2 + Math.random() * span;
+        for (var sl = 0; sl < 2; sl++) {
+          var SN = Math.ceil(theme.starCount / 2), sp3 = new Float32Array(SN * 3);
+          for (var si = 0; si < SN; si++) {
+            sp3[si * 3] = palace.bounds.minX + Math.random() * span;
+            sp3[si * 3 + 1] = WALL_H + 300 + Math.random() * 2200;
+            sp3[si * 3 + 2] = -span / 2 + Math.random() * span;
+          }
+          var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
+          var sm = new THREE.PointsMaterial({ color: theme.stars, size: 7, transparent: true, opacity: 0.5, depthWrite: false });
+          sm.userData = { phase: sl * Math.PI };   // opposite phases
+          _starMats.push(sm);
+          root.add(new THREE.Points(sg, sm));
         }
-        var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp3, 3));
-        root.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: theme.stars, size: 7, transparent: true, opacity: 0.5, depthWrite: false })));
       }
     } catch (e) {}
 
@@ -604,6 +612,23 @@
       var floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D),
         new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(theme.floorMul), roughness: 0.9 }));
       floor.rotation.x = -Math.PI / 2; floor.position.y = 0.5; rg.add(floor);
+      // Carpet runner from the doorway to the far wall — a soft accent path that
+      // pulls the eye down the room's locus row (and doubles as wayfinding in the
+      // open-world themes). Room-local, so it rotates with the spoke for free.
+      if (ri !== 0) {
+        try {
+          var cc = document.createElement('canvas'); cc.width = 128; cc.height = 32;
+          var cg = cc.getContext('2d');
+          cg.fillStyle = room.color; cg.fillRect(0, 0, 128, 32);
+          cg.fillStyle = 'rgba(255,255,255,0.35)'; cg.fillRect(0, 2, 128, 3); cg.fillRect(0, 27, 128, 3);   // edge trim
+          var ctex = new THREE.CanvasTexture(cc);
+          if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
+          var carpet = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W - 150, 130),
+            new THREE.MeshStandardMaterial({ map: ctex, transparent: true, opacity: theme.walls ? 0.4 : 0.28, roughness: 1, depthWrite: false }));
+          carpet.rotation.x = -Math.PI / 2; carpet.rotation.z = 0;
+          carpet.position.set(0, 1.1, 0); rg.add(carpet);
+        } catch (eC) {}
+      }
       if (ri === 0 || !theme.walls) {
         // Hub is an open plaza; open-world themes (pasture/space) drop walls too.
       } else {
@@ -615,6 +640,18 @@
         var segZ = (ROOM_D - DOOR_W) / 2;
         addLocalWall(-ROOM_W / 2, -(DOOR_W / 2 + segZ / 2), 10, segZ);       // near wall, doorway to the hub
         addLocalWall(-ROOM_W / 2, (DOOR_W / 2 + segZ / 2), 10, segZ);
+        // Doorway columns + lintel — frame the threshold so each room reads as a
+        // distinct chamber from the hub (helps the "walk into a room" mental map).
+        try {
+          var colMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5, metalness: 0.15 });
+          [-1, 1].forEach(function (cs) {
+            var col = new THREE.Mesh(new THREE.CylinderGeometry(16, 19, WALL_H * 0.88, 14), colMat);
+            col.position.set(-ROOM_W / 2, WALL_H * 0.44, cs * (DOOR_W / 2 + 24)); rg.add(col);
+          });
+          var lintel = new THREE.Mesh(new THREE.BoxGeometry(26, 24, DOOR_W + 92),
+            new THREE.MeshStandardMaterial({ color: new THREE.Color(room.color).multiplyScalar(0.65), roughness: 0.55, metalness: 0.2 }));
+          lintel.position.set(-ROOM_W / 2, WALL_H * 0.88 + 12, 0); rg.add(lintel);
+        } catch (eD) {}
       }
       // Room accent light + name sprite (world coords; sprites always face the camera).
       try { var pl = new THREE.PointLight(new THREE.Color(room.color), 0.55, ROOM_W * 1.4); pl.position.set(cx, WALL_H - 40, cz); group.add(pl); } catch (e) {}
@@ -622,7 +659,8 @@
       name.position.set(cx, WALL_H + 40, cz); group.add(name);
     });
 
-    // Entry plinth (the palace title).
+    // Entry plinth (the palace title) + a slow sparkle ring orbiting the orb.
+    var _orbRing = null;
     (function () {
       var plinth = new THREE.Mesh(new THREE.CylinderGeometry(46, 56, 110, 20),
         new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.25 }));
@@ -632,7 +670,38 @@
       orb.position.set(0, 140, 0); orb.userData.locusId = '__entry'; group.add(orb);
       var title = makeLabelSprite(THREE, palace.title || '', '#818cf8', 32);
       title.position.set(0, 215, 0); group.add(title);
+      try {
+        var ORB_N = 18, op3 = new Float32Array(ORB_N * 3);
+        for (var oi = 0; oi < ORB_N; oi++) {
+          var oa = (Math.PI * 2 * oi) / ORB_N;
+          op3[oi * 3] = Math.cos(oa) * 58;
+          op3[oi * 3 + 1] = Math.sin(oa * 3) * 10;    // gentle wave, not a flat halo
+          op3[oi * 3 + 2] = Math.sin(oa) * 58;
+        }
+        var og = new THREE.BufferGeometry(); og.setAttribute('position', new THREE.BufferAttribute(op3, 3));
+        _orbRing = new THREE.Points(og, new THREE.PointsMaterial({ color: 0xa5b4fc, size: 6, transparent: true, opacity: 0.85, depthWrite: false }));
+        _orbRing.position.set(0, 140, 0);
+        group.add(_orbRing);
+      } catch (e) {}
     })();
+
+    // Ambient motes: one drifting point cloud through the palace interior —
+    // lamplit dust (gallery), fireflies (pasture), or star-sparkles (space).
+    // Animated as a whole (slow spin + bob): two uniform writes per frame.
+    var _motes = null;
+    try {
+      var MOTE_COLOR = theme.walls ? 0xffd9a0 : (theme.ground ? 0xd9f99d : 0x93c5fd);
+      var MN = Math.min(260, 60 + palace.rooms.length * 28);
+      var mp3 = new Float32Array(MN * 3);
+      for (var mi = 0; mi < MN; mi++) {
+        mp3[mi * 3] = palace.bounds.minX * 0.9 + Math.random() * palace.bounds.width * 0.9;
+        mp3[mi * 3 + 1] = 30 + Math.random() * (WALL_H + 90);
+        mp3[mi * 3 + 2] = palace.bounds.minZ * 0.9 + Math.random() * palace.bounds.width * 0.9;
+      }
+      var mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.BufferAttribute(mp3, 3));
+      _motes = new THREE.Points(mg, new THREE.PointsMaterial({ color: MOTE_COLOR, size: 5, transparent: true, opacity: 0.45, depthWrite: false }));
+      root.add(_motes);
+    } catch (e) {}
 
     // Loci frames. In recall mode the label is a '?' — the image (or the numbered
     // placard) is the CUE, the label is the ANSWER and stays hidden until earned.
@@ -668,6 +737,22 @@
         return true;
       } catch (e) { return false; }
     }
+    // Shared warm light-wash texture+material for every picture light (gallery
+    // theme): one canvas gradient, one additive material, reused by all frames.
+    var _washMat = null;
+    try {
+      if (theme.walls) {
+        var wc = document.createElement('canvas'); wc.width = 64; wc.height = 128;
+        var wg = wc.getContext('2d');
+        var wgrad = wg.createLinearGradient(0, 0, 0, 128);
+        wgrad.addColorStop(0, 'rgba(255,220,160,0.85)');
+        wgrad.addColorStop(0.55, 'rgba(255,220,160,0.22)');
+        wgrad.addColorStop(1, 'rgba(255,220,160,0)');
+        wg.fillStyle = wgrad; wg.fillRect(0, 0, 64, 128);
+        var wtex = new THREE.CanvasTexture(wc);
+        _washMat = new THREE.MeshBasicMaterial({ map: wtex, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+      }
+    } catch (e) {}
     palace.loci.forEach(function (l, li) {
       if (l.id === '__entry') return;
       var room = palace.rooms[l.roomIdx];
@@ -686,6 +771,14 @@
         new THREE.MeshStandardMaterial({ color: 0x475569, emissive: 0xffd9a0, emissiveIntensity: 0.85, roughness: 0.5, metalness: 0.2 }));
       lampBar.position.set(0, FRAME_H / 2 + 24, 6);
       g2.add(lampBar);
+      // Warm wash on the wall around the frame — the picture light "shining".
+      if (_washMat) {
+        try {
+          var wash = new THREE.Mesh(new THREE.PlaneGeometry(FRAME_W * 1.7, FRAME_H * 1.9), _washMat);
+          wash.position.set(0, 14, -0.5);   // between the wall face and the frame border
+          g2.add(wash);
+        } catch (eW) {}
+      }
       var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       var img = images[l.id];
       if (img) {
@@ -756,23 +849,52 @@
     var SCULPT_UNIT = 90;                    // a touch bigger than the original 70
     var _sculptedIds = {};                   // guard against placing a locus twice
     var _sculptRefs = {};                    // id → {ped, fig} so refine can replace them
+    var _sculptSeq = {};                     // id → token; a late async glb resolve for a replaced/cleared locus is dropped
+    // objects[id] can be a Prim3D recipe OR a CC0-library reference
+    // ({ glbItem: 'sprout', ±scale/rotY/tint }) resolved via GlbLibrary.loadModel —
+    // real .glb when the catalog has one, its Prim3D fallback recipe otherwise.
+    function _isGlbRef(recipe) { return !!(recipe && typeof recipe === 'object' && typeof recipe.glbItem === 'string'); }
+    function _placeFig(l, fig) {
+      // decorSpot rotates the beside-the-frame offset with faceYaw — the old
+      // axis-aligned offset put sculptures inside walls in rotated spoke rooms.
+      var spot = decorSpot(l) || { x: l.framePos.x + 100, z: l.framePos.z + l.faceDir * 100 };
+      var ped = new THREE.Mesh(new THREE.CylinderGeometry(34, 40, 46, 18),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
+      ped.position.set(spot.x, 23, spot.z); group.add(ped);
+      fig.position.set(spot.x, 46, spot.z);
+      if (l.faceYaw != null) fig.rotation.y += l.faceYaw;   // front faces into the room, like the frame
+      group.add(fig);
+      _sculptRefs[l.id] = { ped: ped, fig: fig };
+    }
     function placeSculpture(l, recipe) {
-      if (!P3D || !l || l.id === '__entry' || _sculptedIds[l.id] || !recipe) return;
+      if (!l || l.id === '__entry' || _sculptedIds[l.id] || !recipe) return;
+      if (_isGlbRef(recipe)) {
+        var GLB = window.AlloModules && window.AlloModules.GlbLibrary;
+        if (!GLB || typeof GLB.loadModel !== 'function') return;
+        var item = null;
+        try { item = (GLB.listCatalog() || []).filter(function (it) { return it.id === recipe.glbItem; })[0] || null; } catch (e) {}
+        if (!item) return;
+        _sculptedIds[l.id] = true;                          // claim the locus before the async load
+        var token = (_sculptSeq[l.id] = (_sculptSeq[l.id] || 0) + 1);
+        // student refinement transforms ride the reference (same fields as recipes)
+        var unit = SCULPT_UNIT * Math.max(0.25, Math.min(5, (typeof recipe.scale === 'number' && !isNaN(recipe.scale)) ? recipe.scale : 1));
+        var loadItem = recipe.tint ? Object.assign({}, item, { tint: recipe.tint }) : item;
+        GLB.loadModel(THREE, loadItem, { unit: unit }).then(function (fig) {
+          if (!fig) return;
+          if (state.disposed || _sculptSeq[l.id] !== token || !_sculptedIds[l.id] || _sculptRefs[l.id]) { _disposeObj(fig); return; }
+          try {
+            if (typeof recipe.rotY === 'number' && !isNaN(recipe.rotY)) fig.rotation.y += recipe.rotY * Math.PI / 180;
+            _placeFig(l, fig);
+          } catch (e) {}
+        }).catch(function () { delete _sculptedIds[l.id]; });   // failed load frees the claim for a retry
+        return;
+      }
+      if (!P3D) return;
       try {
         var fig = P3D.buildObject(THREE, recipe, { unit: SCULPT_UNIT });
         if (!fig) return;
-        // decorSpot rotates the beside-the-frame offset with faceYaw — the old
-        // axis-aligned offset put sculptures inside walls in rotated spoke rooms.
-        var spot = decorSpot(l) || { x: l.framePos.x + 100, z: l.framePos.z + l.faceDir * 100 };
-        var px = spot.x, pz = spot.z;
-        var ped = new THREE.Mesh(new THREE.CylinderGeometry(34, 40, 46, 18),
-          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
-        ped.position.set(px, 23, pz); group.add(ped);
-        fig.position.set(px, 46, pz);
-        if (l.faceYaw != null) fig.rotation.y += l.faceYaw;   // front faces into the room, like the frame
-        group.add(fig);
         _sculptedIds[l.id] = true;
-        _sculptRefs[l.id] = { ped: ped, fig: fig };
+        _placeFig(l, fig);
       } catch (e) {}
     }
     function _disposeObj(o) {
@@ -824,7 +946,9 @@
         } catch (e) {}
       }
       var sr = _sculptRefs[id];
-      if (sr) { _disposeObj(sr.fig); _disposeObj(sr.ped); delete _sculptRefs[id]; delete _sculptedIds[id]; }
+      if (sr) { _disposeObj(sr.fig); _disposeObj(sr.ped); delete _sculptRefs[id]; }
+      delete _sculptedIds[id];                              // also releases a pending glb claim…
+      _sculptSeq[id] = (_sculptSeq[id] || 0) + 1;           // …and invalidates its in-flight resolve
     };
     // Live relief reveal (Furnish with 🗿 Relief on): color + depth land together.
     // No depth (or relief fails) → plain flat image, never an error.
@@ -843,7 +967,11 @@
       var l = locusById(palace, id);
       if (!l) return;
       var ref = _sculptRefs[id];
-      if (ref) { _disposeObj(ref.fig); _disposeObj(ref.ped); delete _sculptRefs[id]; delete _sculptedIds[id]; }
+      if (ref) { _disposeObj(ref.fig); _disposeObj(ref.ped); delete _sculptRefs[id]; }
+      // Always release the claim + bump the token: a still-IN-FLIGHT glb load for
+      // the old object must land as a no-op, not resurrect what it replaced.
+      delete _sculptedIds[id];
+      _sculptSeq[id] = (_sculptSeq[id] || 0) + 1;
       placeSculpture(l, recipe);
     };
 
@@ -870,6 +998,75 @@
       });
     }
 
+    // ── Celebration burst: a fistful of glowing confetti at the frame when a
+    //    recall answer lands (skipped under prefers-reduced-motion — the border
+    //    flash + toast still carry the feedback). Sprites share one circle
+    //    texture; per-sprite materials are disposed when the burst expires. ──
+    var _fxTex = null, _bursts = [];
+    var _FX_COLORS = [0xf59e0b, 0x22c55e, 0x818cf8, 0xec4899, 0x22d3ee, 0xfde047];
+    function _fxTexture() {
+      if (_fxTex) return _fxTex;
+      var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+      var g = c.getContext('2d');
+      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(16, 16, 13, 0, Math.PI * 2); g.fill();
+      _fxTex = new THREE.CanvasTexture(c);
+      return _fxTex;
+    }
+    function _celebrate(ref) {
+      if (reduce || !ref || !ref.group) return;
+      try {
+        var yaw = (ref.locus && ref.locus.faceYaw != null) ? ref.locus.faceYaw : 0;
+        var ox = Math.sin(yaw) * 34, oz = Math.cos(yaw) * 34;
+        var base = ref.group.position;
+        var items = [];
+        for (var bi = 0; bi < 16; bi++) {
+          var m = new THREE.SpriteMaterial({ map: _fxTexture(), color: _FX_COLORS[bi % _FX_COLORS.length], transparent: true, depthWrite: false });
+          var sp = new THREE.Sprite(m);
+          var sc = 8 + Math.random() * 7;
+          sp.scale.set(sc, sc, 1);
+          sp.position.set(base.x + ox, base.y + 14, base.z + oz);
+          group.add(sp);
+          items.push({ sp: sp, vx: (Math.random() - 0.5) * 5.5, vy: 2.6 + Math.random() * 3.4, vz: (Math.random() - 0.5) * 5.5 });
+        }
+        _bursts.push({ items: items, age: 0 });
+      } catch (e) {}
+    }
+    // Ambient animation (stars twinkle, motes drift, orb ring spins, bursts fly).
+    // One call per frame from tick — everything here is a handful of uniform
+    // writes; the burst loop only runs while a celebration is alive.
+    function _animateFlourish() {
+      try {
+        if (!reduce) {
+          var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
+          for (var si = 0; si < _starMats.length; si++) {
+            _starMats[si].opacity = 0.42 + 0.18 * Math.sin(now * 0.0012 + (_starMats[si].userData.phase || 0));
+          }
+          if (_motes) { _motes.rotation.y += 0.00035; _motes.position.y = Math.sin(now * 0.0005) * 6; }
+          if (_orbRing) { _orbRing.rotation.y += 0.012; }
+        }
+        for (var b = _bursts.length - 1; b >= 0; b--) {
+          var burst = _bursts[b]; burst.age += 1;
+          var fade = Math.max(0, 1 - burst.age / 55);
+          for (var k = 0; k < burst.items.length; k++) {
+            var it = burst.items[k];
+            it.vy -= 0.12;
+            it.sp.position.x += it.vx; it.sp.position.y += it.vy; it.sp.position.z += it.vz;
+            it.sp.material.opacity = fade;
+          }
+          if (burst.age > 55) {
+            burst.items.forEach(function (it2) {
+              try { group.remove(it2.sp); it2.sp.material.dispose(); } catch (e2) {}   // shared _fxTex lives until destroy
+            });
+            _bursts.splice(b, 1);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // The shared confetti texture is only in the scene graph while a burst is
+    // alive — dispose it explicitly so an idle-at-destroy palace doesn't leak it.
+    state.cleanup.push(function () { try { if (_fxTex) _fxTex.dispose(); } catch (e) {} });
+
     // ── Recall API on the handle: earn a label back / flash placement status ──
     state.revealLocus = function (id) {
       try { if (typeof _xrHideBank === 'function' && _vrBankFor === id) _xrHideBank(); } catch (eB) {}   // answered correctly → close the VR bank
@@ -889,7 +1086,7 @@
       var ref = frameRefs[id];
       if (!ref) return;
       try {
-        if (status === 'correct') ref.borderMat.color.set('#22c55e');
+        if (status === 'correct') { ref.borderMat.color.set('#22c55e'); _celebrate(ref); }
         else if (status === 'incorrect') ref.borderMat.color.set('#ef4444');
         else ref.borderMat.color.set(ref.baseColor).multiplyScalar(0.8);
       } catch (e) {}
@@ -1369,7 +1566,7 @@
       // HEADSET owns the camera pose — skip all rail/free-roam camera writes and
       // let the XR compositor schedule frames (no window rAF). Controllers still
       // drive locomotion (thumbstick) each frame.
-      if (state.xrActive) { _xrLocomotion(); _pulseHl(); renderer.render(root, camera); return; }
+      if (state.xrActive) { _xrLocomotion(); _pulseHl(); _animateFlourish(); renderer.render(root, camera); return; }
       if (freeMode) {
         // WASD free walk on the floor plane; free-look via freeYaw/freePitch.
         if (moveF || moveR) {
@@ -1406,6 +1603,7 @@
         camera.lookAt(lookBase);
       }
       _pulseHl();
+      _animateFlourish();
       renderer.render(root, camera);
       state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
     }
