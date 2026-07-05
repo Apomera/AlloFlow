@@ -2626,6 +2626,34 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function localStudioUrl(path) {
     return new URL(path, document.baseURI).href;
   }
+  var ffmpegWasmBlobUrl = null;
+  // The 32MB ffmpeg-core.wasm cannot live in git — Cloudflare rejects any
+  // deploy containing a >25MiB file (this exact wasm froze the CDN 2026-07-03),
+  // so it is version-controlled as ffmpeg-core.wasm.part0/.part1 chunks plus a
+  // parts manifest (see dev-tools/split_ffmpeg_core.cjs). Stitch the chunks
+  // into a Blob at load time; fall back to a whole ffmpeg-core.wasm wherever
+  // one is still served.
+  async function resolveFfmpegWasmUrl() {
+    if (ffmpegWasmBlobUrl) return ffmpegWasmBlobUrl;
+    var manifest = null;
+    try {
+      var manifestRes = await fetch(localStudioUrl(FFMPEG_CORE_WASM_URL + '.parts.json'));
+      if (manifestRes.ok) manifest = await manifestRes.json();
+    } catch (_) {}
+    if (!manifest || !manifest.parts) return localStudioUrl(FFMPEG_CORE_WASM_URL);
+    var chunks = [];
+    for (var i = 0; i < manifest.parts; i++) {
+      var partRes = await fetch(localStudioUrl(FFMPEG_CORE_WASM_URL + '.part' + i));
+      if (!partRes.ok) throw new Error('MP4 converter download failed (part ' + (i + 1) + ' of ' + manifest.parts + ')');
+      chunks.push(await partRes.blob());
+    }
+    var stitched = new Blob(chunks, { type: 'application/wasm' });
+    if (manifest.bytes && stitched.size !== manifest.bytes) {
+      throw new Error('MP4 converter download was incomplete (' + stitched.size + ' of ' + manifest.bytes + ' bytes)');
+    }
+    ffmpegWasmBlobUrl = URL.createObjectURL(stitched);
+    return ffmpegWasmBlobUrl;
+  }
   function mp4AbortError() {
     var err = new Error('MP4 conversion canceled');
     err.name = 'AbortError';
@@ -2684,7 +2712,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       });
       await ffmpeg.load({
         coreURL: localStudioUrl(FFMPEG_CORE_URL),
-        wasmURL: localStudioUrl(FFMPEG_CORE_WASM_URL)
+        wasmURL: await resolveFfmpegWasmUrl()
       });
       throwIfMp4Canceled();
       return ffmpeg;

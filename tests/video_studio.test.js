@@ -152,19 +152,33 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('exportFormatFileSuffix');
   });
   it('keeps the strict MP4 converter files available in root and deploy mirrors', () => {
+    // The wasm ships as git-tracked .part chunks (Cloudflare rejects >25MiB
+    // files — the whole ffmpeg-core.wasm froze the CDN 2026-07-03), stitched
+    // at load time by resolveFfmpegWasmUrl() in video_studio.html.
     const pairs = [
       ['video_studio/vendor/ffmpeg/ffmpeg/index.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/index.js'],
       ['video_studio/vendor/ffmpeg/ffmpeg/worker.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/ffmpeg/worker.js'],
       ['video_studio/vendor/ffmpeg/core/ffmpeg-core.js', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.js'],
-      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part0'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part1'],
+      ['video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json'],
       ['video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md', 'prismflow-deploy/public/video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'],
     ];
     pairs.forEach(([rootFile, deployFile]) => {
       const rootSize = statSync(resolve(process.cwd(), rootFile)).size;
       const deploySize = statSync(resolve(process.cwd(), deployFile)).size;
-      expect(rootSize).toBeGreaterThan(rootFile.endsWith('.wasm') ? 1_000_000 : 10);
+      expect(rootSize).toBeGreaterThan(rootFile.includes('.wasm.part0') ? 1_000_000 : 10);
+      expect(rootSize).toBeLessThan(25 * 1024 * 1024); // Cloudflare per-file deploy limit
       expect(deploySize).toBe(rootSize);
     });
+    const manifest = JSON.parse(readFileSync(resolve(process.cwd(), 'video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.parts.json'), 'utf-8'));
+    const partTotal = [0, 1].reduce((sum, index) =>
+      sum + statSync(resolve(process.cwd(), 'video_studio/vendor/ffmpeg/core/ffmpeg-core.wasm.part' + index)).size, 0);
+    expect(manifest.parts).toBe(2);
+    expect(partTotal).toBe(manifest.bytes);
+    const studioHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+    expect(studioHtml).toContain('resolveFfmpegWasmUrl');
+    expect(studioHtml).toContain("FFMPEG_CORE_WASM_URL + '.parts.json'");
     const notice = readFileSync(resolve(process.cwd(), 'video_studio/vendor/ffmpeg/THIRD_PARTY_NOTICES.md'), 'utf-8');
     expect(notice).toContain('@ffmpeg/ffmpeg');
     expect(notice).toContain('@ffmpeg/core');
