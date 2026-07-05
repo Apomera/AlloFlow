@@ -270,3 +270,42 @@ describe('ConceptGraph3D — art handle is always present and safe', () => {
     handle.destroy(); div.remove();
   });
 });
+
+describe('ConceptGraph3D — constellation mode (pure, docs §4.5)', () => {
+  it('pairKey is unordered and stable', () => {
+    expect(CG3D.pairKey('b1_i0', 'b0_i2')).toBe(CG3D.pairKey('b0_i2', 'b1_i0'));
+    expect(CG3D.pairKey('a', 'b')).toBe('a|b');
+  });
+
+  it('constellationOpacity maps 0..1 to a visible brightness ramp (0 stays faintly visible)', () => {
+    expect(CG3D.constellationOpacity(0)).toBeCloseTo(0.1, 5);
+    expect(CG3D.constellationOpacity(1)).toBeCloseTo(0.95, 5);
+    expect(CG3D.constellationOpacity(0.5)).toBeGreaterThan(CG3D.constellationOpacity(0.2));
+    expect(CG3D.constellationOpacity('nope')).toBeCloseTo(0.1, 5);   // junk → dim, never NaN
+    expect(CG3D.constellationOpacity(7)).toBeCloseTo(0.95, 5);       // clamped
+  });
+
+  it('buildRelatednessPrompt asks for honest 0..1 JSON with a checkable why', () => {
+    const p = CG3D.buildRelatednessPrompt('Evaporation', 'Condensation', 'The Water Cycle');
+    expect(p).toContain('Evaporation');
+    expect(p).toContain('Condensation');
+    expect(p).toContain('The Water Cycle');
+    expect(p).toContain('"score"');
+    expect(p).toContain('Be honest');
+  });
+
+  it('parseRelatedness extracts + clamps the score and tolerates junk', () => {
+    expect(CG3D.parseRelatedness('{"score": 0.8, "why": "Both are phase changes."}')).toEqual({ score: 0.8, why: 'Both are phase changes.' });
+    expect(CG3D.parseRelatedness('prose {"score": 3, "why": "x"} more').score).toBe(1);   // clamped
+    expect(CG3D.parseRelatedness('no json here')).toBe(null);
+    expect(CG3D.parseRelatedness('{"score": "NaN"}')).toBe(null);
+  });
+
+  it('render() handle exposes setConstellation on the fallback path (safe no-op)', () => {
+    const el = document.createElement('div');
+    const h = CG3D.render(el, { main: 'T', branches: [{ title: 'A', items: ['x'] }] }, {});
+    expect(typeof h.setConstellation).toBe('function');
+    expect(() => h.setConstellation({ weights: { 'a|b': { w: 0.5 } }, mode: 'mine' })).not.toThrow();
+    h.destroy();
+  });
+});

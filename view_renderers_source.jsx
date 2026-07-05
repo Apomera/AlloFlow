@@ -2041,6 +2041,21 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     //    above the node. Persists to data.conceptArt (NOT conceptSpace, so it
     //    never touches the arrangement) via onPersist. ──
     const canImagen = typeof callImagen === 'function';
+    // ── Constellation mode (docs §4.5): student-weighted concept links rendered as
+    //    line brightness. Weights persist under data.constellation (own store — never
+    //    touches the arrangement); each entry { w, why, ai, aiWhy } keyed by the
+    //    unordered pair. Honest framing: brightness = the STUDENT's judgment; the AI
+    //    comparison shows where mental maps differ (spreading-activation-style
+    //    semantic relatedness — not literally "how neural networks work"). ──
+    const constelWeights = data?.constellation || {};
+    const constelRef = React.useRef({}); constelRef.current = constelWeights;
+    const [constelOpen, setConstelOpen] = React.useState(false);
+    const [constelMode, setConstelMode] = React.useState('off');   // off | mine | ai | diff
+    const [constelA, setConstelA] = React.useState('');
+    const [constelB, setConstelB] = React.useState('');
+    const [constelW, setConstelW] = React.useState(0.5);
+    const [constelWhy, setConstelWhy] = React.useState('');
+    const [constelBusy, setConstelBusy] = React.useState(false);
     const [selectedNode, setSelectedNode] = React.useState(null);   // {id,label,category,summary,artType} | null
     const selectedNodeRef = React.useRef(null);
     const artRef = React.useRef({});                 // freshest data.conceptArt for merge-persist
@@ -2262,6 +2277,60 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         });
     };
 
+    // ── Constellation handlers ──
+    const constelNodes = React.useMemo(() => {
+        try {
+            const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+            if (!CG3D || !hasContent) return [];
+            return (CG3D.buildScene(data || {}).nodes || []).map((n) => ({ id: n.id, label: n.label }));
+        } catch (e) { return []; }
+    }, [data, hasContent]);
+    // apply mode/weight changes to the live scene (also runs after remounts via nonce)
+    React.useEffect(() => {
+        const H = handleRef.current;
+        if (H && H.setConstellation) { try { H.setConstellation({ weights: constelRef.current, mode: constelMode }); } catch (e) {} }
+    }, [constelMode, constelWeights, nonce, ready]);
+    const _constelApply = (weights, mode) => {
+        const H = handleRef.current;
+        if (H && H.setConstellation) { try { H.setConstellation({ weights, mode }); } catch (e) {} }
+    };
+    const saveConstelLink = () => {
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB) return;
+        const k = CG3D.pairKey(constelA, constelB);
+        const prev = constelRef.current[k] || {};
+        const next = { ...constelRef.current, [k]: { ...prev, w: constelW, why: constelWhy || prev.why || '' } };
+        persist(next, 'constellation');
+        const mode = constelMode === 'off' ? 'mine' : constelMode;
+        if (constelMode === 'off') setConstelMode('mine');
+        _constelApply(next, mode);
+        setConstelWhy('');
+        if (addToast) addToast(t('cg3d.constel_saved') || '✨ Link weighted — your constellation updated.', 'success');
+    };
+    const aiRateConstelLink = () => {
+        const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+        if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || typeof window.callGemini !== 'function' || constelBusy) return;
+        const la = (constelNodes.find((n) => n.id === constelA) || {}).label || constelA;
+        const lb = (constelNodes.find((n) => n.id === constelB) || {}).label || constelB;
+        setConstelBusy(true);
+        Promise.resolve(window.callGemini(CG3D.buildRelatednessPrompt(la, lb, data?.main || title || ''), true))
+            .then((res) => {
+                if (!artAliveRef.current) return;
+                const parsed = CG3D.parseRelatedness(_gemText(res));
+                if (!parsed) { if (addToast) addToast(t('cg3d.constel_ai_failed') || 'Could not get an AI rating — try again.', 'error'); return; }
+                const k = CG3D.pairKey(constelA, constelB);
+                const prev = constelRef.current[k] || {};
+                const next = { ...constelRef.current, [k]: { ...prev, ai: parsed.score, aiWhy: parsed.why } };
+                persist(next, 'constellation');
+                const mode = constelMode === 'off' ? 'diff' : constelMode;
+                if (constelMode === 'off') setConstelMode('diff');
+                _constelApply(next, mode);
+                if (addToast) addToast(((t('cg3d.constel_ai_rated') || 'AI rating: {s}. {why}')).replace('{s}', String(Math.round(parsed.score * 100) / 100)).replace('{why}', parsed.why || ''), 'info');
+            })
+            .catch(() => { if (addToast) addToast(t('cg3d.constel_ai_failed') || 'Could not get an AI rating — try again.', 'error'); })
+            .then(() => { if (artAliveRef.current) setConstelBusy(false); });
+    };
+
     // ── Per-node art handlers (mirror the Memory Palace's Sculpt/Direct/Refine,
     //    scoped to the clicked node instead of the walk's current locus) ──
     const _gemText = (res) => (typeof res === 'string') ? res : ((res && (res.text || res.output || res.response)) || '');
@@ -2459,6 +2528,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ↺ {t('concept_space.reset') || 'Reset arrangement'}
                                 </button>
                             )}
+                            {hasContent && persist && !failed && (
+                                <button
+                                    onClick={() => setConstelOpen((o) => !o)}
+                                    aria-pressed={constelOpen ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${constelOpen ? 'bg-slate-800 text-indigo-200 border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                                    title={t('cg3d.constel_tooltip') || 'Constellation: rate how strongly YOU think two concepts connect — your weights light up the links'}
+                                >
+                                    🌌 {t('cg3d.constel_toggle') || 'Constellation'}
+                                </button>
+                            )}
                             {hasContent && !failed && (
                                 <button
                                     onClick={handleFullscreen}
@@ -2472,6 +2551,65 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     )}
                 </div>
             </div>
+            {constelOpen && hasContent && persist && !failed && (
+                <div className="mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="text-xs font-bold text-indigo-300">🌌 {t('cg3d.constel_heading') || 'Constellation — weight the connections yourself'}</span>
+                        <div className="flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto" role="group" aria-label={t('cg3d.constel_mode_label') || 'Constellation view mode'}>
+                            {['off', 'mine', 'ai', 'diff'].map((m) => (
+                                <button key={m} onClick={() => setConstelMode(m)} aria-pressed={constelMode === m ? 'true' : 'false'}
+                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${constelMode === m ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-700'}`}>
+                                    {m === 'off' ? (t('cg3d.constel_mode_off') || 'Off') : m === 'mine' ? (t('cg3d.constel_mode_mine') || 'My weights') : m === 'ai' ? (t('cg3d.constel_mode_ai') || 'AI weights') : (t('cg3d.constel_mode_diff') || 'Compare')}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <select value={constelA} onChange={(e) => setConstelA(e.target.value)} aria-label={t('cg3d.constel_pick_a') || 'First concept'}
+                            className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]">
+                            <option value="">{t('cg3d.constel_pick_a') || 'First concept'}…</option>
+                            {constelNodes.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                        </select>
+                        <span className="text-slate-500 text-xs">🔗</span>
+                        <select value={constelB} onChange={(e) => setConstelB(e.target.value)} aria-label={t('cg3d.constel_pick_b') || 'Second concept'}
+                            className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]">
+                            <option value="">{t('cg3d.constel_pick_b') || 'Second concept'}…</option>
+                            {constelNodes.filter((n) => n.id !== constelA).map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                        </select>
+                        <label className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                            {t('cg3d.constel_weight') || 'How related?'}
+                            <input type="range" min="0" max="1" step="0.05" value={constelW} onChange={(e) => setConstelW(parseFloat(e.target.value))}
+                                aria-label={t('cg3d.constel_weight_aria') || 'Relatedness weight, 0 to 1'} aria-valuetext={`${Math.round(constelW * 100)}%`} className="w-24 accent-indigo-500" />
+                            <span className="tabular-nums font-bold text-indigo-300 w-9">{Math.round(constelW * 100)}%</span>
+                        </label>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mt-2">
+                        <input value={constelWhy} onChange={(e) => setConstelWhy(e.target.value)} maxLength={160}
+                            placeholder={t('cg3d.constel_why_ph') || 'Why? One sentence you could defend from the source…'}
+                            aria-label={t('cg3d.constel_why_aria') || 'Justify your weight'}
+                            className="flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500" />
+                        <button onClick={saveConstelLink} disabled={!constelA || !constelB || constelA === constelB}
+                            className="px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                            ⭐ {t('cg3d.constel_save') || 'Set my weight'}
+                        </button>
+                        {typeof window.callGemini === 'function' && (
+                            <button onClick={aiRateConstelLink} disabled={!constelA || !constelB || constelA === constelB || constelBusy}
+                                className="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={t('cg3d.constel_ai_tooltip') || 'Ask the AI to rate the same link, then Compare shows where you differ'}>
+                                ⚖ {constelBusy ? (t('cg3d.constel_ai_busy') || 'Rating…') : (t('cg3d.constel_ai') || 'AI rating')}
+                            </button>
+                        )}
+                    </div>
+                    {constelMode === 'diff' && (
+                        <div className="text-[11px] text-slate-400 mt-2">
+                            <span className="text-indigo-300 font-bold">■</span> {t('cg3d.constel_diff_mine') || 'you rated it stronger'} · <span className="text-amber-400 font-bold">■</span> {t('cg3d.constel_diff_ai') || 'the AI rated it stronger'} · <span className="text-slate-200 font-bold">■</span> {t('cg3d.constel_diff_agree') || 'you roughly agree'}
+                        </div>
+                    )}
+                    <p className="text-[11px] text-slate-500 italic mt-2">
+                        {t('cg3d.constel_framing') || 'Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ — a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally “how neural networks work.”'}
+                    </p>
+                </div>
+            )}
             {hint && (
                 <div className="flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900" role="status" aria-live="polite">
                     <span aria-hidden="true">💡</span>

@@ -23271,11 +23271,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   // Persist a 3D spatial store onto the current outline resource so it survives
   // save/reload. key selects the store: 'conceptSpace' (generated-data node ids:
   // root/b0/b0_i1…), 'conceptSpaceLive' (interactive-canvas node ids), or
-  // 'memoryPalace' ({images, generatedAt} for the method-of-loci walk). Passing
+  // 'memoryPalace' ({images, generatedAt} for the method-of-loci walk), or
+  // 'constellation' (student-weighted concept links for the 3D constellation view). Passing
   // null clears that store.
   const handleConceptSpacePersist = (arrangement, key = 'conceptSpace') => {
       if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return;
-      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace' || key === 'conceptArt') ? key : 'conceptSpace';
+      const storeKey = (key === 'conceptSpaceLive' || key === 'memoryPalace' || key === 'conceptArt' || key === 'constellation') ? key : 'conceptSpace';
       const newData = { ...generatedContent.data };
       if (arrangement) newData[storeKey] = arrangement; else delete newData[storeKey];
       const updatedContent = { ...generatedContent, data: newData };

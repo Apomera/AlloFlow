@@ -1445,6 +1445,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const [nonce, setNonce] = React.useState(0);
   const persist = typeof onPersist === "function" ? onPersist : null;
   const canImagen = typeof callImagen === "function";
+  const constelWeights = data?.constellation || {};
+  const constelRef = React.useRef({});
+  constelRef.current = constelWeights;
+  const [constelOpen, setConstelOpen] = React.useState(false);
+  const [constelMode, setConstelMode] = React.useState("off");
+  const [constelA, setConstelA] = React.useState("");
+  const [constelB, setConstelB] = React.useState("");
+  const [constelW, setConstelW] = React.useState(0.5);
+  const [constelWhy, setConstelWhy] = React.useState("");
+  const [constelBusy, setConstelBusy] = React.useState(false);
   const [selectedNode, setSelectedNode] = React.useState(null);
   const selectedNodeRef = React.useRef(null);
   const artRef = React.useRef({});
@@ -1697,6 +1707,73 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       addToast
     });
   };
+  const constelNodes = React.useMemo(() => {
+    try {
+      const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+      if (!CG3D || !hasContent) return [];
+      return (CG3D.buildScene(data || {}).nodes || []).map((n) => ({ id: n.id, label: n.label }));
+    } catch (e) {
+      return [];
+    }
+  }, [data, hasContent]);
+  React.useEffect(() => {
+    const H = handleRef.current;
+    if (H && H.setConstellation) {
+      try {
+        H.setConstellation({ weights: constelRef.current, mode: constelMode });
+      } catch (e) {
+      }
+    }
+  }, [constelMode, constelWeights, nonce, ready]);
+  const _constelApply = (weights, mode) => {
+    const H = handleRef.current;
+    if (H && H.setConstellation) {
+      try {
+        H.setConstellation({ weights, mode });
+      } catch (e) {
+      }
+    }
+  };
+  const saveConstelLink = () => {
+    const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!CG3D || !persist || !constelA || !constelB || constelA === constelB) return;
+    const k = CG3D.pairKey(constelA, constelB);
+    const prev = constelRef.current[k] || {};
+    const next = { ...constelRef.current, [k]: { ...prev, w: constelW, why: constelWhy || prev.why || "" } };
+    persist(next, "constellation");
+    const mode = constelMode === "off" ? "mine" : constelMode;
+    if (constelMode === "off") setConstelMode("mine");
+    _constelApply(next, mode);
+    setConstelWhy("");
+    if (addToast) addToast(t("cg3d.constel_saved") || "\u2728 Link weighted \u2014 your constellation updated.", "success");
+  };
+  const aiRateConstelLink = () => {
+    const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
+    if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || typeof window.callGemini !== "function" || constelBusy) return;
+    const la = (constelNodes.find((n) => n.id === constelA) || {}).label || constelA;
+    const lb = (constelNodes.find((n) => n.id === constelB) || {}).label || constelB;
+    setConstelBusy(true);
+    Promise.resolve(window.callGemini(CG3D.buildRelatednessPrompt(la, lb, data?.main || title || ""), true)).then((res) => {
+      if (!artAliveRef.current) return;
+      const parsed = CG3D.parseRelatedness(_gemText(res));
+      if (!parsed) {
+        if (addToast) addToast(t("cg3d.constel_ai_failed") || "Could not get an AI rating \u2014 try again.", "error");
+        return;
+      }
+      const k = CG3D.pairKey(constelA, constelB);
+      const prev = constelRef.current[k] || {};
+      const next = { ...constelRef.current, [k]: { ...prev, ai: parsed.score, aiWhy: parsed.why } };
+      persist(next, "constellation");
+      const mode = constelMode === "off" ? "diff" : constelMode;
+      if (constelMode === "off") setConstelMode("diff");
+      _constelApply(next, mode);
+      if (addToast) addToast((t("cg3d.constel_ai_rated") || "AI rating: {s}. {why}").replace("{s}", String(Math.round(parsed.score * 100) / 100)).replace("{why}", parsed.why || ""), "info");
+    }).catch(() => {
+      if (addToast) addToast(t("cg3d.constel_ai_failed") || "Could not get an AI rating \u2014 try again.", "error");
+    }).then(() => {
+      if (artAliveRef.current) setConstelBusy(false);
+    });
+  };
   const _gemText = (res) => typeof res === "string" ? res : res && (res.text || res.output || res.response) || "";
   const _asDataUrl = (s) => typeof s === "string" && s ? /^data:/i.test(s) ? s : "data:image/png;base64," + s : null;
   const _persistNodeArt = (id, art) => {
@@ -1910,6 +1987,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u21BA ",
     t("concept_space.reset") || "Reset arrangement"
+  ), hasContent && persist && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setConstelOpen((o) => !o),
+      "aria-pressed": constelOpen ? "true" : "false",
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${constelOpen ? "bg-slate-800 text-indigo-200 border-slate-800" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"}`,
+      title: t("cg3d.constel_tooltip") || "Constellation: rate how strongly YOU think two concepts connect \u2014 your weights light up the links"
+    },
+    "\u{1F30C} ",
+    t("cg3d.constel_toggle") || "Constellation"
   ), hasContent && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1919,7 +2006,78 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u26F6 ",
     t("concept_space.fullscreen") || "Fullscreen"
-  )))), hint && /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, (t("concept_space.hint_for") || "Thinking about \u201C{label}\u201D:").replace("{label}", hint.label)), " ", hint.text), /* @__PURE__ */ React.createElement(
+  )))), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: m,
+      onClick: () => setConstelMode(m),
+      "aria-pressed": constelMode === m ? "true" : "false",
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${constelMode === m ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-700"}`
+    },
+    m === "off" ? t("cg3d.constel_mode_off") || "Off" : m === "mine" ? t("cg3d.constel_mode_mine") || "My weights" : m === "ai" ? t("cg3d.constel_mode_ai") || "AI weights" : t("cg3d.constel_mode_diff") || "Compare"
+  )))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: constelA,
+      onChange: (e) => setConstelA(e.target.value),
+      "aria-label": t("cg3d.constel_pick_a") || "First concept",
+      className: "bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("cg3d.constel_pick_a") || "First concept", "\u2026"),
+    constelNodes.map((n) => /* @__PURE__ */ React.createElement("option", { key: n.id, value: n.id }, n.label))
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 text-xs" }, "\u{1F517}"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: constelB,
+      onChange: (e) => setConstelB(e.target.value),
+      "aria-label": t("cg3d.constel_pick_b") || "Second concept",
+      className: "bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs text-slate-200 max-w-[180px]"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("cg3d.constel_pick_b") || "Second concept", "\u2026"),
+    constelNodes.filter((n) => n.id !== constelA).map((n) => /* @__PURE__ */ React.createElement("option", { key: n.id, value: n.id }, n.label))
+  ), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 text-[11px] text-slate-400" }, t("cg3d.constel_weight") || "How related?", /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "range",
+      min: "0",
+      max: "1",
+      step: "0.05",
+      value: constelW,
+      onChange: (e) => setConstelW(parseFloat(e.target.value)),
+      "aria-label": t("cg3d.constel_weight_aria") || "Relatedness weight, 0 to 1",
+      "aria-valuetext": `${Math.round(constelW * 100)}%`,
+      className: "w-24 accent-indigo-500"
+    }
+  ), /* @__PURE__ */ React.createElement("span", { className: "tabular-nums font-bold text-indigo-300 w-9" }, Math.round(constelW * 100), "%"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mt-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      value: constelWhy,
+      onChange: (e) => setConstelWhy(e.target.value),
+      maxLength: 160,
+      placeholder: t("cg3d.constel_why_ph") || "Why? One sentence you could defend from the source\u2026",
+      "aria-label": t("cg3d.constel_why_aria") || "Justify your weight",
+      className: "flex-1 min-w-[220px] bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: saveConstelLink,
+      disabled: !constelA || !constelB || constelA === constelB,
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+    },
+    "\u2B50 ",
+    t("cg3d.constel_save") || "Set my weight"
+  ), typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: aiRateConstelLink,
+      disabled: !constelA || !constelB || constelA === constelB || constelBusy,
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-indigo-200 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed",
+      title: t("cg3d.constel_ai_tooltip") || "Ask the AI to rate the same link, then Compare shows where you differ"
+    },
+    "\u2696 ",
+    constelBusy ? t("cg3d.constel_ai_busy") || "Rating\u2026" : t("cg3d.constel_ai") || "AI rating"
+  )), constelMode === "diff" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-400 mt-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_mine") || "you rated it stronger", " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-400 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_ai") || "the AI rated it stronger", " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-200 font-bold" }, "\u25A0"), " ", t("cg3d.constel_diff_agree") || "you roughly agree"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("cg3d.constel_framing") || "Brightness shows how strongly YOU rated each link. Comparing with the AI shows where your mental maps differ \u2014 a window into weighted connections and semantic similarity (closest to spreading-activation models of memory), not literally \u201Chow neural networks work.\u201D")), hint && /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, (t("concept_space.hint_for") || "Thinking about \u201C{label}\u201D:").replace("{label}", hint.label)), " ", hint.text), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setHint(null),

@@ -242,6 +242,38 @@
     return wrap;
   }
 
+  // ── Constellation mode (docs §4.5) — PURE helpers ─────────────────────────────
+  // Unordered pair key: the student rates the LINK, not a direction.
+  function pairKey(a, b) { return [String(a || ''), String(b || '')].sort().join('|'); }
+  // Weight → line opacity: 0 stays faintly visible (a considered "barely related"
+  // is information too), 1 is full brightness.
+  function constellationOpacity(w) {
+    var x = Number(w); if (!isFinite(x)) return 0.1;
+    return 0.1 + 0.85 * Math.max(0, Math.min(1, x));
+  }
+  // Gemini prompt for the AI's side of the my-weights-vs-AI-weights diff. One
+  // checkable sentence of "why" — evidence-grounded, not vibes.
+  function buildRelatednessPrompt(labelA, labelB, topic) {
+    return [
+      'Rate how strongly these two concepts are related' + (topic ? ' in the context of "' + String(topic) + '"' : '') + ':',
+      'A: "' + String(labelA || '') + '"',
+      'B: "' + String(labelB || '') + '"',
+      'Reply with ONLY a JSON object: { "score": <number 0 to 1>, "why": "<ONE short sentence a student can check against the source material>" }',
+      'score 0 = essentially unrelated here; 0.5 = somewhat related; 1 = tightly linked (one defines, causes, or requires the other).',
+      'Be honest: not everything is related. No text outside the JSON.'
+    ].join('\n');
+  }
+  function parseRelatedness(text) {
+    try {
+      var m = String(text || '').match(/\{[\s\S]*\}/);
+      if (!m) return null;
+      var o = JSON.parse(m[0]);
+      var s = Number(o.score);
+      if (!isFinite(s)) return null;
+      return { score: Math.max(0, Math.min(1, s)), why: typeof o.why === 'string' ? o.why.slice(0, 240) : '' };
+    } catch (e) { return null; }
+  }
+
   function isWebGLAvailable() {
     try {
       var c = document.createElement('canvas');
@@ -533,6 +565,7 @@
     // rebuild is far less bug-prone than incremental endpoint surgery.
     var edgeGroup = new THREE.Group(); group.add(edgeGroup);
     var flowMats = [], edgeObjs = [], edgeRefs = [];
+    var _constelState = null;   // {weights, mode} — reapplied after every wholesale edge rebuild
     function buildEdges() {
       flowMats.length = 0; edgeObjs.length = 0; edgeRefs.length = 0;
       for (var ci = edgeGroup.children.length - 1; ci >= 0; ci--) {
@@ -566,7 +599,7 @@
         line.computeLineDistances();
         edgeGroup.add(line);
         if (isSeq) flowMats.push(mat);                         // animate teaching-order flow in tick
-        edgeObjs.push({ mat: mat, fromId: lk.fromId, toId: lk.toId, baseOpacity: mat.opacity });
+        edgeObjs.push({ mat: mat, fromId: lk.fromId, toId: lk.toId, baseOpacity: mat.opacity, origColor: (mat.color && mat.color.clone) ? mat.color.clone() : null });
         var eref = { line: line, cone: null, fromId: lk.fromId, toId: lk.toId };
         // directional arrowhead — edges carry direction (fromId->toId); show it statically
         if (lk.directed && lk.head && lk.dir) {
@@ -584,7 +617,39 @@
         edgeRefs.push(eref);
       });
     }
+    // ── Constellation mode (docs §4.5): student-weighted links as line BRIGHTNESS ──
+    // 'mine' brightens links by the student's own 0..1 relatedness weight (unrated
+    // links recede, so the rated ones read as a constellation); 'ai' shows the AI's
+    // weights; 'diff' colors disagreement (indigo = student rated it stronger,
+    // amber = the AI did) with |difference| driving brightness. The honest framing
+    // (shared substrate: weighted connections/semantic similarity — spreading-
+    // activation models, NOT "how neural networks work") lives in the view copy.
+    function applyConstellation(con) {
+      _constelState = con || null;
+      var weights = (con && con.weights) || null, mode = (con && con.mode) || 'off';
+      edgeObjs.forEach(function (eo) {
+        var mat = eo.mat; if (!mat) return;
+        mat.opacity = eo.baseOpacity;                                   // restore, then re-map
+        if (eo.origColor && mat.color) mat.color.copy(eo.origColor);
+        if (weights && mode !== 'off') {
+          var rec = weights[pairKey(eo.fromId, eo.toId)];
+          if (mode === 'mine' || mode === 'ai') {
+            var w = rec ? (mode === 'mine' ? rec.w : rec.ai) : null;
+            mat.opacity = (w == null || !isFinite(Number(w))) ? 0.08 : constellationOpacity(w);
+          } else if (mode === 'diff') {
+            if (rec && rec.w != null && rec.ai != null) {
+              var d = Number(rec.w) - Number(rec.ai);
+              mat.opacity = 0.3 + 0.65 * Math.min(1, Math.abs(d) * 1.6);
+              if (mat.color) mat.color.set(d > 0.15 ? '#818cf8' : d < -0.15 ? '#f59e0b' : '#e2e8f0');
+            } else { mat.opacity = 0.07; }
+          }
+        }
+        mat.needsUpdate = true;
+      });
+    }
     buildEdges();
+    if (_constelState) applyConstellation(_constelState);              // (never true here; kept for symmetry)
+    if (opts.constellation) applyConstellation(opts.constellation);
 
     // Re-seat every edge's curve (and arrowhead) on the CURRENT sphere positions.
     // Powers live edge-following during node drags and the post-edit glide: the
@@ -841,6 +906,7 @@
         }
       });
       buildEdges();                 // new colours/dash + refs (built at final coords)
+      if (_constelState) applyConstellation(_constelState);   // wholesale rebuild wipes materials → re-map weights
       updateAllEdgePositions();     // …then re-seated on CURRENT positions so they glide with the tween
       tweenActive = !reduce;
       if (selectedId && nodeById3d[selectedId]) {
@@ -1266,7 +1332,7 @@
   function render(container, graph, opts) {
     opts = opts || {};
     var t = opts.t || function (k) { return k; };
-    if (!container) return { destroy: function () {}, update: function () {}, fellBack: true };
+    if (!container) return { destroy: function () {}, update: function () {}, fellBack: true, setConstellation: function () {} };
     // Editing keeps the planes still by default (an orbiting scene is a hostile
     // drag target); an explicit opts.autoRotate still wins.
     if (opts.editable && opts.autoRotate === undefined) opts.autoRotate = false;
@@ -1319,7 +1385,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(t('cg3d.no_webgl') || 'This browser cannot show the 3D view. Showing the reading-order outline instead.');
-      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {} };
+      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {}, setConstellation: function () {} };
     }
 
     var holder = document.createElement('div');
@@ -1341,7 +1407,7 @@
       showFallback(t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.');
     });
 
-    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt };
+    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt, setConstellation: applyConstellation };
   }
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──
@@ -1382,6 +1448,10 @@
     navigateFocus: navigateFocus,
     describeNodeForSR: describeNodeForSR,
     derivePrereqChain: derivePrereqChain,
+    pairKey: pairKey,
+    constellationOpacity: constellationOpacity,
+    buildRelatednessPrompt: buildRelatednessPrompt,
+    parseRelatedness: parseRelatedness,
     isWebGLAvailable: isWebGLAvailable,
     loadThree: loadThree,
     render: render,
