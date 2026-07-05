@@ -1213,24 +1213,24 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -1250,7 +1250,7 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -1260,46 +1260,51 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1351,7 +1356,8 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.blending_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -1423,24 +1429,24 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -1460,7 +1466,7 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -1470,46 +1476,51 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1553,7 +1564,8 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 <div class="space-y-6">
 <div class="flex items-center justify-center mb-4 flex-wrap">
-<h3 class="text-xl font-bold text-violet-700 mb-2">word_sounds.how_many_sounds</h3>
+<h3 class="text-xl font-bold text-violet-700 mb-2">
+</h3>
 </div>
 <div class="text-center mb-6 relative">
 <button class="flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all bg-white/60 hover:bg-violet-50 hover:scale-105">
@@ -1570,7 +1582,8 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 <span class="lucide-icon" data-icon="Calculator">
 </span>
 </div>
-<div class="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-violet-600 shadow-sm border border-violet-100">word_sounds.how_many_sounds</div>
+<div class="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-violet-600 shadow-sm border border-violet-100">
+</div>
 </div>
 </div>
 <div class="flex justify-center flex-wrap gap-4">
@@ -1649,24 +1662,24 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -1686,7 +1699,7 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -1696,46 +1709,51 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1778,9 +1796,9 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
 <div class="flex flex-col items-center gap-5 p-4">
-<p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">word_sounds.decoding_drag_prompt</p>
+<p class="text-xs font-semibold text-violet-600 uppercase tracking-wide">Drag the picture onto the word, or tap the picture</p>
 <div class="text-5xl font-black tracking-wide capitalize px-6 py-3 rounded-2xl border-2 border-dashed transition-colors border-slate-400 text-slate-800">cat</div>
-<p class="text-slate-500 text-sm font-semibold italic">word_sounds.decoding_preparing</p>
+<p class="text-slate-500 text-sm font-semibold italic">Preparing pictures...</p>
 </div>
 </div>
 </div>
@@ -1844,24 +1862,24 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -1881,7 +1899,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -1891,46 +1909,51 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -1972,7 +1995,7 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 <div class="px-4 py-2 bg-amber-100/60 border-t border-amber-200 text-[11px] text-slate-700">
 <span class="font-bold mr-1">Teacher note:</span>Pair with the soft-c anchor (cent, city) for older students.</div>
 </div>
-<div class="p-8 text-center animate-pulse text-violet-700">word_sounds.loading_phonemes</div>
+<div class="p-8 text-center animate-pulse text-violet-700">Loading sounds...</div>
 </div>
 </div>
 </div>
@@ -2035,24 +2058,24 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -2072,7 +2095,7 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -2082,46 +2105,51 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2173,7 +2201,8 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.letter_tracing_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -2260,24 +2289,24 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -2297,7 +2326,7 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -2307,46 +2336,51 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2398,7 +2432,8 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.manipulation_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -2472,24 +2507,24 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -2509,7 +2544,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -2519,46 +2554,51 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2610,7 +2650,8 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.mapping_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -2624,7 +2665,7 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 <button aria-label="common.volume" class="flex items-center gap-2 text-slate-600 hover:text-indigo-500 transition-colors">
 <span class="lucide-icon" data-icon="Volume2">
-</span> word_sounds.listen_word</button>
+</span> Listen to Word</button>
 </div>
 </div>
 </div>
@@ -2689,24 +2730,24 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -2726,7 +2767,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -2736,46 +2777,51 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -2827,7 +2873,8 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.orthography_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -2836,7 +2883,7 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <div class="flex flex-col items-center gap-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto">
 <div class="flex flex-col items-center gap-3 mb-2">
-<button aria-label="common.volume" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50" title="word_sounds.hear_word_again">
+<button aria-label="common.volume" class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50" title="Hear Word Again">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
 </button>
@@ -2850,88 +2897,88 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </form>
 <div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 w-full">
 <div class="flex flex-wrap justify-center gap-2">
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="A" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">a</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="B" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">b</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="C" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">c</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="D" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">d</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="E" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">e</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="F" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">f</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="G" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">g</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="H" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">h</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="I" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">i</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="J" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">j</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="K" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">k</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="L" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">l</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="M" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">m</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="N" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">n</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="O" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">o</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="P" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">p</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="Q" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">q</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="R" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">r</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="S" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">s</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="T" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">t</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="U" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">u</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="V" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">v</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="W" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">w</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="X" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">x</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="Y" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">y</div>
-<div draggable="true" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
+<div draggable="true" role="button" tabindex="0" aria-label="Z" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
  hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
  flex items-center justify-center select-none cursor-grab active:cursor-grabbing">z</div>
 </div>
 <p class="text-center text-slate-600 text-sm mt-4 font-medium">Drag letters to spell the word, or click to hear them!</p>
 </div>
-<button aria-label="common.next" disabled="" class="px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 bg-slate-100 text-slate-600 cursor-not-allowed">word_sounds.check_spelling <span class="lucide-icon" data-icon="ChevronRight">
+<button aria-label="common.next" disabled="" class="px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 bg-slate-100 text-slate-600 cursor-not-allowed">Check Spelling <span class="lucide-icon" data-icon="ChevronRight">
 </span>
 </button>
 </div>
@@ -2998,24 +3045,24 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -3035,7 +3082,7 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -3045,46 +3092,51 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3136,7 +3188,8 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.rhyming_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -3213,24 +3266,24 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -3250,7 +3303,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -3260,46 +3313,51 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3351,7 +3409,8 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.segmentation_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -3363,7 +3422,7 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 <div class="flex justify-center mt-2 mb-4">
 <button aria-label="common.play" data-help-key="wordsounds_test_sequence" class="flex items-center gap-2 px-5 py-2 rounded-full bg-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-200 transition-colors shadow-sm">
 <span class="lucide-icon" data-icon="Play">
-</span>word_sounds.test_sequence</button>
+</span>Test Sequence</button>
 </div>
 <div class="flex justify-center gap-4 flex-wrap mt-6 min-h-[80px] p-4 rounded-xl hover:bg-slate-50 transition-colors">
 </div>
@@ -3433,24 +3492,24 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -3470,7 +3529,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -3480,46 +3539,51 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3566,7 +3630,7 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 <div class="text-center mb-6 relative">
 <div class="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100 mb-4">
 <div class="flex flex-col">
-<span class="text-xs uppercase font-bold text-slate-600 tracking-wider">word_sounds.sound_sort_label</span>
+<span class="text-xs uppercase font-bold text-slate-600 tracking-wider">Sound Sort</span>
 <span class="text-xl font-black text-violet-600">Starts with /…/</span>
 </div>
 <button aria-label="common.replay_instructions" title="common.replay_instructions" class="ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors">
@@ -3574,9 +3638,9 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </span>
 </button>
 </div>
-<h3 class="text-lg text-slate-600 font-medium">word_sounds.sound_sort_instruction</h3>
+<h3 class="text-lg text-slate-600 font-medium">Tap each word to hear it. Find the ones that match!</h3>
 <div class="mt-2 flex items-center justify-center gap-2">
-<div class="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-bold">0 / 3 word_sounds.sound_sort_found</div>
+<div class="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-bold">0 / 3 found</div>
 </div>
 </div>
 <div class="bg-white rounded-3xl border-4 border-violet-100 p-6 mb-8 relative overflow-hidden min-h-[200px] shadow-inner transition-colors duration-500" style="background-color:white">
@@ -3661,24 +3725,24 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -3698,7 +3762,7 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -3708,46 +3772,51 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -3767,7 +3836,8 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.spelling_bee_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -3776,14 +3846,18 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </div>
 <div class="text-center relative">
 <div class="text-4xl mb-2 ">🐝</div>
-<h3 class="text-lg font-bold text-amber-700">word_sounds.spelling_bee_title</h3>
-<p class="text-sm text-amber-600">word_sounds.spelling_bee_subtitle</p>
+<h3 class="text-lg font-bold text-amber-700">
+</h3>
+<p class="text-sm text-amber-600">
+</p>
 </div>
 <div class="flex gap-3">
 <button aria-label="common.volume" class="flex items-center gap-2 px-5 py-2.5 bg-amber-100 hover:bg-amber-200 rounded-full text-amber-800 font-bold transition-all hover:scale-105 shadow-md">
 <span class="lucide-icon" data-icon="Volume2">
-</span>word_sounds.spelling_bee_hear</button>
-<button aria-label="common.slow_playback" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 font-medium transition-all" title="common.slow_playback">word_sounds.spelling_bee_slow</button>
+</span>
+</button>
+<button aria-label="common.slow_playback" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 font-medium transition-all" title="common.slow_playback">
+</button>
 </div>
 <div class="flex gap-2 justify-center flex-wrap">
 <div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
@@ -3791,15 +3865,16 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 <div class="w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all border-slate-200 bg-slate-50 text-slate-600">_</div>
 </div>
 <input aria-label="common.enter_user_answer" type="text" inputMode="text" placeholder="common.placeholder_type_the_word" maxLength="3" class="w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-600 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none" autofocus="" value=""/>
-<button aria-label="common.voice_input" disabled="" class="px-8 py-3 rounded-xl font-bold shadow-lg transition-all bg-slate-200 text-slate-600 cursor-not-allowed">word_sounds.spelling_bee_check</button>
+<button aria-label="common.voice_input" disabled="" class="px-8 py-3 rounded-xl font-bold shadow-lg transition-all bg-slate-200 text-slate-600 cursor-not-allowed">Check Spelling ✓</button>
 <div class="mt-2">
 <button aria-label="common.microphone" class="flex items-center gap-2 px-4 py-2 rounded-full transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200">
 <span class="lucide-icon" data-icon="Mic">
-</span> word_sounds.mic_switch_mic</button>
+</span> Use Microphone</button>
 </div>
 <div class="flex gap-4 text-sm">
-<button class="text-amber-600 hover:text-amber-700 underline">word_sounds.spelling_bee_first_letter</button>
-<button class="text-slate-600 hover:text-slate-600 underline">word_sounds.spelling_bee_hint_vowels</button>
+<button class="text-amber-600 hover:text-amber-700 underline">
+</button>
+<button class="text-slate-600 hover:text-slate-600 underline">💡 Show Vowels</button>
 </div>
 </div>
 </div>
@@ -3864,24 +3939,24 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -3901,7 +3976,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -3911,46 +3986,51 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4002,7 +4082,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.syllable_blending_prompt</p>
+<p class="text-slate-600">Listen to the syllables and blend them together</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -4084,24 +4164,24 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -4121,7 +4201,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -4131,46 +4211,51 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4222,7 +4307,7 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.syllable_counting_prompt</p>
+<p class="text-slate-600">How many syllables do you hear? Clap for each one</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -4301,24 +4386,24 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -4338,7 +4423,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -4348,46 +4433,51 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4439,7 +4529,8 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.word_families_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -4450,7 +4541,7 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 <div class="text-center mb-6 relative">
 <div class="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100 mb-4">
 <div class="flex flex-col">
-<span class="text-xs uppercase font-bold text-slate-600 tracking-wider">word_sounds.sound_sort_label</span>
+<span class="text-xs uppercase font-bold text-slate-600 tracking-wider">Sound Sort</span>
 <span class="text-xl font-black text-violet-600">Sound Family</span>
 </div>
 <button aria-label="common.hear_target_sound" title="common.hear_target_sound" class="ml-2 p-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors">
@@ -4458,9 +4549,9 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </span>
 </button>
 </div>
-<h3 class="text-lg text-slate-600 font-medium">word_sounds.sound_sort_instruction</h3>
+<h3 class="text-lg text-slate-600 font-medium">Tap each word to hear it. Find the ones that match!</h3>
 <div class="mt-2 flex items-center justify-center gap-2">
-<div class="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-bold">0 / 3 word_sounds.sound_sort_found</div>
+<div class="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-bold">0 / 3 found</div>
 </div>
 </div>
 <div class="bg-white rounded-3xl border-4 border-violet-100 p-6 mb-8 relative overflow-hidden min-h-[200px] shadow-inner transition-colors duration-500" style="background-color:white">
@@ -4545,24 +4636,24 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -4582,7 +4673,7 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -4592,46 +4683,51 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4683,7 +4779,8 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.blending_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
@@ -4756,24 +4853,24 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <div class="flex items-center gap-1 px-3 py-1 rounded-full transition-all duration-500 border bg-white/20 border-transparent">
 <span class="lucide-icon" data-icon="Zap">
 </span>
-<span class="font-bold ">word_sounds.streak: 1</span>
+<span class="font-bold ">: 1</span>
 </div>
 <div class="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full">
-<span>40% word_sounds.accuracy</span>
+<span>40% </span>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="common.edit">
+<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
 <span class="lucide-icon" data-icon="Edit2">
 </span>
 </button>
-<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="word_sounds.switch_mic_mode">
+<button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
 </button>
-<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="word_sounds.switch_letter_mode">
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold bg-violet-800 border-violet-500 text-violet-100 shadow-inner" title="Switch to Letter Mode (Show Letters)">
 <span>👂</span>
-<span class="hidden sm:inline">word_sounds.mode_sound</span>
+<span class="hidden sm:inline">Sound Only</span>
 </button>
 <div style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background-color:#22c55e20;border:1px solid #22c55e;font-size:12px;font-weight:500;color:#22c55e">
 <span>🤖</span>
@@ -4793,7 +4890,7 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </select>
 <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full ml-auto md:ml-2">
 <span class="text-xs opacity-80">🐢</span>
-<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="word_sounds.tts_speed" value="1"/>
+<input aria-label="common.range_slider" type="range" min="0.5" max="1.5" step="0.25" class="w-20 accent-white h-1 bg-white/30 rounded-lg appearance-none cursor-pointer" title="Speed" value="1"/>
 <span class="text-xs opacity-80">🐇</span>
 <span class="text-xs font-mono w-6 text-right border-l border-white/20 pl-2 ml-1 font-bold">1x</span>
 </div>
@@ -4803,46 +4900,51 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <div class="border-b border-slate-200 px-4 py-3 overflow-x-auto">
 <div class="flex gap-2 items-center">
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Sound awareness - larger units (syllables &amp; rhyme)">Syllables &amp; Rhyme</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.rhyming_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎵</span>
-<span>word_sounds.activity_rhyming</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Blend syllables into whole words">
 <span>🔗</span>
-<span>word_sounds.activity_syllable_blending</span>
+<span>Syllable Blending</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.syllable_counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Count the syllables in words">
 <span>👏</span>
-<span>word_sounds.activity_syllable_counting</span>
+<span>Syllable Claps</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.word_families_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Build the word family house">
 <span>🏠</span>
-<span>word_sounds.activity_word_families</span>
+<span>Word Families</span>
 </button>
 <span class="text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap" title="Phonemic awareness - individual sounds">Phonemes</span>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.counting_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🔢</span>
-<span>word_sounds.activity_counting</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.isolation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>🎯</span>
-<span>word_sounds.activity_isolation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="word_sounds.blending_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-violet-700 text-white shadow-md" title="">
 <span>🔗</span>
-<span>word_sounds.activity_blending</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.segmentation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="">
 <span>📦</span>
-<span>word_sounds.activity_segmentation</span>
+<span>
+</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.manipulation_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Delete or change sounds in words">
 <span>✂️</span>
-<span>word_sounds.activity_manipulation</span>
+<span>Sound Swap</span>
 </button>
-<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="word_sounds.sound_sort_desc">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200" title="Sort words by shared sounds">
 <span>🔊</span>
-<span>word_sounds.activity_sound_sort</span>
+<span>Sound Sort</span>
 </button>
 <button class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto bg-slate-100 text-slate-600 hover:bg-slate-200" title="Turn on AAC Symbol Overlay (generates images for answer choices)">
 <span>🖼️</span>
@@ -4894,7 +4996,8 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 <span class="text-xs font-medium text-violet-500 mt-1">Tap to hear</span>
 </button>
 <div class="flex items-center justify-center gap-2 mt-2">
-<p class="text-slate-600">word_sounds.blending_prompt</p>
+<p class="text-slate-600">
+</p>
 <button aria-label="common.read_instructions" class="p-1.5 rounded-full text-slate-600 hover:text-violet-600 hover:bg-violet-100 transition-colors" title="common.read_instructions">
 <span class="lucide-icon" data-icon="Volume2">
 </span>
