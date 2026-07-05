@@ -1425,16 +1425,22 @@
         if (!targetWord || targetWord.length < 2) return null;
         const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const mode = wordSeed % 2 === 0 ? 'first' : 'last';
-        let targetPhoneme = (phonemesArr && phonemesArr.length > 0)
-          ? (mode === 'first' ? phonemesArr[0] : phonemesArr[phonemesArr.length - 1])
-          : (mode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord));
         let aiMatches = [];
         let aiMode = mode;
         if (aiSortData && aiSortData.words && aiSortData.words.length >= 2) {
           aiMatches = aiSortData.words.map((w) => w.toLowerCase().trim()).filter((w) => w && w !== targetWord);
           if (aiSortData.position === 'first' || aiSortData.position === 'last') aiMode = aiSortData.position;
-          if (aiSortData.phoneme) targetPhoneme = aiSortData.phoneme;
         }
+        // Derive the target sound AFTER the mode is settled (AI data may flip
+        // first/last), then normalize it: Gemini phonemes can arrive as "/b/"
+        // — the slashes break the phonemeFor() match filter (estimators return
+        // bare graphemes) and miss the phoneme audio bank keys.
+        let targetPhoneme = (aiSortData && aiSortData.phoneme)
+          ? aiSortData.phoneme
+          : (phonemesArr && phonemesArr.length > 0)
+            ? (aiMode === 'first' ? phonemesArr[0] : phonemesArr[phonemesArr.length - 1])
+            : (aiMode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord));
+        targetPhoneme = String(targetPhoneme || '').replace(/^\/+|\/+$/g, '').toLowerCase().trim();
         const phonemeFor = (w) => aiMode === 'first' ? estimateFirstPhoneme(w.toLowerCase()) : estimateLastPhoneme(w.toLowerCase());
         aiMatches = aiMatches.filter((w) => phonemeFor(w) === targetPhoneme);
         const pool = SOUND_MATCH_POOL || ['bat', 'cat', 'dog', 'sit'];
@@ -1454,7 +1460,9 @@
         let selectedMatches = shuffleSeeded(filterByDifficulty(matches)).slice(0, matchLimit);
         if (selectedMatches.length < 2) selectedMatches = shuffleSeeded(matches).slice(0, matchLimit);
         const selectedDistractors = shuffleSeeded(filterByDifficulty(distractorsPool)).slice(0, distractorLimit);
-        return { mode, targetChar: targetPhoneme, difficulty, options: selectedMatches, distractors: selectedDistractors };
+        // Report aiMode (the mode the match filter actually used), not the raw
+        // seed mode — they differ when the AI sort data flips first/last.
+        return { mode: aiMode, targetChar: targetPhoneme, difficulty, options: selectedMatches, distractors: selectedDistractors };
       };
       // Word Families: resolve the rime the SAME way for the instruction audio
       // and the on-screen game (AI rime first, then RIME_FAMILIES, then -at), and
@@ -2422,11 +2430,17 @@
             }
             return Promise.resolve();
           }
-          const text = (
+          let text = (
             typeof textToPlay === "string"
               ? textToPlay.trim()
               : String(textToPlay).trim()
           ).toLowerCase();
+          // Slash-delimited phoneme notation ("/b/", "/sh/") must key into the
+          // audio bank as "b"/"sh" — otherwise the lookup misses and the string
+          // falls through to TTS, which reads it literally ("slash B slash").
+          if (/^\/.+\/$/.test(text)) {
+            text = text.replace(/^\/+|\/+$/g, "").trim();
+          }
           if (
             typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined" &&
             window.__ALLO_PHONEME_AUDIO_BANK[text]
@@ -9073,70 +9087,61 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             } else if (wordSoundsActivity === "sound_sort") {
               const targetWord = (currentWordSoundsWord || "").toLowerCase();
+              // Use the SAME precomputed item as the game view (preload ref /
+              // computeSoundSortItem) so the spoken target sound is the sound
+              // the match filter actually tests. The raw Gemini phonemes can
+              // disagree with it and may carry slash notation ("/b/") that the
+              // phoneme audio bank can't key on — that's what made TTS read
+              // the sound literally instead of playing the bank clip.
+              const _ssPre = soundSortPreloadRef.current;
+              const _ssItem = (_ssPre && _ssPre.word === targetWord && _ssPre.item)
+                ? _ssPre.item
+                : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches);
               const wordSeed = targetWord
                 .split("")
                 .reduce((a, c) => a + c.charCodeAt(0), 0);
-              const mode = wordSeed % 2 === 0 ? "first" : "last";
-              let targetSound = "";
-              if (wordSoundsPhonemes && wordSoundsPhonemes.phonemes) {
-                targetSound =
-                  mode === "first"
-                    ? wordSoundsPhonemes.phonemes[0]
-                    : wordSoundsPhonemes.phonemes[
-                    wordSoundsPhonemes.phonemes.length - 1
-                    ];
+              const mode = _ssItem
+                ? _ssItem.mode
+                : wordSeed % 2 === 0 ? "first" : "last";
+              let targetSound = _ssItem
+                ? _ssItem.targetChar
+                : mode === "first"
+                  ? estimateFirstPhoneme(targetWord)
+                  : estimateLastPhoneme(targetWord);
+              // Belt-and-braces: never let slash notation reach the audio path.
+              targetSound = String(targetSound || "").replace(/^\/+|\/+$/g, "").trim();
+              const ssPromptKey =
+                mode === "first" ? "sound_match_start" : "sound_match_end";
+              if (
+                typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
+                window.__ALLO_INSTRUCTION_AUDIO[ssPromptKey]
+              ) {
+                await handleAudio(window.__ALLO_INSTRUCTION_AUDIO[ssPromptKey]);
               } else {
-                targetSound =
+                // Speak the framing WITHOUT the phoneme embedded — TTS reads a
+                // bare "b" as the letter name ("bee"). The sound itself plays
+                // from the phoneme bank right after.
+                await handleAudio(
                   mode === "first"
-                    ? estimateFirstPhoneme(targetWord)
-                    : estimateLastPhoneme(targetWord);
+                    ? "Find words that start with the sound"
+                    : "Find words that end with the sound",
+                );
               }
-              if (mode === "first") {
+              if (cancelled) return;
+              await new Promise((r) => setTimeout(r, 200));
+              await handleAudio(targetSound);
+              if (currentWordSoundsWord) {
+                await new Promise((r) => setTimeout(r, 150));
                 if (
                   typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
-                  window.__ALLO_INSTRUCTION_AUDIO["sound_match_start"]
+                  window.__ALLO_INSTRUCTION_AUDIO["as_in"]
                 ) {
-                  await handleAudio(
-                    window.__ALLO_INSTRUCTION_AUDIO["sound_match_start"],
-                  );
-                  await new Promise((r) => setTimeout(r, 200));
-                  await handleAudio(targetSound);
-                  if (currentWordSoundsWord) {
-                    await new Promise((r) => setTimeout(r, 150));
-                    if (window.__ALLO_INSTRUCTION_AUDIO["as_in"]) {
-                      await handleAudio(window.__ALLO_INSTRUCTION_AUDIO["as_in"]);
-                    } else {
-                      await handleAudio("as in");
-                    }
-                    await new Promise((r) => setTimeout(r, 100));
-                    await handleAudio(currentWordSoundsWord);
-                  }
+                  await handleAudio(window.__ALLO_INSTRUCTION_AUDIO["as_in"]);
                 } else {
-                  instructionText = `Find words that start with the ${targetSound} sound`;
+                  await handleAudio("as in");
                 }
-              } else {
-                if (
-                  typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
-                  window.__ALLO_INSTRUCTION_AUDIO["sound_match_end"]
-                ) {
-                  await handleAudio(
-                    window.__ALLO_INSTRUCTION_AUDIO["sound_match_end"],
-                  );
-                  await new Promise((r) => setTimeout(r, 200));
-                  await handleAudio(targetSound);
-                  if (currentWordSoundsWord) {
-                    await new Promise((r) => setTimeout(r, 150));
-                    if (window.__ALLO_INSTRUCTION_AUDIO["as_in"]) {
-                      await handleAudio(window.__ALLO_INSTRUCTION_AUDIO["as_in"]);
-                    } else {
-                      await handleAudio("as in");
-                    }
-                    await new Promise((r) => setTimeout(r, 100));
-                    await handleAudio(currentWordSoundsWord);
-                  }
-                } else {
-                  instructionText = `Find words that end with the ${targetSound} sound`;
-                }
+                await new Promise((r) => setTimeout(r, 100));
+                await handleAudio(currentWordSoundsWord);
               }
             } else if (wordSoundsActivity === "word_families") {
               const targetWord = currentWordSoundsWord?.toLowerCase() || "";
@@ -13430,10 +13435,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       await handleAudio(bank[promptKey]);
                       await new Promise((r) => setTimeout(r, 200));
                     } else {
+                      // No phoneme embedded in the TTS sentence — TTS reads a
+                      // bare "b" as the letter name. The sound itself plays
+                      // from the phoneme bank on the next line.
                       await handleAudio(
                         isoMode === 'first'
-                          ? `Find words that start with the ${targetPhoneme} sound`
-                          : `Find words that end with the ${targetPhoneme} sound`,
+                          ? `Find words that start with the sound`
+                          : `Find words that end with the sound`,
                       );
                       await new Promise((r) => setTimeout(r, 200));
                     }
