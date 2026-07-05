@@ -84,6 +84,15 @@ describe('AlloBot accessory integrity', () => {
     expect(/isSleeping \|\| (motionDisabled|disableAnimations)/.test(MOD), 'blink reduce-motion gate missing').toBe(true);
   });
 
+  it('bot + chat lift above the STEM Lab overlay (inline zIndex 10020)', () => {
+    // The lab modal's inline zIndex:10020 overrides its z-[9999] class and buries
+    // the bot (z-10000) and UDL chat (z-100). Both must lift while the lab is open:
+    // bot to 10500, chat to 10490 (preserving bot-above-chat ordering).
+    expect(MOD.includes('showStemLab ? 10500'), 'bot z-lift missing').toBe(true);
+    const CHAT = read('view_misc_modals_module.js');
+    expect(CHAT.includes('showStemLab ? 10490'), 'chat z-lift missing').toBe(true);
+  });
+
   it('STEM discipline accessories + mapping are present', () => {
     for (const k of ['math-tools', 'gear', 'game-pad']) {
       expect(MOD.includes(`effectiveAccessory === "${k}"`) || MOD.includes(`effectiveAccessory === '${k}'`), `missing STEM accessory block ${k}`).toBe(true);

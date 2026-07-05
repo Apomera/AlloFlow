@@ -1739,6 +1739,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       onKeyDown={handleKeyDown}
       className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
       style={{
+        // The STEM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
+        // overridden), which buries the bot's z-[10000] — so the bot and its speech
+        // bubble/chat were invisible during STEM tools. While the lab is open, lift
+        // the bot to 10500: above the lab, below the voice overlays (10999/11500).
+        zIndex: showStemLab ? 10500 : undefined,
         top: `${position.y}px`,
         right: `${position.x}px`,
         transform: motionDisabled ? 'translateY(0px) scale(1)' : `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : String(pulseScale)})`,
