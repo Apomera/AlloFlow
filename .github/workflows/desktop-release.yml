@@ -1,0 +1,138 @@
+name: desktop-release
+
+# Desktop packaging CI, aligned with the 2026-07-05 dependency split:
+# Electron/electron-builder + the packaging scripts live in desktop/package.json
+# (NOT the repo root), the builder config is desktop/electron-builder.json
+# (tracked — the old root electron-builder.desktop.json never was, which is why
+# this workflow could not have succeeded before), and the web bundle build
+# needs prismflow-deploy/node_modules (react-scripts). The :ci package scripts
+# skip icon regeneration — desktop/build-resources/icon.ico is version-
+# controlled, and rebuilding it would need Playwright browsers on CI for no
+# benefit.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Update channel to build'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - beta
+  push:
+    tags:
+      - 'desktop-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows installers
+    runs-on: windows-latest
+    env:
+      CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ALLOFLOW_UPDATE_CHANNEL: ${{ inputs.channel || 'latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: |
+            prismflow-deploy/package-lock.json
+            desktop/package-lock.json
+      - name: Install web app dependencies (react-scripts for the bundle build)
+        working-directory: prismflow-deploy
+        run: npm install --no-audit --no-fund
+      - name: Install desktop dependencies (electron, electron-builder)
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+      - name: Use prerelease version for beta channel
+        if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          $base = node -p "require('./package.json').version.replace(/-.*/, '')"
+          npm version --no-git-tag-version "$base-beta.$env:GITHUB_RUN_NUMBER"
+      - name: Build Windows x64 and ARM64 installers
+        working-directory: desktop
+        run: npm run package:win:ci
+      - name: Verify desktop artifacts
+        working-directory: desktop
+        run: npm run verify:artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alloflow-desktop-windows
+          path: |
+            desktop/dist/AlloFlow-Desktop-*.exe
+            desktop/dist/AlloFlow-Desktop-*.exe.blockmap
+            desktop/dist/*.yml
+            desktop/dist/builder-debug.yml
+          if-no-files-found: error
+
+  mac:
+    name: macOS packages
+    runs-on: macos-latest
+    env:
+      CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ALLOFLOW_UPDATE_CHANNEL: ${{ inputs.channel || 'latest' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: |
+            prismflow-deploy/package-lock.json
+            desktop/package-lock.json
+      - name: Install web app dependencies (react-scripts for the bundle build)
+        working-directory: prismflow-deploy
+        run: npm install --no-audit --no-fund
+      - name: Install desktop dependencies (electron, electron-builder)
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+      - name: Use prerelease version for beta channel
+        if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
+        working-directory: desktop
+        run: |
+          BASE="$(node -p "require('./package.json').version.replace(/-.*/, '')")"
+          npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
+      - name: Build macOS x64 and ARM64 packages
+        working-directory: desktop
+        run: npm run package:mac:ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alloflow-desktop-macos
+          path: |
+            desktop/dist/AlloFlow-Desktop-*.dmg
+            desktop/dist/AlloFlow-Desktop-*.zip
+            desktop/dist/AlloFlow-Desktop-*.dmg.blockmap
+            desktop/dist/AlloFlow-Desktop-*.zip.blockmap
+            desktop/dist/*.yml
+            desktop/dist/builder-debug.yml
+          if-no-files-found: error
+
+  draft-release:
+    name: Draft GitHub release
+    needs: [windows, mac]
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            artifacts/**/*

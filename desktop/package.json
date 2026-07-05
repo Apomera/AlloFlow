@@ -10,6 +10,8 @@
     "icon:build": "node scripts/build-allobot-icon.cjs",
     "web:build": "node scripts/build-desktop-web.cjs",
     "package:win": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --x64 --arm64",
+    "package:win:ci": "npm run web:build && electron-builder --config electron-builder.json --win nsis --x64 --arm64",
+    "package:mac:ci": "npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64",
     "package:win-arm64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --arm64",
     "package:win-x64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --x64",
     "package:mac": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64",
