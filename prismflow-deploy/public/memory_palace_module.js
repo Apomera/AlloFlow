@@ -147,6 +147,40 @@
     return null;
   }
 
+  // ── decorSpot / landmarkSpot — PURE placement math for radial rooms ──
+  // Where a sculpture stands for a locus: beside the frame along the wall, and
+  // stepped out into the room. The offsets are FRAME-LOCAL, so they must rotate
+  // with faceYaw — the old axis-aligned +x/+z offsets predate hub-and-spokes and
+  // put sculptures inside walls in every rotated room. Legacy persisted palaces
+  // (no faceYaw) keep the old behaviour.
+  var DECOR_ALONG = 100, DECOR_OUT = 100;
+  function decorSpot(locus) {
+    if (!locus || !locus.framePos) return null;
+    if (locus.faceYaw == null) {
+      return { x: locus.framePos.x + DECOR_ALONG, z: locus.framePos.z + (locus.faceDir || 1) * DECOR_OUT };
+    }
+    var sy = Math.sin(locus.faceYaw), cy = Math.cos(locus.faceYaw);
+    return {
+      x: locus.framePos.x + DECOR_ALONG * cy + DECOR_OUT * sy,
+      z: locus.framePos.z - DECOR_ALONG * sy + DECOR_OUT * cy
+    };
+  }
+  // Where a room's landmark stands: against the far (solid) wall, room-local
+  // +x end, rotated onto the room's spoke. rotY turns the figure to face back
+  // toward the doorway. Legacy rooms (no angle) keep the linear-corridor spot.
+  var LANDMARK_INSET = 115;
+  function landmarkSpot(room) {
+    if (!room || !room.center) return null;
+    if (room.angle == null) return { x: room.center.x, z: -ROOM_D / 2 + LANDMARK_INSET, rotY: 0 };
+    var lx = ROOM_W / 2 - LANDMARK_INSET;
+    return {
+      x: room.center.x + lx * Math.cos(room.angle),
+      z: room.center.z - lx * Math.sin(room.angle),
+      // figure front (+z) turned to face back toward the doorway (room-local -x)
+      rotY: room.angle - Math.PI / 2
+    };
+  }
+
   // ── describeLocusForSR — the announcement is the mnemonic's home ──
   function describeLocusForSR(palace, id, t) {
     var l = locusById(palace, id);
@@ -468,6 +502,25 @@
     return tex;
   }
 
+  // Small circular route-number badge pinned to a frame corner — keeps the
+  // walking ORDER visible after images/stamps replace the numbered cards (the
+  // ordered route is the method's active ingredient, so it must never vanish).
+  function makeNumBadge(THREE, number, hex) {
+    var c = document.createElement('canvas'); c.width = 96; c.height = 96;
+    var g = c.getContext('2d');
+    g.fillStyle = hex || '#6366f1';
+    g.beginPath(); g.arc(48, 48, 44, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 6;
+    g.beginPath(); g.arc(48, 48, 40, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#ffffff'; g.font = '800 46px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(number), 48, 51);
+    var tex = new THREE.CanvasTexture(c);
+    if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+    sp.scale.set(34, 34, 1);
+    return sp;
+  }
+
   // ── Imperative GL mount ──
   function mountGL(holder, THREE, palace, opts, state) {
     var w = holder.clientWidth || 800, hgt = holder.clientHeight || 480;
@@ -622,10 +675,17 @@
       var g2 = new THREE.Group();
       g2.position.set(l.framePos.x, l.framePos.y, l.framePos.z);
       g2.rotation.y = (l.faceYaw != null) ? l.faceYaw : (l.faceDir > 0 ? 0 : Math.PI);   // face into the (radial) room
-      // Frame border + canvas.
-      var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.4, metalness: 0.3 });
+      // Frame border + canvas. The border carries an (initially dark) emissive in
+      // the room accent so the CURRENT locus can glow — tick pulses emissiveIntensity.
+      var borderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.8), roughness: 0.4, metalness: 0.3, emissive: new THREE.Color(color), emissiveIntensity: 0 });
       var border = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W + 18, FRAME_H + 18, 6), borderMat);
       g2.add(border);
+      // Museum "picture light": a warm emissive bar above the frame — reads as a
+      // gallery fixture without the per-frame cost of a real THREE light.
+      var lampBar = new THREE.Mesh(new THREE.BoxGeometry(FRAME_W * 0.72, 7, 9),
+        new THREE.MeshStandardMaterial({ color: 0x475569, emissive: 0xffd9a0, emissiveIntensity: 0.85, roughness: 0.5, metalness: 0.2 }));
+      lampBar.position.set(0, FRAME_H / 2 + 24, 6);
+      g2.add(lampBar);
       var mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       var img = images[l.id];
       if (img) {
@@ -647,6 +707,25 @@
       var lab = makeLabelSprite(THREE, recall ? '?' : l.label, color, 24);
       lab.position.set(0, -(FRAME_H / 2 + 34), 10);
       g2.add(lab);
+      // Route-number badge on the frame's top-left corner (order stays visible
+      // once the numbered placeholder card is replaced by art). Safe in recall —
+      // the position is already announced; only the LABEL is the answer.
+      try {
+        var badge = makeNumBadge(THREE, li, color);
+        badge.position.set(-(FRAME_W / 2 + 4), FRAME_H / 2 + 22, 10);
+        g2.add(badge);
+      } catch (eB) {}
+      // Floor stop-ring at the camera stop — "stand here" wayfinding for the
+      // free-roam walk and VR teleport, in the room accent color.
+      try {
+        if (l.camPos) {
+          var ring = new THREE.Mesh(new THREE.RingGeometry(18, 25, 28),
+            new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide }));
+          ring.rotation.x = -Math.PI / 2;
+          ring.position.set(l.camPos.x, 1.6, l.camPos.z);
+          group.add(ring);
+        }
+      } catch (eR) {}
       // Recall-driven dimming (study/review mode only — NEVER during a recall quiz,
       // which would leak "you struggled here"): loci the student recalled weakly in
       // past walks render dimmer, so re-study focuses where their OWN measured
@@ -682,12 +761,15 @@
       try {
         var fig = P3D.buildObject(THREE, recipe, { unit: SCULPT_UNIT });
         if (!fig) return;
-        var px = l.framePos.x + 100;
-        var pz = l.framePos.z + l.faceDir * 100;
+        // decorSpot rotates the beside-the-frame offset with faceYaw — the old
+        // axis-aligned offset put sculptures inside walls in rotated spoke rooms.
+        var spot = decorSpot(l) || { x: l.framePos.x + 100, z: l.framePos.z + l.faceDir * 100 };
+        var px = spot.x, pz = spot.z;
         var ped = new THREE.Mesh(new THREE.CylinderGeometry(34, 40, 46, 18),
           new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.2 }));
         ped.position.set(px, 23, pz); group.add(ped);
         fig.position.set(px, 46, pz);
+        if (l.faceYaw != null) fig.rotation.y += l.faceYaw;   // front faces into the room, like the frame
         group.add(fig);
         _sculptedIds[l.id] = true;
         _sculptRefs[l.id] = { ped: ped, fig: fig };
@@ -718,8 +800,31 @@
         var tx = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined, function () {});
         if (THREE.sRGBEncoding) tx.encoding = THREE.sRGBEncoding;
         ref.mat.map = tx; ref.mat.needsUpdate = true;
+        // A flat image replacing a relief must also drop the old depth map, or the
+        // new picture renders warped over the previous subject's displacement bumps.
+        if (ref.mat.displacementMap) {
+          try { ref.mat.displacementMap.dispose(); } catch (eD) {}
+          ref.mat.displacementMap = null; ref.mat.needsUpdate = true;
+        }
         if (oldMap && oldMap.dispose && oldMap !== tx) { try { oldMap.dispose(); } catch (e) {} }   // free the placeholder card
       } catch (e) {}
+    };
+    // Clear a single locus back to its numbered card + no sculpture (the Decorate
+    // panel's "remove art here"). Frame texture, relief displacement, and any
+    // pedestal figure are all disposed in place — no remount needed.
+    state.clearLocus = function (id) {
+      var ref = frameRefs[id];
+      if (ref && ref.mat) {
+        try {
+          var old = ref.mat.map;
+          ref.mat.map = makeCardTexture(THREE, ref.idx || 0, ref.baseColor);
+          if (ref.mat.displacementMap) { try { ref.mat.displacementMap.dispose(); } catch (eD) {} ref.mat.displacementMap = null; }
+          ref.mat.needsUpdate = true;
+          if (old && old.dispose && old !== ref.mat.map) { try { old.dispose(); } catch (eO) {} }
+        } catch (e) {}
+      }
+      var sr = _sculptRefs[id];
+      if (sr) { _disposeObj(sr.fig); _disposeObj(sr.ped); delete _sculptRefs[id]; delete _sculptedIds[id]; }
     };
     // Live relief reveal (Furnish with 🗿 Relief on): color + depth land together.
     // No depth (or relief fails) → plain flat image, never an error.
@@ -754,7 +859,12 @@
         try {
           var big = P3D.buildObject(THREE, rec, { unit: 150 });
           if (!big) return;
-          big.position.set(room.center.x, 0, -ROOM_D / 2 + 115);   // stands against the back wall
+          // landmarkSpot rotates the far-wall position onto the room's spoke —
+          // the old constant z was a linear-corridor leftover (wrong room, or
+          // floating in the hub, for every rotated room).
+          var lspot = landmarkSpot(room) || { x: room.center.x, z: -ROOM_D / 2 + 115, rotY: 0 };
+          big.position.set(lspot.x, 0, lspot.z);
+          big.rotation.y += lspot.rotY || 0;   // compose with any recipe rotY
           group.add(big);
         } catch (e) {}
       });
@@ -833,15 +943,32 @@
         try { opts.onLocusChange(locusById(palace, palace.route[idx]), idx, palace.route.length); } catch (e) {}
       }
     }
+    // Current-locus glow: the active frame's border emissive pulses gently so the
+    // student always sees WHICH locus the walk is on (reduced motion ⇒ steady glow).
+    var _hlRef = null;
+    function _setHighlight(id) {
+      if (_hlRef && _hlRef.borderMat) { try { _hlRef.borderMat.emissiveIntensity = 0; } catch (e) {} }
+      _hlRef = frameRefs[id] || null;
+      if (_hlRef && _hlRef.borderMat && reduce) { try { _hlRef.borderMat.emissiveIntensity = 0.45; } catch (e) {} }
+    }
+    function _pulseHl() {
+      if (reduce || !_hlRef || !_hlRef.borderMat) return;
+      try {
+        var now = (window.performance && window.performance.now) ? window.performance.now() : 0;
+        _hlRef.borderMat.emissiveIntensity = 0.24 + 0.2 * (0.5 + 0.5 * Math.sin(now * 0.004));
+      } catch (e) {}
+    }
     function goTo(idx, skipAnnounce) {
       try { if (typeof _xrHideBank === 'function') _xrHideBank(); } catch (eB) {}   // navigating away closes an open VR answer bank
       curIdx = Math.max(0, Math.min(palace.route.length - 1, idx));
       overview = false; freeMode = false; moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;   // guided nav returns to the rails
       stopTargets(curIdx);
+      _setHighlight(palace.route[curIdx]);
       if (reduce) { camPos.copy(camPosT); look.copy(lookT); }
       updateHud();
       if (!skipAnnounce) announce(curIdx);
     }
+    _setHighlight(palace.route[curIdx]);   // glow the starting locus too
 
     // ── DOM chrome: prev/next + progress + overview ──
     var hud = document.createElement('div');

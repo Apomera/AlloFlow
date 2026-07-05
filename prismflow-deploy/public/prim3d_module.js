@@ -189,6 +189,133 @@
     return { action: action, axis: STRETCH_AXES[axis] ? axis : 'y' };   // default up
   }
 
+  // ── PRESETS — curated, hand-authored decoration recipes ──
+  // A zero-AI decoration shelf: the same recipe format Gemini emits, but built
+  // in. Placing one costs nothing (no credits, no network, works offline) and
+  // flows through the exact same normalize → buildObject path as generated
+  // sculptures, so refine/tweak/persist all keep working. Labels here are
+  // English fallbacks; hosts localize via their own t() keyed on the id.
+  var PRESETS = [
+    { id: 'trophy', emoji: '🏆', label: 'Trophy', parts: [
+      { shape: 'box', size: [0.5, 0.1, 0.5], position: [0, 0.05, 0], color: '#334155' },
+      { shape: 'box', size: [0.34, 0.08, 0.34], position: [0, 0.14, 0], color: '#475569' },
+      { shape: 'cylinder', size: [0.06, 0.3], position: [0, 0.33, 0], color: '#fbbf24' },
+      { shape: 'cone', size: [0.32, 0.42], position: [0, 0.69, 0], rotation: [180, 0, 0], color: '#fbbf24' },
+      { shape: 'torus', size: [0.3, 0.045], position: [0, 0.9, 0], rotation: [90, 0, 0], color: '#f59e0b' },
+      { shape: 'torus', size: [0.12, 0.03], position: [0.38, 0.66, 0], color: '#f59e0b' },
+      { shape: 'torus', size: [0.12, 0.03], position: [-0.38, 0.66, 0], color: '#f59e0b' }
+    ] },
+    { id: 'plant', emoji: '🪴', label: 'Potted plant', parts: [
+      { shape: 'cylinder', size: [0.24, 0.3], position: [0, 0.15, 0], color: '#b45309' },
+      { shape: 'torus', size: [0.24, 0.035], position: [0, 0.3, 0], rotation: [90, 0, 0], color: '#92400e' },
+      { shape: 'cylinder', size: [0.045, 0.35], position: [0, 0.48, 0], color: '#8b5a2b' },
+      { shape: 'sphere', size: [0.3], position: [0, 0.85, 0], color: '#16a34a' },
+      { shape: 'sphere', size: [0.22], position: [0.22, 0.72, 0.06], color: '#22c55e' },
+      { shape: 'sphere', size: [0.22], position: [-0.2, 0.75, -0.08], color: '#15803d' }
+    ] },
+    { id: 'lamp', emoji: '💡', label: 'Lamp', parts: [
+      { shape: 'cylinder', size: [0.2, 0.06], position: [0, 0.03, 0], color: '#334155' },
+      { shape: 'cylinder', size: [0.035, 0.75], position: [0, 0.44, 0], color: '#64748b' },
+      { shape: 'sphere', size: [0.12], position: [0, 0.8, 0], color: '#fef3c7' },
+      { shape: 'cone', size: [0.3, 0.32], position: [0, 0.98, 0], color: '#fbbf24' }
+    ] },
+    { id: 'books', emoji: '📚', label: 'Book stack', parts: [
+      { shape: 'box', size: [0.62, 0.12, 0.44], position: [0, 0.06, 0], rotation: [0, 8, 0], color: '#dc2626' },
+      { shape: 'box', size: [0.58, 0.12, 0.4], position: [0.02, 0.18, 0], rotation: [0, -10, 0], color: '#2563eb' },
+      { shape: 'box', size: [0.55, 0.11, 0.38], position: [-0.02, 0.29, 0], rotation: [0, 4, 0], color: '#16a34a' },
+      { shape: 'box', size: [0.5, 0.1, 0.36], position: [0, 0.4, 0], rotation: [0, -6, 0], color: '#f59e0b' },
+      { shape: 'box', size: [0.05, 0.02, 0.2], position: [0.18, 0.46, 0.05], color: '#f472b6' }
+    ] },
+    { id: 'rocket', emoji: '🚀', label: 'Rocket', parts: [
+      { shape: 'cylinder', size: [0.22, 0.72], position: [0, 0.56, 0], color: '#e2e8f0' },
+      { shape: 'cone', size: [0.22, 0.32], position: [0, 1.08, 0], color: '#ef4444' },
+      { shape: 'torus', size: [0.09, 0.03], position: [0, 0.68, 0.21], color: '#ef4444' },
+      { shape: 'sphere', size: [0.08], position: [0, 0.68, 0.18], color: '#7dd3fc' },
+      { shape: 'box', size: [0.3, 0.26, 0.045], position: [0.26, 0.16, 0], rotation: [0, 0, -18], color: '#ef4444' },
+      { shape: 'box', size: [0.3, 0.26, 0.045], position: [-0.26, 0.16, 0], rotation: [0, 0, 18], color: '#ef4444' },
+      { shape: 'box', size: [0.045, 0.26, 0.3], position: [0, 0.16, -0.26], rotation: [18, 0, 0], color: '#ef4444' },
+      { shape: 'cone', size: [0.14, 0.22], position: [0, 0.11, 0], rotation: [180, 0, 0], color: '#f97316' }
+    ] },
+    { id: 'robot', emoji: '🤖', label: 'Robot', parts: [
+      { shape: 'box', size: [0.12, 0.22, 0.14], position: [0.12, 0.11, 0], color: '#475569' },
+      { shape: 'box', size: [0.12, 0.22, 0.14], position: [-0.12, 0.11, 0], color: '#475569' },
+      { shape: 'box', size: [0.46, 0.42, 0.3], position: [0, 0.43, 0], color: '#64748b' },
+      { shape: 'sphere', size: [0.05], position: [0, 0.46, 0.16], color: '#22d3ee' },
+      { shape: 'box', size: [0.09, 0.34, 0.12], position: [0.31, 0.45, 0], color: '#475569' },
+      { shape: 'box', size: [0.09, 0.34, 0.12], position: [-0.31, 0.45, 0], color: '#475569' },
+      { shape: 'box', size: [0.32, 0.26, 0.26], position: [0, 0.79, 0], color: '#94a3b8' },
+      { shape: 'sphere', size: [0.045], position: [0.08, 0.81, 0.14], color: '#22d3ee' },
+      { shape: 'sphere', size: [0.045], position: [-0.08, 0.81, 0.14], color: '#22d3ee' },
+      { shape: 'cylinder', size: [0.02, 0.14], position: [0, 0.98, 0], color: '#64748b' },
+      { shape: 'sphere', size: [0.04], position: [0, 1.07, 0], color: '#ef4444' }
+    ] },
+    { id: 'castle', emoji: '🏰', label: 'Castle', parts: [
+      { shape: 'box', size: [0.5, 0.5, 0.42], position: [0, 0.25, 0], color: '#94a3b8' },
+      { shape: 'box', size: [0.16, 0.22, 0.05], position: [0, 0.11, 0.21], color: '#713f12' },
+      { shape: 'cylinder', size: [0.13, 0.62], position: [0.3, 0.31, 0.18], color: '#cbd5e1' },
+      { shape: 'cylinder', size: [0.13, 0.62], position: [-0.3, 0.31, 0.18], color: '#cbd5e1' },
+      { shape: 'cone', size: [0.16, 0.22], position: [0.3, 0.73, 0.18], color: '#dc2626' },
+      { shape: 'cone', size: [0.16, 0.22], position: [-0.3, 0.73, 0.18], color: '#dc2626' },
+      { shape: 'cylinder', size: [0.015, 0.2], position: [0, 0.6, 0], color: '#64748b' },
+      { shape: 'box', size: [0.12, 0.07, 0.02], position: [0.07, 0.66, 0], color: '#ef4444' }
+    ] },
+    { id: 'telescope', emoji: '🔭', label: 'Telescope', parts: [
+      { shape: 'cylinder', size: [0.03, 0.6], position: [0.18, 0.28, 0], rotation: [0, 0, -20], color: '#475569' },
+      { shape: 'cylinder', size: [0.03, 0.6], position: [-0.09, 0.28, 0.16], rotation: [20, 0, 10], color: '#475569' },
+      { shape: 'cylinder', size: [0.03, 0.6], position: [-0.09, 0.28, -0.16], rotation: [-20, 0, 10], color: '#475569' },
+      { shape: 'sphere', size: [0.07], position: [0, 0.58, 0], color: '#334155' },
+      { shape: 'cylinder', size: [0.09, 0.6], position: [0, 0.72, 0.05], rotation: [55, 0, 0], color: '#1d4ed8' },
+      { shape: 'cylinder', size: [0.045, 0.12], position: [0, 0.5, -0.22], rotation: [55, 0, 0], color: '#f59e0b' }
+    ] },
+    { id: 'chest', emoji: '🪙', label: 'Treasure chest', parts: [
+      { shape: 'box', size: [0.56, 0.3, 0.38], position: [0, 0.15, 0], color: '#92400e' },
+      { shape: 'box', size: [0.56, 0.14, 0.38], position: [0, 0.36, -0.08], rotation: [-25, 0, 0], color: '#7c2d12' },
+      { shape: 'box', size: [0.06, 0.32, 0.4], position: [0.16, 0.15, 0], color: '#f59e0b' },
+      { shape: 'box', size: [0.06, 0.32, 0.4], position: [-0.16, 0.15, 0], color: '#f59e0b' },
+      { shape: 'sphere', size: [0.05], position: [0, 0.28, 0.2], color: '#fbbf24' },
+      { shape: 'sphere', size: [0.07], position: [0.05, 0.34, 0.02], color: '#fde047' },
+      { shape: 'sphere', size: [0.06], position: [-0.09, 0.33, 0.05], color: '#facc15' }
+    ] },
+    { id: 'snowman', emoji: '⛄', label: 'Snowman', parts: [
+      { shape: 'sphere', size: [0.34], position: [0, 0.3, 0], color: '#f8fafc' },
+      { shape: 'sphere', size: [0.26], position: [0, 0.78, 0], color: '#f1f5f9' },
+      { shape: 'sphere', size: [0.19], position: [0, 1.15, 0], color: '#f8fafc' },
+      { shape: 'cone', size: [0.05, 0.16], position: [0, 1.16, 0.24], rotation: [90, 0, 0], color: '#f97316' },
+      { shape: 'sphere', size: [0.03], position: [0.07, 1.2, 0.15], color: '#1e293b' },
+      { shape: 'sphere', size: [0.03], position: [-0.07, 1.2, 0.15], color: '#1e293b' },
+      { shape: 'sphere', size: [0.03], position: [0, 0.82, 0.24], color: '#1e293b' },
+      { shape: 'sphere', size: [0.03], position: [0, 0.72, 0.25], color: '#1e293b' },
+      { shape: 'cylinder', size: [0.22, 0.03], position: [0, 1.31, 0], color: '#1e293b' },
+      { shape: 'cylinder', size: [0.14, 0.18], position: [0, 1.41, 0], color: '#1e293b' }
+    ] },
+    { id: 'mushroom', emoji: '🍄', label: 'Mushroom', parts: [
+      { shape: 'cylinder', size: [0.13, 0.42], position: [0, 0.21, 0], color: '#fef3c7' },
+      { shape: 'cylinder', size: [0.34, 0.05], position: [0, 0.42, 0], color: '#fecaca' },
+      { shape: 'sphere', size: [0.4], position: [0, 0.48, 0], color: '#dc2626' },
+      { shape: 'sphere', size: [0.06], position: [0.18, 0.68, 0.12], color: '#ffffff' },
+      { shape: 'sphere', size: [0.05], position: [-0.16, 0.7, -0.1], color: '#ffffff' },
+      { shape: 'sphere', size: [0.045], position: [0.02, 0.78, -0.18], color: '#ffffff' }
+    ] },
+    { id: 'globe', emoji: '🌍', label: 'Globe', parts: [
+      { shape: 'cylinder', size: [0.2, 0.06], position: [0, 0.03, 0], color: '#334155' },
+      { shape: 'cylinder', size: [0.03, 0.25], position: [0, 0.16, 0], color: '#64748b' },
+      { shape: 'sphere', size: [0.32], position: [0, 0.55, 0], color: '#2563eb' },
+      { shape: 'sphere', size: [0.11], position: [0.24, 0.6, 0.12], color: '#16a34a' },
+      { shape: 'sphere', size: [0.09], position: [-0.2, 0.5, 0.18], color: '#22c55e' },
+      { shape: 'sphere', size: [0.08], position: [0.05, 0.66, -0.26], color: '#16a34a' },
+      { shape: 'torus', size: [0.36, 0.02], position: [0, 0.55, 0], rotation: [0, 0, 23], color: '#cbd5e1' }
+    ] }
+  ];
+
+  // getPreset — id → a fresh, normalized recipe (safe to mutate/persist).
+  // Returns null for unknown ids; never throws.
+  function getPreset(id) {
+    for (var i = 0; i < PRESETS.length; i++) {
+      if (PRESETS[i].id === id) return normalizeRecipe({ name: PRESETS[i].label, parts: PRESETS[i].parts });
+    }
+    return null;
+  }
+
   // ── buildObject — recipe → THREE.Group (no GL context required) ──
   // opts.scale multiplies the whole assembly (1 recipe unit ≈ opts.unit world
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
@@ -246,6 +373,8 @@
     parseSculptCommand: parseSculptCommand,
     buildStretchCommandPrompt: buildStretchCommandPrompt,
     parseStretchCommand: parseStretchCommand,
+    PRESETS: PRESETS,
+    getPreset: getPreset,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');
