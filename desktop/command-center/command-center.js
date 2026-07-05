@@ -826,6 +826,63 @@
     }
   }
 
+  // ── Built-in AI Engine (managed llama-server) ──────────────────────────────
+  let enginePollTimer = null;
+  function renderEngineStatus(status) {
+    if (!status) return;
+    let phase = status.phase || 'stopped';
+    if (status.download && status.download.totalBytes) {
+      const pct = Math.round((status.download.receivedBytes / status.download.totalBytes) * 100);
+      phase += ' — ' + status.download.file + ' ' + pct + '%';
+    }
+    setText('#engine-phase', phase);
+    setText('#engine-model', status.model
+      ? (status.model.name || 'not set') + (status.model.present ? ' (downloaded)' : ' (will download)')
+      : '-');
+    setText('#engine-disk', status.diskFreeBytes != null ? (status.diskFreeBytes / 1073741824).toFixed(1) + ' GB' : '-');
+    const result = $('#engine-result');
+    if (result) {
+      if (status.lastError) result.textContent = status.lastError;
+      else if (status.advisory) result.textContent = status.advisory;
+      else if (status.running) result.textContent = 'Running (' + (status.arch || '?') + ') at ' + status.baseUrl + '. Select the "AlloFlow Built-in Engine" provider to use it.';
+    }
+  }
+  async function refreshEngineStatus() {
+    const status = await api('/api/engine/status');
+    renderEngineStatus(status);
+    return status;
+  }
+  function pollEngineUntilSettled() {
+    if (enginePollTimer) clearInterval(enginePollTimer);
+    enginePollTimer = setInterval(async () => {
+      try {
+        const status = await refreshEngineStatus();
+        if (status.running || status.phase === 'error' || status.phase === 'stopped') {
+          clearInterval(enginePollTimer);
+          enginePollTimer = null;
+        }
+      } catch (_) { /* runtime briefly busy — keep polling */ }
+    }, 2000);
+  }
+  async function startBuiltInEngine() {
+    const result = $('#engine-result');
+    if (result) result.textContent = 'Starting the built-in engine (first run downloads the engine + model, about 2 GB)...';
+    try {
+      renderEngineStatus(await api('/api/engine/start', { method: 'POST' }));
+      pollEngineUntilSettled();
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Engine start failed.';
+    }
+  }
+  async function stopBuiltInEngine() {
+    try {
+      renderEngineStatus(await api('/api/engine/stop', { method: 'POST' }));
+    } catch (error) {
+      const result = $('#engine-result');
+      if (result) result.textContent = error.message || 'Engine stop failed.';
+    }
+  }
+
   function updateStatusCopy(update) {
     if (!update) return 'Unavailable';
     if (!update.configured) return update.message || 'Updates are not configured for this build.';
@@ -1091,6 +1148,9 @@
     $('#refresh-schoolbox').addEventListener('click', refresh);
     $('#check-voice').addEventListener('click', inspectKokoroVoice);
     $('#download-kokoro').addEventListener('click', downloadKokoroVoice);
+    $('#engine-start').addEventListener('click', startBuiltInEngine);
+    $('#engine-stop').addEventListener('click', stopBuiltInEngine);
+    refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
       setTimeout(inspectKokoroVoice, 800);
     });

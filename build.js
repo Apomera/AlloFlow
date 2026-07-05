@@ -846,6 +846,7 @@ const PLUGIN_FILES = [
     'psychometric_literacy_probes.json',
     'kokoro_tts_loader.js',
     'piper_tts_loader.js',
+    'sd_turbo_loader.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
     'stem_lab/stem_tool_unitconvert.js',

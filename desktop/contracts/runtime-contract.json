@@ -82,7 +82,15 @@
       "protocol": "openai-compatible",
       "baseUrl": "http://localhost:32173",
       "modelsEndpoint": "/v1/models",
-      "managedByDesktop": true
+      "managedByDesktop": true,
+      "implementation": {
+        "status": "SHIPPED 2026-07-05 (E2E-verified on Windows ARM64)",
+        "server": "llama.cpp llama-server, pinned CPU build per-arch (b9878), downloaded on first start (~11-17MB)",
+        "model": "config localEngine.modelUrl GGUF, default Qwen2.5-3B-Instruct Q4_K_M (~2GB); swap URL + a CUDA/Vulkan binaryUrl for GPU boxes — zero code changes",
+        "archFallback": "On Windows ARM64 a native loader failure (missing VC++ ARM64 runtime, exit 0xC000007B/0xC0000135) automatically falls back to the x64 build under emulation and surfaces a one-line advisory with the vc_redist.arm64 link",
+        "diskPreflight": "Downloads require the file size plus 1.5GB free or they refuse with a plain-language message",
+        "boundary": "Binds 127.0.0.1 only; never exposed by the LAN share listener"
+      }
     },
     "lmstudio": {
       "label": "LM Studio",
@@ -117,8 +125,10 @@
     { "method": "GET", "path": "/api/providers", "purpose": "Provider presets and availability" },
     { "method": "POST", "path": "/api/providers/test", "purpose": "Probe one provider by id/baseUrl" },
     { "method": "POST", "path": "/api/secrets/{providerId}", "purpose": "Store a provider key locally and return only redacted state" },
-    { "method": "GET", "path": "/api/engine/status", "purpose": "AlloFlow local engine status" },
-    { "method": "POST", "path": "/api/engine/start", "purpose": "Future managed local engine launcher" },
+    { "method": "GET", "path": "/api/engine/status", "purpose": "Built-in engine status: phase, download progress, model presence, disk headroom, arch, advisory" },
+    { "method": "POST", "path": "/api/engine/start", "purpose": "Download (first run) and start the managed llama-server; returns a snapshot immediately — poll status for progress" },
+    { "method": "POST", "path": "/api/engine/stop", "purpose": "Stop the managed llama-server process tree" },
+    { "method": "GET", "path": "/api/engine/logs", "purpose": "Recent built-in engine process logs" },
     { "method": "GET", "path": "/api/live-session/status", "purpose": "Selected live-session backend, data location, cloud allowance, and next actions" },
     { "method": "GET", "path": "/api/lan-share/status", "purpose": "Private command-center status for the explicit student-safe LAN share listener" },
     { "method": "GET", "path": "/api/lan-share/diagnostics", "purpose": "Private plain-language network readout: LAN addresses, share/PIN state, join base URLs, and firewall/client-isolation guidance" },

@@ -98,6 +98,19 @@
             </div>
             <pre id="voice-result" class="result" aria-live="polite">Kokoro loads locally in the bundled app view, then downloads the selected voice model once and caches it on this device.</pre>
           </section>
+          <section class="panel engine-panel">
+            <h2>Built-in AI Engine</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="engine-phase">-</dd>
+              <dt>Model</dt><dd id="engine-model">-</dd>
+              <dt>Disk free</dt><dd id="engine-disk">-</dd>
+            </dl>
+            <div class="button-row">
+              <button id="engine-start" type="button">Start engine</button>
+              <button id="engine-stop" type="button">Stop</button>
+            </div>
+            <pre id="engine-result" class="result" aria-live="polite">Local text AI with nothing else to install: the runtime downloads llama-server plus a small model once (about 2 GB), then serves it privately on this device. Select the "AlloFlow Built-in Engine" provider to use it.</pre>
+          </section>
         </div>
       </section>
 

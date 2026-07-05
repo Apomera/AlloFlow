@@ -5571,6 +5571,26 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         s.async = true; s.crossOrigin = 'anonymous';
         return new Promise(r => { s.onload = () => r(true); s.onerror = () => r(false); document.head.appendChild(s); });
       };
+      // SD-Turbo: local image generation (the image twin of the Kokoro
+      // fallback). Loader is tiny; the ~2GB models download inside init()
+      // with progress, cached in the browser Cache API per device.
+      window.__loadSdTurbo = async (onProgress) => {
+        if (window._sdTurbo?.ready) return true;
+        if (!window._sdTurbo) {
+          const sdSrc = pluginCdnBase + 'sd_turbo_loader.js?v=' + pluginCdnVersion;
+          const loaded = await new Promise((resolve) => {
+            if (document.querySelector('script[src="' + sdSrc + '"]')) { resolve(true); return; }
+            const sdTag = document.createElement('script');
+            sdTag.src = sdSrc; sdTag.async = true; sdTag.crossOrigin = 'anonymous';
+            sdTag.onload = () => resolve(true);
+            sdTag.onerror = () => resolve(false);
+            document.head.appendChild(sdTag);
+          });
+          if (!loaded || !window._sdTurbo) return false;
+        }
+        try { return await window._sdTurbo.init(onProgress); }
+        catch (e) { console.warn('[SD-Turbo] init failed:', e?.message); return false; }
+      };
 
       const isLazy = _isCanvasEnv || (typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader));
       if (isLazy) {
@@ -5587,6 +5607,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       ? { loading: true, stage: t('voice_engine.preparing') || 'Preparing voice engine...', pct: 0 } : null
   );
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
+  const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
   const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
   React.useEffect(() => {
     if (!_isCanvasEnv) return;
@@ -14914,11 +14935,37 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     console.warn('[Imagen] ' + message);
     try { addToast(t('imagen.key_notice') || message, 'info'); } catch (_) {}
   };
+  // Local image fallback (SD-Turbo on WebGPU): the image twin of the Kokoro
+  // rate-limit fallback. Simpler images than Imagen — but private, free, and
+  // on-device when the cloud has no key, is rate-limited, or is out of quota.
+  const sdTurboOfferedRef = React.useRef(false);
+  const _sdTurboTryLocal = async (prompt, width, qual) => {
+    try {
+      if (window._sdTurbo?.ready) {
+        const localUrl = await window._sdTurbo.generate(prompt);
+        if (localUrl) return await optimizeImage(localUrl, width, qual);
+      }
+    } catch (e) { console.warn('[Imagen] Local SD-Turbo generation failed:', e?.message); }
+    return null;
+  };
+  const _sdTurboMaybeOffer = (err) => {
+    if (sdTurboOfferedRef.current || window.__sdTurboOfferDeclined || window.__sdTurboDownloading) return;
+    if (window._sdTurbo?.ready) return;
+    if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU: never offer what can't run
+    const msg = String(err?.message || '');
+    const eligible = err?.isConfigState || err?.isRateLimited || /429|quota|RESOURCE_EXHAUSTED|Rate limited/i.test(msg);
+    if (!eligible) return;
+    sdTurboOfferedRef.current = true;
+    setShowSdTurboOfferModal(true);
+  };
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
     if (!_isCanvasEnv && !apiKey) {
+      const localOnly = await _sdTurboTryLocal(prompt, width, qual);
+      if (localOnly) return localOnly;
       imagenKeyNotice('AI images are off — no image API key is set. Add one in AI Settings to enable image generation. Everything else works without it.');
       const configErr = new Error('Imagen skipped: no API key configured');
       configErr.isConfigState = true;
+      _sdTurboMaybeOffer(configErr);
       throw configErr;
     }
     console.log("[Imagen] Calling Imagen API for:", prompt.substring(0, 50));
@@ -14981,12 +15028,25 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         throw err;
       }
     };
+    const runWithLocalFallback = async (runner) => {
+      try {
+        return await runner();
+      } catch (err) {
+        const local = await _sdTurboTryLocal(prompt, width, qual);
+        if (local) {
+          console.warn('[Imagen] Cloud image generation failed (' + (err?.message || 'error') + ') — used the local image generator instead.');
+          return local;
+        }
+        _sdTurboMaybeOffer(err);
+        throw err;
+      }
+    };
     if (imagenRateLimitedRef.current) {
-      const queuedRequest = imagenQueueRef.current.then(executeWithRetry, () => executeWithRetry());
+      const queuedRequest = imagenQueueRef.current.then(() => runWithLocalFallback(executeWithRetry), () => runWithLocalFallback(executeWithRetry));
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
-      return executeWithRetry();
+      return runWithLocalFallback(executeWithRetry);
     }
   };
   // Browsers render animated GIFs natively in <img> tags, so panels that
@@ -25753,6 +25813,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {showKokoroOfferModal && <KokoroOfferModal setShowKokoroOfferModal={setShowKokoroOfferModal} setSelectedVoice={setSelectedVoice} addToast={addToast} />}
+      {showSdTurboOfferModal && <SdTurboOfferModal t={t} onDecline={() => { window.__sdTurboOfferDeclined = true; setShowSdTurboOfferModal(false); }} onAccept={() => {
+        setShowSdTurboOfferModal(false);
+        window.__sdTurboDownloading = true;
+        addToast(t('sdturbo.downloading') || 'Downloading the local image generator (~2 GB). Keep working — a toast will confirm when it\u2019s ready.', 'info');
+        (window.__loadSdTurbo ? window.__loadSdTurbo() : Promise.resolve(false)).then((ok) => {
+          window.__sdTurboDownloading = false;
+          addToast(ok ? (t('sdturbo.ready') || 'Local image generator ready — images will be made on this device while the cloud is unavailable.') : (t('sdturbo.failed') || 'The local image generator could not load on this device.'), ok ? 'success' : 'error');
+        }).catch(() => { window.__sdTurboDownloading = false; });
+      }} />}
       {disableAnimations && (
         <style>{`
           *, *::before, *::after {
@@ -31371,6 +31440,22 @@ class AlloFlowErrorBoundary extends React.Component {
 }
 
 // ── KokoroOfferModal extracted to view_kokoro_offer_modal_module.js (CDN) ──
+// ── SD-Turbo (local image generator) offer modal — inline, no CDN pair ──
+function SdTurboOfferModal({ onAccept, onDecline, t }) {
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={t('sdturbo.offer_title') || 'Local image generator'}>
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+                <div className="mb-2 text-3xl" aria-hidden="true">🎨</div>
+                <h2 className="mb-2 text-lg font-bold text-gray-900 dark:text-gray-100">{t('sdturbo.offer_title') || 'Keep making images — locally'}</h2>
+                <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">{t('sdturbo.offer_body') || 'Cloud image generation is unavailable right now (no key, or the daily limit was reached). AlloFlow can download a local image generator (about 2 GB, one time) that makes simpler images right on this device — private, free, and it works offline.'}</p>
+                <div className="flex justify-end gap-2">
+                    <button type="button" className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700" onClick={onDecline}>{t('sdturbo.offer_decline') || 'Not now'}</button>
+                    <button type="button" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" onClick={onAccept}>{t('sdturbo.offer_accept') || 'Download (~2 GB)'}</button>
+                </div>
+            </div>
+        </div>
+    );
+}
 function KokoroOfferModal(props) {
     return (
         <CDNModuleGate moduleKey="KokoroOfferModal.KokoroOfferModal" icon="🎙️" displayName="Kokoro Voice Pack" t={props.t}>

@@ -168,6 +168,16 @@ const DEFAULT_CONFIG = {
     managed: false,
     port: 32173,
     modelDirectory: '',
+    // Pinned llama.cpp CPU build per-arch when empty (see ENGINE_BINARY_URLS).
+    binaryUrl: '',
+    // Default model: small enough for a 16GB classroom laptop, good enough for
+    // glossaries/leveling/simple generation. Swap via config for bigger boxes
+    // (a CUDA/Vulkan llama.cpp binaryUrl + a larger GGUF = the "better
+    // computer" path with zero code changes).
+    modelUrl: 'https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf',
+    contextSize: 4096,
+    threads: 0,
+    extraArgs: [],
   },
   updates: {
     channel: process.env.ALLOFLOW_UPDATE_CHANNEL || 'latest',
@@ -236,6 +246,30 @@ const lanSessionSubscribers = new Map();
 // hydration. Same in-memory + TTL model as lanSessions; no SSE (read-once).
 const lanDocs = new Map();
 const MAX_LAN_DOCS = 4000;
+
+// ─── AlloFlow Built-in Engine (managed llama.cpp server) ────────────────────
+// "alloflow-local" = a llama-server child process this runtime downloads and
+// manages, so classrooms get local text AI without installing Ollama or
+// LM Studio. It speaks the OpenAI-compatible API on 127.0.0.1:{port} — the
+// app's AIProvider preset for alloflow-local already points there.
+const ENGINE_BINARY_URLS = {
+  arm64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-arm64.zip',
+  x64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-x64.zip',
+};
+const managedEngine = {
+  child: null,
+  logs: [],
+  phase: 'stopped', // stopped | downloading-binary | downloading-model | starting | running | error
+  download: null,   // { file, receivedBytes, totalBytes }
+  startPromise: null,
+  startedAt: null,
+  stoppedAt: null,
+  lastError: null,
+  binaryPath: null,
+  modelPath: null,
+  arch: null,
+  advisory: null,
+};
 
 let secretStorage = {
   id: 'local-config',
@@ -1839,6 +1873,279 @@ function textResponse(res, statusCode, body) {
   res.end(body);
 }
 
+function appendEngineLog(line) {
+  const text = String(line || '').replace(/\r/g, '').trimEnd();
+  if (!text) return;
+  text.split('\n').forEach((entry) => {
+    managedEngine.logs.push({ at: new Date().toISOString(), line: entry.slice(0, 2000) });
+  });
+  if (managedEngine.logs.length > 250) managedEngine.logs.splice(0, managedEngine.logs.length - 250);
+}
+
+function isEngineRunning() {
+  return Boolean(managedEngine.child && !managedEngine.child.killed && managedEngine.child.exitCode === null);
+}
+
+function getEngineConfig(config = readConfig()) {
+  return deepMerge(DEFAULT_CONFIG.localEngine, (config && config.localEngine) || {});
+}
+
+function getEngineDir(config) {
+  const engine = getEngineConfig(config);
+  return engine.modelDirectory || path.join(getDataDir(), 'engine');
+}
+
+function engineModelFilePath(config) {
+  const engine = getEngineConfig(config);
+  if (!engine.modelUrl) return '';
+  const name = decodeURIComponent(String(engine.modelUrl).split('/').pop().split('?')[0] || '');
+  return name ? path.join(getEngineDir(config), 'models', name) : '';
+}
+
+async function getFreeDiskBytes(dir) {
+  try {
+    const stats = await fs.promises.statfs(dir);
+    return stats.bavail * stats.bsize;
+  } catch (_) {
+    return null;
+  }
+}
+
+function findFileRecursive(dir, name) {
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return null; }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isFile() && entry.name.toLowerCase() === name.toLowerCase()) return full;
+    if (entry.isDirectory()) {
+      const found = findFileRecursive(full, name);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+async function downloadEngineFile(url, destination, label) {
+  const response = await fetch(url, { redirect: 'follow' });
+  if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  const totalBytes = Number(response.headers.get('content-length')) || 0;
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  const freeBytes = await getFreeDiskBytes(path.dirname(destination));
+  // Teacher laptops run close to full; a 2GB model landing on a 98%-full disk
+  // is worse than no model. Require the download size plus real headroom.
+  if (freeBytes !== null && totalBytes && freeBytes < totalBytes + 1.5 * 1024 * 1024 * 1024) {
+    throw new Error('Not enough disk space for the ' + label + ': it needs ' + Math.round(totalBytes / 1048576) +
+      ' MB plus working headroom, but only ' + Math.round(freeBytes / 1048576) + ' MB is free. Free up space, then try again.');
+  }
+  managedEngine.download = { file: label, receivedBytes: 0, totalBytes };
+  const temp = destination + '.download';
+  await new Promise((resolveDone, rejectDone) => {
+    const output = fs.createWriteStream(temp);
+    const reader = require('stream').Readable.fromWeb(response.body);
+    reader.on('data', (chunk) => { managedEngine.download.receivedBytes += chunk.length; });
+    reader.on('error', rejectDone);
+    output.on('error', rejectDone);
+    output.on('finish', resolveDone);
+    reader.pipe(output);
+  });
+  fs.renameSync(temp, destination);
+  managedEngine.download = null;
+}
+
+async function expandEngineZip(zipPath, destDir) {
+  fs.mkdirSync(destDir, { recursive: true });
+  await new Promise((resolveDone, rejectDone) => {
+    const child = process.platform === 'win32'
+      ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+          "Expand-Archive -LiteralPath '" + zipPath.replace(/'/g, "''") + "' -DestinationPath '" + destDir.replace(/'/g, "''") + "' -Force"],
+          { windowsHide: true })
+      : spawn('unzip', ['-o', zipPath, '-d', destDir]);
+    child.on('exit', (code) => (code === 0 ? resolveDone() : rejectDone(new Error('Engine archive extraction failed (exit ' + code + ').'))));
+    child.on('error', rejectDone);
+  });
+}
+
+// Windows loader failures for a child that never ran: wrong-format image /
+// missing DLL. Seen in practice on ARM64 machines WITHOUT the Microsoft
+// Visual C++ ARM64 runtime installed (llama.cpp builds do not bundle it) —
+// verified on the Surface Snapdragon 2026-07-05. The x64 build then runs fine
+// under Windows ARM emulation, so we fall back to it automatically.
+const ENGINE_LOADER_EXIT_CODES = new Set([3221225595 /* 0xC000007B */, 3221225781 /* 0xC0000135 */]);
+const ENGINE_ARM64_ADVISORY = 'The native ARM64 engine could not start (this usually means the Microsoft Visual C++ ' +
+  'ARM64 runtime is not installed). Using the compatible x64 engine instead — it works but is slower. For full speed, ' +
+  'install https://aka.ms/vs/17/release/vc_redist.arm64.exe once, then restart the engine.';
+
+async function ensureEngineBinary(config, arch) {
+  const engine = getEngineConfig(config);
+  const dir = getEngineDir(config);
+  const binaryName = process.platform === 'win32' ? 'llama-server.exe' : 'llama-server';
+  const archDir = path.join(dir, 'bin', arch);
+  let binary = findFileRecursive(archDir, binaryName);
+  if (!binary) {
+    const url = (arch === (process.arch === 'arm64' ? 'arm64' : 'x64') && engine.binaryUrl) || ENGINE_BINARY_URLS[arch];
+    if (!url) throw new Error('No engine binary is published for this platform (' + process.platform + '/' + arch + ').');
+    managedEngine.phase = 'downloading-binary';
+    appendEngineLog('Downloading engine binary (' + arch + '): ' + url);
+    const zipPath = path.join(archDir, 'llama-server-download.zip');
+    await downloadEngineFile(url, zipPath, 'engine program');
+    await expandEngineZip(zipPath, archDir);
+    try { fs.unlinkSync(zipPath); } catch (_) {}
+    binary = findFileRecursive(archDir, binaryName);
+    if (!binary) throw new Error('llama-server was not found inside the downloaded engine archive.');
+  }
+  return binary;
+}
+
+async function ensureEngineAssets(config, arch) {
+  const engine = getEngineConfig(config);
+  const binary = await ensureEngineBinary(config, arch);
+  if (!engine.modelUrl) throw new Error('No AI model URL is configured (localEngine.modelUrl).');
+  const modelFile = engineModelFilePath(config);
+  if (!fs.existsSync(modelFile)) {
+    managedEngine.phase = 'downloading-model';
+    appendEngineLog('Downloading AI model: ' + engine.modelUrl);
+    await downloadEngineFile(engine.modelUrl, modelFile, 'AI model');
+  }
+  managedEngine.binaryPath = binary;
+  managedEngine.modelPath = modelFile;
+  return { binary, modelFile };
+}
+
+async function getLocalEngineStatus(config = readConfig()) {
+  const engine = getEngineConfig(config);
+  const dir = getEngineDir(config);
+  const binaryName = process.platform === 'win32' ? 'llama-server.exe' : 'llama-server';
+  const binary = managedEngine.binaryPath || findFileRecursive(path.join(dir, 'bin'), binaryName);
+  const modelFile = engineModelFilePath(config);
+  let modelBytes = null;
+  try { modelBytes = fs.statSync(modelFile).size; } catch (_) {}
+  const running = isEngineRunning();
+  return {
+    implemented: true,
+    phase: running ? managedEngine.phase : (managedEngine.phase === 'running' ? 'stopped' : managedEngine.phase),
+    running: running && managedEngine.phase === 'running',
+    pid: running ? managedEngine.child.pid : null,
+    port: engine.port,
+    baseUrl: 'http://127.0.0.1:' + engine.port,
+    engineDir: dir,
+    binaryPresent: Boolean(binary),
+    model: {
+      url: engine.modelUrl,
+      name: modelFile ? path.basename(modelFile) : '',
+      present: Boolean(modelBytes),
+      bytes: modelBytes,
+    },
+    download: managedEngine.download,
+    diskFreeBytes: await getFreeDiskBytes(getDataDir()),
+    startedAt: managedEngine.startedAt,
+    stoppedAt: managedEngine.stoppedAt,
+    lastError: managedEngine.lastError,
+    arch: managedEngine.arch,
+    advisory: managedEngine.advisory,
+  };
+}
+
+async function launchEngineProcess(config, arch) {
+  const engine = getEngineConfig(config);
+  const { binary, modelFile } = await ensureEngineAssets(config, arch);
+  managedEngine.phase = 'starting';
+  managedEngine.arch = arch;
+  appendEngineLog('Starting llama-server (' + arch + ') on 127.0.0.1:' + engine.port + ' with ' + path.basename(modelFile));
+  const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(engine.port),
+    '-c', String(engine.contextSize || 4096), '--no-webui'];
+  if (engine.threads) args.push('-t', String(engine.threads));
+  (Array.isArray(engine.extraArgs) ? engine.extraArgs : []).forEach((arg) => args.push(String(arg)));
+  let exitCode = null;
+  const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  managedEngine.child = child;
+  managedEngine.startedAt = new Date().toISOString();
+  child.stdout.on('data', (data) => appendEngineLog(data));
+  child.stderr.on('data', (data) => appendEngineLog(data));
+  child.on('exit', (code) => {
+    exitCode = code;
+    appendEngineLog('llama-server exited with code ' + code);
+    managedEngine.child = null;
+    managedEngine.stoppedAt = new Date().toISOString();
+    if (managedEngine.phase !== 'stopped') managedEngine.phase = code === 0 ? 'stopped' : 'error';
+  });
+  child.on('error', (error) => {
+    managedEngine.lastError = error.message;
+    appendEngineLog('spawn error: ' + error.message);
+  });
+  // Model load is mmap-backed but can still take a while on first touch.
+  const deadline = Date.now() + 120000;
+  while (Date.now() < deadline) {
+    if (!isEngineRunning()) {
+      if (exitCode !== null && ENGINE_LOADER_EXIT_CODES.has(exitCode >>> 0)) return { loaderFailure: true, exitCode };
+      throw new Error(managedEngine.lastError || 'The engine process exited during startup — see /api/engine/logs.');
+    }
+    try {
+      const health = await fetch('http://127.0.0.1:' + engine.port + '/health');
+      if (health.ok) {
+        managedEngine.phase = 'running';
+        appendEngineLog('Engine is healthy and serving the OpenAI-compatible API (' + arch + ').');
+        return { loaderFailure: false };
+      }
+    } catch (_) { /* not up yet */ }
+    await new Promise((resolveDone) => setTimeout(resolveDone, 1000));
+  }
+  throw new Error('The engine did not become healthy within 120 seconds — see /api/engine/logs.');
+}
+
+async function startLocalEngine(config = readConfig()) {
+  if (isEngineRunning() || managedEngine.startPromise) return managedEngine.startPromise || Promise.resolve();
+  managedEngine.lastError = null;
+  managedEngine.advisory = null;
+  managedEngine.startPromise = (async () => {
+    try {
+      const primaryArch = process.arch === 'arm64' ? 'arm64' : 'x64';
+      const attempt = await launchEngineProcess(config, primaryArch);
+      if (attempt.loaderFailure && primaryArch === 'arm64') {
+        managedEngine.advisory = ENGINE_ARM64_ADVISORY;
+        appendEngineLog(ENGINE_ARM64_ADVISORY);
+        const fallback = await launchEngineProcess(config, 'x64');
+        if (fallback.loaderFailure) {
+          throw new Error('Neither the ARM64 nor the x64 engine could start on this machine — see /api/engine/logs.');
+        }
+      } else if (attempt.loaderFailure) {
+        throw new Error('The engine binary could not be loaded by Windows (exit ' + attempt.exitCode + ') — see /api/engine/logs.');
+      }
+    } catch (error) {
+      managedEngine.lastError = error.message;
+      managedEngine.phase = 'error';
+      managedEngine.download = null;
+      appendEngineLog('ERROR: ' + error.message);
+      if (isEngineRunning()) { try { managedEngine.child.kill(); } catch (_) {} }
+      throw error;
+    } finally {
+      managedEngine.startPromise = null;
+    }
+  })();
+  return managedEngine.startPromise;
+}
+
+async function stopLocalEngine(config = readConfig()) {
+  if (!isEngineRunning()) {
+    managedEngine.phase = 'stopped';
+    return getLocalEngineStatus(config);
+  }
+  const child = managedEngine.child;
+  managedEngine.phase = 'stopped';
+  appendEngineLog('Stopping the built-in engine.');
+  if (process.platform === 'win32') {
+    await new Promise((resolveDone) => {
+      const killer = spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true });
+      killer.on('exit', resolveDone);
+      killer.on('error', resolveDone);
+    });
+  } else {
+    try { child.kill('SIGTERM'); } catch (_) {}
+  }
+  managedEngine.child = null;
+  managedEngine.stoppedAt = new Date().toISOString();
+  return getLocalEngineStatus(config);
+}
+
 async function readRequestJson(req) {
   const chunks = [];
   let size = 0;
@@ -2161,18 +2468,30 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && url.pathname === '/api/engine/status') {
     const provider = providerFromConfig(PROVIDER_PRESETS.find((item) => item.id === 'alloflow-local'), config);
     jsonResponse(res, 200, {
-      engine: config.localEngine,
+      ...await getLocalEngineStatus(config),
+      engine: getEngineConfig(config),
       provider: await probeProvider(provider),
-      implemented: false,
     });
     return;
   }
 
   if (req.method === 'POST' && url.pathname === '/api/engine/start') {
-    jsonResponse(res, 501, {
-      error: 'AlloFlow Built-in Engine launcher is not implemented yet.',
-      nextStep: 'Add the managed model runner process behind this endpoint.',
-    });
+    // Downloads + model load can take minutes: kick the work off and return a
+    // snapshot immediately — the command center polls /api/engine/status.
+    if (!isEngineRunning() && !managedEngine.startPromise) {
+      startLocalEngine(config).catch(() => { /* surfaced via status.lastError */ });
+    }
+    jsonResponse(res, 200, await getLocalEngineStatus(config));
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/engine/stop') {
+    jsonResponse(res, 200, await stopLocalEngine(config));
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/engine/logs') {
+    jsonResponse(res, 200, { logs: managedEngine.logs.slice(-100) });
     return;
   }
 
@@ -2606,6 +2925,12 @@ async function runSmoke(args) {
     if (publicCreateStatus !== 403) throw new Error('Public LAN share allowed session creation.');
     if (publicPatch.session?.data?.roster?.student?.name !== 'Learner') throw new Error('Public LAN share could not patch a session.');
     if (!schoolBox || !schoolBox.implemented) throw new Error('School Box endpoint did not return implemented status.');
+    const engineStatus = await fetch(baseUrl + '/api/engine/status').then((response) => response.json());
+    const engineStop = await fetch(baseUrl + '/api/engine/stop', { method: 'POST' }).then((response) => response.json());
+    if (engineStatus.implemented !== true) throw new Error('Engine status no longer reports implemented.');
+    if (engineStatus.running !== false) throw new Error('Engine unexpectedly reports running in smoke.');
+    if (typeof engineStatus.binaryPresent !== 'boolean' || !engineStatus.model) throw new Error('Engine status shape regressed.');
+    if (engineStop.phase !== 'stopped') throw new Error('Engine stop was not idempotent.');
     if (docPut.doc?.id !== 'asset_smoke_1') throw new Error('LAN doc create failed.');
     if (docGet.doc?.data?.resource?.id !== 'r1') throw new Error('LAN doc read failed.');
     if (publicDocGet.doc?.data?.kind !== 'sessionResource') throw new Error('Public LAN share could not read a class asset.');
