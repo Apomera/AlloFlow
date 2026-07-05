@@ -71,6 +71,10 @@ const createTTS = (deps) => {
                  for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
                  return bytes;
             };
+            // Guard: callers can pass a missing field; undefined.length threw here and
+            // was pointlessly retried. Normalize; empty text fails fast, non-retryable.
+            text = (text == null ? '' : String(text));
+            if (!text.trim()) throw new Error('TTS Empty Text');
             let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
             promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
             promptText = promptText.replace(/^\s*[-*•]\s+/gm, '');
@@ -191,6 +195,10 @@ const createTTS = (deps) => {
 
     const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
+            return null;
+        }
+        if (text == null || !String(text).trim()) {
+            console.warn('[TTS] Skipped: empty text (a caller passed a missing field)');
             return null;
         }
         var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts
@@ -377,6 +385,7 @@ const createTTS = (deps) => {
 
     const callTTSDirect = async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
         if (isGlobalMuted()) return null;
+        if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv) {
             if (Date.now() >= state.rateLimitedUntil) {
