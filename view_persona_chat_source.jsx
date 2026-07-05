@@ -431,7 +431,7 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                         <div className="mt-6">
-                                            <button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaReflectionInput(''); setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10 })); }} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                                            <button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaReflectionInput(''); setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10, earnedBadges: [] })); }} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
                                                 <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
                                             </button>
                                         </div>
@@ -745,40 +745,70 @@ function PersonaChatView(props) {
                                      )}
                                      <div className={`p-4 rounded-2xl text-sm shadow-sm leading-relaxed ${bubbleClass}`}>
                                          {(() => {
-                                             const paragraphs = msg.text.split(/\n{2,}/);
+                                             // Keep the English translation OUT of the TTS sentence spans:
+                                             // new messages carry it in msg.translation; the split also
+                                             // upgrades legacy messages where the model embedded a
+                                             // "**English Translation:**" block inside the text.
+                                             const _twoLang = String(msg.text || '').split(/\*{0,2}\s*English Translation\s*:?\s*\*{0,2}/i);
+                                             const mainText = _twoLang[0].trim() || String(msg.text || '');
+                                             const translationText = (msg.translation && String(msg.translation).trim()) || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
+                                             const paragraphs = mainText.split(/\n{2,}/);
                                              let sentenceCounter = 0;
-                                             return paragraphs.map((para, pIdx) => {
-                                                 const sentences = splitTextToSentences(para);
-                                                 if (sentences.length === 0) return null;
-                                                 return (
-                                                     <p key={pIdx} className="mb-2 last:mb-0">
-                                                         {sentences.map((s, sIdx) => {
-                                                             const currentGlobalIdx = sentenceCounter;
-                                                             sentenceCounter++;
-                                                             const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-                                                             const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
-                                                             const isActive = isMessagePlaying && (_activeRange ? (currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1]) : currentGlobalIdx === playbackState.currentIdx);
-                                                             const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
-                                                             const isHeader = s.trim().startsWith('#') || isHtmlHeader;
-                                                             const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
-                                                             return (
-                                                                 <span
-                                                                     key={sIdx}
+                                             return (
+                                                 <>
+                                                     {paragraphs.map((para, pIdx) => {
+                                                         const sentences = splitTextToSentences(para);
+                                                         if (sentences.length === 0) return null;
+                                                         return (
+                                                             <p key={pIdx} className="mb-2 last:mb-0">
+                                                                 {sentences.map((s, sIdx) => {
+                                                                     const currentGlobalIdx = sentenceCounter;
+                                                                     sentenceCounter++;
+                                                                     const isMessagePlaying = playingContentId === `persona-message-${idx}`;
+                                                                     const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+                                                                     const isActive = isMessagePlaying && (_activeRange ? (currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1]) : currentGlobalIdx === playbackState.currentIdx);
+                                                                     const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
+                                                                     const isHeader = s.trim().startsWith('#') || isHtmlHeader;
+                                                                     const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
+                                                                     return (
+                                                                         <span
+                                                                             key={sIdx}
+                                                                             onClick={(e) => {
+                                                                                 e.stopPropagation();
+                                                                                 handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
+                                                                             }}
+                                                                             className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
+                                                                             title={t('common.click_to_read')}
+                                                                         >
+                                                                             {formatInteractiveText(cleanText)}
+                                                                             {" "}
+                                                                         </span>
+                                                                     );
+                                                                 })}
+                                                             </p>
+                                                         );
+                                                     })}
+                                                     {translationText && (
+                                                         <div className="mt-3 pt-2 border-t border-slate-200/70">
+                                                             <div className="flex items-center gap-2 mb-1">
+                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t('persona.translation_label') || 'English translation'}</span>
+                                                                 <button
+                                                                     aria-label={t('common.volume')}
                                                                      onClick={(e) => {
                                                                          e.stopPropagation();
-                                                                         handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+                                                                         handleSpeak(translationText, `persona-translation-${idx}`, 0);
                                                                      }}
-                                                                     className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
+                                                                     className="p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors"
                                                                      title={t('common.click_to_read')}
                                                                  >
-                                                                     {formatInteractiveText(cleanText)}
-                                                                     {" "}
-                                                                 </span>
-                                                             );
-                                                         })}
-                                                     </p>
-                                                 );
-                                             });
+                                                                     <Volume2 size={12}/>
+                                                                 </button>
+                                                             </div>
+                                                             <p className="text-xs text-slate-500 leading-relaxed italic">{translationText}</p>
+                                                         </div>
+                                                     )}
+                                                 </>
+                                             );
                                          })()}
                                      </div>
                                  </div>
@@ -897,7 +927,7 @@ function PersonaChatView(props) {
                                                 setReflectionFeedback(null);
                                                 setIsPersonaReflectionOpen(false);
                                                 setPersonaReflectionInput('');
-                                                setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single' }));
+                                                setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10, earnedBadges: [] }));
                                             }}
                                             className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
                                         >

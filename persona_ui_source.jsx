@@ -422,9 +422,12 @@ const HarmonyMeter = ({ score }) => {
 const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
     const { t } = useContext(LanguageContext);
     if (!character) return <div className="flex-1 bg-slate-50/50"></div>;
+    // Active objectives first — what the student can still pursue belongs on
+    // top; completed secrets settle to the bottom (matches single-mode order
+    // and quest-log convention).
     const sortedQuests = [...(character.quests || [])].sort((a, b) => {
         if (a.isCompleted === b.isCompleted) return 0;
-        return a.isCompleted ? -1 : 1;
+        return a.isCompleted ? 1 : -1;
     });
     return (
     <div className="flex flex-col items-center text-center h-full p-2">

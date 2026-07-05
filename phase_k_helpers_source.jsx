@@ -653,7 +653,10 @@ const handleSpeak = async (text, contentId, startIndex = 0, deps) => {
         setIsGeneratingAudio(true);
         setPlayingContentId(contentId);
         try {
-            const audioUrl = await callTTS(effectiveText, selectedVoice, 1, 2, leveledTextLanguage);
+            // Persona translation blocks are always English — don't apply the
+            // target-language phonology hint that leveledTextLanguage carries.
+            const _ttsLang = (contentId && String(contentId).startsWith('persona-translation-')) ? 'English' : leveledTextLanguage;
+            const audioUrl = await callTTS(effectiveText, selectedVoice, 1, 2, _ttsLang);
             addBlobUrl(audioUrl);
             const audio = new Audio(audioUrl);
             if (contentId && (contentId.startsWith('term-') || contentId.startsWith('def-'))) {
@@ -1912,7 +1915,7 @@ const handleSaveReflection = async (deps) => {
               };
           }
           const totalXP = 10 + (grading.xpBonus || 0);
-          const formattedChatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || subjectName)}:**\n${m.text}`).join('\n\n---\n\n');
+          const formattedChatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || subjectName)}:**\n${m.text}${m.translation ? `\n\n> *English translation:* ${m.translation}` : ''}`).join('\n\n---\n\n');
           let metaHeader = `### 📝 Student Reflection\n`;
           if (standardsContext || dokContext) {
               metaHeader += `> *Graded against: ${standardsContext || ''} ${dokContext || ''}*\n\n`;
@@ -1933,10 +1936,10 @@ const handleSaveReflection = async (deps) => {
           let newlyEarnedBadges = [];
           if (grading.score >= 80 && !personaState.earnedBadges?.includes('master_interviewer')) {
               newlyEarnedBadges.push('master_interviewer');
-              setPersonaState(prev => ({
+              setPersonaState(prev => (prev.earnedBadges || []).includes('master_interviewer') ? prev : {
                   ...prev,
                   earnedBadges: [...(prev.earnedBadges || []), 'master_interviewer']
-              }));
+              });
               addToast(`🏆 ${t('persona.badges.master_interviewer')}!`, "success");
           }
           playSound('correct');

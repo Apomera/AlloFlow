@@ -727,8 +727,21 @@ const createPersonas = (deps) => {
         }
         setPersonaState(prev => ({ ...prev, isLoading: true }));
         try {
-            const historyStr = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : personaState.selectedCharacter.name}: ${m.text}`).join('\n');
-            const prompt = `
+            // Panel mode: label each line with its actual speaker and frame the
+            // spark as a MODERATOR question to both figures — the single-mode
+            // prompt attributed every model line to Character A and aimed the
+            // question at A alone.
+            const isPanelSpark = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
+            const historyStr = personaState.chatHistory.map(m => `${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}: ${m.text}`).join('\n');
+            const prompt = isPanelSpark
+                ? `
+              You are coaching a student who is moderating a debate between ${personaState.selectedCharacters[0].name} (${personaState.selectedCharacters[0].role}) and ${personaState.selectedCharacters[1].name} (${personaState.selectedCharacters[1].role}).
+              Debate so far:
+              ${historyStr}
+              Task: Suggest ONE deep, specific question the student moderator could pose to BOTH figures right now — ideally one that surfaces a real disagreement between them or pushes them toward common ground.
+              Return ONLY the raw text of the question.
+            `
+                : `
               You are roleplaying as ${personaState.selectedCharacter.name} (${personaState.selectedCharacter.role}, ${personaState.selectedCharacter.year}).
               Conversation Context:
               ${historyStr}
@@ -938,7 +951,10 @@ const createPersonas = (deps) => {
             }
             if (targetLang !== 'English') {
                 langInstruction = `Language: ${targetLang}.`;
-                translationInstruction = `Provide the response in ${targetLang} first. Then, add a new line with "**English Translation:**" followed by the English translation.`;
+                // Translation goes in its OWN JSON field — embedding it in
+                // "response" made TTS read both languages back-to-back and
+                // mixed languages inside one voice-consistent chunk.
+                translationInstruction = `Write your conversational response entirely in ${targetLang} in the "response" field. Put a complete English translation of it in the separate "translation" field. Do NOT include any English text or translation inside "response".`;
             }
             const prompt = `
               You are roleplaying as ${personaState.selectedCharacter.name} (${personaState.selectedCharacter.role}, ${personaState.selectedCharacter.year}).
@@ -969,7 +985,8 @@ const createPersonas = (deps) => {
               User: ${textToSend}
               Return ONLY JSON:
               {
-                  "response": "Your conversational response here (include translation if requested)",
+                  "response": "Your conversational response here (in the requested language ONLY — no translation)",
+                  "translation": "Complete English translation of the response (ONLY when the response is not in English; otherwise null)",
                   "visualReaction": "A concise visual description of your current action. This can be: 1. A facial expression (e.g., 'furrowed brow'). 2. A gesture (e.g., 'pointing at the horizon', 'shrugging', 'bowing'). 3. An interaction with an object (e.g., 'holding a map', 'examining a quill'). Keep it simple and visual.",
                   "rapportChange": integer (e.g., +5, -10),
                   "completedQuestId": "q1" (or null if none),
@@ -992,7 +1009,8 @@ const createPersonas = (deps) => {
                 resultParsed = { response: salvaged, rapportChange: 0, completedQuestId: null };
             }
             const responseText = resultParsed.response;
-            const finalHistory = [...historyContextForPrompt, { role: 'user', text: textToSend }, { role: 'model', text: responseText }];
+            const translationText = (typeof resultParsed.translation === 'string' && resultParsed.translation.trim()) ? resultParsed.translation.trim() : null;
+            const finalHistory = [...historyContextForPrompt, { role: 'user', text: textToSend }, { role: 'model', text: responseText, ...(translationText ? { translation: translationText } : {}) }];
             const delta = parseInt(resultParsed.rapportChange) || 0;
             let actualReward = 0;
             if (delta > 0) {
@@ -1114,7 +1132,7 @@ const createPersonas = (deps) => {
         if (personaState.chatHistory.length === 0 || !personaState.selectedCharacter) return;
         // Panel messages carry speakerName — honor it so Character B's lines
         // aren't attributed to Character A in the saved transcript.
-        const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}:**\n${m.text}`).join('\n\n---\n\n');
+        const chatLog = personaState.chatHistory.map(m => `**${m.role === 'user' ? 'Student' : (m.speakerName || personaState.selectedCharacter.name)}:**\n${m.text}${m.translation ? `\n\n> *English translation:* ${m.translation}` : ''}`).join('\n\n---\n\n');
         const isPanelSave = personaState.mode === 'panel' && (personaState.selectedCharacters || []).length === 2;
         const saveTitle = isPanelSave
             ? `Interview: ${personaState.selectedCharacters[0].name} & ${personaState.selectedCharacters[1].name}`

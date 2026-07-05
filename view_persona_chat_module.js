@@ -476,7 +476,8 @@
         suggestions: [],
         selectedCharacters: [],
         mode: 'single',
-        harmonyScore: 10
+        harmonyScore: 10,
+        earnedBadges: []
       }));
     },
     className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
@@ -783,9 +784,16 @@
     }))), /*#__PURE__*/React.createElement("div", {
       className: `p-4 rounded-2xl text-sm shadow-sm leading-relaxed ${bubbleClass}`
     }, (() => {
-      const paragraphs = msg.text.split(/\n{2,}/);
+      // Keep the English translation OUT of the TTS sentence spans:
+      // new messages carry it in msg.translation; the split also
+      // upgrades legacy messages where the model embedded a
+      // "**English Translation:**" block inside the text.
+      const _twoLang = String(msg.text || '').split(/\*{0,2}\s*English Translation\s*:?\s*\*{0,2}/i);
+      const mainText = _twoLang[0].trim() || String(msg.text || '');
+      const translationText = (msg.translation && String(msg.translation).trim()) || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
+      const paragraphs = mainText.split(/\n{2,}/);
       let sentenceCounter = 0;
-      return paragraphs.map((para, pIdx) => {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, paragraphs.map((para, pIdx) => {
         const sentences = splitTextToSentences(para);
         if (sentences.length === 0) return null;
         return /*#__PURE__*/React.createElement("p", {
@@ -804,13 +812,31 @@
             key: sIdx,
             onClick: e => {
               e.stopPropagation();
-              handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+              handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
             },
             className: `transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`,
             title: t('common.click_to_read')
           }, formatInteractiveText(cleanText), " ");
         }));
-      });
+      }), translationText && /*#__PURE__*/React.createElement("div", {
+        className: "mt-3 pt-2 border-t border-slate-200/70"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-2 mb-1"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "text-[10px] font-bold uppercase tracking-wider text-slate-500"
+      }, t('persona.translation_label') || 'English translation'), /*#__PURE__*/React.createElement("button", {
+        "aria-label": t('common.volume'),
+        onClick: e => {
+          e.stopPropagation();
+          handleSpeak(translationText, `persona-translation-${idx}`, 0);
+        },
+        className: "p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors",
+        title: t('common.click_to_read')
+      }, /*#__PURE__*/React.createElement(Volume2, {
+        size: 12
+      }))), /*#__PURE__*/React.createElement("p", {
+        className: "text-xs text-slate-500 leading-relaxed italic"
+      }, translationText)));
     })())), /*#__PURE__*/React.createElement("span", {
       className: `text-[11px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider ${!isUser && avatarUrl ? 'ml-11' : ''}`
     }, speakerName));
@@ -926,7 +952,9 @@
         chatHistory: [],
         suggestions: [],
         selectedCharacters: [],
-        mode: 'single'
+        mode: 'single',
+        harmonyScore: 10,
+        earnedBadges: []
       }));
     },
     className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
