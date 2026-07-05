@@ -254,6 +254,16 @@
     };
   }
 
+  // PURE: Imagen prompt for a grayscale DEPTH MAP of a locus subject — the Art Studio
+  // stereogram trick (white = near, black = far). Paired with the color illustration it
+  // drives a displacementMap "relief statue" at the locus: no new ML, ships in-Canvas
+  // (design doc P4a; Depth-Anything popup remains the future fidelity upgrade).
+  function buildDepthPrompt(subject) {
+    return 'A smooth, high-quality, continuous 3D grayscale depth map of: ' + String(subject || '').trim() +
+      '. The closest parts must be pure white, and the furthest background pure black. ' +
+      'Soft gradients between depths, single centered subject matching the illustration, no text, no floating artifacts. Fill the entire square frame.';
+  }
+
   // Refine an EXISTING sculpture recipe by a student instruction. The canonical
   // implementation now lives in Prim3D (so the sculpting primitive is reusable);
   // delegate to it, with an inline fallback if Prim3D isn't loaded.
@@ -576,6 +586,35 @@
     var recall = !!opts.recall;
     var frameMeshes = [], frameRefs = {};
     var texLoader = new THREE.TextureLoader();
+    // Depth-relief "statues": when a locus has BOTH a color image and a grayscale depth
+    // map (white = near), the flat frame canvas is swapped for a subdivided plane whose
+    // vertices are displaced by the depth map — a bas-relief that reads as 3D from the
+    // walk. Depth maps come from the same Imagen path as the art (buildDepthPrompt).
+    var depths = (opts && opts.depths) || {};
+    var RELIEF_DEPTH = 26;                    // world-units of max displacement (frame is 175×130)
+    function applyRelief(ref, li, color, img, depth) {
+      if (!ref || !ref.canvasMesh || !img || !depth) return false;
+      try {
+        var ctex = texLoader.load(img, function () { try { ref.mat.needsUpdate = true; } catch (e) {} }, undefined,
+          function () { try { ref.mat.map = makeCardTexture(THREE, li, color); ref.mat.needsUpdate = true; } catch (e2) {} });
+        if (THREE.sRGBEncoding) ctex.encoding = THREE.sRGBEncoding;
+        var dtex = texLoader.load(depth, undefined, undefined, function () {});   // decode-fail → flat (bias 0 ≙ no displacement data)
+        var m2 = new THREE.MeshStandardMaterial({
+          map: ctex, displacementMap: dtex,
+          displacementScale: RELIEF_DEPTH, displacementBias: -RELIEF_DEPTH * 0.2,
+          roughness: 0.85, metalness: 0.05
+        });
+        var oldG = ref.canvasMesh.geometry, oldM = ref.canvasMesh.material;
+        // preserve recall-dimming opacity if the flat material carried it
+        if (oldM && oldM.transparent) { m2.transparent = true; m2.opacity = oldM.opacity; }
+        ref.canvasMesh.geometry = new THREE.PlaneGeometry(FRAME_W, FRAME_H, 64, 48);
+        ref.canvasMesh.material = m2;
+        ref.mat = m2;
+        if (oldG && oldG.dispose) { try { oldG.dispose(); } catch (e) {} }
+        if (oldM) { try { if (oldM.map && oldM.map.dispose && oldM.map !== ctex) oldM.map.dispose(); oldM.dispose(); } catch (e) {} }
+        return true;
+      } catch (e) { return false; }
+    }
     palace.loci.forEach(function (l, li) {
       if (l.id === '__entry') return;
       var room = palace.rooms[l.roomIdx];
@@ -623,7 +662,9 @@
       }
       group.add(g2);
       frameMeshes.push(canvasMesh);
-      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh };
+      frameRefs[l.id] = { group: g2, label: lab, borderMat: borderMat, baseColor: color, locus: l, mat: mat, canvasMesh: canvasMesh, idx: li };
+      // Existing relief pair (reload path): upgrade the flat frame in place.
+      if (img && depths[l.id]) applyRelief(frameRefs[l.id], li, color, img, depths[l.id]);
     });
 
     // Sculpted 3D objects at loci (Prim3D recipes from the 🗿 Sculpt flow, or a
@@ -679,6 +720,13 @@
         ref.mat.map = tx; ref.mat.needsUpdate = true;
         if (oldMap && oldMap.dispose && oldMap !== tx) { try { oldMap.dispose(); } catch (e) {} }   // free the placeholder card
       } catch (e) {}
+    };
+    // Live relief reveal (Furnish with 🗿 Relief on): color + depth land together.
+    // No depth (or relief fails) → plain flat image, never an error.
+    state.setLocusRelief = function (id, img, depth) {
+      var ref = frameRefs[id];
+      if (!ref || !img) return;
+      if (!depth || !applyRelief(ref, ref.idx || 0, ref.baseColor, img, depth)) state.setLocusImage(id, img);
     };
     state.setLocusObject = function (id, recipe) {
       var l = locusById(palace, id);
@@ -1233,6 +1281,7 @@
     function revealLocus(id) { try { if (state.revealLocus) state.revealLocus(id); } catch (e) {} }
     function setLocusStatus(id, status) { try { if (state.setLocusStatus) state.setLocusStatus(id, status); } catch (e) {} }
     function setLocusImage(id, img) { try { if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
+    function setLocusRelief(id, img, depth) { try { if (state.setLocusRelief) state.setLocusRelief(id, img, depth); else if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
     function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function showFallback(msg) {
@@ -1246,7 +1295,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -1268,7 +1317,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -1286,6 +1335,7 @@
     buildPromptEvalPrompt: buildPromptEvalPrompt,
     parsePromptEval: parsePromptEval,
     buildRefinePrompt: buildRefinePrompt,
+    buildDepthPrompt: buildDepthPrompt,
     updateMastery: updateMastery,
     dueLoci: dueLoci,
     masteryStrength: masteryStrength,

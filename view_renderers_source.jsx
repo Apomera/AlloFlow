@@ -2621,6 +2621,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const persist = typeof onPersist === 'function' ? onPersist : null;
     const canImagen = typeof callImagen === 'function';
     const images = data?.memoryPalace?.images || {};
+    const depths = data?.memoryPalace?.depths || {};                 // depth maps for relief statues (P4a)
+    const [reliefOn, setReliefOn] = React.useState(false);           // 🗿 also generate a depth map per locus → 3D bas-relief
     const imageCount = Object.keys(images).length;
     // ── Recall walk (P2): the walk becomes the game board. ──
     const [recall, setRecall] = React.useState(null);           // {mode:'bank'|'type', seed, startAt}
@@ -2678,6 +2680,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             t,
             theme: data?.memoryPalace?.theme || 'gallery',
             images: data?.memoryPalace?.images || {},
+            depths: data?.memoryPalace?.depths || {},
             objects: data?.memoryPalace?.objects || {},
             mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
             recall: !!recall,
@@ -2997,11 +3000,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const cur = currentRef.current;
         if (!MP || !cur || cur.id === '__entry' || !persist) return;
         setDirectBusy('generating'); setDirectEval(null);
-        const done = (store, key, val) => {
+        const done = (store, key, val, depthVal) => {
             if (!aliveRef.current) return;
             if (val) {
-                if (handleRef.current) { if (key === 'images' && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, val); else if (handleRef.current.setLocusObject) handleRef.current.setLocusObject(cur.id, val); }
-                persist({ ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } }, 'memoryPalace');
+                if (handleRef.current) {
+                    if (key === 'images' && depthVal && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(cur.id, val, depthVal);
+                    else if (key === 'images' && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, val);
+                    else if (key !== 'images' && handleRef.current.setLocusObject) handleRef.current.setLocusObject(cur.id, val);
+                }
+                const nx = { ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } };
+                if (key === 'images' && depthVal) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [cur.id]: depthVal };
+                persist(nx, 'memoryPalace');
                 if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
                 setDirectPrompt('');
             } else if (addToast) addToast(t('memory_palace.direct_gen_failed') || 'Generation failed — try a different prompt.', 'error');
@@ -3015,7 +3024,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         } else {
             if (!canImagen) { setDirectBusy(null); return; }
             callImagen('A vivid, memorable, slightly surreal illustration: ' + finalPrompt + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
-                .then((base64) => done('images', 'images', base64))
+                .then((base64) => {
+                    if (base64 && reliefOn && typeof MP.buildDepthPrompt === 'function') {
+                        return callImagen(MP.buildDepthPrompt(finalPrompt), 400).catch(() => null)
+                            .then((d64) => done('images', 'images', base64, d64 || null));
+                    }
+                    done('images', 'images', base64);
+                })
                 .catch(() => done('images', 'images', null));
         }
     };
@@ -3069,7 +3084,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         if (!MP || !canImagen || !persist || furnishing || sculpting) return;
         const palace = MP.buildPalace(data || {});
-        const targets = palace.loci.filter((l) => l.id !== '__entry' && !images[l.id]);
+        // Relief mode also targets loci that HAVE a flat image but no depth map yet
+        // (upgrade-in-place: only the depth map is generated for those).
+        const wantRelief = reliefOn && typeof MP.buildDepthPrompt === 'function';
+        const targets = palace.loci.filter((l) => l.id !== '__entry' && (!images[l.id] || (wantRelief && !depths[l.id])));
         if (!targets.length) { if (addToast) addToast(t('memory_palace.furnish_done_already') || 'Every locus already has an image.', 'info'); return; }
         genCancelRef.current = false;
         setFurnishing({ done: 0, total: targets.length });
@@ -3086,12 +3104,31 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             }
             const l = targets[i];
             const subject = l.mnemonic || l.label;
-            callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400)
+            const haveImg = (mpRef.current && mpRef.current.images && mpRef.current.images[l.id]) || null;
+            const finishWith = (base64, depthB64) => {
+                // depth-upgrade-only target that got no depth = a failure; a fresh image
+                // without depth still counts (flat frame, exactly as before relief mode).
+                if (haveImg && !depthB64) { failures += 1; return; }
+                done += 1;
+                if (handleRef.current) {
+                    if (depthB64 && handleRef.current.setLocusRelief) handleRef.current.setLocusRelief(l.id, base64, depthB64);
+                    else if (!haveImg && handleRef.current.setLocusImage) handleRef.current.setLocusImage(l.id, base64);
+                }
+                const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } };
+                if (depthB64) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [l.id]: depthB64 };
+                persist(nx, 'memoryPalace');
+            };
+            const colorP = haveImg ? Promise.resolve(haveImg)
+                : callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400);
+            colorP
                 .then((base64) => {
                     if (!aliveRef.current || !base64) { if (!base64) failures += 1; return; }
-                    done += 1;
-                    if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(l.id, base64);
-                    persist({ ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } }, 'memoryPalace');
+                    if (wantRelief) {
+                        // returning the promise keeps generation sequential (depth lands before the next locus starts)
+                        return callImagen(MP.buildDepthPrompt(subject), 400).catch(() => null)
+                            .then((d64) => { if (aliveRef.current) finishWith(base64, d64 || null); });
+                    }
+                    finishWith(base64, null);
                 })
                 .catch(() => { failures += 1; })
                 .then(() => { if (aliveRef.current) { setFurnishing({ done: i + 1, total: targets.length }); step(i + 1); } });
@@ -3158,6 +3195,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     title={t('memory_palace.direct_tooltip') || 'Direct the AI yourself: write the prompt for each locus and the AI checks it before creating'}
                                 >
                                     ✍️ {t('memory_palace.direct_toggle') || 'Direct the AI'}
+                                </button>
+                            )}
+                            {hasContent && !failed && canImagen && persist && (
+                                <button
+                                    onClick={() => setReliefOn((r) => !r)}
+                                    aria-pressed={reliefOn ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${reliefOn ? 'bg-stone-700 text-white border-stone-700' : 'bg-white text-stone-700 border-stone-300 hover:bg-stone-50'}`}
+                                    title={t('memory_palace.relief_tooltip') || 'Relief mode: also generate a depth map per locus so furnished images become 3D bas-reliefs (two images per locus — uses more image credits and save space)'}
+                                >
+                                    🗿 {t('memory_palace.relief_toggle') || 'Relief'}
                                 </button>
                             )}
                             {hasContent && !failed && canImagen && persist && (

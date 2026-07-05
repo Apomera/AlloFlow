@@ -280,3 +280,30 @@ describe('MemoryPalace — graceful degradation (no WebGL in jsdom)', () => {
     div.remove();
   });
 });
+
+describe('MemoryPalace — depth-relief prompt (pure, P4a statues)', () => {
+  it('buildDepthPrompt asks for a grayscale depth map of the subject (white=near, black=far)', () => {
+    const p = MP.buildDepthPrompt('a kettle boiling a lake into steam');
+    expect(p).toContain('grayscale depth map');
+    expect(p).toContain('a kettle boiling a lake into steam');
+    expect(p).toContain('pure white');
+    expect(p).toContain('pure black');
+    expect(p).toContain('no text');
+  });
+
+  it('is pure and null-safe', () => {
+    expect(MP.buildDepthPrompt('x')).toBe(MP.buildDepthPrompt('x'));
+    expect(typeof MP.buildDepthPrompt()).toBe('string');
+    expect(typeof MP.buildDepthPrompt(null)).toBe('string');
+  });
+
+  it('the GL handle contract includes setLocusRelief (fallback path too)', () => {
+    // jsdom has no WebGL → render() returns the fallback handle; the relief setter
+    // must exist there as a safe no-op so callers never need to branch.
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {});
+    expect(typeof h.setLocusRelief).toBe('function');
+    expect(() => h.setLocusRelief('b0_i0', 'data:image/png;base64,x', 'data:image/png;base64,y')).not.toThrow();
+    h.destroy();
+  });
+});

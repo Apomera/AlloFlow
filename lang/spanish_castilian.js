@@ -5082,6 +5082,8 @@
     "empty_title": "Aún no hay palacio que recorrer",
     "empty_body": "Genera este organizador a partir de un texto fuente y los datos se convertirán en salas y loci que podrás recorrer.",
     "furnish": "Amueblar con imágenes de IA",
+    "relief_toggle": "Relieve",
+    "relief_tooltip": "Modo relieve: genera también un mapa de profundidad por locus para que las imágenes se conviertan en bajorrelieves 3D (dos imágenes por locus; usa más créditos y espacio de guardado)",
     "furnishing": "Amueblando {done}/{total}…",
     "furnish_tooltip": "Genera una ilustración de IA por locus a partir de su imagen mental (usa créditos de imagen; se guarda con el recurso)",
     "furnish_done": "🖼 ¡Palacio amueblado! Recorre la ruta para fijar las imágenes.",
