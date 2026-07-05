@@ -1442,12 +1442,27 @@
             : (aiMode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord));
         targetPhoneme = String(targetPhoneme || '').replace(/^\/+|\/+$/g, '').toLowerCase().trim();
         const phonemeFor = (w) => aiMode === 'first' ? estimateFirstPhoneme(w.toLowerCase()) : estimateLastPhoneme(w.toLowerCase());
-        aiMatches = aiMatches.filter((w) => phonemeFor(w) === targetPhoneme);
+        // Compare by SOUND class (phonemeKey), not spelling: the estimators
+        // return graphemes ("c" for "cap") while the AI target is a phoneme
+        // ("k" for "cat"), so exact-string comparison dropped phonetically
+        // correct matches AND recruited identical-sounding words (cap, cup)
+        // as scored-wrong distractors — punishing correct judgments.
+        const _soundEq = (a, b) => phonemeKey(a) === phonemeKey(b);
         const pool = SOUND_MATCH_POOL || ['bat', 'cat', 'dog', 'sit'];
-        const poolMatches = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; return phonemeFor(wc) === targetPhoneme; });
+        // Unwinnable-board guard: if the (AI-derived) target sound matches
+        // nothing in either word source, fall back to the estimator-derived
+        // target — the pool always has matches for estimator graphemes.
+        const _hasAny = (t) =>
+          aiMatches.some((w) => _soundEq(phonemeFor(w), t)) ||
+          pool.some((w) => { const wc = w.toLowerCase(); return wc !== targetWord && _soundEq(phonemeFor(wc), t); });
+        if (!_hasAny(targetPhoneme)) {
+          targetPhoneme = aiMode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord);
+        }
+        aiMatches = aiMatches.filter((w) => _soundEq(phonemeFor(w), targetPhoneme));
+        const poolMatches = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; return _soundEq(phonemeFor(wc), targetPhoneme); });
         const matches = [...new Set([...aiMatches, ...poolMatches])];
         const matchesLower = new Set(matches.map((w) => w.toLowerCase()));
-        const distractorsPool = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; if (matchesLower.has(wc)) return false; return phonemeFor(wc) !== targetPhoneme; });
+        const distractorsPool = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; if (matchesLower.has(wc)) return false; return !_soundEq(phonemeFor(wc), targetPhoneme); });
         const wordLen = targetWord.length;
         const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
         const difficulty = wordLen <= 3 && !hasBlend ? 'easy' : (wordLen <= 4 || hasBlend ? 'medium' : 'hard');
@@ -1473,10 +1488,21 @@
         let targetRime = null;
         let familyMembers = [];
         if (aiRimeData && aiRimeData.rime && aiRimeData.words && aiRimeData.words.length >= 3) {
-          targetRime = aiRimeData.rime.replace(/^-/, '');
-          familyMembers = aiRimeData.words.map((w) => w.toLowerCase().trim()).filter((w) => w && w !== targetWord);
+          // Normalize like the sibling paths (uppercase AI rimes broke the
+          // endsWith distractor filter), validate members actually belong to
+          // the family, and dedupe — an off-rime AI "member" became a chip
+          // that scored correct while looking identical to a distractor, and
+          // duplicates let the board complete early.
+          targetRime = aiRimeData.rime.replace(/^-/, '').toLowerCase().trim();
+          familyMembers = [...new Set(
+            aiRimeData.words
+              .map((w) => w.toLowerCase().trim())
+              .filter((w) => w && w !== targetWord && w.endsWith(targetRime)),
+          )];
         }
         if (!targetRime || familyMembers.length < 2) {
+          targetRime = null;
+          familyMembers = [];
           for (const [rime, members] of Object.entries(RIME_FAMILIES)) {
             if (targetWord.endsWith(rime) && targetWord.length > rime.length) {
               targetRime = rime;
@@ -1733,6 +1759,7 @@
       const [highlightedSyllableOptionIndex, setHighlightedSyllableOptionIndex] = React.useState(null);
       const [syllableTapCount, setSyllableTapCount] = React.useState(0);
       const lastWordForSyllable = React.useRef(null);
+      const syllableGenInFlightRef = React.useRef(null);
       const [blendingProgress, setBlendingProgress] = React.useState(0);
       const [blendingOptions, setBlendingOptions] = React.useState([]);
       const blendingOptionsRef = React.useRef([]);
@@ -1748,6 +1775,11 @@
       // (activity switch or answer submitted). Option-play loops capture it and
       // bail when it changes, so audio never bleeds into the next activity/item.
       const audioRunIdRef = React.useRef(0);
+      // Bumped by startActivity: checkAnswer's 0.8-3s advance timeout captures
+      // it and bails if the teacher switched activities in the window —
+      // otherwise the stale closure advanced the OLD activity's next word,
+      // clobbering the word startActivity just set.
+      const advanceEpochRef = React.useRef(0);
       // Tracks the post-error anchor "replay the sound" timeout so it can be
       // cleared on cleanup/teardown — otherwise it fires (and plays a phoneme)
       // after the tool has been closed or minimized.
@@ -1995,6 +2027,15 @@
           try {
             const result = await generateManipulationTask(word, phonemes);
             if (!result) return;
+            // Stale-word guard: a slow Gemini result for word N must not land
+            // on word N+1 (the child would be graded against N's answer while
+            // looking at N+1). The trigger effect sets the ref eagerly, so it
+            // always names the LATEST requested word.
+            if (
+              lastWordForManipulation.current &&
+              lastWordForManipulation.current !== word
+            )
+              return;
             const opts = fisherYatesShuffle(padManipOpts([result.answer, ...(result.distractors || []).slice(0, 5)]));
             setManipulationState(result);
             manipulationStateRef.current = result;
@@ -2082,6 +2123,12 @@
               count: result.syllables.length,
               blendingOptions: cleanOptions,
             };
+            // Stale-word guard (same class as manipulation above).
+            if (
+              lastWordForSyllable.current &&
+              lastWordForSyllable.current !== word
+            )
+              return;
             setSyllableData(data);
             syllableDataRef.current = data;
           } catch (err) {
@@ -2102,6 +2149,11 @@
         const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
         if (!currentWord) return;
         if (lastWordForSyllable.current === currentWord && syllableData) return;
+        // In-flight guard: setSyllableData(null) below re-fires this effect
+        // (syllableData is a dep) and the null defeated the word guard — every
+        // word change kicked off TWO racing Gemini syllable generations.
+        if (syllableGenInFlightRef.current === currentWord) return;
+        syllableGenInFlightRef.current = currentWord;
         lastWordForSyllable.current = currentWord;
         setSyllableData(null);
         syllableDataRef.current = null;
@@ -2507,6 +2559,10 @@
             debugLog("⚡ audioInstances HIT:", text);
             if (playImmediately) {
               await playInstance(audioInstances.current.get(text));
+            } else {
+              // Preload path: setIsPlayingAudio(true) above had no reset on
+              // this early return, sticking the UI in a "playing" state.
+              setIsPlayingAudio(false);
             }
             return;
           }
@@ -2842,10 +2898,16 @@
       }, [handleAudio, clearAudioNotice]);
       const playBlending = React.useCallback(async () => {
         if (!wordSoundsPhonemes?.phonemes) return;
+        // Run-id contract: bail between clips when an answer/activity-switch
+        // bumps the token — this loop previously had NO cancellation at all,
+        // so a mid-blend word advance kept stepping through the OLD word's
+        // phonemes over the new item.
+        const myRun = audioRunIdRef.current;
         try {
           setIsPlayingAudio(true);
           setBlendingProgress(0);
           for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
+            if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
             const phoneme = wordSoundsPhonemes?.phonemes?.[i];
             setBlendingProgress(i + 1);
             await handleAudio(phoneme);
@@ -2853,20 +2915,17 @@
           }
           setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
           await new Promise((r) => setTimeout(r, 200));
-          // Guard the global (it can be undefined before audio_banks loads) and
-          // drop the old duplicated else-branch, which re-tested the same value
-          // already known to be falsy (dead code).
+          if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
+          // Guard the global (it can be undefined before audio_banks loads).
+          // Route through handleAudio (data-URI path) so the clip registers in
+          // currentActiveAudio — the old bare `new Audio()` was unstoppable by
+          // stopAllWordSoundsAudio/minimize/unmount.
           const whichWordAudio =
             (typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
               window.__ALLO_INSTRUCTION_AUDIO["which_word_did_you_hear"]) ||
             null;
           if (whichWordAudio) {
-            const a = new Audio(whichWordAudio);
-            await new Promise((res, rej) => {
-              a.onended = res;
-              a.onerror = rej;
-              a.play().catch(rej);
-            });
+            await handleAudio(whichWordAudio);
           } else {
             await handleAudio("Which word did you hear?");
           }
@@ -3015,12 +3074,23 @@
                           "8th",
                         ];
                         const ordinal = ordinals[pos] || pos + 1 + "th";
+                        // typeof-guard (every other site has it): a raw
+                        // dereference throws if the bank never loaded, and
+                        // register the clip so close/minimize can stop it.
                         const bankAudio =
-                          window.__ALLO_ISOLATION_AUDIO[ordinal];
+                          (typeof window.__ALLO_ISOLATION_AUDIO !==
+                            "undefined" &&
+                            window.__ALLO_ISOLATION_AUDIO[ordinal]) ||
+                          null;
                         if (bankAudio) {
                           try {
                             const audio = new Audio(bankAudio);
                             audio.playbackRate = 0.9;
+                            currentActiveAudio.current = audio;
+                            audio.onended = () => {
+                              if (currentActiveAudio.current === audio)
+                                currentActiveAudio.current = null;
+                            };
                             await audio.play();
                             return;
                           } catch (e) {
@@ -3033,6 +3103,11 @@
                           if (url) {
                             const audio = new Audio(url);
                             audio.playbackRate = 0.9;
+                            currentActiveAudio.current = audio;
+                            audio.onended = () => {
+                              if (currentActiveAudio.current === audio)
+                                currentActiveAudio.current = null;
+                            };
                             await audio.play();
                           }
                         } catch (e) {
@@ -4562,7 +4637,10 @@
                       "inline-block bg-rose-100 text-rose-600 px-4 py-2 rounded-full text-sm font-bold",
                   },
                   '\u274C "',
-                  wrongFeedback,
+                  // Sound-only mode masks chip text \u2014 don't leak the printed
+                  // word in the error banner (a letter hint precisely on
+                  // errors defeats the masking).
+                  soundOnlyMode ? "\uD83D\uDD0A" : wrongFeedback,
                   '" ',
                   ts("word_sounds.sound_sort_wrong_hint") ||
                   (showLetterHints
@@ -5961,7 +6039,9 @@
         }
         setIsLoadingPhonemes(false);
         setPhonemeError(null);
-        if (data.word) {
+        // Never cache dataless entries — a phonemes:null item re-served from
+        // cache breaks every downstream activity for that word permanently.
+        if (data.word && data.phonemes && data.phonemes.length) {
           wordDataCache.current.set(data.word.toLowerCase(), data);
         }
       };
@@ -6355,7 +6435,16 @@
               word,
               phonemeData,
             );
-            applyWordDataToState(phonemeData);
+            // Only apply to LIVE state when this is still the latest
+            // foreground request — background prefetches and superseded
+            // fetches (word N resolving after word N+1) were last-writer-wins
+            // clobbering the current word's data.
+            const _isLatestReq =
+              (latestRequestedWord.current || "").toLowerCase() ===
+              word.toLowerCase();
+            if (_isLatestReq && !isBackground) {
+              applyWordDataToState(phonemeData);
+            }
             wordDataCache.current.set(word.toLowerCase(), phonemeData);
           }
           if (resolveRequest) resolveRequest(phonemeData);
@@ -6474,6 +6563,11 @@
             }
             const finalOptions = [targetToCheck, ...finalDistractors];
             const uniqueFinalOptions = [...new Set(finalOptions)];
+            // Staleness guard: the Gemini repair can straddle a word advance;
+            // without this, word N's option set (whose "correct" answer is
+            // word N) clobbered word N+1's freshly-set options — the new
+            // target wasn't even in the list, so blending was unwinnable.
+            if (_repairCancelled) return;
             setBlendingOptions &&
               setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
             debugLog(
@@ -6482,7 +6576,11 @@
             );
           }
         };
+        let _repairCancelled = false;
         repairBlendingDistractors();
+        return () => {
+          _repairCancelled = true;
+        };
       }, [
         wordSoundsActivity,
         wordSoundsPhonemes,
@@ -7330,7 +7428,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             if (
               !showReviewPanel &&
               !currentWordSoundsWord &&
-              !hasStartedFromReview.current
+              !hasStartedFromReview.current &&
+              !isProbeMode
             ) {
               debugLog("📋 Words loaded - showing Review Panel");
               setShowReviewPanel(true);
@@ -7514,6 +7613,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           if (wordDataCache.current) {
             wordDataCache.current.delete(targetWord.toLowerCase());
+          }
+          // Invalidate the pinned sound-sort/word-families items so the
+          // regenerated data actually reaches the board (they're word-keyed
+          // and would otherwise keep serving the pre-regenerate item).
+          if (soundSortPreloadRef.current?.word === targetWord.toLowerCase()) {
+            soundSortPreloadRef.current = null;
+          }
+          if (wordFamilyRimeRef.current?.word === targetWord.toLowerCase()) {
+            wordFamilyRimeRef.current = null;
           }
           if (typeof removeAudioFromStorage === "function") {
             removeAudioFromStorage(targetWord);
@@ -8070,9 +8178,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const options = [correctRhyme, ...filteredDistractors.slice(0, 4)];
             if (
               rhymeOptions.length === 0 ||
-              !rhymeOptions.includes(correctRhyme)
+              !rhymeOptions.includes(correctRhyme) ||
+              // Word-change check: two same-rime-family words in a row (bat →
+              // cat) kept the OLD word's options because the new correctRhyme
+              // coincidentally appeared in them — but the distractors were
+              // filtered against the old word's rime, not the new one's.
+              String(lastWordForRhyming.current || "").toLowerCase() !==
+                (currentWordSoundsWord || "").toLowerCase()
             ) {
               setRhymeOptions(fisherYatesShuffle(options));
+              lastWordForRhyming.current = currentWordSoundsWord;
             }
           } else {
             if (rhymeOptions.length === 0) {
@@ -8597,8 +8712,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             try { instructionAudioRef.current.pause(); } catch (e) {}
             instructionAudioRef.current = null;
           }
-          setTimeout(() => { audioCancelledRef.current = false; }, 50);
+          // Guard against un-cancelling a MINIMIZED tool: switch-activity-
+          // then-minimize within 50ms left the hard-cancel flag false,
+          // re-opening the leak stopAllWordSoundsAudio exists to close.
+          setTimeout(() => {
+            if (!isMinimized) audioCancelledRef.current = false;
+          }, 50);
           // === End audio cleanup ===
+          advanceEpochRef.current++;
           setWordSoundsActivity(activityId);
           setWordSoundsFeedback?.(null);
           setUserAnswer("");
@@ -8630,6 +8751,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setDecodingChoices([]);
           setDecodeDragOver(false);
           lastWordForDecoding.current = null;
+          // Sight & Spell: the rebuild effect is gated on option COUNT, not
+          // word — without this reset, re-entering orthography served the
+          // previous word's misspellings with the new word patched at index 0.
+          setOrthographyOptions([]);
+          if (typeof lastWordForOrthography !== "undefined" && lastWordForOrthography && "current" in lastWordForOrthography) {
+            lastWordForOrthography.current = null;
+          }
           if (!forceWord) {
             const effectiveDiff = getEffectiveDifficulty();
             generateSessionQueue(activityId, effectiveDiff);
@@ -8850,7 +8978,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           const firstWord = preloadedWords[0];
           if (firstWord && firstWord.phonemes) {
-            if (!showReviewPanel && !hasStartedFromReview.current) {
+            if (!showReviewPanel && !hasStartedFromReview.current && !isProbeMode) {
               setShowReviewPanel(true);
             }
           }
@@ -8873,7 +9001,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           (wordPool && wordPool.length > 0) ||
           (preloadedWords && preloadedWords.length > 0);
         if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
-          if (preloadedWords.length > 0 && !hasStartedFromReview.current) {
+          if (preloadedWords.length > 0 && !hasStartedFromReview.current && !isProbeMode) {
             setShowReviewPanel(true);
             return;
           }
@@ -8975,6 +9103,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
           });
         }
+        // Also stop the active data-URI/bank clip: a word advance within the
+        // same activity never paused it, so multi-second clips crossed item
+        // boundaries (startActivity only covers activity SWITCHES).
+        if (currentActiveAudio.current) {
+          try {
+            currentActiveAudio.current.pause();
+            currentActiveAudio.current.currentTime = 0;
+          } catch (e) { /* already stopped */ }
+          currentActiveAudio.current = null;
+        }
         setIsPlayingAudio(false);
       }, [currentWordSoundsWord, wordSoundsActivity]);
       React.useEffect(() => {
@@ -8982,6 +9120,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         if (showReviewPanel) return;
         // orthography now gets instructions like all other activities
         let cancelled = false;
+        // Run-id: answering bumps audioRunIdRef, but the option-play loops
+        // below only checked `cancelled` (which flips 2-3s later on the word
+        // change) — so read-alouds kept talking over the answer feedback.
+        const seqRun = audioRunIdRef.current;
+        const seqStale = () =>
+          cancelled ||
+          audioCancelledRef.current ||
+          audioRunIdRef.current !== seqRun;
         setIsPlayingAudio(true);
         const runInstructionSequence = async () => {
           try {
@@ -9271,15 +9417,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 instructionText = null;
               }
             }
-            if (cancelled || audioCancelledRef.current) return;
+            if (seqStale()) return;
             if (instructionAudioSrc) {
               await handleAudio(instructionAudioSrc);
             } else if (instructionText && !isPlayingAudio) {
               await handleAudio(instructionText);
             }
+            // Bail BEFORE dispatching: a word advance mid-instruction used to
+            // still fire this event, kicking WordFamiliesView's option
+            // auto-play against the wrong (next) item.
+            if (seqStale()) return;
             // Signal that instruction audio is done (used by WordFamiliesView / Sound Sort)
             try { window.dispatchEvent(new Event('wordSoundsInstructionDone')); } catch(e) { console.warn("[WordSounds] silent catch:", e); }
-            if (cancelled || audioCancelledRef.current) return;
             if (
               wordSoundsActivity === "blending" &&
               wordSoundsPhonemes?.phonemes
@@ -9328,7 +9477,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ) {
                 await new Promise((r) => setTimeout(r, 100));
                 for (let i = 0; i < effectiveBlendingOptions.length; i++) {
-                  if (cancelled) break;
+                  if (seqStale()) break;
                   setHighlightedBlendIndex(i);
                   await handleAudio(effectiveBlendingOptions[i]);
                   if (cancelled) return;
@@ -9371,7 +9520,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 );
                 if (cancelled) return;
                 for (let i = 0; i < rhymeSnapshot.length; i++) {
-                  if (cancelled) break;
+                  if (seqStale()) break;
                   setHighlightedRhymeIndex(i);
                   await handleAudio(rhymeSnapshot[i]);
                   if (cancelled) return;
@@ -9419,7 +9568,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 );
                 if (cancelled) return;
                 for (let i = 0; i < manipSnapshot.length; i++) {
-                  if (cancelled) break;
+                  if (seqStale()) break;
                   setHighlightedManipIndex(i);
                   await handleAudio(manipSnapshot[i]);
                   if (cancelled) return;
@@ -9450,7 +9599,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (wordSoundsActivity === "syllable_blending") {
                   const syls = syllableDataRef.current.syllables || [];
                   for (let i = 0; i < syls.length; i++) {
-                    if (cancelled) break;
+                    if (seqStale()) break;
                     setHighlightedSyllableIndex(i);
                     await handleAudio(syls[i]);
                     if (cancelled) return;
@@ -9498,7 +9647,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   i < (isoSnap2?.isoOptions?.length || 0);
                   i++
                 ) {
-                  if (cancelled) break;
+                  if (seqStale()) break;
                   setHighlightedIsoIndex(i);
                   await handleAudio(isoSnap2.isoOptions[i]);
                   if (cancelled) return;
@@ -9515,6 +9664,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // sound_sort word already played in custom instruction block above
           } catch (e) {
             warnLog("Unhandled error in runInstructionSequence:", e);
+          } finally {
+            // The 8919 setIsPlayingAudio(true) had NO matching reset on
+            // data-URI-only sequences (bank clips never touch the flag), so
+            // replay buttons stayed spinner-disabled for the whole item.
+            if (isMountedRef.current) setIsPlayingAudio(false);
           }
         };
         runInstructionSequence();
@@ -9650,19 +9804,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     feedbackAudioRef.current = tryAgainAudio;
                     tryAgainAudio.volume = 0.7;
                     tryAgainAudio.play().catch(() => { });
+                    // Run-id guard: if the child answers correctly while this
+                    // clip is still playing, the natural onended used to
+                    // replay the OLD word (or a whole blend) over the
+                    // celebration and next item.
+                    const _fbRun = audioRunIdRef.current;
                     tryAgainAudio.onended = () => {
                       // Read & Match decodes a PRINTED word that is never spoken;
                       // skip the re-speak so the modality stays read-only.
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding") {
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && audioRunIdRef.current === _fbRun) {
                         setTimeout(
-                          () => wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord),
+                          () => {
+                            if (audioRunIdRef.current !== _fbRun) return;
+                            wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
+                          },
                           300,
                         );
                       }
                     };
                   } else {
+                    const _fbRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding")
+                      if (isMountedRef.current && currentWordSoundsWord && wordSoundsActivity !== "decoding" && audioRunIdRef.current === _fbRun2)
                         wordSoundsActivity === "blending" ? playBlending() : handleAudio(currentWordSoundsWord);
                     }, 800);
                   }
@@ -9699,14 +9862,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     feedbackAudioRef.current = almostAudio;
                     almostAudio.volume = 0.7;
                     almostAudio.play().catch(() => { });
+                    // Run-id + sentinel guards (same class as the try-again
+                    // clip above): never re-speak a stale item or a sentinel.
+                    const _almRun = audioRunIdRef.current;
                     almostAudio.onended = () => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding") {
-                        setTimeout(() => handleAudio(expectedAnswer), 300);
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && !_expIsSentinel && audioRunIdRef.current === _almRun) {
+                        setTimeout(() => {
+                          if (audioRunIdRef.current === _almRun) handleAudio(expectedAnswer);
+                        }, 300);
                       }
                     };
                   } else {
+                    const _almRun2 = audioRunIdRef.current;
                     setTimeout(() => {
-                      if (isMountedRef.current && wordSoundsActivity !== "decoding") handleAudio(expectedAnswer);
+                      if (isMountedRef.current && wordSoundsActivity !== "decoding" && !_expIsSentinel && audioRunIdRef.current === _almRun2) handleAudio(expectedAnswer);
                     }, 800);
                   }
                 } catch (e) {
@@ -9731,7 +9900,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // (confetti/stars/XP float/avatar bounce) and the haptic buzz for
               // motion/sensory-sensitive learners, not just speed it up via CSS.
               // The success chime + word/image reveal + feedback banner remain.
-              if (!disableAnimations) {
+              // Suppress in probe mode too: a timed CBM should not pay out
+              // per-item celebrations (XP floats claim XP that probe mode
+              // deliberately never awards), and the 2.5s burst eats probe time.
+              if (!disableAnimations && !isProbeMode) {
                 setIsCelebrating(true);
                 // Visual celebrations — scale with streak!
                 wsSpawnConfetti(newStreak >= 5 ? 20 : newStreak >= 3 ? 15 : 8);
@@ -9767,6 +9939,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               correct: wordSoundsScore.correct + (isCorrect ? 1 : 0),
               total: wordSoundsScore.total + 1,
             };
+            const _advanceEpoch = advanceEpochRef.current;
             if (setWordSoundsStreak) setWordSoundsStreak(newStreak);
             // Letter hints are a practice scaffold — never auto-enable them
             // mid-probe (it changes what the probe measures; items would be
@@ -9853,6 +10026,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } else if (
               hasLessonPlan &&
               isCorrect &&
+              // Never let the lesson-plan auto-director switch activities
+              // mid-probe: startActivity resets the probe clock without
+              // resetting the score, permanently killing the payload arming.
+              !isProbeMode &&
               shouldAdvanceActivity(wordSoundsActivity, currentLessonConfig)
             ) {
               debugLog(
@@ -10066,7 +10243,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }
             updateDailyProgress(isCorrect);
-            if (isCorrect && setWordSoundsSessionProgress) {
+            // Level-ups are practice gamification — never mid-probe.
+            if (isCorrect && !isProbeMode && setWordSoundsSessionProgress) {
               setWordSoundsSessionProgress((prev) => {
                 const newVal = prev + 1;
                 if (newVal > 0 && newVal % 10 === 0) {
@@ -10109,7 +10287,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 return newVal;
               });
             }
-            checkAndAwardBadges(wordSoundsActivity, isCorrect, newStreak);
+            // Badges are practice rewards — probe items shouldn't earn them.
+            if (!isProbeMode) {
+              checkAndAwardBadges(wordSoundsActivity, isCorrect, newStreak);
+            }
             const streakCelebration =
               newStreak === 5 || newStreak === 10 || newStreak === 25
                 ? " " +
@@ -10204,6 +10385,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setTimeout(
               () => {
                 submissionLockRef.current = false;
+                // Bail if startActivity ran during the feedback window — this
+                // closure belongs to the OLD activity and would clobber the
+                // new one's word/state (and could double-fire onProbeComplete
+                // after the modal closed).
+                if (advanceEpochRef.current !== _advanceEpoch) return;
+                if (!isMountedRef.current) return;
                 // HOISTED, QUEUE-INDEPENDENT completion check. The queue-refill
                 // effect re-runs after every answer (generateSessionQueue's
                 // identity changes with history) and repopulates an empty queue
@@ -10291,7 +10478,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     bufferedWord.displayWord ||
                     bufferedWord.word ||
                     "";
-                  const phonemeData = bufferedWord;
+                  // Queue items outside the preloaded set routinely carry
+                  // phonemes:null — applying them verbatim gave segmentation
+                  // 0 boxes and poisoned wordDataCache. Fall back like
+                  // startActivity does.
+                  const phonemeData =
+                    bufferedWord.phonemes && bufferedWord.phonemes.length
+                      ? bufferedWord
+                      : generateFallbackData(targetWord) || bufferedWord;
                   const wordImage = bufferedWord.image;
                   setCurrentWordSoundsWord(targetWord);
                   setCurrentWordImage(wordImage);
@@ -10829,6 +11023,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           target,
                         );
                         setCurrentWordSoundsWord(target);
+                        // Parity with the normal advance branch — without
+                        // these, the previous item's feedback banner/typed
+                        // answer (and segmentation's filled boxes for a
+                        // same-phoneme-count word) carried into the refill.
+                        setWordSoundsFeedback?.(null);
+                        setUserAnswer("");
+                        setElkoninBoxes([]);
+                        setSegmentationErrors([]);
                         const refillPreloaded = preloadedWords.find(
                           (pw) =>
                             pw.word?.toLowerCase() === target.toLowerCase() ||
@@ -11127,6 +11329,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
       };
       const handleOptionUpdate = (index, newValue, type) => {
+        // Teacher edits write React state only — drop the cached entry so a
+        // later cache hit / advance re-apply can't silently revert the edit
+        // (the regenerate handler already does this; edits didn't).
+        if (currentWordSoundsWord && wordDataCache.current) {
+          wordDataCache.current.delete(currentWordSoundsWord.toLowerCase());
+        }
         if (type === "set_correct") {
           if (wordSoundsActivity === "rhyming") {
             setWordSoundsPhonemes((prev) => ({ ...prev, rhymeWord: newValue }));
@@ -13615,6 +13823,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ? _ssPre.item
               : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches);
             if (!_ssItem) return null;
+            // PIN the item on first compute: on the non-preloaded path the AI
+            // sort data lands asynchronously mid-play — recomputing per-render
+            // could flip first/last (remounting the board via key= and wiping
+            // foundWords) and desync from the already-spoken instruction.
+            if (!(_ssPre && _ssPre.word === targetWord && _ssPre.item)) {
+              soundSortPreloadRef.current = { word: targetWord, item: _ssItem };
+            }
             const mode = _ssItem.mode;
             const targetPhoneme = _ssItem.targetChar;
             const difficulty = _ssItem.difficulty;
@@ -13637,6 +13852,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   options: selectedMatches,
                   distractors: selectedDistractors,
                 },
+                // Word Families already passes this; Sound Sort omitted it, so
+                // sound-only sessions still showed printed words (solvable by
+                // first letter) and history logged mode:"sound_only" wrongly.
+                soundOnlyMode: !showWordText,
                 onPlayAudio: handleAudio,
                 // Full-instruction replay — mirrors the auto-playback sequence
                 // that runs on first load (instruction prompt → target sound →
@@ -14011,6 +14230,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     currentWordSoundsWord,
                   ),
                 onPlayAudio: (w) => handleAudio(w),
+                // Replay = instruction clip + WHICH family (the in-card
+                // fallback previously played only the bare rime with no
+                // framing, and the header replay omitted the rime entirely).
+                onPlayInstruction: async () => {
+                  try {
+                    const bank =
+                      (typeof window !== "undefined" &&
+                        window.__ALLO_INSTRUCTION_AUDIO) ||
+                      {};
+                    if (bank["inst_word_families"]) {
+                      await handleAudio(bank["inst_word_families"]);
+                      await new Promise((r) => setTimeout(r, 200));
+                    } else {
+                      await handleAudio("Find all the words in the family");
+                      await new Promise((r) => setTimeout(r, 200));
+                    }
+                    await handleAudio(targetRime);
+                  } catch (e) {
+                    warnLog("WF replay instruction failed:", e);
+                  }
+                },
                 onUpdateOption: handleOptionUpdate,
                 showLetterHints: showLetterHints,
                 soundOnlyMode: !showWordText,
@@ -14019,7 +14259,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           case "decoding": {
             const dWord = currentWordSoundsWord || "";
-            const dChoices = (decodingChoices && decodingChoices.length) ? decodingChoices : [dWord];
+            // Require ≥2 choices: the [dWord] fallback could render a
+            // one-card grid where tapping the only picture scores correct
+            // with zero discrimination (image-cache timing window).
+            const dChoices = (decodingChoices && decodingChoices.length >= 2) ? decodingChoices : [];
             const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || (pe && pe.image) || null; };
             const dSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
             const dAnyImg = dChoices.some((w) => imgFor(w));
@@ -14212,8 +14455,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                     "div",
                     { className: "text-xl font-bold" },
-                    (wordSoundsScore?.correct || 0) * 10,
-                    " \u2728",
+                    // Probe mode never awards XP (onScoreUpdate is gated), so
+                    // don't display XP that was never earned \u2014 show accuracy.
+                    isProbeMode
+                      ? `${accuracy}%`
+                      : `${(wordSoundsScore?.correct || 0) * 10} \u2728`,
                   ),
                   /*#__PURE__*/ React.createElement(
                     "div",
@@ -14221,7 +14467,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "text-xs text-white/80 uppercase tracking-wider",
                     },
-                    ts("word_sounds.session_xp_earned") || "XP Earned",
+                    isProbeMode
+                      ? ts("word_sounds.accuracy") || "Accuracy"
+                      : ts("word_sounds.session_xp_earned") || "XP Earned",
                   ),
                 ),
               ),
@@ -14382,6 +14630,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ].length,
                 ")",
               ),
+              // Probe mode: no Play Again / Next Activity. Play Again silently
+              // started a SECOND probe (one launch → two banked payloads), and
+              // Next Activity let the child leave the probed skill while the
+              // probe UI persisted. Close is the only honest exit.
+              !isProbeMode &&
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
@@ -14400,6 +14653,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ? "Practice Again"
                   : (ts("word_sounds.play_again") || "Play Again"),
               ),
+              !isProbeMode &&
               /*#__PURE__*/ React.createElement(
                 "button",
                 {
@@ -14961,6 +15215,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "flex items-center gap-2" },
+                // Teacher review/edit are practice affordances \u2014 opening the
+                // review panel mid-probe replaces the probe UI entirely and
+                // its Start button wipes the evidence (setWordSoundsHistory([])).
+                !isProbeMode &&
                 preloadedWords.length > 0 &&
                   /*#__PURE__*/ React.createElement(
                   "button",
@@ -14973,6 +15231,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   },
                   "\u270F\uFE0F Review Words",
                 ),
+                !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
                   {
