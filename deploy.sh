@@ -133,6 +133,20 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ no \`__alloT = ctx.t\` fallback-dropping decls (missing keys must fall back to English, not render 'undefined')."
 fi
 
+# ── Step 0.7: CDN-deployability gate ───────────────────────────────
+# Guards the two classes that froze alloflow-cdn.pages.dev for 3 days
+# (2026-07-03→05 post-mortem): a tracked file over Cloudflare's hard 25 MiB
+# per-file limit (the ffmpeg-core.wasm sweep; classic Pages ignores
+# .assetsignore), and an npm-11-regenerated root lock that npm 10 — the
+# version in Cloudflare's build image — rejects at npm ci (the @emnapi class,
+# invisible to local npm 11 checks). Bypass: SKIP_CDN_DEPLOYABLE=1 ./deploy.sh
+if [[ "${SKIP_CDN_DEPLOYABLE:-0}" != "1" ]]; then
+  echo ""
+  echo "=== Step 0.7: CDN-deployability gate (asset size + npm-10 lock) ==="
+  node dev-tools/check_cdn_deployable.cjs --quiet
+  echo "  ✓ CDN-deployable: no ≥25MiB tracked files; root lock passes npm-10 ci."
+fi
+
 # ── Step 1: Source commit ──────────────────────────────────────────
 echo ""
 echo "════════════════════════════════════════════"
