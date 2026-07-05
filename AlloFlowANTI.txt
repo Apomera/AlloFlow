@@ -17752,6 +17752,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setActiveSessionAppId(appId);
       }
   };
+  // Desktop LAN classroom auto-join: the School Box join page (served by
+  // desktop/runtime/alloflow-desktop-runtime.cjs) seeds
+  // localStorage.alloflow_live_session_config, then links the student to
+  // /app/?allo_lan_join=CODE. On boot we join that session automatically so a
+  // student never retypes the code. CANONICAL HOME: AlloFlowANTI.txt — an
+  // earlier version of this hook lived only in the generated App.jsx and was
+  // wiped by regeneration (recovered 2026-07-05).
+  useEffect(() => {
+      let cancelled = false;
+      let timer = null;
+      try {
+          const params = new URLSearchParams(window.location.search);
+          const lanCode = (params.get('allo_lan_join') || '').trim();
+          if (!lanCode) return undefined;
+          // Short delay so first-render plumbing (db/appId/toasts) settles.
+          timer = setTimeout(() => {
+              if (cancelled) return;
+              try { joinClassSession(lanCode); } catch (e) { warnLog('LAN auto-join failed', e); }
+          }, 600);
+      } catch (_) { /* URL parsing unavailable — never block boot */ }
+      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+  }, []);
   const handleExportPDF = () => {
       handleExport('print');
   };
