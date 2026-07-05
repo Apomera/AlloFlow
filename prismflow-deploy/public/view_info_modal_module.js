@@ -13,6 +13,116 @@
   var React = window.React;
   if (!React) { console.error('[InfoModal] React not found on window'); return; }
 
+const OSS_CREDITS = [
+  {
+    group: "App framework",
+    items: [
+      { name: "React & React DOM", use: "user-interface framework", license: "MIT", url: "https://react.dev" },
+      { name: "Lucide", use: "icon set", license: "ISC", url: "https://lucide.dev" },
+      { name: "Tailwind CSS", use: "styling", license: "MIT", url: "https://tailwindcss.com" },
+      { name: "Firebase JS SDK", use: "sign-in & class sync", license: "Apache-2.0", url: "https://firebase.google.com" }
+    ]
+  },
+  {
+    group: "Documents, PDF & accessibility",
+    items: [
+      { name: "pdf.js", use: "reading & rendering PDFs", license: "Apache-2.0", url: "https://mozilla.github.io/pdf.js/" },
+      { name: "pdf-lib", use: "building accessible PDFs", license: "MIT", url: "https://pdf-lib.js.org" },
+      { name: "fontkit", use: "embedding fonts in PDFs", license: "MIT", url: "https://github.com/foliojs/fontkit" },
+      { name: "Tesseract.js", use: "OCR of scanned handouts", license: "Apache-2.0", url: "https://tesseract.projectnaptha.com" },
+      { name: "veraPDF", use: "PDF/UA & PDF/A conformance checks", license: "GPLv3+ / MPLv2", url: "https://verapdf.org" },
+      { name: "Apache PDFBox", use: "PDF parsing inside veraPDF", license: "Apache-2.0", url: "https://pdfbox.apache.org" },
+      { name: "CheerpJ", use: "runs the veraPDF engine in the browser", license: "free for this use (LeaningTech)", url: "https://leaningtech.com/cheerpj/" },
+      { name: "axe-core", use: "accessibility rule checks", license: "MPL-2.0", url: "https://github.com/dequelabs/axe-core" },
+      { name: "IBM Equal Access (accessibility-checker-engine)", use: "second accessibility checker", license: "Apache-2.0", url: "https://github.com/IBMa/equal-access" },
+      { name: "DOMPurify", use: "HTML sanitizing (safety)", license: "Apache-2.0 / MPL-2.0", url: "https://github.com/cure53/DOMPurify" },
+      { name: "Harper", use: "grammar & spelling checks", license: "Apache-2.0", url: "https://writewithharper.com" },
+      { name: "KaTeX", use: "math typesetting", license: "MIT", url: "https://katex.org" },
+      { name: "Temml", use: "LaTeX \u2192 MathML", license: "MIT", url: "https://temml.org" },
+      { name: "Prism", use: "code syntax highlighting", license: "MIT", url: "https://prismjs.com" },
+      { name: "mammoth.js", use: "importing Word documents", license: "BSD-2-Clause", url: "https://github.com/mwilliamson/mammoth.js" },
+      { name: "docx", use: "Word (.docx) export", license: "MIT", url: "https://docx.js.org" },
+      { name: "PptxGenJS", use: "PowerPoint (.pptx) export", license: "MIT", url: "https://gitbrent.github.io/PptxGenJS/" },
+      { name: "JSZip", use: "packaging multi-file exports", license: "MIT / GPLv3", url: "https://stuk.github.io/jszip/" },
+      { name: "pako", use: "zlib compression", license: "MIT", url: "https://github.com/nodeca/pako" }
+    ]
+  },
+  {
+    group: "Math, science & simulations",
+    items: [
+      { name: "math.js", use: "math engine", license: "Apache-2.0", url: "https://mathjs.org" },
+      { name: "jStat", use: "statistics library", license: "MIT", url: "https://github.com/jstat/jstat" },
+      { name: "Acorn", use: "JavaScript parser (code sandbox)", license: "MIT", url: "https://github.com/acornjs/acorn" },
+      { name: "CircuitJS1", use: "electronic-circuit simulator (Circuit Shelf) \u2014 Paul Falstad & Iain Sharp", license: "GPLv2", url: "https://github.com/pfalstad/circuitjs1" },
+      { name: "Mol*", use: "3D molecular-structure viewer (Molecule Shelf) \u2014 RCSB PDB & PDBe", license: "MIT", url: "https://molstar.org" },
+      { name: "CODAP", use: "data-science workspace (Data Lab) \u2014 Concord Consortium", license: "MIT", url: "https://codap.concord.org" },
+      { name: "PhET Interactive Simulations", use: "science & math sims (Sim Shelf) \u2014 Univ. of Colorado Boulder", license: "GPLv3 (code) / CC-BY (content)", url: "https://phet.colorado.edu" },
+      { name: "iframe-phone", use: "bridge to the CODAP window \u2014 Concord Consortium", license: "MIT", url: "https://github.com/concord-consortium/iframe-phone" }
+    ]
+  },
+  {
+    group: "3D, graphics, maps & media",
+    items: [
+      { name: "three.js", use: "3D graphics (Memory Palace, STEM tools)", license: "MIT", url: "https://threejs.org" },
+      { name: "globe.gl", use: "interactive 3D globe", license: "MIT", url: "https://github.com/vasturiano/globe.gl" },
+      { name: "Leaflet", use: "interactive maps", license: "BSD-2-Clause", url: "https://leafletjs.com" },
+      { name: "world-atlas", use: "country-boundary map data (from Natural Earth, public domain)", license: "ISC", url: "https://github.com/topojson/world-atlas" },
+      { name: "A-Frame", use: "WebXR / virtual reality", license: "MIT", url: "https://aframe.io" },
+      { name: "html2canvas", use: "exporting on-screen charts as images", license: "MIT", url: "https://html2canvas.hertzen.com" },
+      { name: "ffmpeg.wasm", use: "in-browser video/audio export", license: "MIT wrapper; FFmpeg LGPL-2.1/GPL", url: "https://ffmpegwasm.netlify.app" }
+    ]
+  },
+  {
+    group: "On-device speech & AI",
+    items: [
+      { name: "Kokoro", use: "neural text-to-speech (primary)", license: "Apache-2.0", url: "https://github.com/hexgrad/kokoro" },
+      { name: "Piper", use: "neural text-to-speech (40+ languages)", license: "MIT (engine now GPLv3 fork)", url: "https://github.com/OHF-Voice/piper1-gpl" },
+      { name: "Transformers.js", use: "in-browser ML (Whisper transcription, image gen)", license: "Apache-2.0", url: "https://github.com/huggingface/transformers.js" },
+      { name: "ONNX Runtime Web", use: "machine-learning inference", license: "MIT", url: "https://onnxruntime.ai" },
+      { name: "Pyodide", use: "Python in the browser", license: "MPL-2.0", url: "https://pyodide.org" }
+    ]
+  },
+  {
+    group: "Utilities",
+    items: [
+      { name: "lz-string", use: "compressing saved work", license: "MIT", url: "https://github.com/pieroxy/lz-string" },
+      { name: "idb-keyval", use: "offline browser storage", license: "Apache-2.0", url: "https://github.com/jakearchibald/idb-keyval" },
+      { name: "jsdiff", use: "comparing text revisions", license: "BSD-3-Clause", url: "https://github.com/kpdecker/jsdiff" },
+      { name: "jsonrepair", use: "repairing AI-generated JSON", license: "ISC", url: "https://github.com/josdejong/jsonrepair" },
+      { name: "lamejs", use: "MP3 audio encoding", license: "LGPL-3.0", url: "https://github.com/zhuker/lamejs" },
+      { name: "DragDropTouch", use: "touch drag-and-drop on tablets", license: "MIT", url: "https://github.com/Bernardo-Castilho/dragdroptouch" }
+    ]
+  },
+  {
+    group: "Fonts",
+    items: [
+      { name: "OpenDyslexic", use: "dyslexia-friendly reading font", license: "SIL OFL-1.1", url: "https://opendyslexic.org" },
+      { name: "Atkinson Hyperlegible", use: "low-vision font \u2014 Braille Institute", license: "free (Atkinson Hyperlegible Font License)", url: "https://brailleinstitute.org/freefont" },
+      { name: "Inter & Lexend", use: "interface fonts", license: "SIL OFL-1.1", url: "https://fonts.google.com" },
+      { name: "Noto", use: "Unicode & CJK text in PDFs \u2014 Google", license: "SIL OFL-1.1", url: "https://fonts.google.com/noto" },
+      { name: "DejaVu", use: "PDF fallback font", license: "Bitstream Vera / public domain", url: "https://dejavu-fonts.github.io" }
+    ]
+  },
+  {
+    group: "Desktop app (School Box)",
+    items: [
+      { name: "Electron", use: "offline desktop app", license: "MIT", url: "https://electronjs.org" },
+      { name: "electron-log & electron-updater", use: "desktop logging & updates", license: "MIT", url: "https://github.com/electron-userland/electron-builder" }
+    ]
+  }
+];
+function OssCredits({ t }) {
+  return /* @__PURE__ */ React.createElement("details", { className: "bg-slate-50 rounded-xl border border-slate-200 mt-4 group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer select-none px-4 py-3 font-bold text-slate-800 text-sm flex items-center gap-2 hover:text-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F49B}"), t("about.oss_credits_title") || "Open-source software we build on"), /* @__PURE__ */ React.createElement("div", { className: "px-4 pb-4 pt-1 space-y-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, t("about.oss_credits_intro") || "AlloFlow is free and open source (AGPL-3.0), and it is built on the generous work of the projects below. Thank you to their authors and communities. Each link goes to the project\u2019s home or source."), OSS_CREDITS.map((section) => /* @__PURE__ */ React.createElement("div", { key: section.group }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5" }, section.group), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 list-none" }, section.items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.name, className: "text-xs text-slate-700 leading-snug flex flex-col sm:flex-row sm:items-baseline sm:gap-2" }, /* @__PURE__ */ React.createElement(
+    "a",
+    {
+      href: item.url,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
+    },
+    item.name
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014 ", item.use, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-slate-500" }, item.license))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.oss_credits_footer") || "AI features also use Google\u2019s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know.")));
+}
 function InfoModal({
   handleSetInfoModalTabToAbout,
   handleSetInfoModalTabToFeatures,
@@ -134,7 +244,7 @@ function InfoModal({
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }),
     " ",
     t("about.reset_wizard")
-  )))) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement(OssCredits, { t })) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setSelectedFeature(null),
