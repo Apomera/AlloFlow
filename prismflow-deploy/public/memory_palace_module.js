@@ -1369,7 +1369,7 @@
       // HEADSET owns the camera pose — skip all rail/free-roam camera writes and
       // let the XR compositor schedule frames (no window rAF). Controllers still
       // drive locomotion (thumbstick) each frame.
-      if (state.xrActive) { _xrLocomotion(); renderer.render(root, camera); return; }
+      if (state.xrActive) { _xrLocomotion(); _pulseHl(); renderer.render(root, camera); return; }
       if (freeMode) {
         // WASD free walk on the floor plane; free-look via freeYaw/freePitch.
         if (moveF || moveR) {
@@ -1405,6 +1405,7 @@
         }
         camera.lookAt(lookBase);
       }
+      _pulseHl();
       renderer.render(root, camera);
       state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
     }
@@ -1482,6 +1483,7 @@
     function setLocusRelief(id, img, depth) { try { if (state.setLocusRelief) state.setLocusRelief(id, img, depth); else if (state.setLocusImage) state.setLocusImage(id, img); } catch (e) {} }
     function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
+    function clearLocus(id) { try { if (state.clearLocus) state.clearLocus(id); } catch (e) {} }
     function showFallback(msg) {
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
@@ -1493,7 +1495,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -1515,7 +1517,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -1525,6 +1527,8 @@
     THEME_KEYS: THEME_KEYS,
     buildPalace: buildPalace,
     navigateRoute: navigateRoute,
+    decorSpot: decorSpot,
+    landmarkSpot: landmarkSpot,
     describeLocusForSR: describeLocusForSR,
     describeLocusForRecall: describeLocusForRecall,
     buildRecallBank: buildRecallBank,

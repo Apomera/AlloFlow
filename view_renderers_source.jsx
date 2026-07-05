@@ -2726,6 +2726,43 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
 // wrapper owns the toolbar (Furnish with Imagen, per the Art Studio depth
 // trick's sibling pattern) and the visible mnemonic strip. Images persist
 // in data.memoryPalace.images (Frayer-image precedent) via onPersist.
+
+// Preset frame stamps for the 🎁 Decorate panel: the app's own emoji icon
+// language rendered onto a small card texture — zero AI, zero network, a few
+// KB each, and they ride the exact same images store/live-reveal path as
+// Imagen art. Labels are EN fallbacks; t() keys memory_palace.stamp_<id>.
+const _MP_STAMPS = [
+    { id: 'star', e: '⭐', label: 'Star' },
+    { id: 'heart', e: '❤️', label: 'Heart' },
+    { id: 'bolt', e: '⚡', label: 'Lightning bolt' },
+    { id: 'flame', e: '🔥', label: 'Flame' },
+    { id: 'rainbow', e: '🌈', label: 'Rainbow' },
+    { id: 'dragon', e: '🐉', label: 'Dragon' },
+    { id: 'trex', e: '🦖', label: 'T-rex' },
+    { id: 'rocket', e: '🚀', label: 'Rocket' },
+    { id: 'crown', e: '👑', label: 'Crown' },
+    { id: 'music', e: '🎵', label: 'Music note' },
+    { id: 'ice', e: '🧊', label: 'Ice cube' },
+    { id: 'volcano', e: '🌋', label: 'Volcano' },
+];
+// Emoji → small PNG data-URL (dark card + big centered glyph). Returns null when
+// a 2D canvas isn't available (the caller toasts instead of crashing).
+const _mpStampImage = (emoji) => {
+    try {
+        const c = document.createElement('canvas');
+        c.width = 320; c.height = 240;
+        const g = c.getContext('2d');
+        if (!g) return null;
+        const grad = g.createLinearGradient(0, 0, 0, 240);
+        grad.addColorStop(0, '#1e1b4b'); grad.addColorStop(1, '#0f172a');
+        g.fillStyle = grad; g.fillRect(0, 0, 320, 240);
+        g.strokeStyle = 'rgba(129,140,248,0.55)'; g.lineWidth = 10; g.strokeRect(5, 5, 310, 230);
+        g.font = '150px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText(String(emoji || '⭐'), 160, 128);
+        return c.toDataURL('image/png');
+    } catch (e) { return null; }
+};
+
 const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
@@ -3035,6 +3072,43 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const objects3d = data?.memoryPalace?.objects || {};
     const objectCount = Object.keys(objects3d).length;
     const [sculpting, setSculpting] = React.useState(null);   // {done, total} | null
+    // ── 🎁 Decorate mode: preset decorations from assets ALREADY IN THE APP —
+    //    hand-authored Prim3D recipes + emoji frame stamps. No AI, no credits,
+    //    works offline; the walk is the locus picker (same contract as Direct).
+    //    Choosing your own cue is itself encoding work (choice + generation effect).
+    const [decorMode, setDecorMode] = React.useState(false);
+    const handlePlacePreset = (presetId) => {
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        const cur = currentRef.current;
+        if (!P3D || typeof P3D.getPreset !== 'function' || !cur || cur.id === '__entry' || !persist) return;
+        const recipe = P3D.getPreset(presetId);
+        if (!recipe) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
+        _persistObject(cur.id, recipe);
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
+    const handlePlaceStamp = (stamp) => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const img = _mpStampImage(stamp.e);
+        if (!img) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
+        if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, img);
+        const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [cur.id]: img } };
+        // a flat stamp replaces any relief pair — drop the stale depth map with it
+        if (nx.depths && nx.depths[cur.id]) { const d = { ...nx.depths }; delete d[cur.id]; nx.depths = d; }
+        persist(nx, 'memoryPalace');
+        if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
+    };
+    const handleDecorRemove = () => {
+        const cur = currentRef.current;
+        if (!cur || cur.id === '__entry' || !persist) return;
+        const keep = { ...(mpRef.current || {}) };
+        ['images', 'depths', 'objects'].forEach((k) => {
+            if (keep[k] && keep[k][cur.id] !== undefined) { const o = { ...keep[k] }; delete o[cur.id]; keep[k] = o; }
+        });
+        persist(keep, 'memoryPalace');
+        if (handleRef.current && handleRef.current.clearLocus) handleRef.current.clearLocus(cur.id);
+        if (addToast) addToast(t('memory_palace.decorate_removed') || 'Removed — the locus is back to its numbered card.', 'info');
+    };
     // ── Direct-the-AI mode: the student writes the prompt; an AI stage rejects /
     //    enhances / approves it before generating (generation effect + prompt craft). ──
     const [directMode, setDirectMode] = React.useState(false);
@@ -3344,6 +3418,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ✍️ {t('memory_palace.direct_toggle') || 'Direct the AI'}
                                 </button>
                             )}
+                            {hasContent && !failed && persist && (
+                                <button
+                                    onClick={() => setDecorMode((d) => !d)}
+                                    aria-pressed={decorMode ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
+                                    title={t('memory_palace.decorate_tooltip') || 'Decorate loci yourself with built-in 3D objects and stamps — instant, no AI credits needed'}
+                                >
+                                    🎁 {t('memory_palace.decorate_toggle') || 'Decorate'}
+                                </button>
+                            )}
                             {hasContent && !failed && canImagen && persist && (
                                 <button
                                     onClick={() => setReliefOn((r) => !r)}
@@ -3540,6 +3624,59 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         {voiceHeard && <span className="w-full text-xs text-fuchsia-500 italic">“{voiceHeard}”</span>}
                                     </div>
                                 </form>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+            {decorMode && !recall && hasContent && !failed && (
+                <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                    {(!current || current.entry) ? (
+                        <div className="text-sm text-emerald-900">{t('memory_palace.decorate_at_entry') || '🎁 Walk to a locus (▶ or WASD), then pick a decoration for it.'}</div>
+                    ) : (
+                        <>
+                            <div className="text-xs font-bold text-emerald-800 mb-0.5">
+                                {(t('memory_palace.decorate_for') || 'Decorate: {label}').replace('{label}', current.label)}
+                            </div>
+                            <div className="text-xs text-emerald-700 mb-2">{t('memory_palace.decorate_note') || 'Built-in decorations — instant and free. Pick something that helps YOU picture this fact.'}</div>
+                            {!!(window.AlloModules && window.AlloModules.Prim3D && window.AlloModules.Prim3D.PRESETS) && (
+                                <div className="mb-2">
+                                    <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_objects') || '3D decorations (stand beside the frame)'}</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {window.AlloModules.Prim3D.PRESETS.map((p) => {
+                                            const label = t('memory_palace.preset_' + p.id) || p.label;
+                                            return (
+                                                <button key={p.id} onClick={() => handlePlacePreset(p.id)} title={label}
+                                                    className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-emerald-700 border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                    {p.emoji} {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            <div>
+                                <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_stamps') || 'Frame stamps (fill the picture frame)'}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {_MP_STAMPS.map((s) => {
+                                        const label = t('memory_palace.stamp_' + s.id) || s.label;
+                                        return (
+                                            <button key={s.id} onClick={() => handlePlaceStamp(s)} title={label} aria-label={label}
+                                                className="w-9 h-9 flex items-center justify-center rounded-lg text-xl bg-white border border-emerald-300 hover:bg-emerald-100 transition-colors">
+                                                {s.e}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            {(images[current.id] || objects3d[current.id]) && (
+                                <div className="mt-2 pt-2 border-t border-emerald-200">
+                                    <button onClick={handleDecorRemove}
+                                        title={t('memory_palace.decorate_remove_tooltip') || 'Clear the image and 3D object at this locus'}
+                                        className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-300 hover:bg-slate-50 transition-colors">
+                                        ✖ {t('memory_palace.decorate_remove') || 'Remove art at this locus'}
+                                    </button>
+                                </div>
                             )}
                         </>
                     )}

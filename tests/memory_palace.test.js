@@ -319,3 +319,61 @@ describe('MemoryPalace — in-VR recall bank contract', () => {
     h.destroy();
   });
 });
+
+describe('MemoryPalace.decorSpot / landmarkSpot (radial placement math)', () => {
+  it('rotates the beside-the-frame offset with faceYaw so sculptures stay inside rotated rooms', () => {
+    // many branches → spokes at genuinely rotated angles
+    const p = MP.buildPalace({
+      main: 'Big Palace',
+      branches: Array.from({ length: 6 }, (_, i) => ({ title: 'R' + i, items: ['a', 'b'] })),
+    });
+    p.loci.filter((l) => l.id !== '__entry').forEach((l) => {
+      const s = MP.decorSpot(l);
+      // always ~100√2 from the frame (along-wall + into-room legs)…
+      const d = Math.hypot(s.x - l.framePos.x, s.z - l.framePos.z);
+      expect(d).toBeCloseTo(Math.hypot(100, 100), 5);
+      // …and stepped INTO the room, i.e. toward the camera stop's side of the wall:
+      // the spot must be strictly closer to the camera stop than the naive legacy
+      // offset would be for rotated rooms is not guaranteed — instead pin that the
+      // spot lies on the same side of the wall as the camera (dot with face normal > 0).
+      const nx = Math.sin(l.faceYaw), nz = Math.cos(l.faceYaw);   // frame's world +z (into the room)
+      const inward = (s.x - l.framePos.x) * nx + (s.z - l.framePos.z) * nz;
+      expect(inward).toBeCloseTo(100, 5);
+    });
+  });
+  it('falls back to the legacy axis-aligned offset for pre-faceYaw persisted palaces', () => {
+    const legacy = { framePos: { x: 50, y: 170, z: -20 }, faceDir: -1 };
+    const s = MP.decorSpot(legacy);
+    expect(s).toEqual({ x: 150, z: -120 });
+    expect(MP.decorSpot(null)).toBe(null);
+  });
+  it('landmarkSpot stands against the far wall of each rotated room, facing the doorway', () => {
+    const p = MP.buildPalace({
+      main: 'Big Palace',
+      branches: Array.from({ length: 5 }, (_, i) => ({ title: 'R' + i, items: ['a'] })),
+    });
+    p.rooms.filter((r) => r.key !== '__entry').forEach((room) => {
+      const s = MP.landmarkSpot(room);
+      // the far wall is the room-local +x end: the landmark sits further out along
+      // the spoke than the room centre, by (ROOM_W/2 - inset)
+      const rCenter = Math.hypot(room.center.x, room.center.z);
+      const rSpot = Math.hypot(s.x, s.z);
+      expect(rSpot).toBeGreaterThan(rCenter);
+      expect(typeof s.rotY).toBe('number');
+    });
+    // legacy room (no angle): the old linear-corridor spot
+    const s0 = MP.landmarkSpot({ center: { x: 300, z: 0 } });
+    expect(s0.x).toBe(300);
+    expect(s0.rotY).toBe(0);
+  });
+});
+
+describe('MemoryPalace — decorate handle contract', () => {
+  it('the handle includes clearLocus as a safe no-op on the fallback path', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {});
+    expect(typeof h.clearLocus).toBe('function');
+    expect(() => h.clearLocus('b0_i0')).not.toThrow();
+    h.destroy();
+  });
+});

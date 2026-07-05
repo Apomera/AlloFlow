@@ -174,3 +174,36 @@ describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
     expect(g.children.length).toBe(1);
   });
 });
+
+describe('Prim3D.PRESETS (built-in decoration shelf)', () => {
+  it('every preset has a unique id, an emoji, a label, and a renderable recipe', () => {
+    const ids = P.PRESETS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(P.PRESETS.length).toBeGreaterThanOrEqual(10);
+    P.PRESETS.forEach((p) => {
+      expect(typeof p.emoji).toBe('string');
+      expect(p.label.length).toBeGreaterThan(0);
+      const rec = P.getPreset(p.id);
+      expect(rec).toBeTruthy();
+      expect(rec.parts.length).toBeGreaterThanOrEqual(4);
+      expect(rec.parts.length).toBeLessThanOrEqual(P.MAX_PARTS);
+      // decorations stand ON the pedestal: no part center below the ground plane
+      rec.parts.forEach((part) => expect(part.position[1]).toBeGreaterThanOrEqual(0));
+    });
+  });
+  it('getPreset returns a FRESH normalized recipe each call (mutation-safe) and null for unknown ids', () => {
+    const a = P.getPreset('trophy');
+    const b = P.getPreset('trophy');
+    expect(a).not.toBe(b);
+    a.parts[0].color = '#000000';
+    expect(b.parts[0].color).not.toBe('#000000');
+    expect(P.getPreset('no-such-preset')).toBe(null);
+  });
+  it('preset recipes survive normalizeRecipe unchanged in part count (already in-bounds)', () => {
+    P.PRESETS.forEach((p) => {
+      const rec = P.getPreset(p.id);
+      const renorm = P.normalizeRecipe(rec);
+      expect(renorm.parts.length).toBe(rec.parts.length);
+    });
+  });
+});
