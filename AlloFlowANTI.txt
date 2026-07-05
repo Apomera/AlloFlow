@@ -643,8 +643,13 @@ const STYLE_IMAGE_PIXELATED = { imageRendering: 'pixelated' };
 const STYLE_TEXT_SHADOW_WHITE = { textShadow: '0 2px 4px rgba(255,255,255,1)' };
 const STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
 const TRANSLATION_VERSION = 'v1';
+// NOTE: inside the App component this is SHADOWED by the richer map from
+// window.AlloModules.TextPipelineHelpers (declared component-scope) — that module map is
+// what the tour/help/spotlight expand paths actually read. Keep the two in sync.
 const DOM_TO_TOOL_ID_MAP = {
-  'ui-tool-wordsounds': 'word-sounds-generator',
+  'tour-tool-wordsounds': 'ui-tool-wordsounds',
+  'tour-tool-note-taking': 'note-taking',
+  'tour-tool-anchor-chart': 'anchor-chart',
   'tour-input-panel': 'source-input',
   'ui-tool-glossary': 'glossary',
   'ui-tool-simplified': 'simplified',
@@ -3718,8 +3723,39 @@ const AlloFlowContent = () => {
     } catch (e) { setMicPermissionStatus('denied'); setMicBannerDismissed(true); }
   }, []);
   const [guidedMode, setGuidedMode] = useState(false);
-  const [guidedStep, setGuidedStep] = useState(0);
-  const [guidedSelectedIds, setGuidedSelectedIds] = useState(null); // null = all 22 steps; else array of included step ids (source-input always implied)
+  // Cross-refresh resume: guided progress previously lived ONLY inside project saves, so a
+  // browser refresh (or exit + re-enter) restarted the tour at step 0. Mirror the step /
+  // step-selection / completions to localStorage. guidedMode itself is deliberately NOT
+  // restored — entering the tour stays an explicit choice; re-entry just resumes from here.
+  const [_guidedSaved] = useState(() => {
+    try {
+      const p = JSON.parse(localStorage.getItem('allo_guided_progress') || 'null');
+      return (p && (p.version == null || p.version === 1) && typeof p.guidedStep === 'number') ? p : null;
+    } catch (_) { return null; }
+  });
+  const [guidedStep, setGuidedStep] = useState(() => {
+    if (!_guidedSaved) return 0;
+    // source-input is always an active step; estimate the active-step count to clamp against.
+    const _sel = _guidedSaved.selectedIds;
+    const _activeLen = Array.isArray(_sel) ? (_sel.indexOf('source-input') === -1 ? _sel.length + 1 : _sel.length) : 22;
+    return Math.max(0, Math.min(_guidedSaved.guidedStep, Math.max(0, _activeLen - 1)));
+  });
+  const [guidedSelectedIds, setGuidedSelectedIds] = useState(_guidedSaved && Array.isArray(_guidedSaved.selectedIds) ? _guidedSaved.selectedIds : null); // null = all 22 steps; else array of included step ids (source-input always implied)
+  // Steps whose tool actually produced output this tour. Source of truth for the banner's ✅
+  // so navigating Back doesn't lose it (the banner's history baseline re-arms on every step
+  // change); rides project saves and the localStorage mirror above.
+  const [guidedCompletedIds, setGuidedCompletedIds] = useState(_guidedSaved && Array.isArray(_guidedSaved.completedSteps) ? _guidedSaved.completedSteps : []);
+  const markGuidedStepDone = (id) => { if (id) setGuidedCompletedIds(prev => (prev && prev.includes(id)) ? prev : [...(prev || []), id]); };
+  // Finish ("All done") and the header's "Start over" both wipe progress; plain Exit keeps
+  // it so the teacher can resume.
+  const resetGuidedProgress = () => {
+    setGuidedStep(0); setGuidedSelectedIds(null); setGuidedCompletedIds([]);
+    try { localStorage.removeItem('allo_guided_progress'); } catch (_) {}
+  };
+  useEffect(() => {
+    if (!guidedMode) return; // keep the last snapshot across exit so re-entry resumes it
+    try { localStorage.setItem('allo_guided_progress', JSON.stringify({ version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds })); } catch (_) {}
+  }, [guidedMode, guidedStep, guidedSelectedIds, guidedCompletedIds]);
   const _guidedWizardOpenRef = useRef(false); // mirrors "QuickStart Wizard visible" for the guided effect (declared before showWizard, so it can't read it directly)
   // Each step carries teaching content for the hands-on guided tutorial:
   //   action  = the short imperative shown in the banner ("do this now"), pointing
@@ -7053,6 +7089,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     earnedBadges: []
   });
   const [personaAutoRead, setPersonaAutoRead] = useState(false);
+  // Ref mirror so the auto-read sequencing loop (an async closure that
+  // outlives renders) sees the CURRENT toggle — without this, turning
+  // auto-read off mid-sequence let the loop keep speaking queued messages.
+  const personaAutoReadRef = useRef(false);
+  useEffect(() => { personaAutoReadRef.current = personaAutoRead; }, [personaAutoRead]);
   const [isPersonaDefining, setIsPersonaDefining] = useState(false);
   const personaDefinitionCache = React.useRef(new Map());
   const [panelTtsPending, setPanelTtsPending] = useState([]);
@@ -18462,7 +18503,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const executeSaveFile = () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.executeSaveFile === "function") return _m.executeSaveFile({
-        guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedActiveSteps.slice(0, guidedStep).map(s => s.id) } : null,
+        guidedTourProgress: guidedMode ? { version: 1, guidedStep, selectedIds: guidedSelectedIds, completedSteps: guidedCompletedIds } : null,
         saveEncryptPassword,
         isPlaying,
         isPaused,
@@ -18700,6 +18741,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setGuidedStep,
         setGuidedMode,
         setGuidedSelectedIds,
+        setGuidedCompletedIds,
         setStudentProjectSettings,
         setIsIndependentMode,
         setIsTeacherMode,
@@ -21737,25 +21779,32 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               setPanelTtsPending(pendingIndices);
           }
           setTimeout(async () => {
+              // NOTE: no callTTS pre-fetch here. It warmed the WRONG cache key
+              // (default voice, no persona voice direction, whole-message text
+              // vs per-chunk playback), so every call was wasted quota — and a
+              // 429 from the waste tripped the 60s cooldown that silently
+              // drops the character voice instruction in playSequence.
               for (let i = 0; i < newMessages.length; i++) {
+                  if (!personaAutoReadRef.current) { setPanelTtsPending([]); return; }
                   const { msg, index } = newMessages[i];
-                  const speakerName = msg.speakerName || 'Panelist';
-                  const textWithName = `${msg.text}`;
-                  try {
-                      await callTTS(textWithName, selectedVoice);
-                  } catch (e) {
-                      warnLog('TTS pre-fetch failed, proceeding anyway:', e);
-                  }
-                  if (i + 1 < newMessages.length) {
-                      const nextMsg = newMessages[i + 1];
-                      callTTS(nextMsg.msg.text, selectedVoice).catch(e => warnLog("Persona TTS lookahead failed:", e?.message || e));
-                  }
                   setPanelTtsPending(prev => prev.filter(idx => idx !== index));
                   await new Promise(resolve => {
-                      handleSpeak(textWithName, `persona-message-${index}`, 0);
-                      const charTime = msg.text.length * 150;
-                      const estimatedDuration = Math.max(6000, charTime) + 500;
-                      setTimeout(resolve, estimatedDuration);
+                      handleSpeak(msg.text, `persona-message-${index}`, 0);
+                      // Wait for playback to actually finish (isPlayingRef is
+                      // set on handleSpeak entry and cleared by stopPlayback)
+                      // instead of a fixed 150ms/char over-estimate that left
+                      // long dead air between panel turns. Hard cap keeps a
+                      // wedged playback from stalling the queue forever.
+                      const hardCapMs = Math.max(20000, msg.text.length * 200);
+                      const startedAt = Date.now();
+                      const poll = setInterval(() => {
+                          const finished = !isPlayingRef.current && (Date.now() - startedAt) > 1500;
+                          const timedOut = (Date.now() - startedAt) > hardCapMs;
+                          if (finished || timedOut || !personaAutoReadRef.current) {
+                              clearInterval(poll);
+                              resolve();
+                          }
+                      }, 400);
                   });
               }
               setPanelTtsPending([]);
@@ -22872,7 +22921,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         buildLessonPlanPrompt,
         buildStudyGuidePrompt,
         buildParentGuidePrompt,
-        GUIDED_STEPS,
+        // The dispatcher's guided auto-advance compares findIndex(...) against guidedStep,
+        // which indexes the ACTIVE (possibly customized-subset) step list — so it must get
+        // the active list, not the full 22. Identical when no subset is selected.
+        GUIDED_STEPS: guidedActiveSteps,
         LENGTH_THRESHOLDS,
         TIMELINE_MODE_DEFINITIONS,
         audioRef,
@@ -26598,7 +26650,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -26756,7 +26808,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} wizardOpen={showWizard && hasSelectedRole && isTeacherMode} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} wizardOpen={showWizard && hasSelectedRole && isTeacherMode} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>

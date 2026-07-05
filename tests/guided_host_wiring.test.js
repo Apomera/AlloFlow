@@ -8,6 +8,8 @@ const header = readFileSync(resolve(root, 'view_header_source.jsx'), 'utf8');
 const wizard = readFileSync(resolve(root, 'quickstart_source.jsx'), 'utf8');
 const phaseO = readFileSync(resolve(root, 'phase_o_misc_handlers_source.jsx'), 'utf8');
 const banner = readFileSync(resolve(root, 'view_guided_mode_banner_source.jsx'), 'utf8');
+const miscHandlers = readFileSync(resolve(root, 'misc_handlers_source.jsx'), 'utf8');
+const textPipeline = readFileSync(resolve(root, 'text_pipeline_helpers_source.jsx'), 'utf8');
 
 function guidedTourMapEntries() {
   const start = app.indexOf('const GUIDED_TOUR_MAP = {');
@@ -68,6 +70,45 @@ describe('Guided Mode host wiring', () => {
     const effect = app.slice(effectStart, app.indexOf('[history, guidedMode, guidedStep]', effectStart));
     expect(effect).toContain('guidedActiveSteps[guidedStep]');
     expect(effect).toContain('len !== prevLen + 1');
+  });
+
+  it('type-matches step completion and keeps ✅ across Back via the completed set', () => {
+    // stepDone used to flip on ANY history growth (wrong tool marked the step done) and
+    // re-baselined on every step change (Back lost the ✅).
+    expect(banner).toContain('const STEP_HISTORY_TYPES = {');
+    expect(banner).toContain("'alignment': ['alignment-report']");
+    expect(banner).toContain('_matchTypes.indexOf(h.type) !== -1');
+    expect(banner).toContain('guidedCompletedIds');
+    expect(banner).toContain('markGuidedStepDone');
+    // Host persists the real completed set (project saves + localStorage mirror).
+    expect(app).toContain("completedSteps: guidedCompletedIds");
+    expect(app).toContain("localStorage.setItem('allo_guided_progress'");
+    expect(app).toContain("localStorage.getItem('allo_guided_progress'");
+    expect(miscHandlers).toContain('setGuidedCompletedIds(Array.isArray(_gtp.completedSteps)');
+  });
+
+  it('gives the generate dispatcher the ACTIVE step list so subset tours auto-advance', () => {
+    expect(app).toContain('GUIDED_STEPS: guidedActiveSteps,');
+  });
+
+  it('header re-entry resumes guided progress with an explicit Start over path', () => {
+    expect(header).toContain('_guidedHasProgress');
+    expect(header).toContain('restartGuidedModeFromHeader');
+    expect(header).toContain("t('guided.resumed')");
+    expect(header).toContain("t('toolbar.guided_mode_start_over')");
+  });
+
+  it('maps the late-added tour anchors to their expandable panels', () => {
+    // The component-scoped map from TextPipelineHelpers SHADOWS the host copy, so the
+    // module map is the one the tour/help expand paths actually read.
+    for (const entry of [
+      "'tour-tool-wordsounds': 'ui-tool-wordsounds'",
+      "'tour-tool-note-taking': 'note-taking'",
+      "'tour-tool-anchor-chart': 'anchor-chart'",
+    ]) {
+      expect(textPipeline).toContain(entry);
+      expect(app).toContain(entry);
+    }
   });
 
   it('keeps Guided Next step separate from explicit Skip step controls', () => {

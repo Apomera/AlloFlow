@@ -482,12 +482,37 @@ function GuidedModeBanner({
   getDefaultTitle,
   inputText,
   setInputText,
+  guidedCompletedIds,
+  markGuidedStepDone,
+  resetGuidedProgress,
 }) {
   const step = GUIDED_STEPS[guidedStep] || {};
   const isLast = guidedStep >= GUIDED_STEPS.length - 1;
   const [showPicker, setShowPicker] = React.useState(false);
   const [infoTab, setInfoTab] = React.useState(null); // null | 'how' | 'example'
   const [showFullLesson, setShowFullLesson] = React.useState(false);
+  // Tablist keyboard support (tabs pattern): Left/Right move between the two tabs,
+  // Home/End jump to first/last. Selection stays on click/Enter (the tabs toggle their
+  // panel open/closed, so focus ≠ selection here).
+  const _tabHowRef = React.useRef(null);
+  const _tabExampleRef = React.useRef(null);
+  const _onTabKeyDown = (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const target = e.key === 'Home' ? _tabHowRef.current
+      : e.key === 'End' ? _tabExampleRef.current
+      : (document.activeElement === _tabHowRef.current ? _tabExampleRef.current : _tabHowRef.current);
+    try { if (target && target.focus) target.focus(); } catch (_) {}
+  };
+  // SR announce on tab-panel open and on the full-lesson modal opening — the visual
+  // change is otherwise silent to screen-reader users.
+  React.useEffect(() => {
+    if (!infoTab || typeof window === 'undefined' || !window.alloAnnounce) return;
+    window.alloAnnounce(infoTab === 'how' ? (t('guided.tab_how') || 'How it works') : (t('guided.tab_example') || 'Worked example'), 'polite');
+  }, [infoTab]);
+  React.useEffect(() => {
+    if (showFullLesson && typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(t('guided.full_lesson_title') || 'The full worked lesson', 'polite');
+  }, [showFullLesson]);
   const _modalRef = React.useRef(null);
   const _modalReturnRef = React.useRef(null);
   // Full-lesson modal a11y: trap focus inside the dialog, close on Escape, restore focus to the opener (dialog pattern).
@@ -523,6 +548,17 @@ function GuidedModeBanner({
   // the source step keys on actual entered text; Word Sounds / STEM Lab / Adventure / the final
   // download fall back to the click (`guidedEngaged`) — the best signal available for those.
   const GUIDED_CLICK_STEPS = ['ui-tool-wordsounds', 'math', 'adventure', '_final'];
+  // Which history types complete each generate step. Without this, ANY new history item
+  // (a stray Ctrl+K generation, the unit builder, a different panel) flashed the current
+  // step "done" — the baseline only checked that history GREW, not what grew.
+  const STEP_HISTORY_TYPES = {
+    'analysis': ['analysis'], 'glossary': ['glossary'], 'simplified': ['simplified'],
+    'outline': ['outline'], 'anchor-chart': ['anchor-chart'], 'image': ['image'],
+    'faq': ['faq'], 'sentence-frames': ['sentence-frames'], 'note-taking': ['note-taking'],
+    'brainstorm': ['brainstorm'], 'persona': ['persona'], 'timeline': ['timeline'],
+    'concept-sort': ['concept-sort'], 'dbq': ['dbq'], 'quiz': ['quiz'],
+    'alignment': ['alignment-report'], 'lesson-plan': ['lesson-plan'],
+  };
   const _histLen = Array.isArray(history) ? history.length : 0;
   const _stepBaseRef = React.useRef(_histLen);
   const _prevStepRef = React.useRef(guidedStep);
@@ -530,10 +566,23 @@ function GuidedModeBanner({
     _prevStepRef.current = guidedStep;          // re-baseline synchronously on step change so a
     _stepBaseRef.current = _histLen;            // prior step's output can't flash this one "done"
   }
-  const stepDone =
+  const _matchTypes = STEP_HISTORY_TYPES[step.id] || null;
+  const _newItems = (Array.isArray(history) && _histLen > _stepBaseRef.current) ? history.slice(_stepBaseRef.current) : [];
+  const _generatedDone = _matchTypes
+    ? _newItems.some(h => h && _matchTypes.indexOf(h.type) !== -1)
+    : (_histLen > _stepBaseRef.current); // unknown future steps keep the coarse growth signal
+  const _computedDone =
     step.id === 'source-input' ? ((inputText || '').trim().length > 20) :
     GUIDED_CLICK_STEPS.indexOf(step.id) !== -1 ? !!guidedEngaged :
-    (_histLen > _stepBaseRef.current);
+    _generatedDone;
+  // Completion survives navigation: once a step's tool produced output, revisiting it via
+  // Back keeps the ✅ (the host persists guidedCompletedIds in saves + localStorage). The
+  // source step stays live-computed — its "done" legitimately un-does if the text is cleared.
+  const _completedSet = Array.isArray(guidedCompletedIds) ? guidedCompletedIds : [];
+  const stepDone = _computedDone || (step.id !== 'source-input' && _completedSet.indexOf(step.id) !== -1);
+  React.useEffect(() => {
+    if (_computedDone && step.id && step.id !== 'source-input' && typeof markGuidedStepDone === 'function') markGuidedStepDone(step.id);
+  }, [_computedDone, step.id]);
 
   // --- About-panel read-aloud: reuse the app's TTS (window.callTTS, the teacher's selected voice)
   // so a step explanation can be listened to instead of read. Leak-safe: the blob URL is revoked
@@ -623,11 +672,11 @@ function GuidedModeBanner({
         )}
         {detailEntry && step.id !== 'source-input' && (
           <div style={{ marginBottom: '10px' }}>
-            <div role="tablist" aria-label={t('guided.detail_tablist') || 'Section detail'} style={{ display: 'flex', gap: '6px', marginBottom: infoTab ? '8px' : '0' }}>
-              <button role="tab" id="gd-tab-how" aria-selected={infoTab === 'how'} aria-controls="gd-panel-how" onClick={() => setInfoTab(infoTab === 'how' ? null : 'how')} style={_gdTab(infoTab === 'how')}>
+            <div role="tablist" aria-label={t('guided.detail_tablist') || 'Section detail'} onKeyDown={_onTabKeyDown} style={{ display: 'flex', gap: '6px', marginBottom: infoTab ? '8px' : '0' }}>
+              <button role="tab" id="gd-tab-how" ref={_tabHowRef} aria-selected={infoTab === 'how'} aria-controls="gd-panel-how" onClick={() => setInfoTab(infoTab === 'how' ? null : 'how')} style={_gdTab(infoTab === 'how')}>
                 <span aria-hidden="true">⚙️</span>{t('guided.tab_how') || 'How it works'}
               </button>
-              <button role="tab" id="gd-tab-example" aria-selected={infoTab === 'example'} aria-controls="gd-panel-example" onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')} style={_gdTab(infoTab === 'example')}>
+              <button role="tab" id="gd-tab-example" ref={_tabExampleRef} aria-selected={infoTab === 'example'} aria-controls="gd-panel-example" onClick={() => setInfoTab(infoTab === 'example' ? null : 'example')} style={_gdTab(infoTab === 'example')}>
                 <span aria-hidden="true">💡</span>{t('guided.tab_example') || 'Worked example'}
               </button>
             </div>
@@ -677,10 +726,10 @@ function GuidedModeBanner({
         )}
         <div style={{ display: 'flex', gap: '8px' }}>
           {guidedStep > 0 && <button onClick={() => setGuidedStep(s => Math.max(0, s - 1))} aria-label={t('guided.back') || 'Back'} title={t('guided.back') || 'Back'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}>← {t('guided.back') || 'Back'}</button>}
-          {guidedStep === 0 && !guidedEngaged && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(199,210,254,0.85)', fontStyle: 'italic', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
+          {step.id === 'source-input' && !stepDone && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(199,210,254,0.85)', fontStyle: 'italic', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
           {!isLast && stepDone && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: '1px solid rgba(129,140,248,0.45)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.next_step') || 'Next step →'}</button>}
           {!isLast && !stepDone && guidedStep > 0 && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 800, color: '#c7d2fe', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip_step') || t('guided.skip') || 'Skip step'}</button>}
-          {isLast && <button onClick={() => { setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
+          {isLast && <button onClick={() => { if (typeof resetGuidedProgress === 'function') resetGuidedProgress(); else setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
           {toggleGuidedStepId && <button onClick={() => setShowPicker(p => !p)} aria-label={t('guided.customize') || 'Choose which steps to include'} aria-expanded={showPicker} title={t('guided.customize') || 'Choose which steps to include'} style={{ padding: '6px 10px', fontSize: '11px', fontWeight: 700, color: showPicker ? 'white' : '#c7d2fe', background: showPicker ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>⚙</button>}
           <button onClick={() => setShowGuidedTip(p => !p)} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: showGuidedTip ? 'white' : '#c7d2fe', background: showGuidedTip ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{showGuidedTip ? '✕' : 'ℹ️'} {t('guided.about')}</button>
           <button onClick={handleExitGuidedMode} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(248,113,113,0.9)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.exit') || 'Exit'}</button>

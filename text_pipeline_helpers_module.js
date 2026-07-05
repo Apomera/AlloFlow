@@ -618,6 +618,13 @@ const parseTaggedContent = (text) => {
     'ui-tool-quiz': 'quiz',
     'tour-tool-alignment': 'alignment-report',
     'tour-tool-lesson-plan': 'lesson-plan',
+    // Late-added sidebar panels the tour/help expand paths were blind to: these three tour
+    // anchors were missing entirely, so their tour steps rang a collapsed panel. Note the
+    // Word Sounds panel's expandedTools id is 'ui-tool-wordsounds' (its DOM id is
+    // 'tour-tool-wordsounds' — inverse of the usual naming).
+    'tour-tool-wordsounds': 'ui-tool-wordsounds',
+    'tour-tool-note-taking': 'note-taking',
+    'tour-tool-anchor-chart': 'anchor-chart',
     'glossary_standard_flashcards': 'glossary',
     'glossary_language_flashcards': 'glossary',
     'glossary_etymology_info': 'glossary',

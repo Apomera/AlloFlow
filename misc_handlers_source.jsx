@@ -304,6 +304,9 @@ const handleLoadProject = (e, deps) => {
                     const _activeLen = Array.isArray(_sel) ? (_sel.indexOf('source-input') === -1 ? _sel.length + 1 : _sel.length) : 22;
                     const _step = Math.max(0, Math.min(_gtp.guidedStep, Math.max(0, _activeLen - 1)));
                     if (deps.setGuidedStep) deps.setGuidedStep(_step);
+                    // Real per-step completions (which steps produced output) — powers the
+                    // banner's ✅ so revisiting a completed step doesn't lose its done state.
+                    if (deps.setGuidedCompletedIds) deps.setGuidedCompletedIds(Array.isArray(_gtp.completedSteps) ? _gtp.completedSteps : []);
                     if (deps.setGuidedMode) deps.setGuidedMode(true);
                     if (addToast) addToast(t('guided.resumed') || 'Resumed your guided tutorial.', 'success');
                 } else if (addToast) {
