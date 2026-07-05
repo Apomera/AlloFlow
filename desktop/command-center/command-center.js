@@ -855,16 +855,41 @@
       const match = Array.from(modelSelect.options).find((option) => option.value === status.engine.modelUrl);
       if (match) modelSelect.value = status.engine.modelUrl;
     }
+    const dirInput = $('#engine-model-dir');
+    if (dirInput && document.activeElement !== dirInput && status.engine) {
+      dirInput.value = status.engine.modelDirectory || '';
+    }
     return status;
   }
   async function changeEngineModel(event) {
     const result = $('#engine-result');
+    let modelUrl = event.target.value;
+    if (modelUrl === '__custom') {
+      modelUrl = window.prompt('Paste a direct .gguf download URL, or the full path to a .gguf file (for example on a USB drive):', '');
+      if (!modelUrl || !modelUrl.trim()) { refreshEngineStatus().catch(() => {}); return; }
+      modelUrl = modelUrl.trim();
+    }
     try {
-      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelUrl: event.target.value } }) });
-      if (result) result.textContent = 'Model choice saved. It downloads on the next engine start (stop + start to switch now). Earlier models stay on disk until you delete them from the engine folder.';
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelUrl } }) });
+      if (result) {
+        result.textContent = /^https?:\/\//i.test(modelUrl)
+          ? 'Model choice saved. It downloads on the next engine start (stop + start to switch now). Earlier models stay on disk until you delete them from the engine folder.'
+          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
+      }
       await refreshEngineStatus();
     } catch (error) {
       if (result) result.textContent = error.message || 'Could not save the model choice.';
+    }
+  }
+  async function saveEngineModelDir() {
+    const result = $('#engine-result');
+    const input = $('#engine-model-dir');
+    try {
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelDirectory: (input && input.value ? input.value.trim() : '') } }) });
+      if (result) result.textContent = 'Model folder saved. New downloads land there on the next engine start; already-downloaded models stay where they are.';
+      await refreshEngineStatus();
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Could not save the model folder.';
     }
   }
   function pollEngineUntilSettled() {
@@ -1166,6 +1191,7 @@
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
     $('#engine-model-select').addEventListener('change', changeEngineModel);
+    $('#engine-model-dir-save').addEventListener('click', saveEngineModelDir);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
       setTimeout(inspectKokoroVoice, 800);

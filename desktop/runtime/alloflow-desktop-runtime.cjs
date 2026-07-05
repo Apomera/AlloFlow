@@ -1898,6 +1898,11 @@ function getEngineDir(config) {
 function engineModelFilePath(config) {
   const engine = getEngineConfig(config);
   if (!engine.modelUrl) return '';
+  // A local file path (USB stick, network share, already-downloaded GGUF) is
+  // used in place — no download, no copy. Anything that isn't http(s) counts.
+  if (!/^https?:\/\//i.test(String(engine.modelUrl))) {
+    return path.resolve(String(engine.modelUrl));
+  }
   const name = decodeURIComponent(String(engine.modelUrl).split('/').pop().split('?')[0] || '');
   return name ? path.join(getEngineDir(config), 'models', name) : '';
 }
@@ -1998,9 +2003,16 @@ async function ensureEngineBinary(config, arch) {
 
 async function ensureEngineAssets(config, arch) {
   const engine = getEngineConfig(config);
-  const binary = await ensureEngineBinary(config, arch);
+  // Validate the model BEFORE any downloads: an unplugged USB model or a
+  // missing URL should fail instantly, not after fetching the binary.
   if (!engine.modelUrl) throw new Error('No AI model URL is configured (localEngine.modelUrl).');
   const modelFile = engineModelFilePath(config);
+  const modelIsLocal = !/^https?:\/\//i.test(String(engine.modelUrl));
+  if (modelIsLocal && !fs.existsSync(modelFile)) {
+    throw new Error('The model file was not found at ' + modelFile +
+      '. If it lives on a USB drive or network share, make sure it is connected — or pick a downloadable model instead.');
+  }
+  const binary = await ensureEngineBinary(config, arch);
   if (!fs.existsSync(modelFile)) {
     managedEngine.phase = 'downloading-model';
     appendEngineLog('Downloading AI model: ' + engine.modelUrl);
