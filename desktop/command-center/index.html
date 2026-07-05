@@ -35,12 +35,26 @@
           <div class="toolbar">
             <input id="app-url" type="url" aria-label="AlloFlow app URL">
             <button id="save-app-url" type="button">Save</button>
+            <button id="start-app" type="button">Start App</button>
+            <button id="stop-app" type="button">Stop App</button>
             <a id="open-app-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
             <button id="refresh-all" type="button">Refresh</button>
+            <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
           </div>
         </header>
-        <div class="app-frame-wrap">
-          <iframe id="app-frame" title="AlloFlow application preview"></iframe>
+        <div class="app-grid">
+          <div class="app-frame-wrap">
+            <iframe id="app-frame" title="AlloFlow application preview"></iframe>
+          </div>
+          <aside class="panel app-side">
+            <h2>App Manager</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="app-managed-status">-</dd>
+              <dt>Owner</dt><dd id="app-owner">-</dd>
+              <dt>Process</dt><dd id="app-pid">-</dd>
+            </dl>
+            <pre id="app-logs" class="result app-logs" aria-live="polite"></pre>
+          </aside>
         </div>
       </section>
 
@@ -71,6 +85,19 @@
             </div>
             <pre id="provider-result" class="result" aria-live="polite"></pre>
           </section>
+          <section class="panel voice-panel">
+            <h2>Voice Engine</h2>
+            <dl class="kv tight">
+              <dt>Status</dt><dd id="voice-status">-</dd>
+              <dt>Quality</dt><dd id="voice-quality">-</dd>
+              <dt>Voices</dt><dd id="voice-count">-</dd>
+            </dl>
+            <div class="button-row">
+              <button id="check-voice" type="button">Check</button>
+              <button id="download-kokoro" type="button">Download Kokoro</button>
+            </div>
+            <pre id="voice-result" class="result" aria-live="polite">Kokoro loads locally in the bundled app view, then downloads the selected voice model once and caches it on this device.</pre>
+          </section>
         </div>
       </section>
 
@@ -81,32 +108,109 @@
             <p id="schoolbox-status">Checking host status</p>
           </div>
           <div class="toolbar">
+            <button id="refresh-schoolbox" type="button">Refresh</button>
+            <button id="setup-schoolbox" type="button">Prepare</button>
             <button id="start-schoolbox" type="button">Start Host</button>
             <button id="stop-schoolbox" type="button">Stop Host</button>
+            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
           </div>
         </header>
-        <div class="split">
+        <div class="schoolbox-grid">
+          <section class="panel live-session-panel">
+            <h2>Live Sessions</h2>
+            <dl class="kv">
+              <dt>Backend</dt><dd id="live-session-mode">-</dd>
+              <dt>Data location</dt><dd id="live-session-location">-</dd>
+              <dt>Cloud session docs</dt><dd id="live-session-cloud">-</dd>
+              <dt>Student joining</dt><dd id="live-session-joining">-</dd>
+              <dt>LAN bridge</dt><dd id="live-session-lan">-</dd>
+              <dt>Join base</dt><dd id="live-session-join-base">-</dd>
+            </dl>
+            <label for="live-session-mode-select">Live session backend</label>
+            <select id="live-session-mode-select">
+              <option value="schoolbox-lan">School Box / Local Network</option>
+              <option value="local-preview">Local Preview Only</option>
+              <option value="district-server">District Server (future)</option>
+              <option value="byo-firebase">Bring Your Own Firebase</option>
+              <option value="alloflow-demo-cloud">AlloFlow Demo Cloud</option>
+            </select>
+            <div class="button-row">
+              <button id="save-live-session" type="button">Save Live Session Mode</button>
+              <button id="start-lan-share" type="button">Start LAN Share</button>
+              <button id="stop-lan-share" type="button">Stop LAN Share</button>
+            </div>
+            <h3 class="subhead">Classroom join tools</h3>
+            <label for="lan-pin">Join PIN (optional)</label>
+            <div class="button-row">
+              <input id="lan-pin" type="text" maxlength="32" autocomplete="off" placeholder="e.g. 4217">
+              <button id="save-lan-pin" type="button">Save PIN</button>
+            </div>
+            <p class="lan-hint" id="lan-pin-hint">A PIN locks the join page and class data on the shared network. It takes effect when LAN sharing starts &mdash; if sharing is already on, stop and start it again.</p>
+            <label for="presenter-code">Class code</label>
+            <div class="button-row">
+              <input id="presenter-code" type="text" maxlength="24" autocomplete="off" placeholder="e.g. TIGERS1">
+              <button id="show-join-qr" type="button">Show QR</button>
+              <button id="copy-join-link" type="button">Copy join link</button>
+              <a id="open-presenter" class="button-link" target="_blank" rel="noreferrer">Presenter view</a>
+            </div>
+            <div id="join-qr" class="join-qr" role="img" aria-label="QR code for the class join link" hidden></div>
+            <div id="join-link" class="join-link" aria-live="polite"></div>
+            <h3 class="subhead">Network check</h3>
+            <ul id="lan-diagnostics" class="next-actions"></ul>
+            <ul id="live-session-next-actions" class="next-actions"></ul>
+            <pre id="live-session-result" class="result" aria-live="polite"></pre>
+          </section>
           <section class="panel">
-            <h2>Host</h2>
+            <h2>Classroom Setup Wizard</h2>
+            <p class="lan-hint">Local-first classroom in three steps. Student work stays on this computer and your school network.</p>
+            <ol id="classroom-wizard" class="setup-guide"></ol>
+            <div class="button-row">
+              <button id="run-classroom-check" type="button">Run classroom check</button>
+            </div>
+            <pre id="classroom-check-result" class="result" aria-live="polite"></pre>
+            <p class="lan-hint">AlloFlow Desktop is designed to support school-controlled, privacy-first deployments. Whether a deployment meets FERPA or district policy depends on how your school configures and uses it &mdash; this app avoids cloud student data by default, but compliance is an institutional decision.</p>
+          </section>
+          <section class="panel">
+            <h2>Readiness</h2>
             <dl class="kv">
               <dt>Mode</dt><dd id="schoolbox-mode">-</dd>
               <dt>Address</dt><dd id="schoolbox-address">-</dd>
               <dt>Embedded</dt><dd id="schoolbox-embedded">-</dd>
               <dt>Status</dt><dd id="schoolbox-state">-</dd>
+              <dt>Docker</dt><dd id="schoolbox-docker">-</dd>
+              <dt>Stack</dt><dd id="schoolbox-stack">-</dd>
+              <dt>Env</dt><dd id="schoolbox-env">-</dd>
             </dl>
+            <ul id="schoolbox-next-actions" class="next-actions"></ul>
+          </section>
+          <section class="panel">
+            <h2>Setup Guide</h2>
+            <ol id="schoolbox-setup-guide" class="setup-guide"></ol>
           </section>
           <section class="panel">
             <h2>Configuration</h2>
             <label for="schoolbox-mode-select">Mode</label>
             <select id="schoolbox-mode-select">
               <option value="disabled">Disabled</option>
-              <option value="desktop-host">Desktop Host</option>
-              <option value="district-server">District Server</option>
+              <option value="desktop-host">Desktop Host (local)</option>
+              <option value="district-server">District Server (future)</option>
             </select>
             <label for="schoolbox-port">Port</label>
             <input id="schoolbox-port" type="number" min="1024" max="65535" step="1">
+            <label class="check-row" for="schoolbox-include-gpu">
+              <input id="schoolbox-include-gpu" type="checkbox">
+              <span>Image AI service</span>
+            </label>
             <button id="save-schoolbox" type="button">Save</button>
             <pre id="schoolbox-result" class="result" aria-live="polite"></pre>
+          </section>
+          <section class="panel services-panel">
+            <h2>Services</h2>
+            <div class="service-list" id="schoolbox-services"></div>
+          </section>
+          <section class="panel logs-panel">
+            <h2>Logs</h2>
+            <pre id="schoolbox-logs" class="result schoolbox-logs" aria-live="polite"></pre>
           </section>
         </div>
       </section>
@@ -127,11 +231,64 @@
             <dt>Command center</dt><dd id="runtime-command-dir">-</dd>
           </dl>
         </section>
+        <section class="panel wide">
+          <h2>Updates</h2>
+          <dl class="kv">
+            <dt>Installed</dt><dd id="update-current-version">-</dd>
+            <dt>Available</dt><dd id="update-available-version">-</dd>
+            <dt>Status</dt><dd id="update-status">-</dd>
+            <dt>Channel</dt><dd id="update-channel">-</dd>
+            <dt>Platform</dt><dd id="update-platform">-</dd>
+            <dt>Feed</dt><dd id="update-feed">-</dd>
+          </dl>
+          <label for="update-channel-select">Update channel</label>
+          <div class="button-row">
+            <select id="update-channel-select">
+              <option value="latest">Latest</option>
+              <option value="beta">Prerelease beta</option>
+            </select>
+            <button id="save-update-channel" type="button">Save Channel</button>
+          </div>
+          <div class="button-row">
+            <button id="check-updates" type="button">Check for Updates</button>
+            <button id="download-update" type="button">Download</button>
+            <button id="install-update" type="button">Install and Restart</button>
+          </div>
+          <pre id="update-result" class="result" aria-live="polite"></pre>
+        </section>
+        <section class="panel wide">
+          <h2>Diagnostics</h2>
+          <div class="button-row">
+            <button id="copy-diagnostics" type="button">Copy Diagnostics</button>
+          </div>
+          <pre id="diagnostics-result" class="result" aria-live="polite">Diagnostics are redacted before copying.</pre>
+        </section>
       </section>
     </main>
   </div>
 
+  <button id="exit-app-focus" class="focus-exit" type="button">Exit Full Screen</button>
+
+  <div class="setup-modal hidden" id="api-key-setup" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+    <section class="setup-dialog">
+      <header>
+        <span class="setup-kicker">First Run</span>
+        <h2 id="api-key-title">Connect Gemini</h2>
+        <p id="api-key-copy">Add your API key to enable cloud AI features in this desktop copy.</p>
+      </header>
+      <label for="setup-provider-select">Provider</label>
+      <select id="setup-provider-select"></select>
+      <label for="setup-api-key">API key</label>
+      <input id="setup-api-key" type="password" autocomplete="off" placeholder="Paste key">
+      <div class="button-row setup-actions">
+        <button id="setup-save-key" class="primary" type="button">Save Key</button>
+        <button id="setup-later" type="button">Later</button>
+      </div>
+      <p id="setup-result" class="inline-status" aria-live="polite"></p>
+    </section>
+  </div>
+
+  <script src="./vendor/qrcode.js"></script>
   <script src="./command-center.js"></script>
 </body>
 </html>
-
