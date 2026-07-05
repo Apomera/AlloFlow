@@ -180,7 +180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   if (!document.getElementById('mm-a11y-css')) {
     var mmStyle = document.createElement('style');
     mmStyle.id = 'mm-a11y-css';
-    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }';
+    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } [data-tool="moonMission"] .text-slate-200 { color: #cbd5e1 !important; }';
     document.head.appendChild(mmStyle);
   }
 
@@ -523,7 +523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // ── Quiz Questions (shown between key phases) ──
       var QUIZ_BANK = [
         { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!') },
-        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, traveling at ~3,900 km/h.') },
+        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, reaching ~39,000 km/h at injection, then coasting slower as it climbed away from Earth.') },
         { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: t('stem.moonmission.the_moon_s_gravity_is_1_6_of_earth_s_a', 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person weighs only ~12 kg there!') },
         { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: t('stem.moonmission.the_sunlit_side_reaches_127_c_while_th', 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!') },
         { q: 'How many people have walked on the Moon?', opts: ['2', '6', '12', '24'], a: 2, fact: t('stem.moonmission.12_astronauts_walked_on_the_moon_acros', '12 astronauts walked on the Moon across Apollo 11, 12, 14, 15, 16, and 17.') },
@@ -704,7 +704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
 
       // Check badges whenever phase changes
-      checkBadges();
+      setTimeout(checkBadges, 0);   // deferred: unlocking a badge calls upd()+addToast() — never setState during render
 
       // ── Quiz State ──
       var showQuiz = d.showQuiz || false;
@@ -950,7 +950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               upd('quizIdx', nextIdx);
               upd('quizAnswered', false);
               upd('quizSelectedAnswer', -1);
-              if (nextIdx >= QUIZ_BANK.length || nextIdx % 2 === 0) {
+              if (nextIdx >= QUIZ_BANK.length || nextIdx % 5 === 0) {   // 5-question blocks: the 'answer 5' quest + Space Scholar badge are actually reachable (was % 2 → only 2 ever shown)
                 upd('showQuiz', false);
               }
             },
@@ -1587,7 +1587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
               h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' },
-                t('stem.moonmission.the_s_ivb_third_stage_will_fire_for_5_', 'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.')),
+                t('stem.moonmission.the_s_ivb_third_stage_will_fire_for_5_', 'The S-IVB third stage will fire for 5 minutes 47 seconds to accelerate from 28,000 km/h to 38,900 km/h \u2014 trans-lunar injection speed, just under escape velocity. This single burn sends you on a trajectory to the Moon, 384,400 km away.')),
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2' },
                 [
                   ['\u0394v Required', '3.13 km/s'],
@@ -1900,7 +1900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var alt = 15000; // meters
                   var vVel = -20; // vertical velocity (negative = descending)
                   var hVel = 500; // horizontal velocity
-                  var fuel = 100;
+                  var fuel = (diffSettings && diffSettings.fuel) || 100;      // difficulty was a dead setting here
                   var thrust = 0;
                   var landed = false;
                   var crashed = false;
@@ -1909,7 +1909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   // Controls
                   var keys = {};
                   cvEl.tabIndex = 0;
-                  cvEl.addEventListener('keydown', function(e) { keys[e.key] = true; e.preventDefault(); });
+                  cvEl.addEventListener('keydown', function(e) { var k = e.key.toLowerCase(); if (['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].indexOf(k) === -1) return; keys[e.key] = true; e.preventDefault(); });   // only game keys — Tab must escape (WCAG 2.1.2)
                   cvEl.addEventListener('keyup', function(e) { keys[e.key] = false; });
                   cvEl.focus();
 
@@ -1929,7 +1929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (keys['ArrowRight'] || keys['d'] || keys['D']) hVel += 0.5;
 
                       // Physics
-                      var gravity = 1.62; // Moon gravity m/s^2
+                      var gravity = (diffSettings && diffSettings.gravity) || 1.62; // Moon gravity m/s^2 (difficulty-scaled)
                       var thrustForce = thrust * (fuel > 0 ? 4 : 0);
                       vVel += (-gravity + thrustForce) * 0.016;
                       hVel *= 0.999;
@@ -2159,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (!landed && !crashed && document.contains(cvEl)) requestAnimationFrame(drawDescent);
                     else {
                       // One more frame render for final state
-                      setTimeout(function() { drawDescent(); }, 100);
+                      if (document.contains(cvEl)) setTimeout(function() { drawDescent(); }, 100);   // stop re-rendering the frozen frame forever after unmount
                     }
                   }
                   drawDescent();
@@ -2758,7 +2758,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           if (typeof announceToSR === 'function') announceToSR(clickToMove ? 'Click to move enabled. Click on the ground to walk there.' : 'Click to move disabled.');
                           break;
                       }
-                      e.preventDefault();
+                      // Only swallow the EVA control keys — an unconditional preventDefault
+                      // also ate Tab, trapping keyboard users on the canvas (WCAG 2.1.2).
+                      if (['w', 'a', 's', 'd', 'f', 'c', ' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
                     });
                     canvasEl.addEventListener('keyup', function(e) {
                       switch(e.key.toLowerCase()) {
@@ -3803,6 +3805,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('quizIdx', 0);
                 upd('showQuiz', false);
                 upd('quizAnswered', false);
+                // Full mission-slice reset — these were missed, so on replay the random
+                // events never re-fired (all ids stuck in resolvedEvents) and the
+                // descent/EVA onboarding never re-showed.
+                upd('resolvedEvents', []);
+                upd('decisionLog', []);
+                upd('activeEvent', null);
+                upd('eventOutcome', null);
+                upd('crewMorale', 100);
+                upd('aiBriefing', null);
+                upd('aiBriefingLoading', false);
+                upd('descentStarted', false);
+                upd('evaStarted', false);
+                upd('quizSelectedAnswer', -1);
+                upd('deltaVHunt', null);
               },
               className: 'px-6 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700'
             }, t('stem.moonmission.fly_another_mission', '\uD83D\uDD04 Fly Another Mission'))
