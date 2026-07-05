@@ -1425,6 +1425,24 @@
         if (!targetWord || targetWord.length < 2) return null;
         const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const mode = wordSeed % 2 === 0 ? 'first' : 'last';
+        // Teacher-edited boards are authoritative: no sound filtering, no
+        // pool merging, no difficulty slicing — the teacher may deliberately
+        // include words the estimators would reject ("city" starts with /s/).
+        // Empty strings are kept (they're live edit rows); the play view
+        // filters them out.
+        if (aiSortData && aiSortData.teacherEdited) {
+          const tMode = aiSortData.position === 'last' ? 'last' : 'first';
+          const tTarget = String(aiSortData.phoneme || '').replace(/^\/+|\/+$/g, '').toLowerCase().trim();
+          const tWordLen = targetWord.length;
+          const tHasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
+          return {
+            mode: tMode,
+            targetChar: tTarget,
+            difficulty: tWordLen <= 3 && !tHasBlend ? 'easy' : (tWordLen <= 4 || tHasBlend ? 'medium' : 'hard'),
+            options: (aiSortData.words || []).filter((w) => w != null && String(w).toLowerCase() !== targetWord).slice(0, 8),
+            distractors: (aiSortData.distractors || []).filter((w) => w != null && String(w).toLowerCase() !== targetWord).slice(0, 8),
+          };
+        }
         let aiMatches = [];
         let aiMode = mode;
         if (aiSortData && aiSortData.words && aiSortData.words.length >= 2) {
@@ -1487,6 +1505,17 @@
         const targetWord = (targetWordRaw || '').toLowerCase();
         let targetRime = null;
         let familyMembers = [];
+        // Teacher-edited data is authoritative — no endsWith validation (the
+        // teacher may include irregular family members) and empty strings are
+        // kept as live edit rows (the play view filters them).
+        if (aiRimeData && aiRimeData.teacherEdited && aiRimeData.rime) {
+          return {
+            rime: String(aiRimeData.rime).toLowerCase().trim(),
+            members: (aiRimeData.words || []).filter(
+              (w) => w != null && String(w).toLowerCase() !== targetWord,
+            ),
+          };
+        }
         if (aiRimeData && aiRimeData.rime && aiRimeData.words && aiRimeData.words.length >= 3) {
           // Normalize like the sibling paths (uppercase AI rimes broke the
           // endsWith distractor filter), validate members actually belong to
@@ -1516,6 +1545,34 @@
           if (RIME_FAMILIES[ending]) {
             targetRime = ending;
             familyMembers = RIME_FAMILIES[ending].filter((w) => w !== targetWord);
+          }
+        }
+        if (!targetRime) {
+          // Derive the word's ACTUAL rime (last vowel group + coda) and scan
+          // the word pools for genuine family members before surrendering to
+          // '-at' — the old fallback taught bat/cat/hat "as in duck", pairing
+          // the target word with a family it doesn't belong to.
+          const _rimeMatch = targetWord.match(/[aeiou][a-z]*$/);
+          const _actualRime = _rimeMatch ? _rimeMatch[0] : null;
+          if (_actualRime && _actualRime.length >= 2) {
+            const _scanPool = [
+              ...(typeof SOUND_MATCH_POOL !== "undefined" ? SOUND_MATCH_POOL : []),
+              ...Object.values(RIME_FAMILIES).flat(),
+            ];
+            const _derived = [
+              ...new Set(
+                _scanPool.filter(
+                  (w) =>
+                    w !== targetWord &&
+                    w.endsWith(_actualRime) &&
+                    w.length > _actualRime.length,
+                ),
+              ),
+            ];
+            if (_derived.length >= 2) {
+              targetRime = _actualRime;
+              familyMembers = _derived;
+            }
           }
         }
         if (!targetRime) {
@@ -1564,6 +1621,15 @@
       const [audioNotice, setAudioNotice] = React.useState(null);
       const lastAudioRef = React.useRef(null);
       const audioNoticeTimerRef = React.useRef(null);
+      // WCAG 4.1.3: mirror EVERY visible feedback message to the SR live
+      // region in one place. Only 2 of ~24 message-setting sites announced
+      // before (level-up, mapping, scramble, spelling-bee, transitions were
+      // visual + color only for AT users). Replaces the old per-site calls.
+      React.useEffect(() => {
+        if (wordSoundsFeedback && wordSoundsFeedback.message) {
+          wsAnnounce(String(wordSoundsFeedback.message));
+        }
+      }, [wordSoundsFeedback]);
       const [userAnswer, setUserAnswer] = React.useState("");
       const [showLetterHints, setShowLetterHints] = React.useState(false);
       React.useEffect(() => {
@@ -2896,6 +2962,30 @@
         const last = lastAudioRef.current;
         if (last != null) handleAudio(last);
       }, [handleAudio, clearAudioNotice]);
+      // Speak an instruction sentence that embeds phoneme notation ("change
+      // the /t/ sound to /m/"): whole-sentence TTS reads the tokens literally
+      // ("slash tee slash"). Split the /X/ tokens out and play them from the
+      // phoneme bank (handleAudio strips the slashes → bank clip), TTS-ing
+      // only the plain-text spans around them.
+      const speakInstructionWithPhonemes = React.useCallback(
+        async (sentence) => {
+          const parts = String(sentence || "")
+            .split(/(\/[^\s/]{1,4}\/)/g)
+            .map((s) => s.trim())
+            // Drop empty and punctuation-only segments (a trailing "." after
+            // a /m/ token would otherwise become its own TTS call).
+            .filter((s) => s && /[a-z0-9]/i.test(s));
+          if (!parts.length) return;
+          const myRun = audioRunIdRef.current;
+          for (const part of parts) {
+            if (audioRunIdRef.current !== myRun || audioCancelledRef.current)
+              return;
+            await handleAudio(part);
+            await new Promise((r) => setTimeout(r, 120));
+          }
+        },
+        [handleAudio],
+      );
       const playBlending = React.useCallback(async () => {
         if (!wordSoundsPhonemes?.phonemes) return;
         // Run-id contract: bail between clips when an answer/activity-switch
@@ -3508,7 +3598,8 @@
                 "button",
                 {
                   "aria-label": ts("word_sounds.sr_listen_instruction") || "Listen to instruction",
-                  onClick: () => onPlayAudio(data.instruction, true),
+                  // Segmented playback: /X/ tokens play from the phoneme bank.
+                  onClick: () => speakInstructionWithPhonemes(data.instruction),
                   className:
                     "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
                 },
@@ -4184,12 +4275,19 @@
                   if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
                   if (instrDoneListenerRef.current) window.removeEventListener('wordSoundsInstructionDone', instrDoneListenerRef.current);
                   lastOptionsKey.current = newKey;
+                  // Skip blank entries: teacher-edited boards keep empty
+                  // strings as live edit rows — they must never render as
+                  // tappable blank chips.
                   const mixed = [
-                    ...(data.options || []).map((w) => ({
+                    ...(data.options || [])
+                      .filter((w) => w && String(w).trim())
+                      .map((w) => ({
                       text: w,
                       isFamily: true,
                     })),
-                    ...(data.distractors || []).map((w) => ({
+                    ...(data.distractors || [])
+                      .filter((w) => w && String(w).trim())
+                      .map((w) => ({
                       text: w,
                       isFamily: false,
                     })),
@@ -4261,9 +4359,12 @@
               if (item.isFamily) {
                 const newFound = [...foundWords, item.text];
                 setFoundWords(newFound);
-                const allMembers = data.options;
+                // Blank edit rows don't count toward completion.
+                const allMembers = (data.options || []).filter(
+                  (m) => m && String(m).trim(),
+                );
                 const uniqueFound = new Set(newFound);
-                if (allMembers.every((m) => uniqueFound.has(m))) {
+                if (allMembers.length > 0 && allMembers.every((m) => uniqueFound.has(m))) {
                   setIsComplete(true);
                   onPlayAudio("correct");
                   setTimeout(() => {
@@ -4546,7 +4647,8 @@
                     },
                     foundWords.length,
                     " / ",
-                    data.options?.length || 0,
+                    (data.options || []).filter((w) => w && String(w).trim())
+                      .length,
                     " ",
                     ts("word_sounds.sound_sort_found") || "found",
                   ),
@@ -4591,7 +4693,9 @@
                     ...Array(
                       Math.max(
                         0,
-                        (data.options?.length || 0) - foundWords.length,
+                        (data.options || []).filter(
+                          (w) => w && String(w).trim(),
+                        ).length - foundWords.length,
                       ),
                     ),
                   ].map((_, i) =>
@@ -9549,10 +9653,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 manipulationStateRef.current &&
                 manipulationOptionsRef.current?.length > 0
               ) {
-                // Play the task instruction via TTS
+                // Play the task instruction — /X/ tokens come from the phoneme
+                // bank instead of TTS reading "slash tee slash".
                 const instruction = manipulationStateRef.current.instruction;
                 if (instruction) {
-                  await handleAudio(instruction);
+                  await speakInstructionWithPhonemes(instruction);
                   if (cancelled) return;
                   await new Promise((r) => setTimeout(r, 400));
                 }
@@ -9775,7 +9880,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               "false",
             ].includes(safeExpected);
             const effectiveCheckMode = getEffectiveImageMode();
-            if (!isCorrect && attempts < 1 && !isProbeMode) {
+            // Find-all boards (sound_sort/word_families) pass maxAttempts =
+            // distractor count + 1: their instruction invites tapping words to
+            // hear them, so two exploratory taps must not finalize the item
+            // as a scored failure. Default stays 2 presentations (1 retry).
+            const _retryBudget =
+              opts && Number(opts.maxAttempts) > 1
+                ? Number(opts.maxAttempts) - 1
+                : 1;
+            if (!isCorrect && attempts < _retryBudget && !isProbeMode) {
               const newAttempts = attempts + 1;
               setAttempts(newAttempts);
               playSound("error");
@@ -9788,7 +9901,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ts("word_sounds.fb_try_again") ||
                     "Try again! Listen closely... 👂",
                 });
-                wsAnnounce(ts("word_sounds.sr_try_again") || "Try again");
+                // (announced by the wordSoundsFeedback mirror effect)
                 try {
                   if (
                     typeof window.__ALLO_INSTRUCTION_AUDIO !== "undefined" &&
@@ -10352,8 +10465,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               streak: newStreak,
               message: _resultMsg,
             });
-            // Announce the same result text to screen readers (WCAG 4.1.3).
-            wsAnnounce(_resultMsg);
+            // (announced by the wordSoundsFeedback mirror effect)
             if (
               !isCorrect &&
               expectedAnswer &&
@@ -11328,12 +11440,57 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (typeof action === "function") action();
         }
       };
-      const handleOptionUpdate = (index, newValue, type) => {
+      const handleOptionUpdate = (index, newValue, type, ctx) => {
         // Teacher edits write React state only — drop the cached entry so a
         // later cache hit / advance re-apply can't silently revert the edit
         // (the regenerate handler already does this; edits didn't).
         if (currentWordSoundsWord && wordDataCache.current) {
           wordDataCache.current.delete(currentWordSoundsWord.toLowerCase());
+        }
+        // Sound Sort / Word Families: write the fields the game ACTUALLY
+        // reads (soundSortMatches / rimeFamilyMembers) with a teacherEdited
+        // flag the compute paths honor verbatim. The old branch wrote
+        // familyMembers/rhymeDistractors, which nothing renders — every edit
+        // was silently dropped. `ctx` carries the currently displayed board
+        // from the call site so indexed edits refer to what the teacher sees.
+        if (
+          ctx &&
+          (ctx.activity === "sound_sort" || ctx.activity === "word_families")
+        ) {
+          const words = [...(ctx.options || [])];
+          const distractors = [...(ctx.distractors || [])];
+          if (type === "member") words[index] = newValue;
+          else if (type === "distractor") distractors[index] = newValue;
+          else if (type === "add_member") words.push("");
+          else if (type === "add_distractor") distractors.push("");
+          else if (type === "remove_member") words.splice(index, 1);
+          else if (type === "remove_distractor") distractors.splice(index, 1);
+          else return;
+          if (ctx.activity === "sound_sort") {
+            setWordSoundsPhonemes((prev) => ({
+              ...(prev || {}),
+              soundSortMatches: {
+                position: ctx.mode,
+                phoneme: ctx.target,
+                words,
+                distractors,
+                teacherEdited: true,
+              },
+            }));
+            soundSortPreloadRef.current = null;
+          } else {
+            setWordSoundsPhonemes((prev) => ({
+              ...(prev || {}),
+              rimeFamilyMembers: {
+                rime: ctx.rime,
+                words,
+                distractors,
+                teacherEdited: true,
+              },
+            }));
+            wordFamilyRimeRef.current = null;
+          }
+          return;
         }
         if (type === "set_correct") {
           if (wordSoundsActivity === "rhyming") {
@@ -13857,6 +14014,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // first letter) and history logged mode:"sound_only" wrongly.
                 soundOnlyMode: !showWordText,
                 onPlayAudio: handleAudio,
+                onUpdateOption: (i, v, type) =>
+                  handleOptionUpdate(i, v, type, {
+                    activity: "sound_sort",
+                    options: selectedMatches,
+                    distractors: selectedDistractors,
+                    mode: mode,
+                    target: targetPhoneme,
+                  }),
+                isEditing: isEditing,
                 // Full-instruction replay — mirrors the auto-playback sequence
                 // that runs on first load (instruction prompt → target sound →
                 // "as in" → target word). The old replay button only played
@@ -13897,10 +14063,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     warnLog('Replay instruction failed:', e && e.message);
                   }
                 },
-                isEditing: isEditing,
-                onUpdateOption: handleOptionUpdate,
                 onCheckAnswer: (result) => {
-                  checkAnswer(result, "correct");
+                  // Find-all board: allow one exploratory wrong tap per
+                  // distractor before the item finalizes (the instruction
+                  // invites tapping words to hear them).
+                  checkAnswer(result, "correct", {
+                    maxAttempts: Math.max(
+                      2,
+                      (selectedDistractors || []).length + 1,
+                    ),
+                  });
                 },
                 showLetterHints: showLetterHints,
               }),
@@ -14184,10 +14356,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               };
             })(wfSeed);
             const wfShuffle = (arr) => [...arr].sort(() => wfRng() - 0.5);
-            const selectedMembers = wfShuffle(familyMembers).slice(
-              0,
-              rimeMemberLimit,
-            );
+            // Teacher-edited board: use the lists verbatim — no reshuffle, no
+            // slicing, no adjacent-family distractor pool.
+            const _wfTeacher = !!(aiRimeData && aiRimeData.teacherEdited);
+            const selectedMembers = _wfTeacher
+              ? familyMembers.slice(0, 8)
+              : wfShuffle(familyMembers).slice(0, rimeMemberLimit);
             const rimeKeys = Object.keys(RIME_FAMILIES);
             const currentRimeIdx = rimeKeys.indexOf(targetRime);
             const adjacentRimes = rimeKeys.filter(
@@ -14204,10 +14378,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             distractorPool = distractorPool.filter(
               (w) => !w.endsWith(targetRime),
             );
-            const selectedDistractors = wfShuffle(distractorPool).slice(
-              0,
-              rimeDistractorLimit,
-            );
+            const selectedDistractors = _wfTeacher
+              ? (aiRimeData.distractors || []).filter((w) => w != null).slice(0, 8)
+              : wfShuffle(distractorPool).slice(0, rimeDistractorLimit);
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
@@ -14228,6 +14401,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   checkAnswer(
                     result === "correct" ? currentWordSoundsWord : null,
                     currentWordSoundsWord,
+                    // Find-all board: one exploratory wrong tap per distractor
+                    // before the item finalizes (instruction invites tapping).
+                    {
+                      maxAttempts: Math.max(
+                        2,
+                        (selectedDistractors || []).length + 1,
+                      ),
+                    },
                   ),
                 onPlayAudio: (w) => handleAudio(w),
                 // Replay = instruction clip + WHICH family (the in-card
@@ -14251,7 +14432,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     warnLog("WF replay instruction failed:", e);
                   }
                 },
-                onUpdateOption: handleOptionUpdate,
+                onUpdateOption: (i, v, type) =>
+                  handleOptionUpdate(i, v, type, {
+                    activity: "word_families",
+                    options: selectedMembers,
+                    distractors: selectedDistractors,
+                    rime: targetRime,
+                  }),
                 showLetterHints: showLetterHints,
                 soundOnlyMode: !showWordText,
               }),
