@@ -2,11 +2,13 @@
   !include LogicLib.nsh
   !include nsDialogs.nsh
 
-  ; Friendly, teacher-facing installer chrome. The "license" page is used as
-  ; an About-this-beta page (see build-resources/installer-about.txt): what
-  ; AlloFlow Desktop is, the local-first privacy stance, and an honest
+  ; Friendly, teacher-facing installer chrome. customWelcomePage is the hook
+  ; the electron-builder template inserts BEFORE the page flow (customHeader
+  ; comes after the pages exist, so MUI defines there are silent no-ops).
+  ; The "license" page doubles as an About-this-beta page (installer-about.txt):
+  ; what AlloFlow Desktop is, the local-first privacy stance, and an honest
   ; explanation of the unsigned-beta SmartScreen warning.
-  !macro customHeader
+  !macro customWelcomePage
     !define MUI_WELCOMEPAGE_TITLE "Welcome to AlloFlow Desktop (Beta)"
     !define MUI_WELCOMEPAGE_TEXT "AlloFlow turns your materials into accessible, differentiated learning resources - leveled readers, glossaries, quizzes, visual supports, STEM tools, and live classroom sessions.$\r$\n$\r$\nThe Desktop edition is local-first: classroom sessions stay on your computer and school network, with optional built-in AI (text, images, and voices) that needs no cloud account.$\r$\n$\r$\nClick Next to learn more."
     !define MUI_LICENSEPAGE_TEXT_TOP "A quick word about this beta - including why Windows showed a publisher warning."
@@ -14,6 +16,7 @@
     !define MUI_LICENSEPAGE_BUTTON "I Understand"
     !define MUI_FINISHPAGE_TITLE "AlloFlow Desktop is ready"
     !define MUI_FINISHPAGE_TEXT "The command center opens on launch. Good first stops: the Classroom Setup Wizard (School Box tab), Voice Engine, and the Built-in AI Engine panel.$\r$\n$\r$\nThank you for teaching with AlloFlow."
+    !insertmacro MUI_PAGE_WELCOME
   !macroend
 
   Var AddDesktopShortcutCheckbox
