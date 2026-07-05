@@ -63,6 +63,7 @@
   "nsis": {
     "artifactName": "AlloFlow-Desktop-${version}-${arch}-setup.${ext}",
     "include": "build-resources/installer.nsh",
+    "license": "build-resources/installer-about.txt",
     "oneClick": false,
     "perMachine": false,
     "allowElevation": false,

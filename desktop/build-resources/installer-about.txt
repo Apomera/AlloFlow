@@ -1,0 +1,49 @@
+ABOUT ALLOFLOW DESKTOP (BETA)
+=============================
+
+WHAT THIS IS
+
+AlloFlow helps educators turn any material into accessible, differentiated
+learning resources: leveled readers, glossaries, quizzes, visual supports,
+110+ interactive STEM tools, SEL activities, and live classroom sessions
+students join from their own devices.
+
+The Desktop edition is local-first by design:
+
+  * Live classroom sessions run on YOUR computer and your school's network.
+    Student work does not pass through any cloud service by default.
+  * Optional built-in AI runs entirely on this device: a local text engine,
+    local voices (Kokoro), and a local image generator - no accounts needed.
+  * Cloud AI (for example Gemini) is used only if you add your own key.
+
+AlloFlow is designed to support school-controlled, privacy-first
+deployments. Whether a deployment meets FERPA or district policy also
+depends on your institution's configuration and agreements.
+
+ABOUT THE "UNKNOWN PUBLISHER" / SMARTSCREEN WARNING
+
+Windows may have warned you that this installer is from an "unknown
+publisher". That is expected for this beta: AlloFlow is not yet signed
+with a paid code-signing certificate. Signing requires a commercial
+identity-verification process that is planned before wide release.
+Until then, Windows shows its standard caution for any unsigned app.
+If you obtained this installer directly from AlloFlow's repository or
+from the person who built it for you, you can proceed with
+"More info" -> "Run anyway".
+
+BETA SOFTWARE NOTICE
+
+This is beta software provided as-is, without warranty. Features are
+still evolving and you may find rough edges. Feedback is welcome and
+genuinely shapes what gets built next.
+
+WHAT'S NEW IN 0.2.0
+
+  * Live LAN classroom sessions end-to-end (join PIN, QR codes,
+    projector page, classroom setup wizard)
+  * Built-in local AI text engine - no extra installs
+  * Local image generation fallback when cloud limits are reached
+  * Local Kokoro voices now work everywhere in the app
+  * Reliability and clarity fixes throughout
+
+Thank you for teaching with AlloFlow.
