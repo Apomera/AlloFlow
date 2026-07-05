@@ -89,6 +89,12 @@ function main() {
     BROWSER: 'none',
     CI: 'false',
     GENERATE_SOURCEMAP: 'false',
+    // The monolith's lint debt (injection-contract globals like __app_id) is
+    // baselined and gated by AlloFlow's own dev-tools checks; CRA's ESLint
+    // pass must not re-litigate it. Locally this came from the UNTRACKED
+    // prismflow-deploy/.env — bake it in so CI builds behave identically.
+    DISABLE_ESLINT_PLUGIN: 'true',
+    ESLINT_NO_DEV_ERRORS: 'true',
     PUBLIC_URL: '.',
     REACT_APP_API_KEY: 'desktop-user-provided',
     REACT_APP_GEMINI_API_KEY: 'desktop-user-provided',
