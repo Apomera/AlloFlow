@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow Circuit Shelf</title>
+<!--
+  AlloFlow Circuit Shelf — CircuitJS1 + Predict-Explore-Explain coach
+  (companion window).
+
+  Opened by stem_lab/stem_tool_circuitshelf.js with window.open (the escape-
+  hatch pattern: a TOP-LEVEL browsing context, unaffected by Gemini Canvas's
+  sandboxed iframe).
+
+  The simulator is CircuitJS1 by Paul Falstad and Iain Sharp
+  (github.com/pfalstad/circuitjs1, github.com/sharpie7/circuitjs1) — a free,
+  open-source (GPL) electronic-circuit simulator used in classrooms
+  worldwide. Credit and thanks to Paul Falstad and Iain Sharp. The simulator
+  loads from its host (internet required). Offline vendoring into School Box
+  is on the roadmap; the GPL permits redistribution.
+
+  The AlloFlow layer is a PREDICT → EXPLORE → EXPLAIN coach (the well-
+  evidenced POE model). The simulator is a sealed box to us — no internals —
+  so the coach BRACKETS it with build-it challenges: students commit a
+  prediction BEFORE they wire anything, build & run, then explain what the
+  meters read, and (only when the teacher has AI hints on) the opener
+  AlloFlow window relays a Socratic comparison of prediction vs. observation.
+  With AI off or standalone, built-in reflection prompts do the bracketing.
+  Nothing here is persisted; predictions live in this window only.
+-->
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #f59e0b; --accent2: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 11.5px; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
+  .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
+  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #fcd34d; text-transform: uppercase; letter-spacing: 0.06em; }
+  .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
+  .ai-state .on { color: var(--ok); font-weight: 700; }
+  .ai-state .off { color: var(--warn); font-weight: 700; }
+  .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button[aria-selected="true"] { background: #78350f; color: #fde68a; border-color: var(--accent); }
+  .steps button.done { color: var(--ok); }
+  .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  .locked { background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
+  .locked b { color: var(--ok); }
+  ul.hints { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
+  .feedback { background: var(--panel2); border: 1px solid #4c1d95; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
+  .sim { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
+  .sim iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+  .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; }
+  .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .simcard:hover { border-color: var(--accent); }
+  .simcard .emoji { font-size: 26px; }
+  .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
+  .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
+  .backbar { position: absolute; top: 8px; left: 8px; z-index: 5; }
+  .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔌 Circuit Shelf</h1>
+  <span class="sub">CircuitJS1 by Paul Falstad &amp; Iain Sharp (open source, GPL) + AlloFlow Predict-Explore-Explain coach</span>
+  <select id="chalSelect" aria-label="Choose a challenge"><option value="">Choose a challenge…</option></select>
+</header>
+<div class="wrap">
+  <aside class="coach" aria-label="Predict Explore Explain coach">
+    <h2>Lab coach</h2>
+    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="steps" role="tablist" aria-label="Lab steps">
+      <button id="tabPredict" role="tab" aria-selected="true">1 · Predict</button>
+      <button id="tabExplore" role="tab" aria-selected="false">2 · Build</button>
+      <button id="tabExplain" role="tab" aria-selected="false">3 · Explain</button>
+    </div>
+    <div class="body" id="coachBody">
+      <div class="qcard">Pick a challenge to start. The coach will ask you to <b>predict before you wire anything</b> — that’s where the learning hides.</div>
+    </div>
+    <div class="privacy">Predictions and explanations live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
+  </aside>
+  <main class="sim" aria-label="Circuit simulator">
+    <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Challenges</button></div>
+    <iframe id="simFrame" title="CircuitJS circuit simulator" allow="fullscreen"></iframe>
+    <div class="picker" id="picker">
+      <h2>Pick a challenge — each is a tiny electronics lab. Predict first, then build it in the simulator.</h2>
+      <div class="grid" id="pickerGrid"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── CircuitJS1 embed (Paul Falstad / Iain Sharp, GPL). The simulator loads
+  //    once; each challenge swaps the coach panel, not the simulator. Students
+  //    build the circuit themselves using the simulator's own toolbar — the
+  //    hints say what to add. hideMenu stays FALSE so components are reachable.
+  var CIRCUITJS_URL = 'https://www.falstad.com/circuit/circuitjs.html';
+
+  var CHALLENGES = [
+    { id: 'series-parallel', emoji: '💡', name: 'Series vs. Parallel Bulbs', topics: 'brightness, current paths', grades: '5–10',
+      predict: 'You build two bulbs one-after-another (series), then the same two side-by-side (parallel), each on the same battery. Which pair glows brighter — and what happens to the OTHER bulb if you remove one?',
+      hints: ['Right-click the canvas → Add → Passive Components → Resistor/Lamp; drag wires from node to node', 'Add a battery (Add → Inputs and Sources → Voltage Source)', 'Right-click a component → View in Scope, or hover to read current/voltage', 'Build series first, run it, then rebuild as parallel'],
+      explain: 'Which layout was brighter, and what current did you read in each? What happened to the second bulb when you deleted one — and why?' },
+    { id: 'ohms-law', emoji: '📏', name: 'Ohm’s Law', topics: 'V, I, R relationship', grades: '7–12',
+      predict: 'One resistor on a battery. If you DOUBLE the resistance but keep the battery the same, what happens to the current — doubles, halves, or no change? Write the relationship you expect.',
+      hints: ['Build battery → resistor → back to battery', 'Right-click the resistor → Edit to set its resistance', 'Add an ammeter in the loop (Add → Meters → Ammeter)', 'Try resistance = R, then 2R, then R/2'],
+      explain: 'What current did you read at each resistance? Does V = I × R hold up against your numbers?' },
+    { id: 'rc-charging', emoji: '🔋', name: 'RC Charging', topics: 'capacitors, time constant', grades: '9–12',
+      predict: 'A resistor and capacitor in series with a battery. When you close the switch, does the capacitor voltage jump instantly to the battery voltage, or rise gradually? What changes if you increase the resistance?',
+      hints: ['Build battery → resistor → capacitor → back', 'Right-click the capacitor → View in Scope to watch its voltage over time', 'Increase R and watch how the curve changes', 'Try a switch (Add → Switches) to reset it'],
+      explain: 'What shape was the capacitor’s voltage-vs-time curve? How did more resistance change how fast it charged?' },
+    { id: 'voltage-divider', emoji: '➗', name: 'Voltage Divider', topics: 'series resistors, output voltage', grades: '8–12',
+      predict: 'Two equal resistors in series across a battery. What voltage do you expect at the point BETWEEN them? What if you make the second resistor much bigger than the first?',
+      hints: ['Build battery → R1 → (measure here) → R2 → back', 'Add a voltmeter (Add → Meters → Voltmeter) across R2', 'Try R1 = R2, then R2 much larger', 'Read the middle-node voltage each time'],
+      explain: 'What voltage sat at the middle node in each case? What rule predicts it from the two resistances?' },
+    { id: 'logic-gates', emoji: '🔢', name: 'Logic Gates (AND / OR)', topics: 'digital logic, truth tables', grades: '9–12',
+      predict: 'An AND gate lights an LED only when BOTH inputs are on; an OR gate lights it when EITHER is on. Sketch the truth table you expect for each before you build it.',
+      hints: ['Add → Logic Gates → AND Gate (and OR Gate)', 'Add → Inputs and Sources → Logic Input for each input', 'Add → Outputs and Labels → LED on the gate output', 'Toggle the logic inputs and watch the LED'],
+      explain: 'Which input combinations lit the LED for AND vs OR? Did your truth tables match what you saw?' },
+    { id: 'short-circuit', emoji: '⚠️', name: 'What Is a Short Circuit?', topics: 'current, resistance, safety', grades: '6–10',
+      predict: 'A bulb glows on a battery. Now imagine adding a plain wire straight across the bulb (a "short"). What happens to the bulb — brighter, dimmer, or off — and where does the current go?',
+      hints: ['Build battery → bulb → back, and run it', 'Add a wire directly across the two ends of the bulb', 'Add an ammeter in the wire vs. in the bulb branch', 'Compare the current in each path'],
+      explain: 'What happened to the bulb when you added the short? Which path carried the current, and why did it "prefer" that route?' }
+  ];
+
+  var params = new URLSearchParams(window.location.search);
+
+  // ── State (in-memory only) ──────────────────────────────────────────
+  var current = null;           // current challenge object
+  var perChal = {};             // id → {prediction, locked, explanation, feedback}
+  var step = 'predict';
+  var aiAvailable = false, openerOk = false, busy = false, simLoaded = false;
+
+  var simFrame = document.getElementById('simFrame');
+  var picker = document.getElementById('picker');
+  var pickerGrid = document.getElementById('pickerGrid');
+  var chalSelect = document.getElementById('chalSelect');
+  var coachBody = document.getElementById('coachBody');
+  var aiStateEl = document.getElementById('aiState');
+  var backbar = document.getElementById('backbar');
+  var backBtn = document.getElementById('backBtn');
+  var tabs = { predict: document.getElementById('tabPredict'), explore: document.getElementById('tabExplore'), explain: document.getElementById('tabExplain') };
+
+  // ── Opener AI bridge (Sim Shelf / Data Lab pattern) ──────────────────
+  var pending = {};
+  function toOpener(payload) {
+    try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
+    return false;
+  }
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'alloccircuit-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
+    if (data.type === 'alloccircuit-ai-response' && data.id && pending[data.id]) {
+      var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
+    }
+  });
+  function askAi(challengeName, prediction, explanation) {
+    var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return new Promise(function (resolve) {
+      pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000) };
+      var sent = toOpener({ type: 'alloccircuit-ai-request', id: id, challenge: challengeName, prediction: prediction, explanation: explanation });
+      if (!sent) { var e = pending[id]; delete pending[id]; if (e) clearTimeout(e.timer); resolve(null); }
+    });
+  }
+
+  var REFLECT_BANK = [
+    'Where exactly did your prediction and the meters disagree? Pin down the one reading that surprised you.',
+    'If a younger student made your original prediction, which single measurement in the simulator would you show them first?',
+    'What is one value you did NOT change yet (a resistance, a voltage)? Predict its effect — then go test it.',
+    'Trace the current with your finger from + to −. Does every branch you built actually carry current?',
+    'What would have to be true about the circuit for your ORIGINAL prediction to have been right?'
+  ];
+  var reflectIndex = Math.floor(Math.random() * REFLECT_BANK.length);
+  function nextReflect() { reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length; return REFLECT_BANK[reflectIndex]; }
+
+  function renderAiState() {
+    aiStateEl.innerHTML = openerOk
+      ? (aiAvailable ? 'AlloFlow connected · AI coach <span class="on">on</span>' : 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in reflection prompts')
+      : 'Standalone — built-in reflection prompts (open from AlloFlow for the AI coach)';
+  }
+
+  // ── Coach panel rendering ───────────────────────────────────────────
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function setStep(next) {
+    step = next;
+    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    renderCoach();
+  }
+
+  function renderCoach() {
+    coachBody.innerHTML = '';
+    if (!current) {
+      coachBody.appendChild(el('div', { class: 'qcard' }, 'Pick a challenge to start. The coach will ask you to predict before you wire anything — that’s where the learning hides.'));
+      return;
+    }
+    var mem = perChal[current.id] = perChal[current.id] || { prediction: '', locked: false, explanation: '', feedback: '' };
+    if (mem.locked) tabs.predict.classList.add('done'); else tabs.predict.classList.remove('done');
+
+    if (step === 'predict') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🔮 ' + current.predict));
+      if (mem.locked) {
+        var lockedBox = el('div', { class: 'locked' });
+        lockedBox.innerHTML = '<b>Your prediction is locked in:</b>\n';
+        lockedBox.appendChild(document.createTextNode(mem.prediction));
+        coachBody.appendChild(lockedBox);
+        var toExplore = el('button', { class: 'go' }, 'On to Build →');
+        toExplore.addEventListener('click', function () { setStep('explore'); });
+        coachBody.appendChild(toExplore);
+      } else {
+        var ta = el('textarea', { id: 'predictText', 'aria-label': 'Your prediction', placeholder: 'I predict… because…' });
+        ta.value = mem.prediction;
+        ta.addEventListener('input', function () { mem.prediction = ta.value; });
+        coachBody.appendChild(ta);
+        var lock = el('button', { class: 'go' }, '🔒 Lock in my prediction');
+        lock.addEventListener('click', function () {
+          if (!mem.prediction.trim()) { ta.focus(); return; }
+          mem.locked = true;
+          toOpener({ type: 'alloccircuit-predicted' });
+          setStep('explore');
+        });
+        coachBody.appendChild(lock);
+        coachBody.appendChild(el('div', { class: 'qcard' }, 'Why lock it? Committing to a guess BEFORE you build is what turns wiring into science.'));
+      }
+    } else if (step === 'explore') {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🧭 Build it in the simulator. Some things to try:'));
+      var ul = el('ul', { class: 'hints' });
+      current.hints.forEach(function (hint) { ul.appendChild(el('li', null, hint)); });
+      coachBody.appendChild(ul);
+      if (mem.locked) {
+        var remind = el('div', { class: 'locked' });
+        remind.innerHTML = '<b>You predicted:</b>\n';
+        remind.appendChild(document.createTextNode(mem.prediction));
+        coachBody.appendChild(remind);
+      }
+      var toExplain = el('button', { class: 'go' }, 'I’ve built it — Explain →');
+      toExplain.addEventListener('click', function () { setStep('explain'); });
+      coachBody.appendChild(toExplain);
+    } else {
+      coachBody.appendChild(el('div', { class: 'qcard' }, '📝 ' + current.explain));
+      var ta2 = el('textarea', { id: 'explainText', 'aria-label': 'What actually happened', placeholder: 'What the meters actually showed was…' });
+      ta2.value = mem.explanation;
+      ta2.addEventListener('input', function () { mem.explanation = ta2.value; });
+      coachBody.appendChild(ta2);
+      var askBtn = el('button', { class: 'go', id: 'debriefBtn' }, aiAvailable && openerOk ? '✨ Compare with my prediction' : '🤔 Give me a reflection prompt');
+      askBtn.addEventListener('click', function () {
+        if (busy) return;
+        if (!(aiAvailable && openerOk)) {
+          mem.feedback = nextReflect();
+          renderCoach();
+          return;
+        }
+        if (!mem.explanation.trim()) { ta2.focus(); return; }
+        busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
+        askAi(current.name, mem.prediction, mem.explanation).then(function (res) {
+          var text = res && !res.error && res.text ? String(res.text).trim() : '';
+          mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
+          busy = false;
+          renderCoach();
+        });
+      });
+      coachBody.appendChild(askBtn);
+      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+    }
+  }
+
+  Object.keys(tabs).forEach(function (k) {
+    tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+  });
+
+  // ── Challenge picker ─────────────────────────────────────────────────
+  function ensureSim() {
+    if (!simLoaded) { simFrame.src = CIRCUITJS_URL; simLoaded = true; }
+  }
+  function loadChallenge(id) {
+    current = CHALLENGES.find(function (c) { return c.id === id; }) || null;
+    if (!current) return;
+    ensureSim();
+    picker.style.display = 'none';
+    backbar.style.display = 'block';
+    chalSelect.value = current.id;
+    document.title = 'AlloFlow Circuit Shelf — ' + current.name;
+    toOpener({ type: 'alloccircuit-chalopened', challenge: current.id });
+    setStep(perChal[current.id] && perChal[current.id].locked ? 'explore' : 'predict');
+  }
+  function showPicker() {
+    picker.style.display = 'block';
+    backbar.style.display = 'none';
+  }
+
+  CHALLENGES.forEach(function (chal) {
+    var opt = el('option', { value: chal.id }, chal.emoji + ' ' + chal.name);
+    chalSelect.appendChild(opt);
+    var card = el('button', { class: 'simcard', type: 'button' });
+    card.appendChild(el('div', { class: 'emoji' }, chal.emoji));
+    card.appendChild(el('div', { class: 'name' }, chal.name));
+    card.appendChild(el('div', { class: 'meta' }, chal.topics + ' · grades ' + chal.grades));
+    card.addEventListener('click', function () { loadChallenge(chal.id); });
+    pickerGrid.appendChild(card);
+  });
+  chalSelect.addEventListener('change', function () { if (chalSelect.value) loadChallenge(chalSelect.value); });
+  backBtn.addEventListener('click', showPicker);
+
+  // ── Boot ────────────────────────────────────────────────────────────
+  var requested = params.get('challenge');
+  if (requested && CHALLENGES.some(function (c) { return c.id === requested; })) loadChallenge(requested);
+  var hello = function () { toOpener({ type: 'alloccircuit-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(renderAiState, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'alloccircuit-closed' }); });
+})();
+</script>
+</body>
+</html>

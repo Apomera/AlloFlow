@@ -855,6 +855,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_accesslens.js',
     'stem_lab/stem_tool_datalab.js',
     'stem_lab/stem_tool_simshelf.js',
+    'stem_lab/stem_tool_circuitshelf.js',
+    'stem_lab/stem_tool_moleculeshelf.js',
     'stem_lab/stem_tool_probability.js',
     'stem_lab/stem_tool_calculus.js',
     'stem_lab/stem_tool_galaxy.js',

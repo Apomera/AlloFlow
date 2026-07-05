@@ -5429,6 +5429,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Sim Shelf — PhET (CU Boulder) companion window with a
         // Predict→Explore→Explain coach; launcher + AI bridge in the tool.
         'stem_lab/stem_tool_simshelf.js',
+        // Jul 2026: Circuit Shelf — CircuitJS1 (Falstad/Sharp, GPL) companion
+        // window with a POE coach; launcher + AI bridge in the tool.
+        'stem_lab/stem_tool_circuitshelf.js',
+        // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window with a
+        // Notice→Wonder coach; launcher + AI bridge in the tool.
+        'stem_lab/stem_tool_moleculeshelf.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
