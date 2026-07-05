@@ -1703,7 +1703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   role: 'tab', 'aria-selected': active,
                   style: {
                     padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    background: active ? '#ea580c' : '#1e293b',
+                    background: active ? '#c2410c' : '#1e293b',
                     color: active ? '#fff' : '#94a3b8',
                     fontWeight: active ? 700 : 500, fontSize: 13,
                     transition: 'all 0.2s'
@@ -2593,7 +2593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 disabled: aiLoading,
                 style: {
                   padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: aiLoading ? '#334155' : '#0ea5e9', color: '#fff', fontWeight: 700, fontSize: 14
+                  background: aiLoading ? '#334155' : '#0369a1', color: '#fff', fontWeight: 700, fontSize: 14
                 }
               }, aiLoading ? 'Thinking...' : 'Ask')
             ),

@@ -9905,10 +9905,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var liferCount = Object.keys(lifeListNow).length;
         var habitatProgressPct = totalBirds > 0 ? Math.round((foundCount / totalBirds) * 100) : 0;
         var missionPrompt = foundCount === 0
-          ? 'Scan the habitat for movement, posture, and shape before using a hint.'
+          ? __alloT('stem.birdlab.i_spy_prompt_scan', 'Scan the habitat for movement, posture, and shape before using a hint.')
           : (foundCount >= totalBirds
-            ? 'Habitat complete. Try another habitat or re-run on a harder hint budget.'
-            : 'Keep scanning. The remaining birds are still moving in the scene.');
+            ? __alloT('stem.birdlab.i_spy_prompt_complete', 'Habitat complete. Try another habitat or re-run on a harder hint budget.')
+            : __alloT('stem.birdlab.i_spy_prompt_keep', 'Keep scanning. The remaining birds are still moving in the scene.'));
 
         return h('div', { className: 'min-h-screen bg-slate-50', 'data-birdlab-ispy': 'true' },
           h(BackBar, { icon: '🔍', title: 'I-Spy Bird Spotter — ' + habitat.name }),
@@ -9934,7 +9934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', null,
                   h('div', { className: 'birdlab-kicker' }, __alloT('stem.birdlab.i_spy_mission', 'I-Spy mission')),
                   h('h1', { className: 'birdlab-mission-title' }, habitat.name + ' observation round'),
-                  h('p', { className: 'text-sm mt-2 max-w-3xl' }, __alloT('stem.birdlab.i_spy_mission_prompt', missionPrompt)),
+                  h('p', { className: 'text-sm mt-2 max-w-3xl' }, missionPrompt),
                   h('div', { className: 'birdlab-progress-rail mt-4', 'aria-hidden': true },
                     h('div', { className: 'birdlab-progress-fill', style: { width: habitatProgressPct + '%' } })
                   )

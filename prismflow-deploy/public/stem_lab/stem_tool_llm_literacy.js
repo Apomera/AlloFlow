@@ -1264,7 +1264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         good:     '#059669',
         bad:      '#dc2626',
         warn:     '#d97706',
-        muted:    '#94a3b8',
+        muted:    '#475569',
         text:     '#0f172a',
         subtext:  '#475569'
       };
@@ -1272,7 +1272,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         word:    { bg: '#dbeafe', fg: '#1e40af' },
         subword: { bg: '#fce7f3', fg: '#9d174d' },
         punct:   { bg: '#fef3c7', fg: '#92400e' },
-        space:   { bg: '#f1f5f9', fg: '#94a3b8' }
+        space:   { bg: '#f1f5f9', fg: '#475569' }
       };
       function btn(bg, fg, disabled) {
         return {

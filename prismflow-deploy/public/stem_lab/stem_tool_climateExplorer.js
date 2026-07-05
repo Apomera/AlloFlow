@@ -261,7 +261,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('climateExplorer', n); };
       var getStemXP = ctx.getXP;

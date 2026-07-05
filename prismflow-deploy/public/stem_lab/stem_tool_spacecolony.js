@@ -90,7 +90,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
       var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled);
       var setStemLabTool = ctx.setStemLabTool;
       var ArrowLeft = ctx.icons.ArrowLeft;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
           var d = labToolData || {};
           var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, n); o[k] = v; return o; }); };

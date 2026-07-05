@@ -136,7 +136,10 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // ctx.t is a single-arg translator that returns undefined on a miss and ignores the
+      // 2nd-arg English fallback. Wrap it so the fallback is honored — otherwise any key not
+      // yet in ui_strings.js renders as nothing (empty buttons). See dev-tools/check_i18n_fallback.cjs.
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;

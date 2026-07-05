@@ -2432,7 +2432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     border: 'var(--allo-stem-border, #334155)',
     text:      '#e2e8f0',
     textDim:   '#cbd5e1',
-    textMute:  '#a3a3a3',
+    textMute:  '#b6bdc7',
     accent:    '#60a5fa',
     accentDim: '#3b82f6',
     success:   '#34d399',

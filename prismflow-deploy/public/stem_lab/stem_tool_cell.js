@@ -20282,7 +20282,7 @@ var d = labToolData.cell || {};
                 ),
                 React.createElement("div", { className: "grid gap-2 sm:grid-cols-2" },
                   [
-                    { id: 'observe', label: 'Petri Dish', desc: 'Watch organisms move, feed, split, and interact.', accent: '#16a34a' },
+                    { id: 'observe', label: 'Petri Dish', desc: 'Watch organisms move, feed, split, and interact.', accent: '#15803d' },
                     { id: 'interior', label: 'Inside a Cell', desc: 'Compare animal, plant, and bacterial structures.', accent: '#0e7490' },
                     { id: 'play', label: 'Play as Cell', desc: 'Control an organism and learn its survival strategy.', accent: '#7c3aed' },
                     { id: 'quiz', label: 'Concept Check', desc: 'Practice organelles, movement, and cell type clues.', accent: '#0284c7' }
@@ -20336,7 +20336,7 @@ var d = labToolData.cell || {};
             // ── Topic-accent hero band (per mode) ──
             (function() {
               var MODE_META = {
-                observe: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe - explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
+                observe: { accent: '#15803d', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe - explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
                 play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play - be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
                 quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz - concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
               };

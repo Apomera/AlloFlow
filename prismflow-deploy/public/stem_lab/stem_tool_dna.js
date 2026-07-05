@@ -1718,7 +1718,7 @@ window.StemLab = window.StemLab || {
           id: 'dogma',
           label: 'Central Dogma',
           desc: 'Follow DNA to RNA to protein, with codons and amino acids visible.',
-          accent: '#059669',
+          accent: '#047857',
           soft: '#ecfdf5',
           tools: ['transcribe', 'translate', 'protein']
         },
@@ -1726,7 +1726,7 @@ window.StemLab = window.StemLab || {
           id: 'editing',
           label: 'Mutation & Editing',
           desc: 'Change the sequence, predict impact, then try CRISPR or forensics.',
-          accent: '#dc2626',
+          accent: '#b91c1c',
           soft: '#fef2f2',
           tools: ['mutate', 'crispr', 'forensics']
         },
@@ -1734,7 +1734,7 @@ window.StemLab = window.StemLab || {
           id: 'practice',
           label: 'Practice Arena',
           desc: 'Use challenges, battles, and reference notes when ready to review.',
-          accent: '#d97706',
+          accent: '#b45309',
           soft: '#fffbeb',
           tools: ['challenge', 'battle', 'learn']
         }

@@ -802,7 +802,8 @@
       var labToolData=ctx.toolData; var setLabToolData=ctx.setToolData;
       var setStemLabTool=ctx.setStemLabTool;
       var toolSnapshots=ctx.toolSnapshots; var setToolSnapshots=ctx.setToolSnapshots;
-      var addToast=ctx.addToast; var t=ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
       var a11yClick=ctx.a11yClick;
@@ -4193,6 +4194,14 @@ const d = labToolData.waterCycle || {};
 
             React.createElement("div", { className: "wc-stage-rack flex flex-wrap gap-1.5 mb-3", role: "group", "data-watercycle-stage-rack": "true", "aria-label": t('stem.watercycle.water_cycle_stages', "Water cycle stages") },
               STAGES.map(function (stage, stageIdx) {
+                // active-tab ink: pick near-black or white per stage color so white
+                // never sits on a light stage fill (e.g. evaporation amber #f59e0b = 2.15:1).
+                var _wcInk = (function (hex) {
+                  var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+                  var lin = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+                  var L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+                  return ((L + 0.05) / 0.05) >= (1.05 / (L + 0.05)) ? '#0a0f1a' : '#ffffff';
+                })(stage.color);
                 var isActive = (d.activeStage || 'evaporation') === stage.id;
                 var shortcut = (stageIdx + 1).toString();
                 return React.createElement("button", {
@@ -4210,8 +4219,8 @@ const d = labToolData.waterCycle || {};
                       }, { debounce: 500 });
                     }
                   },
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'text-white shadow-md' : 'border hover:opacity-80'),
-                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? 'white' : stage.color }
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'shadow-md' : 'border hover:opacity-80'),
+                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : stage.color }
                 },
                   React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   React.createElement("span", null, stage.emoji + " " + stage.label));

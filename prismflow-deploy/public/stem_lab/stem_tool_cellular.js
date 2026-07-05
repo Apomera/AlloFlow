@@ -396,8 +396,10 @@
         title: opts.title || label,
         style: {
           padding: '7px 12px', borderRadius: '9px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
-          border: '1px solid ' + (opts.primary ? C.accent : C.border),
-          background: opts.pressed ? C.accent : (opts.primary ? C.accent : C.panel),
+          // primary/pressed buttons use a fixed emerald-700 so white text clears
+          // 4.5:1 in both themes (the shared C.accent is emerald-400/600 → fails).
+          border: '1px solid ' + ((opts.primary || opts.pressed) ? '#047857' : C.border),
+          background: (opts.pressed || opts.primary) ? '#047857' : C.panel,
           color: (opts.pressed || opts.primary) ? '#ffffff' : C.text,
           whiteSpace: 'nowrap'
         }
