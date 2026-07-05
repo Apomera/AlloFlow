@@ -339,6 +339,40 @@ const createTTS = (deps) => {
             }
             return null;
         }
+        // ─── Desktop/Firebase: a selected Kokoro voice speaks through the local engine ───
+        // The Canvas branch above has always routed af_/am_/bf_/bm_ voices to the
+        // in-browser Kokoro engine, but this non-Canvas path sent them to the
+        // AIProvider/Gemini instead: Gemini 400s on non-Gemini voice names, every
+        // caller's catch lands on browser speechSynthesis, and the model that the
+        // header picker downloads (and desktop/Firebase boot auto-loads) never speaks.
+        var _kokoroVoicePrefixNC = /^(af_|am_|bf_|bm_)/i;
+        if (typeof voiceName === 'string' && _kokoroVoicePrefixNC.test(voiceName)) {
+            if (!_isEnglish) {
+                console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — switching to Gemini "Puck" for this call');
+                voiceName = 'Puck';
+            } else if (window._kokoroTTS) {
+                try {
+                    const kokoroText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*\u2022]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+                    const kokoroUrl = await window._kokoroTTS.speakStreaming(kokoroText, voiceName, speed);
+                    if (kokoroUrl) return kokoroUrl;
+                    voiceName = 'Puck'; // engine returned nothing — never send af_* to Gemini
+                } catch (e) {
+                    if (_isAbortError(e)) { throw e; }
+                    console.warn('[TTS] Kokoro engine failed, degrading to Gemini "Puck":', e?.message);
+                    voiceName = 'Puck';
+                }
+            } else {
+                // Engine missing (download declined/failed/blocked). Kick a background
+                // (re)load for future calls and degrade this one to a valid Gemini voice.
+                if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
+                    window.__kokoroTTSDownloading = true;
+                    Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
+                }
+                console.warn('[TTS] Kokoro voice "' + voiceName + '" selected but the engine is not loaded — using Gemini "Puck" this time');
+                voiceName = 'Puck';
+            }
+        }
+
         // ─── AIProvider TTS routing ───────────────────────────────────
         const _aiUserConfig = getAiUserConfig();
         const _ai = getAi();
@@ -441,6 +475,20 @@ const createTTS = (deps) => {
             }
             return null;
         }
+        // ─── Desktop/Firebase: selected Kokoro voice → local engine (same fix as callTTS) ───
+        var _kokoroVoicePrefixBot = /^(af_|am_|bf_|bm_)/i;
+        if (typeof voiceName === 'string' && _kokoroVoicePrefixBot.test(voiceName)) {
+            const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
+            if (botKokoroLang === 'en' && window._kokoroTTS) {
+                try {
+                    const kokoroBotText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*\u2022]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+                    const kokoroBotUrl = await window._kokoroTTS.speakStreaming(kokoroBotText, voiceName, speed);
+                    if (kokoroBotUrl) return kokoroBotUrl;
+                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed, degrading to "Puck":', e?.message); }
+            }
+            voiceName = 'Puck'; // valid Gemini voice for the fallback paths below
+        }
+
         // ─── AIProvider TTS routing (same as callTTS) ─────────────────
         const _aiUserConfig = getAiUserConfig();
         const _ai = getAi();
