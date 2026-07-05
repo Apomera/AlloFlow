@@ -2981,6 +2981,15 @@ async function main() {
     const address = server.address();
     console.log('[AlloFlow Desktop] Runtime listening on http://' + args.host + ':' + address.port);
     console.log('[AlloFlow Desktop] AlloFlow app URL: ' + getAppUrl(readConfig(), `http://${args.host}:${address.port}`));
+    // Built-in engine autostart: once a teacher has chosen the engine
+    // (localEngine.enabled, set by the app's AI Backend modal or the command
+    // center) AND its model is already on disk, warm it with the desktop so
+    // local AI is simply "on" — never on a fresh config, never mid-download.
+    const bootConfig = readConfig();
+    if (getEngineConfig(bootConfig).enabled && fs.existsSync(engineModelFilePath(bootConfig))) {
+      console.log('[AlloFlow Desktop] Built-in engine enabled and model present — starting it.');
+      startLocalEngine(bootConfig).catch((error) => console.warn('[AlloFlow Desktop] Engine autostart failed:', error.message));
+    }
   });
 }
 

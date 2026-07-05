@@ -850,7 +850,22 @@
   async function refreshEngineStatus() {
     const status = await api('/api/engine/status');
     renderEngineStatus(status);
+    const modelSelect = $('#engine-model-select');
+    if (modelSelect && status.engine && status.engine.modelUrl) {
+      const match = Array.from(modelSelect.options).find((option) => option.value === status.engine.modelUrl);
+      if (match) modelSelect.value = status.engine.modelUrl;
+    }
     return status;
+  }
+  async function changeEngineModel(event) {
+    const result = $('#engine-result');
+    try {
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelUrl: event.target.value } }) });
+      if (result) result.textContent = 'Model choice saved. It downloads on the next engine start (stop + start to switch now). Earlier models stay on disk until you delete them from the engine folder.';
+      await refreshEngineStatus();
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Could not save the model choice.';
+    }
   }
   function pollEngineUntilSettled() {
     if (enginePollTimer) clearInterval(enginePollTimer);
@@ -1150,6 +1165,7 @@
     $('#download-kokoro').addEventListener('click', downloadKokoroVoice);
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
+    $('#engine-model-select').addEventListener('change', changeEngineModel);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
       setTimeout(inspectKokoroVoice, 800);

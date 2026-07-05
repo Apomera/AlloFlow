@@ -105,6 +105,13 @@
               <dt>Model</dt><dd id="engine-model">-</dd>
               <dt>Disk free</dt><dd id="engine-disk">-</dd>
             </dl>
+            <label for="engine-model-select">AI model</label>
+            <select id="engine-model-select">
+              <option value="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf">Light — Qwen 1.5B (1.0 GB, fastest)</option>
+              <option value="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf" selected>Balanced — Qwen 3B (2.0 GB, recommended)</option>
+              <option value="https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf">Balanced — Llama 3.2 3B (1.9 GB)</option>
+              <option value="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf">Strong — Qwen 7B (4.4 GB, needs 16 GB+ RAM)</option>
+            </select>
             <div class="button-row">
               <button id="engine-start" type="button">Start engine</button>
               <button id="engine-stop" type="button">Stop</button>

@@ -626,6 +626,76 @@ function AIBackendModal(props) {
     });
     select.value = selectedValue || '';
   };
+  // ─── Built-in Engine strip (desktop) ───────────────────────────────────
+  // This modal is hookless by design (early return above), so the strip uses
+  // the file's DOM idiom. On desktop the app is served BY the runtime, so the
+  // engine API is same-origin; elsewhere the strip explains where to get it.
+  const refreshEngineStrip = async () => {
+    const strip = document.getElementById('ai-backend-engine-strip');
+    if (!strip) return;
+    let backend = readAIBackendConfig().backend || 'gemini';
+    const providerSelect = document.getElementById('ai-backend-provider');
+    if (providerSelect && providerSelect.value) backend = providerSelect.value;
+    if (backend !== 'alloflow-local') { strip.style.display = 'none'; return; }
+    strip.style.display = '';
+    if (!(typeof window !== 'undefined' && window._isDesktopBundledApp)) {
+      strip.textContent = t('ai_backend.engine_desktop_only') || 'The Built-in Engine runs inside AlloFlow Desktop. Install the desktop app to use local AI on this computer — no account or key needed.';
+      strip.className = 'text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200';
+      return;
+    }
+    try {
+      const engineStatus = await fetch('/api/engine/status').then((response) => response.json());
+      if (engineStatus.running) {
+        strip.textContent = '✓ ' + (t('ai_backend.engine_running') || 'Engine running') + (engineStatus.model && engineStatus.model.name ? ' — ' + engineStatus.model.name : '') + '. ' + (t('ai_backend.engine_reload_note') || 'Reload the app to start using it.');
+        strip.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100';
+        return;
+      }
+      let line = t('ai_backend.engine_stopped') || 'Engine is not running.';
+      if (engineStatus.download && engineStatus.download.totalBytes) {
+        line = (t('ai_backend.engine_downloading') || 'Downloading') + ' ' + engineStatus.download.file + ' — ' + Math.round((engineStatus.download.receivedBytes / engineStatus.download.totalBytes) * 100) + '%';
+      } else if (engineStatus.phase === 'starting') {
+        line = t('ai_backend.engine_starting') || 'Starting the engine…';
+      } else if (engineStatus.lastError) {
+        line = engineStatus.lastError;
+      }
+      strip.innerHTML = '';
+      const stripText = document.createElement('span');
+      stripText.textContent = line + (engineStatus.model && !engineStatus.model.present && !engineStatus.download && engineStatus.phase !== 'starting' ? ' ' + (t('ai_backend.engine_first_run') || '(first start downloads the AI model — about 2 GB, one time)') : '');
+      strip.appendChild(stripText);
+      if (!engineStatus.download && engineStatus.phase !== 'starting') {
+        const startBtn = document.createElement('button');
+        startBtn.type = 'button';
+        startBtn.textContent = t('ai_backend.engine_start_btn') || 'Start engine';
+        startBtn.className = 'ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700';
+        startBtn.onclick = async () => {
+          startBtn.disabled = true;
+          try {
+            await fetch('/api/engine/start', { method: 'POST' });
+            // Remember the choice runtime-side so the engine autostarts with
+            // the desktop from now on.
+            fetch('/api/config', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ localEngine: { enabled: true } }) }).catch(() => {});
+          } catch (_) {}
+          pollEngineStrip();
+        };
+        strip.appendChild(startBtn);
+      }
+      strip.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100';
+    } catch (_) {
+      strip.textContent = t('ai_backend.engine_unreachable') || 'Could not reach the desktop runtime from this page.';
+      strip.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100';
+    }
+  };
+  const pollEngineStrip = () => {
+    if (window.__alloEngineStripPoll) clearInterval(window.__alloEngineStripPoll);
+    window.__alloEngineStripPoll = setInterval(() => {
+      if (!document.getElementById('ai-backend-engine-strip')) {
+        clearInterval(window.__alloEngineStripPoll);
+        window.__alloEngineStripPoll = null;
+        return;
+      }
+      refreshEngineStrip();
+    }, 2000);
+  };
   const createAIProviderFromSettings = () => {
     const cfg = readAIBackendConfig();
     const backend = cfg.backend || 'gemini';
@@ -673,11 +743,12 @@ function AIBackendModal(props) {
                             populateModelSelect(document.getElementById('ai-backend-model-fallback'), 'Same as default', [], '');
                             const status = document.getElementById('ai-backend-status');
                             if (status) { status.textContent = 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
+                            setTimeout(refreshEngineStrip, 0);
                         }}
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="gemini">✨ Gemini (Google) — Default</option>
-                        <option value="alloflow-local">AlloFlow Built-in Engine (future)</option>
+                        <option value="alloflow-local">🏫 AlloFlow Built-in Engine (this computer — no account)</option>
                         <option value="lmstudio">LM Studio (Local)</option>
                         <option value="localai">🖥️ LocalAI (Self-Hosted GPU)</option>
                         <option value="ollama">🦙 Ollama (Local)</option>
@@ -702,6 +773,7 @@ function AIBackendModal(props) {
                         className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
                     />
                 </div>
+                <div id="ai-backend-engine-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node) setTimeout(refreshEngineStrip, 0); }}></div>
                 <div>
                     <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('ai_backend.api_key_label') || 'API Key'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.api_key_hint') || '(cloud providers only)'}</span></label>
                     <input
