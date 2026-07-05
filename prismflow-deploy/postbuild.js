@@ -19,6 +19,14 @@ const htmlPath = path.join(buildDir, 'index.html');
 
 let html = fs.readFileSync(htmlPath, 'utf8');
 
+function resolveBuildAsset(assetUrl) {
+    const normalized = String(assetUrl || '')
+        .replace(/\\/g, '/')
+        .replace(/^\.?\//, '')
+        .replace(/^\/+/, '');
+    return path.join(buildDir, normalized);
+}
+
 // Safe insertion before </body> — avoids String.replace() which interprets
 // $&, $', $` etc. in the replacement string, corrupting JS that contains $.
 function insertBeforeBodyClose(htmlStr, content) {
@@ -28,9 +36,9 @@ function insertBeforeBodyClose(htmlStr, content) {
 }
 
 // 1. Find and inline the CSS file
-const cssMatch = html.match(/<link href="(\/static\/css\/[^"]+\.css)" rel="stylesheet">/);
+const cssMatch = html.match(/<link\b(?=[^>]*\bhref=["'](\.?\/?static\/css\/[^"']+\.css)["'])(?=[^>]*\brel=["']stylesheet["'])[^>]*\/?>/i);
 if (cssMatch) {
-    const cssPath = path.join(buildDir, cssMatch[1]);
+    const cssPath = resolveBuildAsset(cssMatch[1]);
     if (fs.existsSync(cssPath)) {
         const cssContent = fs.readFileSync(cssPath, 'utf8');
         html = html.replace(cssMatch[0], '<style>' + cssContent + '</style>');
@@ -39,14 +47,16 @@ if (cssMatch) {
 }
 
 // 2. Find and inline the JS file
-const jsMatch = html.match(/<script defer="defer" src="(\/static\/js\/[^"]+\.js)"><\/script>/);
+const mainScriptPattern = /<script\b(?=[^>]*\bsrc=["'](\.?\/?static\/js\/main\.[^"']+\.js)["'])[^>]*>\s*<\/script>/i;
+const allMainScriptPattern = /<script\b(?=[^>]*\bsrc=["']\.?\/?static\/js\/main\.[^"']+\.js["'])[^>]*>\s*<\/script>/gi;
+const jsMatch = html.match(mainScriptPattern);
 if (jsMatch) {
-    const jsPath = path.join(buildDir, jsMatch[1]);
+    const jsPath = resolveBuildAsset(jsMatch[1]);
     if (fs.existsSync(jsPath)) {
         const jsContent = fs.readFileSync(jsPath, 'utf8');
         // Use a deferred inline approach: put JS at the end of body
         // Remove the script tag from head
-        html = html.replace(jsMatch[0], '');
+        html = html.replace(allMainScriptPattern, '');
         // Add inline script at the end of body, before </body>
         html = insertBeforeBodyClose(html, '<script>' + jsContent + '</script>');
         console.log('✓ Inlined JS (' + (jsContent.length / 1024).toFixed(1) + ' KB)');
@@ -60,6 +70,7 @@ if (jsMatch) {
         const jsFiles = fs.readdirSync(jsDir).filter(f => f.startsWith('main.') && f.endsWith('.js') && !f.endsWith('.map'));
         if (jsFiles.length > 0) {
             const jsContent = fs.readFileSync(path.join(jsDir, jsFiles[0]), 'utf8');
+            html = html.replace(allMainScriptPattern, '');
             // Remove any existing dynamic loader script
             html = html.replace(/<script>\s*\(function\(\)\s*\{[\s\S]*?loadScript[\s\S]*?\}\)\(\);\s*<\/script>/, '');
             html = insertBeforeBodyClose(html, '<script>' + jsContent + '</script>');
