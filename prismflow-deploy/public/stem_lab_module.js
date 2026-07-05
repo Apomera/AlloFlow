@@ -94,6 +94,53 @@
       };
     }
 
+    // ── Shared "safe fullscreen" toggle for STEM tool canvases ──
+    // Real OS fullscreen only works where the host iframe grants it (document.fullscreenEnabled).
+    // Inside a sandboxed iframe (e.g. Gemini Canvas) requestFullscreen() rejects/throws
+    // "Disallowed by permissions policy" — which, left unhandled, breaks the button (the bug
+    // reported on the physics tool). window.__alloStemFS(el) toggles: in real fullscreen → exit;
+    // in CSS fill-frame → exit; else → try real (guarded, .catch), else a CSS "fill the frame"
+    // mode (wrapper → fixed/100vw/100vh with !important so React re-renders don't revert it, plus
+    // a window resize event so canvases that listen re-measure, and Escape to exit). Never throws.
+    if (typeof window !== 'undefined' && !window.__alloStemFS) {
+      var _stemFsProps = { position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', width: '100vw', height: '100vh', margin: '0', 'border-radius': '0', 'z-index': '99998', background: '#0f172a' };
+      var _stemFsExit = function(el) {
+        if (!el) return;
+        el.__alloFsOn = false;
+        var s = el.style, saved = el.__alloFsSaved || {};
+        Object.keys(_stemFsProps).forEach(function(p) { if (saved[p]) s.setProperty(p, saved[p]); else s.removeProperty(p); });
+        try { if (el.__alloFsEsc) document.removeEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      var _stemFsEnter = function(el) {
+        el.__alloFsSaved = {}; el.__alloFsOn = true;
+        var s = el.style;
+        Object.keys(_stemFsProps).forEach(function(p) { el.__alloFsSaved[p] = s.getPropertyValue(p); s.setProperty(p, _stemFsProps[p], 'important'); });
+        el.__alloFsEsc = function(ev) { if (ev && ev.key === 'Escape') _stemFsExit(el); };
+        try { document.addEventListener('keydown', el.__alloFsEsc); } catch (e) {}
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      };
+      window.__alloStemFS = function(el) {
+        if (!el) return;
+        try {
+          var realEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          if (realEl) {
+            var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+            if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function() {}); }
+            return;
+          }
+          if (el.__alloFsOn) { _stemFsExit(el); return; }
+          var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+          if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+            var pr = rq.call(el);
+            if (pr && pr.catch) pr.catch(function() { _stemFsEnter(el); });
+            return;
+          }
+          _stemFsEnter(el);
+        } catch (e) { try { if (!el.__alloFsOn) _stemFsEnter(el); } catch (e2) {} }
+      };
+    }
+
     // ── StemLab Plugin Registry (Phase 2) ──
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)
@@ -3868,6 +3915,11 @@
                 id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
                 desc: 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
                 color: 'sky', ready: true
+              },
+              {
+                id: 'dataLab', icon: '\uD83D\uDCCA', label: 'Data Lab',
+                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
+                color: 'indigo', ready: true
               }
             ];
             // ── Tool search filter ──
@@ -3879,7 +3931,8 @@
               titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
               anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
               solarSystem: 'solar system explorer planets astronomy space orbit orrery',
-              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility'
+              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
+              dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes'
             };
             function _normalizeToolSearchText(value) {
               return String(value || '')
@@ -5309,7 +5362,14 @@
             cellularLab: true,
             // Jul 2026: Access Lens — learner accessibility camera kit
             // (describe / read / translate / Socratic investigate).
-            accessLens: true
+            accessLens: true,
+            // Jul 5 2026: Arc City — registered + tiled since Phase 1 but never
+            // added here, so the tile rendered a blank content area (same bug
+            // as stewardshipHub May 15 and cellularLab Jul 2).
+            arccity: true,
+            // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
+            // (launcher + AI bridge live in stem_tool_datalab.js).
+            dataLab: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

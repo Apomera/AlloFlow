@@ -3915,6 +3915,11 @@
                 id: 'accessLens', icon: '\uD83D\uDCF7', label: 'Access Lens',
                 desc: 'Point your camera at the world: scene descriptions read aloud (built for students who are blind or have low vision), large-print re-reading of any text, translation of signs and handouts, and a Socratic investigate mode where the AI asks questions instead of pronouncing answers.',
                 color: 'sky', ready: true
+              },
+              {
+                id: 'dataLab', icon: '\uD83D\uDCCA', label: 'Data Lab',
+                desc: 'Real data science in CODAP \u2014 the Concord Consortium\u2019s open data workspace \u2014 with an AlloFlow Socratic tutor beside it that sees the shape of your data (names and counts, never values) and asks questions instead of giving answers.',
+                color: 'indigo', ready: true
               }
             ];
             // ── Tool search filter ──
@@ -3926,7 +3931,8 @@
               titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
               anatomy: 'anatomy lab human anatomy body systems organs skeletal muscular',
               solarSystem: 'solar system explorer planets astronomy space orbit orrery',
-              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility'
+              accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
+              dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes'
             };
             function _normalizeToolSearchText(value) {
               return String(value || '')
@@ -5356,7 +5362,14 @@
             cellularLab: true,
             // Jul 2026: Access Lens — learner accessibility camera kit
             // (describe / read / translate / Socratic investigate).
-            accessLens: true
+            accessLens: true,
+            // Jul 5 2026: Arc City — registered + tiled since Phase 1 but never
+            // added here, so the tile rendered a blank content area (same bug
+            // as stewardshipHub May 15 and cellularLab Jul 2).
+            arccity: true,
+            // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
+            // (launcher + AI bridge live in stem_tool_datalab.js).
+            dataLab: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

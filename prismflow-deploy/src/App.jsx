@@ -5195,6 +5195,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Access Lens — learner accessibility camera kit
         // (describe / read / translate / Socratic investigate).
         'stem_lab/stem_tool_accesslens.js',
+        // Jul 2026: Data Lab — CODAP (Concord Consortium, MIT) companion window
+        // with a Socratic tutor; this tool is the launcher + AI bridge.
+        'stem_lab/stem_tool_datalab.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
