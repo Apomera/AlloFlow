@@ -965,7 +965,7 @@
     ),
     h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
       h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
-        h('canvas', { ref: canvasRef, style: { width: 540, height: 300, display: 'block', maxWidth: '100%' } })
+        h('canvas', { ref: canvasRef, role: 'img', tabIndex: 0, 'aria-label': 'Plate boundary map visualization.', style: { width: 540, height: 300, display: 'block', maxWidth: '100%' } })
       ),
       h('div', { className: 'flex flex-col gap-2' },
         // Mode selector
@@ -6855,7 +6855,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("div", { className: "rounded-xl overflow-hidden border-2 " + (isDark ? "border-slate-800" : "border-red-200") },
 
-                  React.createElement("canvas", { ref: seismoRef, 'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_seismograp', 'Interactive plate tectonics seismograph visualization'), role: 'img', className: "w-full", style: { height: '120px', display: 'block' } })
+                  React.createElement("canvas", { tabIndex: 0, ref: seismoRef, 'aria-label': __alloT('stem.platetectonics.interactive_plate_tectonics_seismograp', 'Interactive plate tectonics seismograph visualization'), role: 'img', className: "w-full", style: { height: '120px', display: 'block' } })
 
                 )
 
@@ -6987,7 +6987,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement('div', { 'data-tl-playing': String(timelapsePlaying), 'data-tl-speed': String(timelapseSpeed), style: { display: 'none' } }),
 
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
 
                   id: "geology-earth-canvas",
 
@@ -21666,6 +21666,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('h4', { className: 'text-sm font-bold text-red-700 mb-2' }, __alloT('stem.platetectonics.three_boundary_types_where_plates_meet', '\ud83c\udf0b Three Boundary Types - Where plates meet')),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-red-200', style: { background: '#1c1410', aspectRatio: '16/5' } },
                 React.createElement('canvas', {
+                  role: 'img', tabIndex: 0, 'aria-label': 'Animation of the three plate-boundary types: convergent, divergent, and transform.',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._tbAnim) return;
@@ -21790,6 +21791,7 @@ var d = labToolData.plateTectonics || {};
               React.createElement('h4', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.platetectonics.earthquake_scales_magnitude_vs_intensi', '\ud83d\udccf Earthquake Scales - Magnitude vs Intensity')),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-orange-200', style: { background: '#0a0410', aspectRatio: '16/5' } },
                 React.createElement('canvas', {
+                  role: 'img', tabIndex: 0, 'aria-label': 'Animation comparing earthquake magnitude (Richter) and shaking intensity (Mercalli).',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._eqAnim) return;

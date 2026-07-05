@@ -201,13 +201,13 @@ const createPersonas = deps => {
               Include the nationality field in the JSON.
 
               VOICE PROFILE:
-              For each character, write a "voiceProfile" string describing EXACTLY how they should sound aloud. This MUST include:
-              1. Their specific accent based on nationality (e.g., "thick Viennese German accent" not just "European accent")
+              For each character, write a "voiceProfile" string describing how they should sound aloud. This MUST include:
+              1. Their specific accent based on nationality, always described as "subtle, consistent" (e.g., "subtle, consistent Viennese German accent" not just "European accent"). NEVER use intensifiers like "thick", "heavy", or "strong" — the TTS engine renders exaggerated accents unpredictably, flipping between full character and neutral from sentence to sentence. A subtle accent renders the same way every time.
               2. Speaking pace (measured, rapid, deliberate)
               3. Emotional tone (warm, stern, passionate, contemplative)
-              4. Speech mannerisms (uses pauses, speaks in metaphors, formal diction, etc.)
-              Example for Freud: "Speaks with a thick Viennese German accent, measured and deliberate pace, contemplative and analytical tone, frequently pauses to consider before speaking, uses medical terminology naturally, occasionally lapses into German phrases."
-              Example for MLK Jr: "Speaks with a Southern American Baptist preacher's cadence, powerful and rhythmic delivery, builds from quiet reflection to passionate crescendo, uses biblical allusions and repetition for emphasis."
+              4. Delivery mannerisms (uses pauses, formal diction, builds to emphasis, etc.). NEVER instruct switching into another language or inserting foreign phrases — the voice must read only the written text.
+              Example for Freud: "Speaks with a subtle, consistent Viennese German accent, measured and deliberate pace, contemplative and analytical tone, frequently pauses to consider before speaking."
+              Example for MLK Jr: "Speaks with a warm Southern American cadence, powerful and rhythmic delivery, builds from quiet reflection to passionate emphasis, uses repetition for emphasis."
               Return ONLY a JSON array of objects with this exact structure:
               [
                   {

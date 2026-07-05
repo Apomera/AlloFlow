@@ -4745,7 +4745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ),
                 h('span', { style: { color: sys.accent } }, filtered.length + ' structures')
               ),
-              h('canvas', { 'aria-label': t('stem.anatomy.anatomy_visualization', 'Anatomy visualization'),
+              h('canvas', { role: 'img', tabIndex: 0, 'aria-label': t('stem.anatomy.anatomy_visualization', 'Anatomy visualization'),
                 ref: canvasRef,
                 onClick: handleClick,
                 onMouseMove: handleMouseMove,

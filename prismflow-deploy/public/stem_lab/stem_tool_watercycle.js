@@ -4110,7 +4110,7 @@ const d = labToolData.waterCycle || {};
                 )
               ),
 
-              React.createElement("canvas", { ref: canvasRef, id: "wcCanvas", className: "wc-canvas-element", "data-watercycle-canvas": "true", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
+              React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": "Water cycle animation showing the " + (d.activeStage || 'evaporation') + " stage.", ref: canvasRef, id: "wcCanvas", className: "wc-canvas-element", "data-watercycle-canvas": "true", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
 
               // Weather badge overlay
               (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
@@ -4222,7 +4222,7 @@ const d = labToolData.waterCycle || {};
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'shadow-md' : 'border hover:opacity-80'),
                   style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : stage.color }
                 },
-                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
+                  React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   React.createElement("span", null, stage.emoji + " " + stage.label));
               })
             ),

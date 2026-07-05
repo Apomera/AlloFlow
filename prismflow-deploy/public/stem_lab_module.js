@@ -214,7 +214,12 @@
               minHeight: 'calc(100vh - 32px)'
             },
             'data-stem-tool-shell': id
-          }, rendered);
+          },
+            // sr-only tool-name heading — gives every tool a semantic H1 landmark
+            // for screen readers (many tools' visible titles are non-heading text
+            // or sit behind a tab). Visual layout is unchanged.
+            ctx.React.createElement('h1', { style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, (tool.label || id)),
+            rendered);
         },
         // Shared HiDPI canvas setup. Resizes the internal pixel buffer
         // to match the device pixel ratio while keeping CSS dims at the

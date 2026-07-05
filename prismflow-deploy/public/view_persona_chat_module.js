@@ -285,7 +285,8 @@
           const currentGlobalIdx = sentenceCounter;
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-          const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+          const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
@@ -794,7 +795,8 @@
           const currentGlobalIdx = sentenceCounter;
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-          const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
+          const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
+          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;

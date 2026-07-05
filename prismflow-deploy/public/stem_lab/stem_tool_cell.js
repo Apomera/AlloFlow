@@ -20325,7 +20325,7 @@ var d = labToolData.cell || {};
                   },
                     React.createElement('span', { className: 'text-lg mb-1' }, chal.icon),
                     React.createElement('span', { className: 'text-[10px] font-bold leading-tight' }, chal.label),
-                    React.createElement('span', { className: 'text-[9px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
+                    React.createElement('span', { className: 'text-[10px] mt-1 px-1 rounded font-mono ' + (isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600') },
                       isDone ? 'Done' : 'Locked'
                     )
                   );
@@ -20734,7 +20734,7 @@ var d = labToolData.cell || {};
 
                     ),
 
-                    React.createElement("span", { className: "text-[9px]" }, isActive ? "🟢" : "⚫")
+                    React.createElement("span", { className: "text-[10px]" }, isActive ? "🟢" : "⚫")
 
                   );
 
@@ -20972,7 +20972,7 @@ var d = labToolData.cell || {};
 
                         React.createElement("span", { className: "text-slate-600 leading-relaxed" }, a.fn),
 
-                        React.createElement("span", { className: "transition-colors text-[9px] text-green-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:text-green-800" }, "🔍 [Locate]")
+                        React.createElement("span", { className: "transition-colors text-[10px] text-green-700 font-bold ml-1.5 inline-flex items-center gap-0.5 hover:text-green-800" }, "🔍 [Locate]")
 
                       )
 
@@ -21466,7 +21466,7 @@ var d = labToolData.cell || {};
                         style: { width: percentage + '%' }
                       })
                     ),
-                    React.createElement('div', { className: 'flex justify-between text-[8px] text-slate-600 font-mono mt-0.5' },
+                    React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-600 font-mono mt-0.5' },
                       React.createElement('span', null, '1 μm (Bacteria)'),
                       React.createElement('span', null, '100 μm (Protist)'),
                       React.createElement('span', null, '1000 μm (Water Bear)')
@@ -21510,7 +21510,7 @@ var d = labToolData.cell || {};
                         return React.createElement('button', {
                           key: key,
                           onClick: function() { upd('_studyConcept', key); },
-                          className: 'px-2.5 py-1 text-[9px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'
+                          className: 'px-2.5 py-1 text-[10px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'
                         }, '📖 Study ' + CELL_VOCAB[key].term + ' (+5 RP)');
                       })
                     );
@@ -21630,8 +21630,8 @@ var d = labToolData.cell || {};
 
                     return React.createElement('div', { key: k, className: 'p-2.5 rounded-xl border transition-all ' + (isDifferent ? 'bg-amber-50/50 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200') },
                       React.createElement('div', { className: 'flex justify-between items-center mb-1' },
-                        React.createElement('span', { className: 'text-[9px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
-                        isDifferent && React.createElement('span', { className: 'text-[8px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
+                        React.createElement('span', { className: 'text-[10px] font-black uppercase text-slate-500 tracking-wider' }, k.replace(/([A-Z])/g, ' $1')),
+                        isDifferent && React.createElement('span', { className: 'text-[10px] bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded' }, 'Difference')
                       ),
                       React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-xs' },
                         React.createElement('div', { className: 'text-slate-700 leading-normal' },
@@ -21644,7 +21644,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );
@@ -21660,7 +21660,7 @@ var d = labToolData.cell || {};
                                 return React.createElement('button', {
                                   key: key,
                                   onClick: function() { upd('_studyConcept', key); },
-                                  className: 'transition-colors px-1.5 py-0.5 text-[8px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
+                                  className: 'transition-colors px-1.5 py-0.5 text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 rounded font-bold hover:bg-emerald-100 active:scale-[0.97]'
                                 }, '📖 Study ' + CELL_VOCAB[key].term);
                               })
                             );

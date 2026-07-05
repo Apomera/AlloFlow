@@ -777,7 +777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
                   h('div', { className: 'text-3xl font-black text-orange-800 leading-none' }, foundDefectTypes + ' / ' + totalDefectTypes),
-                  h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defects_id_d', 'Defects ID\'d'))
+                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defects_id_d', 'Defects ID\'d'))
                 ),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },

@@ -840,7 +840,7 @@ window.StemLab = window.StemLab || {
               'I understand — explain in own words'),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain inequality test logic.',
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[9px] italic text-slate-500' }, 'Design note: discrete 3-state test marker; no answer reveal — by design.')
+            h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 3-state test marker; no answer reveal — by design.')
           );
         })(),
 

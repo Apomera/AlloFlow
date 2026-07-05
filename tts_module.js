@@ -84,7 +84,7 @@ const createTTS = deps => {
       };
       // Guard: callers can pass a missing field; undefined.length threw here and
       // was pointlessly retried. Normalize; empty text fails fast, non-retryable.
-      text = (text == null ? '' : String(text));
+      text = text == null ? '' : String(text);
       if (!text.trim()) throw new Error('TTS Empty Text');
       let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
       promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
@@ -118,6 +118,14 @@ const createTTS = deps => {
         }],
         generationConfig: {
           responseModalities: ["AUDIO"],
+          // Lower sampling temperature: the default (~1.0) re-rolls the
+          // voice acting on every request, so back-to-back persona calls
+          // with the identical voice direction drift in accent/delivery.
+          // 0.7 keeps renditions stable while still expressive. Gated so
+          // a 400 rejecting the field disables it globally (see below).
+          ...(state.ttsTemperatureUnsupported ? {} : {
+            temperature: 0.7
+          }),
           speechConfig: {
             voiceConfig: {
               prebuiltVoiceConfig: {
@@ -157,6 +165,11 @@ const createTTS = deps => {
             throw new Error(`TTS Transient Error (${response.status})`);
           }
           const errorBody = await response.text().catch(() => '');
+          if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+            state.ttsTemperatureUnsupported = true;
+            console.warn('[TTS] API rejected temperature param — disabled; caller retry will go without it.');
+            throw new Error('TTS Transient Error (400 temperature)');
+          }
           console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
           throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
@@ -174,6 +187,9 @@ const createTTS = deps => {
                 }],
                 generationConfig: {
                   responseModalities: ["AUDIO"],
+                  ...(state.ttsTemperatureUnsupported ? {} : {
+                    temperature: 0.7
+                  }),
                   speechConfig: {
                     voiceConfig: {
                       prebuiltVoiceConfig: {
@@ -235,10 +251,10 @@ const createTTS = deps => {
     if (isGlobalMuted()) {
       return null;
     }
-  if (text == null || !String(text).trim()) {
+    if (text == null || !String(text).trim()) {
       console.warn('[TTS] Skipped: empty text (a caller passed a missing field)');
       return null;
-  }
+    }
     var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts : maxRetriesOrOpts && typeof maxRetriesOrOpts.maxRetries === 'number' ? maxRetriesOrOpts.maxRetries : 2;
     var _callOpts = maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object' ? maxRetriesOrOpts : {};
     var _language = languageArg || _callOpts.language || 'English';
@@ -428,7 +444,10 @@ const createTTS = deps => {
   };
   const callTTSDirect = async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
     if (isGlobalMuted()) return null;
-        if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
+    if (text == null || !String(text).trim()) {
+      console.warn('[TTS] Skipped: empty text');
+      return null;
+    }
     // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
     if (_isCanvasEnv) {
       if (Date.now() >= state.rateLimitedUntil) {
@@ -541,6 +560,9 @@ const createTTS = deps => {
             }],
             generationConfig: {
               responseModalities: ["AUDIO"],
+              ...(state.ttsTemperatureUnsupported ? {} : {
+                temperature: 0.7
+              }),
               speechConfig: {
                 voiceConfig: {
                   prebuiltVoiceConfig: {
@@ -569,6 +591,11 @@ const createTTS = deps => {
               throw new Error(`TTS Transient Error (${response.status})`);
             }
             const errorBody = await response.text().catch(() => '');
+            if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
+              state.ttsTemperatureUnsupported = true;
+              console.warn('[TTS-Bot] API rejected temperature param — disabled; retry will go without it.');
+              throw new Error('TTS Transient Error (400 temperature)');
+            }
             console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
           }

@@ -4360,7 +4360,7 @@ var d = labToolData.brainAtlas || {};
 
                 React.createElement("div", { className: "brainatlas-canvas-stage" },
 
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
 
                   ref: canvasRef,
 
@@ -4687,7 +4687,7 @@ var d = labToolData.brainAtlas || {};
 
                   // Brainwave canvas
 
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
 
                     id: "brainwave-canvas",
 

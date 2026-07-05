@@ -6070,6 +6070,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("canvas", {
 
+                  role: "img", tabIndex: 0, "aria-label": "Dissection specimen view — click a structure to identify it, or use the tool controls.",
                   ref: canvasRef, onClick: canvasClick,
 
                   'data-diss-canvas': true,
@@ -7073,7 +7074,7 @@ var d = labToolData.dissection || {};
                         { label: 'Insight score', val: insight.toFixed(1) }
                       ].map(function(m) {
                         return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                          React.createElement("div", { className: "text-[9px] opacity-60" }, m.label),
+                          React.createElement("div", { className: "text-[10px] opacity-60" }, m.label),
                           React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
                         );
                       })
@@ -7112,7 +7113,7 @@ var d = labToolData.dissection || {};
                       }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
                       React.createElement("button", { onClick: function() { setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
                     ),
-                    iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                    iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[10px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                       iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' dp' + e.dp + ' care' + e.c + ' tp' + e.tp + ' → dmg ' + e.dmg + ' ins ' + e.ins); })
                     ),
                     React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which slider is most overweighted by novice dissectors? Why?)'),
@@ -7132,7 +7133,7 @@ var d = labToolData.dissection || {};
                       React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
                     ),
                     iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    React.createElement("p", { className: "m-0 text-[9px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
+                    React.createElement("p", { className: "m-0 text-[10px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
                   );
                 })(),
 

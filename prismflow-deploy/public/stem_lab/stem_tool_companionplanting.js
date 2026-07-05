@@ -6437,7 +6437,7 @@ var d = (labToolData.companionPlanting) || {};
                       })
                     )
                   ),
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
 
                   ref: canvasRef,
 

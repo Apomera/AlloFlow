@@ -1471,7 +1471,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
 
-                React.createElement("canvas", { ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': __alloT('stem.artstudio.interactive_color_wheel', 'Interactive color wheel'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
+                React.createElement("canvas", { tabIndex: 0, ref: wheelRef, width: 320, height: 320, role: "img", 'aria-label': __alloT('stem.artstudio.interactive_color_wheel', 'Interactive color wheel'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair flex-shrink-0", style: { background: '#1e1e2e' } }),
 
                 React.createElement("div", { className: "flex-1 space-y-3" },
 
@@ -1649,7 +1649,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.pixel_art_canvas', 'Pixel art canvas'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
+              React.createElement("canvas", { tabIndex: 0, ref: pixelRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.pixel_art_canvas', 'Pixel art canvas'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', imageRendering: 'pixelated' } })
 
             ),
 
@@ -1721,7 +1721,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.symmetry_drawing_canvas', 'Symmetry drawing canvas'), key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
+              React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.symmetry_drawing_canvas', 'Symmetry drawing canvas'), key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'), className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0", style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } })
 
               ), // end symmetryCanvasContainer
 
@@ -2029,7 +2029,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spirograph_canvas', 'Spirograph canvas'), className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { tabIndex: 0, id: 'spiroCanvas', key: 'spiro-' + (d.spiroReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spirograph_canvas', 'Spirograph canvas'), className: "rounded-xl border-2 border-indigo-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2153,7 +2153,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': __alloT('stem.artstudio.generative_art_canvas', 'Generative art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
+              React.createElement("canvas", { tabIndex: 0, id: 'genCanvas', key: 'gen-' + (d.genStyle || 'flow') + '-' + (d.genReset || 0), width: 640, height: 480, role: "img", 'aria-label': __alloT('stem.artstudio.generative_art_canvas', 'Generative art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg cursor-crosshair mx-auto block", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                 ref: function (canvas) {
 
@@ -2453,7 +2453,7 @@ const d = labToolData.artStudio || {};
 
               ),
 
-              React.createElement("canvas", { id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spin_art_canvas', 'Spin art canvas'), className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
+              React.createElement("canvas", { tabIndex: 0, id: 'spinCanvas', key: 'spin-' + (d.spinReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.spin_art_canvas', 'Spin art canvas'), className: "rounded-full border-4 border-orange-300 shadow-lg cursor-crosshair mx-auto block mt-3", style: { maxWidth: '100%', background: d.spinDark ? '#0f172a' : '#fefefe' },
 
                 ref: function (canvas) {
 
@@ -2718,7 +2718,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.string_art_canvas', 'String art canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { tabIndex: 0, id: 'stringCanvas', key: 'str-' + (d.strReset || 0), width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.string_art_canvas', 'String art canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   ref: function (canvas) {
 
@@ -2986,7 +2986,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.op_art_canvas', 'Op art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
+                React.createElement("canvas", { tabIndex: 0, id: 'opArtCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.op_art_canvas', 'Op art canvas'), className: "rounded-xl border-2 border-fuchsia-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#0a0a0a' },
 
                   ref: function (canvas) {
 
@@ -3352,7 +3352,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.tessellation_canvas', 'Tessellation canvas'), className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
+                React.createElement("canvas", { tabIndex: 0, id: 'tessCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.tessellation_canvas', 'Tessellation canvas'), className: "rounded-xl border-2 border-teal-200 shadow-lg mx-auto block cursor-pointer", style: { maxWidth: '100%', background: 'var(--allo-stem-canvas, #0f172a)' },
 
                   key: 'tess-' + (d.tessShape || 'hexagon') + '-' + (d.tessGrid || 6) + '-' + (d.tessRotation || 0) + '-' + (d.tessWarpAmt || 0) + '-' + (d.tessScheme || 'rainbow'),
 
@@ -3810,7 +3810,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.fractal_art_canvas', 'Fractal art canvas'), className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
+                React.createElement("canvas", { tabIndex: 0, id: 'fractalCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.fractal_art_canvas', 'Fractal art canvas'), className: "rounded-xl border-2 border-violet-200 shadow-lg mx-auto block cursor-crosshair", style: { maxWidth: '100%', background: '#0a0a1a' },
 
                   key: 'frac-' + (d.fractalType || 'mandelbrot') + '-' + (d.fractalReset || 0),
 
@@ -4348,7 +4348,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("canvas", { id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.gradient_designer_canvas', 'Gradient designer canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
+                React.createElement("canvas", { tabIndex: 0, id: 'gradientCanvas', width: 512, height: 512, role: "img", 'aria-label': __alloT('stem.artstudio.gradient_designer_canvas', 'Gradient designer canvas'), className: "rounded-xl border-2 border-rose-200 shadow-lg mx-auto block", style: { maxWidth: '100%', background: '#1e1e2e' },
 
                   key: 'grad-' + (d.gradType || 'linear') + '-' + (d.gradAngle || 90) + '-' + (d.gradBlend || 'smooth') + '-' + JSON.stringify(d.gradStops || []),
 
@@ -6875,7 +6875,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("div", { id: "lifeCanvasContainer", className: "space-y-2 bg-slate-900 aspect-square flex flex-col items-center justify-center p-2 rounded-xl" },
 
-                  React.createElement("canvas", { id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': __alloT('stem.artstudio.game_of_life_simulation_canvas', 'Game of Life simulation canvas'),
+                  React.createElement("canvas", { tabIndex: 0, id: 'lifeCanvas', width: 600, height: 600, role: "img", 'aria-label': __alloT('stem.artstudio.game_of_life_simulation_canvas', 'Game of Life simulation canvas'),
 
                     key: 'life-' + (d.lifeClear || 0) + '-' + (d.lifeSize || 60),
 

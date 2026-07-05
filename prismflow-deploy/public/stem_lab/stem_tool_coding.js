@@ -2235,7 +2235,7 @@
               React.createElement("div", { className: "flex flex-col gap-3" },
                 // Grid Canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-emerald-500/30 bg-[#0f172a]", style: { height: '380px' } },
-                  React.createElement("canvas", {
+                  React.createElement("canvas", { tabIndex: 0,
                     "data-robot-canvas": "true",
                     role: "img", "aria-label": describeRobotGrid(),
                     style: { width: '100%', height: '100%', display: 'block' },
@@ -2604,7 +2604,7 @@
             playgroundMode === 'turtle' && React.createElement("div", { className: "flex flex-col gap-3" },
               // Canvas
               React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
-                React.createElement("canvas", {
+                React.createElement("canvas", { tabIndex: 0,
                   ref: canvasRef, width: 500, height: 500,
                   role: "img", "aria-label": describeTurtleCanvas(),
                   onClick: canvasClickHandler,

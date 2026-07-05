@@ -1876,7 +1876,7 @@ window.StemLab = window.StemLab || {
               __alloT('stem.volume.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.volume.explain_how_each_dimension_contributes', 'Explain how each dimension contributes to total volume.'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
+            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.volume.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-volume score; no reveal — by design.'))
           );
         })(),
 
@@ -2165,6 +2165,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'rounded-xl overflow-hidden border border-cyan-200', style: { background: '#020210', aspectRatio: '16/6' } },
             h('canvas', {
+              role: 'img', tabIndex: 0, 'aria-label': 'Volume and 3D shape visualization.',
               ref: function(cvEl) {
                 if (!cvEl) return;
                 if (cvEl._volAnim) return;

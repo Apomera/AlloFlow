@@ -18060,7 +18060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   : '0 0 28px rgba(251,191,36,0.22), 0 0 0 1px rgba(251,191,36,0.30), inset 0 1px 0 rgba(254,240,138,0.30), 0 4px 18px rgba(0,0,0,0.20)'
               }
             },
-            h('canvas', {
+            h('canvas', { tabIndex: 0,
               ref: _cvRef,
               'data-beehive-canvas': 'true',
               role: 'img',
@@ -18210,7 +18210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     })),
                   h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to chain nectar boosts.')))
               : h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
-                  h('canvas', { ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
+                  h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { width: '100%', height: '100%', display: 'block' } }),
                   h('canvas', { ref: _droneOverlayCvRef, style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', display: 'block' } }),
                   // Stop button overlay
                   h('button', { onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); }, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10 },
@@ -18271,7 +18271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     queenThreats.length > 0 && h('span', { className: dk ? 'text-red-400' : 'text-red-600' }, '⚠ ' + queenThreats.length + ' threat' + (queenThreats.length > 1 ? 's' : ''))),
                   // Queen canvas
                   h('div', { className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-purple-500/60' : 'border-purple-400'), style: { height: 'clamp(380px, 48vw, 470px)', background: dk ? 'radial-gradient(circle at 50% 44%, rgba(168,85,247,0.22), rgba(15,23,42,0.96) 68%)' : 'radial-gradient(circle at 50% 44%, rgba(245,208,254,0.62), rgba(255,251,235,0.95) 70%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(192,132,252,0.22)' : '0 18px 38px rgba(168,85,247,0.18), 0 0 0 1px rgba(192,132,252,0.24)' } },
-                    h('canvas', { ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.queen_defense_game_release_pheromones_', 'Queen defense game: release pheromones and build structures to protect the colony from threats'), style: { width: '100%', height: '100%', display: 'block' } })),
+                    h('canvas', { tabIndex: 0, ref: _queenCvRef, 'data-beehive-queen-canvas': 'true', role: 'img', 'aria-label': __alloT('stem.beehive.queen_defense_game_release_pheromones_', 'Queen defense game: release pheromones and build structures to protect the colony from threats'), style: { width: '100%', height: '100%', display: 'block' } })),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
                     h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Commands')),

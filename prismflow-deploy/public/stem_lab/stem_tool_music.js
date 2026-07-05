@@ -1936,7 +1936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
             // ── Oscilloscope ──
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-purple-200 bg-[#0f0a1e] mb-3", style: { height: '120px' } },
-              React.createElement("canvas", { ref: canvasRef, "data-show-fft": showFFT ? 'true' : 'false', "data-viz-mode": vizMode, "data-note-color": d.lastNoteColor || '#a855f7', style: { width: '100%', height: '100%' } }),
+              React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": "Live audio visualizer showing the synth output as a " + (showFFT ? "frequency spectrum" : "waveform") + ".", ref: canvasRef, "data-show-fft": showFFT ? 'true' : 'false', "data-viz-mode": vizMode, "data-note-color": d.lastNoteColor || '#a855f7', style: { width: '100%', height: '100%' } }),
               // Note display
               d.lastNote && React.createElement("div", { className: "absolute top-2 left-2 px-2 py-0.5 bg-black/40 backdrop-blur rounded text-white text-xs font-bold" }, "\u266A " + d.lastNote + (d.lastFreq ? " (" + Math.round(d.lastFreq) + " Hz)" : "")),
               // Viz mode selector
@@ -2998,7 +2998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
 
               // ── Waveform Visualizer ──
               React.createElement("div", { className: "mb-3 rounded-xl overflow-hidden shadow-inner border border-indigo-900/30", style: { height: '48px' } },
-                React.createElement("canvas", { ref: _bpCanvasRef, width: 600, height: 48, className: "w-full h-full", style: { background: '#1e1b4b' } })
+                React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": "Note and beat pattern strip.", ref: _bpCanvasRef, width: 600, height: 48, className: "w-full h-full", style: { background: '#1e1b4b' } })
               ),
 
               // ── Transport Bar (enhanced) ──
@@ -4669,6 +4669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement('h4', { className: 'text-sm font-bold text-indigo-700 mb-2' }, __alloT('stem.music.harmonic_series_why_instruments_sound_', '\uD83C\uDFB5 Harmonic Series \u2014 Why instruments sound different')),
               React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
                 React.createElement('canvas', {
+                  role: 'img', tabIndex: 0, 'aria-label': 'Harmonic series waveform — why different instruments sound different.',
                   ref: function(cvEl) {
                     if (!cvEl) return;
                     if (cvEl._hsAnim) return;

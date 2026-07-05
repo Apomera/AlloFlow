@@ -1135,7 +1135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               }, className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, __alloT('stem.worldbuilder.log_this_world', '📋 Log this world')),
               h('button', { onClick: function() { setIQ({ biome: 'temperate', popMillions: 50, techLevel: 5, conflictLevel: 3, govStability: 7 }); }, className: 'px-2 py-1 rounded text-[10px]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, __alloT('stem.worldbuilder.reset', 'Reset'))
             ),
-            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[9px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+            iq.log.length > 0 && h('div', { className: 'p-1.5 rounded text-[10px] font-mono mb-2', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ' + e.b + ' · p' + e.p + ' tech' + e.tech + ' conf' + e.conf + ' gov' + e.gov + ' → frag ' + e.frag + '%'); })
             ),
             h('label', { className: 'block text-[10px] font-bold opacity-85 mb-1' }, __alloT('stem.worldbuilder.your_hypothesis_what_slider_would_tip_', 'Your hypothesis (what slider would tip your world into collapse fastest? Why?)')),
@@ -1155,7 +1155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               h('span', null, __alloT('stem.worldbuilder.i_can_explain_why_this_combo_yields_th', 'I can explain why this combo yields this story-tension state.'))
             ),
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.worldbuilder.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-            h('p', { className: 'm-0 text-[9px] italic opacity-60' }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
+            h('p', { className: 'm-0 text-[10px] italic opacity-60' }, __alloT('stem.worldbuilder.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Carrying capacities are pedagogical heuristics, not population biology; use as story scaffolding, not policy modeling.'))
           );
         })(),
 
