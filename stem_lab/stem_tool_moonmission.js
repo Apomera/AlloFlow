@@ -155,9 +155,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       src.connect(filt); filt.connect(master); master.connect(ac.destination);
       src.start();
       _mmAmbient = { src: src, master: master };
-      // Periodic radio chirps for space/EVA
+      // Periodic radio chirps for space/EVA. Self-cleaning: if the tool has been
+      // unmounted by ANY path (not just the Back button), the next tick notices the
+      // root marker is gone and stops the loop + audio nodes — no leaked interval.
       if (type === 'space' || type === 'eva') {
         _mmAmbient._interval = setInterval(function() {
+          if (!document.querySelector('[data-moonmission-tool]')) { stopMissionAmbient(); return; }
           if (Math.random() > 0.5) sfxRadioChirp();
         }, 4000 + Math.random() * 6000);
       }
@@ -176,13 +179,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
   }
 
-  // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('mm-a11y-css')) {
-    var mmStyle = document.createElement('style');
-    mmStyle.id = 'mm-a11y-css';
-    mmStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } [data-tool="moonMission"] .text-slate-200 { color: #cbd5e1 !important; }';
-    document.head.appendChild(mmStyle);
-  }
+  // (Removed the duplicate reduced-motion stylesheet — the shared
+  // 'allo-stem-motion-reduce-css' block at the top of this file already covers it —
+  // and the .text-slate-200 color override entirely: the app-wide version recolored
+  // every .text-slate-200 in the whole app, and this tool mixes a light header with
+  // dark mission panels, so ANY blanket override breaks one surface or the other.
+  // The one problem element — the MET readout on the light header — now simply uses
+  // a dark text class directly.)
 
   // ═══════════════════════════════════════════════════════════════
   // SHARED PROCEDURAL DRAWING HELPERS
@@ -418,8 +421,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         else if (p >= 10) { sfxMissionComplete(); stopMissionAmbient(); }         // Complete
       }
 
+      var _xpPending = 0;   // accumulates within one render pass so two same-pass awards (e.g. double badge unlock) don't overwrite each other off the stale snapshot
       function addXP(amount) {
-        upd('missionXP', (d.missionXP || 0) + amount);
+        _xpPending += amount;
+        upd('missionXP', (d.missionXP || 0) + _xpPending);
         if (typeof awardStemXP === 'function') awardStemXP('moonMission', amount);
       }
 
@@ -521,17 +526,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       ];
 
       // ── Quiz Questions (shown between key phases) ──
+      // Each question carries `why` — one short line PER DISTRACTOR explaining why that
+      // specific wrong pick is wrong (null at the correct index). Misconception-targeted
+      // feedback beats bare right/wrong (same pattern as the physics tool's predict quiz).
       var QUIZ_BANK = [
-        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!') },
-        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, reaching ~39,000 km/h at injection, then coasting slower as it climbed away from Earth.') },
-        { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: t('stem.moonmission.the_moon_s_gravity_is_1_6_of_earth_s_a', 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person weighs only ~12 kg there!') },
-        { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: t('stem.moonmission.the_sunlit_side_reaches_127_c_while_th', 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!') },
-        { q: 'How many people have walked on the Moon?', opts: ['2', '6', '12', '24'], a: 2, fact: t('stem.moonmission.12_astronauts_walked_on_the_moon_acros', '12 astronauts walked on the Moon across Apollo 11, 12, 14, 15, 16, and 17.') },
-        { q: 'What was the first word spoken on the Moon?', opts: ['"Houston"', '"Tranquility"', '"Eagle"', '"That\'s"'], a: 0, fact: t('stem.moonmission.buzz_aldrin_said_contact_light_first_b', 'Buzz Aldrin said "Contact light" first, but Armstrong\'s famous line started with "That\'s."') },
-        { q: 'What fuel did the Saturn V first stage use?', opts: ['Hydrogen', 'Kerosene (RP-1)', 'Methane', 'Solid fuel'], a: 1, fact: t('stem.moonmission.the_first_stage_burned_rp_1_kerosene_w', 'The first stage burned RP-1 kerosene with liquid oxygen \u2014 2,000+ tons of fuel in 2.5 minutes!') },
-        { q: 'Why is there no sound on the Moon?', opts: ['Too cold', 'No atmosphere', 'Too much gravity', 'Solar radiation'], a: 1, fact: t('stem.moonmission.sound_needs_a_medium_air_water_to_trav', 'Sound needs a medium (air/water) to travel. The Moon has no atmosphere, so it\'s perfectly silent.') },
-        { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: t('stem.moonmission.every_apollo_astronaut_reported_that_m', 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!') },
-        { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: t('stem.moonmission.the_oldest_moon_rocks_are_4_4_billion_', 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!') }
+        { q: 'How far is the Moon from Earth?', opts: ['38,440 km', '384,400 km', '3,844,000 km', '38,440,000 km'], a: 1, fact: t('stem.moonmission.the_moon_is_about_384_400_km_away_ligh', 'The Moon is about 384,400 km away \u2014 light takes 1.3 seconds to travel there!'), why: ['That would put the Moon closer than many satellites — about 1/10 of the real distance.', null, 'That is ~10× too far — at that range the Moon would look tiny in our sky.', 'That is ~100× too far — a good fraction of the way to Venus.'] },
+        { q: 'How long does it take to reach the Moon?', opts: ['3 hours', '3 days', '3 weeks', '3 months'], a: 1, fact: t('stem.moonmission.apollo_missions_took_about_3_days_each', 'Apollo missions took about 3 days each way, reaching ~39,000 km/h at injection, then coasting slower as it climbed away from Earth.'), why: ['3 hours barely gets you to high Earth orbit — the Moon is ~1,000× farther than the ISS.', null, '3 weeks would mean crawling — even the slowing coast averaged ~5,000 km/h.', '3 months is interplanetary-cruise territory, not a lunar hop.'] },
+        { q: 'What is the Moon\'s gravity compared to Earth?', opts: ['1/2', '1/4', '1/6', '1/10'], a: 2, fact: t('stem.moonmission.the_moon_s_gravity_is_1_6_of_earth_s_a', 'The Moon\'s gravity is 1/6 of Earth\'s. A 70 kg person weighs only ~12 kg there!'), why: ['1/2 would feel almost Earth-normal — no bunny-hop gait.', '1/4 is closer to Mars (~3/8) — still too strong for the footage you have seen.', null, 'At 1/10 the famous loping gait would look even floatier than it does.'] },
+        { q: 'What is the temperature on the Moon\'s sunlit side?', opts: ['50\u00B0C', '127\u00B0C', '200\u00B0C', '327\u00B0C'], a: 1, fact: t('stem.moonmission.the_sunlit_side_reaches_127_c_while_th', 'The sunlit side reaches 127\u00B0C, while the dark side drops to -173\u00B0C!'), why: ['50 Celsius is just a hot day on Earth \u2014 with no atmosphere the Moon swings far wider.', null, 'Hotter than daytime regolith actually gets \u2014 the Moon receives the same sunlight as Earth, just unfiltered.', 'That is Mercury-dayside territory \u2014 the Moon is no closer to the Sun than Earth is.'] },
+        { q: 'How many people have walked on the Moon?', opts: ['2', '6', '12', '24'], a: 2, fact: t('stem.moonmission.12_astronauts_walked_on_the_moon_acros', '12 astronauts walked on the Moon across Apollo 11, 12, 14, 15, 16, and 17.'), why: ['2 was just Apollo 11 — five more landings followed.', '6 is the number of LANDINGS — two astronauts walked on each.', null, '24 is roughly how many FLEW to the Moon (including orbit-only crews) — only half walked.'] },
+        { q: 'What was the first word spoken on the Moon?', opts: ['"Houston"', '"Tranquility"', '"Eagle"', '"That\'s"'], a: 0, fact: t('stem.moonmission.buzz_aldrin_said_contact_light_first_b', 'Buzz Aldrin said "Contact light" first, but Armstrong\'s famous line started with "That\'s."'), why: [null, '“Tranquility” came a beat later, in “Tranquility Base here”.', '“Eagle” was the LM callsign — spoken often, but not the first word after touchdown.', 'The famous “one small step” line came hours later, on the ladder.'] },
+        { q: 'What fuel did the Saturn V first stage use?', opts: ['Hydrogen', 'Kerosene (RP-1)', 'Methane', 'Solid fuel'], a: 1, fact: t('stem.moonmission.the_first_stage_burned_rp_1_kerosene_w', 'The first stage burned RP-1 kerosene with liquid oxygen \u2014 2,000+ tons of fuel in 2.5 minutes!'), why: ['Liquid hydrogen powered the SECOND and THIRD stages — too low-thrust-per-volume for liftoff.', null, 'Methane engines are a modern design — nothing flew on methane in the 1960s.', 'Big solid boosters came with the Shuttle era — the Saturn V was all-liquid.'] },
+        { q: 'Why is there no sound on the Moon?', opts: ['Too cold', 'No atmosphere', 'Too much gravity', 'Solar radiation'], a: 1, fact: t('stem.moonmission.sound_needs_a_medium_air_water_to_trav', 'Sound needs a medium (air/water) to travel. The Moon has no atmosphere, so it\'s perfectly silent.'), why: ['Cold does not stop sound — it travels fine through cold air and even solid ice.', null, 'Lunar gravity is WEAKER (1/6), and gravity does not carry sound anyway.', 'Radiation has nothing to do with it — sound just needs matter to vibrate.'] },
+        { q: 'What does the Moon smell like?', opts: ['Nothing', 'Spent gunpowder', 'Sulfur', 'Roses'], a: 1, fact: t('stem.moonmission.every_apollo_astronaut_reported_that_m', 'Every Apollo astronaut reported that Moon dust smells like spent gunpowder when brought inside the LM!'), why: ['Astronauts consistently reported a strong smell once the dust came inside the LM.', null, 'Sulfur is a volcanic-Earth smell — lunar dust smelled BURNT, not rotten.', 'Sadly not — every report says “spent gunpowder”.'] },
+        { q: 'How old are the oldest Moon rocks collected?', opts: ['1 billion years', '2.5 billion years', '4.4 billion years', '6 billion years'], a: 2, fact: t('stem.moonmission.the_oldest_moon_rocks_are_4_4_billion_', 'The oldest Moon rocks are 4.4 billion years old \u2014 nearly as old as the solar system itself!'), why: ['1 billion years is younger than nearly all of the lunar surface.', '2.5 billion is still younger than the ancient highland crust the crews sampled.', null, '6 billion years would be older than the solar system itself (4.6 billion).'] }
       ];
 
       // ── AI-customized content override ──
@@ -584,7 +592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         {
           id: 'toilet_clog', title: t('stem.moonmission.waste_management_malfunction', 'Waste Management Malfunction'), emoji: '\uD83D\uDEBD',
           phases: [3, 8], difficulty: ['pilot', 'commander'], probability: 0.7,
-          historical: 'Artemis II (April 2026): Frozen urine in the vent line blocked the toilet just hours into the mission. NASA rotated the Orion capsule to expose the frozen blockage to sunlight, thawing it via thermal radiation through the vacuum of space.',
+          historical: 'Illustrative scenario (based on real spacecraft waste-system failures — Apollo 10 famously logged one, and Skylab and ISS crews fought vent-line freezing): frozen liquid blocks a vent line, and the fix is rotating the spacecraft so sunlight thaws the blockage via thermal radiation through the vacuum of space.',
           scenario: 'Houston reports a blockage in the waste management vent line. Frozen waste is preventing the toilet from functioning. With days of coast ahead, this needs solving \u2014 crew comfort and hygiene are critical for mission success.',
           stemConcepts: ['thermal radiation', 'phase changes of matter', 'heat transfer in vacuum'],
           options: [
@@ -596,7 +604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               scienceReward: 'Conduction transfers heat through direct contact between molecules. It works, but uses electrical power from your limited fuel cell supply \u2014 and fuel cells also generate your oxygen and drinking water!' },
             { label: t('stem.moonmission.seal_the_vent_and_use_backup_waste_bag', 'Seal the vent and use backup waste bags'), icon: '\uD83D\uDDC4\uFE0F',
               effects: { morale: -10 }, quality: 'poor', xp: 5,
-              scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In microgravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as Artemis II proved, space plumbing is hard!' }
+              scienceReward: 'Apollo astronauts (1969-1972) had NO toilet at all \u2014 they used adhesive collection bags for every bathroom visit. In microgravity, this was extremely difficult and unpleasant. The modern $23 million Universal Waste Management System was designed to fix this, but as every crewed program since has re-learned, space plumbing is hard!' }
           ]
         },
         {
@@ -675,7 +683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
       // ── Difficulty Settings (expanded with event parameters) ──
       var DIFFICULTIES = {
-        tourist:    { label: t('stem.moonmission.tourist', 'Tourist'),    icon: '\uD83C\uDF1F', desc: t('stem.moonmission.guided_experience_auto_landing_extende', 'Guided experience \u2014 auto-landing, extended O\u2082'), gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.3, showEffects: true, showOptimalHint: true },
+        tourist:    { label: t('stem.moonmission.tourist', 'Tourist'),    icon: '\uD83C\uDF1F', desc: t('stem.moonmission.guided_experience_auto_landing_extende', 'Guided experience \u2014 auto-landing, extended O\u2082'), gravity: 0.5, fuel: 150, o2Rate: 0.1, eventFreq: 0.55, showEffects: true, showOptimalHint: true },
         pilot:     { label: t('stem.moonmission.pilot', 'Pilot'),      icon: '\u2B50', desc: t('stem.moonmission.standard_apollo_parameters', 'Standard Apollo parameters'), gravity: 1.62, fuel: 100, o2Rate: 0.3, eventFreq: 0.6, showEffects: true, showOptimalHint: false },
         commander: { label: t('stem.moonmission.commander', 'Commander'),  icon: '\uD83C\uDFC5', desc: t('stem.moonmission.realistic_tight_fuel_budget_faster_o_d', 'Realistic \u2014 tight fuel budget, faster O\u2082 drain'), gravity: 1.62, fuel: 70, o2Rate: 0.6, eventFreq: 0.9, showEffects: false, showOptimalHint: false }
       };
@@ -762,7 +770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           h('div', { className: 'text-right' },
-            h('div', { className: 'text-[11px] text-slate-200 font-mono' }, 'MET ' + getMissionElapsed()),
+            h('div', { className: 'text-[11px] text-slate-600 font-mono' }, 'MET ' + getMissionElapsed()),
             h('div', { className: 'text-[11px] text-indigo-500 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
@@ -930,8 +938,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (typeof announceToSR === 'function') announceToSR('Correct! ' + QUIZ_BANK[quizIdx].fact);
                   } else {
                     sfxQuizWrong();
-                    if (addToast) addToast('\u274C Not quite \u2014 the answer is: ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a], 'info');
-                    if (typeof announceToSR === 'function') announceToSR('Incorrect. The correct answer is ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a] + '. ' + QUIZ_BANK[quizIdx].fact);
+                    // Per-distractor feedback: explain why THIS wrong pick is wrong, not just what the right one was.
+                    var whyLine = (QUIZ_BANK[quizIdx].why && QUIZ_BANK[quizIdx].why[oi]) || '';
+                    if (addToast) addToast('\u274C ' + (whyLine || ('Not quite \u2014 the answer is: ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a])), 'info');
+                    if (typeof announceToSR === 'function') announceToSR('Incorrect. ' + whyLine + ' The correct answer is ' + QUIZ_BANK[quizIdx].opts[QUIZ_BANK[quizIdx].a] + '. ' + QUIZ_BANK[quizIdx].fact);
                   }
                 },
                 className: 'w-full text-left px-3 py-2 rounded-lg text-[11px] transition-all border ' +
@@ -941,6 +951,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               }, (showResult && isCorrect ? '\u2705 ' : showResult && isSelected ? '\u274C ' : '') + opt);
             })
           ),
+          quizAnswered && quizSelectedAnswer !== QUIZ_BANK[quizIdx].a && QUIZ_BANK[quizIdx].why && QUIZ_BANK[quizIdx].why[quizSelectedAnswer] &&
+            h('div', { className: 'bg-amber-500/10 rounded-lg p-2 border border-amber-500/20 mb-2' },
+              h('p', { className: 'text-[11px] text-amber-300' }, '\uD83D\uDD0D ' + QUIZ_BANK[quizIdx].why[quizSelectedAnswer])
+            ),
           quizAnswered && h('div', { className: 'bg-sky-500/10 rounded-lg p-2 border border-sky-500/20 mb-3' },
             h('p', { className: 'text-[11px] text-sky-300' }, '\uD83D\uDCA1 ' + QUIZ_BANK[quizIdx].fact)
           ),
@@ -1131,7 +1145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._launchInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 400;
-                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   var countdown = 300; // 5 seconds at 60fps
                   var launched = false;
@@ -1158,21 +1172,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       skyGrad.addColorStop(1, '#5aaa5a');
                       ctx.fillStyle = skyGrad;
                       ctx.fillRect(0, 0, W, H);
-                      // Launch tower
-                      ctx.fillStyle = '#888888';
-                      ctx.fillRect(W * 0.48, H * 0.2, 8, H * 0.6);
-                      ctx.fillRect(W * 0.42, H * 0.25, W * 0.16, 4);
-                      ctx.fillRect(W * 0.42, H * 0.45, W * 0.16, 4);
-                      // Rocket on pad
-                      ctx.fillStyle = '#e2e8f0';
-                      ctx.fillRect(W * 0.47, H * 0.35, W * 0.06, H * 0.45);
-                      // Nose cone
+                      // Pad slab + hold-down structure
+                      ctx.fillStyle = '#4b5563';
+                      ctx.fillRect(W * 0.40, H * 0.795, W * 0.22, H * 0.03);
+                      // Launch umbilical tower — lattice, not a plain grey bar
+                      ctx.fillStyle = '#6b7280';
+                      ctx.fillRect(W * 0.555, H * 0.18, 7, H * 0.62);
+                      ctx.strokeStyle = 'rgba(156,163,175,0.75)';
+                      ctx.lineWidth = 1.5;
+                      for (var lt = 0; lt < 6; lt++) {
+                        var ly = H * (0.22 + lt * 0.1);
+                        ctx.beginPath(); ctx.moveTo(W * 0.555, ly); ctx.lineTo(W * 0.555 + 7, ly + H * 0.05); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(W * 0.555 + 7, ly); ctx.lineTo(W * 0.555, ly + H * 0.05); ctx.stroke();
+                      }
+                      // Swing arms reaching the stack
+                      ctx.fillStyle = '#9ca3af';
+                      ctx.fillRect(W * 0.53, H * 0.30, W * 0.03, 3);
+                      ctx.fillRect(W * 0.53, H * 0.46, W * 0.03, 3);
+                      ctx.fillRect(W * 0.53, H * 0.62, W * 0.03, 3);
+                      // Saturn V stack — shaded body, black roll-pattern bands, engine skirt
+                      var bodyX = W * 0.47, bodyW = W * 0.06;
+                      var bodyGrad = ctx.createLinearGradient(bodyX, 0, bodyX + bodyW, 0);
+                      bodyGrad.addColorStop(0, '#f8fafc');
+                      bodyGrad.addColorStop(0.55, '#e2e8f0');
+                      bodyGrad.addColorStop(1, '#94a3b8');           // sun-side → shadow-side
+                      ctx.fillStyle = bodyGrad;
+                      ctx.fillRect(bodyX, H * 0.35, bodyW, H * 0.45);
+                      ctx.fillStyle = '#0f172a';                      // interstage roll-pattern bands
+                      ctx.fillRect(bodyX, H * 0.475, bodyW, 3);
+                      ctx.fillRect(bodyX, H * 0.60, bodyW, 3);
+                      ctx.fillRect(bodyX, H * 0.775, bodyW, H * 0.012);
+                      ctx.fillRect(bodyX + bodyW * 0.42, H * 0.35, bodyW * 0.16, H * 0.06); // upper black stripe
+                      ctx.fillStyle = '#b91c1c';                      // tiny USA mark
+                      ctx.fillRect(bodyX + bodyW * 0.2, H * 0.52, bodyW * 0.6, 2.5);
+                      // Engine skirt + F-1 bells
+                      ctx.fillStyle = '#475569';
+                      ctx.beginPath();
+                      ctx.moveTo(bodyX - bodyW * 0.12, H * 0.80);
+                      ctx.lineTo(bodyX + bodyW * 1.12, H * 0.80);
+                      ctx.lineTo(bodyX + bodyW, H * 0.78);
+                      ctx.lineTo(bodyX, H * 0.78);
+                      ctx.closePath(); ctx.fill();
+                      // Nose cone + escape tower spike
                       ctx.fillStyle = '#f0f0f0';
                       ctx.beginPath();
-                      ctx.moveTo(W * 0.47, H * 0.35);
+                      ctx.moveTo(bodyX, H * 0.35);
                       ctx.lineTo(W * 0.5, H * 0.25);
-                      ctx.lineTo(W * 0.53, H * 0.35);
+                      ctx.lineTo(bodyX + bodyW, H * 0.35);
                       ctx.fill();
+                      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
+                      ctx.beginPath(); ctx.moveTo(W * 0.5, H * 0.25); ctx.lineTo(W * 0.5, H * 0.21); ctx.stroke();
+                      // Pre-launch LOX venting — drifting steam puffs at the pad base
+                      for (var vp = 0; vp < 5; vp++) {
+                        var vph = (tick * 0.6 + vp * 47) % 60;
+                        var vpx = bodyX + bodyW * (vp % 2 === 0 ? -0.35 : 1.35) + Math.sin((tick + vp * 30) * 0.05) * 6;
+                        ctx.fillStyle = 'rgba(240,244,248,' + (0.28 * (1 - vph / 60)) + ')';
+                        ctx.beginPath();
+                        ctx.arc(vpx, H * 0.78 - vph * 0.5, 5 + vph * 0.28, 0, Math.PI * 2);
+                        ctx.fill();
+                      }
                       // Countdown text
                       var countSec = Math.ceil(countdown / 60);
                       ctx.fillStyle = '#ffffff';
@@ -1344,7 +1402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // HUD overlay
                       ctx.fillStyle = 'rgba(0,0,0,0.5)';
                       ctx.fillRect(8, 8, 150, 90);
-                      ctx.fillRect(W - 158, 8, 150, 70);
+                      ctx.fillRect(W - 158, W < 330 ? 106 : 8, 150, 70);   // right box drops under the left on narrow canvases (they collided < ~324px)
                       ctx.font = 'bold 10px monospace';
                       ctx.textAlign = 'left';
                       ctx.fillStyle = '#38bdf8';
@@ -1362,7 +1420,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillStyle = '#38bdf8';
                       ctx.fillText('STAGE ' + stage + '/3', 14, 88);
 
-                      // G-force meter (right side)
+                      // G-force meter (right side; follows the narrow-screen drop)
+                      ctx.save();
+                      if (W < 330) ctx.translate(0, 98);
                       ctx.textAlign = 'right';
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#fbbf24';
@@ -1376,6 +1436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var gPct = Math.min(1, gForce / 6);
                       ctx.fillStyle = gForce > 4 ? '#ef4444' : gForce > 3 ? '#f59e0b' : '#22c55e';
                       ctx.fillRect(W - 148, 52, 130 * gPct, 8);
+                      ctx.restore();
 
                       // Stage separation notification
                       if ((altitude > 1990 && altitude < 2100) || (altitude > 7900 && altitude < 8100)) {
@@ -1440,7 +1501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._orbitLeoInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HL = cvEl.offsetHeight || 260;
-                  cvEl.width = W * 2; cvEl.height = HL * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = HL * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HL)) { W = nw; HL = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   // 1.5 orbits over ~22 seconds of viewing (60fps × 22 = 1320 frames → angSpeed ~0.0071)
                   var orbitAngSpeed = 0.0071;
@@ -1543,7 +1604,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText('VELOCITY', 14, 50);
                     ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
                     ctx.fillText('7.8 km/s (28,000 km/h)', 14, 64);
-                    // Orbit counter (right side)
+                    // Orbit counter (right side; drops under the left panel below ~270px)
+                    ctx.save();
+                    if (W < 270) ctx.translate(0, 72);
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
                     ctx.fillRect(W - 112, 8, 104, 64);
                     ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
@@ -1554,6 +1617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(inWindow ? 'TLI WINDOW \u25B6 GO' : 'TLI WINDOW', W - 14, 58);
                     ctx.font = '8px monospace';
                     ctx.fillText(orbits >= 1.35 ? (inWindow ? 'BURN NOW' : 'aligning...') : ('in ' + Math.max(0, (1.35 - orbits)).toFixed(2) + ' orbit'), W - 14, 68);
+                    ctx.restore();
                     // Footer explainer text (fades in after 3s, cycles)
                     var lessons = [
                       'At 7.8 km/s, one orbit takes ~90 minutes.',
@@ -1632,7 +1696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._transitInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, H3 = cvEl.offsetHeight || 280;
-                  cvEl.width = W * 2; cvEl.height = H3 * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H3 * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H3)) { W = nw; H3 = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   function drawTransit() {
                     tick++;
@@ -1755,7 +1819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._orbitInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HO = cvEl.offsetHeight || 240;
-                  cvEl.width = W * 2; cvEl.height = HO * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = HO * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HO)) { W = nw; HO = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   function drawOrbit() {
                     tick++;
@@ -1895,7 +1959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._descentInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, H = cvEl.offsetHeight || 420;
-                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== H)) { W = nw; H = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   var alt = 15000; // meters
                   var vVel = -20; // vertical velocity (negative = descending)
@@ -2079,7 +2143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // HUD
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
                     ctx.fillRect(6, 6, 140, 100);
-                    ctx.fillRect(W - 146, 6, 140, 80);
+                    ctx.fillRect(W - 146, W < 305 ? 110 : 6, 140, 80);   // tracks the right HUD's narrow-screen drop
                     ctx.font = 'bold 9px monospace';
                     ctx.textAlign = 'left';
                     ctx.fillStyle = '#38bdf8'; ctx.fillText('ALTITUDE', 12, 18);
@@ -2097,7 +2161,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = fuel < 20 ? '#ef4444' : '#22c55e'; ctx.font = '12px monospace';
                     ctx.fillText(fuel.toFixed(0) + '%', 50, 100);
 
-                    // Right HUD
+                    // Right HUD \u2014 drops below the left panel on narrow canvases so the
+                    // two fixed-width boxes can't overlap (they collided under ~305px).
+                    ctx.save();
+                    if (W < 305) ctx.translate(0, 104);
                     ctx.textAlign = 'right';
                     ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 9px monospace'; ctx.fillText('THRUST', W - 12, 18);
                     ctx.fillStyle = '#1e293b'; ctx.fillRect(W - 136, 22, 120, 8);
@@ -2106,6 +2173,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText('\u2191 or W = thrust', W - 12, 46);
                     ctx.fillText('\u2190\u2192 or A/D = lateral', W - 12, 58);
                     ctx.fillText('Land: V < 3 m/s, H < 5 m/s', W - 12, 72);
+                    ctx.restore();
 
                     // Alarm
                     if (alarms.length > 0 && tick % 60 < 30) {
@@ -3127,7 +3195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._ascentInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HA = cvEl.offsetHeight || 300;
-                  cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HA)) { W = nw; HA = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   function drawAscent() {
                     tick++;
@@ -3284,9 +3352,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.save();
                     ctx.translate(ascentX, ascentY);
                     ctx.rotate(ascentAng);
-                    // Octagonal ascent body (gold foil)
+                    // Octagonal ascent body (gold foil) — an actual octagon path now,
+                    // with a lit/shadow foil split (the comment used to promise an
+                    // octagon while drawing a plain rectangle)
+                    ctx.beginPath();
+                    ctx.moveTo(-5, -1.5); ctx.lineTo(-3.2, -4); ctx.lineTo(3.2, -4); ctx.lineTo(5, -1.5);
+                    ctx.lineTo(5, 1.5); ctx.lineTo(3.2, 4); ctx.lineTo(-3.2, 4); ctx.lineTo(-5, 1.5);
+                    ctx.closePath();
                     ctx.fillStyle = '#c9a444';
-                    ctx.fillRect(-5, -4, 10, 8);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(90,62,20,0.35)';           // shadowed foil facet
+                    ctx.beginPath();
+                    ctx.moveTo(5, 1.5); ctx.lineTo(3.2, 4); ctx.lineTo(-3.2, 4); ctx.lineTo(-5, 1.5);
+                    ctx.closePath(); ctx.fill();
                     // Top white section (RCS + docking tunnel)
                     ctx.fillStyle = '#e8ecf0';
                     ctx.fillRect(-3, -6, 6, 2);
@@ -3335,7 +3413,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.font = 'bold 10px monospace';
                     ctx.fillStyle = prelaunch ? '#fbbf24' : launching ? '#ef4444' : rendezvous ? '#38bdf8' : '#22c55e';
                     ctx.fillText(prelaunch ? 'PRE-LAUNCH' : launching ? 'ASCENT' : rendezvous ? 'RENDEZVOUS' : 'DOCKED', 14, 78);
-                    // HUD right (distance to CSM)
+                    // HUD right (distance to CSM; drops under the left panel below ~290px)
+                    ctx.save();
+                    if (W < 290) ctx.translate(0, 78);
                     ctx.fillStyle = 'rgba(0,0,0,0.62)';
                     ctx.fillRect(W - 128, 8, 120, 58);
                     ctx.textAlign = 'right'; ctx.font = 'bold 9px monospace';
@@ -3348,6 +3428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillText(distKm + ' km', W - 14, 42);
                     ctx.font = 'bold 8px monospace'; ctx.fillStyle = '#94a3b8';
                     ctx.fillText(docked ? 'HARD DOCK' : rendezvous ? 'closing...' : prelaunch ? 'aligned' : 'pursuing', W - 14, 56);
+                    ctx.restore();
                     // Countdown during prelaunch
                     if (prelaunch) {
                       var secs = Math.max(1, Math.ceil((90 - tick) / 30));
@@ -3462,7 +3543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl._reentryInit = true;
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HR = cvEl.offsetHeight || 320;
-                  cvEl.width = W * 2; cvEl.height = HR * 2; ctx.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = HR * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HR)) { W = nw; HR = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   var reentryPhase = 0; // 0=heat, 1=blackout, 2=drogue, 3=main chutes, 4=splash
                   function drawReentry() {
@@ -3588,14 +3669,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         }
                       }
                     }
-                    // Capsule
+                    // Capsule — the Apollo CM gumdrop: truncated cone with curved shoulder,
+                    // shaded silver body, hatch window (was a bare flat grey triangle)
                     var capX = W * 0.5;
-                    ctx.fillStyle = '#cccccc';
+                    var capGrad = ctx.createLinearGradient(capX - 12, 0, capX + 12, 0);
+                    capGrad.addColorStop(0, '#e8ecf2');
+                    capGrad.addColorStop(0.45, '#c3cad4');
+                    capGrad.addColorStop(1, '#7d8794');
+                    ctx.fillStyle = capGrad;
                     ctx.beginPath();
                     ctx.moveTo(capX - 12, capsuleY + 10);
-                    ctx.lineTo(capX, capsuleY - 10);
+                    ctx.lineTo(capX - 3.5, capsuleY - 8);
+                    ctx.quadraticCurveTo(capX, capsuleY - 10.5, capX + 3.5, capsuleY - 8);   // rounded apex (docking tunnel shoulder)
                     ctx.lineTo(capX + 12, capsuleY + 10);
                     ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#64748b';                                               // apex docking probe stub
+                    ctx.fillRect(capX - 1.5, capsuleY - 12, 3, 3);
+                    ctx.fillStyle = '#38bdf8';                                               // crew hatch window
+                    ctx.beginPath(); ctx.arc(capX - 4.5, capsuleY + 2.5, 1.8, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(71,85,105,0.55)'; ctx.lineWidth = 0.8;           // panel seam
+                    ctx.beginPath(); ctx.moveTo(capX - 9.5, capsuleY + 6); ctx.lineTo(capX + 9.5, capsuleY + 6); ctx.stroke();
                     // Heat shield (bottom, glows during re-entry)
                     if (reentryPhase <= 1) {
                       var shieldGlow = Math.min(1, tick / 120);
@@ -3901,7 +3994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: t('stem.moonmission.explain_in_your_own_words_how_do_mass_', 'Explain in your own words: how do mass ratio, burn duration, and Isp interact?'),
                 className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
-            h('div', { className: 'mt-2 text-[9px] italic text-slate-500' },
+            h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
               t('stem.moonmission.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no score; no reveal — by design.'))
           );
         })(),
