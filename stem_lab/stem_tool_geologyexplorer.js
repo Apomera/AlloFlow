@@ -761,6 +761,53 @@
     }
     loop();
 
+    // ── WebXR (optional): stand at the outcrop — walk around/through the voxel
+    //    block at human scale (thumbstick glide + teleport + comfort vignette via
+    //    AlloVR). Loads only when a headset is present; the 2D orbit/FP camera is
+    //    untouched (loop paused while presenting). Seat/bounds ON-DEVICE TUNABLE. ──
+    var _geoVR = null, _geoVRBtnOff = null;
+    try {
+      if (navigator.xr && navigator.xr.isSessionSupported) {
+        navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+          if (!ok || eng.disposed) return;
+          var ensureV = function (cb) {
+            if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+            var base = 'https://alloflow-cdn.pages.dev/', q = '';
+            try {
+              var scr = document.querySelectorAll('script[src]');
+              for (var i = 0; i < scr.length; i++) {
+                var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                if (m) { base = m[1]; q = m[2] || ''; break; }
+              }
+            } catch (e) {}
+            try {
+              var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+              s.onload = function () { cb(window.AlloModules && window.AlloModules.AlloVR); };
+              s.onerror = function () { cb(null); };
+              document.head.appendChild(s);
+            } catch (e) { cb(null); }
+          };
+          ensureV(function (V) {
+            if (!V || eng.disposed) return;
+            try {
+              _geoVR = V.enable({
+                THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+                // world is ~NX(≈14) units wide; scale 0.35 → the block towers like a real
+                // road-cut outcrop; seated just outside the front face looking in
+                seat: { position: [0, -NY * 0.45, NZ * 1.05], scale: 0.35, moveSpeed: 1.4 },
+                bounds: { minX: -NX * 1.6, maxX: NX * 1.6, minZ: -NZ * 1.6, maxZ: NZ * 1.6 },
+                render: function () { renderer.render(scene, camera); },
+                pauseLoop: function () { if (raf) { cancelAnimationFrame(raf); raf = null; } },
+                resumeLoop: function () { if (!eng.disposed) loop(); }
+              });
+              _geoVRBtnOff = V.mountButton(container, _geoVR, null,
+                { style: 'position:absolute;left:10px;bottom:10px;z-index:12;border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;' });
+            } catch (e) {}
+          });
+        }).catch(function () {});
+      }
+    } catch (e) {}
+
     eng.setView = function (name) {
       if (fp.active) return;   // camera is owned by first-person mode
       if (!controls) return;
@@ -782,6 +829,8 @@
     eng.fpActive = function () { return !!fp.active; };
     eng._fpExit = exitFP;
     eng.dispose = function () {
+      try { if (_geoVRBtnOff) _geoVRBtnOff(); } catch (e) {}
+      try { if (_geoVR && _geoVR.destroy) _geoVR.destroy(); _geoVR = null; } catch (e) {}
       try { exitFP(); } catch (e) {}   // tear down FP listeners first so nothing leaks across re-init
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);

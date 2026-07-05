@@ -1605,6 +1605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
         useEffect(function () {
           var cancelled = false;
+          var _weldVR = null, _weldVRBtnOff = null;   // effect scope: set inside init(), torn down in the cleanup closure
 
           function init() {
             if (cancelled) return;
@@ -2519,6 +2520,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             }
             rafRef.current = requestAnimationFrame(loop);
 
+            // ── WebXR (optional): stand AT the welding bench — vocational VR (lean in
+            //    and watch the arc/pool at workbench scale; small-area glide via AlloVR).
+            //    Loads only when a headset is present; presenting-only, so the 2D orbit
+            //    camera is untouched. Seat/scale ON-DEVICE TUNABLE. ──
+            _weldVR = null; _weldVRBtnOff = null;   // declared at effect scope (cleanup closure needs them)
+            try {
+              if (navigator.xr && navigator.xr.isSessionSupported) {
+                navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+                  if (!ok || cancelled || !canvas.isConnected) return;
+                  var ensureV = function (cb) {
+                    if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+                    var base = 'https://alloflow-cdn.pages.dev/', q = '';
+                    try {
+                      var scr = document.querySelectorAll('script[src]');
+                      for (var i = 0; i < scr.length; i++) {
+                        var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                        if (m) { base = m[1]; q = m[2] || ''; break; }
+                      }
+                    } catch (e) {}
+                    try {
+                      var sc = document.createElement('script'); sc.src = base + 'allo_vr_module.js' + q; sc.async = true;
+                      sc.onload = function () { cb(window.AlloModules && window.AlloModules.AlloVR); };
+                      sc.onerror = function () { cb(null); };
+                      document.head.appendChild(sc);
+                    } catch (e) { cb(null); }
+                  };
+                  ensureV(function (V) {
+                    if (!V || cancelled || !canvas.isConnected) return;
+                    try {
+                      _weldVR = V.enable({
+                        THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+                        seat: { position: [0, 0, 4.2], scale: 2.0, moveSpeed: 0.8 },   // at the bench, slow careful steps
+                        bounds: { minX: -8, maxX: 8, minZ: -8, maxZ: 8 },
+                        render: function () { var s2 = sceneRef.current; if (!s2) return; var _c = s2.renderer._alloComposer; if (_c) { try { _c.render(); return; } catch (e) { s2.renderer._alloComposer = null; } } s2.renderer.render(s2.scene, s2.camera); },
+                        pauseLoop: function () { if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; } },
+                        resumeLoop: function () { if (!cancelled) rafRef.current = requestAnimationFrame(loop); }
+                      });
+                      if (canvas.parentNode) _weldVRBtnOff = V.mountButton(canvas.parentNode, _weldVR, null,
+                        { style: 'position:absolute;left:10px;bottom:10px;z-index:12;border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;' });
+                    } catch (e) {}
+                  });
+                }).catch(function () {});
+              }
+            } catch (e) {}
+
             // ── Pointer + wheel controls ──
             var dragging = false;
             var lastX = 0, lastY = 0;
@@ -2631,6 +2677,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
           return function () {
             cancelled = true;
+            try { if (_weldVRBtnOff) _weldVRBtnOff(); } catch (e) {}
+            try { if (_weldVR && _weldVR.destroy) _weldVR.destroy(); _weldVR = null; } catch (e) {}
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             if (sceneRef.current && sceneRef.current.dispose) sceneRef.current.dispose();
             sceneRef.current = null;

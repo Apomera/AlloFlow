@@ -369,7 +369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var callTTS = ctx.callTTS;
@@ -2726,6 +2727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // used to reschedule unconditionally → a forever-running WebGL render loop leaked if the
                       // student left via the Back arrow instead of the "End EVA" button.
                       if (!document.contains(canvasEl)) { if (canvasEl._evaCleanup) canvasEl._evaCleanup(); return; }
+                      if (_evaVRPaused) return;               // VR session owns the frame loop (AlloVR setAnimationLoop); resumeLoop restarts us
                       requestAnimationFrame(animateEva);
                       evaTick++;
 
@@ -2917,8 +2919,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
                     animateEva();
 
+                    // ── WebXR (optional): stand on the Moon — room-scale EVA walk (thumbstick
+                    //    glide + teleport + comfort vignette via AlloVR). Loads only when a headset
+                    //    is present; presenting-only, so the 2D pointer-lock walk is untouched.
+                    //    Seat/bounds are world-units — ON-DEVICE TUNABLE. ──
+                    var _evaVR = null, _evaVRPaused = false, _evaVRBtnOff = null;
+                    try {
+                      if (navigator.xr && navigator.xr.isSessionSupported) {
+                        navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+                          if (!ok || !document.contains(canvasEl)) return;
+                          var ensureV = function (cb) {
+                            if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+                            var base = 'https://alloflow-cdn.pages.dev/', q = '';
+                            try {
+                              var scr = document.querySelectorAll('script[src]');
+                              for (var i = 0; i < scr.length; i++) {
+                                var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                                if (m) { base = m[1]; q = m[2] || ''; break; }
+                              }
+                            } catch (e) {}
+                            try {
+                              var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+                              s.onload = function () { cb(window.AlloModules && window.AlloModules.AlloVR); };
+                              s.onerror = function () { cb(null); };
+                              document.head.appendChild(s);
+                            } catch (e) { cb(null); }
+                          };
+                          ensureV(function (V) {
+                            if (!V || !document.contains(canvasEl)) return;
+                            try {
+                              _evaVR = V.enable({
+                                THREE: THREE, renderer: renderer, scene: scene, camera: camera,
+                                seat: { position: [playerPos.x, 0, playerPos.z], scale: 1.0, moveSpeed: 1.6 },   // lunar amble
+                                bounds: { minX: -80, maxX: 80, minZ: -80, maxZ: 80 },
+                                render: function () { if (composer) { try { composer.render(); return; } catch (e) {} } renderer.render(scene, camera); },
+                                pauseLoop: function () { _evaVRPaused = true; },
+                                resumeLoop: function () { if (_evaVRPaused) { _evaVRPaused = false; animateEva(); } }
+                              });
+                              _evaVRBtnOff = V.mountButton(evaHud, _evaVR);
+                            } catch (e) {}
+                          });
+                        }).catch(function () {});
+                      }
+                    } catch (e) {}
+
                     // Cleanup ref
                     canvasEl._evaCleanup = function() {
+                      try { if (_evaVRBtnOff) _evaVRBtnOff(); } catch (e) {}
+                      try { if (_evaVR && _evaVR.destroy) _evaVR.destroy(); _evaVR = null; } catch (e) {}
                       document.removeEventListener('mousemove', onMM);
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }

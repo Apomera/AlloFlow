@@ -691,7 +691,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var updMulti = function(obj) { ctx.updateMulti('echolocation', obj); };
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
-      var t = ctx.t;
+      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
+      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var awardXP = ctx.awardXP;
@@ -1574,7 +1575,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           }
           animate();
 
+          // ── WebXR (optional): stand IN the cave — the echolocation dark-navigation
+          //    game at room scale (thumbstick glide + teleport + comfort vignette via
+          //    AlloVR). Loads only when a headset is present; presenting-only, so the
+          //    2D pointer-lock walk is untouched. Seat/bounds ON-DEVICE TUNABLE. ──
+          var _caveVR = null, _caveVRBtnOff = null;
+          try {
+            if (navigator.xr && navigator.xr.isSessionSupported) {
+              navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
+                if (!ok || !cnv.isConnected) return;
+                var ensureV = function (cb) {
+                  if (window.AlloModules && window.AlloModules.AlloVR) { cb(window.AlloModules.AlloVR); return; }
+                  var base = 'https://alloflow-cdn.pages.dev/', q = '';
+                  try {
+                    var scr = document.querySelectorAll('script[src]');
+                    for (var i = 0; i < scr.length; i++) {
+                      var m = (scr[i].getAttribute('src') || '').match(/^(.*\/)(?:allo_vr_module|prim3d_module|stem_lab\/stem_tool_[a-z0-9]+)\.js(\?.*)?$/);
+                      if (m) { base = m[1]; q = m[2] || ''; break; }
+                    }
+                  } catch (e) {}
+                  try {
+                    var s = document.createElement('script'); s.src = base + 'allo_vr_module.js' + q; s.async = true;
+                    s.onload = function () { cb(window.AlloModules && window.AlloModules.AlloVR); };
+                    s.onerror = function () { cb(null); };
+                    document.head.appendChild(s);
+                  } catch (e) { cb(null); }
+                };
+                ensureV(function (V) {
+                  if (!V || !cnv.isConnected) return;
+                  try {
+                    _caveVR = V.enable({
+                      THREE: THREE, renderer: eng.renderer, scene: eng.scene, camera: eng.camera,
+                      seat: { position: [eng.camera.position.x, 0, eng.camera.position.z], scale: 1.0, moveSpeed: 1.8 },
+                      bounds: { minX: -60, maxX: 60, minZ: -60, maxZ: 60 },
+                      render: function () { var _ac = eng.renderer._alloComposer; if (_ac) { try { _ac.render(); return; } catch (e) { eng.renderer._alloComposer = null; } } eng.renderer.render(eng.scene, eng.camera); },
+                      pauseLoop: function () { if (cave3dAnimRef.current) { cancelAnimationFrame(cave3dAnimRef.current); cave3dAnimRef.current = null; } },
+                      resumeLoop: function () { if (cnv.isConnected) animate(); }
+                    });
+                    if (cnv.parentNode) _caveVRBtnOff = V.mountButton(cnv.parentNode, _caveVR, null,
+                      { style: 'position:absolute;left:10px;bottom:10px;z-index:12;border:none;background:#4f46e5;color:#fff;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;' });
+                  } catch (e) {}
+                });
+              }).catch(function () {});
+            }
+          } catch (e) {}
+
           return function() {
+            try { if (_caveVRBtnOff) _caveVRBtnOff(); } catch (e) {}
+            try { if (_caveVR && _caveVR.destroy) _caveVR.destroy(); _caveVR = null; } catch (e) {}
             cancelAnimationFrame(cave3dAnimRef.current);
             document.removeEventListener('keydown', eng._keyDown);
             document.removeEventListener('keyup', eng._keyUp);
