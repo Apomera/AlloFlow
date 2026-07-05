@@ -307,3 +307,15 @@ describe('MemoryPalace — depth-relief prompt (pure, P4a statues)', () => {
     h.destroy();
   });
 });
+
+describe('MemoryPalace — in-VR recall bank contract', () => {
+  it('render() tolerates vrRecall opts on the fallback path (no WebGL) without throwing', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {
+      recall: { seed: 7 },
+      vrRecall: { getBank: () => [{ id: 'b0_i0', label: 'Evaporation' }], onPick: () => {} },
+    });
+    expect(typeof h.destroy).toBe('function');
+    h.destroy();
+  });
+});

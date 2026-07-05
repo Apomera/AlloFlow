@@ -762,6 +762,7 @@
 
     // ── Recall API on the handle: earn a label back / flash placement status ──
     state.revealLocus = function (id) {
+      try { if (typeof _xrHideBank === 'function' && _vrBankFor === id) _xrHideBank(); } catch (eB) {}   // answered correctly → close the VR bank
       var ref = frameRefs[id];
       if (!ref) return;
       try {
@@ -833,6 +834,7 @@
       }
     }
     function goTo(idx, skipAnnounce) {
+      try { if (typeof _xrHideBank === 'function') _xrHideBank(); } catch (eB) {}   // navigating away closes an open VR answer bank
       curIdx = Math.max(0, Math.min(palace.route.length - 1, idx));
       overview = false; freeMode = false; moveF = 0; moveR = 0; yawOff = 0; pitchOff = 0;   // guided nav returns to the rails
       stopTargets(curIdx);
@@ -913,6 +915,7 @@
           if (live) live.textContent = _tr(t, 'memory_palace.vr_entered', 'Entered VR. Look around and walk the palace.');
           session.addEventListener('end', function () {
             state.xrActive = false;
+            try { _xrHideBank(); } catch (e) {}          // floating answer chips must not linger into the 2D view
             try { renderer.setAnimationLoop(null); } catch (e) {}
             _unseatVR();
             if (btn) btn.disabled = false;
@@ -1081,6 +1084,7 @@
     function _xrCtrlRay(ctrl) {
       if (!_xrRay) _xrRay = new THREE.Raycaster();
       if (!_xrTmpM) _xrTmpM = new THREE.Matrix4();
+      _xrRay.camera = camera;                            // THREE.Sprite.raycast requires it (bank chips)
       _xrTmpM.identity().extractRotation(ctrl.matrixWorld);
       _xrRay.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
       _xrRay.ray.direction.set(0, 0, -1).applyMatrix4(_xrTmpM);
@@ -1094,13 +1098,80 @@
         return !!ray.ray.intersectPlane(_xrFloor, out);
       } catch (e) { return false; }
     }
-    // Context-sensitive trigger: point at a locus → reveal it; point at the floor
-    // → teleport there (comfort blink). Complements the thumbstick glide.
+    // ── In-VR recall bank: floating, ray-selectable answer chips (Tier-4 item) ──
+    // In recall mode the 2D bank UI is invisible from inside the headset, so the
+    // trigger on a locus spawns the REMAINING answers as label sprites in front of
+    // the player. Picking one routes through the SAME view-side answer flow as a
+    // 2D chip click (opts.vrRecall.onPick → submitRecallAnswer): correct → the
+    // view reveals the locus (which closes the bank synchronously), wrong → the
+    // attempts/hints machinery accrues and the bank stays up. Distances/sizes are
+    // rig-scale world units — ON-DEVICE TUNABLE like the other VR constants.
+    var _vrBankGroup = null, _vrBankMeshes = [], _vrBankFor = null;
+    var VR_BANK_DIST = 230, VR_BANK_COL_W = 210, VR_BANK_ROW_H = 44, VR_BANK_FONT = 30;
+    function _xrHideBank() {
+      if (!_vrBankGroup) return;
+      try {
+        group.remove(_vrBankGroup);
+        _vrBankGroup.traverse(function (n) {
+          if (n.material) { try { if (n.material.map && n.material.map.dispose) n.material.map.dispose(); n.material.dispose(); } catch (e) {} }
+          if (n.geometry && n.geometry.dispose) { try { n.geometry.dispose(); } catch (e) {} }
+        });
+      } catch (e) {}
+      _vrBankGroup = null; _vrBankMeshes = []; _vrBankFor = null;
+    }
+    function _xrShowBank(id) {
+      _xrHideBank();
+      if (!recall || !opts.vrRecall || typeof opts.vrRecall.getBank !== 'function') return;
+      var chips = [];
+      try { chips = opts.vrRecall.getBank() || []; } catch (e) { chips = []; }
+      if (!chips.length) return;
+      try {
+        _vrBankGroup = new THREE.Group(); _vrBankFor = id;
+        var cw = new THREE.Vector3(); camera.getWorldPosition(cw);
+        var fwd = new THREE.Vector3(); camera.getWorldDirection(fwd); fwd.y = 0;
+        if (fwd.lengthSq() < 0.01) fwd.set(0, 0, -1); fwd.normalize();
+        var right = new THREE.Vector3(fwd.z, 0, -fwd.x);                 // perpendicular, same plane
+        var base = cw.clone().addScaledVector(fwd, VR_BANK_DIST);
+        var cols = chips.length > 8 ? 3 : 2;
+        var rows = Math.ceil(chips.length / cols);
+        chips.forEach(function (ch, i) {
+          var s = makeLabelSprite(THREE, ch.label, '#a5b4fc', VR_BANK_FONT);
+          var cx = (i % cols) - (cols - 1) / 2, ry = Math.floor(i / cols);
+          s.position.copy(base).addScaledVector(right, cx * VR_BANK_COL_W);
+          s.position.y = cw.y + ((rows - 1) / 2 - ry) * VR_BANK_ROW_H;
+          s.userData.bankChip = { id: ch.id, label: ch.label };
+          _vrBankGroup.add(s); _vrBankMeshes.push(s);
+        });
+        group.add(_vrBankGroup);
+        try { live.textContent = describeLocusForRecall(palace, id, t); } catch (e2) {}
+      } catch (e) { _xrHideBank(); }
+    }
+    // Context-sensitive trigger: bank chip → answer; locus in recall → open the
+    // bank (NEVER auto-reveal — the pre-bank behavior leaked the answer); locus in
+    // study → reveal; floor → teleport (comfort blink).
     function _xrTrigger(ctrl) {
       try {
+        if (_vrBankGroup && _vrBankMeshes.length) {
+          var bh = _xrCtrlRay(ctrl).intersectObjects(_vrBankMeshes, false);
+          if (bh.length) {
+            var chip = bh[0].object.userData.bankChip, forId = _vrBankFor;
+            try { if (opts.vrRecall && typeof opts.vrRecall.onPick === 'function') opts.vrRecall.onPick(forId, chip); } catch (e5) {}
+            // A correct pick makes the view reveal the locus, which closes the
+            // bank synchronously — still open here means the pick was wrong.
+            if (_vrBankGroup) _xrHapticPulse(0.2, 120); else _xrHapticPulse(0.5, 40);
+            return;
+          }
+        }
         var hits = _xrCtrlRay(ctrl).intersectObjects(frameMeshes, false);
         if (hits.length) {
           var id = hits[0].object.userData.locusId;
+          if (recall) {
+            var ri = palace.route.indexOf(id);
+            if (ri > 0) { try { goTo(ri); } catch (e6) {} }         // announce → onLocusChange keeps the view's current locus in sync (camera writes are XR-gated)
+            _xrShowBank(id);
+            _xrHapticPulse(0.35, 35);
+            return;
+          }
           try { if (state.revealLocus) state.revealLocus(id); } catch (e2) {}
           try { if (live) live.textContent = describeLocusForSR(palace, id, t); } catch (e3) {}
           try { if (typeof opts.onLocusActivate === 'function') opts.onLocusActivate(id); } catch (e4) {}   // seam for VR recall

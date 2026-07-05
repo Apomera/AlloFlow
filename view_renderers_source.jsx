@@ -2630,6 +2630,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const attemptsTotalRef = React.useRef(0);
     const startedByArmRef = React.useRef(false);
     const [recallBank, setRecallBank] = React.useState([]);
+    const bankRef = React.useRef([]);                                 // live bank for the in-VR answer chips (stale-closure safe)
+    bankRef.current = recallBank;
     const [answered, setAnswered] = React.useState(0);
     const [recallHint, setRecallHint] = React.useState(null);
     const [canReveal, setCanReveal] = React.useState(false);
@@ -2684,6 +2686,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             objects: data?.memoryPalace?.objects || {},
             mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
             recall: !!recall,
+            // In-VR recall bank: the palace spawns the remaining answers as ray-
+            // selectable chips; a pick routes through the SAME submitRecallAnswer
+            // as a 2D chip click (refs-based, so the once-mounted closure stays live).
+            vrRecall: recall ? {
+                getBank: () => (bankRef.current || []).map((c) => ({ id: c.id, label: c.label })),
+                onPick: (locusId, chip) => { if (chip) submitRecallAnswer(chip.label, chip.id); },
+            } : undefined,
             startAt: recall ? recall.startAt : undefined,
             onLocusChange: (locus, idx, total) => {
                 if (!locus) return;
