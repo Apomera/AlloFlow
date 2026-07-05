@@ -2367,19 +2367,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       tPos[vi + 2] = h2;
                     }
                     terrainGeo.computeVertexNormals();
+                    // Regolith texture via ImageData (the old per-pixel fillRect loop made 65k
+                    // canvas calls at init AND its sin() term printed visible diagonal stripes
+                    // that tiled 8× across the plain). Isotropic value noise, no banding.
                     var tCv = document.createElement('canvas'); tCv.width = 256; tCv.height = 256;
                     var tCx = tCv.getContext('2d');
-                    for (var ty = 0; ty < 256; ty++) {
-                      for (var tx = 0; tx < 256; tx++) {
-                        var n = 130 + Math.sin(tx * 0.3 + ty * 0.2) * 10 + (Math.random() - 0.5) * 15;
-                        tCx.fillStyle = 'rgb(' + n + ',' + (n - 2) + ',' + (n - 5) + ')';
-                        tCx.fillRect(tx, ty, 1, 1);
+                    (function paintRegolith() {
+                      var img = tCx.createImageData(256, 256);
+                      var dpx = img.data;
+                      for (var tp = 0; tp < 256 * 256; tp++) {
+                        var txx = tp % 256, tyy = (tp / 256) | 0;
+                        var n = 128 + (Math.random() - 0.5) * 22;                       // fine grain
+                        n += Math.sin(txx * 0.055 + Math.sin(tyy * 0.061) * 3.1) * 5;   // broad soft mottling (non-directional)
+                        n += Math.sin(tyy * 0.047 + Math.sin(txx * 0.052) * 2.7) * 5;
+                        if (Math.random() < 0.004) n -= 34;                             // occasional pebble fleck
+                        var ni = Math.max(70, Math.min(190, n | 0));
+                        var o4 = tp * 4;
+                        dpx[o4] = ni; dpx[o4 + 1] = ni - 2; dpx[o4 + 2] = ni - 5; dpx[o4 + 3] = 255;
                       }
-                    }
+                      tCx.putImageData(img, 0, 0);
+                    })();
                     var terrainTex = new THREE.CanvasTexture(tCv);
                     terrainTex.wrapS = terrainTex.wrapT = THREE.RepeatWrapping; terrainTex.repeat.set(8, 8);
                     var terrain = new THREE.Mesh(terrainGeo, new THREE.MeshStandardMaterial({ map: terrainTex, roughness: 0.95, metalness: 0.02, flatShading: true }));
                     terrain.rotation.x = -Math.PI / 2;
+                    terrain.receiveShadow = true;   // lunar scene sells on hard black shadows (sun.castShadow above)
                     scene.add(terrain);
                     var _terrainRay = new THREE.Raycaster();
                     var _terrainHeightAt = function(x, z) {
@@ -2389,10 +2401,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     };
 
                     // ── Lighting (harsh unfiltered sunlight + no atmosphere) ──
-                    scene.add(new THREE.AmbientLight(0x222222, 0.4));
-                    var sun = new THREE.DirectionalLight(0xfff8e1, 1.5);
+                    // Real lunar look = pitch-black SHADOWS under a single hard sun, with a
+                    // faint warm ground-bounce (regolith reflects ~12%) instead of a flat grey
+                    // ambient. Shadow map skipped on low-power devices (same tier as bloom).
+                    var _evaLowPower = false;
+                    try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
+                    scene.add(new THREE.AmbientLight(0x1a1a1e, 0.35));
+                    scene.add(new THREE.HemisphereLight(0x050508, 0x35302a, 0.35));   // black sky above, regolith bounce below
+                    var sun = new THREE.DirectionalLight(0xfff8e1, 1.6);
                     sun.position.set(40, 25, 15);
+                    if (!_evaLowPower) {
+                      renderer.shadowMap.enabled = true;
+                      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                      sun.castShadow = true;
+                      sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
+                      sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
+                      sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+                      sun.shadow.camera.near = 1; sun.shadow.camera.far = 160;
+                      sun.shadow.bias = -0.0015;
+                    }
                     scene.add(sun);
+                    // The sun itself — a hot disc in the sky along the light direction so the
+                    // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
+                    (function addSunDisc() {
+                      var sc = document.createElement('canvas'); sc.width = 128; sc.height = 128;
+                      var sg = sc.getContext('2d');
+                      var grad = sg.createRadialGradient(64, 64, 4, 64, 64, 64);
+                      grad.addColorStop(0, 'rgba(255,255,250,1)');
+                      grad.addColorStop(0.25, 'rgba(255,246,220,0.9)');
+                      grad.addColorStop(0.6, 'rgba(255,240,200,0.25)');
+                      grad.addColorStop(1, 'rgba(255,240,200,0)');
+                      sg.fillStyle = grad; sg.fillRect(0, 0, 128, 128);
+                      var st = new THREE.CanvasTexture(sc);
+                      var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: st, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+                      var sd = new THREE.Vector3(40, 25, 15).normalize().multiplyScalar(170);
+                      sunSprite.position.copy(sd);
+                      sunSprite.scale.set(26, 26, 1);
+                      scene.add(sunSprite);
+                    })();
 
                     // ── Lunar Module on surface ──
                     var lmGroup = new THREE.Group();
@@ -2415,19 +2461,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       pad.position.set(lp[0] * 1.5, -1.7, lp[2] * 1.5);
                       lmGroup.add(pad);
                     });
-                    // Flag
-                    var flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.5, 4), new THREE.MeshStandardMaterial({ color: 0xaaaaaa }));
-                    flagPole.position.set(4, 0.5, 2);
-                    scene.add(flagPole);
-                    var flagGeo = new THREE.PlaneGeometry(1.2, 0.7);
-                    var flagMat = new THREE.MeshBasicMaterial({ color: 0xcc2222, side: THREE.DoubleSide });
-                    var flag = new THREE.Mesh(flagGeo, flagMat);
-                    flag.position.set(4.6, 1.6, 2); scene.add(flag);
-                    // Blue canton
-                    var cantonGeo = new THREE.PlaneGeometry(0.45, 0.35);
-                    var cantonMat = new THREE.MeshBasicMaterial({ color: 0x2244aa, side: THREE.DoubleSide });
-                    var canton = new THREE.Mesh(cantonGeo, cantonMat);
-                    canton.position.set(4.22, 1.82, 2.01); scene.add(canton);
+                    // ── Flag (grouped, terrain-anchored, real stripes + canton texture, and a
+                    // FROZEN ripple — Apollo flags hung from a stiffening rod and kept the
+                    // crinkle from handling; there's no air, so it must not animate) ──
+                    // (Replaces a solid-red plane + a separately-floating blue patch that were
+                    // not grouped, not anchored to the terrain, and read as "not the US flag".)
+                    var flagGroup = new THREE.Group();
+                    var flagPole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 2.5, 8), new THREE.MeshStandardMaterial({ color: 0xb9bcc2, metalness: 0.6, roughness: 0.35 }));
+                    flagPole.position.y = 1.25;
+                    flagGroup.add(flagPole);
+                    var flagCv = document.createElement('canvas'); flagCv.width = 192; flagCv.height = 112;
+                    var fCtx = flagCv.getContext('2d');
+                    for (var fsi = 0; fsi < 13; fsi++) {                       // 13 stripes
+                      fCtx.fillStyle = fsi % 2 === 0 ? '#b22234' : '#f5f2ec';
+                      fCtx.fillRect(0, Math.round(fsi * (112 / 13)), 192, Math.ceil(112 / 13));
+                    }
+                    fCtx.fillStyle = '#3c3b6e'; fCtx.fillRect(0, 0, 77, 60);   // canton
+                    fCtx.fillStyle = '#ffffff';                                 // star dots (abstracted at this scale)
+                    for (var fr2 = 0; fr2 < 5; fr2++) for (var fc2 = 0; fc2 < 6; fc2++) {
+                      fCtx.beginPath(); fCtx.arc(8 + fc2 * 12.5 + (fr2 % 2) * 6, 7 + fr2 * 11.5, 1.7, 0, Math.PI * 2); fCtx.fill();
+                    }
+                    var flagTex = new THREE.CanvasTexture(flagCv);
+                    var flagGeo = new THREE.PlaneGeometry(1.2, 0.7, 12, 4);
+                    var fvp = flagGeo.attributes.position.array;
+                    for (var fvi = 0; fvi < fvp.length; fvi += 3) {            // frozen crinkle, stronger toward the fly end
+                      var fu = (fvp[fvi] + 0.6) / 1.2;
+                      fvp[fvi + 2] = Math.sin(fu * 6.0) * 0.045 * fu + Math.sin(fu * 13.0 + 1.7) * 0.02 * fu;
+                    }
+                    flagGeo.computeVertexNormals();
+                    var flag = new THREE.Mesh(flagGeo, new THREE.MeshStandardMaterial({ map: flagTex, side: THREE.DoubleSide, roughness: 0.85 }));
+                    flag.position.set(0.61, 2.1, 0);                            // hangs from the top rod, left edge at the pole
+                    flagGroup.add(flag);
+                    var flagRod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.22, 6), new THREE.MeshStandardMaterial({ color: 0xb9bcc2, metalness: 0.6, roughness: 0.35 }));
+                    flagRod.rotation.z = Math.PI / 2; flagRod.position.set(0.61, 2.46, 0);
+                    flagGroup.add(flagRod);
+                    flagGroup.position.set(4, _terrainHeightAt(4, 2), 2);
+                    scene.add(flagGroup);
 
                     lmGroup.position.set(0, _terrainHeightAt(0, 0) + 1.7, 0);
                     scene.add(lmGroup);
@@ -2513,25 +2582,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     // ── Hadley Rille (sinuous lava channel) ──
-                    var rillePoints = [];
-                    for (var ri2 = 0; ri2 < 30; ri2++) {
-                      var rx2 = -40 + ri2 * 3 + Math.sin(ri2 * 0.5) * 5;
-                      var rz2 = 30 + Math.cos(ri2 * 0.3) * 8;
-                      rillePoints.push(new THREE.Vector3(rx2, _terrainHeightAt(rx2, rz2) - 0.5, rz2));
-                    }
-                    var rilleGeo = new THREE.BufferGeometry().setFromPoints(rillePoints);
-                    var rilleMat = new THREE.LineBasicMaterial({ color: 0x555555, linewidth: 2 });
-                    scene.add(new THREE.Line(rilleGeo, rilleMat));
-                    // Rille walls (dark trench)
-                    for (var rw = 0; rw < rillePoints.length - 1; rw++) {
-                      var wallGeo = new THREE.PlaneGeometry(0.8, 1.5);
-                      var wallMat = new THREE.MeshStandardMaterial({ color: 0x4a4540, roughness: 0.95, side: THREE.DoubleSide });
-                      var wall = new THREE.Mesh(wallGeo, wallMat);
-                      wall.position.copy(rillePoints[rw]);
-                      wall.position.y -= 0.3;
-                      wall.lookAt(rillePoints[rw + 1]);
-                      scene.add(wall);
-                    }
+                    // A real trench ribbon along the path. (Replaces a LineBasicMaterial line —
+                    // WebGL ignores linewidth, so it rendered as a 1-pixel scratch — plus a chain
+                    // of small disconnected wall planes that floated above the terrain.)
+                    (function addRille() {
+                      var rPts = [];
+                      for (var ri2 = 0; ri2 < 30; ri2++) {
+                        var rx2 = -40 + ri2 * 3 + Math.sin(ri2 * 0.5) * 5;
+                        var rz2 = 30 + Math.cos(ri2 * 0.3) * 8;
+                        rPts.push(new THREE.Vector3(rx2, _terrainHeightAt(rx2, rz2), rz2));
+                      }
+                      var HALF_W = 1.6, DEPTH = 1.1;
+                      var verts = [], idx = [];
+                      for (var rp = 0; rp < rPts.length; rp++) {
+                        var tangent = (rp < rPts.length - 1)
+                          ? new THREE.Vector3().subVectors(rPts[rp + 1], rPts[rp])
+                          : new THREE.Vector3().subVectors(rPts[rp], rPts[rp - 1]);
+                        var norm = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+                        var P = rPts[rp];
+                        // left rim → channel floor (sunken) → right rim: a shallow V trench
+                        verts.push(P.x + norm.x * HALF_W, P.y + 0.05, P.z + norm.z * HALF_W);
+                        verts.push(P.x, P.y - DEPTH, P.z);
+                        verts.push(P.x - norm.x * HALF_W, P.y + 0.05, P.z - norm.z * HALF_W);
+                        if (rp > 0) {
+                          var a0 = (rp - 1) * 3, b0 = rp * 3;
+                          idx.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);        // left wall
+                          idx.push(a0 + 1, b0 + 1, a0 + 2, b0 + 1, b0 + 2, a0 + 2); // right wall
+                        }
+                      }
+                      var rGeo = new THREE.BufferGeometry();
+                      rGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+                      rGeo.setIndex(idx);
+                      rGeo.computeVertexNormals();
+                      var rille = new THREE.Mesh(rGeo, new THREE.MeshStandardMaterial({ color: 0x3d3833, roughness: 0.98, side: THREE.DoubleSide, flatShading: true }));
+                      scene.add(rille);
+                    })();
 
                     // ── Highland ridge in the distance ──
                     var ridgeGeo = new THREE.BoxGeometry(60, 6, 4);
@@ -2547,20 +2632,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ridge.position.set(0, _terrainHeightAt(0, -70) + 2, -70);
                     scene.add(ridge);
 
-                    // ── Earthrise glow on the horizon (enlarged) ──
-                    var earthGlowGeo = new THREE.SphereGeometry(8, 16, 12);
-                    var earthGlowMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
-                    var earthGlow = new THREE.Mesh(earthGlowGeo, earthGlowMat);
-                    earthGlow.position.set(-80, 15, -60);
-                    scene.add(earthGlow);
-                    // Earth atmosphere halo (enlarged)
-                    var earthHaloGeo = new THREE.SphereGeometry(11, 16, 12);
-                    var earthHaloMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.15 });
-                    scene.add(new THREE.Mesh(earthHaloGeo, earthHaloMat)).position.copy(earthGlow.position);
-                    // Outer atmospheric halo
-                    var earthHalo2Geo = new THREE.SphereGeometry(14, 16, 12);
-                    var earthHalo2Mat = new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.05 });
-                    scene.add(new THREE.Mesh(earthHalo2Geo, earthHalo2Mat)).position.copy(earthGlow.position);
+                    // ── Distant highland mountains ringing the horizon ──
+                    // (Replaces the old "Earthrise glow" — a solid untextured blue ball + halos
+                    // that sat on the horizon while the REAL Earth billboard already hung in the
+                    // sky: two Earths at once, and the ball read as a flat blue blob. The Earth
+                    // sprite up at (-60,70,-120) is the one true Earth, per the Apollo EVA view.)
+                    (function addHorizonMountains() {
+                      var mmSpots = [[-80, -60, 14, 9], [-95, 10, 18, 7], [70, -80, 16, 10], [95, 30, 20, 8], [-30, -95, 22, 11], [40, 90, 17, 8], [-90, 70, 15, 7]];
+                      mmSpots.forEach(function (ms, mi) {
+                        var mGeo = new THREE.ConeGeometry(ms[2], ms[3], 7, 1);
+                        var mp = mGeo.attributes.position.array;
+                        for (var mvi = 0; mvi < mp.length; mvi += 3) {         // roughen the silhouette
+                          mp[mvi] *= 0.85 + ((mi * 131 + mvi * 17) % 100) / 100 * 0.3;
+                          mp[mvi + 2] *= 0.85 + ((mi * 57 + mvi * 29) % 100) / 100 * 0.3;
+                        }
+                        mGeo.computeVertexNormals();
+                        var m = new THREE.Mesh(mGeo, new THREE.MeshStandardMaterial({ color: 0x86807a, roughness: 0.98, flatShading: true }));
+                        m.position.set(ms[0], ms[3] * 0.35, ms[1]);
+                        scene.add(m);
+                      });
+                    })();
+
+                    // All static scenery built → mark it as shadow CASTERS in one pass (the
+                    // terrain receives). Sample orbs / bootprints are added after this on
+                    // purpose: glowing beacons and decals shouldn't cast, and skipping them
+                    // keeps the shadow pass cheap. No-op when shadows are off (low-power).
+                    if (!_evaLowPower) {
+                      scene.traverse(function (n3) {
+                        if (!n3.isMesh || n3 === terrain) return;
+                        var m3 = n3.material;
+                        if (m3 && (m3.isSpriteMaterial || m3.side === THREE.BackSide)) return;   // sky shell must NEVER cast — it surrounds the shadow frustum
+                        n3.castShadow = true;
+                      });
+                    }
 
                     // ── Sample collection orbs (lunar rocks) ──
                     var lunarSampleOrbs = [];
