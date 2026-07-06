@@ -141,3 +141,31 @@ sentence replaces one map entry, leaving every vetted sentence untouched.
   6. SMOKE (Canvas/desktop, can't be done headless): teacher generates → hears
      each sentence → regenerates one → saves → reload/other device → student
      opens karaoke → hears the VETTED set with zero latency, no re-synth.
+
+#### 8b UPDATE — SHIPPED + LIVE-SMOKED (@7729074e7, Opus)
+Teacher-vettable per-sentence read-aloud is END TO END and deployed. Live smoke
+on prismflow-911fe.web.app: store module loads, shared splitter works, both
+globals (__alloRegenerateSentenceAudio / __alloPrepareReadAloud) defined,
+hydrate effect establishes KaraokeAudioStore.current on resource load, 0 page
+errors. Teacher karaoke overlay shows "🔄 Regenerate this sentence" + "💾 Prepare
+read-aloud for students (size shown)"; audio persists in generatedContent.
+karaokeAudio and rides the save cross-device. FULL human smoke (generate a
+resource → open karaoke → regenerate a take → prepare/save → reload/other device
+→ student hears vetted set) needs a key/Canvas — Aaron's env.
+
+#### 8c — Save-as-you-play toggle (Aaron's idea, RECOMMENDED next; Opus assessed)
+Two options weighed. Option A (synthesize during the generation flow) REJECTED
+as default: text isn't final at generation time (teachers adjust complexity/
+regenerate → audio stale), and it bloats an already multi-step flow with
+speculative synthesis. The shipped "Prepare read-aloud" button already IS the
+better eager path (post-finalization, teacher-triggered). Option B (RECOMMENDED):
+a "Save read-aloud audio" toggle that CAPTURES the audio karaoke already
+generates on play into the store instead of discarding it — zero added latency,
+accumulates during normal use, and "listen-to-vet == save" collapses into one
+gesture (regenerate handles bad takes). Build: when toggle on, in the getAudioUrl
+resolution (view_simplified) or a play hook, if a sentence isn't already stored
+and callTTS produced a URL, fetch→base64→KaraokeAudioStore.current.put + persist
+into generatedContent.karaokeAudio. Applies to leveled text AND FAQ (same store).
+Sub-choice for Aaron: capture on ACTUAL play (strict vet-by-listening) vs on any
+fetch incl. pre-warm (faster fill). Placement: global preference (left panel/
+settings) or a switch in the karaoke overlay by the teacher tools.
