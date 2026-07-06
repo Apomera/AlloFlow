@@ -903,6 +903,37 @@ window.StemLab = window.StemLab || {
     return null;
   }
 
+  // ── Similarity scaling (PURE) — multiply every defining vector by k so the
+  //    shape stays SIMILAR (same proportions). This is the engine behind the
+  //    square–cube law: length scales ×k, area ×k², volume ×k³. ──
+  function geoScaleObject(o, k) {
+    if (!o) return null;
+    var c = { type: o.type, id: o.id, position: (o.position || [0, 0, 0]).slice() };
+    if (o.type === 'segment') c.vector = vec3Scale(o.vector, k);
+    else if (o.type === 'rect') { c.u = vec3Scale(o.u, k); c.v = vec3Scale(o.v, k); }
+    else if (o.type === 'prism') { c.u = vec3Scale(o.u, k); c.v = vec3Scale(o.v, k); c.w = vec3Scale(o.w, k); }
+    return c;
+  }
+  // Before/after measurements + the exponent ratios for a scale factor k. The
+  // whole point: ratios are k^1 (length), k^2 (area/surface), k^3 (volume).
+  function geoScaleReport(o, k) {
+    var m = geoStretchMeasure(o);
+    if (!m || m.dim === 0) return null;
+    var s = geoStretchMeasure(geoScaleObject(o, k));
+    var out = { k: k, dim: m.dim, rows: [] };
+    if (o.type === 'segment') {
+      out.rows.push({ label: 'Length', exp: 1, ratio: k, before: m.value, after: s.value });
+    } else if (o.type === 'rect') {
+      out.rows.push({ label: 'Perimeter', exp: 1, ratio: k, before: m.perimeter, after: s.perimeter });
+      out.rows.push({ label: 'Area', exp: 2, ratio: k * k, before: m.value, after: s.value });
+    } else if (o.type === 'prism') {
+      out.rows.push({ label: 'Edge', exp: 1, ratio: k, before: vec3Mag(o.u), after: vec3Mag(o.u) * k });
+      out.rows.push({ label: 'Surface', exp: 2, ratio: k * k, before: m.surfaceArea, after: s.surfaceArea });
+      out.rows.push({ label: 'Volume', exp: 3, ratio: k * k * k, before: m.value, after: s.value });
+    }
+    return out;
+  }
+
   // ── Build challenges (PURE, seeded) — turn stretching into problem-solving:
   //    hit a target length / area / volume by choosing axes and lengths. Level
   //    1=length (1D), 2=area (2D), 3=volume (3D). Deterministic given a seed so
@@ -967,7 +998,8 @@ window.StemLab = window.StemLab || {
     { id: 'cube', icon: '⬛', title: 'A perfect cube', desc: 'Build a cube — all three edges equal (e.g. 3 × 3 × 3).', test: { type: 'cube' } },
     { id: 'vol', icon: '📦', title: 'Target volume', desc: 'Build a prism with volume 24.', test: { type: 'measure', kind: 'volume', target: 24 } },
     { id: 'oblique', icon: '◣', title: 'Lean it over', desc: 'Build an oblique (slanted) prism — turn on Oblique first.', test: { type: 'oblique' } },
-    { id: 'cavalieri', icon: '⚖', title: 'Cavalieri twins', desc: 'Build a straight prism and a slanted prism with the SAME volume.', test: { type: 'cavalieri' } }
+    { id: 'cavalieri', icon: '⚖', title: 'Cavalieri twins', desc: 'Build a straight prism and a slanted prism with the SAME volume.', test: { type: 'cavalieri' } },
+    { id: 'squarecube', icon: '🔢', title: 'Square–cube law', desc: 'Build a prism, then place a ×2 scaled copy — watch the volume jump ×8.', test: { type: 'scaled', ratio: 2 } }
   ];
   function _geoIsCube(o, tol) {
     if (!o || o.type !== 'prism') return false;
@@ -995,6 +1027,18 @@ window.StemLab = window.StemLab || {
       var obliques = prisms.filter(function (m) { return m && m.oblique; });
       var solved = straights.some(function (s) { return obliques.some(function (ob) { return Math.abs(s.value - ob.value) / (s.value || 1) <= 0.05; }); });
       return { solved: solved };
+    }
+    if (test.type === 'scaled') {
+      // Two SIMILAR prisms whose edge lengths all differ by ~the ratio (a scaled copy).
+      var pr = objs.filter(function (o) { return o.type === 'prism'; });
+      var r = test.ratio || 2, tol = 0.08, ok = false;
+      var edges = function (o) { return [vec3Mag(o.u), vec3Mag(o.v), vec3Mag(o.w)].sort(function (x, y) { return x - y; }); };
+      for (var i = 0; i < pr.length && !ok; i++) for (var j = 0; j < pr.length; j++) {
+        if (i === j) continue;
+        var ea = edges(pr[i]), eb = edges(pr[j]);   // eb should be ~r× ea on all three edges
+        if (ea[0] > 0.05 && Math.abs(eb[0] / ea[0] - r) / r <= tol && Math.abs(eb[1] / ea[1] - r) / r <= tol && Math.abs(eb[2] / ea[2] - r) / r <= tol) { ok = true; break; }
+      }
+      return { solved: ok };
     }
     return { solved: false };
   }
@@ -1131,6 +1175,8 @@ window.StemLab = window.StemLab || {
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       geoStretchMeasure: geoStretchMeasure,
+      geoScaleObject: geoScaleObject,
+      geoScaleReport: geoScaleReport,
       geoMakeBuildChallenge: geoMakeBuildChallenge,
       geoEvalBuildChallenge: geoEvalBuildChallenge,
       GEO_MISSIONS: GEO_MISSIONS,
@@ -1375,6 +1421,25 @@ window.StemLab = window.StemLab || {
           var ng = Object.assign({}, g); delete ng.buildChallenge;
           return Object.assign({}, p, { geoSandbox: ng });
         });
+      }
+      // Place a similar (scaled) copy of the selected object beside it, so the
+      // student SEES small-vs-big and the square–cube jump in the readouts.
+      function placeScaledCopy(k) {
+        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+        if (!sel || sel.type === 'point') { if (addToast) addToast('Select a segment, rectangle, or prism to scale', 'info'); return; }
+        var copy = geoScaleObject(sel, k);
+        // offset so the copy sits clear of the original (span of the bigger one + gap)
+        var span = (vec3Mag(sel.u || sel.vector || [1,0,0]) || 1) * (k + 1) + 1;
+        copy.position = [ (sel.position[0] || 0) + span, sel.position[1] || 0, sel.position[2] || 0 ];
+        copy.id = nextObjId(construction.objects);   // fresh id (geoScaleObject carried the source's)
+        pushHistory();
+        var newObjs = construction.objects.concat([copy]);
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: copy.id } }) });
+        });
+        geoSound('shapeChange');
+        if (announceToSR) { var rep = geoScaleReport(sel, k); if (rep && rep.rows.length) announceToSR('Placed a ' + k + '× copy. ' + rep.rows[rep.rows.length - 1].label + ' is now ' + rep.rows[rep.rows.length - 1].ratio.toFixed(0) + ' times bigger.'); }
       }
       function saveConstruction(name) {
         if (!name) return;
@@ -2530,6 +2595,46 @@ window.StemLab = window.StemLab || {
                     }, '🖨 ' + t('stem.geosandbox.net_print', 'Print / cut-out net'))
                   );
                 })()
+              );
+            })(),
+
+            // ═══ SCALE EXPLORER — the square–cube law, live ═══
+            mode === 'stretch' && (function() {
+              var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+              if (!sel || sel.type === 'point') return null;
+              var k = gd.scaleK != null ? gd.scaleK : 2;
+              var rep = geoScaleReport(sel, k);
+              if (!rep) return null;
+              var expText = { 1: '¹', 2: '²', 3: '³' };
+              return h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-slate-900/30 rounded-xl p-3 border border-amber-500/40 space-y-2' },
+                h('div', { className: 'text-xs font-bold text-amber-200 uppercase tracking-wider' }, t('stem.geosandbox.scale_explorer', '🔎 Scale explorer — square–cube law')),
+                h('div', { className: 'flex justify-between items-center' },
+                  h('span', { className: 'text-[11px] font-bold text-amber-200' }, t('stem.geosandbox.scale_factor', 'Scale factor k')),
+                  h('span', { className: 'text-amber-300 font-mono text-[11px]' }, '×' + k.toFixed(2))
+                ),
+                h('input', {
+                  type: 'range', min: '0.5', max: '3', step: '0.25', value: k,
+                  onChange: function(e) { upd('scaleK', parseFloat(e.target.value)); },
+                  'aria-label': t('stem.geosandbox.scale_factor', 'Scale factor k'),
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500'
+                }),
+                h('div', { className: 'space-y-1' },
+                  rep.rows.map(function(row) {
+                    return h('div', { key: row.label, className: 'flex items-center justify-between text-[11px] bg-slate-900/40 rounded px-2 py-1' },
+                      h('span', { className: 'text-slate-200 font-medium' }, row.label),
+                      h('span', { className: 'font-mono text-amber-200' },
+                        row.before.toFixed(2) + ' → ' + row.after.toFixed(2) + '  (×k' + (expText[row.exp] || ('^' + row.exp)) + ' = ×' + row.ratio.toFixed(2) + ')')
+                    );
+                  })
+                ),
+                sel.type === 'prism' && h('p', { className: 'text-[10px] text-amber-300/80' },
+                  t('stem.geosandbox.square_cube_note', 'Double the sides and the volume grows 8×, not 2× — why big animals need thick legs and small ones do not.')
+                ),
+                h('button', {
+                  onClick: function() { placeScaledCopy(k); },
+                  'aria-label': t('stem.geosandbox.place_scaled_copy', 'Place a scaled copy beside the original'),
+                  className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-700/70 text-white hover:bg-amber-600'
+                }, '⧉ ' + t('stem.geosandbox.place_scaled', 'Place ×{k} copy').replace('{k}', k.toFixed(2)))
               );
             })(),
 

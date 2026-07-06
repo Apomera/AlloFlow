@@ -172,3 +172,47 @@ describe('prism net (geoPrismNet)', () => {
     expect(P.geoPrismNet({ type: 'rect', position:[0,0,0], u:[1,0,0], v:[0,1,0] })).toBe(null);
   });
 });
+
+describe('square-cube law scaling (geoScaleObject, geoScaleReport)', () => {
+  it('scales every defining vector by k (similar shape)', () => {
+    const box = { type: 'prism', position: [1, 2, 3], u: [2, 0, 0], v: [0, 3, 0], w: [0, 0, 4] };
+    const s = P.geoScaleObject(box, 2);
+    expect(s.u).toEqual([4, 0, 0]);
+    expect(s.v).toEqual([0, 6, 0]);
+    expect(s.w).toEqual([0, 0, 8]);
+    expect(s.position).toEqual([1, 2, 3]);  // position preserved
+  });
+  it('reports k / k^2 / k^3 ratios for a prism (edge / surface / volume)', () => {
+    const box = { type: 'prism', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0], w: [0, 0, 4] };
+    const rep = P.geoScaleReport(box, 2);
+    const byLabel = {}; rep.rows.forEach(function(r){ byLabel[r.label] = r; });
+    expect(byLabel.Edge.ratio).toBeCloseTo(2, 6);
+    expect(byLabel.Surface.ratio).toBeCloseTo(4, 6);
+    expect(byLabel.Volume.ratio).toBeCloseTo(8, 6);
+    expect(byLabel.Volume.after).toBeCloseTo(byLabel.Volume.before * 8, 6);
+    expect(byLabel.Surface.after).toBeCloseTo(byLabel.Surface.before * 4, 6);
+  });
+  it('reports k / k^2 for a rectangle (perimeter / area) and k for a segment', () => {
+    const rect = { type: 'rect', position: [0,0,0], u: [3,0,0], v: [0,4,0] };
+    const rr = P.geoScaleReport(rect, 3);
+    const rl = {}; rr.rows.forEach(function(r){ rl[r.label] = r; });
+    expect(rl.Perimeter.ratio).toBeCloseTo(3, 6);
+    expect(rl.Area.ratio).toBeCloseTo(9, 6);
+    const seg = { type: 'segment', position: [0,0,0], vector: [5,0,0] };
+    const sr = P.geoScaleReport(seg, 2);
+    expect(sr.rows[0].ratio).toBeCloseTo(2, 6);
+    expect(sr.rows[0].after).toBeCloseTo(10, 6);
+  });
+  it('null report for a point (0-D nothing to scale)', () => {
+    expect(P.geoScaleReport({ type: 'point', position: [0,0,0] }, 2)).toBe(null);
+  });
+  it('square-cube mission solves for a prism + its 2x similar copy', () => {
+    const m = P.GEO_MISSIONS.find(function(x){ return x.id === 'squarecube'; });
+    const box = { type: 'prism', position: [0,0,0], u: [2,0,0], v: [0,3,0], w: [0,0,4] };
+    const twice = P.geoScaleObject(box, 2);
+    expect(P.geoEvalMission(m, [box, twice]).solved).toBe(true);
+    expect(P.geoEvalMission(m, [box]).solved).toBe(false);
+    // a non-similar second prism must NOT count
+    expect(P.geoEvalMission(m, [box, { type:'prism', position:[0,0,0], u:[4,0,0], v:[0,3,0], w:[0,0,4] }]).solved).toBe(false);
+  });
+});
