@@ -988,6 +988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var clinicalSolved = d._clinicalSolved || 0;
         var activeCaseIdx = d._activeCaseIdx || 0;
         var activeCaseFeedback = d._activeCaseFeedback || null;
+        var clinicalSolvedIds = d._clinicalSolvedIds || {};
 
         // ── Spotter test state ──
         var spotterActive = d._spotterActive || false;
@@ -5483,20 +5484,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             d._showClinical ? h('div', { className: 'space-y-2' },
               CLINICAL_CASES.filter(function(c) { return !sysKey || c.system === sysKey || sysKey === 'skeletal'; }).slice(0, 3).map(function(cs, ci) {
-                var isActive = activeCaseIdx === ci;
+                var solved = !!clinicalSolvedIds[cs.id];
+                var caseFb = solved ? 'correct' : (activeCaseIdx === ci ? activeCaseFeedback : null);
                 return h('div', { key: cs.id, className: 'bg-white rounded-lg p-3 border border-rose-200' },
                   h('p', { className: 'text-xs font-bold text-rose-800 mb-1' }, cs.title + ' (' + cs.difficulty + ')'),
                   h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-2' }, cs.presentation),
                   h('p', { className: 'text-[11px] font-bold text-slate-700 mb-1' }, cs.question),
-                  isActive && activeCaseFeedback ? h('div', { className: 'mt-2 rounded-lg p-2 ' + (activeCaseFeedback === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
-                    h('p', { className: 'text-[11px] font-bold ' + (activeCaseFeedback === 'correct' ? 'text-green-800' : 'text-amber-800') }, activeCaseFeedback === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
+                  caseFb ? h('div', { className: 'mt-2 rounded-lg p-2 ' + (caseFb === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
+                    h('p', { className: 'text-[11px] font-bold ' + (caseFb === 'correct' ? 'text-green-800' : 'text-amber-800') }, caseFb === 'correct' ? '\u2705 Correct!' : '\u274C Answer: ' + cs.answer),
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mt-1' }, cs.explanation)
                   ) : h('div', { className: 'flex gap-1 flex-wrap' },
                     h('button', { 'aria-label': t('stem.anatomy.i_got_it', 'I got it!'),
                       onClick: function() {
-                        upd('_activeCaseIdx', ci);
-                        upd('_activeCaseFeedback', 'correct');
-                        upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
+                        if (clinicalSolvedIds[cs.id]) return;
+                        var newIds = Object.assign({}, clinicalSolvedIds); newIds[cs.id] = true;
+                        updMulti({ _clinicalSolvedIds: newIds, _clinicalSolved: Object.keys(newIds).length });
                         playSound('spotterCorrect');
                         setTimeout(checkAnatomyChallenges, 50);
                       },
