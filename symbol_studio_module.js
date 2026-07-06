@@ -1906,8 +1906,209 @@
       document.body.appendChild(a); a.click();
       document.body.removeChild(a); URL.revokeObjectURL(url);
       var multi = board.pages && board.pages.length > 1;
-      addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format (.obf)' + (multi ? ' — first page only; import into Cboard or another AAC app.' : ' — import into Cboard or another AAC app.'), 'success');
+      addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format (.obf)' + (multi ? ' — first page only (use .obz for all pages); import into Cboard or another AAC app.' : ' — import into Cboard or another AAC app.'), 'success');
     }, [addToast, boardLang]);
+
+    // ── OBF/OBZ helpers: one page → one OBF object (shared by .obz export) ──
+    // Mirrors exportBoardOBF's per-page logic but returns the object instead of
+    // downloading it, so the multi-page .obz export can build one OBF per page.
+    var _hexToRgbShared = function (hex) {
+      if (!hex) return null;
+      var h = String(hex).trim().replace(/^#/, '');
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (!/^[0-9a-f]{6}$/i.test(h)) return (/^rgba?\(/i.test(hex) ? hex : null);
+      var n = parseInt(h, 16);
+      return 'rgb(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ')';
+    };
+    var _pageToObf = function (page, board, locale, seq) {
+      var cells = (page.words || []).filter(function (w) { return w && (w.label || w.image); });
+      var cols = page.cols || board.cols || 4;
+      var rows = Math.max(1, Math.ceil((cells.length || 1) / cols));
+      var buttons = [], images = [], order = [], idx = 0;
+      for (var r = 0; r < rows; r++) {
+        var rowArr = [];
+        for (var c = 0; c < cols; c++) {
+          if (idx < cells.length) {
+            var w = cells[idx];
+            var bid = 'btn_' + seq + '_' + idx;
+            var label = w.translatedLabel || w.label || '';
+            var btn = { id: bid, label: label, vocalization: w.label || label,
+              border_color: _hexToRgbShared(CAT_BORDER[w.category]) || 'rgb(229, 231, 235)',
+              background_color: _hexToRgbShared(CAT_COLORS[w.category]) || 'rgb(249, 250, 251)' };
+            var img = safeImgUrl(w.image);
+            if (img) {
+              var iid = 'img_' + seq + '_' + idx;
+              var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
+              var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
+              if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              images.push(imgObj); btn.image_id = iid;
+            }
+            buttons.push(btn); rowArr.push(bid); idx++;
+          } else { rowArr.push(null); }
+        }
+        order.push(rowArr);
+      }
+      return { format: 'open-board-0.1', id: 'alloflow_' + seq, locale: (locale || 'en'),
+        name: page.title || board.title || 'AlloFlow Board',
+        description_html: 'Created with AlloFlow Symbol Studio.',
+        buttons: buttons, grid: { rows: rows, columns: cols, order: order },
+        images: images, sounds: [], license: { type: 'CC By' } };
+    };
+
+    var _ensureJSZip = function () {
+      if (window.JSZip) return Promise.resolve(window.JSZip);
+      return new Promise(function (resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.async = true;
+        s.onload = function () { window.JSZip ? resolve(window.JSZip) : reject(new Error('JSZip missing')); };
+        s.onerror = function () { reject(new Error('JSZip load failed')); };
+        document.head.appendChild(s);
+      });
+    };
+
+    // ── .obz export — a multi-page board as an Open Board Format ZIP set ──
+    // .obz is the OBF standard's multi-board package (a zip of .obf files +
+    // a manifest). Single-page boards export fine too; images stay inline as
+    // data URLs (valid OBF), so no per-file image extraction is needed.
+    var exportBoardOBZ = useCallback(function (board) {
+      var pages = (board.pages && board.pages.length) ? board.pages
+        : [{ title: board.title, words: board.words || [], cols: board.cols || 4 }];
+      var hasCells = pages.some(function (p) { return (p.words || []).some(function (w) { return w && (w.label || w.image); }); });
+      if (!hasCells) { addToast && addToast('This board has no symbols to export yet.', 'info'); return; }
+      _ensureJSZip().then(function (JSZip) {
+        var zip = new JSZip();
+        var manifest = { format: 'open-board-0.1', root: 'boards/board_0.obf', paths: { boards: {} } };
+        pages.forEach(function (p, i) {
+          var obf = _pageToObf(p, board, boardLang || 'en', i);
+          var path = 'boards/board_' + i + '.obf';
+          zip.file(path, JSON.stringify(obf, null, 2));
+          manifest.paths.boards[obf.id] = path;
+        });
+        zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+        return zip.generateAsync({ type: 'blob', mimeType: 'application/obz' });
+      }).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.download = safeName + '.obz';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format set (.obz) — ' + pages.length + ' page' + (pages.length === 1 ? '' : 's') + '; import into Cboard or another AAC app.', 'success');
+      }).catch(function () {
+        addToast && addToast('Could not build the .obz file (the zip library did not load). Try the .obf export instead.', 'error');
+      });
+    }, [addToast, boardLang]);
+
+    // ── OBF/OBZ IMPORT (round-trips the export; Cboard authoring → AlloFlow) ──
+    // Maps an Open Board Format button grid back into a native Symbol Studio
+    // board {title, words:[{id,label,description,category,image}], cols}.
+    var _obfToPage = function (obf) {
+      var imagesById = {};
+      (obf.images || []).forEach(function (im) { if (im && im.id) imagesById[im.id] = im.data || im.url || ''; });
+      var buttonsById = {};
+      (obf.buttons || []).forEach(function (b) { if (b && b.id != null) buttonsById[b.id] = b; });
+      var _btnToWord = function (b) {
+        var raw = b.image_id ? (imagesById[b.image_id] || '') : '';
+        return { id: uid(), label: b.label || b.vocalization || '', description: b.label || b.vocalization || '',
+          category: 'other', image: safeImgUrl(raw) };
+      };
+      var words = [];
+      var order = obf.grid && Array.isArray(obf.grid.order) ? obf.grid.order : null;
+      if (order) {
+        order.forEach(function (row) { (row || []).forEach(function (bid) { if (bid != null && buttonsById[bid]) words.push(_btnToWord(buttonsById[bid])); }); });
+      }
+      // Fall back to raw button list if the grid was empty or missing ids.
+      if (!words.length) (obf.buttons || []).forEach(function (b) { words.push(_btnToWord(b)); });
+      var cols = (obf.grid && obf.grid.columns) || 4;
+      return { title: obf.name || 'Imported board', words: words, cols: cols };
+    };
+
+    // Shared save path (extracted from importSingleBoard so OBF/OBZ reuse it).
+    var _ingestImportedBoard = function (board, sourceLabel) {
+      if (!board || !Array.isArray(board.words) || !board.words.length) {
+        addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
+        return;
+      }
+      var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
+      setSavedBoards(function (prev) {
+        var updated = [imported].concat(prev);
+        store(scopedKey(STORAGE_BOARDS), updated);
+        return updated;
+      });
+      setShowBoardGallery(true);
+      addToast && addToast((t('toasts.board_imported') || 'Imported board "') + (imported.title || 'Untitled') + '"' + (sourceLabel ? ' (' + sourceLabel + ')' : ''), 'success');
+    };
+
+    var importBoardFile = useCallback(function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      var name = (file.name || '').toLowerCase();
+      if (/\.obz$/.test(name)) {
+        _ensureJSZip().then(function (JSZip) {
+          return file.arrayBuffer().then(function (buf) { return JSZip.loadAsync(buf); });
+        }).then(function (zip) {
+          var manifestFile = zip.file('manifest.json');
+          var readObf = function (path) {
+            var f = zip.file(path.replace(/^\.\//, '')); if (!f) return Promise.resolve(null);
+            return f.async('string').then(function (s) { try { return JSON.parse(s); } catch (_) { return null; } });
+          };
+          // Resolve image `path` entries (files inside the zip) to data URLs.
+          var resolveImages = function (obf) {
+            var imgs = (obf && obf.images) || [];
+            return Promise.all(imgs.map(function (im) {
+              if (!im || im.data || im.url || !im.path) return Promise.resolve();
+              var f = zip.file(String(im.path).replace(/^\.\//, ''));
+              if (!f) return Promise.resolve();
+              return f.async('base64').then(function (b64) { im.data = 'data:' + (im.content_type || 'image/png') + ';base64,' + b64; });
+            })).then(function () { return obf; });
+          };
+          var order = [];
+          var proceed = manifestFile
+            ? manifestFile.async('string').then(function (s) {
+                var man = {}; try { man = JSON.parse(s); } catch (_) {}
+                var boardsMap = (man.paths && man.paths.boards) || {};
+                var paths = Object.keys(boardsMap).map(function (k) { return boardsMap[k]; });
+                if (man.root && paths.indexOf(man.root) === -1) paths.unshift(man.root);
+                if (man.root) paths.sort(function (a, b) { return (a === man.root) ? -1 : (b === man.root ? 1 : 0); });
+                order = paths;
+              })
+            : Promise.resolve().then(function () {
+                zip.forEach(function (rel) { if (/\.obf$/i.test(rel)) order.push(rel); });
+              });
+          return proceed.then(function () {
+            return Promise.all(order.map(function (p) { return readObf(p).then(function (o) { return o ? resolveImages(o) : null; }); }));
+          });
+        }).then(function (obfs) {
+          var pages = (obfs || []).filter(Boolean).map(_obfToPage).filter(function (pg) { return pg.words.length; });
+          if (!pages.length) { addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error'); return; }
+          var board = pages.length === 1
+            ? { title: pages[0].title, words: pages[0].words, cols: pages[0].cols }
+            : { title: pages[0].title || 'Imported set', words: pages[0].words, cols: pages[0].cols, pages: pages };
+          _ingestImportedBoard(board, 'from .obz');
+        }).catch(function () { addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error'); });
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (e2) {
+        try {
+          if (/\.obf$/.test(name)) {
+            var obf = JSON.parse(e2.target.result);
+            _ingestImportedBoard(_obfToPage(obf), 'from .obf');
+            return;
+          }
+          var data = JSON.parse(e2.target.result);
+          var board = (data.type === 'alloBoard' && data.board) ? data.board : data;
+          if (!board || !Array.isArray(board.words)) throw new Error('Not a valid board file');
+          _ingestImportedBoard(Object.assign({}, board), null);
+        } catch (err) {
+          addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
+        }
+      };
+      reader.readAsText(file);
+    }, [savedBoards, addToast]);
 
     // ── HTML board export (WCAG 2.1 AA accessible) ─────────────────────────
     var exportBoardHTML = useCallback(function (board) {
@@ -6832,8 +7033,8 @@
             e('button', { onClick: function () { setShowPrintSettings(!showPrintSettings); }, 'aria-label': '️ Printu2026', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print\u2026')
           ),
           savedBoards.length > 0 && e('button', { onClick: function () { setShowBoardGallery(!showBoardGallery); }, 'aria-label': 'Toggle saved boards gallery', style: S.btn(showBoardGallery ? LIGHT_PURPLE : '#f3f4f6', showBoardGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedBoards.length + ')'),
-          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json file' }, '📥 Import Board'),
-          e('input', { type: 'file', accept: '.json', ref: importBoardRef, style: { display: 'none' }, onChange: importSingleBoard })
+          e('button', { onClick: function () { importBoardRef.current && importBoardRef.current.click(); }, 'aria-label': 'Import Board', style: S.btn('#f3f4f6', '#374151', false), title: 'Import a board from a .json, .obf, or .obz (Cboard / Open Board Format) file' }, '📥 Import Board'),
+          e('input', { type: 'file', accept: '.json,.obf,.obz', ref: importBoardRef, style: { display: 'none' }, onChange: importBoardFile })
         ),
         // Saved boards panel
         showBoardGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px', paddingTop: '6px' } },
@@ -6892,7 +7093,8 @@
                     }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': '⬇️', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': '🌐', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
-                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
+                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
+                    b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': 'Export all pages as Open Board Format set for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
                       onClick: function () {

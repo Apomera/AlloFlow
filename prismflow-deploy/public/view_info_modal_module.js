@@ -38,6 +38,7 @@ const OSS_CREDITS = [
       { name: "DOMPurify", use: "HTML sanitizing (safety)", license: "Apache-2.0 / MPL-2.0", url: "https://github.com/cure53/DOMPurify" },
       { name: "Harper", use: "grammar & spelling checks", license: "Apache-2.0", url: "https://writewithharper.com" },
       { name: "liblouis", use: "UEB Grade 2 braille (.brf) translation", license: "GPLv3 (engine) / LGPL-2.1+ (tables)", url: "https://liblouis.io" },
+      { name: "Open Board Format (OBF/OBZ)", use: "AAC board interchange with Cboard & other AAC apps (Symbol Studio import/export) \u2014 Open AAC / CoughDrop", license: "open specification", url: "https://www.openboardformat.org" },
       { name: "KaTeX", use: "math typesetting", license: "MIT", url: "https://katex.org" },
       { name: "Temml", use: "LaTeX \u2192 MathML", license: "MIT", url: "https://temml.org" },
       { name: "Speech Rule Engine", use: "spoken math (read-aloud, equation alt text, export captions) \u2014 Volker Sorge / MathJax", license: "Apache-2.0", url: "https://github.com/Speech-Rule-Engine/speech-rule-engine" },
