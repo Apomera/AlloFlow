@@ -88,9 +88,13 @@ describe('addAiTableCaptions — gated, bounded, conservative, fail-safe', () =>
 });
 
 describe('anti-drift: addAiTableCaptions is wired into the main flow before the final audit', () => {
+  // 2026-07-05: repointed to the LIVE single-doc path. The original anchors (the call site +
+  // `const batchFinalAudit = …`) lived only in the batch loop deleted @3a5d9280 (2026-07-02), so
+  // this test had been red — the function was orphaned. It is now restored on the live path, right
+  // after the outline fix and before `const finalAudit = await auditOutputAccessibility(...)`.
   it('the main remediation calls addAiTableCaptions ahead of the final authoritative audit', () => {
     const callIdx = dp.indexOf('await addAiTableCaptions(accessibleHtml)');
-    const finalAuditIdx = dp.indexOf('const batchFinalAudit = await auditOutputAccessibility(accessibleHtml)');
+    const finalAuditIdx = dp.indexOf('const finalAudit = await auditOutputAccessibility(accessibleHtml)');
     expect(callIdx).toBeGreaterThan(-1);
     expect(finalAuditIdx).toBeGreaterThan(-1);
     expect(callIdx).toBeLessThan(finalAuditIdx);

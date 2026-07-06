@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -18479,6 +18479,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         warnLog('[PDF Fix] Outline fix: collapsed ' + _h1Before + ' <h1> → 1 (kept the document title, demoted ' + (_h1Before - 1) + ' to <h2>) before the final audit.');
       }
 
+      // ── AI table captions (Increment 2, 2026-06-22; re-wired 2026-07-05) ── The AI tier of the
+      // caption cascade: fixTableCaptionsFromHeadings (deterministic, in runDeterministicWcagFixes)
+      // already captioned tables with an adjacent heading; this authors a caption for the REMAINDER —
+      // caption-less tables with NO nearby heading — so the "missing table caption" finding clears
+      // BEFORE the authoritative audit below. It was wired ONLY into the batch loop deleted in the
+      // 2026-07-02 deep-dive (@3a5d9280), which silently orphaned it on the live single-doc path; the
+      // anti-drift wiring test (tests/table_caption_ai_tier) then went red. Restored here, at the same
+      // pre-final-audit point the batch loop used. STRICT no-op with ZERO API calls when every table
+      // already carries a caption (the common case — the extraction prompt asks Vision for one), so it
+      // adds nothing to a clean run or under a Canvas throttle; each table is fail-safe and bounded.
+      try {
+        const _capRes = await addAiTableCaptions(accessibleHtml);
+        if (_capRes && _capRes.fixCount > 0) { accessibleHtml = _capRes.html; warnLog('[PDF Fix] AI: authored ' + _capRes.fixCount + ' table caption(s) for headingless tables before the final audit'); }
+      } catch (_capErr) { warnLog('[PDF Fix] addAiTableCaptions failed (non-fatal): ' + (_capErr && _capErr.message)); }
+
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
@@ -31570,6 +31585,11 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
