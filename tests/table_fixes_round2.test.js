@@ -68,7 +68,10 @@ describe('XSS-1 — _emitAccessibleTableHtml escapes when given an escaping sani
     expect(out).toContain('<img src=x onerror'); // exactly the XSS the old grid call allowed
   });
   it('source: the grid renderer no longer passes the non-escaping bare sanitizeField', () => {
-    expect(src).toContain('sanitize: (v) => escapeTextField(sanitizeField(v)),');
+    // #G (2026-07-05): the closure now routes through _alloCellRichText, whose every text run still
+    // goes through the SAME escapeTextField(sanitizeField(…)) escaper (live-tested in
+    // tests/ocr_echo_and_cell_markup.test.js).
+    expect(src).toContain('sanitize: (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t))),');
     expect(src).not.toContain('return _emitAccessibleTableHtml(block.grid, {\n                    sanitize: sanitizeField,');
   });
 });
@@ -76,9 +79,11 @@ describe('XSS-1 — _emitAccessibleTableHtml escapes when given an escaping sani
 // ── XSS-2: banner escaping + sanitizer hardening ──
 describe('XSS-2 — banner block is escaped + the write sanitizer kills unclosed <script>', () => {
   it('source: _bEyebrow/_bTitle/_bSubtitle route through escapeTextField', () => {
-    expect(src).toContain("'\">' + escapeTextField(_bEyebrow) + '</div>'");
-    expect(src).toContain("'\">' + escapeTextField(_bTitle) + '</div>'");
-    expect(src).toContain("'\">' + escapeTextField(_bSubtitle) + '</div>'");
+    // #G (2026-07-05): the banner card now emits a real <h1> (title) + <p> (eyebrow/subtitle) so the
+    // document gets its level-1 heading and the leading card lifts into <header> — same escaping.
+    expect(src).toContain("'\">' + escapeTextField(_bEyebrow) + '</p>'");
+    expect(src).toContain("'\">' + escapeTextField(_bTitle) + '</h1>'");
+    expect(src).toContain("'\">' + escapeTextField(_bSubtitle) + '</p>'");
   });
   it('source: _sanitizeHtmlForWrite now strips an UNCLOSED <script src=…>', () => {
     expect(src).toContain(".replace(/<\\/?script\\b[^>]*>/gi, '')");

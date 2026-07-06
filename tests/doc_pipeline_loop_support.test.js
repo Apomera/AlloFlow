@@ -44,6 +44,23 @@ function extractConst(name) {
   return eval('(' + head + '=> ' + bodySrc + ')');
 }
 
+// Harness repair (2026-07-05): reconcileOcrPages now calls two module statics unconditionally —
+// _stripPageEdgeArtifacts (#F) and _collapseAdjacentDupes (#G) — and logs flips via warnLog. The
+// evaled body resolves free variables lexically from THIS module's scope, so provide the real
+// statics (extracted from source — they are self-contained) and a warnLog stub. This suite had
+// been red since the #F commit.
+function extractVarFn(name) {
+  const s = SRC.indexOf('var ' + name + ' = function');
+  if (s === -1) throw new Error('source extraction failed: ' + name);
+  const e = SRC.indexOf('\n};', s) + 2; // include the closing '}' but not the ';'
+  const decl = SRC.slice(s, e);
+  // eslint-disable-next-line no-eval
+  return eval('(' + decl.slice(decl.indexOf('function')) + ')');
+}
+const _stripPageEdgeArtifacts = extractVarFn('_stripPageEdgeArtifacts');
+const _collapseAdjacentDupes = extractVarFn('_collapseAdjacentDupes');
+const warnLog = () => {};
+
 const splitHtmlOnTagBoundary = extractConst('splitHtmlOnTagBoundary');
 const reconcileOcrPages = extractConst('reconcileOcrPages');
 const _docFingerprint = extractConst('_docFingerprint');

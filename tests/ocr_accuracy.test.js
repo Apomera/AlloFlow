@@ -9,9 +9,15 @@ import { resolve } from 'node:path';
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // Pull the contiguous block: _ocrJunkRatio -> _ALLO_OCR_COMMON_EN -> _alloOcrAccuracy.
-const block = dp.match(/var _ocrJunkRatio = function[\s\S]*?\n  return _result;\r?\n\};/);
-if (!block) throw new Error('could not extract _alloOcrAccuracy block from source');
-const ocrAccuracy = new Function(block[0] + '\n; return _alloOcrAccuracy;')();
+// Harness repair (2026-07-05): the old non-greedy regex anchored on the FIRST `return _result;\n};`
+// after _ocrJunkRatio, which stopped at an intervening helper once one landed in the span — the
+// suite silently red. Slice by explicit markers instead: everything between the two functions is
+// self-contained (definitions only evaluate; bodies never run unless called).
+const _s0 = dp.indexOf('var _ocrJunkRatio = function');
+const _s1 = dp.indexOf('var _alloOcrAccuracy = function');
+const _e1 = dp.indexOf('\n};', _s1) + 3;
+if (_s0 === -1 || _s1 === -1 || _e1 < 3) throw new Error('could not extract _alloOcrAccuracy block from source');
+const ocrAccuracy = new Function(dp.slice(_s0, _e1) + '\n; return _alloOcrAccuracy;')();
 
 // A clean English paragraph (real text from the test corpus — well-formed OCR output).
 const CLEAN_EN = `A list of assessment procedures follows the Reason for Referral, thus identifying the assessment measures that were purposefully selected to answer the referral questions and to test hypotheses relating to them. The list should include all sources of assessment data that the evaluator relied on to address referral questions and concerns. In addition to tests and rating scales, the list should include observations in naturalistic settings and the types of interviews conducted.`;

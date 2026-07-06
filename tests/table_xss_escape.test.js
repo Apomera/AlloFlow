@@ -48,8 +48,11 @@ describe('every untrusted element-content sink in the block renderer routes thro
   it('the flat table path escapes caption, headers, and BOTH cell branches', () => {
     expect(src).toContain('<caption style="font-weight:bold;text-align:left;margin-bottom:0.5rem;color:${docStyle.headingColor}">`+escapeTextField(sanitizeField(block.caption))+`</caption>');
     expect(src).toContain('text-align:left">`+escapeTextField(sanitizeField(h))+`</th>'); // header cell
-    expect(src).toContain('padding:8px 12px">`+escapeTextField(sanitizeField(row))+`</td></tr>'); // single-cell row
-    expect(src).toContain('padding:8px 12px">`+escapeTextField(sanitizeField(cell))+`</td>'); // grid cell
+    // #G (2026-07-05): both cell branches route through _cellEsc — _alloCellRichText over the SAME
+    // escaper, so list-ish cell markup becomes a real list while every text run is still escaped.
+    expect(src).toContain('const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));');
+    expect(src).toContain('padding:8px 12px">`+_cellEsc(row)+`</td></tr>'); // single-cell row
+    expect(src).toContain('padding:8px 12px">`+_cellEsc(cell)+`</td>'); // grid cell
   });
   it('the definition_list (legend) path escapes caption, intro, headings, markers, labels', () => {
     expect(src).toContain('escapeTextField(sanitizeField(block.caption))+`</figcaption>');

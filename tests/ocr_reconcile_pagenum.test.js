@@ -13,7 +13,22 @@ const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf
 const start = src.indexOf('const reconcileOcrPages = (tessPages, visionPages) => {');
 const end = src.indexOf('const ensureMammothLoaded', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for reconcileOcrPages missing');
-const { reconcileOcrPages } = new Function(src.slice(start, end) + '\n; return { reconcileOcrPages };')();
+// Harness repair (2026-07-05): reconcileOcrPages now calls two module statics unconditionally —
+// _stripPageEdgeArtifacts (#F) and _collapseAdjacentDupes (#G) — so the bare slice threw a
+// ReferenceError (this suite was red from the #F commit on). Prepend the statics' own slices
+// (they are self-contained) and stub the conditional warnLog.
+const _sliceVarFn = (name) => {
+  const s = src.indexOf('var ' + name + ' = function');
+  if (s === -1) throw new Error('extraction marker for ' + name + ' missing');
+  const e = src.indexOf('\n};', s) + 3;
+  return src.slice(s, e);
+};
+const { reconcileOcrPages } = new Function(
+  'var warnLog = function () {};\n'
+  + _sliceVarFn('_stripPageEdgeArtifacts') + '\n'
+  + _sliceVarFn('_collapseAdjacentDupes') + '\n'
+  + src.slice(start, end) + '\n; return { reconcileOcrPages };'
+)();
 
 describe('reconcileOcrPages pairs by absolute pageNum', () => {
   it('reconciles page 6 with page 6 — not tess-page-1 vs vision-page-6 (the #20 bug)', () => {

@@ -879,7 +879,39 @@ var _stripPageEdgeArtifacts = function (pageTexts) {
   return { texts: outTexts, folios: Array.from(new Set(folios)) };
 };
 
-var _ALLO_OCR_COMMON_EN = ('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
+// ── #G (2026-07-05): cross-engine adjacent-duplicate collapse ──
+// The 7/5 scanned-book run shipped "should be reserved reserved for" inside a sentence the restorer
+// copied VERBATIM from the OCR ground truth — the winning engine had echoed a word at a printed line
+// wrap, and everything downstream (integrity denominator, AutoRestore's missing-word set, the sentence
+// restorer) trusted it. Collapse an adjacent identical token pair in one engine's page text ONLY when
+// the OTHER engine's text for the same page lacks that doubled bigram — a legitimate double ("had had",
+// "that that") is seen by both engines and survives. With no reference text (the other engine failed the
+// page), only the punctuation-bearing shape ("work? work?") is collapsed: a terminal-punctuation token
+// repeated immediately is not a prose pattern, while bare doubles are left alone. Pure; collapses are
+// returned (word + count) so the caller can disclose them in the fidelity panel — never silent.
+var _collapseAdjacentDupes = function (text, refText) {
+  var s = String(text == null ? '' : text);
+  var collapsed = [];
+  if (!s) return { text: s, collapsed: collapsed };
+  var ref = String(refText == null ? '' : refText).toLowerCase().replace(/\s+/g, ' ');
+  // A reference is only evidence when it plausibly COVERS the same content: an engine that captured
+  // a fraction of the page (or failed it) is silent, not disagreeing — mirror _substantialAlt's ≥50%
+  // guard. An unusable ref drops to the conservative no-ref mode below.
+  if (ref.length < s.replace(/\s+/g, ' ').length * 0.5) ref = '';
+  var out = s.replace(/(^|\s)(\S{3,})(\s+)(\2)(?=\s|$)/g, function (m, pre, tok) {
+    var t = tok.toLowerCase();
+    var legit = ref ? (ref.indexOf(t + ' ' + t) !== -1) : !/[.!?,;:]$/.test(tok);
+    if (legit) return m;
+    collapsed.push(tok);
+    return pre + tok;
+  });
+  // Named-var return: a module-level 2-space `return {` breaks check_pipeline_integrity's factory-
+  // export parse (the computeHeadline trap) — same idiom as _alloOcrAccuracy/restyleBlock.
+  var _r = { text: out, collapsed: collapsed };
+  return _r;
+};
+
+var _ALLO_OCR_COMMON_EN =('the of and to a in is that it for was as with his he be on at by i this had not are but from or have an they which you were her all she there would their we him been has when who will more no if out so said what up its about into than them can only other new some could time these two may then do first any my now such like our over me even most made after also did many before must through back years where much your way well down should because each just people how too little good very make see own work long here between both life being under never day same know while last might us great old year off come since against go came right used take three say each she may these so people them other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us').split(' ').filter(Boolean);
 var _alloOcrAccuracy = function (text) {
   var s = String(text == null ? '' : text);
   var rawTokens = s.split(/[^\p{L}\p{N}']+/u).filter(Boolean);
@@ -1188,6 +1220,51 @@ function _emitAccessibleTableHtml(grid, opts) {
   // so offset by +1) so the scope fallback sees true geometry, not the slice index.
   const tbody = '<tbody>' + tbodyRows.map(function (r, i) { return rowHtml(r, firstAllHeader ? i + 1 : i); }).join('') + '</tbody>';
   return '<table' + (opts.reconAttr ? ' data-allo-reconstructed="image"' : '') + ' style="width:100%;border-collapse:collapse;margin:1em 0">' + cap + thead + tbody + '</table>';
+}
+
+// ── #G (2026-07-05): table-cell rich text — stop shipping literal "<ul><li>" as visible cell text ──
+// The JSON extraction prompt gives Gemini no way to express a bulleted list INSIDE a table cell (the
+// commonest shape in assessment-report boxes), so the model improvises HTML inside the JSON string and
+// the escape-everything cell path prints the tags to the reader. Worse, the escaped markup fuses words
+// into single tokens ("assignment?</li><li>What"), which made AutoRestore's presence check judge plainly
+// visible cell words as MISSING and re-splice duplicates next to them. This helper is the render-time
+// net: a cell string carrying list-ish markup (<ul>/<ol>/<li>/<br>/<p>) — or the prompt's sanctioned
+// plain-text "• item" lines — is rebuilt as a REAL nested list; anything else escapes exactly as before.
+// XSS: only tags this function itself emits reach the output — every text run goes through the caller's
+// escaper, so a hostile cell string ('<img onerror=…>') is stripped to text and then escaped.
+function _alloCellRichText(raw, esc) {
+  var s = String(raw == null ? '' : raw);
+  var _stripTags = function (v) { return v.replace(/<[^>]+>/g, ' ').replace(/[ \t]+/g, ' ').trim(); };
+  if (!/<\s*(?:ul|ol|li|br|p)\b/i.test(s)) {
+    // Plain-text bullet lines (the prompt's sanctioned in-cell list shape): 2+ "• " items → real list.
+    var _bullets = s.split(/\s*[•▪◦]\s+/).map(function (b) { return b.trim(); }).filter(Boolean);
+    if (_bullets.length >= 2 && /[•▪◦]/.test(s)) {
+      var _lead = /^\s*[•▪◦]/.test(s) ? '' : _bullets.shift();
+      return (_lead ? '<p style="margin:0 0 0.4em">' + esc(_lead) + '</p>' : '')
+        + '<ul style="margin:0;padding-left:1.2em">' + _bullets.map(function (b) { return '<li style="margin:0.2em 0">' + esc(b) + '</li>'; }).join('') + '</ul>';
+    }
+    return esc(s);
+  }
+  var ordered = /<\s*ol\b/i.test(s) && !/<\s*ul\b/i.test(s);
+  var cleaned = s
+    .replace(/<\s*\/?\s*(?:ul|ol)\b[^>]*>/gi, '')
+    .replace(/<\s*br\s*\/?\s*>/gi, '\n')
+    .replace(/<\s*\/\s*p\s*>/gi, '\n')
+    .replace(/<\s*p\b[^>]*>/gi, '');
+  var parts = cleaned.split(/<\s*li\b[^>]*>/i);
+  var introTxt = _stripTags(parts.shift() || '').replace(/\s*\n\s*/g, ' ').trim();
+  var items = parts.map(function (p) { return _stripTags(p.replace(/<\s*\/\s*li\s*>/gi, ' ')).replace(/\s*\n\s*/g, ' ').trim(); }).filter(Boolean);
+  if (!items.length) {
+    // Markup but no <li> items (e.g. stray <br> line breaks): escape line-by-line, keep the breaks.
+    var lines = _stripTags(cleaned).split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    if (lines.length <= 1) return esc(lines[0] || introTxt);
+    return lines.map(esc).join('<br>');
+  }
+  var tag = ordered ? 'ol' : 'ul';
+  return (introTxt ? '<p style="margin:0 0 0.4em">' + esc(introTxt) + '</p>' : '')
+    + '<' + tag + ' style="margin:0;padding-left:1.2em">'
+    + items.map(function (it) { return '<li style="margin:0.2em 0">' + esc(it) + '</li>'; }).join('')
+    + '</' + tag + '>';
 }
 
 // A surgical DOM table tool gets EITHER a full document OR a bare fragment chunk (the AutoFix / surgical
@@ -1994,7 +2071,11 @@ function fixLandmarkFoundations(html) {
     // (it can collide with a host page's banner when embedded). Conservative: only lifts when the body
     // STARTS with the <h1>; any other leading content ⇒ no lift, plain <main> wrap exactly as before.
     out = out.replace(/(<body[^>]*>)([\s\S]*?)(<\/body>)/i, function (full, bodyOpen, inner, bodyClose) {
-      var _lift = inner.match(/^(\s*)(<h1\b[^>]*>[\s\S]*?<\/h1>\s*(?:<(?:p|div)\b[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i);
+      // #G (2026-07-05): also lift a leading data-allo-banner title CARD (the banner block's <div>
+      // holding the document <h1> — it contains no nested divs, so the non-greedy close is exact).
+      // Only a card that OPENS the body lifts; mid-body cards from merged chunks stay inside <main>.
+      var _lift = inner.match(/^(\s*)(<div\b[^>]*\bdata-allo-banner\s*=\s*["']true["'][^>]*>[\s\S]*?<\/div>\s*)/i)
+        || inner.match(/^(\s*)(<h1\b[^>]*>[\s\S]*?<\/h1>\s*(?:<(?:p|div)\b[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i);
       var headerHtml = _lift ? '<header>\n' + _lift[2].trim() + '\n</header>\n' : '';
       var rest = _lift ? inner.slice(_lift[0].length) : inner;
       return bodyOpen + '\n' + headerHtml + '<main id="main-content" role="main">' + rest + '</main>\n' + bodyClose;
@@ -8422,6 +8503,7 @@ var createDocPipeline = function(deps) {
     const merged = [];
     const disagreements = [];
     const lowConfidence = []; // B5 (2026-06-20): pages whose WINNING OCR is low-confidence — surfaced as a banner
+    const _dupeCollapses = []; // #G (2026-07-05): line-wrap word echoes collapsed from a winning page, per page
     for (const _pn of _nums) {
       const _pair = _byNum.get(_pn);
       const tPage = _pair.t || null, vPage = _pair.v || null;
@@ -8473,6 +8555,20 @@ var createDocPipeline = function(deps) {
         }
       }
       const chosen = _winner === 'tesseract' ? { source: 'tesseract', text: tText } : { source: 'vision', text: vText };
+      // #G (2026-07-05): the 7/5 book run shipped "should be reserved reserved for" — the winning engine
+      // had echoed a word at a printed line wrap, and the ground truth carried it into the sentence
+      // restorer verbatim. Collapse an adjacent duplicate token in the WINNING text only when the OTHER
+      // engine's read of the same page lacks that doubled bigram (a legitimate "had had" is seen by both);
+      // disclosed downstream via dupeCollapses — never silent.
+      {
+        const _ddRef = _winner === 'tesseract' ? vText : tText;
+        const _dd = _collapseAdjacentDupes(chosen.text, _ddRef);
+        if (_dd.collapsed.length) {
+          chosen.text = _dd.text;
+          _dupeCollapses.push({ pageNum: _pn, words: _dd.collapsed });
+          warnLog('[OCR Reconcile] page ' + _pn + ': collapsed ' + _dd.collapsed.length + ' adjacent duplicate token(s) (' + _dd.collapsed.slice(0, 5).join(', ') + ') — the echo is absent from the other engine\'s read');
+        }
+      }
       // Carry the Tesseract word boxes + page dims through reconciliation (Vision has
       // none). These are text+position PAIRS from Tesseract, used to draw a positioned
       // searchable layer — independent of which engine's TEXT won the length contest.
@@ -8531,10 +8627,20 @@ var createDocPipeline = function(deps) {
       // Pseudo-page blob: page boundaries are unknown inside it, so the edge strip can't apply — but the
       // folio census from the Tesseract side still informs downstream nets via detectedFolios.
       _fullText = (visionPages[0] && visionPages[0].text) || merged.map(p => p.text).filter(Boolean).join('\n\n');
+      // #G: the blob bypassed the per-page collapse above — dedupe it against the whole Tesseract side.
+      {
+        const _blobRef = (tessPages || []).map(p => (p && p.text) || '').filter(Boolean).join('\n\n');
+        const _bdd = _collapseAdjacentDupes(_fullText, _blobRef);
+        if (_bdd.collapsed.length) {
+          _fullText = _bdd.text;
+          _dupeCollapses.push({ pageNum: null, words: _bdd.collapsed });
+          warnLog('[OCR Reconcile] vision blob: collapsed ' + _bdd.collapsed.length + ' adjacent duplicate token(s) (' + _bdd.collapsed.slice(0, 5).join(', ') + ')');
+        }
+      }
     } else {
       _fullText = _edge.texts.filter(Boolean).join('\n\n');
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, dupeCollapses: _dupeCollapses };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -16130,6 +16236,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // integrity nets can flag one that leaked INTO the body ("his factual 194 memory") instead of
         // falsely flagging the stripped ones as lost values.
         try { window.__alloDetectedFolios = (rec && rec.detectedFolios) || []; } catch (_) {}
+        // #G (2026-07-05): remember reconcile-time echo collapses for the fidelity panel — a removal,
+        // however safe, is never silent. Overwritten every reconcile, so it can't go stale within a run.
+        try { window.__alloOcrDupeCollapses = (rec && rec.dupeCollapses) || []; } catch (_) {}
         // P2-a: clean the reconciled OCR ground text (drop standalone folios, rejoin page-break
         // hyphenation) before it feeds the transform / restore / integrity. rec.pages (the word boxes
         // for the positioned searchable layer) is left untouched below, so this can't desync it.
@@ -16585,7 +16694,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // DISABLED escaping on this rich/grid reconstructed-table path — untrusted vision text
                   // then reached the recon dangerouslySetInnerHTML sink raw. Escape like the flat path.
                   return _emitAccessibleTableHtml(block.grid, {
-                    sanitize: (v) => escapeTextField(sanitizeField(v)),
+                    // #G: cell strings carrying list-ish markup / "• " lines become REAL nested lists;
+                    // plain cells escape exactly as before (every text run still goes through the escaper).
+                    sanitize: (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t))),
                     tableBorder: docStyle.tableBorder,
                     tableBg: _hdr ? _hdr.bg : docStyle.tableBg,
                     headColor: docStyle.headingColor,
@@ -16624,9 +16735,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const hdrs = Array.isArray(block.headers) ? block.headers : [];
               const hdr = hdrs.length > 0 ? `<thead><tr>`+hdrs.map(h => `<th scope="col" style="background:${docStyle.tableBg};border:1px solid ${docStyle.tableBorder};padding:8px 12px;font-weight:bold;text-align:left">`+escapeTextField(sanitizeField(h))+`</th>`).join('')+`</tr></thead>` : '';
               const rowsArr = Array.isArray(block.rows) ? block.rows : [];
+              // #G: same in-cell list net as the grid path — the model has no JSON shape for a bulleted
+              // list inside a cell, so literal "<ul><li>" (or "• " lines) in a cell string is rebuilt as a
+              // real nested list instead of shipping escaped tags as visible text.
+              const _cellEsc = (v) => _alloCellRichText(v, (t) => escapeTextField(sanitizeField(t)));
               const rows = rowsArr.map(row => {
-                if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+escapeTextField(sanitizeField(row))+`</td></tr>`;
-                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+escapeTextField(sanitizeField(cell))+`</td>`).join('')+`</tr>`;
+                if (!Array.isArray(row)) return `<tr><td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(row)+`</td></tr>`;
+                return `<tr>`+row.map(cell => `<td style="border:1px solid ${docStyle.tableBorder};padding:8px 12px">`+_cellEsc(cell)+`</td>`).join('')+`</tr>`;
               }).join('');
               return `<table${_recon ? ' data-allo-reconstructed="image"' : ''} style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
@@ -16770,10 +16885,18 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const _shadowSm = _isDarkText
                 ? '0 1px 1px rgba(255,255,255,0.3)'
                 : '0 1px 2px rgba(0,0,0,0.3)';
-              return `<div style="position:relative;background:${docStyle.headerBg};color:${_bText} !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
-                + (_bEyebrow ? '<div style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin-bottom:10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bEyebrow) + '</div>' : '')
-                + (_bTitle ? '<div style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;text-shadow:' + _shadow + '">' + escapeTextField(_bTitle) + '</div>' : '')
-                + (_bSubtitle ? '<div style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin-top:10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bSubtitle) + '</div>' : '')
+              // #G (2026-07-05): the title is the ONE block the pipeline itself knows is the document
+              // title, yet it shipped as a styled <div> — the source of both Equal Access findings on the
+              // 7/5 scanned-book run ("missing h1", "no <header> landmark") and the PDF self-check's
+              // "first heading is H2" warning. Emit a real <h1> (same visual styles, margins zeroed) and
+              // mark the card data-allo-banner so runDeterministicWcagFixes lifts it into the top-level
+              // <header> BEFORE <main> (a header nested inside <main> is not a banner landmark). A
+              // chunk-merged doc can render several banner cards: _alloEnsureSingleH1 demotes the extra
+              // h1s, and only a card that OPENS the body is lifted, so mid-body cards stay plain divs.
+              return `<div data-allo-banner="true" style="position:relative;background:${docStyle.headerBg};color:${_bText} !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid ${_accent};box-shadow:0 6px 20px rgba(15,23,42,0.18)">`
+                + (_bEyebrow ? '<p style="color:' + _bText + ' !important;font-size:0.75em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.95;margin:0 0 10px;text-shadow:' + _shadowSm + '">' + escapeTextField(_bEyebrow) + '</p>' : '')
+                + (_bTitle ? '<h1 style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;margin:0;text-shadow:' + _shadow + '">' + escapeTextField(_bTitle) + '</h1>' : '')
+                + (_bSubtitle ? '<p style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin:10px 0 0;text-shadow:' + _shadowSm + '">' + escapeTextField(_bSubtitle) + '</p>' : '')
                 + `</div>`;
             }
             case 'rawhtml': {
@@ -16827,7 +16950,7 @@ BLOCK TYPES:
 - {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}
 - {"type":"ul","items":["item 1","item 2"]} — unordered lists (use for bullet points)
 - {"type":"ol","items":["step 1","step 2"]} — ordered lists (use for numbered sequences)
-- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row
+- {"type":"table","caption":"Descriptive table caption explaining what data the table shows","headers":["Col 1","Col 2"],"rows":[["data","data"]]} — tables MUST have a caption and header row. Cell strings must be PLAIN TEXT — never HTML tags. When a single cell contains a bulleted list, write each item prefixed with "• " (e.g. "• first point • second point"); do not emit <ul>/<li> markup inside a cell string.
 - {"type":"image","description":"Detailed description of what the image shows and why it matters in context (2-3 sentences)","alt":"Concise alternative text under 125 characters that conveys the image's purpose, not just its appearance"}
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
 - {"type":"hr"} — for section breaks between major content areas
@@ -18802,6 +18925,18 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // amber asterisk and the panel lists the specific values — instead of it living only in a toast.
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
       if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
+      // #G (2026-07-05): disclose reconcile-time echo collapses in the same persistent panel. Gated on
+      // _heavyScanned so a stale stash from a previous scanned run can't annotate a born-digital doc
+      // (the stash is only written when reconciliation actually runs).
+      try {
+        const _ddc = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloOcrDupeCollapses)) ? window.__alloOcrDupeCollapses : [];
+        if (_ddc.length) {
+          const _ddWords = [];
+          _ddc.forEach((e) => { ((e && e.words) || []).forEach((w) => { if (_ddWords.length < 8) _ddWords.push(w); }); });
+          const _ddN = _ddc.reduce((a, e) => a + (((e && e.words) || []).length), 0);
+          _structuralFidelityNotes.push({ kind: 'ocrDupeCollapse', msg: _ddN + ' repeated-word OCR echo(es) collapsed during page reconciliation (' + _ddWords.join(', ') + (_ddN > _ddWords.length ? ', …' : '') + ') — each token appeared twice in a row in one engine\'s read but once in the other\'s. Verify the affected sentence(s) against the original.' });
+        }
+      } catch (_) {}
       // OCR confidence (2026-06-29): low-confidence OCR pages are ALREADY computed
       // (window.__lastOcrLowConfidencePages, mean Tesseract conf <60) but were only surfaced as a transient
       // toast/banner. Push a durable WARN into the same notes the panel renders so a likely-garbled scan
@@ -24565,8 +24700,14 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         if (target) {
           const node = target.node;
           const orig = node.nodeValue;
-          const origCursor = mapOffset(orig, target.splicePoint);
+          let origCursor = mapOffset(orig, target.splicePoint);
           const origWord = srcWordsRaw[pos] || targetWord;
+          // #G (2026-07-05): an after-anchor splice point lands BETWEEN the anchor's last word and its
+          // ATTACHED punctuation when the context needle carries none ("…referral questions|. The onset").
+          // Splicing there produced "questions Note . The onset" on the 7/5 scanned-book run. Closing
+          // punctuation binds to the word on its left, so advance past it before splicing. Gated on a
+          // non-space left neighbor: a before-anchor splice point (cursor at a word START) never moves.
+          while (origCursor > 0 && origCursor < orig.length && !/\s/.test(orig[origCursor - 1]) && /[.,;:!?)\]"'”’]/.test(orig[origCursor])) origCursor++;
           // Adjacency guard (2026-06-19): the candidate-missing test can mis-flag an ALREADY-present
           // token (e.g. a curly-vs-straight apostrophe that slipped past _arNorm) as missing. If
           // origWord already abuts this splice point, treat it as present and DON'T re-insert —
@@ -24579,8 +24720,13 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
           // the curly/straight case it documents. Normalizing here catches "isn't isn't" too (defense-in-depth).
           const _normTok = function (s) { return String(s || '').toLowerCase().replace(/[‘’ʼ´`]/g, "'").replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, ''); };
           const _ow = _normTok(origWord);
-          const _leftTok = _normTok((orig.slice(0, origCursor).match(/[\p{L}\p{N}'‘’ʼ]+$/u) || [''])[0]);
-          const _rightTok = _normTok((orig.slice(origCursor).match(/^[\p{L}\p{N}'‘’ʼ]+/u) || [''])[0]);
+          // #G (2026-07-05): reach the neighbor tokens THROUGH whitespace/punctuation. The old regexes
+          // required the token to abut the cursor directly, so a splice point one space away from the
+          // word's existing copy ("…type of | assignment?</li>…") saw an empty neighbor and re-inserted
+          // the word — the "assignment? assignment?" / "work? work?" doubles on the 7/5 run. Adjacent
+          // means adjacent-in-prose, not adjacent-in-bytes.
+          const _leftTok = _normTok((orig.slice(0, origCursor).replace(/[^\p{L}\p{N}'‘’ʼ]+$/u, '').match(/[\p{L}\p{N}'‘’ʼ]+$/u) || [''])[0]);
+          const _rightTok = _normTok((orig.slice(origCursor).replace(/^[^\p{L}\p{N}'‘’ʼ]+/u, '').match(/^[\p{L}\p{N}'‘’ʼ]+/u) || [''])[0]);
           if (_ow && (_ow === _leftTok || _ow === _rightTok)) {
             placed = true; // the EXACT word already abuts this splice point — nothing to insert
           } else {
@@ -31384,6 +31530,8 @@ window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; /
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested
+window.AlloModules.createDocPipeline.collapseAdjacentDupes = _collapseAdjacentDupes; // static: #G cross-engine line-wrap echo collapse (2026-07-05), unit-tested
+window.AlloModules.createDocPipeline.cellRichText = _alloCellRichText; // static: #G in-cell list markup net (2026-07-05), unit-tested
 window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsToChunks; // static: $4 violation→chunk router (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
