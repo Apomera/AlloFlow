@@ -47,6 +47,17 @@ const OSS_CREDITS = [
       { name: "DOMPurify", use: "HTML sanitizing (safety)", license: "Apache-2.0 / MPL-2.0", url: "https://github.com/cure53/DOMPurify" },
       { name: "Harper", use: "grammar & spelling checks", license: "Apache-2.0", url: "https://writewithharper.com" },
       {
+        name: "Free Dictionary API (dictionaryapi.dev)",
+        use: "authoritative word definitions, pronunciation & synonyms shown beside the AI in the Define popup \u2014 a non-AI second source, cached so looked-up words keep working offline",
+        license: "API free / no key; data CC BY-SA (Wiktionary)",
+        url: "https://dictionaryapi.dev",
+        featured: 6,
+        owner: "meetDeveloper \xB7 data from Wiktionary",
+        blurb: "Puts a real dictionary entry \u2014 definition, pronunciation, and synonyms drawn from Wiktionary \u2014 right next to AlloFlow\u2019s AI explanation, so a grade-leveled definition can be triangulated against an authoritative one. Words a class looks up are cached and keep working offline.",
+        site: "https://dictionaryapi.dev",
+        repo: "https://github.com/meetDeveloper/freeDictionaryAPI"
+      },
+      {
         name: "liblouis",
         use: "UEB Grade 2 braille (.brf) translation",
         license: "GPLv3 (engine) / LGPL-2.1+ (tables)",

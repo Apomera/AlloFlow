@@ -1783,6 +1783,21 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       } finally {
       }
   };
+  // Authoritative dictionary (Wiktionary via dictionaryapi.dev, offline-cached) shown
+  // BESIDE the AI's grade-leveled definition — triangulation + a non-AI knowledge source.
+  // Fallback-safe: on any miss/failure the Define popup keeps its AI-only behaviour.
+  const attachDictionary = (word) => {
+      (async () => {
+          try {
+              if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                  await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+              }
+              if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+              const entry = await window.AlloDictionary.lookup(word);
+              if (entry) setDefinitionData(prev => (prev && prev.word === word ? { ...prev, dictionary: entry } : prev));
+          } catch (_e) {}
+      })();
+  };
   const handleWordClick = async (rawWord, e) => {
       if (interactionMode !== 'define') return;
       e.stopPropagation();
@@ -1796,6 +1811,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           x,
           y
       });
+      attachDictionary(word);
       try {
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const prompt = `
@@ -2010,6 +2026,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           y
       });
       setSelectionMenu(null);
+      attachDictionary(word);
       try {
           const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
           const prompt = `

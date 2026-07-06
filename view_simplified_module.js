@@ -19,6 +19,29 @@
   if (!React) { console.error('[ViewSimplifiedModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
+  // Authoritative dictionary panel (Wiktionary via dictionaryapi.dev, offline-cached)
+  // rendered beside the AI's leveled definition in the Define popup — triangulation.
+  // Pure fn of (entry, t); returns null when there's no entry (AI-only fallback).
+  function renderDictionaryPanel(dict, t) {
+    if (!dict) return null;
+    var kids = [];
+    kids.push(React.createElement('div', { key: 'hd', className: 'flex items-center gap-2 mb-1' },
+      React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700' }, (t('glossary.popups.dictionary') || 'Dictionary')),
+      dict.phonetic ? React.createElement('span', { className: 'text-[11px] text-slate-500' }, dict.phonetic) : null));
+    (dict.meanings || []).slice(0, 2).forEach(function (m, mi) {
+      var d0 = m.definitions && m.definitions[0] ? m.definitions[0].definition : '';
+      if (!d0) return;
+      kids.push(React.createElement('div', { key: 'm' + mi, className: 'text-xs text-slate-700 leading-snug mb-0.5' },
+        m.partOfSpeech ? React.createElement('span', { className: 'italic text-slate-500 mr-1' }, m.partOfSpeech) : null, d0));
+    });
+    if (dict.synonyms && dict.synonyms.length) {
+      kids.push(React.createElement('div', { key: 'syn', className: 'text-[11px] text-slate-500 mt-0.5' },
+        (t('glossary.popups.similar') || 'Similar') + ': ' + dict.synonyms.slice(0, 5).join(', ')));
+    }
+    kids.push(React.createElement('div', { key: 'src', className: 'text-[10px] text-slate-400 mt-1' }, dict.source));
+    return React.createElement('div', { className: 'mt-3 pt-3 border-t border-emerald-100' }, kids);
+  }
+
   // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
   // the animations globally so users with that preference see static styling.
   (function () {
@@ -757,7 +780,7 @@
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin"
-  }), " ", t('glossary.popups.finding')), definitionData.text && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('glossary.popups.finding')), definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t), definitionData.text && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 pt-3 border-t border-slate-100"
   }, definitionData.imageUrl ? /*#__PURE__*/React.createElement("img", {
     src: definitionData.imageUrl,

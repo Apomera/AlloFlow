@@ -856,6 +856,7 @@ const PLUGIN_FILES = [
     'mathlive_loader.js',
     'phonics_g2p_loader.js',
     'translate_loader.js',
+    'dictionary_loader.js',
     'sd_turbo_loader.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
