@@ -15,9 +15,122 @@ var isGoogleRedirect = function() {
   var fn = (u && u.isGoogleRedirect) || (window.__alloUtils && window.__alloUtils.isGoogleRedirect);
   return fn ? fn.apply(this, arguments) : false;
 };
+// ── Storybook picker (Quick Start ↔ Reading Library bridge) ──────────────
+// Compact picker over the same mirrored StoryWeaver data the Reading Library
+// serves (allo-reading-library-index@1). Deliberately dependency-free (plain
+// createElement, own fetch chain) so the wizard works even when the
+// ReadingLibrary module has not loaded. Kept byte-identical in
+// quickstart_source.jsx and quickstart_module.js (hand-synced pair).
+var STORYBOOK_BASES = [
+  'https://alloflow-cdn.pages.dev/reading_library/',
+  'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
+  './reading_library/',
+];
+function StorybookPicker(props) {
+  var e = React.createElement;
+  var _idx = React.useState(null); var idx = _idx[0], setIdx = _idx[1];
+  var _err = React.useState(false); var err = _err[0], setErr = _err[1];
+  var _lang = React.useState(''); var lang = _lang[0], setLang = _lang[1];
+  var _q = React.useState(''); var q = _q[0], setQ = _q[1];
+  var _busy = React.useState(null); var busy = _busy[0], setBusy = _busy[1];
+  var baseRef = React.useRef(STORYBOOK_BASES[0]);
+  var wt = function (k, fb) { try { var r = props.t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
+  React.useEffect(function () {
+    var alive = true;
+    var tryBase = function (i) {
+      if (i >= STORYBOOK_BASES.length) { if (alive) setErr(true); return; }
+      var bust = STORYBOOK_BASES[i].indexOf('http') === 0 ? '?t=' + Date.now() : '';
+      fetch(STORYBOOK_BASES[i] + 'index.json' + bust)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (!alive) return;
+          if (!data || !Array.isArray(data.books)) throw new Error('bad shape');
+          baseRef.current = STORYBOOK_BASES[i];
+          setIdx(data);
+        })
+        .catch(function () { tryBase(i + 1); });
+    };
+    tryBase(0);
+    return function () { alive = false; };
+  }, []);
+  var pick = function (entry) {
+    if (busy) return;
+    setBusy(entry.slug);
+    var bust = baseRef.current.indexOf('http') === 0 ? '?t=' + Date.now() : '';
+    fetch(baseRef.current + entry.file + bust)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (book) {
+        setBusy(null);
+        var parts = [book.title || ''];
+        (book.pages || []).forEach(function (p) { if (p.text) parts.push(p.text); });
+        var credits = (book.authors || []).join(', ');
+        props.onPicked(parts.join('\n\n').trim(), {
+          title: book.title,
+          description: (credits ? credits + ' · ' : '') + 'StoryWeaver, Pratham Books · CC BY 4.0',
+        });
+      })
+      .catch(function () {
+        setBusy(null);
+        if (props.addToast) props.addToast(wt('wizard.storybook_failed', 'Could not open that book right now.'), 'error');
+      });
+  };
+  if (err) return e('p', { className: 'text-sm text-red-600' }, wt('wizard.storybook_unavailable', 'The book library is not reachable right now — try another source option.'));
+  if (!idx) return e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_loading', 'Loading the library…'));
+  var matches = idx.books.filter(function (b) {
+    if (lang && b.language !== lang) return false;
+    if (q) {
+      var hay = (b.title + ' ' + (b.authors || []).join(' ')).toLowerCase();
+      if (hay.indexOf(q.toLowerCase()) === -1) return false;
+    }
+    return true;
+  });
+  var shown = matches.slice(0, 30);
+  return e('div', null,
+    e('div', { className: 'flex gap-2 mb-3' },
+      e('select', {
+        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        value: lang, onChange: function (ev) { setLang(ev.target.value); },
+        'aria-label': wt('wizard.storybook_language', 'Language'),
+      },
+        e('option', { value: '' }, wt('wizard.storybook_all_langs', 'All languages')),
+        (idx.languages || []).map(function (l) { return e('option', { key: l.name, value: l.name }, l.name + ' (' + l.count + ')'); })
+      ),
+      e('input', {
+        dir: 'auto',
+        className: 'flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
+        placeholder: wt('wizard.storybook_search', 'Search titles…'),
+        value: q, onChange: function (ev) { setQ(ev.target.value); },
+        'aria-label': wt('wizard.storybook_search', 'Search titles…'),
+      })
+    ),
+    shown.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No books match — try different filters.')) : null,
+    e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1' },
+      shown.map(function (b) {
+        return e('button', {
+          key: b.slug,
+          onClick: function () { pick(b); },
+          disabled: !!busy,
+          className: 'flex items-center gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all bg-white text-start disabled:opacity-60',
+        },
+          b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-12 h-12 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
+          e('span', { className: 'min-w-0' },
+            e('span', { className: 'block font-bold text-slate-700 text-sm truncate', dir: 'auto' }, (busy === b.slug ? '⏳ ' : '') + b.title),
+            e('span', { className: 'block text-[11px] text-slate-500' }, b.language + ' · L' + b.level + (b.hasAudio ? ' · 🔊' : ''))
+          )
+        );
+      })
+    ),
+    e('p', { className: 'text-[11px] text-slate-500 mt-2' },
+      (matches.length > shown.length ? wt('wizard.storybook_more', 'Showing the first 30 — filter by language or search to narrow down.') + ' · ' : '') +
+      wt('wizard.storybook_credit', 'Books from StoryWeaver, an open library by Pratham Books (CC BY 4.0).'))
+  );
+}
 const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
+  // Guarded fallback for keys newer than the lang packs (raw-key echo counts
+  // as missing — same convention as the Reading Library module).
+  const wt = (k, fb) => { try { const r = t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
   const wizardRef = useRef(null);
   useFocusTrap(wizardRef, isOpen);
   const [localData, setLocalData] = useState({
@@ -161,6 +274,17 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       } finally {
           setIsFetching(false);
       }
+  };
+  // Merged "Find on the Web" entry point: a pasted link imports directly,
+  // anything else goes through AI search. (The Paste URL and AI Auto-Search
+  // cards overlapped — one card, one input, smart dispatch.)
+  const handleWizardWebFind = () => {
+      const q = (localData.searchQuery || '').trim();
+      if (/^(https?:\/\/|www\.)\S+$/i.test(q)) {
+          handleWizardUrlFetch(q.indexOf('www.') === 0 ? 'https://' + q : q);
+          return;
+      }
+      handleWizardAiSearch();
   };
   const handleWizardAiSearch = async () => {
       if (!localData.searchQuery.trim()) return;
@@ -425,19 +549,6 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <span className="font-bold text-slate-700 group-hover:text-indigo-700 text-lg">{t('wizard.upload_file')}</span>
                                 <span className="text-xs text-slate-600 mt-1">{t('wizard.upload_desc')}</span>
                               </button>
-                              <button data-help-key="wizard_url_source"
-                                onClick={() => {
-                                    setLocalData(prev => ({ ...prev, sourceMode: 'url' }));
-                                    setStep(3);
-                                }}
-                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all group bg-white active:scale-95 h-40"
-                              >
-                                <div className="bg-blue-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
-                                    <Link size={32} className="text-blue-600"/>
-                                </div>
-                                <span className="font-bold text-slate-700 group-hover:text-blue-700 text-lg">{t('wizard.paste_url')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{t('wizard.url_desc')}</span>
-                              </button>
                               <button data-help-key="wizard_search_source"
                                 onClick={() => {
                                     setLocalData(prev => ({ ...prev, sourceMode: 'search' }));
@@ -448,8 +559,21 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <div className="bg-teal-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
                                     <Globe size={32} className="text-teal-600"/>
                                 </div>
-                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{t('wizard.ai_search')}</span>
-                                <span className="text-xs text-slate-600 mt-1">{t('wizard.search_desc')}</span>
+                                <span className="font-bold text-slate-700 group-hover:text-teal-700 text-lg">{wt('wizard.find_web', 'Find on the Web')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.find_web_desc', 'Paste a link or let AI search for you')}</span>
+                              </button>
+                              <button data-help-key="wizard_storybook_source"
+                                onClick={() => {
+                                    setLocalData(prev => ({ ...prev, sourceMode: 'storybook' }));
+                                    setStep(3);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50 transition-all group bg-white active:scale-95 h-40"
+                              >
+                                <div className="bg-amber-50 p-4 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform group-hover:bg-white">
+                                    <span className="text-[32px] leading-none" aria-hidden="true">📖</span>
+                                </div>
+                                <span className="font-bold text-slate-700 group-hover:text-amber-700 text-lg">{wt('wizard.storybooks', 'Story Books')}</span>
+                                <span className="text-xs text-slate-600 mt-1">{wt('wizard.storybooks_desc', 'Real picture books in 38 languages')}</span>
                               </button>
                               <button data-help-key="wizard_generate_source"
                                   aria-label={t('common.generate')}
@@ -521,22 +645,22 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       )}
                       {localData.sourceMode === 'search' && (
                           <div>
-                              <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.ai_search')}</label>
-                              <p className="text-slate-600 mb-4 text-sm">{t('wizard.search_helper')}</p>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">{wt('wizard.find_web', 'Find on the Web')}</label>
+                              <p className="text-slate-600 mb-4 text-sm">{wt('wizard.find_web_helper', 'Paste a link to import that page, or describe what you need and AI will find options.')}</p>
                               <div className="flex gap-2 mb-6">
                                   <input dir="auto" aria-label={t('common.enter_local_data')}
                                       type="text"
                                       value={localData.searchQuery}
                                       onChange={(e) => setLocalData(prev => ({ ...prev, searchQuery: e.target.value }))}
                                       data-help-key="wizard_search_input"
-                                      placeholder={t('wizard.search_placeholder')}
+                                      placeholder={wt('wizard.find_web_placeholder', 'Paste a URL, or describe a topic…')}
                                       className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 outline-none transition-all"
-                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardAiSearch()}
+                                      onKeyDown={(e) => e.key === 'Enter' && handleWizardWebFind()}
                                       autoFocus
                                   />
                                   <button aria-label={t('common.search_with_ai')}
                                       data-help-key="wizard_search_btn"
-                                      onClick={handleWizardAiSearch}
+                                      onClick={handleWizardWebFind}
                                       disabled={isFetching || !localData.searchQuery}
                                       aria-busy={isFetching}
                                       className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors flex items-center gap-2 shadow-md"
@@ -607,6 +731,47 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                             className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
                                           >
                                               {t('wizard.back_to_results')}
+                                          </button>
+                                          <button
+                                              aria-label={t('common.continue')}
+                                              onClick={() => setStep(4)}
+                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                                          >
+                                              {t('common.next')} <ArrowRight size={18} />
+                                          </button>
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                      )}
+                      {localData.sourceMode === 'storybook' && (
+                          <div>
+                              <label className="block text-lg font-bold text-slate-700 mb-2">📖 {wt('wizard.storybooks_title', 'Pick a story book')}</label>
+                              <p className="text-slate-600 mb-4 text-sm">{wt('wizard.storybooks_helper', 'Open picture books from StoryWeaver in 38 languages — the book text becomes your source material for every tool.')}</p>
+                              {!(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && (
+                                  <StorybookPicker t={t} addToast={addToast} onPicked={(text, meta) => setLocalData(prev => ({ ...prev, fetchedContent: text, resourceMeta: meta, searchQuery: meta.title }))} />
+                              )}
+                              {typeof localData.fetchedContent === 'string' && localData.fetchedContent && (
+                                  <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm">
+                                      <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                          <CheckCircle size={20} className="fill-green-100 text-green-600" /> {t('wizard.content_loaded')}
+                                      </div>
+                                      {localData.resourceMeta && (
+                                          <div className="mb-3 pb-3 border-b border-green-200/50">
+                                              <h4 className="font-bold text-green-900 text-sm" dir="auto">{localData.resourceMeta.title}</h4>
+                                              <p className="text-xs text-green-700 italic">{localData.resourceMeta.description}</p>
+                                          </div>
+                                      )}
+                                      <p className="text-xs text-green-700 mb-4 line-clamp-3 opacity-80 bg-white/50 p-2 rounded border border-green-100" dir="auto">
+                                          {localData.fetchedContent.substring(0, 300)}...
+                                      </p>
+                                      <div className="flex gap-2">
+                                          <button
+                                              aria-label={t('common.continue')}
+                                              onClick={() => setLocalData(prev => ({ ...prev, fetchedContent: '', resourceMeta: null }))}
+                                              className="px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
+                                          >
+                                              {wt('wizard.back_to_books', 'Choose another book')}
                                           </button>
                                           <button
                                               aria-label={t('common.continue')}

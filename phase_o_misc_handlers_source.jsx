@@ -365,7 +365,7 @@ const handleWizardComplete = (data, deps) => {
               customInstructions: finalData.sourceCustomInstructions
           });
       }, 500);
-    } else if (finalData.sourceMode === 'url' || finalData.sourceMode === 'search') {
+    } else if (finalData.sourceMode === 'url' || finalData.sourceMode === 'search' || finalData.sourceMode === 'storybook') {
       if (finalData.fetchedContent) {
           setInputText(finalData.fetchedContent);
       }
