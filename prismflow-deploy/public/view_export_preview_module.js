@@ -909,7 +909,7 @@ function ExportPreviewView(props) {
       a.click();
       URL.revokeObjectURL(a.href);
       addToast("Plain text downloaded", "success");
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4C4} Plain Text (.txt)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       let html = "";
@@ -920,6 +920,19 @@ function ExportPreviewView(props) {
       } catch (_) {
         html = doc.documentElement.outerHTML;
       }
+      const _mathBlocks = html.match(/<math\b[\s\S]*?<\/math>/gi) || [];
+      let _spokenByBlock = null;
+      if (_mathBlocks.length) {
+        try {
+          if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin("sre_loader.js");
+          if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === "function") {
+            _spokenByBlock = await Promise.all(_mathBlocks.map((m) => window.AlloMathSpeech.toSpeech(m, { timeoutMs: 8e3 })));
+          }
+        } catch (_) {
+          _spokenByBlock = null;
+        }
+      }
+      let _mathIdx = 0;
       const _cellTxt = (s) => String(s || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").replace(/\|/g, "\\|").trim();
       html = html.replace(/<table\b[\s\S]*?<\/table>/gi, (tbl) => {
         const rows = (tbl.match(/<tr\b[\s\S]*?<\/tr>/gi) || []).map((tr) => (tr.match(/<t[hd]\b[\s\S]*?<\/t[hd]>/gi) || []).map(_cellTxt));
@@ -929,7 +942,11 @@ function ExportPreviewView(props) {
         return "\n\n" + line(rows[0]) + "\n|" + Array.from({ length: w }, () => " --- |").join("") + "\n" + rows.slice(1).map(line).join("\n") + "\n\n";
       });
       html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => "\n\n![" + String(alt).replace(/\]/g, ")") + "](image)\n\n");
-      html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => "\n\n```mathml\n" + m + "\n```\n\n");
+      html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => {
+        const _spoken = _spokenByBlock && _spokenByBlock[_mathIdx] ? String(_spokenByBlock[_mathIdx]).trim().replace(/\*/g, "") : "";
+        _mathIdx++;
+        return "\n\n" + (_spoken ? "*Spoken: " + _spoken + "*\n\n" : "") + "```mathml\n" + m + "\n```\n\n";
+      });
       let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n").replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n").replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n").replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n").replace(/<p[^>]*>(.*?)<\/p>/gi, "$1\n\n").replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**").replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*").replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)").replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/\n{3,}/g, "\n\n").trim();
       const blob = new Blob([md], { type: "text/markdown" });
       const a = document.createElement("a");
@@ -1174,24 +1191,27 @@ function ExportPreviewView(props) {
         URL.revokeObjectURL(a.href);
       };
       const _grade1 = _toBRF(text);
-      if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
-        addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
-        Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
-          if (ueb && ueb.replace(/\s/g, "").length) {
-            _downloadBRF(ueb);
-            addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
-          } else {
+      const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
+      Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+        if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
+          addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
+          Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+            if (ueb && ueb.replace(/\s/g, "").length) {
+              _downloadBRF(ueb);
+              addToast("Electronic Braille (UEB Grade 2) downloaded", "success");
+            } else {
+              _downloadBRF(_grade1);
+              addToast("Electronic Braille (Grade 1) downloaded", "success");
+            }
+          }).catch(() => {
             _downloadBRF(_grade1);
             addToast("Electronic Braille (Grade 1) downloaded", "success");
-          }
-        }).catch(() => {
+          });
+        } else {
           _downloadBRF(_grade1);
-          addToast("Electronic Braille (Grade 1) downloaded", "success");
-        });
-      } else {
-        _downloadBRF(_grade1);
-        addToast("Electronic Braille (BRF) downloaded", "success");
-      }
+          addToast("Electronic Braille (BRF) downloaded", "success");
+        }
+      });
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("a11y.text_formatting") }, [
       { cmd: "bold", icon: "B", label: "Bold", style: "font-bold" },
       { cmd: "italic", icon: "I", label: "Italic", style: "italic" },

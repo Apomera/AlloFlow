@@ -847,6 +847,7 @@ const PLUGIN_FILES = [
     'kokoro_tts_loader.js',
     'piper_tts_loader.js',
     'liblouis_braille_loader.js',
+    'sre_loader.js',
     'sd_turbo_loader.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',

@@ -5580,6 +5580,30 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         s.async = true; s.crossOrigin = 'anonymous';
         return new Promise(r => { s.onload = () => r(true); s.onerror = () => r(false); document.head.appendChild(s); });
       };
+      // Generic on-demand loader-script injector for CDN plugin files
+      // (sre_loader.js, liblouis_braille_loader.js, …). CDN modules can't see
+      // pluginCdnBase/pluginCdnVersion, so without this a loader that nothing
+      // injects is dead code (the braille UEB path shipped exactly that way).
+      // Resolves true once the script tag has loaded; idempotent per URL;
+      // respects the desktop bundled-app relative base. Callers still check
+      // for the loader's window global afterwards.
+      window.__alloLoadPlugin = (file) => new Promise((resolve) => {
+        try {
+          const url = pluginCdnBase + file + '?v=' + pluginCdnVersion;
+          const existing = document.querySelector('script[src="' + url + '"]');
+          if (existing) {
+            if (existing.dataset.alloLoaded === '1') { resolve(true); return; }
+            existing.addEventListener('load', () => resolve(true));
+            existing.addEventListener('error', () => resolve(false));
+            return;
+          }
+          const s = document.createElement('script');
+          s.src = url; s.async = true; s.crossOrigin = 'anonymous';
+          s.onload = () => { s.dataset.alloLoaded = '1'; resolve(true); };
+          s.onerror = () => resolve(false);
+          document.head.appendChild(s);
+        } catch (_) { resolve(false); }
+      });
       // SD-Turbo: local image generation (the image twin of the Kokoro
       // fallback). Loader is tiny; the ~2GB models download inside init()
       // with progress, cached in the browser Cache API per device.

@@ -40,6 +40,7 @@ const OSS_CREDITS = [
       { name: "liblouis", use: "UEB Grade 2 braille (.brf) translation", license: "GPLv3 (engine) / LGPL-2.1+ (tables)", url: "https://liblouis.io" },
       { name: "KaTeX", use: "math typesetting", license: "MIT", url: "https://katex.org" },
       { name: "Temml", use: "LaTeX \u2192 MathML", license: "MIT", url: "https://temml.org" },
+      { name: "Speech Rule Engine", use: "spoken math (read-aloud, equation alt text, export captions) \u2014 Volker Sorge / MathJax", license: "Apache-2.0", url: "https://github.com/Speech-Rule-Engine/speech-rule-engine" },
       { name: "Prism", use: "code syntax highlighting", license: "MIT", url: "https://prismjs.com" },
       { name: "mammoth.js", use: "importing Word documents", license: "BSD-2-Clause", url: "https://github.com/mwilliamson/mammoth.js" },
       { name: "docx", use: "Word (.docx) export", license: "MIT", url: "https://docx.js.org" },

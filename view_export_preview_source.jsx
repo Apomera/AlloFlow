@@ -1056,7 +1056,7 @@ function ExportPreviewView(props) {
                           const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.txt'; a.click(); URL.revokeObjectURL(a.href);
                           addToast('Plain text downloaded', 'success');
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📄 Plain Text (.txt)</button>
-                        <button onClick={() => {
+                        <button onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
                           // #14: strip editor chrome + style/script bodies before the regex conversion.
@@ -1066,6 +1066,22 @@ function ExportPreviewView(props) {
                             _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
+                          // Spoken-math captions (2026-07-05): the ```mathml fence below is
+                          // opaque to anyone reading the .md without a MathML renderer. When
+                          // SRE (sre_loader.js) can produce a spoken form for a block, emit
+                          // it as a "Spoken:" line above the fence. Fail-soft: any failure
+                          // leaves the fence exactly as before.
+                          const _mathBlocks = html.match(/<math\b[\s\S]*?<\/math>/gi) || [];
+                          let _spokenByBlock = null;
+                          if (_mathBlocks.length) {
+                            try {
+                              if (!window.AlloMathSpeech && window.__alloLoadPlugin) await window.__alloLoadPlugin('sre_loader.js');
+                              if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+                                _spokenByBlock = await Promise.all(_mathBlocks.map(m => window.AlloMathSpeech.toSpeech(m, { timeoutMs: 8000 })));
+                              }
+                            } catch (_) { _spokenByBlock = null; }
+                          }
+                          let _mathIdx = 0;
                           // #6 (export-format review): tables/images/math vanished under the final
                           // tag-strip. Convert tables to GitHub pipe tables, images to md images
                           // (alt preserved), and MathML to a fenced block BEFORE the strip runs.
@@ -1078,7 +1094,11 @@ function ExportPreviewView(props) {
                             return '\n\n' + line(rows[0]) + '\n|' + Array.from({ length: w }, () => ' --- |').join('') + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
                           });
                           html = html.replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*>/gi, (m, alt) => '\n\n![' + String(alt).replace(/\]/g, ')') + '](image)\n\n');
-                          html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => '\n\n```mathml\n' + m + '\n```\n\n');
+                          html = html.replace(/<math\b[\s\S]*?<\/math>/gi, (m) => {
+                            const _spoken = (_spokenByBlock && _spokenByBlock[_mathIdx]) ? String(_spokenByBlock[_mathIdx]).trim().replace(/\*/g, '') : '';
+                            _mathIdx++;
+                            return '\n\n' + (_spoken ? ('*Spoken: ' + _spoken + '*\n\n') : '') + '```mathml\n' + m + '\n```\n\n';
+                          });
                           let md = html.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
                             .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n').replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
                             .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
@@ -1290,24 +1310,32 @@ function ExportPreviewView(props) {
                           // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
                           // fall back to the Grade-1 converter on ANY failure so the export
                           // is never worse than before (offline, load error, empty result).
-                          if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
-                            addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
-                            Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
-                              if (ueb && ueb.replace(/\s/g, '').length) {
-                                _downloadBRF(ueb);
-                                addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
-                              } else {
+                          // 2026-07-05: nothing ever INJECTED liblouis_braille_loader.js, so
+                          // window.AlloBraille could not exist and the UEB path was dead code.
+                          // Lazy-load it on demand via the __alloLoadPlugin injector first.
+                          const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
+                            ? Promise.resolve(true)
+                            : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
+                          Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
+                            if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
+                              addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                              Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                                if (ueb && ueb.replace(/\s/g, '').length) {
+                                  _downloadBRF(ueb);
+                                  addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
+                                } else {
+                                  _downloadBRF(_grade1);
+                                  addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                                }
+                              }).catch(() => {
                                 _downloadBRF(_grade1);
                                 addToast('Electronic Braille (Grade 1) downloaded', 'success');
-                              }
-                            }).catch(() => {
+                              });
+                            } else {
                               _downloadBRF(_grade1);
-                              addToast('Electronic Braille (Grade 1) downloaded', 'success');
-                            });
-                          } else {
-                            _downloadBRF(_grade1);
-                            addToast('Electronic Braille (BRF) downloaded', 'success');
-                          }
+                              addToast('Electronic Braille (BRF) downloaded', 'success');
+                            }
+                          });
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">⠿ Electronic Braille (.brf)</button>
                       </div>
                     </details>

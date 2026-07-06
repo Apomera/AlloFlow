@@ -225,6 +225,44 @@ const createTTS = (deps) => {
         .replace(/\n{2,}/g, '. ')
         .replace(/\n/g, ', ')
         .replace(/\s{2,}/g, ' ').trim();
+    // ── Spoken math pre-pass (2026-07-05) ──
+    // Substitute delimited math ($x^2$, $$..$$, \(..\), \[..\]) with a spoken
+    // rendering via Speech Rule Engine (sre_loader.js → window.AlloMathSpeech)
+    // BEFORE the text forks to any synthesis leg — without this every engine
+    // reads "dollar x caret two dollar". One shared pre-pass, same rationale
+    // as cleanTextForLocalTTS (the per-leg copies drift). Fallback-safe: on
+    // no-math / loader missing / SRE failure / timeout the original text is
+    // returned untouched, so the worst case is exactly today's behaviour.
+    const MATH_SEGMENT_RE = /\$\$([^$]{1,400}?)\$\$|\\\[([\s\S]{1,400}?)\\\]|\\\(([\s\S]{1,300}?)\\\)|\$([^$\n]{1,200}?)\$/g;
+    // Currency guard: "$5 and $10" pairs into a bogus segment. Only treat a
+    // segment as math when it carries a LaTeX command, super/subscript, or a
+    // short equation — anything else stays verbatim (conservative by design).
+    const _mathLooksReal = (c) => /\\[a-zA-Z]+|[\^_]/.test(c) || (/=/.test(c) && c.length <= 80);
+    const _mathToSpeakable = async (raw, language) => {
+        try {
+            const src = String(raw == null ? '' : raw);
+            MATH_SEGMENT_RE.lastIndex = 0;
+            if (!MATH_SEGMENT_RE.test(src)) return raw;
+            if (!window.AlloMathSpeech && window.__alloLoadPlugin) { try { await window.__alloLoadPlugin('sre_loader.js'); } catch (_) {} }
+            if (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') return raw;
+            const jobs = [];
+            src.replace(MATH_SEGMENT_RE, (m, disp, brk, par, inl, off) => {
+                const body = (disp || brk || par || inl || '').trim();
+                if (body && _mathLooksReal(body)) jobs.push({ m, body, off });
+                return m;
+            });
+            if (!jobs.length) return raw;
+            const spoken = await Promise.all(jobs.map(j => window.AlloMathSpeech.toSpeech(j.body, { lang: language, timeoutMs: 6000 })));
+            let out = ''; let cursor = 0;
+            jobs.forEach((j, i) => {
+                out += src.slice(cursor, j.off);
+                out += (spoken[i] && String(spoken[i]).trim()) ? (' ' + String(spoken[i]).trim() + ' ') : j.m;
+                cursor = j.off + j.m.length;
+            });
+            out += src.slice(cursor);
+            return out;
+        } catch (_) { return raw; }
+    };
     const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
             return null;
@@ -241,6 +279,8 @@ const createTTS = (deps) => {
         // speak Spanish glossary terms with English phonology (and cache it).
         var _language = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
         var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
+        // Spoken math pre-pass (no-op unless delimited math is present)
+        text = await _mathToSpeakable(text, _language);
         // Optional AbortSignal for per-call cancellation. AlloSpeechPlayer.stop()
         // aborts in-flight TTS so a fast click-to-stop doesn't keep burning the
         // Gemini quota for audio the user already cancelled. fetchTTSBytes
@@ -446,6 +486,8 @@ const createTTS = (deps) => {
     const callTTSDirect = async (text, voiceName = "Puck", speed = 1, maxRetries = 2) => {
         if (isGlobalMuted()) return null;
         if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
+        // Spoken math pre-pass (no-op unless delimited math is present)
+        text = await _mathToSpeakable(text, getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv) {
             if (Date.now() >= state.rateLimitedUntil) {

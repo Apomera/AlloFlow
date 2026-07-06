@@ -11992,6 +11992,40 @@ HTML section ${chunkNum}/${chunks.length}:
           if (parsed && _applyImageIntel(htmlDoc2, im, parsed)) {
             changed = true;
             out.classified++;
+            // ── SRE spoken-math upgrade + TRIANGULATION (2026-07-05) ──
+            // For an equation we hold TWO independent derivations of the
+            // spoken form: Vision's freeform spoken alt, and a deterministic
+            // Speech-Rule-Engine rendering of the SAME LaTeX Vision captured.
+            // When both exist and agree, Vision's stays (it saw the pixels);
+            // when they diverge — Vision's two outputs contradicting each
+            // other is the best cheap signal it misread the equation — prefer
+            // the deterministic SRE form and mark the image for review. Runs
+            // BEFORE the duplicate-group loop so every copy inherits the
+            // upgraded alt. Fail-soft: any failure keeps the
+            // _alloLatexToSpeakable fallback _applyImageIntel already set.
+            if (parsed.kind === 'equation' && im.getAttribute('data-allo-latex') && typeof window !== 'undefined') {
+              try {
+                if (!window.AlloMathSpeech && window.__alloLoadPlugin) { try { await window.__alloLoadPlugin('sre_loader.js'); } catch (_) {} }
+                if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+                  const _sreSpoken = await window.AlloMathSpeech.toSpeech(im.getAttribute('data-allo-latex'), { timeoutMs: 8000 });
+                  if (_sreSpoken && _sreSpoken.trim().length >= 8) {
+                    const _visionAlt = (im.getAttribute('alt') || '').replace(/^Equation:\s*/i, '').trim();
+                    const _tok = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter((w) => w.length > 1);
+                    const _aTok = _tok(_visionAlt); const _bSet = new Set(_tok(_sreSpoken));
+                    let _hits = 0; _aTok.forEach((w) => { if (_bSet.has(w)) _hits++; });
+                    const _agreement = _aTok.length ? _hits / Math.max(1, Math.min(_aTok.length, _bSet.size)) : 0;
+                    if (!_visionAlt || _agreement < 0.45) {
+                      const _upgraded = ('Equation: ' + _sreSpoken.trim()).slice(0, 600);
+                      im.setAttribute('alt', _upgraded);
+                      parsed.alt = _upgraded; // duplicate-group members inherit below
+                      if (_visionAlt) im.setAttribute('data-allo-spoken-triangulation', 'divergent');
+                    } else {
+                      im.setAttribute('data-allo-spoken-triangulation', 'agree');
+                    }
+                  }
+                }
+              } catch (_) { /* deterministic fallback already in place */ }
+            }
             // One verdict, every copy: alt/kind/latex apply to all group
             // members; the companion blocks (chart table, MathML) attach to
             // the FIRST occurrence only — repeating them per copy is noise.
