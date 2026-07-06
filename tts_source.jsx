@@ -24,6 +24,18 @@ const createTTS = (deps) => {
         setShowKokoroOfferModal,
     } = deps;
 
+    // Effective cloud-TTS key. Two ways a "key" can be a lie (both field-hit
+    // 2026-07-06 on desktop): the bundler's old 'desktop-user-provided'
+    // sentinel (truthy placeholder nothing recognized), and a real-looking key
+    // Google rejects (__ttsGeminiAuthFailed latches on the first key-invalid
+    // 400). Either way the cloud leg is unusable and keyless routing — local
+    // Kokoro reroute + skip-doomed-calls — must engage.
+    const _cloudKeyUsable = () => {
+        if (!apiKey || apiKey === 'desktop-user-provided') return false;
+        if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) return false;
+        return true;
+    };
+
     // pcmToWav is inlined here (not injected) because it's a pure conversion
     // utility with no external deps. Keeps the module self-contained and avoids
     // a TDZ trap from the monolith's pcmToWav being component-scoped.
@@ -146,6 +158,12 @@ const createTTS = (deps) => {
                     state.ttsTemperatureUnsupported = true;
                     console.warn('[TTS] API rejected temperature param — disabled; caller retry will go without it.');
                     throw new Error('TTS Transient Error (400 temperature)');
+                }
+                if (response.status === 400 && /API key not valid|API_KEY_INVALID/i.test(errorBody)) {
+                    // Key-invalid latch: this key will NEVER work — flip the whole
+                    // session to keyless routing (local Kokoro serves; no more doomed calls).
+                    try { window.__ttsGeminiAuthFailed = true; } catch (_) {}
+                    console.warn("[TTS]" + " cloud TTS key rejected — switching this session to the local voice.");
                 }
                 console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
@@ -411,7 +429,7 @@ const createTTS = (deps) => {
         var _provIsLocalAI = !!(_cfgTtsEarly && (_cfgTtsEarly.backend === 'ollama' || _cfgTtsEarly.backend === 'localai'));
         var _providerHandlesTts = _provTtsEarly === 'local' || _provTtsEarly === 'browser' || _provTtsEarly === 'off' || (_provTtsEarly === 'auto' && _provIsLocalAI);
         var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
-        var _kokoroKeyless = !_isCanvasEnv && !apiKey && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
+        var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
         if (_kokoroPreferred || _kokoroKeyless) {
             if (!_isEnglish) {
                 console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
@@ -474,7 +492,7 @@ const createTTS = (deps) => {
         // Gemini TTS leg can NEVER succeed — every attempt is a guaranteed
         // 400 + retries + an error-report entry. Skip it silently (one log
         // per session); callers fall to the browser voice until Kokoro is up.
-        if (!_isCanvasEnv && !apiKey) {
+        if (!_isCanvasEnv && !_cloudKeyUsable()) {
             if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
                 window.__ttsKeylessLogged = true;
                 console.log('[TTS] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle read-aloud.');
@@ -580,7 +598,7 @@ const createTTS = (deps) => {
         var _botProvLocalAI = !!(_botCfgTts && (_botCfgTts.backend === 'ollama' || _botCfgTts.backend === 'localai'));
         var _botProviderHandles = _botProvTts === 'local' || _botProvTts === 'browser' || _botProvTts === 'off' || (_botProvTts === 'auto' && _botProvLocalAI);
         var _botKokoroEligible = (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName))
-            || (!_isCanvasEnv && !apiKey && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
+            || (!_isCanvasEnv && !_cloudKeyUsable() && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
         if (_botKokoroEligible) {
             const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
             if (botKokoroLang === 'en' && window._kokoroTTS && window._kokoroTTS.ready) {
@@ -620,7 +638,7 @@ const createTTS = (deps) => {
         }
         // Same keyless short-circuit as callTTS: no key = guaranteed 400 from
         // the Gemini leg, so don't burn retries or pollute the error report.
-        if (!_isCanvasEnv && !apiKey) {
+        if (!_isCanvasEnv && !_cloudKeyUsable()) {
             if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
                 window.__ttsKeylessLogged = true;
                 console.log('[TTS-Bot] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle speech.');
@@ -687,7 +705,13 @@ const createTTS = (deps) => {
                           console.warn('[TTS-Bot] API rejected temperature param — disabled; retry will go without it.');
                           throw new Error('TTS Transient Error (400 temperature)');
                       }
-                      console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
+                      if (response.status === 400 && /API key not valid|API_KEY_INVALID/i.test(errorBody)) {
+                    // Key-invalid latch: this key will NEVER work — flip the whole
+                    // session to keyless routing (local Kokoro serves; no more doomed calls).
+                    try { window.__ttsGeminiAuthFailed = true; } catch (_) {}
+                    console.warn("[TTS-Bot]" + " cloud TTS key rejected — switching this session to the local voice.");
+                }
+                console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
                       throw new Error(`API Error: ${response.status} ${response.statusText}`);
                     }
                     const data = await response.json();

@@ -97,7 +97,13 @@ function main() {
     ESLINT_NO_DEV_ERRORS: 'true',
     PUBLIC_URL: '.',
     REACT_APP_API_KEY: 'desktop-user-provided',
-    REACT_APP_GEMINI_API_KEY: 'desktop-user-provided',
+    // EMPTY, not a placeholder (field-caught 2026-07-06): the old
+    // 'desktop-user-provided' sentinel is a TRUTHY string no consumer
+    // recognized — the app believed it had a cloud key, sent
+    // ?key=desktop-user-provided to Google ("API key not valid" 400 storms),
+    // and every keyless routing path (local Kokoro reroute, keyless guard)
+    // stayed disabled. Desktop is the no-account surface: no baked key.
+    REACT_APP_GEMINI_API_KEY: '',
     GEMINI_API_KEY: 'desktop-user-provided',
     GOOGLE_API_KEY: 'desktop-user-provided',
   };
