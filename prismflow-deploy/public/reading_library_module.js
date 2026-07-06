@@ -44,11 +44,14 @@
     './reading_library/',
   ];
 
+  // StoryWeaver reading levels with their approximate grade bands (their own
+  // guidance: L1 emergent, L2 early, L3 fluent-ish, L4 confident). Bands are a
+  // guide, not a hard grade lock — a newcomer at any grade may start at L1.
   var LEVEL_LABELS = {
-    1: 'Level 1 · First words',
-    2: 'Level 2 · First sentences',
-    3: 'Level 3 · Reading on my own',
-    4: 'Level 4 · Longer stories',
+    1: 'Level 1 · First words (≈ K–1)',
+    2: 'Level 2 · First sentences (≈ Gr 1–2)',
+    3: 'Level 3 · Reading on my own (≈ Gr 2–3)',
+    4: 'Level 4 · Longer stories (≈ Gr 3–5)',
   };
 
   // --- i18n guard (free-t crash class + raw-key echo both handled) --------

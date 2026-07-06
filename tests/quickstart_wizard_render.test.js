@@ -112,22 +112,40 @@ describe('source-material step (step 2)', () => {
 });
 
 describe('story-books flow', () => {
-  it('picks a real book from the mirrored index and loads it as source content', async () => {
+  it('preselects the reading level from the chosen grade, then loads a book as source content', async () => {
+    await mountAtSourceStep(); // wizard grade defaults to '3rd Grade'
+    clickByText('Story Books');
+    await flush();
+    // two selects now: level (first) + language (second)
+    const selects = host.querySelectorAll('select');
+    expect(selects.length).toBe(2);
+    // 3rd Grade → Level 3 preselect, with the grade note shown
+    expect(selects[0].value).toBe('3');
+    expect(host.textContent).toContain('matched to your grade');
+    // language dropdown still carries every language
+    expect(selects[1].querySelectorAll('option').length).toBe(index.languages.length + 1);
+    // pick the first LEVEL-3 book (guaranteed within the shown slice)
+    const lvl3 = index.books.filter((b) => String(b.level) === '3')[0];
+    clickByText(lvl3.title);
+    await flush();
+    const text = host.textContent || '';
+    expect(text).toContain('Content loaded and ready');
+    expect(text).toContain(lvl3.title);
+    expect(text).toContain('CC BY 4.0');
+  });
+
+  it('clearing the level filter to All levels widens the grid', async () => {
     await mountAtSourceStep();
     clickByText('Story Books');
     await flush();
-    // picker loaded the real index: language filter carries every language
-    const select = host.querySelector('select');
-    expect(select).toBeTruthy();
-    expect(select.querySelectorAll('option').length).toBe(index.languages.length + 1);
-    // pick the first book in the grid
-    const first = index.books[0];
-    clickByText(first.title.slice(0, 10));
+    const levelSelect = host.querySelectorAll('select')[0];
+    expect(levelSelect.value).toBe('3');
+    act(() => {
+      levelSelect.value = '';
+      levelSelect.dispatchEvent(new window.Event('change', { bubbles: true }));
+    });
     await flush();
-    // green confirmation with the book title + CC BY attribution
-    const text = host.textContent || '';
-    expect(text).toContain('Content loaded and ready');
-    expect(text).toContain(first.title);
-    expect(text).toContain('CC BY 4.0');
+    // grade note gone once the preselect no longer applies
+    expect(host.textContent).not.toContain('matched to your grade');
   });
 });

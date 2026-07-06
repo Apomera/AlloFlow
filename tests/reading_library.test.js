@@ -190,7 +190,20 @@ describe('language plan (reading_library/languages.json)', () => {
         expect(['1', '2', '3', '4']).toContain(lvl);
         expect(n).toBeGreaterThan(0);
       });
+      // audioPerLevel is optional (narration-first top-up); when present it
+      // must be well-formed too.
+      if (p.audioPerLevel) {
+        Object.entries(p.audioPerLevel).forEach(([lvl, n]) => {
+          expect(['1', '2', '3', '4']).toContain(lvl);
+          expect(n).toBeGreaterThan(0);
+        });
+      }
     });
+  });
+
+  it('only languages with a real StoryWeaver audio pool get audioPerLevel', () => {
+    const withAudio = plan.filter((p) => p.audioPerLevel).map((p) => p.language).sort();
+    expect(withAudio).toEqual(['Arabic', 'English', 'Hindi', 'Urdu']);
   });
 
   it('language names and codes are unique', () => {

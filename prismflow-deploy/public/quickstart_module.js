@@ -60,11 +60,28 @@ var STORYBOOK_BASES = [
   'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
   './reading_library/',
 ];
+// Reading levels ≈ grade bands (StoryWeaver's own leveling). Used to label and
+// pre-select the picker's level filter from the grade chosen in wizard step 1.
+var STORYBOOK_LEVELS = {
+  '1': 'First words (≈ K–1)',
+  '2': 'First sentences (≈ Gr 1–2)',
+  '3': 'Reading alone (≈ Gr 2–3)',
+  '4': 'Longer stories (≈ Gr 3–5)',
+};
+function storybookGradeToLevel(grade) {
+  var g = String(grade || '').toLowerCase();
+  if (g.indexOf('kinder') !== -1 || /\b(pre-?k|1st)\b/.test(g)) return '1';
+  if (/\b2nd\b/.test(g)) return '2';
+  if (/\b3rd\b/.test(g)) return '3';
+  if (/\b([4-9]|1[0-2])th\b/.test(g) || g.indexOf('college') !== -1) return '4';
+  return '';
+}
 function StorybookPicker(props) {
   var e = React.createElement;
   var _idx = React.useState(null); var idx = _idx[0], setIdx = _idx[1];
   var _err = React.useState(false); var err = _err[0], setErr = _err[1];
   var _lang = React.useState(''); var lang = _lang[0], setLang = _lang[1];
+  var _lvl = React.useState(function () { return storybookGradeToLevel(props.grade); }); var level = _lvl[0], setLevel = _lvl[1];
   var _q = React.useState(''); var q = _q[0], setQ = _q[1];
   var _busy = React.useState(null); var busy = _busy[0], setBusy = _busy[1];
   var baseRef = React.useRef(STORYBOOK_BASES[0]);
@@ -112,6 +129,7 @@ function StorybookPicker(props) {
   if (!idx) return e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_loading', 'Loading the library…'));
   var matches = idx.books.filter(function (b) {
     if (lang && b.language !== lang) return false;
+    if (level && String(b.level) !== level) return false;
     if (q) {
       var hay = (b.title + ' ' + (b.authors || []).join(' ')).toLowerCase();
       if (hay.indexOf(q.toLowerCase()) === -1) return false;
@@ -120,7 +138,15 @@ function StorybookPicker(props) {
   });
   var shown = matches.slice(0, 30);
   return e('div', null,
-    e('div', { className: 'flex gap-2 mb-3' },
+    e('div', { className: 'flex flex-wrap gap-2 mb-2' },
+      e('select', {
+        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        value: level, onChange: function (ev) { setLevel(ev.target.value); },
+        'aria-label': wt('wizard.storybook_level', 'Reading level'),
+      },
+        e('option', { value: '' }, wt('wizard.storybook_all_levels', 'All levels')),
+        ['1', '2', '3', '4'].map(function (lv) { return e('option', { key: lv, value: lv }, 'L' + lv + ' · ' + (STORYBOOK_LEVELS[lv] || '')); })
+      ),
       e('select', {
         className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
         value: lang, onChange: function (ev) { setLang(ev.target.value); },
@@ -137,6 +163,8 @@ function StorybookPicker(props) {
         'aria-label': wt('wizard.storybook_search', 'Search titles…'),
       })
     ),
+    level && level === storybookGradeToLevel(props.grade) ? e('p', { className: 'text-[11px] text-amber-700 mb-2' },
+      wt('wizard.storybook_grade_note', 'Showing books matched to your grade — choose “All levels” to see everything.')) : null,
     shown.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No books match — try different filters.')) : null,
     e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1' },
       shown.map(function (b) {
@@ -959,6 +987,7 @@ const QuickStartWizard = React.memo(({
     className: "text-slate-600 mb-4 text-sm"
   }, wt('wizard.storybooks_helper', 'Open picture books from StoryWeaver in 38 languages — the book text becomes your source material for every tool.')), !(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && /*#__PURE__*/React.createElement(StorybookPicker, {
     t: t,
+    grade: localData.grade,
     addToast: addToast,
     onPicked: (text, meta) => setLocalData(prev => ({
       ...prev,
