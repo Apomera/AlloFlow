@@ -3057,7 +3057,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       label
     );
   }))), glbReady && !!(window.AlloModules && window.AlloModules.GlbLibrary) && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_collectibles") || "Collectibles (open 3D library)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, window.AlloModules.GlbLibrary.listCatalog().filter((it) => it.id !== "trophy").map((it) => {
-    const emoji = { sprout: "\u{1F331}", boulder: "\u{1FAA8}", lantern: "\u{1F3EE}", companion: "\u{1F43E}" }[it.id] || "\u{1F4E6}";
+    const emoji = { sprout: "\u{1F331}", boulder: "\u{1FAA8}", lantern: "\u{1F3EE}", companion: "\u{1F43E}", torch: "\u{1F525}", chest_gold: "\u{1F9F0}", coin_stack: "\u{1FA99}", candles: "\u{1F56F}\uFE0F", key: "\u{1F5DD}\uFE0F", banner: "\u{1F6A9}", crates: "\u{1F4E6}", barrel: "\u{1F6E2}\uFE0F", pillar: "\u{1F3DB}\uFE0F", table: "\u{1FA91}", potion: "\u{1F9EA}" }[it.id] || "\u{1F4E6}";
     const label = t("memory_palace.collect_" + it.id) || it.label;
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -3071,7 +3071,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       " ",
       label
     );
-  }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_stamps") || "Frame stamps (fill the picture frame)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, _MP_STAMPS.map((s) => {
+  })), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-emerald-600 mt-1" }, t("memory_palace.decorate_credit") || "3D models: KayKit by Kay Lousberg (CC0)")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-800 mb-1.5" }, t("memory_palace.decorate_stamps") || "Frame stamps (fill the picture frame)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, _MP_STAMPS.map((s) => {
     const label = t("memory_palace.stamp_" + s.id) || s.label;
     return /* @__PURE__ */ React.createElement(
       "button",

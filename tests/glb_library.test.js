@@ -46,8 +46,9 @@ describe('GlbLibrary catalog + economy (pure seams)', () => {
 
   it('listCatalog filters by category', () => {
     const trophies = G.listCatalog({ category: 'trophy' });
-    expect(trophies.length).toBe(1);
-    expect(trophies[0].id).toBe('trophy');
+    expect(trophies.length).toBeGreaterThanOrEqual(1);      // grows with the catalog (KayKit wave added more)
+    expect(trophies.every((it) => it.category === 'trophy')).toBe(true);
+    expect(trophies.some((it) => it.id === 'trophy')).toBe(true);
     expect(G.listCatalog({ category: 'plant' }).every((it) => it.category === 'plant')).toBe(true);
   });
 
@@ -85,5 +86,34 @@ describe('GlbLibrary.loadModel (Prim3D fallback works with zero .glb)', () => {
   });
   it('rejects an item with neither source', async () => {
     await expect(G.loadModel(threeStub(), { id: 'empty' }, {})).rejects.toThrow();
+  });
+});
+
+describe('GlbLibrary — real CC0 model entries (KayKit wave 1)', () => {
+  it('every glb-backed item keeps a renderable Prim3D fallback and a well-formed relative url', () => {
+    const glbItems = G.normalizeCatalog().filter((it) => it.glbUrl);
+    expect(glbItems.length).toBeGreaterThanOrEqual(11);
+    glbItems.forEach((it) => {
+      expect(it.glbUrl).toMatch(/^assets\/glb\/[a-z0-9_]+\.glb$/);
+      expect(it.recipe).toBeTruthy();                       // offline / load-fail still renders
+      expect(G.resolveSource(it)).toBe('glb');
+      expect(it.unitScale).toBeGreaterThan(0);
+      const fs = require('node:fs');
+      expect(fs.existsSync(it.glbUrl)).toBe(true);          // asset actually committed at repo root
+      expect(fs.existsSync('prismflow-deploy/public/' + it.glbUrl)).toBe(true);   // and mirrored
+    });
+  });
+  it('resolveGlbUrl joins relative urls to a base and passes absolute/data urls through', () => {
+    expect(G.resolveGlbUrl('assets/glb/key.glb', 'https://cdn.example/')).toBe('https://cdn.example/assets/glb/key.glb');
+    expect(G.resolveGlbUrl('./assets/glb/key.glb', 'https://cdn.example')).toBe('https://cdn.example/assets/glb/key.glb');
+    expect(G.resolveGlbUrl('https://x.y/z.glb', 'https://cdn.example/')).toBe('https://x.y/z.glb');
+    expect(G.resolveGlbUrl('data:model/gltf-binary;base64,xxx', 'https://cdn.example/')).toBe('data:model/gltf-binary;base64,xxx');
+    expect(G.resolveGlbUrl('', 'https://cdn.example/')).toBe('');
+  });
+  it('unitScale is clamped and defaults to 1', () => {
+    const one = G.normalizeCatalog([{ id: 'a', recipe: { parts: [{ shape: 'box' }] } }])[0];
+    expect(one.unitScale).toBe(1);
+    const big = G.normalizeCatalog([{ id: 'b', unitScale: 99, recipe: { parts: [{ shape: 'box' }] } }])[0];
+    expect(big.unitScale).toBe(10);
   });
 });

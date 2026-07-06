@@ -33,6 +33,30 @@
   function isNum(v) { return typeof v === 'number' && !isNaN(v); }
   function num(v, d) { return isNum(v) ? v : d; }
 
+  // Where THIS module was loaded from — relative glbUrls resolve against it, so
+  // the same catalog entry works from the Firebase host, the pages.dev CDN
+  // mirror, and inside the Gemini Canvas iframe (where page-relative would 404).
+  function _selfBase() {
+    try {
+      var scripts = document.getElementsByTagName('script');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].src || '';
+        var idx = src.indexOf('glb_library_module.js');
+        if (idx >= 0) return src.slice(0, idx);
+      }
+    } catch (e) {}
+    return '';
+  }
+  // PURE given a base: absolute/data URLs pass through; anything else joins the base.
+  function resolveGlbUrl(url, base) {
+    var u = String(url || '');
+    if (!u) return u;
+    if (/^(https?:)?\/\//i.test(u) || /^(data|blob):/i.test(u)) return u;
+    var b = (base != null) ? String(base) : _selfBase();
+    if (!b) return u;
+    return b.replace(/\/?$/, '/') + u.replace(/^\.?\//, '');
+  }
+
   // Starter catalog — Prim3D-recipe-backed so the shop works before any .glb
   // exists. `glbUrl: null` → renders from `recipe`; set glbUrl to upgrade.
   var STARTER_CATALOG = [
@@ -64,6 +88,66 @@
       { shape: 'cylinder', size: [0.06, 0.25], position: [0, 0.24, 0], color: '#f59e0b' },
       { shape: 'sphere', size: [0.24], position: [0, 0.5, 0], color: '#fbbf24' },
       { shape: 'torus', size: [0.24, 0.05], position: [0, 0.5, 0], rotation: [0, 0, 90], color: '#f59e0b' }
+    ] } },
+    // ── Real CC0 models — KayKit "Dungeon Remastered" by Kay Lousberg ──
+    // (assets/glb/*, CC0 1.0; provenance + license in assets/glb/README.md,
+    // credited in the About-tab OSS credits.) Relative glbUrls resolve against
+    // this module's own origin. Every item keeps a small Prim3D silhouette
+    // fallback so offline / load-failure still renders SOMETHING. unitScale
+    // trues up each model's native metres to the ~1-unit catalog convention.
+    { id: 'torch', label: 'Torch', category: 'decor', cost: 8, glbUrl: 'assets/glb/torch_lit.glb', unitScale: 1.0, recipe: { name: 'Torch', parts: [
+      { shape: 'cylinder', size: [0.05, 0.7], position: [0, 0.35, 0], color: '#78350f' },
+      { shape: 'cone', size: [0.12, 0.28], position: [0, 0.82, 0], color: '#f97316' }
+    ] } },
+    { id: 'chest_gold', label: 'Golden Chest', category: 'trophy', cost: 30, glbUrl: 'assets/glb/chest_gold.glb', unitScale: 1.1, recipe: { name: 'Golden Chest', parts: [
+      { shape: 'box', size: [0.6, 0.32, 0.4], position: [0, 0.16, 0], color: '#92400e' },
+      { shape: 'box', size: [0.6, 0.16, 0.4], position: [0, 0.4, 0], color: '#7c2d12' },
+      { shape: 'sphere', size: [0.08], position: [0, 0.42, 0.2], color: '#fbbf24' }
+    ] } },
+    { id: 'coin_stack', label: 'Coin Hoard', category: 'trophy', cost: 20, glbUrl: 'assets/glb/coin_stack.glb', unitScale: 1.2, recipe: { name: 'Coin Hoard', parts: [
+      { shape: 'cylinder', size: [0.2, 0.3], position: [0, 0.15, 0], color: '#fbbf24' },
+      { shape: 'cylinder', size: [0.16, 0.22], position: [0.28, 0.11, 0.08], color: '#fde047' },
+      { shape: 'cylinder', size: [0.13, 0.14], position: [-0.24, 0.07, -0.06], color: '#facc15' }
+    ] } },
+    { id: 'candles', label: 'Candles', category: 'decor', cost: 8, glbUrl: 'assets/glb/candle_triple.glb', unitScale: 1.5, recipe: { name: 'Candles', parts: [
+      { shape: 'cylinder', size: [0.07, 0.4], position: [0, 0.2, 0], color: '#fef3c7' },
+      { shape: 'cylinder', size: [0.06, 0.28], position: [0.16, 0.14, 0.04], color: '#fef3c7' },
+      { shape: 'cylinder', size: [0.05, 0.2], position: [-0.14, 0.1, -0.03], color: '#fef3c7' },
+      { shape: 'sphere', size: [0.05], position: [0, 0.44, 0], color: '#f97316' }
+    ] } },
+    { id: 'key', label: 'Great Key', category: 'decor', cost: 12, glbUrl: 'assets/glb/key.glb', unitScale: 1.4, recipe: { name: 'Great Key', parts: [
+      { shape: 'torus', size: [0.16, 0.05], position: [0, 0.7, 0], color: '#f59e0b' },
+      { shape: 'cylinder', size: [0.05, 0.5], position: [0, 0.3, 0], color: '#f59e0b' },
+      { shape: 'box', size: [0.16, 0.08, 0.05], position: [0.08, 0.1, 0], color: '#f59e0b' }
+    ] } },
+    { id: 'banner', label: 'Shield Banner', category: 'decor', cost: 15, glbUrl: 'assets/glb/banner_shield.glb', unitScale: 0.65, recipe: { name: 'Shield Banner', parts: [
+      { shape: 'cylinder', size: [0.04, 1.4], position: [0, 0.7, 0], color: '#78350f' },
+      { shape: 'box', size: [0.5, 0.7, 0.04], position: [0, 1.0, 0.06], color: '#2563eb' },
+      { shape: 'sphere', size: [0.1], position: [0, 1.05, 0.12], color: '#cbd5e1' }
+    ] } },
+    { id: 'crates', label: 'Supply Crates', category: 'furniture', cost: 10, glbUrl: 'assets/glb/crates_stacked.glb', unitScale: 0.85, recipe: { name: 'Supply Crates', parts: [
+      { shape: 'box', size: [0.55, 0.55, 0.55], position: [0, 0.28, 0], color: '#92400e' },
+      { shape: 'box', size: [0.45, 0.45, 0.45], position: [0.15, 0.78, 0.05], color: '#b45309' }
+    ] } },
+    { id: 'barrel', label: 'Barrel', category: 'furniture', cost: 10, glbUrl: 'assets/glb/barrel_decorated.glb', unitScale: 1.0, recipe: { name: 'Barrel', parts: [
+      { shape: 'cylinder', size: [0.3, 0.7], position: [0, 0.35, 0], color: '#92400e' },
+      { shape: 'torus', size: [0.3, 0.03], position: [0, 0.15, 0], rotation: [90, 0, 0], color: '#475569' },
+      { shape: 'torus', size: [0.3, 0.03], position: [0, 0.55, 0], rotation: [90, 0, 0], color: '#475569' }
+    ] } },
+    { id: 'pillar', label: 'Carved Pillar', category: 'decor', cost: 12, glbUrl: 'assets/glb/pillar_decorated.glb', unitScale: 0.55, recipe: { name: 'Carved Pillar', parts: [
+      { shape: 'box', size: [0.5, 0.12, 0.5], position: [0, 0.06, 0], color: '#64748b' },
+      { shape: 'cylinder', size: [0.16, 1.3], position: [0, 0.77, 0], color: '#94a3b8' },
+      { shape: 'box', size: [0.5, 0.12, 0.5], position: [0, 1.48, 0], color: '#64748b' }
+    ] } },
+    { id: 'table', label: 'Scholar Table', category: 'furniture', cost: 14, glbUrl: 'assets/glb/table_decorated.glb', unitScale: 0.9, recipe: { name: 'Scholar Table', parts: [
+      { shape: 'box', size: [0.8, 0.08, 0.5], position: [0, 0.5, 0], color: '#92400e' },
+      { shape: 'box', size: [0.08, 0.46, 0.08], position: [0.32, 0.23, 0.17], color: '#78350f' },
+      { shape: 'box', size: [0.08, 0.46, 0.08], position: [-0.32, 0.23, -0.17], color: '#78350f' }
+    ] } },
+    { id: 'potion', label: 'Potion Bottle', category: 'decor', cost: 8, glbUrl: 'assets/glb/potion_bottle.glb', unitScale: 1.6, recipe: { name: 'Potion Bottle', parts: [
+      { shape: 'sphere', size: [0.22], position: [0, 0.24, 0], color: '#16a34a' },
+      { shape: 'cylinder', size: [0.07, 0.2], position: [0, 0.5, 0], color: '#166534' },
+      { shape: 'cylinder', size: [0.09, 0.05], position: [0, 0.62, 0], color: '#92400e' }
     ] } }
   ];
 
@@ -85,6 +169,9 @@
       cost: Math.max(0, Math.round(num(raw.cost, 0))),
       glbUrl: glbUrl,
       recipe: recipe,
+      // Per-model size correction: real .glb packs are authored in metres while
+      // the catalog convention is ~1 unit tall — unitScale trues each one up.
+      unitScale: Math.max(0.05, Math.min(10, num(raw.unitScale, 1))),
       tint: _validColor(raw.tint) ? raw.tint.trim().toLowerCase() : null
     };
   }
@@ -182,11 +269,11 @@
       return loadGLTFLoader(THREE, opts).then(function () {
         return new Promise(function (resolve, reject) {
           try {
-            new THREE.GLTFLoader().load(item.glbUrl, function (gltf) {
+            new THREE.GLTFLoader().load(resolveGlbUrl(item.glbUrl, opts.assetBase), function (gltf) {
               try {
                 var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
                 if (!obj) { reject(new Error('empty gltf')); return; }
-                if (isNum(opts.unit)) obj.scale.setScalar(opts.unit);
+                if (isNum(opts.unit)) obj.scale.setScalar(opts.unit * num(item.unitScale, 1));
                 _applyTint(THREE, obj, item.tint);
                 obj.userData.glbItemId = item.id;
                 resolve(obj);
@@ -213,6 +300,7 @@
     canAfford: canAfford,
     affordable: affordable,
     resolveSource: resolveSource,
+    resolveGlbUrl: resolveGlbUrl,
     loadModel: loadModel
   };
   console.log('[GlbLibrary] Registered (glblib/1 — CC0 collectibles catalog + GLTFLoader, Prim3D fallback)');

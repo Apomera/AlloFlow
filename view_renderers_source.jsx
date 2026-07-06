@@ -3682,7 +3682,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     <div className="text-xs font-bold text-emerald-800 mb-1.5">{t('memory_palace.decorate_collectibles') || 'Collectibles (open 3D library)'}</div>
                                     <div className="flex flex-wrap gap-1.5">
                                         {window.AlloModules.GlbLibrary.listCatalog().filter((it) => it.id !== 'trophy').map((it) => {
-                                            const emoji = { sprout: '🌱', boulder: '🪨', lantern: '🏮', companion: '🐾' }[it.id] || '📦';
+                                            const emoji = { sprout: '🌱', boulder: '🪨', lantern: '🏮', companion: '🐾', torch: '🔥', chest_gold: '🧰', coin_stack: '🪙', candles: '🕯️', key: '🗝️', banner: '🚩', crates: '📦', barrel: '🛢️', pillar: '🏛️', table: '🪑', potion: '🧪' }[it.id] || '📦';
                                             const label = t('memory_palace.collect_' + it.id) || it.label;
                                             return (
                                                 <button key={it.id} onClick={() => handlePlaceCollectible(it)} title={label}
@@ -3692,6 +3692,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                             );
                                         })}
                                     </div>
+                                    <div className="text-[10px] text-emerald-600 mt-1">{t('memory_palace.decorate_credit') || '3D models: KayKit by Kay Lousberg (CC0)'}</div>
                                 </div>
                             )}
                             <div>

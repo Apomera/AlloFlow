@@ -65,6 +65,7 @@ const OSS_CREDITS = [
     group: "3D, graphics, maps & media",
     items: [
       { name: "three.js", use: "3D graphics (Memory Palace, STEM tools)", license: "MIT", url: "https://threejs.org" },
+      { name: "KayKit Dungeon Remastered", use: "3D decoration models (Memory Palace collectibles) \u2014 Kay Lousberg", license: "CC0 (credit appreciated, not required)", url: "https://kaylousberg.itch.io/kaykit-dungeon-remastered" },
       { name: "globe.gl", use: "interactive 3D globe", license: "MIT", url: "https://github.com/vasturiano/globe.gl" },
       { name: "Leaflet", use: "interactive maps", license: "BSD-2-Clause", url: "https://leafletjs.com" },
       { name: "world-atlas", use: "country-boundary map data (from Natural Earth, public domain)", license: "ISC", url: "https://github.com/topojson/world-atlas" },
