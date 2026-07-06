@@ -1,0 +1,74 @@
+// Wait-not-stop (2026-07-05, maintainer decision): the host auto-continue loop used to fire full
+// rounds of chunk calls INTO an active Canvas rate-limit storm — on the 7/5 run each call failed
+// after ~150s AND extended the throttle window, until the 12-minute dead-man switch killed the loop
+// (a premature stop dressed as a safety net). Maintainer's requirement: never stop early — WAIT.
+// The pipeline now exposes geminiThrottleInfo (storm snapshot) + waitForGeminiCalm (bounded wait:
+// sleep out the active cooldown, confirm recovery with ONE tiny probe call, then proceed at full
+// strength; on timeout it proceeds anyway — the run only ever gets slower, never stopped).
+import { describe, it, expect, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+
+let pipeline;
+beforeAll(() => {
+  loadAlloModule('doc_pipeline_module.js');
+  pipeline = window.AlloModules.createDocPipeline({
+    callGemini: async () => 'OK',
+    callGeminiVision: async () => '{}',
+    callImagen: async () => null,
+    addToast: () => {},
+    t: (k) => k,
+    isRtlLang: () => false,
+    updateExportPreview: () => {},
+    getDefaultTitle: () => 'Document',
+    state: {},
+  });
+});
+
+describe('pipeline API — LIVE instance', () => {
+  it('geminiThrottleInfo + waitForGeminiCalm are exported', () => {
+    expect(typeof pipeline.geminiThrottleInfo).toBe('function');
+    expect(typeof pipeline.waitForGeminiCalm).toBe('function');
+  });
+  it('a calm gate reports not-storming and the wait is an exact no-op', async () => {
+    const info = pipeline.geminiThrottleInfo();
+    expect(info.storming).toBe(false);
+    expect(info.cooldownRemainingMs).toBe(0);
+    const r = await pipeline.waitForGeminiCalm({ maxWaitMs: 50 });
+    expect(r.calm).toBe(true);
+    expect(r.waitedMs).toBe(0);
+  });
+});
+
+describe('pipeline behavior — source pins', () => {
+  it('sleeps out ACTIVE cooldowns, probes with ONE tiny call, is bounded, and feeds the idle watchdog', () => {
+    expect(dp).toContain('var waitForGeminiCalm = async function (opts) {');
+    expect(dp).toContain("await callGemini('Reply with exactly: OK')");                      // the probe
+    expect(dp).toContain('await _sleep(Math.min(inf.cooldownRemainingMs + 250, 15000));');   // cooldown sleep
+    expect(dp).toContain('{ calm: false, waitedMs: _now() - t0, timedOut: true }');          // bounded → proceeds anyway
+    expect(dp).toContain('_pulsePipelineWatchdog(); // waiting IS pipeline activity');
+  });
+  it('a reduced cap alone is NOT storming — it recovers on successes, so waiting on it would deadlock', () => {
+    expect(dp).toContain('storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP');
+  });
+});
+
+describe('host auto-continue wiring (AlloFlowANTI)', () => {
+  it('the loop binds the export with an immediate-calm fallback (an older pipeline module changes nothing)', () => {
+    expect(anti).toContain("const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });");
+  });
+  it('each round awaits calm BEFORE firing its calls, with a ticking status (disarms the dead-man switch)', () => {
+    const waitIdx = anti.indexOf('await waitForGeminiCalm({ maxWaitMs: 240000, onTick:');
+    expect(waitIdx).toBeGreaterThan(-1);
+    const fireIdx = anti.indexOf("aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-'", waitIdx);
+    expect(fireIdx).toBeGreaterThan(waitIdx); // wait precedes the round's calls
+    expect(anti).toContain('nothing is skipped, the run just takes longer');
+  });
+  it('the callback dep array carries waitForGeminiCalm', () => {
+    expect(anti).toMatch(/aiFixChunked, waitForGeminiCalm, runAxeAudit/);
+  });
+});

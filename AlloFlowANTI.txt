@@ -16971,6 +16971,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
   const autoFixAxeViolations = _docPipeline ? _docPipeline.autoFixAxeViolations : async (h) => h;
   const aiFixChunked = _docPipeline ? _docPipeline.aiFixChunked : async (h) => h;
+  // Wait-not-stop (2026-07-05, maintainer): bounded storm-wait before each auto-continue round; the
+  // fallback resolves immediately so an older pipeline module changes nothing.
+  const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });
   const runEqualAccessAudit = _docPipeline ? _docPipeline.runEqualAccessAudit : async () => null;
   const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
   const runTier2SurgicalFixes = _docPipeline ? _docPipeline.runTier2SurgicalFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
@@ -17082,6 +17085,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         lastDet = _curDet;
         lastIssues = _aiIssues.length;
         setPdfFixLoading(true);
+        // Storm-aware WAIT-not-stop (2026-07-05, maintainer): never fire a round into an active
+        // Canvas rate-limit storm — on the 7/5 run those calls each failed after ~150s AND extended
+        // the throttle window, until the 12-min dead-man switch killed the whole loop. Waiting is not
+        // stopping: nothing is skipped and no target is abandoned — the round runs at full strength
+        // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
+        // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
+        try {
+          await waitForGeminiCalm({ maxWaitMs: 240000, onTick: (w) => {
+            const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
+            setPdfFixStep(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
+          } });
+        } catch (_) {}
         const _acDetail = _vio > 0
           ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
           : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : '')));
@@ -17222,7 +17237,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto, _override) => {
     // Incomplete/interrupted run (resumable-incomplete-project 2026-06-20): a hard AI

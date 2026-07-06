@@ -3265,6 +3265,78 @@ var createDocPipeline = function(deps) {
     }
     try { _geminiPump(); } catch (_) {}
   };
+  // ── Storm visibility (2026-07-05, maintainer: wait-not-stop) ── Read-only snapshot of the gate for
+  // host follow-up loops. "storming" = an ACTIVE cooldown or a live tripped failure streak. A reduced
+  // cap alone is deliberately NOT storming: the cap recovers as calls SUCCEED, so waiting on it
+  // without calling would never end — a capped-but-calm gate should be called (slowly), not waited on.
+  var _geminiThrottleInfo = function () {
+    var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    var cooldownRemainingMs = Math.max(0, _geminiCooldownUntil - now);
+    var _r = {
+      cooldownRemainingMs: cooldownRemainingMs,
+      authStreak: _geminiAuthStreak,
+      transientStreak: _geminiTransientStreak,
+      capped: _geminiCap < _geminiEffectiveMax,
+      storming: cooldownRemainingMs > 0 || _geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP,
+    };
+    return _r;
+  };
+  // ── Wait-not-stop (2026-07-05, maintainer): pause, never abandon ── The follow-up loops
+  // (auto-continue) used to fire full rounds of 17-19KB chunk calls INTO an active storm: on the 7/5
+  // run every such call failed after ~150s AND extended the rate-limit window, until the host's
+  // 12-minute dead-man switch killed the loop — a premature stop dressed as a safety net, plus wasted
+  // quota. This helper lets the caller WAIT instead: sleep out the active cooldown, then — when the
+  // failure streak is still live — confirm recovery with ONE tiny probe call (a success resets the
+  // streaks via _geminiNoteSuccess) before unleashing the full round. Bounded by maxWaitMs so a run
+  // can never hang; on timeout it returns calm:false and the caller PROCEEDS anyway — the run only
+  // ever gets slower, never stopped. onTick fires on every wait step so the host can keep its status
+  // line moving (its dead-man switch triggers on a FROZEN step). Exact no-op when the gate is calm.
+  var waitForGeminiCalm = async function (opts) {
+    var o = opts || {};
+    var maxWaitMs = (typeof o.maxWaitMs === 'number') ? Math.max(0, o.maxWaitMs) : 240000;
+    var _now = function () { return ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); };
+    var _sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    var t0 = _now();
+    var probed = false;
+    var _tick = function (probing) {
+      if (typeof o.onTick !== 'function') return;
+      try { var ti = _geminiThrottleInfo(); ti.waitedMs = _now() - t0; ti.maxWaitMs = maxWaitMs; ti.probing = !!probing; o.onTick(ti); } catch (_) {}
+    };
+    var inf0 = _geminiThrottleInfo();
+    if (!inf0.storming) { var _c0 = { calm: true, waitedMs: 0 }; return _c0; }
+    warnLog('[GeminiGate] wait-not-stop: storm active (cooldown ' + Math.round(inf0.cooldownRemainingMs / 1000) + 's, auth streak ' + inf0.authStreak + ', transient streak ' + inf0.transientStreak + ') — waiting for calm instead of firing into it (bounded at ' + Math.round(maxWaitMs / 1000) + 's; nothing is skipped)');
+    while (_now() - t0 < maxWaitMs) {
+      _pulsePipelineWatchdog(); // waiting IS pipeline activity — keep the idle watchdog fed
+      var inf = _geminiThrottleInfo();
+      if (inf.cooldownRemainingMs > 0) {
+        _tick(false);
+        await _sleep(Math.min(inf.cooldownRemainingMs + 250, 15000));
+        continue;
+      }
+      if (!inf.storming) {
+        var _cOk = { calm: true, waitedMs: _now() - t0, probed: probed };
+        warnLog('[GeminiGate] wait-not-stop: calm after ' + Math.round(_cOk.waitedMs / 1000) + 's' + (probed ? ' (probe confirmed)' : ''));
+        return _cOk;
+      }
+      // Cooldown elapsed but the failure streak is still tripped — confirm recovery with ONE cheap
+      // call rather than a full round. FERPA: the probe carries no document content.
+      if (o.probe === false || typeof callGemini !== 'function') { var _cNP = { calm: true, waitedMs: _now() - t0, unprobed: true }; return _cNP; }
+      _tick(true);
+      probed = true;
+      try {
+        var _pr = await callGemini('Reply with exactly: OK');
+        if (_pr && String(_pr).trim()) {
+          var _cP = { calm: true, waitedMs: _now() - t0, probed: true };
+          warnLog('[GeminiGate] wait-not-stop: probe call succeeded after ' + Math.round(_cP.waitedMs / 1000) + 's — the storm has passed, proceeding');
+          return _cP;
+        }
+      } catch (_) { /* probe failed → the gate re-armed a cooldown; the loop keeps waiting */ }
+      await _sleep(5000);
+    }
+    var _cTO = { calm: false, waitedMs: _now() - t0, timedOut: true };
+    warnLog('[GeminiGate] wait-not-stop: still stormy after the ' + Math.round(maxWaitMs / 1000) + 's bound — proceeding anyway (the run continues slower rather than stopping)');
+    return _cTO;
+  };
   // Pulse the dead-man watchdog (reset its 8-min idle timer): a RETRY / throttle cooldown IS pipeline
   // activity, not silence. The [Retry]/[GeminiGate] throttle logs are plain warnLog and never fired
   // 'alloflow:pipeline-warn' (only _pipeLog's start/done/step events do), so under a sustained Canvas
@@ -19659,7 +19731,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         ${pdfuaTile}
       </div>`;
       if (div >= 15) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; Structural and semantic scores diverge by ${div} points.</strong> Automated structural checks (axe-core) can pass while the AI rubric flags meaning/usability gaps. Treat the lower score as the honest ceiling and have a human verify the experience.</p>`;
-      if (_eaGoverns) h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; The headline is governed by the IBM Equal Access engine (${secondEngine}).</strong> This second independent WCAG engine flagged issues axe-core weighted lightly (most often multiple &lt;h1&gt; elements or landmark/region rules). The headline is the <em>weakest</em> of the engines, never an average &mdash; so it reflects Equal Access here, not the higher structural/semantic numbers. See the on-screen &ldquo;What Equal Access flagged&rdquo; detail for the specific rules.</p>`;
+      // Aaron 2026-07-05: _eaGoverns only means EA is the stricter DETERMINISTIC engine (EA < axe) —
+      // it does NOT mean EA governs the HEADLINE. When the semantic/content layer is lower still
+      // (content 80 vs automated 90 on the 7/5 run), the old copy's "The headline is governed by
+      // Equal Access" contradicted the caption right beside it ("headline = the lower layer
+      // (content)"). Branch: claim headline governance only when EA is also at-or-below semantic;
+      // otherwise explain the automated number without claiming the headline.
+      const _eaGovernsHeadline = _eaGoverns && !(typeof semantic === 'number' && semantic < secondEngine);
+      if (_eaGoverns) h += _eaGovernsHeadline
+        ? `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; The headline is governed by the IBM Equal Access engine (${secondEngine}).</strong> This second independent WCAG engine flagged issues axe-core weighted lightly (most often multiple &lt;h1&gt; elements or landmark/region rules). The headline is the <em>weakest</em> of the engines, never an average &mdash; so it reflects Equal Access here, not the higher structural/semantic numbers. See the on-screen &ldquo;What Equal Access flagged&rdquo; detail for the specific rules.</p>`
+        : `<p style="font-size:12px;color:#475569;margin:0 0 12px"><strong>About the automated layer (${secondEngine}):</strong> axe-core scored ${structural}, but the second independent WCAG engine, IBM Equal Access, scored ${secondEngine} &mdash; the automated layer always reports the stricter of the two engines. The headline is governed by the lower <em>content</em> layer (${semantic}), not by this number. See the on-screen &ldquo;What Equal Access flagged&rdquo; detail for the specific rules.</p>`;
       if (hasPdfUa && pdfuaPct !== null && pdfuaPct < 80 && (structural >= 80 || semantic >= 80)) {
         h += `<p style="font-size:12px;color:#b45309;margin:0 0 12px"><strong>&#9888; PDF/UA-1 self-check (${pdfuaPct}%) is meaningfully lower than the WCAG / semantic scores.</strong> The HTML representation passes WCAG but the exported PDF bytes have structural gaps — a PDF/UA-1 validator (PAC 2024, veraPDF, Acrobat Pro Accessibility Checker) would flag what's missing. See the "Independent Self-Check" section below for the specific rules that failed.</p>`;
       }
@@ -31453,6 +31534,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
     getPipelineStats: _getPipelineStats,
+    // Storm visibility + wait-not-stop (2026-07-05, maintainer): host follow-up loops (auto-continue)
+    // gate each round on these instead of firing into an active Canvas rate-limit storm — the run
+    // waits (bounded) and then proceeds at full strength; nothing is ever skipped or stopped.
+    geminiThrottleInfo: _geminiThrottleInfo,
+    waitForGeminiCalm: waitForGeminiCalm,
     clampPaletteContrast: clampPaletteContrast,
     buildPaletteCss: buildPaletteCss,
     applyPaletteToHtml: applyPaletteToHtml,
