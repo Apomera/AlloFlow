@@ -380,6 +380,7 @@
     var _txm = useState(false); var txMenuOpen = _txm[0]; var setTxMenuOpen = _txm[1];
     var _txi = useState(''); var txInput = _txi[0]; var setTxInput = _txi[1];
     var audioRef = useRef(null);
+    var fbAtRef = useRef(0); // debounce narration→TTS fallback (play-reject + onError can both fire)
 
     var pages = book.pages || [];
     var page = pages[pageIdx] || null;
@@ -439,9 +440,27 @@
       }
     };
 
+    // When the pre-recorded narration mp3 can't play (some StoryWeaver audio
+    // objects 403 on their bucket, or the network drops), don't just fail —
+    // read the page aloud with Gemini TTS so the child still hears it.
+    var narrationFallback = function () {
+      var now = Date.now();
+      if (now - fbAtRef.current < 1500) return; // play-reject and onError can both fire
+      fbAtRef.current = now;
+      var a = audioRef.current;
+      if (a) { try { a.pause(); } catch (_) {} }
+      setNarrating(false);
+      setActiveCue(null);
+      if (displayPageText && speak(displayPageText, displayLanguage)) {
+        props.addToast && props.addToast(tr('readinglib_narration_fallback', 'Narration audio is unavailable — reading this page aloud instead.'), 'info');
+      } else {
+        props.addToast && props.addToast(tr('readinglib_audio_failed', 'Could not play the audio right now.'), 'error');
+      }
+    };
+
     var toggleNarration = function () {
       var a = audioRef.current;
-      if (!a) return;
+      if (!a) { narrationFallback(); return; }
       if (narrating) { a.pause(); setNarrating(false); return; }
       stopSpeech();
       var range = pageCueRange(page);
@@ -450,9 +469,7 @@
           if (book.audio.cues[i][0] === range[0]) { a.currentTime = Math.max(0, book.audio.cues[i][1] - 0.15); break; }
         }
       }
-      a.play().then(function () { setNarrating(true); }).catch(function () {
-        props.addToast && props.addToast(tr('readinglib_audio_failed', 'Could not play the narration audio.'), 'error');
-      });
+      a.play().then(function () { setNarrating(true); }).catch(function () { narrationFallback(); });
     };
 
     var readPageTts = function () {
@@ -722,6 +739,9 @@
         ref: audioRef, src: book.audio.src, preload: 'none',
         onTimeUpdate: onTimeUpdate,
         onEnded: function () { setNarrating(false); setActiveCue(null); },
+        // Some browsers resolve play() then fire 'error' on a dead media URL;
+        // fall back to TTS here too (debounced against play()'s own reject).
+        onError: function () { narrationFallback(); },
       }) : null,
       showPractice ? e(PracticePanel, { book: book, refText: displayPlainText, onClose: function () { setShowPractice(false); } }) : null,
       // page spread — the flex column + m-auto child centers short spreads
@@ -815,7 +835,7 @@
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: '', level: '', search: '', audio: false });
+    var _f = useState({ language: '', level: '', search: '', audio: false, sort: 'level' });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
@@ -855,7 +875,7 @@
 
     var filtered = useMemo(function () {
       var q = filters.search.trim().toLowerCase();
-      return books.filter(function (b) {
+      var list = books.filter(function (b) {
         if (filters.language && b.language !== filters.language) return false;
         if (filters.level && String(b.level) !== filters.level) return false;
         if (filters.audio && !b.hasAudio) return false;
@@ -865,6 +885,18 @@
         }
         return true;
       });
+      // Default order (raw index) groups by language then interleaves the
+      // narration top-up, which reads as jumbled. Sort for a predictable
+      // browse: by level (easiest→hardest) unless the teacher picks otherwise.
+      var byTitle = function (a, b) { return String(a.title).localeCompare(String(b.title)); };
+      var byLevel = function (a, b) { return (Number(a.level) - Number(b.level)) || byTitle(a, b); };
+      var sorters = {
+        level: byLevel,
+        title: byTitle,
+        audio: function (a, b) { return (b.hasAudio ? 1 : 0) - (a.hasAudio ? 1 : 0) || byLevel(a, b); },
+        language: function (a, b) { return String(a.language).localeCompare(String(b.language)) || byLevel(a, b); },
+      };
+      return list.sort(sorters[filters.sort] || byLevel);
     }, [books, filters]);
 
     var languages = useMemo(function () {
@@ -918,7 +950,7 @@
     } else {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
         // filters
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pb-3' },
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 pb-3' },
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.language,
@@ -936,6 +968,17 @@
           },
             e('option', { value: '' }, tr('readinglib_all_levels', 'All levels')),
             ['1', '2', '3', '4'].map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
+          ),
+          e('select', {
+            className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
+            value: filters.sort,
+            onChange: function (ev) { setFilters(Object.assign({}, filters, { sort: ev.target.value })); },
+            'aria-label': tr('readinglib_sort', 'Sort by'),
+          },
+            e('option', { value: 'level' }, tr('readinglib_sort_level', 'Level · easiest first')),
+            e('option', { value: 'title' }, tr('readinglib_sort_title', 'Title · A–Z')),
+            e('option', { value: 'audio' }, tr('readinglib_sort_audio', 'Narrated first')),
+            e('option', { value: 'language' }, tr('readinglib_sort_language', 'Language'))
           ),
           e('input', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',

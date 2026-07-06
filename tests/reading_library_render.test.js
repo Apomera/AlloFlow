@@ -117,6 +117,35 @@ describe('browse view', () => {
     const btns = Array.from(host.querySelectorAll('button')).map(textOf);
     expect(btns.some((t) => t.includes('Language options'))).toBe(false);
   });
+
+  it('sorts by reading level (easiest first) by default', async () => {
+    await mount();
+    // filter controls: language, level, sort
+    const selects = host.querySelectorAll('select');
+    expect(selects[2].value).toBe('level');
+    // narrow to one language to keep the grid light; ordering still applies
+    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await flush();
+    const levels = Array.from(host.querySelectorAll('button'))
+      .map((b) => { const m = /Level\s+(\d)/.exec(textOf(b)); return m ? Number(m[1]) : 0; })
+      .filter((n) => n > 0);
+    expect(levels.length).toBeGreaterThan(3);
+    for (let i = 1; i < levels.length; i++) expect(levels[i]).toBeGreaterThanOrEqual(levels[i - 1]);
+  });
+
+  it('re-sorts to Title A–Z when chosen', async () => {
+    await mount();
+    const selects = host.querySelectorAll('select');
+    act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    act(() => { selects[2].value = 'title'; selects[2].dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await flush();
+    // card buttons carry a "Level N" badge; the title is the .font-bold node
+    const cards = Array.from(host.querySelectorAll('button')).filter((b) => /Level\s+\d/.test(textOf(b)));
+    const titles = cards.map((b) => { const t = b.querySelector('.font-bold'); return (t ? t.textContent : '').trim().toLowerCase(); });
+    expect(titles.length).toBeGreaterThan(3);
+    const sorted = titles.slice().sort((a, b) => a.localeCompare(b));
+    expect(titles).toEqual(sorted);
+  });
 });
 
 describe('reader view (RTL original)', () => {
@@ -248,5 +277,37 @@ describe('narration playback — audio track vs cue timings', () => {
     const labels = Array.from(host.querySelectorAll('button')).map(textOf);
     expect(labels.some((l) => /Read this page/.test(l))).toBe(true);
     expect(labels.some((l) => /Read to me/.test(l))).toBe(false);
+  });
+
+  it('falls back to Gemini TTS when the narration mp3 fails to play', async () => {
+    const spoken = [];
+    const toasts = [];
+    window.AlloSpeechPlayer = { speak: (t) => { spoken.push(t); return true; }, stop: () => {} };
+    const origPlay = window.HTMLMediaElement.prototype.play;
+    // Real browsers reject play() on a dead media URL (e.g. a 403 mp3).
+    window.HTMLMediaElement.prototype.play = () => Promise.reject(new Error('403'));
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(ReadingLibrary.BookReader, {
+          book: { ...baseBook, audio: { src: 'https://gcs/dead.mp3', cues: [[1, 0, 1]] } },
+          onExit: () => {}, addToast: (m, t) => toasts.push([m, t]),
+        }));
+      });
+      await flush();
+      const btn = Array.from(host.querySelectorAll('button')).find((b) => /Read to me/.test(textOf(b)));
+      expect(btn).toBeTruthy();
+      await act(async () => { btn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+      await flush();
+      // Gemini TTS spoke the page instead of erroring out
+      expect(spoken.length).toBe(1);
+      expect(spoken[0]).toContain('Page one');
+      expect(toasts.some(([m]) => /unavailable|aloud/i.test(m))).toBe(true);
+    } finally {
+      window.HTMLMediaElement.prototype.play = origPlay;
+      delete window.AlloSpeechPlayer;
+    }
   });
 });

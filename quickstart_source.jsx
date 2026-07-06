@@ -114,6 +114,9 @@ function StorybookPicker(props) {
       if (hay.indexOf(q.toLowerCase()) === -1) return false;
     }
     return true;
+  }).sort(function (a, b) {
+    // Predictable browse order: easiest reading level first, then A–Z.
+    return (Number(a.level) - Number(b.level)) || String(a.title).localeCompare(String(b.title));
   });
   return e('div', null,
     e('div', { className: 'flex flex-wrap gap-2 mb-2' },
