@@ -229,7 +229,7 @@ window.StemLab = window.StemLab || {
       // skip OrbitControls + the bloom composer (mono) and just render stereo. The
       // XR compositor schedules the frames, so no window rAF is queued here.
       var presenting = false; try { presenting = renderer.xr && renderer.xr.isPresenting; } catch (e) {}
-      if (presenting) { _xrGrabFrame(); renderer.render(scene, camera); return; }
+      if (presenting) { _xrGrabFrame(); _xrSticks(); renderer.render(scene, camera); return; }
       if (!renderer.domElement.isConnected) { cancelAnimationFrame(animId); return; }
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
@@ -281,6 +281,26 @@ window.StemLab = window.StemLab || {
       } catch (e) {}
     }
     function _xrReleaseGrab() { try { if (_grab && _grab.obj) { scene.attach(_grab.obj); } _grab = null; } catch (e) {} }
+    // ── Thumbstick tuning in VR (armed edge-trigger so one flick = one step):
+    //    RIGHT stick X cycles the stretch axis, Y adjusts the stretch length —
+    //    routed to the React handlers so 2D + VR share one source of truth. ──
+    var _stickAxArmed = false, _stickLenArmed = false;
+    function _xrSticks() {
+      try {
+        var sess = renderer.xr.getSession && renderer.xr.getSession(); if (!sess) return;
+        var srcs = sess.inputSources || [];
+        for (var i = 0; i < srcs.length; i++) {
+          var src = srcs[i]; if (!src || src.handedness !== 'right') continue;
+          var g = src.gamepad; if (!g || !g.axes) continue;
+          var ax = g.axes.length >= 4 ? g.axes[2] : (g.axes[0] || 0);
+          var ay = g.axes.length >= 4 ? g.axes[3] : (g.axes[1] || 0);
+          if (Math.abs(ax) > 0.7) { if (!_stickAxArmed) { _stickAxArmed = true; _geoHaptic(0.3, 20); try { if (window._geoXrAxis) window._geoXrAxis(ax > 0 ? 1 : -1); } catch (e) {} } }
+          else if (Math.abs(ax) < 0.3) _stickAxArmed = false;
+          if (Math.abs(ay) > 0.7) { if (!_stickLenArmed) { _stickLenArmed = true; _geoHaptic(0.3, 20); try { if (window._geoXrLen) window._geoXrLen(ay < 0 ? 0.5 : -0.5); } catch (e) {} } }   // stick up = longer
+          else if (Math.abs(ay) < 0.3) _stickLenArmed = false;
+        }
+      } catch (e) {}
+    }
     // ── In-VR caption: a text panel pinned in front of the headset so a student
     //    sees what the mic heard while immersed (visual confirmation matters most
     //    in VR, where the 2D UI is out of view). Updated by the React voice flow
@@ -320,10 +340,18 @@ window.StemLab = window.StemLab || {
           (function (ctrl) {
             ctrl.addEventListener('squeezestart', function () { _grabStart(ctrl); });
             ctrl.addEventListener('squeezeend', function () { _grabEnd(ctrl); });
-            // Trigger = talk to the model: start voice capture (routes to the
-            // sculpt/stretch voice handler for the current mode). Speech mid-session
-            // is device-dependent; if it never fires this is simply inert.
-            ctrl.addEventListener('selectstart', function () { _geoHaptic(0.5, 40); try { if (window._geoVoiceTrigger) window._geoVoiceTrigger(); } catch (e) {} });
+            // Trigger = the primary BUILD action (reliable, not speech-dependent):
+            // in stretch mode the right hand stretches the selected object and the
+            // left hand adds/cycles; other modes fall back to voice. Handedness
+            // comes off the XR input source on the event.
+            ctrl.addEventListener('selectstart', function (ev) {
+              _geoHaptic(0.5, 40);
+              var hand = (ev && ev.data && ev.data.handedness) || 'right';
+              try {
+                if (window._geoXrPrimary) window._geoXrPrimary(hand);
+                else if (window._geoVoiceTrigger) window._geoVoiceTrigger();
+              } catch (e) {}
+            });
           })(c);
           xrRig.add(c); _xrCtrlsGeo.push(c);
           // grip mesh — a small controller-ish box so the student sees their hands
@@ -811,6 +839,73 @@ window.StemLab = window.StemLab || {
     return 0;
   }
 
+  // ── Measurement of a construction object (PURE) — the dimension it lives in
+  //    plus the size that "counts" there (length / area / volume) and the vector
+  //    formula that produced it. This is the math the stretch mechanic teaches. ──
+  function geoStretchMeasure(o) {
+    if (!o) return null;
+    if (o.type === 'point')   return { dim: 0, kind: 'point',  value: 0, unitExp: 0, formula: '—', label: 'Point' };
+    if (o.type === 'segment') return { dim: 1, kind: 'length', value: objectVolume(o), unitExp: 1, formula: '|v|', label: 'Length' };
+    if (o.type === 'rect')    return { dim: 2, kind: 'area',   value: objectVolume(o), unitExp: 2, formula: '|u × v|', label: 'Area' };
+    if (o.type === 'prism')   return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3, formula: '|u · (v × w)|', label: 'Volume' };
+    return null;
+  }
+
+  // ── Build challenges (PURE, seeded) — turn stretching into problem-solving:
+  //    hit a target length / area / volume by choosing axes and lengths. Level
+  //    1=length (1D), 2=area (2D), 3=volume (3D). Deterministic given a seed so
+  //    the logic is unit-testable; targets factor into whole-number side lengths
+  //    so there is always a clean stretch path to the answer. ──
+  var GEO_BUILD_KINDS = ['length', 'area', 'volume'];
+  function _geoSeededRand(seed) {
+    var s = (seed >>> 0) || 1;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+  function geoMakeBuildChallenge(level, seed) {
+    var lv = Math.max(1, Math.min(3, level || 1));
+    var rnd = _geoSeededRand(isFinite(seed) ? (seed | 0) : 1);
+    var kind = GEO_BUILD_KINDS[lv - 1];
+    var target, prompt, hint;
+    if (kind === 'length') {
+      target = 1 + Math.floor(rnd() * 8);                          // 1..8
+      prompt = 'Stretch a point into a segment ' + target + ' units long.';
+      hint = 'Place a point, pick an axis, set the length to ' + target + ', then Stretch.';
+    } else if (kind === 'area') {
+      var a = 2 + Math.floor(rnd() * 5), b = 2 + Math.floor(rnd() * 5);   // 2..6
+      target = a * b;
+      prompt = 'Build a rectangle with area ' + target + ' square units.';
+      hint = 'Try ' + a + ' × ' + b + ': stretch a point to length ' + a + ', then stretch that segment ' + b + ' on a different axis.';
+    } else {
+      var w = 2 + Math.floor(rnd() * 4), d = 2 + Math.floor(rnd() * 4), hgt = 2 + Math.floor(rnd() * 4);   // 2..5
+      target = w * d * hgt;
+      prompt = 'Build a prism (solid) with volume ' + target + ' cubic units.';
+      hint = w + ' × ' + d + ' × ' + hgt + ' = ' + target + ': point→segment (' + w + '), →rectangle (' + d + '), →prism (' + hgt + ').';
+    }
+    return { id: 'bld-' + lv + '-' + (isFinite(seed) ? (seed | 0) : 1), level: lv, goalDim: lv, kind: kind, target: target, prompt: prompt, hint: hint, tolerance: 0.05 };
+  }
+  // Evaluate a build challenge against the current construction (PURE): solved
+  // when ANY object of the target kind lands within tolerance; also reports the
+  // closest attempt so the UI can coach ("closest volume so far: 22").
+  function geoEvalBuildChallenge(ch, objects) {
+    if (!ch) return { solved: false, closest: null, deltaPct: null, message: '' };
+    var tol = ch.tolerance || 0.05;
+    var best = null, bestDelta = Infinity;
+    (objects || []).forEach(function (o) {
+      var mm = geoStretchMeasure(o);
+      if (!mm || mm.kind !== ch.kind) return;
+      var delta = ch.target === 0 ? Math.abs(mm.value) : Math.abs(mm.value - ch.target) / Math.abs(ch.target);
+      if (delta < bestDelta) { bestDelta = delta; best = mm.value; }
+    });
+    var solved = best != null && bestDelta <= tol;
+    var shapeWord = ch.kind === 'length' ? 'segment' : ch.kind === 'area' ? 'rectangle' : 'prism';
+    var round2 = function (n) { return Math.round(n * 100) / 100; };
+    var message = best == null
+      ? ('Build a ' + shapeWord + ' to set its ' + ch.kind + '.')
+      : solved ? ('Solved! ' + ch.kind + ' = ' + round2(best))
+        : ('Closest ' + ch.kind + ': ' + round2(best) + ' — target ' + ch.target);
+    return { solved: solved, closest: best, deltaPct: best == null ? null : bestDelta, message: message };
+  }
+
   // Render construction objects into a Three.js scene group, returns the group.
   function buildConstructionGroup(THREE, objects, selectedId) {
     var group = new THREE.Group();
@@ -915,6 +1010,17 @@ window.StemLab = window.StemLab || {
 
   // ══════════════════════════════════════
   // ═══ REGISTER TOOL ═══
+  // Expose the pure stretch-math + challenge seams for unit tests (no DOM/GL).
+  try {
+    window.StemLab.geoPure = {
+      objectVolume: objectVolume,
+      stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
+      geoStretchMeasure: geoStretchMeasure,
+      geoMakeBuildChallenge: geoMakeBuildChallenge,
+      geoEvalBuildChallenge: geoEvalBuildChallenge
+    };
+  } catch (e) {}
+
   // ══════════════════════════════════════
   window.StemLab.registerTool('geoSandbox', {
     icon: '\uD83D\uDD37', label: 'Geometry Sandbox',
@@ -1048,6 +1154,12 @@ window.StemLab = window.StemLab || {
       var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
       var stretchAxis = gd.stretchAxis || 'x';
       var stretchLength = gd.stretchLength != null ? gd.stretchLength : 2;
+      // ── Build Challenge (stretch-mode problem solving) ──
+      var buildChallenge = gd.buildChallenge || null;
+      var buildScore = gd.buildScore || { solved: 0 };
+      var buildEval = (mode === 'stretch' && buildChallenge)
+        ? geoEvalBuildChallenge(buildChallenge, construction.objects)
+        : null;
 
       function pushHistory() {
         var snap = JSON.parse(JSON.stringify(construction));
@@ -1112,6 +1224,37 @@ window.StemLab = window.StemLab || {
         setLabToolData(function(p) {
           var g = p.geoSandbox || {};
           return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: Object.assign({}, g.construction || construction, { selection: id }) }) });
+        });
+      }
+      // Cycle the selection through the construction (dir +1/-1). Used by the VR
+      // controller (no mouse) and handy for keyboard-only 2D use.
+      function cycleSelection(dir) {
+        var objs = construction.objects;
+        if (!objs.length) return;
+        var idx = objs.findIndex(function(o) { return o.id === construction.selection; });
+        var nextIdx = ((idx < 0 ? 0 : idx + (dir < 0 ? -1 : 1)) + objs.length) % objs.length;
+        selectObject(objs[nextIdx].id);
+        var mm = geoStretchMeasure(objs[nextIdx]);
+        if (announceToSR && mm) announceToSR('Selected ' + mm.label.toLowerCase() + (mm.dim > 0 ? ' ' + (Math.round(mm.value * 100) / 100) : ''));
+      }
+      // Start / advance a build challenge. Level auto-advances 1→2→3 with each
+      // solve so the problem-solving scaffolds from length to area to volume.
+      function startBuildChallenge(level) {
+        var lv = level || (buildChallenge ? Math.min(3, (buildChallenge.level || 1) + (buildEval && buildEval.solved ? 1 : 0)) : 1);
+        var seed = ((Date.now() % 100000) ^ (construction.objects.length * 131)) | 0;
+        var ch = geoMakeBuildChallenge(lv, seed);
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { buildChallenge: ch }) });
+        });
+        if (addToast) addToast('🎯 ' + ch.prompt, 'info');
+        if (announceToSR) announceToSR('New build challenge. ' + ch.prompt);
+      }
+      function clearBuildChallenge() {
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          var ng = Object.assign({}, g); delete ng.buildChallenge;
+          return Object.assign({}, p, { geoSandbox: ng });
         });
       }
       function saveConstruction(name) {
@@ -1468,6 +1611,77 @@ window.StemLab = window.StemLab || {
         };
         return function() { try { window._geoVoiceTrigger = null; } catch (e) {} };
       }, [mode, voiceListening, sculptRecipe, construction.selection]);
+
+      // ── Build-challenge solved transition: celebrate once when the current
+      //    construction first satisfies the target (and re-arm if it's undone). ──
+      var _bldSolvedRef = React.useRef(null);
+      React.useEffect(function() {
+        if (mode !== 'stretch' || !buildChallenge || !buildEval) return;
+        var key = buildChallenge.id;
+        if (buildEval.solved && _bldSolvedRef.current !== key) {
+          _bldSolvedRef.current = key;
+          geoSound('correct');
+          if (addToast) addToast('✅ ' + buildEval.message, 'success');
+          if (announceToSR) announceToSR('Challenge solved! ' + buildEval.message);
+          setLabToolData(function(p) {
+            var g = p.geoSandbox || {};
+            var sc = g.buildScore || { solved: 0 };
+            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { buildScore: { solved: (sc.solved || 0) + 1 } }) });
+          });
+        } else if (!buildEval.solved && _bldSolvedRef.current === key) {
+          _bldSolvedRef.current = null;   // taken apart → a fresh solve can celebrate again
+        }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [construction, buildChallenge, mode]);
+
+      // ── VR controller bridges (reliable, NOT speech-dependent) — this is what
+      //    makes immersive mode a hands-on builder: the trigger stretches, the
+      //    off-hand adds/cycles, and the thumbstick dials axis + length. Set only
+      //    while mounted; the scene calls them if present, else falls back to voice. ──
+      React.useEffect(function() {
+        window._geoXrPrimary = function(hand) {
+          if (mode === 'stretch') {
+            if (hand === 'left') {
+              if (!construction.objects.length) addPoint([0, 0, 0]);
+              else cycleSelection(1);
+            } else {
+              if (!construction.selection) addPoint([0, 0, 0]); else performStretch();
+            }
+          } else {
+            var handler = (mode === 'stretch') ? handleStretchVoiceCommand : handleVoiceCommand;
+            toggleVoice(handler, mode === 'stretch' ? 'Say a build move' : 'Say what to make');
+          }
+        };
+        window._geoXrAxis = function(dir) {
+          if (mode !== 'stretch') return;
+          var order = ['x', 'y', 'z']; var i = order.indexOf(stretchAxis); if (i < 0) i = 0;
+          upd('stretchAxis', order[(i + (dir < 0 ? -1 : 1) + 3) % 3]);
+        };
+        window._geoXrLen = function(delta) {
+          if (mode !== 'stretch') return;
+          upd('stretchLength', Math.max(0.5, Math.min(12, Math.round((stretchLength + delta) * 2) / 2)));
+        };
+        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; } catch (e) {} };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [mode, construction, stretchAxis, stretchLength]);
+
+      // ── VR math HUD: while a headset session is presenting, pin a compact line
+      //    (axis · length · current measurement · challenge target) in view so the
+      //    math is legible without the 2D panel. No-op in 2D (nothing rendered). ──
+      React.useEffect(function() {
+        try {
+          var gs = window._geoScene;
+          if (!(gs && gs.renderer && gs.renderer.xr && gs.renderer.xr.isPresenting && gs.setVrCaption)) return;
+          if (mode !== 'stretch') return;
+          var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+          var mm = sel ? geoStretchMeasure(sel) : null;
+          var seg = String(stretchAxis).toUpperCase() + '·' + stretchLength.toFixed(1);
+          if (mm && mm.dim > 0) seg += '  ' + mm.label[0] + '=' + (Math.round(mm.value * 100) / 100);
+          if (buildChallenge && buildEval) seg += buildEval.solved ? '  🎯✓' : ('  🎯' + buildChallenge.target);
+          gs.setVrCaption(seg);
+        } catch (e) {}
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [construction, stretchAxis, stretchLength, buildChallenge, mode]);
 
       // ── Wireframe toggle with badge ──
       var toggleWireframe = function() {
@@ -1911,6 +2125,49 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
                 t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
               ),
+              // ── Build Challenge: math problem-solving woven into the mechanic ──
+              (function() {
+                if (!buildChallenge) {
+                  return h('div', { className: 'rounded-lg p-2.5 bg-slate-900/50 border border-emerald-500/40 space-y-1.5' },
+                    h('div', { className: 'text-[11px] font-bold text-emerald-200' }, '🎯 ' + t('stem.geosandbox.build_challenge', 'Build Challenge')),
+                    h('p', { className: 'text-[10.5px] text-emerald-200/70' }, t('stem.geosandbox.build_challenge_intro', 'Get a target and build a shape that hits it — stretch to the right length, area, or volume.')),
+                    h('div', { className: 'flex gap-1' },
+                      [[1, t('stem.geosandbox.level_length', 'Length')], [2, t('stem.geosandbox.level_area', 'Area')], [3, t('stem.geosandbox.level_volume', 'Volume')]].map(function(lvl) {
+                        return h('button', {
+                          key: 'lvl-' + lvl[0],
+                          onClick: function() { startBuildChallenge(lvl[0]); },
+                          className: 'flex-1 px-2 py-1.5 rounded text-[11px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-600 transition-all'
+                        }, lvl[1]);
+                      })
+                    ),
+                    (buildScore.solved > 0) && h('div', { className: 'text-[10px] text-emerald-300/80' }, '⭐ ' + (t('stem.geosandbox.build_solved_count', '{n} solved').replace('{n}', String(buildScore.solved))))
+                  );
+                }
+                var solved = buildEval && buildEval.solved;
+                return h('div', { className: 'rounded-lg p-2.5 border space-y-1.5 ' + (solved ? 'bg-emerald-900/40 border-emerald-400/60' : 'bg-slate-900/50 border-emerald-500/40') },
+                  h('div', { className: 'flex items-center justify-between' },
+                    h('div', { className: 'text-[11px] font-bold text-emerald-200' }, (solved ? '✅ ' : '🎯 ') + t('stem.geosandbox.build_challenge', 'Build Challenge')),
+                    (buildScore.solved > 0) && h('div', { className: 'text-[10px] text-emerald-300/80' }, '⭐ ' + buildScore.solved)
+                  ),
+                  h('p', { className: 'text-[11px] text-emerald-100 font-medium' }, buildChallenge.prompt),
+                  buildEval && h('p', { className: 'text-[10.5px] font-mono ' + (solved ? 'text-emerald-300' : 'text-amber-300/90'), 'aria-live': 'polite' }, buildEval.message),
+                  h('div', { className: 'flex gap-1' },
+                    h('button', {
+                      onClick: function() { updExt({ _bldHint: !(gd._geoExt && gd._geoExt._bldHint) }); },
+                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-200 hover:bg-slate-700'
+                    }, '💡 ' + t('stem.geosandbox.hint', 'Hint')),
+                    h('button', {
+                      onClick: function() { startBuildChallenge(solved ? undefined : buildChallenge.level); },
+                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-600'
+                    }, solved ? ('➡ ' + t('stem.geosandbox.next_challenge', 'Next')) : ('🔄 ' + t('stem.geosandbox.new_challenge', 'New'))),
+                    h('button', {
+                      onClick: clearBuildChallenge,
+                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-400 hover:bg-slate-700'
+                    }, '✕')
+                  ),
+                  (gd._geoExt && gd._geoExt._bldHint) && h('p', { className: 'text-[10px] text-emerald-200/70 italic' }, buildChallenge.hint)
+                );
+              })(),
               // Voice build (hands-free HandWaver stretch): speak the dimensional moves
               (voiceSupported && typeof ctx.callGemini === 'function') && h('div', { className: 'space-y-1' },
                 h('button', {
@@ -1946,19 +2203,29 @@ window.StemLab = window.StemLab || {
                   })
                 )
               ),
-              // Stretch length
+              // Stretch length — slider for quick feel + a precise number box so a
+              // student can dial in an exact value (needed to hit a challenge target).
               h('div', null,
                 h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
                   h('span', null, t('stem.geosandbox.length', 'Length')),
                   h('span', { className: 'text-purple-300 font-mono' }, stretchLength.toFixed(1) + ' ' + unitDef.short)
                 ),
-                h('input', {
-                  type: 'range', min: '0.5', max: '8', step: '0.5',
-                  value: stretchLength,
-                  onChange: function(e) { upd('stretchLength', parseFloat(e.target.value)); },
-                  'aria-label': t('stem.geosandbox.stretch_length', 'Stretch length'),
-                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
-                })
+                h('div', { className: 'flex items-center gap-2' },
+                  h('input', {
+                    type: 'range', min: '0.5', max: '12', step: '0.5',
+                    value: stretchLength,
+                    onChange: function(e) { upd('stretchLength', parseFloat(e.target.value)); },
+                    'aria-label': t('stem.geosandbox.stretch_length', 'Stretch length'),
+                    className: 'flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
+                  }),
+                  h('input', {
+                    type: 'number', min: '0.1', max: '20', step: '0.1',
+                    value: stretchLength,
+                    onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('stretchLength', Math.max(0.1, Math.min(20, v))); },
+                    'aria-label': t('stem.geosandbox.stretch_length_exact', 'Exact stretch length'),
+                    className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                  })
+                )
               ),
               // Stretch button (context label changes based on selection)
               (function() {
