@@ -19,111 +19,140 @@
   if (!React) { console.error('[ViewSimplifiedModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Authoritative dictionary panel (Wiktionary via dictionaryapi.dev, offline-cached)
-  // rendered beside the AI's leveled definition in the Define popup — triangulation.
-  // Pure fn of (entry, t); returns null when there's no entry (AI-only fallback).
-  function renderDictionaryPanel(dict, t) {
-    if (!dict) return null;
-    var kids = [];
-    kids.push(React.createElement('div', { key: 'hd', className: 'flex items-center gap-2 mb-1 flex-wrap' },
-      React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700' }, (t('glossary.popups.dictionary') || 'Dictionary')),
-      dict.phonetic ? React.createElement('span', { className: 'text-[11px] text-slate-500' }, dict.phonetic) : null,
-      dict.audio ? React.createElement('button', {
-        type: 'button',
-        onClick: function () { try { new Audio(dict.audio).play().catch(function () {}); } catch (_e) {} },
-        className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-1.5 py-0.5 transition-colors',
-        'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
-        title: t('glossary.popups.hear_real') || 'Hear a real recording'
-      }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')) : null));
-    (dict.meanings || []).slice(0, 2).forEach(function (m, mi) {
-      var d0 = m.definitions && m.definitions[0] ? m.definitions[0].definition : '';
-      if (!d0) return;
-      var d0ex = m.definitions[0].example || '';
-      kids.push(React.createElement('div', { key: 'm' + mi, className: 'text-xs text-slate-700 leading-snug mb-1' },
-        m.partOfSpeech ? React.createElement('span', { className: 'italic text-slate-500 mr-1' }, m.partOfSpeech) : null, d0,
-        d0ex ? React.createElement('span', { className: 'block text-[11px] text-slate-500 italic mt-0.5' }, '"' + d0ex + '"') : null));
-    });
-    if (dict.synonyms && dict.synonyms.length) {
-      kids.push(React.createElement('div', { key: 'syn', className: 'text-[11px] text-slate-500 mt-0.5' },
-        (t('glossary.popups.similar') || 'Similar') + ': ' + dict.synonyms.slice(0, 5).join(', ')));
-    }
-    kids.push(React.createElement('div', { key: 'src', className: 'text-[10px] text-slate-400 mt-1' }, dict.source));
-    return React.createElement('div', { className: 'mt-3 pt-3 border-t border-emerald-100' }, kids);
-  }
-
-  // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
-  // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
-  function renderPhonicsDictRow(phonicsData, t) {
-    var d = phonicsData && phonicsData.dictionary;
-    if (!d || (!d.phonetic && !d.audio)) return null;
-    var row = [React.createElement('span', { key: 'lbl', className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, (t('glossary.popups.dictionary') || 'Dictionary'))];
-    if (d.phonetic) row.push(React.createElement('span', { key: 'ipa', className: 'font-mono text-xs text-slate-600' }, d.phonetic));
-    if (d.audio) row.push(React.createElement('button', {
-      key: 'aud', type: 'button',
-      onClick: function () { try { new Audio(d.audio).play().catch(function () {}); } catch (_e) {} },
-      className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
-      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
-      title: t('glossary.popups.hear_real') || 'Hear a real recording'
-    }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
-    return React.createElement('div', { className: 'flex items-center gap-2 flex-wrap px-1' }, row);
-  }
-
   // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
-  // the animations globally so users with that preference see static styling.
-  (function () {
-    if (typeof document === 'undefined') return;
-    if (document.getElementById('allo-chunk-mood-css')) return;
-    var st = document.createElement('style');
-    st.id = 'allo-chunk-mood-css';
-    st.textContent =
-      '@keyframes allo-chunk-popin { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }' +
-      '@keyframes allo-chunk-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }' +
-      '@media (prefers-reduced-motion: reduce) {' +
-      '  [data-sentence-idx] { animation: none !important; }' +
-      '}';
-    if (document.head) document.head.appendChild(st);
-  })();
+// the animations globally so users with that preference see static styling.
+(function () {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-chunk-mood-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-chunk-mood-css';
+  st.textContent = '@keyframes allo-chunk-popin { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }' + '@keyframes allo-chunk-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }' + '@media (prefers-reduced-motion: reduce) {' + '  [data-sentence-idx] { animation: none !important; }' + '}';
+  if (document.head) document.head.appendChild(st);
+})();
+// Authoritative dictionary panel (Wiktionary via dictionaryapi.dev, offline-cached)
+// rendered beside the AI's leveled definition in the Define popup — triangulation.
+// Pure fn of (entry, t); returns null when there's no entry (AI-only fallback).
+function renderDictionaryPanel(dict, t) {
+  if (!dict) return null;
+  var kids = [];
+  kids.push(React.createElement('div', {
+    key: 'hd',
+    className: 'flex items-center gap-2 mb-1 flex-wrap'
+  }, React.createElement('span', {
+    className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700'
+  }, t('glossary.popups.dictionary') || 'Dictionary'), dict.phonetic ? React.createElement('span', {
+    className: 'text-[11px] text-slate-500'
+  }, dict.phonetic) : null, dict.audio ? React.createElement('button', {
+    type: 'button',
+    onClick: function () {
+      try {
+        new Audio(dict.audio).play().catch(function () {});
+      } catch (_e) {}
+    },
+    className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-1.5 py-0.5 transition-colors',
+    'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+    title: t('glossary.popups.hear_real') || 'Hear a real recording'
+  }, React.createElement(Volume2, {
+    size: 11
+  }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')) : null));
+  (dict.meanings || []).slice(0, 2).forEach(function (m, mi) {
+    var d0 = m.definitions && m.definitions[0] ? m.definitions[0].definition : '';
+    if (!d0) return;
+    var d0ex = m.definitions[0].example || '';
+    kids.push(React.createElement('div', {
+      key: 'm' + mi,
+      className: 'text-xs text-slate-700 leading-snug mb-1'
+    }, m.partOfSpeech ? React.createElement('span', {
+      className: 'italic text-slate-500 mr-1'
+    }, m.partOfSpeech) : null, d0, d0ex ? React.createElement('span', {
+      className: 'block text-[11px] text-slate-500 italic mt-0.5'
+    }, '"' + d0ex + '"') : null));
+  });
+  if (dict.synonyms && dict.synonyms.length) {
+    kids.push(React.createElement('div', {
+      key: 'syn',
+      className: 'text-[11px] text-slate-500 mt-0.5'
+    }, (t('glossary.popups.similar') || 'Similar') + ': ' + dict.synonyms.slice(0, 5).join(', ')));
+  }
+  kids.push(React.createElement('div', {
+    key: 'src',
+    className: 'text-[10px] text-slate-400 mt-1'
+  }, dict.source));
+  return React.createElement('div', {
+    className: 'mt-3 pt-3 border-t border-emerald-100'
+  }, kids);
+}
 
-  var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
+// Authoritative pronunciation row for the phonics popup: real Wiktionary recording
+// + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
+function renderPhonicsDictRow(phonicsData, t) {
+  var d = phonicsData && phonicsData.dictionary;
+  if (!d || !d.phonetic && !d.audio) return null;
+  var row = [React.createElement('span', {
+    key: 'lbl',
+    className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide'
+  }, t('glossary.popups.dictionary') || 'Dictionary')];
+  if (d.phonetic) row.push(React.createElement('span', {
+    key: 'ipa',
+    className: 'font-mono text-xs text-slate-600'
+  }, d.phonetic));
+  if (d.audio) row.push(React.createElement('button', {
+    key: 'aud',
+    type: 'button',
+    onClick: function () {
+      try {
+        new Audio(d.audio).play().catch(function () {});
+      } catch (_e) {}
+    },
+    className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
+    'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+    title: t('glossary.popups.hear_real') || 'Hear a real recording'
+  }, React.createElement(Volume2, {
+    size: 11
+  }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
+  return React.createElement('div', {
+    className: 'flex items-center gap-2 flex-wrap px-1'
+  }, row);
+}
+var _lazyIcon = function (name) {
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
-  var Heart = _lazyIcon('Heart');
-  var CheckCircle = _lazyIcon('CheckCircle');
-  var Volume2 = _lazyIcon('Volume2');
-  var Mic = _lazyIcon('Mic');
-  var Search = _lazyIcon('Search');
-  var Ear = _lazyIcon('Ear');
-  var Plus = _lazyIcon('Plus');
-  var HelpCircle = _lazyIcon('HelpCircle');
-  var PenTool = _lazyIcon('PenTool');
-  var Gamepad2 = _lazyIcon('Gamepad2');
-  var Pencil = _lazyIcon('Pencil');
-  var GitCompare = _lazyIcon('GitCompare');
-  var BookOpen = _lazyIcon('BookOpen');
-  var Settings = _lazyIcon('Settings');
-  var ChevronLeft = _lazyIcon('ChevronLeft');
-  var ChevronRight = _lazyIcon('ChevronRight');
-  var Copy = _lazyIcon('Copy');
-  var RefreshCw = _lazyIcon('RefreshCw');
-  var ShieldCheck = _lazyIcon('ShieldCheck');
-  var Download = _lazyIcon('Download');
-  var CheckCircle2 = _lazyIcon('CheckCircle2');
-  var X = _lazyIcon('X');
-  var Bold = _lazyIcon('Bold');
-  var Italic = _lazyIcon('Italic');
-  var Highlighter = _lazyIcon('Highlighter');
-  var List = _lazyIcon('List');
-  var ListOrdered = _lazyIcon('ListOrdered');
-  var Trophy = _lazyIcon('Trophy');
-  var ImageIcon = _lazyIcon('ImageIcon');
-  var Sparkles = _lazyIcon('Sparkles');
-  var AlertCircle = _lazyIcon('AlertCircle');
-  var ArrowRight = _lazyIcon('ArrowRight');
-
-  function SimplifiedView(props) {
+};
+var Heart = _lazyIcon('Heart');
+var CheckCircle = _lazyIcon('CheckCircle');
+var Volume2 = _lazyIcon('Volume2');
+var Mic = _lazyIcon('Mic');
+var Search = _lazyIcon('Search');
+var Ear = _lazyIcon('Ear');
+var Plus = _lazyIcon('Plus');
+var HelpCircle = _lazyIcon('HelpCircle');
+var PenTool = _lazyIcon('PenTool');
+var Gamepad2 = _lazyIcon('Gamepad2');
+var Pencil = _lazyIcon('Pencil');
+var GitCompare = _lazyIcon('GitCompare');
+var BookOpen = _lazyIcon('BookOpen');
+var Settings = _lazyIcon('Settings');
+var ChevronLeft = _lazyIcon('ChevronLeft');
+var ChevronRight = _lazyIcon('ChevronRight');
+var Copy = _lazyIcon('Copy');
+var RefreshCw = _lazyIcon('RefreshCw');
+var ShieldCheck = _lazyIcon('ShieldCheck');
+var Download = _lazyIcon('Download');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var X = _lazyIcon('X');
+var Bold = _lazyIcon('Bold');
+var Italic = _lazyIcon('Italic');
+var Highlighter = _lazyIcon('Highlighter');
+var List = _lazyIcon('List');
+var ListOrdered = _lazyIcon('ListOrdered');
+var Trophy = _lazyIcon('Trophy');
+var ImageIcon = _lazyIcon('ImageIcon');
+var Sparkles = _lazyIcon('Sparkles');
+var AlertCircle = _lazyIcon('AlertCircle');
+var ArrowRight = _lazyIcon('ArrowRight');
+function SimplifiedView(props) {
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -269,8 +298,11 @@
   var ConfettiExplosion = props.ConfettiExplosion;
   var ComplexityGauge = props.ComplexityGauge;
   var SourceReferencesPanel = props.SourceReferencesPanel;
-  // Word-level popups must sit ABOVE the z-[200] immersive overlay while it is
-  // open, else Define/Phonics render behind it in the standard view.
+  // The immersive reader is a z-[200] full-screen overlay. Word-level popups
+  // (Define / Phonics / selection / revise) default to z-[100]/z-[90], so when
+  // immersive is open they render BEHIND it — the definition appears to land in
+  // the standard view. Lift them above the overlay while immersive is active
+  // (backdrop just under the popup, still above the overlay).
   const _popupZ = isImmersiveReaderActive ? 'z-[220]' : 'z-[100]';
   const _popupBackdropZ = isImmersiveReaderActive ? 'z-[210]' : 'z-[90]';
   return /*#__PURE__*/React.createElement("div", {
@@ -358,7 +390,11 @@
   }), /*#__PURE__*/React.createElement(KaraokeReaderOverlay, {
     isOpen: isKaraokeOverlayActive,
     onClose: () => setIsKaraokeOverlayActive(false),
-    getAudioUrl: sentenceText => callTTS(sentenceText).catch(() => null),
+    getAudioUrl: sentenceText => {
+      const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+      const _u = _st && _st.get(sentenceText);
+      return _u ? Promise.resolve(_u) : callTTS(sentenceText).catch(() => null);
+    },
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out",
@@ -407,7 +443,7 @@
     // the active sentence contributes wordData.text.length to the rolling offset.
     let activeChunkCharOffset = 0;
     let lastWasActiveSentence = false;
-    const reduceMotion = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return generatedContent.immersiveData.map((wordData, i) => {
       if (wordData.pos === 'newline') {
         return /*#__PURE__*/React.createElement("div", {
@@ -461,8 +497,12 @@
           transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
           // In chunk-read mode every word is click-to-jump (onClick below);
           // pointer cursor surfaces the affordance without needing instructions.
-          ...(isChunkReaderActive ? { cursor: 'pointer' } : {}),
-          ...(moodAnimation ? { animation: moodAnimation } : {}),
+          ...(isChunkReaderActive ? {
+            cursor: 'pointer'
+          } : {}),
+          ...(moodAnimation ? {
+            animation: moodAnimation
+          } : {}),
           ...(showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
             backgroundColor: 'rgba(250, 204, 21, 0.35)',
             borderRadius: '4px',
@@ -690,23 +730,23 @@
     className: `px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "default"
-  }, "\uD83C\uDFA8 Default (App Theme)"), /*#__PURE__*/React.createElement("option", {
+  }, "🎨 Default (App Theme)"), /*#__PURE__*/React.createElement("option", {
     value: "warm"
-  }, "\u2600\uFE0F Warm Cream"), /*#__PURE__*/React.createElement("option", {
+  }, "☀️ Warm Cream"), /*#__PURE__*/React.createElement("option", {
     value: "sepia"
-  }, "\uD83D\uDCDC Sepia"), theme !== 'dark' && /*#__PURE__*/React.createElement("option", {
+  }, "📜 Sepia"), theme !== 'dark' && /*#__PURE__*/React.createElement("option", {
     value: "dark"
-  }, "\uD83C\uDF19 Dark Mode"), /*#__PURE__*/React.createElement("option", {
+  }, "🌙 Dark Mode"), /*#__PURE__*/React.createElement("option", {
     value: "highContrast"
-  }, "\u25FC\uFE0F High Contrast"), /*#__PURE__*/React.createElement("option", {
+  }, "◼️ High Contrast"), /*#__PURE__*/React.createElement("option", {
     value: "blue"
-  }, "\uD83D\uDCA7 Blue Wash"), /*#__PURE__*/React.createElement("option", {
+  }, "💧 Blue Wash"), /*#__PURE__*/React.createElement("option", {
     value: "green"
-  }, "\uD83C\uDF3F Green Tint"), /*#__PURE__*/React.createElement("option", {
+  }, "🌿 Green Tint"), /*#__PURE__*/React.createElement("option", {
     value: "rose"
-  }, "\uD83C\uDF38 Rose"), /*#__PURE__*/React.createElement("option", {
+  }, "🌸 Rose"), /*#__PURE__*/React.createElement("option", {
     value: "dyslexia"
-  }, "\uD83D\uDD24 Easy Read")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, "🔤 Easy Read")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center mr-2"
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.settings'),
@@ -898,12 +938,10 @@
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1"
   }, t('glossary.popups.syllables')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-0.5"
-  }, phonicsData.data.syllables.map((syl, i) => /*#__PURE__*/React.createElement(React.Fragment, {
-    key: i
-  }, i > 0 && /*#__PURE__*/React.createElement("span", {
+  }, phonicsData.data.syllables.map((syl, i) => /*#__PURE__*/React.createElement(React.Fragment, null, i > 0 && /*#__PURE__*/React.createElement("span", {
     className: "text-emerald-500 font-bold px-0.5",
     "aria-hidden": "true"
-  }, "\u2022"), /*#__PURE__*/React.createElement("span", {
+  }, "•"), /*#__PURE__*/React.createElement("span", {
     className: "bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm"
   }, syl))))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-red-600 text-xs font-bold py-4"
@@ -961,14 +999,14 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(HelpCircle, {
     size: 12,
-    className: "text-teal-400"
+    className: "text-teal-700"
   }), " ", t('text_tools.explain')), interactionMode === 'revise' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.generate'),
     onClick: () => handleReviseSelection('simplify'),
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 12,
-    className: "text-yellow-400"
+    className: "text-yellow-700"
   }), " ", t('text_tools.simplify')), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-3 bg-slate-600"
   }), /*#__PURE__*/React.createElement("button", {
@@ -983,7 +1021,7 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12,
-    className: "text-yellow-400"
+    className: "text-yellow-700"
   }), " ", t('text_tools.define')), interactionMode === 'add-glossary' && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: () => {
@@ -993,7 +1031,7 @@
     className: "px-3 py-1.5 hover:bg-white/20 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 12,
-    className: "text-green-400"
+    className: "text-green-700"
   }), " ", t('text_tools.add_term')))), /*#__PURE__*/React.createElement("div", {
     className: "w-2 h-2 bg-slate-800 rotate-45"
   })), selectionMenu && /*#__PURE__*/React.createElement("div", {
@@ -1398,7 +1436,7 @@
               className: "bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"
             }, /*#__PURE__*/React.createElement("span", {
               className: "text-[11px] mr-1 text-indigo-600 font-bold"
-            }, "\u2713"), part);
+            }, "✓"), part);
           }
           if (typeof part !== 'string') return null;
           return part.split(/(\s+)/).map((subPart, spIdx) => {
@@ -1500,9 +1538,7 @@
       const rowTargetEndIdx = rowTargetStartIdx + targetParaSentences.length;
       currentSourceSentenceIdx += sourceParaSentences.length;
       currentTargetSentenceIdx += targetParaSentences.length;
-      return /*#__PURE__*/React.createElement(React.Fragment, {
-        key: i
-      }, /*#__PURE__*/React.createElement("div", {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
         className: `bg-white/60 rounded-lg p-4 border border-orange-100 hover:border-orange-300 transition-colors ${isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'text-right' : 'text-left'}`,
         dir: isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'rtl' : 'ltr'
       }, /*#__PURE__*/React.createElement("div", {
@@ -1540,6 +1576,12 @@
       body: _bodyRaw,
       references: _referencesFromContent
     } = splitReferencesFromBody(_fullData);
+    // Normalize AI heading lines wrapped in * / ** (e.g. "*Dreams*",
+    // "**How Do We Dream?**") into real Markdown headings, so the reader
+    // styles them as bold section headers instead of showing the raw
+    // asterisks. Only matches a WHOLE line that is a single * / ** span
+    // with no other asterisks — inline emphasis inside a sentence is
+    // untouched.
     const _bodyNoRefs = String(_bodyRaw || '').replace(/^[ \t]*(\*{1,2})([^*\n]+?)\1[ \t]*$/gm, (_m, _s, _inner) => '## ' + _inner.trim());
     const _refsFromInput = inputText ? splitReferencesFromBody(inputText).references : '';
     const _refsContentCount = parseReferenceItems(_referencesFromContent || '').length;
@@ -1603,7 +1645,7 @@
                   className: "bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"
                 }, /*#__PURE__*/React.createElement("span", {
                   className: "text-[11px] mr-1 text-indigo-600 font-bold"
-                }, "\u2713"), part);
+                }, "✓"), part);
               }
               if (typeof part !== 'string') return null;
               return part.split(/(\s+)/).map((subPart, spIdx) => {
@@ -1844,7 +1886,7 @@
                 className: "bg-indigo-50 rounded px-1 mx-0.5 border border-indigo-200 inline-flex items-baseline"
               }, /*#__PURE__*/React.createElement("span", {
                 className: "text-[11px] mr-1 text-indigo-600 font-bold"
-              }, "\u2713"), part);
+              }, "✓"), part);
             }
             if (typeof part !== 'string') return null;
             return part.split(/(\s+)/).map((subPart, spIdx) => {

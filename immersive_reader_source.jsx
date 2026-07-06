@@ -1013,6 +1013,17 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     useEffect(() => {
         if (!text) { setSentences([]); return; }
         const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        // Prefer the SHARED splitter (KaraokeAudioStore) so stored/vetted
+        // audio keys line up exactly with what the player requests; the
+        // inline regex below is the identical fallback when the store
+        // module is absent (older bundles / web without it).
+        const _KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+        if (_KS && typeof _KS.splitSentences === 'function') {
+            const _shared = _KS.splitSentences(text);
+            setSentences(_shared.length > 0 ? _shared : [cleaned]);
+            setSentenceIdx(0); setSweepPct(0); warmedRef.current = new Set();
+            return;
+        }
         // Preserve terminal punctuation in each sentence; split on "punct + whitespace"
         const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
         const out = [];

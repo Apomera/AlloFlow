@@ -815,6 +815,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
       return;
     }
     const cleaned = String(text || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    const _KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (_KS && typeof _KS.splitSentences === "function") {
+      const _shared = _KS.splitSentences(text);
+      setSentences(_shared.length > 0 ? _shared : [cleaned]);
+      setSentenceIdx(0);
+      setSweepPct(0);
+      warmedRef.current = /* @__PURE__ */ new Set();
+      return;
+    }
     const parts = cleaned.split(/([.!?]+["'\u201D\u2019]?)(\s+|$)/);
     const out = [];
     let buf = "";
