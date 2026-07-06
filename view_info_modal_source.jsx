@@ -76,6 +76,9 @@ const OSS_CREDITS = [
       { name: 'CODAP', use: 'data-science workspace (Data Lab) — Concord Consortium', license: 'MIT', url: 'https://codap.concord.org' },
       { name: 'PhET Interactive Simulations', use: 'science & math sims (Sim Shelf) — Univ. of Colorado Boulder', license: 'GPLv3 (code) / CC-BY (content)', url: 'https://phet.colorado.edu' },
       { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
+      { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io' },
+      { name: 'Smithsonian Open Access', use: 'CC0 museum images in the Zoom Gallery (deep-zoom IIIF)', license: 'CC0 1.0', url: 'https://www.si.edu/openaccess' },
+      { name: 'NASA Image and Video Library', use: 'public-domain space photographs in the Zoom Gallery', license: 'Public domain (NASA media guidelines)', url: 'https://images.nasa.gov' },
     ],
   },
   {

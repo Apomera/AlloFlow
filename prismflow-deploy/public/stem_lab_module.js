@@ -3945,6 +3945,11 @@
                 id: 'timelineStudio', icon: '\uD83D\uDD70\uFE0F', label: 'Timeline Studio',
                 desc: 'Turn any reading \u2014 history, a biography, a science-discovery passage \u2014 into an interactive TimelineJS timeline. The AI pulls out the dated events; you scroll, zoom, and step through them, or build a timeline by hand.',
                 color: 'rose', ready: true
+              },
+              {
+                id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
+                desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
+                color: 'sky', ready: true
               }
             ];
             // ── Tool search filter ──
@@ -3961,7 +3966,8 @@
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
               circuitShelf: 'circuit circuits circuitjs falstad electronics electronic simulator series parallel ohm ohms law resistor resistance voltage current capacitor rc logic gates and or led breadboard battery predict explore explain poe physics',
               moleculeShelf: 'molecule molecules molecular mol star molstar protein proteins pdb rcsb structure structures 3d dna rna hemoglobin water enzyme virus chemistry biochemistry biology atoms bonds ball stick cartoon notice wonder',
-              timelineStudio: 'timeline timelines timelinejs knight lab history historical chronology chronological events dates date sequence biography social studies humanities era eras when order document reading generate ai'
+              timelineStudio: 'timeline timelines timelinejs knight lab history historical chronology chronological events dates date sequence biography social studies humanities era eras when order document reading generate ai',
+              zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
             };
             function _normalizeToolSearchText(value) {
               return String(value || '')
@@ -5410,7 +5416,11 @@
             moleculeShelf: true,
             // Jul 2026: Timeline Studio — TimelineJS (Knight Lab, MPL) companion
             // window + AI doc→timeline (launcher + data bridge in stem_tool_timeline.js).
-            timelineStudio: true
+            timelineStudio: true,
+            // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
+            // window over Smithsonian CC0 (IIIF) + NASA public-domain images +
+            // Notice→Wonder coach (launcher + AI bridge in stem_tool_zoomgallery.js).
+            zoomGallery: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};

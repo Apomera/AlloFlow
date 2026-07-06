@@ -5438,6 +5438,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Timeline Studio — TimelineJS (Knight Lab, MPL) companion
         // window + AI document→timeline; launcher + data bridge in the tool.
         'stem_lab/stem_tool_timeline.js',
+        // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
+        // window over Smithsonian CC0 (IIIF) + NASA public-domain images with a
+        // Notice→Wonder coach; launcher + AI bridge in the tool.
+        'stem_lab/stem_tool_zoomgallery.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
