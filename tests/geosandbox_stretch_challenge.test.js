@@ -95,3 +95,34 @@ describe('geoEvalBuildChallenge (target checking with tolerance)', () => {
     expect(P.geoEvalBuildChallenge(ch, [pt, s, r, pr]).solved).toBe(true);
   });
 });
+
+describe('surface area + Cavalieri oblique stretch (geoPrismSurfaceArea, slant)', () => {
+  it('computes prism surface area = 2(|uv|+|vw|+|wu|)', () => {
+    const box = { type: 'prism', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0], w: [0, 0, 4] };
+    // 2*(2*3 + 3*4 + 4*2) = 2*(6+12+8) = 52
+    expect(P.geoPrismSurfaceArea(box)).toBeCloseTo(52, 6);
+    expect(P.geoStretchMeasure(box).surfaceArea).toBeCloseTo(52, 6);
+  });
+  it('a Cavalieri slant preserves volume but increases surface area', () => {
+    const rect = { type: 'rect', position: [0, 0, 0], u: [3, 0, 0], v: [0, 4, 0] };
+    const straight = P.stretchRect(rect, 'z', 5, 0);
+    const oblique = P.stretchRect(rect, 'z', 5, 0.8);
+    expect(P.objectVolume(straight)).toBeCloseTo(60, 6);
+    expect(P.objectVolume(oblique)).toBeCloseTo(P.objectVolume(straight), 6);  // Cavalieri: same volume
+    expect(P.geoPrismSurfaceArea(oblique)).toBeGreaterThan(P.geoPrismSurfaceArea(straight)); // slant adds surface
+    expect(P.geoStretchMeasure(oblique).oblique).toBe(true);
+    expect(P.geoStretchMeasure(straight).oblique).toBe(false);
+  });
+  it('a Cavalieri slant on a segment→rect preserves area (2D Cavalieri)', () => {
+    const seg = { type: 'segment', position: [0, 0, 0], vector: [4, 0, 0] };
+    const straight = P.stretchSegment(seg, 'y', 3, 0);
+    const oblique = P.stretchSegment(seg, 'y', 3, 1.0);
+    expect(P.objectVolume(straight)).toBeCloseTo(12, 6);
+    expect(P.objectVolume(oblique)).toBeCloseTo(12, 6);  // parallelogram, same area
+  });
+  it('slant defaults to 0 (backward-compatible right prism)', () => {
+    const rect = { type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 2, 0] };
+    const a = P.stretchRect(rect, 'z', 2);
+    expect(P.geoStretchMeasure(a).oblique).toBe(false);
+  });
+});

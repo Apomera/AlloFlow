@@ -811,6 +811,9 @@ window.StemLab = window.StemLab || {
   }
   function vec3Scale(v, s) { return [v[0] * s, v[1] * s, v[2] * s]; }
   function vec3Add(a, b)  { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+  function vec3Mag(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]); }
+  function vec3Cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function vec3Norm(a) { var m = vec3Mag(a); return m > 1e-9 ? vec3Scale(a, 1 / m) : [1, 0, 0]; }
   function vec3Perp(v) {
     // Pick a perpendicular axis: if v is along x or close, perp is y; else perp is x.
     var ax = Math.abs(v[0]), ay = Math.abs(v[1]), az = Math.abs(v[2]);
@@ -822,7 +825,11 @@ window.StemLab = window.StemLab || {
     var ax = STRETCH_AXES.find(function(a) { return a.id === axis; }) || STRETCH_AXES[0];
     return { type: 'segment', position: point.position.slice(), vector: vec3Scale(ax.vec, length) };
   }
-  function stretchSegment(seg, axis, length) {
+  // Cavalieri slant (optional): a SHEAR added to the extrusion, IN the base plane
+  // and PERPENDICULAR to the base direction — it slants the shape without changing
+  // its base or its perpendicular height, so the area/volume is provably unchanged
+  // (Cavalieri's principle). slant = 0 → the original straight (right) stretch.
+  function stretchSegment(seg, axis, length, slant) {
     var ax = STRETCH_AXES.find(function(a) { return a.id === axis; }) || STRETCH_AXES[1];
     // Don't allow stretching along the segment's own axis (would degenerate)
     var segLen = Math.sqrt(seg.vector[0]*seg.vector[0] + seg.vector[1]*seg.vector[1] + seg.vector[2]*seg.vector[2]);
@@ -834,18 +841,26 @@ window.StemLab = window.StemLab || {
     } else {
       perp = ax.vec;
     }
-    return { type: 'rect', position: seg.position.slice(), u: seg.vector.slice(), v: vec3Scale(perp, length) };
+    var v = vec3Scale(perp, length);
+    // Shear along the segment's own direction keeps base(|u|) × height(length) fixed.
+    if (slant) v = vec3Add(v, vec3Scale(normSeg, slant * length));
+    return { type: 'rect', position: seg.position.slice(), u: seg.vector.slice(), v: v };
   }
-  function stretchRect(rect, axis, length) {
+  function stretchRect(rect, axis, length, slant) {
     // For a rect, w is the perpendicular of the plane defined by u, v.
     var u = rect.u, v = rect.v;
-    // Cross product u × v gives a normal
-    var nx = u[1] * v[2] - u[2] * v[1];
-    var ny = u[2] * v[0] - u[0] * v[2];
-    var nz = u[0] * v[1] - u[1] * v[0];
-    var nLen = Math.sqrt(nx*nx + ny*ny + nz*nz);
-    var normal = nLen > 0 ? [nx/nLen, ny/nLen, nz/nLen] : [0, 0, 1];
-    return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: vec3Scale(normal, length) };
+    var normal = vec3Norm(vec3Cross(u, v));
+    if (vec3Mag(vec3Cross(u, v)) < 1e-9) normal = [0, 0, 1];
+    var w = vec3Scale(normal, length);
+    // Shear in the base plane (along û) keeps base area × perpendicular height fixed
+    // → an oblique prism with IDENTICAL volume (Cavalieri).
+    if (slant) w = vec3Add(w, vec3Scale(vec3Norm(u), slant * length));
+    return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: w };
+  }
+  // Surface area of a parallelepiped prism = 2(|u×v| + |v×w| + |w×u|).
+  function geoPrismSurfaceArea(o) {
+    if (!o || o.type !== 'prism') return 0;
+    return 2 * (vec3Mag(vec3Cross(o.u, o.v)) + vec3Mag(vec3Cross(o.v, o.w)) + vec3Mag(vec3Cross(o.w, o.u)));
   }
   function objectVolume(o) {
     if (o.type === 'point') return 0;
@@ -878,8 +893,13 @@ window.StemLab = window.StemLab || {
     if (!o) return null;
     if (o.type === 'point')   return { dim: 0, kind: 'point',  value: 0, unitExp: 0, formula: '—', label: 'Point' };
     if (o.type === 'segment') return { dim: 1, kind: 'length', value: objectVolume(o), unitExp: 1, formula: '|v|', label: 'Length' };
-    if (o.type === 'rect')    return { dim: 2, kind: 'area',   value: objectVolume(o), unitExp: 2, formula: '|u × v|', label: 'Area' };
-    if (o.type === 'prism')   return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3, formula: '|u · (v × w)|', label: 'Volume' };
+    if (o.type === 'rect')    return { dim: 2, kind: 'area',   value: objectVolume(o), unitExp: 2, formula: '|u × v|', label: 'Area', perimeter: 2 * (vec3Mag(o.u) + vec3Mag(o.v)) };
+    if (o.type === 'prism') {
+      // A slanted (oblique) prism has extra edge length in w beyond its height,
+      // so surfaceArea grows while volume is unchanged — the Cavalieri contrast.
+      var oblique = Math.abs(o.u && o.v && o.w ? (function() { var n = vec3Norm(vec3Cross(o.u, o.v)); return (o.w[0] * n[0] + o.w[1] * n[1] + o.w[2] * n[2]) / (vec3Mag(o.w) || 1); })() : 1) < 0.999;
+      return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3, formula: '|u · (v × w)|', label: 'Volume', surfaceArea: geoPrismSurfaceArea(o), oblique: oblique };
+    }
     return null;
   }
 
@@ -1046,6 +1066,7 @@ window.StemLab = window.StemLab || {
   try {
     window.StemLab.geoPure = {
       objectVolume: objectVolume,
+      geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       geoStretchMeasure: geoStretchMeasure,
       geoMakeBuildChallenge: geoMakeBuildChallenge,
@@ -1186,6 +1207,7 @@ window.StemLab = window.StemLab || {
       var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
       var stretchAxis = gd.stretchAxis || 'x';
       var stretchLength = gd.stretchLength != null ? gd.stretchLength : 2;
+      var stretchSlant = gd.stretchSlant != null ? gd.stretchSlant : 0;   // Cavalieri shear (0 = right/straight)
       // ── Build Challenge (stretch-mode problem solving) ──
       var buildChallenge = gd.buildChallenge || null;
       var buildScore = gd.buildScore || { solved: 0 };
@@ -1230,8 +1252,8 @@ window.StemLab = window.StemLab || {
         if (!sel) { addToast('Select an object first', 'error'); return; }
         var newObj;
         if (sel.type === 'point')        newObj = stretchPoint(sel, ax, stretchLength);
-        else if (sel.type === 'segment') newObj = stretchSegment(sel, ax, stretchLength);
-        else if (sel.type === 'rect')    newObj = stretchRect(sel, ax, stretchLength);
+        else if (sel.type === 'segment') newObj = stretchSegment(sel, ax, stretchLength, stretchSlant);
+        else if (sel.type === 'rect')    newObj = stretchRect(sel, ax, stretchLength, stretchSlant);
         else { addToast('Cannot stretch a solid further in this dimension', 'info'); return; }
         pushHistory();
         newObj.id = nextObjId(construction.objects);
@@ -2262,6 +2284,32 @@ window.StemLab = window.StemLab || {
                   })
                 )
               ),
+              // ── Oblique (Cavalieri) slant: slant the stretch without changing the
+              //    base or height, so area/volume stay identical — a hands-on proof
+              //    of Cavalieri's principle. ──
+              h('div', null,
+                h('div', { className: 'flex justify-between items-center mb-1' },
+                  h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-purple-200 cursor-pointer' },
+                    h('input', {
+                      type: 'checkbox', checked: stretchSlant !== 0,
+                      onChange: function(e) { upd('stretchSlant', e.target.checked ? 0.6 : 0); },
+                      'aria-label': t('stem.geosandbox.oblique_toggle', 'Oblique (slanted) stretch')
+                    }),
+                    t('stem.geosandbox.oblique', '◣ Oblique (slant)')
+                  ),
+                  stretchSlant !== 0 && h('span', { className: 'text-purple-300 font-mono text-[11px]' }, '×' + stretchSlant.toFixed(1))
+                ),
+                stretchSlant !== 0 && h('input', {
+                  type: 'range', min: '0', max: '1.5', step: '0.1',
+                  value: stretchSlant,
+                  onChange: function(e) { upd('stretchSlant', parseFloat(e.target.value)); },
+                  'aria-label': t('stem.geosandbox.slant_amount', 'Slant amount'),
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
+                }),
+                stretchSlant !== 0 && h('p', { className: 'text-[10px] text-emerald-300/80 mt-0.5' },
+                  t('stem.geosandbox.cavalieri_note', "Cavalieri: slanting keeps the base and height — so area/volume don't change, only the surface does.")
+                )
+              ),
               // Stretch button (context label changes based on selection)
               (function() {
                 var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
@@ -2292,7 +2340,7 @@ window.StemLab = window.StemLab || {
                     var label = o.type === 'point' ? 'Point #' + o.id :
                                 o.type === 'segment' ? 'Segment #' + o.id + ' (L = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + ')' :
                                 o.type === 'rect' ? 'Rectangle #' + o.id + ' (A = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '²)' :
-                                'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³)';
+                                'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³, SA = ' + geoPrismSurfaceArea(o).toFixed(1) + ' ' + unitDef.short + '²)' + (geoStretchMeasure(o).oblique ? ' ◣' : '');
                     return h('button', {
                       key: 'obj-' + o.id,
                       onClick: function() { selectObject(o.id); },
