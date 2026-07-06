@@ -222,6 +222,38 @@ window.StemLab = window.StemLab || {
         renderer.domElement.addEventListener('pointerdown', function() { controls.autoRotate = false; }, { once: true });
       }
     }
+    // ── On-screen click-to-select (full parity with VR point-and-select) — so a
+    //    student WITHOUT a headset can do everything on screen: a clean tap (not
+    //    an orbit drag) on a construction object selects it, via the React bridge
+    //    window._geoSelectObj. A tap is distinguished from a rotate by movement,
+    //    so it coexists with OrbitControls. ──
+    var _pick = { x: 0, y: 0, moved: false, down: false };
+    var _pickRay = new THREE.Raycaster();
+    try { if (_pickRay.params && _pickRay.params.Line) _pickRay.params.Line.threshold = 0.25; } catch (e) {}
+    var _pickV2 = new THREE.Vector2();
+    function _geoPickDown(e) { _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; }
+    function _geoPickMove(e) { if (_pick.down && (Math.abs(e.clientX - _pick.x) + Math.abs(e.clientY - _pick.y)) > 6) _pick.moved = true; }
+    function _geoPickUp(e) {
+      var wasDown = _pick.down; _pick.down = false;
+      if (!wasDown || _pick.moved) return;                       // it was an orbit drag, not a select
+      try {
+        var gs = window._geoScene; var grp = gs && gs.constructionGroup;
+        if (!grp || !grp.children || !grp.children.length) return;
+        var rect = renderer.domElement.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        _pickV2.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        _pickV2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        _pickRay.setFromCamera(_pickV2, camera);
+        var hits = _pickRay.intersectObjects(grp.children, true);
+        if (!hits.length) return;
+        var node = hits[0].object, id = null;
+        while (node) { if (node.userData && node.userData.objId != null) { id = node.userData.objId; break; } node = node.parent; }
+        if (id != null && window._geoSelectObj) window._geoSelectObj(id);
+      } catch (err) {}
+    }
+    renderer.domElement.addEventListener('pointerdown', _geoPickDown);
+    renderer.domElement.addEventListener('pointermove', _geoPickMove);
+    renderer.domElement.addEventListener('pointerup', _geoPickUp);
     // Animate
     var animId;
     var animate = function() {
@@ -1661,7 +1693,10 @@ window.StemLab = window.StemLab || {
           if (mode !== 'stretch') return;
           upd('stretchLength', Math.max(0.5, Math.min(12, Math.round((stretchLength + delta) * 2) / 2)));
         };
-        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; } catch (e) {} };
+        // On-screen click-to-select: the canvas raycaster (initScene) calls this
+        // when a construction object is tapped — same selectObject as the list.
+        window._geoSelectObj = function(id) { selectObject(id); };
+        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; } catch (e) {} };
       // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [mode, construction, stretchAxis, stretchLength]);
 
@@ -2249,6 +2284,7 @@ window.StemLab = window.StemLab || {
               // Construction object list
               construction.objects.length > 0 && h('div', { className: 'border-t border-purple-500/30 pt-2' },
                 h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, 'Construction (' + construction.objects.length + ' objects):'),
+                h('div', { className: 'text-[10px] text-purple-300/70 mb-1' }, t('stem.geosandbox.click_to_select_hint', '💡 Tip: click a shape in the 3D view — or the list — to select it, then stretch.')),
                 h('div', { className: 'space-y-1 max-h-40 overflow-y-auto' },
                   construction.objects.map(function(o) {
                     var isSel = o.id === construction.selection;
