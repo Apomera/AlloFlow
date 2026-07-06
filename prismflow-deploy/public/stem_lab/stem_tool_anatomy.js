@@ -1016,6 +1016,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         }
         var spotterTargetStruct = spotterTarget ? (allStructures.find(function(s) { return s.id === spotterTarget; }) || null) : null;
         var spotterCueText = spotterRegionCue(spotterTargetStruct);
+        // Elapsed time frozen at answer time (do NOT recompute Date.now() at render — the panel
+        // re-renders on every mouse-move, which would inflate the "Correct! (x.xs)" reading).
+        var spotterElapsed = d._spotterElapsed || 0;
+        // Is the currently-marked structure actually visible under the active systems/layers?
+        var spotterTargetVisible = spotterTarget ? filtered.some(function(s) { return s.id === spotterTarget; }) : false;
+        // Pick a fresh Spotter round from the CURRENTLY VISIBLE structures. Returns false (with a
+        // toast) if fewer than 4 labeled structures are in view, so Start / Next can never silently
+        // no-op or leave the student stuck on an unanswerable question.
+        var pickSpotterRound = function(isStart) {
+          var pool = filtered.filter(function(s) { return s.fn; });
+          if (pool.length < 4) {
+            if (typeof addToast === 'function') addToast('🔎 The Spotter Test needs at least 4 labeled structures in view. Turn on more systems or layers.');
+            return false;
+          }
+          var target = pool[Math.floor(Math.random() * pool.length)];
+          var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+          var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
+          var payload = { _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now(), _spotterElapsed: 0 };
+          if (isStart) payload._spotterActive = true;
+          updMulti(payload);
+          if (typeof announceToSR === 'function') announceToSR((isStart ? 'Spotter test started. ' : 'Next structure. ') + spotterRegionCue(target) + ' Choose which structure is marked from the buttons below.');
+          return true;
+        };
         // Centralized SR announcement for organ selection (the #allo-live-anatomy region was dead).
         // Grade-aware: mirrors the panel (simplified desc for k2/g35, full fn otherwise).
         function announceStructure(id) {
@@ -4242,16 +4265,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           });
           if (closest) {
             if (spotterActive && spotterFeedback === null) {
-              // Block clicking on the target body part directly to obtain the correct answer
-              if (closest.id === spotterTarget) {
-                if (addToast) addToast('🎯 Identify the structure using the multiple-choice buttons in the side panel!');
-                return;
-              }
-              // Clicking directly submits the answer in Spotter Mode (for other parts, marking them wrong)
-              var elapsed = (Date.now() - spotterStartTime) / 1000;
-              upd('_spotterFeedback', closest.id);
-              upd('_spotterTotal', spotterTotal + 1);
-              playSound('spotterWrong');
+              // Spotter answers are given via the multiple-choice buttons ONLY. Canvas clicks never
+              // submit — this blocks cheating (clicking the visible pin) and, just as importantly,
+              // stops an exploratory/accidental click from instantly losing the round.
+              if (addToast) addToast('🎯 Identify the marked structure using the buttons in the side panel.');
+              return;
             } else {
               // Standard explore mode click
               upd('selectedStructure', closest.id); announceStructure(closest.id);
@@ -5106,15 +5124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('p', { className: 'text-xs text-slate-600 mb-3' }, t('stem.anatomy.a_pin_is_placed_on_the_anatomical_figu', 'A pin is placed on the anatomical figure. Identify the structure as quickly as you can! Look for the pulsing crosshair on the canvas.')),
                   !spotterActive ? h('div', { className: 'text-center py-4' },
                     h('button', { 'aria-label': t('stem.anatomy.start_spotter_test', 'Start Spotter Test'),
-                      onClick: function() {
-                        var pool = filtered.filter(function(s) { return s.fn; });
-                        if (pool.length < 4) return;
-                        var target = pool[Math.floor(Math.random() * pool.length)];
-                        var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-                        var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
-                        updMulti({ _spotterActive: true, _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
-                        if (typeof announceToSR === 'function') announceToSR('Spotter test started. ' + spotterRegionCue(target) + ' Now choose which structure is marked from the buttons below.');
-                      },
+                      onClick: function() { pickSpotterRound(true); },
                       className: 'px-6 py-2.5 rounded-xl text-sm font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all shadow-sm active:scale-[0.97]'
                     }, t('stem.anatomy.start_spotter_test_2', '\uD83C\uDFAF Start Spotter Test')),
                     spotterTotal > 0 ? h('p', { className: 'text-[11px] text-slate-600 mt-2' }, 'Score: ' + spotterScore + ' correct out of ' + spotterTotal + ' attempts') : null
@@ -5123,6 +5133,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-sm font-bold text-cyan-900 mb-1' }, t('stem.anatomy.what_structure_is_marked_on_the_figure', 'What structure is marked on the figure?')),
                       h('p', { className: 'text-[11px] text-cyan-700' }, (spotterCueText ? spotterCueText + ' ' : '') + 'Look for the pulsing cyan crosshair on the canvas.')
                     ),
+                    !spotterTargetVisible ? h('div', { className: 'bg-amber-50 border border-amber-300 rounded-lg p-2.5 text-[11px] text-amber-800' },
+                      h('p', { className: 'font-bold mb-0.5' }, '⚠ The marked structure is hidden by the current view or layer filters.'),
+                      h('p', {}, 'Turn its system or layer back on to see the crosshair. The buttons below still work, or ',
+                        h('button', { onClick: function() { pickSpotterRound(false); }, className: 'underline font-bold text-amber-900 active:scale-[0.97]' }, 'pick one in this view'),
+                        '.'
+                      )
+                    ) : null,
                     h('div', { className: 'grid grid-cols-2 gap-2' },
                       spotterOptions.map(function(opt) {
                         var isCorrect = opt.id === spotterTarget;
@@ -5133,6 +5150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           onClick: function() {
                             var elapsed = (Date.now() - spotterStartTime) / 1000;
                             upd('_spotterFeedback', opt.id);
+                            upd('_spotterElapsed', elapsed);
                             upd('_spotterTotal', spotterTotal + 1);
                             if (opt.id === spotterTarget) {
                               upd('_spotterScore', spotterScore + 1);
@@ -5162,7 +5180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       return h('div', { className: 'space-y-2' },
                         h('div', { className: 'rounded-lg p-3 text-xs leading-relaxed ' + (isRight ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200') },
                           h('p', { className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
-                            isRight ? '🎉 Correct! (' + ((Date.now() - spotterStartTime) / 1000).toFixed(1) + 's)' : '🤔 Not quite! The correct structure is: ' + targetStruct.name
+                            isRight ? '🎉 Correct! (' + spotterElapsed.toFixed(1) + 's)' : '🤔 Not quite! The correct structure is: ' + targetStruct.name
                           ),
                           h('p', { className: 'text-slate-600 mt-1' },
                             isRight
@@ -5195,15 +5213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         })(),
 
                         h('button', { 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
-                          onClick: function() {
-                            var pool = filtered.filter(function(s) { return s.fn; });
-                            if (pool.length < 4) return;
-                            var target = pool[Math.floor(Math.random() * pool.length)];
-                            var wrong = pool.filter(function(s) { return s.id !== target.id; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
-                            var opts = wrong.concat([target]).sort(function() { return Math.random() - 0.5; });
-                            updMulti({ _spotterTarget: target.id, _spotterFeedback: null, _spotterOpts: opts, _spotterStartTime: Date.now() });
-                            if (typeof announceToSR === 'function') announceToSR('Next structure. ' + spotterRegionCue(target) + ' Choose which structure is marked from the buttons below.');
-                          },
+                          onClick: function() { pickSpotterRound(false); },
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all active:scale-[0.97]'
                         }, t('stem.anatomy.next_structure_2', 'Next Structure ➔')),
                         h('button', { 'aria-label': t('stem.anatomy.end_test', 'End Test'),
