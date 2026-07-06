@@ -1541,10 +1541,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                // Most non-Gemini backends don't accept audio inline; fail
-                // with a clear error so the caller falls back to local
-                // Whisper transcription + text-only grading path.
-                throw new Error('Audio input not supported on this backend (' + this.backend + '). Use Whisper for transcription, then text grading.');
+                // Most non-Gemini backends don't accept audio inline. For oral-
+                // reading fluency the on-device path is now real: the desktop
+                // School Box runs a managed whisper.cpp server (/api/asr/*) and
+                // fluency_module.js exposes transcribeAudioLocal / analyzeFluencyLocal
+                // (transcribe on-device, then align to the passage). This throw
+                // remains for other audio-grading callers (e.g. AlloHaven) that
+                // still expect a single analyze-and-grade call.
+                throw new Error('Audio input not supported on this backend (' + this.backend + '). For reading fluency use window.analyzeFluencyLocal (on-device whisper.cpp); otherwise transcribe first, then grade text.');
         }
     }
 
