@@ -25846,7 +25846,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     <ActiveViewContext.Provider value={_activeViewCtx}>
     <RoleContext.Provider value={_roleCtx}>
     <ThemeContext.Provider value={_themeCtx}>
-    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col theme-${theme} ${disableAnimations ? 'reduce-motion' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col theme-${theme} ${disableAnimations ? 'reduce-motion' : ''}`}
+      style={theme === 'dark'
+        // Inline style so the themed page background ALWAYS beats the
+        // bg-slate-50 utility in the cascade — any viewport area the panels
+        // don't cover must read as the theme's page color, never white.
+        ? { backgroundColor: '#0B1120', backgroundImage: 'radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0B1120 60%)' }
+        : (theme === 'contrast' ? { backgroundColor: '#000000' } : undefined)}>
+
       {kokoroLoadState && kokoroLoadState.loading && (
         <div role="status" aria-live="polite" aria-label={t('common.alloflow_loading_aria') || 'AlloFlow loading'} style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -27888,7 +27895,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         )}
         <div
             className={`bg-white shadow-xl shadow-indigo-500/10 border border-slate-400 flex flex-col overflow-hidden h-full transition-all duration-200 relative ${isZenMode ? 'w-full rounded-none border-0' : (isFullscreen ? 'w-full rounded-3xl' : 'rounded-3xl')}`}
-            style={{ width: (window.innerWidth >= 768 && !isFullscreen && !isZenMode) ? `${100 - leftWidth}%` : '100%' }}
+            style={{
+                // flexBasis + flexGrow (not exact width): the panel takes its
+                // share of the split but ALWAYS absorbs trailing slack, so no
+                // white gutter can open at the right edge when the row's
+                // children come up short (sidebar clamps, odd iframe widths,
+                // stale innerWidth reads). minWidth:0 keeps inner scrollers
+                // able to shrink instead of blowing the row out.
+                flexBasis: (window.innerWidth >= 768 && !isFullscreen && !isZenMode) ? `${100 - leftWidth}%` : '100%',
+                flexGrow: 1,
+                minWidth: 0
+            }}
         >
           {isZenMode && (
               <button
