@@ -2773,6 +2773,19 @@ var d = labToolData.brainAtlas || {};
                 // ── Cross-Lateralization (Coronal View) ──
                 var clT = canvas._brainTick;
 
+                // Gently scalloped (gyral) edge so the coronal hemispheres read as brain lobes,
+                // not plain ellipses — deterministic, and the interior is left clear for the pathways.
+                function coronalHemi(cx, cy, rx, ry) {
+                  ctx.beginPath();
+                  for (var i = 0; i <= 72; i++) {
+                    var a = (i / 72) * Math.PI * 2;
+                    var wob = 1 + Math.sin(a * 11) * 0.035 + Math.sin(a * 22 + 1) * 0.018;
+                    var x = cx + Math.cos(a) * rx * wob, y = cy + Math.sin(a) * ry * wob;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                  }
+                  ctx.closePath();
+                }
+
                 // Background — faint grid
                 ctx.save(); ctx.globalAlpha = 0.04; ctx.strokeStyle = '#6d5a8f';
                 for (var gx = 0; gx < W; gx += 30) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
@@ -2793,8 +2806,7 @@ var d = labToolData.brainAtlas || {};
                 // Left hemisphere
                 ctx.save();
                 ctx.shadowColor = 'rgba(100,70,160,0.15)'; ctx.shadowBlur = 12;
-                ctx.beginPath();
-                ctx.ellipse(brCx - brRx * 0.52, brCy, brRx * 0.52, brRy, 0, 0, Math.PI * 2);
+                coronalHemi(brCx - brRx * 0.52, brCy, brRx * 0.52, brRy);
                 var lhGrad = ctx.createRadialGradient(brCx - brRx * 0.52, brCy - brRy * 0.2, brRx * 0.1, brCx - brRx * 0.52, brCy, brRx * 0.52);
                 lhGrad.addColorStop(0, '#f3eeff'); lhGrad.addColorStop(1, '#e0d4f5');
                 ctx.fillStyle = lhGrad; ctx.fill();
@@ -2804,8 +2816,7 @@ var d = labToolData.brainAtlas || {};
                 // Right hemisphere
                 ctx.save();
                 ctx.shadowColor = 'rgba(100,70,160,0.15)'; ctx.shadowBlur = 12;
-                ctx.beginPath();
-                ctx.ellipse(brCx + brRx * 0.52, brCy, brRx * 0.52, brRy, 0, 0, Math.PI * 2);
+                coronalHemi(brCx + brRx * 0.52, brCy, brRx * 0.52, brRy);
                 var rhGrad = ctx.createRadialGradient(brCx + brRx * 0.52, brCy - brRy * 0.2, brRx * 0.1, brCx + brRx * 0.52, brCy, brRx * 0.52);
                 rhGrad.addColorStop(0, '#f3eeff'); rhGrad.addColorStop(1, '#e0d4f5');
                 ctx.fillStyle = rhGrad; ctx.fill();
