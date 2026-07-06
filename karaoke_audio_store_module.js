@@ -127,10 +127,16 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     splitSentences: splitSentences,
     b64ToUrl: b64ToUrl,
     createStore: createStore,
-    // The store for the currently-active resource. ANTI sets this on load /
-    // hydrate; the karaoke player reads `current` before falling back to live
-    // synthesis. A single well-known slot avoids deep prop-threading.
-    current: null
+    // Two parallel lanes for the active resource, both keyed by sentence:
+    //  • current        = the MODEL/reference read-aloud (AI takes + the
+    //    teacher's recorded reference). This is what karaoke plays by default.
+    //  • studentCurrent = the STUDENT's own practice recordings. Kept entirely
+    //    separate so a student's take NEVER overwrites the teacher reference —
+    //    the student can always fall back to the teacher's version when stuck.
+    // Sharing is teacher→student→teacher only (never student→student), so each
+    // student's lane lives in their own copy; no contention.
+    current: null,
+    studentCurrent: null
   };
   window.AlloModules.KaraokeAudioStoreModule = true;
   console.log('[KaraokeAudioStore] registered (per-sentence vettable read-aloud: persist + hydrate + regenerate-one)');

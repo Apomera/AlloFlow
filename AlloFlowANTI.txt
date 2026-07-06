@@ -17300,6 +17300,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // construction. Recording is an explicit replace (unlike capture, which
   // no-ops on existing takes). The store is voice-source-agnostic, so a human
   // recording plays through karaoke exactly like an AI clip.
+  // Student practice recording → the STUDENT lane (never the model). Persists
+  // into its own resource field so it rides the student->teacher save without
+  // touching the teacher reference the student can always fall back on.
+  window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS || !KS.studentCurrent || !sentence || !blob) return false;
+    try {
+      const b64 = await _blobToBase64(blob);
+      KS.studentCurrent.put(sentence, b64, blob.type || 'audio/webm', 'human-student');
+      try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeStudentAudio: KS.studentCurrent.serialize() }) : gc); } catch (_) {}
+      return true;
+    } catch (_) { return false; }
+  };
   window.__alloStoreRecordedSentenceAudio = async (sentence, blob, source) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS || !KS.current || !sentence || !blob) return false;
@@ -17419,6 +17432,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       try { st.hydrate(generatedContent.karaokeAudio); } catch (_) {}
     }
     KS.current = st;
+    // Student practice lane (separate field, separate store).
+    const stStudent = KS.createStore();
+    if (generatedContent && generatedContent.karaokeStudentAudio) {
+      try { stStudent.hydrate(generatedContent.karaokeStudentAudio); } catch (_) {}
+    }
+    KS.studentCurrent = stStudent;
   }, [generatedContent && generatedContent.id]);
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
