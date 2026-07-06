@@ -216,3 +216,38 @@ describe('square-cube law scaling (geoScaleObject, geoScaleReport)', () => {
     expect(P.geoEvalMission(m, [box, { type:'prism', position:[0,0,0], u:[4,0,0], v:[0,3,0], w:[0,0,4] }]).solved).toBe(false);
   });
 });
+
+describe('cross-section slicer (geoCrossSectionArea, geoCrossSectionInfo, geoStackVolume)', () => {
+  it('a prism cross-section area is constant up the height (Cavalieri) and equals the base area', () => {
+    const box = { type: 'prism', position: [0,0,0], u: [2,0,0], v: [0,3,0], w: [0,0,5] };
+    const base = 6; // |u x v| = 2*3
+    expect(P.geoCrossSectionArea(box, 0.1)).toBeCloseTo(base, 6);
+    expect(P.geoCrossSectionArea(box, 0.5)).toBeCloseTo(base, 6);
+    expect(P.geoCrossSectionArea(box, 0.9)).toBeCloseTo(base, 6);
+    expect(P.geoCrossSectionArea(box, 1.5)).toBe(0);   // outside the solid
+    expect(P.geoCrossSectionArea(box, -0.2)).toBe(0);
+  });
+  it('an OBLIQUE prism has the same constant cross-section area (equal-area slices)', () => {
+    const rect = { type: 'rect', position: [0,0,0], u: [2,0,0], v: [0,3,0] };
+    const straight = P.stretchRect(rect, 'z', 5, 0);
+    const oblique = P.stretchRect(rect, 'z', 5, 0.9);
+    expect(P.geoCrossSectionArea(oblique, 0.5)).toBeCloseTo(P.geoCrossSectionArea(straight, 0.5), 6);
+  });
+  it('geoCrossSectionInfo gives base area, perpendicular height, and volume = area x height', () => {
+    const box = { type: 'prism', position: [0,0,0], u: [2,0,0], v: [0,3,0], w: [0,0,5] };
+    const info = P.geoCrossSectionInfo(box);
+    expect(info.baseArea).toBeCloseTo(6, 6);
+    expect(info.height).toBeCloseTo(5, 6);
+    expect(info.volume).toBeCloseTo(30, 6);
+    expect(info.baseArea * info.height).toBeCloseTo(info.volume, 6);
+  });
+  it('geoStackVolume (Riemann stack of slices) recovers the volume for any slice count', () => {
+    const box = { type: 'prism', position: [0,0,0], u: [2,0,0], v: [0,3,0], w: [0,0,5] };
+    expect(P.geoStackVolume(box, 4)).toBeCloseTo(30, 6);
+    expect(P.geoStackVolume(box, 40)).toBeCloseTo(30, 6);
+  });
+  it('null / zero for non-prisms', () => {
+    expect(P.geoCrossSectionInfo({ type: 'rect', position:[0,0,0], u:[1,0,0], v:[0,1,0] })).toBe(null);
+    expect(P.geoCrossSectionArea({ type: 'segment', position:[0,0,0], vector:[1,0,0] }, 0.5)).toBe(0);
+  });
+});

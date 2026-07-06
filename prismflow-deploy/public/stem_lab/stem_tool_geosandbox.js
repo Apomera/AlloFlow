@@ -483,6 +483,7 @@ window.StemLab = window.StemLab || {
       try { var _r = window._geoScene.renderer; if (_r && _r.xr) { var _s = _r.xr.getSession && _r.xr.getSession(); if (_s) _s.end(); _r.setAnimationLoop(null); } } catch(e){}
       try{ if(window._geoScene.renderer && window._geoScene.renderer._alloComposer){ (window._geoScene.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); window._geoScene.renderer._alloComposer=null; } }catch(e){}
       try { if (window._geoScene.sculptGroup) { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
+      try { if (window._geoScene.sliceGroup) { window._geoScene.sliceGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
       if (window._geoScene.renderer) window._geoScene.renderer.dispose();
       if (window._geoScene.controls) window._geoScene.controls.dispose();
       window._geoScene = null;
@@ -934,6 +935,32 @@ window.StemLab = window.StemLab || {
     return out;
   }
 
+  // ── Cross-sections (PURE) — a solid is a STACK of cross-sections, so
+  //    volume = cross-section area × height. Slicing a prism horizontally gives a
+  //    parallelogram congruent to its base at EVERY height (right or oblique) —
+  //    the area never changes, which is exactly Cavalieri's principle. ──
+  function geoCrossSectionArea(o, t) {
+    if (!o || o.type !== 'prism') return 0;
+    if (t < 0 || t > 1) return 0;
+    return vec3Mag(vec3Cross(o.u, o.v));   // base parallelogram area, constant up the stack
+  }
+  function geoCrossSectionInfo(o) {
+    if (!o || o.type !== 'prism') return null;
+    var baseArea = vec3Mag(vec3Cross(o.u, o.v));
+    var volume = objectVolume(o);
+    var height = baseArea > 1e-9 ? volume / baseArea : 0;   // perpendicular height
+    return { baseArea: baseArea, height: height, volume: volume, constant: true };
+  }
+  // Riemann/Cavalieri stack: n equal slices, Σ area × Δh — recovers the volume
+  // (exactly for a prism, since every slice has the same area).
+  function geoStackVolume(o, n) {
+    var info = geoCrossSectionInfo(o);
+    if (!info || !(n > 0)) return 0;
+    var dh = info.height / n, sum = 0;
+    for (var i = 0; i < n; i++) sum += geoCrossSectionArea(o, (i + 0.5) / n) * dh;
+    return sum;
+  }
+
   // ── Build challenges (PURE, seeded) — turn stretching into problem-solving:
   //    hit a target length / area / volume by choosing axes and lengths. Level
   //    1=length (1D), 2=area (2D), 3=volume (3D). Deterministic given a seed so
@@ -1157,6 +1184,32 @@ window.StemLab = window.StemLab || {
     return group;
   }
 
+  // Cross-section slice overlay for a prism at height fraction t (0..1): a bright
+  // translucent parallelogram (congruent to the base) placed at that level, with
+  // an outline. The whole point of the visual is that this quad is the SAME size
+  // at every t — a solid is a stack of these. Returns a disposable group.
+  function buildSliceGroup(THREE, prism, t) {
+    var group = new THREE.Group();
+    if (!prism || prism.type !== 'prism') return group;
+    var p = prism.position, u = prism.u, v = prism.v, w = prism.w;
+    var tt = Math.max(0, Math.min(1, t));
+    var base = vec3Add(p, vec3Scale(w, tt));                     // slice origin at this level
+    var c0 = base, c1 = vec3Add(base, u), c2 = vec3Add(vec3Add(base, u), v), c3 = vec3Add(base, v);
+    var V = function(a) { return new THREE.Vector3(a[0], a[1], a[2]); };
+    // filled quad (two triangles)
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+      c0[0], c0[1], c0[2], c1[0], c1[1], c1[2], c2[0], c2[1], c2[2],
+      c0[0], c0[1], c0[2], c2[0], c2[1], c2[2], c3[0], c3[1], c3[2]
+    ]), 3));
+    geo.computeVertexNormals();
+    group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false })));
+    // bright outline loop
+    var loop = new THREE.BufferGeometry().setFromPoints([V(c0), V(c1), V(c2), V(c3), V(c0)]);
+    group.add(new THREE.Line(loop, new THREE.LineBasicMaterial({ color: 0xfde047 })));
+    return group;
+  }
+
   // Real-world unit conversion (shared with Volume Explorer)
   var GEO_UNITS = [
     { id: 'unit', short: 'u',   long: 'unit',        toL: 1 },
@@ -1177,6 +1230,9 @@ window.StemLab = window.StemLab || {
       geoStretchMeasure: geoStretchMeasure,
       geoScaleObject: geoScaleObject,
       geoScaleReport: geoScaleReport,
+      geoCrossSectionArea: geoCrossSectionArea,
+      geoCrossSectionInfo: geoCrossSectionInfo,
+      geoStackVolume: geoStackVolume,
       geoMakeBuildChallenge: geoMakeBuildChallenge,
       geoEvalBuildChallenge: geoEvalBuildChallenge,
       GEO_MISSIONS: GEO_MISSIONS,
@@ -1979,12 +2035,13 @@ window.StemLab = window.StemLab || {
         // Clear the two groups the active mode won't use, so only one is ever shown.
         var _clearSculpt = function() { if (window._geoScene.sculptGroup) { window._geoScene.scene.remove(window._geoScene.sculptGroup); try { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sculptGroup = null; } };
         var _clearConstruction = function() { if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); window._geoScene.constructionGroup = null; } };
+        var _clearSlice = function() { if (window._geoScene.sliceGroup) { window._geoScene.scene.remove(window._geoScene.sliceGroup); try { window._geoScene.sliceGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sliceGroup = null; } };
         var _clearMesh = function() { if (window._geoScene.mesh) { window._geoScene.scene.remove(window._geoScene.mesh); window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); window._geoScene.mesh = null; } };
         if (mode === 'single') {
-          _clearConstruction(); _clearSculpt();
+          _clearConstruction(); _clearSculpt(); _clearSlice();
           updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
         } else if (mode === 'sculpt') {
-          _clearMesh(); _clearConstruction(); _clearSculpt();
+          _clearMesh(); _clearConstruction(); _clearSculpt(); _clearSlice();
           var P3D = window.AlloModules && window.AlloModules.Prim3D;
           if (!P3D) { ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); }); }
           else if (sculptRecipe) {
@@ -1999,6 +2056,15 @@ window.StemLab = window.StemLab || {
           if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); }
           window._geoScene.constructionGroup = buildConstructionGroup(window.THREE, construction.objects, construction.selection);
           window._geoScene.scene.add(window._geoScene.constructionGroup);
+          // Cross-section slice overlay (rebuilt each render so it tracks the slider)
+          _clearSlice();
+          if (gd.sliceOn) {
+            var _sliceSel = construction.objects.find(function(o) { return o.id === construction.selection; });
+            if (_sliceSel && _sliceSel.type === 'prism') {
+              window._geoScene.sliceGroup = buildSliceGroup(window.THREE, _sliceSel, gd.sliceT != null ? gd.sliceT : 0.5);
+              window._geoScene.scene.add(window._geoScene.sliceGroup);
+            }
+          }
         }
         // Resize handler
         var handleResize = function() {
@@ -2010,7 +2076,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -2635,6 +2701,62 @@ window.StemLab = window.StemLab || {
                   'aria-label': t('stem.geosandbox.place_scaled_copy', 'Place a scaled copy beside the original'),
                   className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-700/70 text-white hover:bg-amber-600'
                 }, '⧉ ' + t('stem.geosandbox.place_scaled', 'Place ×{k} copy').replace('{k}', k.toFixed(2)))
+              );
+            })(),
+
+            // ═══ CROSS-SECTION SLICER — a solid is a stack of cross-sections ═══
+            mode === 'stretch' && (function() {
+              var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+              if (!sel || sel.type !== 'prism') return null;
+              var info = geoCrossSectionInfo(sel);
+              if (!info) return null;
+              var sliceOn = !!gd.sliceOn, sliceT = gd.sliceT != null ? gd.sliceT : 0.5;
+              var nSlices = gd.sliceN || 8;
+              return h('div', { className: 'bg-gradient-to-br from-yellow-900/30 to-slate-900/30 rounded-xl p-3 border border-yellow-500/40 space-y-2' },
+                h('div', { className: 'flex items-center justify-between' },
+                  h('div', { className: 'text-xs font-bold text-yellow-200 uppercase tracking-wider' }, t('stem.geosandbox.cross_section', '🍰 Cross-section slicer')),
+                  h('button', {
+                    onClick: function() { upd('sliceOn', !sliceOn); },
+                    'aria-pressed': sliceOn,
+                    className: 'px-2 py-1 rounded text-[10.5px] font-bold ' + (sliceOn ? 'bg-yellow-600 text-white' : 'bg-slate-800/70 text-yellow-200 hover:bg-slate-700')
+                  }, sliceOn ? t('stem.geosandbox.slicing_on', 'Slicing ✓') : t('stem.geosandbox.slice_show', 'Show slice'))
+                ),
+                sliceOn && h('div', null,
+                  h('div', { className: 'flex justify-between text-[11px] font-bold text-yellow-200 mb-1' },
+                    h('span', null, t('stem.geosandbox.slice_height', 'Slice height')),
+                    h('span', { className: 'font-mono text-yellow-300' }, Math.round(sliceT * 100) + '%')
+                  ),
+                  h('input', {
+                    type: 'range', min: '0', max: '1', step: '0.02', value: sliceT,
+                    onChange: function(e) { upd('sliceT', parseFloat(e.target.value)); },
+                    'aria-label': t('stem.geosandbox.slice_height', 'Slice height'),
+                    className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
+                  })
+                ),
+                h('div', { className: 'text-[11px] bg-slate-900/40 rounded px-2 py-1.5 space-y-0.5' },
+                  h('div', { className: 'flex justify-between' },
+                    h('span', { className: 'text-slate-300' }, t('stem.geosandbox.cross_area', 'Cross-section area')),
+                    h('span', { className: 'font-mono text-yellow-200' }, info.baseArea.toFixed(2) + ' ' + unitDef.short + '²')
+                  ),
+                  h('div', { className: 'text-[10px] text-emerald-300/80' }, t('stem.geosandbox.cross_constant', 'Same at every height — that is why volume = area × height (Cavalieri).')),
+                  h('div', { className: 'flex justify-between pt-0.5 border-t border-slate-700/60' },
+                    h('span', { className: 'text-slate-300 font-mono text-[10px]' }, info.baseArea.toFixed(1) + ' × ' + info.height.toFixed(1) + ' (height)'),
+                    h('span', { className: 'font-mono text-yellow-200' }, '= ' + info.volume.toFixed(2) + ' ' + unitDef.short + '³')
+                  )
+                ),
+                sliceOn && h('div', null,
+                  h('div', { className: 'flex justify-between text-[10px] text-yellow-200/80 mb-0.5' },
+                    h('span', null, t('stem.geosandbox.stack_slices', 'Stack of {n} slices').replace('{n}', String(nSlices))),
+                    h('span', { className: 'font-mono' }, '≈ ' + geoStackVolume(sel, nSlices).toFixed(2))
+                  ),
+                  h('input', {
+                    type: 'range', min: '2', max: '40', step: '1', value: nSlices,
+                    onChange: function(e) { upd('sliceN', parseInt(e.target.value, 10)); },
+                    'aria-label': t('stem.geosandbox.slice_count', 'Number of slices in the stack'),
+                    className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
+                  }),
+                  h('p', { className: 'text-[10px] text-yellow-200/70' }, t('stem.geosandbox.stack_note', 'More slices → the stack of areas adds up to the true volume.'))
+                )
               );
             })(),
 
