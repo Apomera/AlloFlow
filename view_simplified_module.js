@@ -394,7 +394,17 @@ function SimplifiedView(props) {
     getAudioUrl: sentenceText => {
       const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
       const _u = _st && _st.get(sentenceText);
-      return _u ? Promise.resolve(_u) : callTTS(sentenceText).catch(() => null);
+      if (_u) return Promise.resolve(_u);
+      return callTTS(sentenceText).catch(() => null).then(url => {
+        try {
+          let _save = false;
+          try {
+            _save = localStorage.getItem("allo_save_karaoke_audio") === "1";
+          } catch (_) {}
+          if (url && _save && isTeacherMode && typeof window.__alloCaptureKaraokeAudio === "function") window.__alloCaptureKaraokeAudio(sentenceText, url);
+        } catch (_) {}
+        return url;
+      });
     },
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {

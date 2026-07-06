@@ -17264,6 +17264,37 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
     return { ok: true, generated: n, total: todo.length, bytes: KS.current.estimateBytes() };
   };
+  // Save-as-you-play (Option B): capture the clip karaoke ALREADY generated
+  // on play into the store instead of discarding it, so vetted read-aloud
+  // accumulates during normal use with zero added synthesis. No-op if the
+  // sentence is already stored (never overwrites a vetted/regenerated take).
+  // Prefers MP3 (the played clip is our own 24kHz mono WAV, RIFF + 44-byte
+  // header) to keep the resource small; stores the raw clip if conversion
+  // isn't possible. Persists into the resource like regenerate does.
+  window.__alloCaptureKaraokeAudio = async (sentence, url) => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS || !KS.current || !sentence || !url) return false;
+    if (KS.current.has(sentence)) return false;
+    try {
+      const buf = await (await fetch(url)).arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46; // 'RIFF'
+      const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+      if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+        try {
+          const pcm = new Uint8Array(buf, 44); // strip WAV header -> PCM
+          const mp3Blob = _ah.pcmToMp3(pcm, 24000);
+          KS.current.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
+          try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+          return true;
+        } catch (_) {}
+      }
+      const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
+      KS.current.put(sentence, await _blobToBase64(blob), blob.type);
+      try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+      return true;
+    } catch (_) { return false; }
+  };
   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
