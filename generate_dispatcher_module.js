@@ -1091,6 +1091,31 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 else if (parsedContent.glossary) parsedContent = parsedContent.glossary;
                 else parsedContent = [];
             }
+            // Offline pre-warm: cache the authoritative dictionary entry for every term so
+            // the whole glossary's vocabulary works OFFLINE before class — the Define popup,
+            // both Pronounce popups, and Word Sounds all read this same localStorage cache.
+            // Background, gentle (concurrency 3; cache-first, so cached terms cost nothing),
+            // English-only, best-effort: never blocks or fails glossary generation.
+            if (effectiveLanguage === 'English' && Array.isArray(parsedContent) && parsedContent.length) {
+                (async () => {
+                    try {
+                        if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                            await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+                        }
+                        if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+                        const _terms = parsedContent.map(it => it && it.term).filter(w => typeof w === 'string' && w && !/\s/.test(w));
+                        let _i = 0;
+                        const _worker = async () => {
+                            while (_i < _terms.length) {
+                                const _w = _terms[_i++];
+                                try { await window.AlloDictionary.lookup(_w); } catch (_e) {}
+                            }
+                        };
+                        await Promise.all([_worker(), _worker(), _worker()]);
+                        debugLog(`[dict] pre-warmed ${_terms.length} glossary term(s) for offline use`);
+                    } catch (_e) {}
+                })();
+            }
             addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
             setGenerationStep(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'));
             const BATCH_SIZE = 10;

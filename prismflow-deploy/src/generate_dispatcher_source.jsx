@@ -2,13 +2,815 @@
 // handleGenerate (2,286 lines) — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
+// ─── Plan O Step 1: Vocabulary fit (deterministic) ──────────────────────
+// Common 7+ letter words that should NOT count as Tier 2 academic vocab.
+// Beck/McKeown defines Tier 2 as "high-utility academic words found across
+// disciplines"; Tier 1 is everyday common vocab. This list catches false
+// positives where word-length alone would misclassify a common word.
+const COMMON_LONGER_WORDS = new Set([
+  'another','because','between','through','without','thought','everyone','anything','everything','something','sometimes','somewhere','anywhere','believe','remember','important','different','together','morning','evening','country','children','friends','family','brother','sister','parents','teacher','student','teacher','school','student','question','answer','really','always','already','almost','beautiful','people','around','before','during','should','would','could','little','really','yourself','myself','himself','herself','themselves','about','above','across','against','behind','beside','beyond','underneath','tomorrow','yesterday','probably','possibly','definitely','certainly','therefore','however','because','though','although','whether','whenever','wherever','whatever','whichever','suddenly','quickly','slowly','carefully','actually','finally','exactly','maybe','perhaps','quite','everyone','someone','nobody','nothing','everywhere','anywhere','sometimes','always','usually','sometimes','never','wanted','seemed','looked','started','stopped','asked','helped','jumped','walked','talked','played','laughed','smiled','cried','watched','listened','followed','answered','planted','painted','reached','turned','opened','closed','picked','dropped','pulled','pushed','rolled','tossed','grabbed','knocked','shouted','whispered','laughed','climbed','crawled','floated','marched'
+]);
+// Suffixes that strongly indicate Tier 3 (domain-specific) vocabulary.
+const TIER3_SUFFIX_RE = /(?:tion|sion|ology|ography|ography|osis|itis|emia|ase|ative|ation|ical|graphic|metric|phobia|trophy|stitial|chrom|sphere|morph|fluence|mission|version|ception|ulation)$/;
+
+function parseGradeLevelToNum(g) {
+  if (!g) return 4;
+  const s = String(g).toLowerCase();
+  if (/kinder|kg|^k\b/.test(s)) return 0;
+  const m = s.match(/(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n <= 12) return n;
+  }
+  if (/college|under-?grad/.test(s)) return 13;
+  if (/grad/.test(s)) return 14;
+  return 4;
+}
+
+function gradeBandExpectations(grade) {
+  // Approximate Beck/McKeown norms for academic vocabulary load per ~500-word
+  // lesson, scaled by grade band. Values are conservative starting points;
+  // teachers can override when interpreting.
+  if (grade <= 2)  return { tier2: 4,  tier3: 2,  band: 'K-2'    };
+  if (grade <= 5)  return { tier2: 8,  tier3: 5,  band: '3-5'    };
+  if (grade <= 8)  return { tier2: 14, tier3: 9,  band: '6-8'    };
+  if (grade <= 12) return { tier2: 22, tier3: 15, band: '9-12'   };
+  return                 { tier2: 30, tier3: 22, band: 'College' };
+}
+
+// ─── Plan O: In-session LLM-review cache ─────────────────────────────
+// Keyed by (dimension, artifact-fingerprint, gradeLevel). On audit re-run,
+// dimensions whose inputs haven't changed reuse cached LLM reviews instead
+// of re-calling Gemini. Persists for the page session only; cleared on reload.
+const _auditLLMCache = new Map();
+function _hashStr(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+}
+function _auditFingerprint(artifacts, ...extras) {
+    const safe = Array.isArray(artifacts) ? artifacts : [];
+    const sorted = safe.slice().sort((a, b) => {
+        const ai = (a && a.id) || '';
+        const bi = (b && b.id) || '';
+        return ai < bi ? -1 : ai > bi ? 1 : 0;
+    });
+    const parts = sorted.map(a => {
+        if (!a) return '?';
+        let dataHash = '0';
+        try { dataHash = _hashStr(JSON.stringify(a.data || null)); } catch (e) { dataHash = 'circ'; }
+        return (a.id || '?') + ':' + (a.type || '?') + ':' + dataHash;
+    });
+    return _hashStr(parts.join('|') + '||' + extras.join('|'));
+}
+
+// ─── Plan O: Harvest existing audit signals from artifacts ─────────────
+// AlloFlow already produces audit-shaped data inside individual artifacts
+// (analysis items contain reading-level bands + accuracy ratings; simplified
+// items contain readability shifts; quiz items contain DOK levels). The
+// comprehensive audit should USE these signals rather than re-derive them.
+function harvestExistingAuditSignals(artifacts) {
+  const out = {
+    readingLevels: [],         // from analysis items: ranges + explanations
+    accuracyRatings: [],       // from analysis items: rating + reason + counts
+    simplifiedShifts: [],      // from simplified items: original vs simplified delta
+    dokLevels: [],             // from quiz items: per-question DOK
+    quizCounts: { total: 0, mcq: 0, reflection: 0 },
+    scaffoldCounts: { sentenceFrames: 0, simplifiedTexts: 0, leveledGlossary: 0 },
+    multimodal: { text: false, image: false, audio: false, interactive: false },
+    distinctTypes: new Set(),
+  };
+  artifacts.forEach(item => {
+    if (!item || !item.type) return;
+    out.distinctTypes.add(item.type);
+    const d = item.data;
+    if (!d) return;
+    if (item.type === 'analysis') {
+      out.multimodal.text = true;
+      if (d.readingLevel && d.readingLevel.range) {
+        out.readingLevels.push({
+          range: String(d.readingLevel.range),
+          explanation: String(d.readingLevel.explanation || ''),
+        });
+      }
+      if (d.accuracy && d.accuracy.rating) {
+        out.accuracyRatings.push({
+          rating: String(d.accuracy.rating),
+          reason: String(d.accuracy.reason || ''),
+          discrepancyCount: Array.isArray(d.accuracy.discrepancies) ? d.accuracy.discrepancies.length : 0,
+          verifiedFactCount: Array.isArray(d.accuracy.verifiedFacts) ? d.accuracy.verifiedFacts.length : 0,
+        });
+      }
+    } else if (item.type === 'simplified') {
+      out.scaffoldCounts.simplifiedTexts++;
+      out.multimodal.text = true;
+      // Simplified data shape varies; record what we can.
+      if (typeof d === 'object' && d) {
+        const original = d.originalText || d.original || '';
+        const simplified = d.simplifiedText || d.text || (typeof d === 'string' ? d : '');
+        if (original && simplified) {
+          const origWords = (original.match(/\S+/g) || []).length;
+          const simpWords = (simplified.match(/\S+/g) || []).length;
+          out.simplifiedShifts.push({
+            originalWords: origWords,
+            simplifiedWords: simpWords,
+            ratio: origWords > 0 ? +(simpWords / origWords).toFixed(2) : null,
+            targetGrade: d.targetGrade || d.grade || null,
+          });
+        }
+      }
+    } else if (item.type === 'quiz' && d.questions) {
+      out.multimodal.interactive = true;
+      out.quizCounts.total += d.questions.length;
+      d.questions.forEach(q => {
+        if (q && q.dok) out.dokLevels.push(String(q.dok));
+        if (q && q.type === 'reflection') out.quizCounts.reflection++;
+        else out.quizCounts.mcq++;
+      });
+    } else if (item.type === 'sentence-frames') {
+      out.scaffoldCounts.sentenceFrames++;
+      out.multimodal.text = true;
+    } else if (item.type === 'glossary') {
+      out.multimodal.text = true;
+      // Tiered glossary entries (with definitionLevel) count as scaffolds
+      if (Array.isArray(d) && d.some(g => g && (g.definitionLevel || g.tier))) {
+        out.scaffoldCounts.leveledGlossary++;
+      }
+    } else if (item.type === 'image' || item.type === 'concept-sort') {
+      out.multimodal.image = true;
+    } else if (item.type === 'adventure' || item.type === 'persona') {
+      out.multimodal.interactive = true;
+      out.multimodal.text = true;
+    }
+  });
+  return out;
+}
+
+// ─── Plan O Step 2: Engagement variety (deterministic + LLM review) ────
+function computeEngagementVariety(harvest, artifacts) {
+  const distinctTypeCount = harvest.distinctTypes.size;
+  const totalArtifacts = artifacts.length;
+  // Diversity score: 0-1, where 1 = perfect balance across many types
+  const diversity = totalArtifacts > 0
+    ? Math.min(1, distinctTypeCount / Math.max(3, Math.min(7, totalArtifacts)))
+    : 0;
+
+  // DOK distribution as percentages
+  const dokDist = { L1: 0, L2: 0, L3: 0, L4: 0, unknown: 0 };
+  harvest.dokLevels.forEach(level => {
+    const m = String(level).match(/[1-4]/);
+    if (!m) { dokDist.unknown++; return; }
+    dokDist['L' + m[0]]++;
+  });
+  const dokTotal = harvest.dokLevels.length;
+  const dokPercent = {};
+  if (dokTotal > 0) {
+    ['L1','L2','L3','L4','unknown'].forEach(k => {
+      dokPercent[k] = Math.round((dokDist[k] / dokTotal) * 100);
+    });
+  }
+
+  // Multi-modal coverage
+  const modalitiesPresent = ['text','image','audio','interactive'].filter(m => harvest.multimodal[m]);
+
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+  if (distinctTypeCount < 3) {
+    status = 'Partially Aligned';
+    recommendations.push(`Only ${distinctTypeCount} artifact type(s) present. Consider adding at least 2 more formats (e.g., visual organizer, sentence frames, quiz, leveled text) for engagement variety.`);
+  }
+  if (modalitiesPresent.length < 2) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Only ${modalitiesPresent.length} modality present (${modalitiesPresent.join(', ') || 'none'}). UDL recommends multiple means of representation; add image/visual or interactive elements.`);
+  }
+  if (dokTotal > 0 && dokDist.L1 / dokTotal > 0.8) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Quiz DOK skews heavily to recall (Level 1: ${dokPercent.L1}%). Add Level 2-3 questions that require application or strategic thinking.`);
+  }
+  if (harvest.scaffoldCounts.sentenceFrames + harvest.scaffoldCounts.simplifiedTexts === 0 && totalArtifacts >= 3) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('No scaffolds detected (sentence frames, simplified text, leveled glossary). Consider adding scaffolds to support diverse learners.');
+  }
+
+  return {
+    status,
+    diversityScore: +diversity.toFixed(2),
+    distinctTypeCount,
+    distinctTypes: Array.from(harvest.distinctTypes),
+    totalArtifacts,
+    dokDistribution: dokPercent,
+    dokTotal,
+    quizCounts: harvest.quizCounts,
+    scaffoldCounts: harvest.scaffoldCounts,
+    multimodalCoverage: { present: modalitiesPresent, missing: ['text','image','audio','interactive'].filter(m => !harvest.multimodal[m]) },
+    simplifiedShiftSamples: harvest.simplifiedShifts.slice(0, 4),
+    recommendations,
+    notes: 'Counts are deterministic; format-balance recommendations are heuristic. The LLM review provides contextual judgment.',
+  };
+}
+
+// ─── Plan O Step 5: Content accuracy (harvest + LLM review) ────────────
+// AlloFlow already runs accuracy verification when teachers analyze source
+// text — analysis.accuracy contains rating + reason + discrepancies +
+// verifiedFacts (with citations). We aggregate those signals and add an
+// LLM review pass that interprets across analyses + flags claims still
+// needing verification in non-analysis artifacts (quiz answers, glossary
+// defs, lesson-plan facts).
+function computeContentAccuracy(harvest) {
+  const ratings = harvest.accuracyRatings || [];
+  const totalAnalyses = ratings.length;
+  let highCount = 0, mediumCount = 0, lowCount = 0;
+  let totalVerifiedFacts = 0, totalDiscrepancies = 0;
+  ratings.forEach(r => {
+    const rating = String(r.rating || '').toLowerCase();
+    if (rating.indexOf('high') >= 0) highCount++;
+    else if (rating.indexOf('low') >= 0 || rating.indexOf('poor') >= 0) lowCount++;
+    else mediumCount++;
+    totalVerifiedFacts += r.verifiedFactCount || 0;
+    totalDiscrepancies += r.discrepancyCount || 0;
+  });
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+  if (totalAnalyses === 0) {
+    status = 'Aligned';
+    recommendations.push('No source-text analysis has been run yet. Run "Analyze Source Text" on the lesson source to surface AI-verified facts and any discrepancies.');
+  } else {
+    if (lowCount > 0) {
+      status = 'Not Aligned';
+      recommendations.push(`${lowCount} analysis flagged the source content as Low accuracy. Review the discrepancies in those analyses and revise the source before sharing with students.`);
+    }
+    if (totalDiscrepancies > 0) {
+      if (status !== 'Not Aligned') status = 'Partially Aligned';
+      recommendations.push(`${totalDiscrepancies} factual discrepancy${totalDiscrepancies === 1 ? '' : 'ies'} flagged across the analyses. Review and either correct the source or remove the affected sections.`);
+    }
+    if (mediumCount > 0 && status === 'Aligned') {
+      status = 'Partially Aligned';
+      recommendations.push(`${mediumCount} analysis returned Medium accuracy. Consider adding citations or rephrasing claims that the AI could not fully verify.`);
+    }
+  }
+  return {
+    status,
+    totalAnalyses,
+    accuracyRatingCounts: { high: highCount, medium: mediumCount, low: lowCount },
+    totalVerifiedFacts,
+    totalDiscrepancies,
+    sampleVerifications: ratings.slice(0, 5),
+    recommendations,
+    notes: 'Aggregated from analyze-source-text accuracy passes. Each analysis already runs Google-Search-grounded verification when generated; this section aggregates those results across the curriculum.',
+  };
+}
+
+// ─── Content accessibility (deterministic) ──────────────────────────────
+// UDL-aligned check: do the curriculum artifacts have alt text for images,
+// avoid color-only references, and break long text into manageable passages?
+function computeContentAccessibility(artifacts, harvest, gradeLevel) {
+  let totalImages = 0;
+  let imagesWithAlt = 0;
+  let colorOnlyCount = 0;
+  const colorOnlyExamples = [];
+  const implicitImageExamples = [];
+  let longestUnbrokenPassage = 0;
+
+  // Color-only patterns: phrases that rely solely on color to convey meaning
+  const colorOnlyRe = /\b(the\s+(?:red|blue|green|yellow|orange|purple|pink)\s+(?:one|section|area|box|circle|highlight|region|part))\b|\b(highlighted?\s+in\s+(?:red|blue|green|yellow|orange|purple|pink))\b|\b(shown\s+in\s+(?:red|blue|green|yellow|orange))\b|\b(see\s+the\s+(?:red|blue|green|yellow)\b)/gi;
+  // Image reference patterns
+  const imgRefRe = /\b(see\s+(?:the\s+)?(?:image|figure|diagram|chart|picture|photo|illustration))\b|\b(as\s+shown\s+(?:in\s+)?(?:the\s+)?(?:image|figure|diagram))\b|\b((?:image|figure|diagram)\s+(?:\d+|above|below))\b/gi;
+
+  artifacts.forEach(function (item) {
+    if (!item) return;
+    const d = item.data;
+    if (!d) return;
+    const textBlob = typeof d === 'string' ? d
+      : typeof d === 'object' && d.text ? d.text
+      : typeof d === 'object' && d.simplifiedText ? d.simplifiedText
+      : typeof d === 'object' && d.originalText ? d.originalText
+      : '';
+
+    // Count words in longest unbroken passage (no heading/hr/blank-line break)
+    if (textBlob) {
+      const paragraphs = textBlob.split(/\n\s*\n|\n#+\s|\n---/);
+      paragraphs.forEach(function (p) {
+        const wc = (p.match(/\S+/g) || []).length;
+        if (wc > longestUnbrokenPassage) longestUnbrokenPassage = wc;
+      });
+    }
+
+    // Detect color-only language
+    if (textBlob) {
+      let m;
+      colorOnlyRe.lastIndex = 0;
+      while ((m = colorOnlyRe.exec(textBlob)) !== null) {
+        colorOnlyCount++;
+        if (colorOnlyExamples.length < 8) colorOnlyExamples.push(m[0]);
+      }
+    }
+
+    // Detect implicit image references (may lack alt text)
+    if (textBlob) {
+      let m;
+      imgRefRe.lastIndex = 0;
+      while ((m = imgRefRe.exec(textBlob)) !== null) {
+        if (implicitImageExamples.length < 8) implicitImageExamples.push(m[0]);
+      }
+    }
+
+    // Count images and alt coverage
+    if (item.type === 'image' || item.type === 'concept-sort') {
+      totalImages++;
+      // If the data has alt text or caption, count as covered
+      if (d && (d.altText || d.caption || d.alt || d.description || d.title)) {
+        imagesWithAlt++;
+      }
+    }
+    // Also count inline images in HTML-like content
+    if (textBlob) {
+      const imgTags = textBlob.match(/<img\b[^>]*>/gi) || [];
+      imgTags.forEach(function (tag) {
+        totalImages++;
+        if (/alt\s*=\s*"[^"]+"/i.test(tag) || /alt\s*=\s*'[^']+'/i.test(tag)) {
+          imagesWithAlt++;
+        }
+      });
+    }
+  });
+
+  const altCoveragePct = totalImages > 0 ? Math.round((imagesWithAlt / totalImages) * 100) : null;
+
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+
+  if (colorOnlyCount > 0) {
+    status = 'Partially Aligned';
+    recommendations.push(colorOnlyCount + ' color-only reference' + (colorOnlyCount === 1 ? '' : 's') + ' detected. Students with color vision deficiencies will miss this information. Add text labels, patterns, or shapes alongside color cues.');
+  }
+
+  if (totalImages > 0 && altCoveragePct < 80) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('Only ' + altCoveragePct + '% of images have alt text. Screen-reader users and students on slow connections will miss visual content. Add descriptive alt text to all informational images.');
+  }
+
+  // Grade-adjusted passage-length thresholds
+  const gradeNum = parseInt(String(gradeLevel).replace(/[^0-9]/g, ''), 10) || 5;
+  const maxPassage = gradeNum <= 2 ? 100 : gradeNum <= 5 ? 200 : gradeNum <= 8 ? 350 : 500;
+  if (longestUnbrokenPassage > maxPassage) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('Longest unbroken passage is ' + longestUnbrokenPassage + ' words (threshold for grade band: ' + maxPassage + '). Break long passages with headings, bullet points, or visual breaks to reduce cognitive load.');
+  }
+
+  if (implicitImageExamples.length > 0 && totalImages === 0) {
+    recommendations.push(implicitImageExamples.length + ' reference' + (implicitImageExamples.length === 1 ? '' : 's') + ' to images/figures found but no image artifacts detected. Ensure referenced visuals are present and have alt text.');
+  }
+
+  return {
+    status,
+    totalImages,
+    altCoveragePct,
+    colorOnlyCount,
+    longestUnbrokenPassage,
+    colorOnlyExamples: colorOnlyExamples.slice(0, 6),
+    implicitImageExamples: implicitImageExamples.slice(0, 6),
+    recommendations,
+    notes: 'Deterministic scan for WCAG-aligned accessibility signals: alt-text coverage, color-only language, passage length. The LLM review adds contextual judgment.',
+  };
+}
+
+// ─── Plan R+ dim: Differentiation coverage ──────────────────────────────
+// UDL-aligned check: does the curriculum offer multiple access paths for
+// learners who differ in reading level, language, processing style, or
+// expression mode? Deterministic detection of accommodation TYPES present
+// across the artifact bundle.
+function computeDifferentiationCoverage(artifacts, harvest) {
+  const has = function (type) { return artifacts.some(function (a) { return a && a.type === type; }); };
+  const flags = {
+    leveledReadingText: false,    // simplified text exists
+    multipleReadingLevels: false, // simplified at multiple levels (look at differentiationGrades)
+    glossarySupport: has('glossary'),
+    sentenceFrames: has('sentence-frames'),
+    visualOrganizer: has('outline') || has('concept-sort') || has('timeline'),
+    quizScaffold: has('quiz'),
+    interactiveOrAdventure: has('adventure') || has('persona'),
+    visualOrImage: has('image'),
+    audioPath: false,             // currently rare; may inflate later as TTS hooks proliferate
+  };
+  artifacts.forEach(function (a) {
+    if (a && a.type === 'simplified') {
+      flags.leveledReadingText = true;
+      var d = a.data || {};
+      // Check if leveled at multiple levels via differentiationGrades or array shape
+      if (Array.isArray(d.versions) && d.versions.length > 1) flags.multipleReadingLevels = true;
+      if (Array.isArray(d.differentiationGrades) && d.differentiationGrades.length > 1) flags.multipleReadingLevels = true;
+    }
+    // Audio detection: any artifact with audioUrl/ttsAudio fields
+    if (a && a.data) {
+      var dd = a.data;
+      if (dd.audioUrl || dd.ttsAudio || dd.audioPath || (dd.audio && (dd.audio.url || dd.audio.path))) flags.audioPath = true;
+    }
+  });
+  // Reuse harvest scaffold counts where available
+  var sf = harvest && harvest.scaffoldCounts ? harvest.scaffoldCounts : {};
+  if ((sf.sentenceFrames || 0) > 0) flags.sentenceFrames = true;
+  if ((sf.simplifiedTexts || 0) > 1) flags.multipleReadingLevels = true;
+  if ((sf.leveledGlossary || 0) > 0) flags.glossarySupport = true;
+
+  const dims = Object.keys(flags);
+  const presentCount = dims.reduce(function (n, k) { return n + (flags[k] ? 1 : 0); }, 0);
+  const coverage = dims.length > 0 ? Math.round((presentCount / dims.length) * 100) : 0;
+  // Status thresholds: 70%+ Aligned, 40-69% Partial, <40% Not Aligned.
+  let status;
+  if (coverage >= 70) status = 'Aligned';
+  else if (coverage >= 40) status = 'Partially Aligned';
+  else status = 'Not Aligned';
+  // Per-row recommendation list
+  const labelMap = {
+    leveledReadingText: 'Leveled / simplified text',
+    multipleReadingLevels: 'Multi-level versions (more than one reading level)',
+    glossarySupport: 'Glossary / vocabulary support',
+    sentenceFrames: 'Sentence frames (writing scaffold)',
+    visualOrganizer: 'Visual organizer (outline / concept sort / timeline)',
+    quizScaffold: 'Formative check / quiz',
+    interactiveOrAdventure: 'Interactive or adventure mode',
+    visualOrImage: 'Visual / image support',
+    audioPath: 'Audio narration path',
+  };
+  const missing = dims.filter(function (k) { return !flags[k]; }).map(function (k) { return labelMap[k]; });
+  const recommendations = [];
+  if (missing.length > 0 && coverage < 70) {
+    recommendations.push('Differentiation gaps: missing ' + missing.slice(0, 4).join(', ') + (missing.length > 4 ? ', and more' : '') + '. Generate at least one of these to broaden access for learners with different needs.');
+  }
+  if (!flags.multipleReadingLevels && flags.leveledReadingText) {
+    recommendations.push('Source text exists at one level only. Generate a second simplified version to support a wider reader range.');
+  }
+  return {
+    status,
+    coverage,
+    presentCount,
+    totalAccommodationTypes: dims.length,
+    flags,
+    missing,
+    recommendations,
+    notes: 'Detects ' + dims.length + ' UDL accommodation types: leveled text, multi-level versions, glossary, sentence frames, visual organizer, quiz, interactive/adventure, image, audio. Coverage = % of types present. Heuristic — does not assess accommodation quality.',
+  };
+}
+
+// ─── Plan R+ dim: Cognitive load / pacing ────────────────────────────────
+// Compares the lesson-plan's claimed segment durations against an estimate of
+// actual time required (reading + activity + quiz). When there's no lesson
+// plan, marks the dimension as Not applicable rather than emitting a misleading
+// score.
+function _parseMinutes(s) {
+  if (!s) return null;
+  var m = String(s).match(/(\d+)\s*(?:min|minute|mins)/i);
+  return m ? parseInt(m[1], 10) : null;
+}
+function computeCognitiveLoad(artifacts, sourceWordCount, gradeLevel) {
+  const lessonPlan = artifacts.slice().reverse().find(function (a) { return a && a.type === 'lesson-plan'; });
+  if (!lessonPlan || !lessonPlan.data) {
+    return {
+      status: 'Not applicable',
+      notApplicable: true,
+      reason: 'No lesson plan in this curriculum. Generate a Lesson Plan to evaluate pacing realism.',
+    };
+  }
+  const d = lessonPlan.data;
+  // Sum claimed time across known segments. Each may live as { duration } or as ' (10 min)' text inside the body.
+  const segments = [
+    { key: 'directInstruction', label: 'Direct instruction' },
+    { key: 'guidedPractice',    label: 'Guided practice' },
+    { key: 'independentPractice', label: 'Independent practice' },
+    { key: 'closure',           label: 'Closure' },
+  ];
+  var claimedTotal = 0;
+  var perSegment = [];
+  segments.forEach(function (s) {
+    var seg = d[s.key];
+    if (!seg) return;
+    var mins = null;
+    if (typeof seg === 'object' && seg.duration) mins = _parseMinutes(seg.duration);
+    if (mins === null && typeof seg === 'string') mins = _parseMinutes(seg);
+    if (mins === null && typeof seg === 'object' && seg.description) mins = _parseMinutes(seg.description);
+    if (mins) {
+      claimedTotal += mins;
+      perSegment.push({ label: s.label, claimedMinutes: mins });
+    } else {
+      perSegment.push({ label: s.label, claimedMinutes: null });
+    }
+  });
+  // Also check activities array
+  if (Array.isArray(d.activities)) {
+    d.activities.forEach(function (act) {
+      var mins = _parseMinutes(act.duration) || _parseMinutes(act.description);
+      if (mins) { claimedTotal += mins; perSegment.push({ label: act.title || act.name || 'Activity', claimedMinutes: mins }); }
+    });
+  }
+  // Estimate actual time required:
+  // - Source reading: words / wpm (grade-band adjusted: 100 wpm K-2, 150 wpm 3-5, 200 wpm 6-8, 250 wpm 9-12)
+  const gradeNum = parseGradeLevelToNum(gradeLevel);
+  let wpm = 200;
+  if (gradeNum <= 2) wpm = 100;
+  else if (gradeNum <= 5) wpm = 150;
+  else if (gradeNum <= 8) wpm = 200;
+  else wpm = 250;
+  const readingMinutes = sourceWordCount > 0 ? Math.round(sourceWordCount / wpm) : 0;
+  // - Quiz: ~1 min per question
+  const quizItem = artifacts.find(function (a) { return a && a.type === 'quiz' && a.data && Array.isArray(a.data.questions); });
+  const quizMinutes = quizItem ? quizItem.data.questions.length * 1 : 0;
+  // - Activities: count distinct artifact types other than reading-only as ~5 min each (rough lower bound)
+  const activityTypes = new Set(artifacts
+    .filter(function (a) { return a && a.type && !['analysis', 'simplified', 'glossary', 'lesson-plan', 'alignment-report', 'udl-advice'].includes(a.type); })
+    .map(function (a) { return a.type; }));
+  const activityMinutes = activityTypes.size * 5;
+  const estimatedTotal = readingMinutes + quizMinutes + activityMinutes;
+  // Score
+  let status, ratio;
+  if (claimedTotal <= 0) {
+    status = 'Partially Aligned'; ratio = null;
+  } else {
+    ratio = estimatedTotal / claimedTotal;
+    if (ratio >= 0.7 && ratio <= 1.4) status = 'Aligned';
+    else if (ratio >= 0.4 && ratio <= 2.0) status = 'Partially Aligned';
+    else status = 'Not Aligned';
+  }
+  const recommendations = [];
+  if (claimedTotal > 0 && ratio !== null) {
+    if (ratio > 1.4) recommendations.push('Lesson plan claims ' + claimedTotal + ' min but content estimates ~' + estimatedTotal + ' min — likely under-scheduled. Consider trimming source text, removing one activity, or adding a second day.');
+    if (ratio < 0.7) recommendations.push('Lesson plan claims ' + claimedTotal + ' min but content estimates ~' + estimatedTotal + ' min — likely over-scheduled (lesson may run short). Consider adding a discussion segment or follow-up activity.');
+  } else if (claimedTotal === 0) {
+    recommendations.push('Lesson plan does not specify segment durations. Add explicit time estimates ("10 min", "15 min") to each segment for realistic pacing.');
+  }
+  return {
+    status,
+    claimedTotalMinutes: claimedTotal,
+    estimatedTotalMinutes: estimatedTotal,
+    ratio: ratio !== null ? Number(ratio.toFixed(2)) : null,
+    perSegment,
+    breakdown: {
+      reading: readingMinutes,
+      quiz: quizMinutes,
+      activities: activityMinutes,
+      wpmAssumption: wpm,
+    },
+    recommendations,
+    notes: 'Estimated time = ' + sourceWordCount + ' source words / ' + wpm + ' wpm + ' + (quizItem ? quizItem.data.questions.length : 0) + ' quiz items × 1 min + ' + activityTypes.size + ' distinct activities × 5 min. Compares against lesson-plan claimed durations. Heuristic — actual classroom pacing varies.',
+  };
+}
+
+// ─── Plan O Step 6: Combined Pass/Revise + Curriculum Readiness Score ──
+// Rolls all comprehensive-audit dimensions into a single 0-100 readiness
+// score + overall status + blocking-issues list. Equal weighting across
+// dimensions; N/A and computeFailed dimensions are excluded from the math
+// but surface in the per-dimension list.
+const STATUS_POINTS = { 'Aligned': 20, 'Partially Aligned': 12, 'Not Aligned': 0 };
+const ALL_DIMENSIONS = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
+const DIMENSION_LABELS = {
+  standards: 'Standards alignment',
+  vocabulary: 'Vocabulary fit',
+  engagement: 'Engagement variety',
+  accessibility: 'Content accessibility',
+  udl: 'UDL principles',
+  accuracy: 'Content accuracy',
+  differentiation: 'Differentiation coverage',
+  cognitiveLoad: 'Cognitive load / pacing',
+  culturalResponsiveness: 'Cultural responsiveness',
+};
+
+function computeReadinessScore(comprehensive) {
+  if (!comprehensive) return null;
+  let totalScore = 0;
+  let dimensionsEvaluated = 0;
+  const dimensionScores = {};
+  const blockingIssues = [];
+
+  ALL_DIMENSIONS.forEach(dim => {
+    const data = comprehensive[dim];
+    if (!data) return;
+    // Skip placeholder failures and N/A dimensions from the readiness math
+    // but still surface them in the per-dimension list so the teacher can see them.
+    if (data.computeFailed) {
+      dimensionScores[dim] = { status: 'Compute failed', points: 0, computeFailed: true };
+      return;
+    }
+    if (data.notApplicable) {
+      dimensionScores[dim] = { status: 'Not applicable', points: 0, notApplicable: true };
+      return;
+    }
+    dimensionsEvaluated++;
+    const status = data.status || 'Partially Aligned';
+    const points = (typeof STATUS_POINTS[status] === 'number') ? STATUS_POINTS[status] : 12;
+    totalScore += points;
+    dimensionScores[dim] = { status, points };
+    if (status === 'Not Aligned') {
+      // Pull a representative issue per blocked dimension
+      let issue = '';
+      if (dim === 'standards' && Array.isArray(data.perStandard) && data.perStandard[0]) {
+        issue = data.perStandard[0].adminRecommendation || ('Standard ' + (data.perStandard[0].standard || 'unknown') + ' did not pass.');
+      }
+      else if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'engagement' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'accessibility' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'udl' && data.overallNarrative) issue = data.overallNarrative;
+      else if (dim === 'accuracy' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      blockingIssues.push({ dimension: DIMENSION_LABELS[dim], issue });
+    }
+  });
+
+  // Normalize to 0-100. If only some dimensions evaluated, scale by what's there.
+  const maxPossible = dimensionsEvaluated * 20;
+  const normalizedScore = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : 0;
+
+  // Overall status thresholds
+  let overallStatus, overallLabel;
+  if (blockingIssues.length > 0) {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — critical issues';
+  } else if (normalizedScore >= 90) {
+    overallStatus = 'Pass';
+    overallLabel = 'Pass — ready to deploy';
+  } else if (normalizedScore >= 70) {
+    overallStatus = 'Pass with notes';
+    overallLabel = 'Pass with notes — minor improvements suggested';
+  } else if (normalizedScore >= 50) {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — multiple dimensions need work';
+  } else {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — significant gaps across dimensions';
+  }
+
+  return {
+    score: normalizedScore,
+    status: overallStatus,
+    label: overallLabel,
+    dimensionsEvaluated,
+    dimensionScores,
+    blockingIssues,
+    perDimensionPercent: Object.keys(dimensionScores).reduce((acc, dim) => {
+      acc[dim] = Math.round((dimensionScores[dim].points / 20) * 100);
+      return acc;
+    }, {}),
+    notes: 'Equal weighting across 5 comprehensive dimensions. Score is a guide; review the per-dimension findings for context. Any "Not Aligned" dimension blocks an automatic Pass regardless of overall score.',
+  };
+}
+
+function collectAuditText(artifacts) {
+  // sourceText  = primary lesson text only (analysis.originalText, falls back to simplified).
+  //               Used for the teacher-facing "word count" so it matches their intuition.
+  // text        = bundle of EVERY artifact's content, used for tier classification across
+  //               the whole curriculum (so we catch academic vocab in glossary defs, quiz, etc.).
+  // glossaryTerms = explicit glossary entries (always Tier 3).
+  const out = { text: '', sourceText: '', glossaryTerms: [] };
+  let analysisText = '';
+  let simplifiedText = '';
+  artifacts.forEach(item => {
+    const d = item.data;
+    if (!d) return;
+    if (item.type === 'analysis') {
+      if (d.originalText) {
+        analysisText = String(d.originalText);
+        out.text += analysisText + ' ';
+      }
+      if (Array.isArray(d.concepts)) out.text += d.concepts.join(' ') + ' ';
+    } else if (item.type === 'glossary' && Array.isArray(d)) {
+      d.forEach(g => {
+        if (g.term)       out.glossaryTerms.push(String(g.term).toLowerCase());
+        if (g.def)        out.text += String(g.def) + ' ';
+        if (g.definition) out.text += String(g.definition) + ' ';
+      });
+    } else if (item.type === 'lesson-plan') {
+      ['directInstruction','guidedPractice','independentPractice','closure','essentialQuestion'].forEach(k => {
+        if (d[k]) out.text += String(d[k]) + ' ';
+      });
+      if (Array.isArray(d.objectives)) out.text += d.objectives.join(' ') + ' ';
+    } else if (item.type === 'quiz' && d.questions) {
+      d.questions.forEach(q => {
+        if (q.question) out.text += String(q.question) + ' ';
+        if (q.text)     out.text += String(q.text) + ' ';
+        if (Array.isArray(q.options)) out.text += q.options.join(' ') + ' ';
+      });
+    } else if (item.type === 'sentence-frames') {
+      if (Array.isArray(d.items)) d.items.forEach(i => i && i.text && (out.text += i.text + ' '));
+      if (typeof d === 'string') out.text += d + ' ';
+      if (d.text) out.text += String(d.text) + ' ';
+    } else if (item.type === 'outline') {
+      if (d.main) out.text += String(d.main) + ' ';
+      if (Array.isArray(d.branches)) d.branches.forEach(b => {
+        if (b && b.title) out.text += String(b.title) + ' ';
+        if (b && Array.isArray(b.items)) out.text += b.items.join(' ') + ' ';
+      });
+    } else if (item.type === 'simplified' && typeof d === 'string') {
+      simplifiedText = d;
+      out.text += d + ' ';
+    } else if (item.type === 'simplified' && d && d.text) {
+      simplifiedText = String(d.text);
+      out.text += simplifiedText + ' ';
+    }
+  });
+  // Resolve sourceText: prefer the analysis.originalText (true source), else simplified.
+  out.sourceText = analysisText || simplifiedText || '';
+  return out;
+}
+
+function computeVocabularyFit(artifacts, gradeLevel) {
+  const { text, sourceText, glossaryTerms } = collectAuditText(artifacts);
+  // sourceWords: count of words in the primary source text only (matches teacher intuition).
+  // auditedTextWords: count across the full bundle (every artifact's content).
+  const sourceWordList = (sourceText.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const sourceWords = sourceWordList.length;
+  const words = (text.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const auditedTextWords = words.length;
+  const uniqueSet = new Set(words);
+  const tier3Set = new Set(glossaryTerms);
+
+  let tier1 = 0, tier2 = 0, tier3 = 0;
+  const tier2Examples = [];
+  const tier3Examples = [];
+
+  uniqueSet.forEach(word => {
+    if (tier3Set.has(word) || (word.length >= 9 && TIER3_SUFFIX_RE.test(word))) {
+      tier3++;
+      if (tier3Examples.length < 8) tier3Examples.push(word);
+    } else if (word.length >= 7 && !COMMON_LONGER_WORDS.has(word)) {
+      tier2++;
+      if (tier2Examples.length < 8) tier2Examples.push(word);
+    } else {
+      tier1++;
+    }
+  });
+
+  const gradeNum = parseGradeLevelToNum(gradeLevel);
+  const baseExpected = gradeBandExpectations(gradeNum);
+  // Beck/McKeown norms are calibrated to a single ~1500-word text. The audited bundle
+  // can be 3-5x larger when it includes simplified text + lesson plan + quiz + glossary.
+  // Rescale tier expectations proportionally so 5th-grade Solar System bundle (~4400 words)
+  // doesn't compare against single-text norms.
+  const TYPICAL_SINGLE_TEXT_WORDS = 1500;
+  const scale = auditedTextWords > 0 ? Math.max(1, auditedTextWords / TYPICAL_SINGLE_TEXT_WORDS) : 1;
+  const expected = {
+    tier2: Math.round(baseExpected.tier2 * scale),
+    tier3: Math.round(baseExpected.tier3 * scale),
+    band: baseExpected.band,
+    gradeBand: baseExpected.band,
+    scale: Number(scale.toFixed(2)),
+    perTextTier2: baseExpected.tier2,
+    perTextTier3: baseExpected.tier3,
+  };
+  const recommendations = [];
+  let status = 'Aligned';
+
+  if (tier2 < expected.tier2 * 0.5) {
+    status = 'Partially Aligned';
+    recommendations.push(`Tier 2 academic vocabulary is light for grade band ${expected.band} (~${tier2} unique vs ~${expected.tier2} expected). Consider adding cross-curricular academic words such as "examine", "evidence", "consequence", "framework", "interpret".`);
+  } else if (tier2 > expected.tier2 * 2.5) {
+    status = 'Partially Aligned';
+    recommendations.push(`Tier 2 vocabulary load is heavy for grade band ${expected.band} (~${tier2} unique vs ~${expected.tier2} expected). May overwhelm; consider simpler synonyms or adding sentence-frame scaffolds.`);
+  }
+  if (tier3 < expected.tier3 * 0.5) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Tier 3 domain vocabulary is light (~${tier3} unique vs ~${expected.tier3} expected). Add ${Math.max(2, expected.tier3 - tier3)} more glossary terms specific to the topic.`);
+  }
+  if (sourceWords < 200 && artifacts.length > 0) {
+    recommendations.push('Source text is short (<200 words). Vocabulary signal may be unreliable; consider expanding the source material before relying on this audit.');
+  }
+
+  return {
+    status,
+    sourceWords,
+    auditedTextWords,
+    totalWords: auditedTextWords, // legacy alias for backward compat with old saved audits
+    uniqueWords: uniqueSet.size,
+    tier1Count: tier1,
+    tier2Count: tier2,
+    tier3Count: tier3,
+    glossaryTermsCount: glossaryTerms.length,
+    expected,
+    tier2Examples,
+    tier3Examples,
+    recommendations,
+    notes: 'sourceWords = primary source text only (matches teacher intuition); auditedTextWords = across the full curriculum bundle (used for tier classification). Tier expectations scaled to bundle size (×' + Number(scale.toFixed(2)) + ').',
+  };
+}
+
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
     setIsMapLocked(false);
     const effectiveGrade = configOverride.grade || gradeLevel;
     const effectiveOutlineType = configOverride.outlineType || outlineType;
-    const effectiveVisualStyle = configOverride.visualStyle || visualStyle;
+    // visualStyle === 'custom' means "use the user-typed phrase in visualCustomStyle"
+    // (revealed by the dropdown when 'Custom' is selected). Empty custom field
+    // falls back to 'Default' so the prompt template never gets "${''} style.".
+    // configOverride still wins if a programmatic caller passes a literal style.
+    let effectiveVisualStyle;
+    if (configOverride.visualStyle) {
+        effectiveVisualStyle = configOverride.visualStyle;
+    } else if (visualStyle === 'custom') {
+        const trimmed = (visualCustomStyle || '').trim().slice(0, 120);
+        effectiveVisualStyle = trimmed || 'Default';
+    } else {
+        effectiveVisualStyle = visualStyle;
+    }
     const effectiveQuizCount = configOverride.quizCount || quizMcqCount;
     const lessonDNA = configOverride.lessonDNA || persistedLessonDNA || null;
     const dnaPromptBlock = formatLessonDNA(lessonDNA);
@@ -59,7 +861,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     const grade = gradesToGen[i];
                     const isLast = i === gradesToGen.length - 1;
                     setGenerationStep(`Generating version for ${grade}...`);
-                    await handleGenerate('simplified', null, !isLast, textToProcess, { grade: grade }, false, deps);
+                    // Thread langOverride through: callers that name a language
+                    // (e.g. Reading Library generating in the book's language)
+                    // must not have differentiated versions silently revert to
+                    // the leveledTextLanguage dropdown.
+                    await handleGenerate('simplified', langOverride, !isLast, textToProcess, { grade: grade }, false, deps);
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
@@ -281,6 +1087,31 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 else if (parsedContent.items) parsedContent = parsedContent.items;
                 else if (parsedContent.glossary) parsedContent = parsedContent.glossary;
                 else parsedContent = [];
+            }
+            // Offline pre-warm: cache the authoritative dictionary entry for every term so
+            // the whole glossary's vocabulary works OFFLINE before class — the Define popup,
+            // both Pronounce popups, and Word Sounds all read this same localStorage cache.
+            // Background, gentle (concurrency 3; cache-first, so cached terms cost nothing),
+            // English-only, best-effort: never blocks or fails glossary generation.
+            if (effectiveLanguage === 'English' && Array.isArray(parsedContent) && parsedContent.length) {
+                (async () => {
+                    try {
+                        if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                            await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+                        }
+                        if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+                        const _terms = parsedContent.map(it => it && it.term).filter(w => typeof w === 'string' && w && !/\s/.test(w));
+                        let _i = 0;
+                        const _worker = async () => {
+                            while (_i < _terms.length) {
+                                const _w = _terms[_i++];
+                                try { await window.AlloDictionary.lookup(_w); } catch (_e) {}
+                            }
+                        };
+                        await Promise.all([_worker(), _worker(), _worker()]);
+                        debugLog(`[dict] pre-warmed ${_terms.length} glossary term(s) for offline use`);
+                    } catch (_e) {}
+                })();
             }
             addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
             setGenerationStep(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'));
@@ -717,12 +1548,48 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 promptInstructions = "Identify two distinct contrasting categories (Set A, Set B) from the text and their shared commonalities (Shared).";
                 structureHint = "CRITICAL FOR VENN DIAGRAM: You MUST return exactly 3 branches in this order: 1. The first distinct category (Set A). 2. The second distinct category (Set B). 3. The shared/overlapping traits (Title: 'Shared').";
                 break;
+            case 'T-Chart':
+                promptInstructions = "Identify two contrasting categories from the text that students must sort items into (e.g. Renewable vs Non-Renewable, Mammals vs Reptiles, Igneous vs Sedimentary, Prokaryotes vs Eukaryotes). Generate 6-12 canonical, unambiguous items balanced ~50/50 between the two columns. Items should be 1-3 words each.";
+                structureHint = "CRITICAL FOR T-CHART: You MUST return exactly 2 branches. Branch 1 title = left column header (2-3 words). Branch 2 title = right column header (2-3 words). Each branch's 'items' array contains the entries that belong in that column. Avoid edge cases — every item should clearly belong to exactly one column.";
+                break;
+            case 'Fishbone':
+                promptInstructions = "Identify a central problem or effect from the text, then organize its CAUSES into 4-6 named CATEGORIES (the 'bones' of the fishbone diagram). Use domain-appropriate categories: for engineering/quality use the classic '6Ms' (People, Methods, Machines, Materials, Measurements, Environment) or a subset; for biology/ecology use categories like Genetic, Environmental, Behavioral, Physiological; for history use Political, Economic, Social, Cultural; for science use Causes, Conditions, Reactions, Outcomes. Pick categories that fit the topic. Within each category, list 2-4 specific causes (1-4 words each). The 'main' field is the central effect/problem being analyzed.";
+                structureHint = "CRITICAL FOR FISHBONE: Return 4-6 branches. Each branch represents one CATEGORY of causes (a 'bone'). Branch.title = category name (1-3 words, e.g. 'Equipment', 'Methods'). Branch.items = specific causes within that category (2-4 items per branch). The main field describes the overall effect/problem being analyzed. Avoid generic categories — pick ones that fit the specific topic.";
+                break;
             case 'Cause and Effect':
                 promptInstructions = "Identify the central event/phenomenon. List its antecedent 'Causes' (factors leading to it) and subsequent 'Effects' (consequences resulting from it). If a sequential chain reaction exists, list it.";
                 structureHint = "CRITICAL: Return branches with specific titles: 'Causes', 'Effects', or 'Chain'. Example: [{ 'title': 'Causes', 'items': ['Cause 1', 'Cause 2'] }, { 'title': 'Effects', 'items': ['Effect 1'] }]";
                 break;
             case 'Problem Solution':
                 promptInstructions = "Identify the core problem discussed and list the solutions or steps taken to resolve it.";
+                break;
+            case 'Frayer Model':
+                promptInstructions = "Create a Frayer Model for a single key vocabulary term from the source text. The 'main' field is the vocabulary term itself. Return exactly 4 branches in this order: 1. 'Definition' (a single student-friendly definition as the only item, 1 short sentence), 2. 'Characteristics' (3-5 key features or attributes of the term), 3. 'Examples' (3-5 concrete examples drawn from the text or its domain), 4. 'Non-Examples' (3-5 things that are NOT examples, ideally with a brief reason why each is excluded).";
+                structureHint = "CRITICAL FOR FRAYER MODEL: Return exactly 4 branches with titles Definition / Characteristics / Examples / Non-Examples in that order. 'Definition' branch should have exactly one item.";
+                break;
+            case 'KWL Chart':
+                promptInstructions = "Create a KWL Chart anchored to the topic of the source text. The 'main' field is the topic. Return exactly 3 branches: 1. 'Know' (4-6 prior knowledge items students at the target grade are likely to bring), 2. 'Want to Know' (4-6 anticipated student questions about the topic), 3. 'Learned' (return an empty items array OR 1-2 placeholder items like '___' since students fill this in after the lesson).";
+                structureHint = "CRITICAL FOR KWL CHART: Return exactly 3 branches with titles Know / Want to Know / Learned in that order. The Learned column should be sparse (empty array or placeholder) because students complete it after the lesson.";
+                break;
+            case 'Claim-Evidence-Reasoning':
+                promptInstructions = "Create a Claim-Evidence-Reasoning template anchored to a key scientific question or phenomenon from the source text. The 'main' field is the central question or phenomenon. Return exactly 3 branches: 1. 'Claim' (a single declarative answer to the question, as the only item), 2. 'Evidence' (3-5 specific pieces of data, observations, or quotations from the source that support the claim), 3. 'Reasoning' (2-4 statements connecting the evidence to the claim via scientific principles or logical inference).";
+                structureHint = "CRITICAL FOR CER: Return exactly 3 branches with titles Claim / Evidence / Reasoning in that order. 'Claim' should be a single declarative item. Evidence items should be specific (quotation marks for direct quotes, or specific data points), not generic.";
+                break;
+            case 'Story Map':
+                promptInstructions = "Create a Story Map (plot diagram) for the source narrative text. The 'main' field is the story title or central narrative summary. Return exactly 5 branches in narrative order: 1. 'Exposition' (setting, main characters, initial situation), 2. 'Rising Action' (3-4 key events that build tension), 3. 'Climax' (the turning point or moment of highest tension, typically a single item), 4. 'Falling Action' (events that follow the climax and lead toward resolution), 5. 'Resolution' (how the story concludes and any final state).";
+                structureHint = "CRITICAL FOR STORY MAP: Return exactly 5 branches with titles Exposition / Rising Action / Climax / Falling Action / Resolution in that order. If the source text is non-narrative, return a single branch noting this is not applicable.";
+                break;
+            case 'Memory Palace':
+                promptInstructions = "Create a Memory Palace (method of loci) for the key facts in this text. Identify 2-5 ROOMS (branches) that group the material into meaningful clusters. Each branch.title = a short room name (1-3 words). Each branch's items = the facts or concepts to memorize (3-6 per room, max 6 words each, listed in the order they should be memorized). ALSO include on each branch a parallel array 'mnemonics' with EXACTLY one entry per item: a vivid, concrete, slightly surreal mental-image description (max 20 words) that visually encodes BOTH the item and its meaning — bizarre, exaggerated, sensory images are remembered best. Keep every mnemonic school-appropriate and non-violent.";
+                structureHint = "CRITICAL FOR MEMORY PALACE: Return 2-5 branches (rooms). Each branch MUST have: title (room name, 1-3 words), items (facts in memorization order), and mnemonics (array exactly parallel to items — one vivid, school-appropriate image description per item, max ~20 words). Example branch: {\"title\": \"Sky Room\", \"items\": [\"Evaporation\"], \"mnemonics\": [\"A kettle the size of a house boiling a whole lake into golden steam\"]}.";
+                break;
+            case '3D Concept Space':
+                promptInstructions = "Identify 3-6 thematic STRANDS (dimensions, themes, or sub-domains) that organize this topic, and the key concepts within each strand. Each branch is one strand; each branch's items are the concepts inside that strand. This organizer renders as a 3D space where each strand becomes a depth plane, so strands must be genuinely distinct lenses on the topic (e.g. for ecosystems: Producers, Consumers, Decomposers, Abiotic Factors; for a historical period: Political, Economic, Social, Technological). CRITICAL: keep every label extremely concise (strand titles 1-3 words, concept items max 4-5 words). If concepts in different strands are causally or sequentially related, use 'connectsTo' (0-based branch indices) to link the strands.";
+                structureHint = "CRITICAL FOR 3D CONCEPT SPACE: Return 3-6 branches, each representing one distinct thematic STRAND (branch.title = strand name, 1-3 words). Each branch's items array contains 3-6 key concepts within that strand (max 4-5 words each). Strands become depth planes in a 3D view, so avoid overlapping or catch-all strands.";
+                break;
+            case 'See-Think-Wonder':
+                promptInstructions = "Create a See-Think-Wonder routine (Harvard Project Zero Visible Thinking) for the source artifact (text, image, phenomenon, or concept). The 'main' field describes what the student is observing. Return exactly 3 branches: 1. 'See' (3-5 concrete, observable details students might notice, no inferences), 2. 'Think' (3-5 inferences or interpretations grounded explicitly in the observations from See), 3. 'Wonder' (3-5 open-ended questions the observation provokes). Maintain strict separation between observation (See), interpretation (Think), and questioning (Wonder).";
+                structureHint = "CRITICAL FOR SEE-THINK-WONDER: Return exactly 3 branches with titles See / Think / Wonder in that order. See items must be observations only (what is visible/readable); Think items must be inferences; Wonder items must be open questions phrased as questions.";
                 break;
             default:
                 promptInstructions = "Create a structured summary.";
@@ -900,18 +1767,32 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
       } else if (type === 'quiz') {
         setShowQuizAnswers(false);
+        // Plan S: Quiz is now mode-aware. Default 'exit-ticket' preserves the
+        // existing behavior for any caller that doesn't pass a mode.
+        const _quizMode = (configOverride && configOverride.quizMode) || 'exit-ticket';
+        const _qmStrategies = (window.AlloModules && window.AlloModules.QuizModeStrategies) || null;
+        const _modeStrategy = _qmStrategies ? _qmStrategies.getStrategy(_quizMode) : null;
+        const _modeFraming = _modeStrategy ? _modeStrategy.generation.promptFrame : 'Create a short "Exit Ticket" quiz based on this text.';
+        const _modeQuestionTargets = _modeStrategy ? _modeStrategy.generation.questionTargets : 'today\'s lesson content';
+        // Pre-check + review modes draw on different context: pre-check needs
+        // PREREQUISITE concepts (what the source assumes), review pulls from
+        // earlier history items rather than today's source.
         let analysisContext = "";
-        if (passAnalysisToQuiz) {
+        if (passAnalysisToQuiz || _quizMode === 'pre-check' || _quizMode === 'review') {
              const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
              if (analysisItem && analysisItem.data) {
                  const { concepts, readingLevel } = analysisItem.data;
                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
-                 analysisContext = `
-                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:
-                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}
-                 - Detected Source Level: ${levelStr}
-                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.
-                 `;
+                 if (_quizMode === 'pre-check') {
+                     analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do NOT test today's lesson content directly.\n                 `;
+                 } else if (_quizMode === 'review') {
+                     // Pull historical concepts from prior history items too (multiple analyses)
+                     const allAnalyses = history.filter(h => h && h.type === 'analysis');
+                     const allConcepts = allAnalyses.flatMap(h => (h.data && h.data.concepts) || []).filter(Boolean);
+                     analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts (not today's). If only today's concepts are available, probe deeper retention of today's content from a few angles.\n                 `;
+                 } else {
+                     analysisContext = `\n                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:\n                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Detected Source Level: ${levelStr}\n                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.\n                 `;
+                 }
              }
         }
         let dokInstruction = "";
@@ -920,25 +1801,101 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } else if (dokLevel) {
             dokInstruction = `Target Webb's Depth of Knowledge (DOK): ${dokLevel}`;
         }
+        const _modeItemCount = (_modeStrategy && _modeStrategy.generation.defaultItemCount) || effectiveQuizCount;
+        // Use mode default ONLY when the caller didn't explicitly request a count
+        const _resolvedItemCount = (configOverride && configOverride.quizMcqCount) ? configOverride.quizMcqCount : _modeItemCount;
+        // Plan S Slice 2: per-mode item type mix. exit-ticket stays MCQ-only by default
+        // for back-compat; pre-check + review get fill-blank + short-answer in the mix.
+        // Plan S Slice 5+: smart-suggestion — when the curriculum already has a Timeline
+        // or Glossary, drop the corresponding new item type from the quiz mix to avoid
+        // redundant overlap with the dedicated tool. Teachers can still opt back in via
+        // explicit configOverride.itemTypes if they want both.
+        const _resolvedMix = Object.assign({}, (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _resolvedItemCount });
+        const _hasTimelineArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'timeline'; });
+        const _hasGlossaryArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'glossary'; });
+        const _smartSkips = [];
+        if (_hasTimelineArtifact && _resolvedMix['sequence-sense']) {
+            delete _resolvedMix['sequence-sense'];
+            _smartSkips.push('sequence-sense (Timeline exists)');
+        }
+        if (_hasGlossaryArtifact && _resolvedMix['relation-mismatch']) {
+            delete _resolvedMix['relation-mismatch'];
+            _smartSkips.push('relation-mismatch (Glossary exists)');
+        }
+        // Allow explicit caller override: if configOverride.itemTypes is provided, use it as-is.
+        const _modeItemMix = (configOverride && configOverride.itemTypes && typeof configOverride.itemTypes === 'object')
+            ? configOverride.itemTypes
+            : _resolvedMix;
+        const _mcqCount = _modeItemMix.mcq || 0;
+        const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
+        const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
+        const _selfExplanationCount = _modeItemMix['self-explanation'] || 0;
+        // Slice 5: replaced 'sequencing'/'matching' with deeper diagnostic mechanics
+        const _sequenceSenseCount = _modeItemMix['sequence-sense'] || 0;
+        const _relationMismatchCount = _modeItemMix['relation-mismatch'] || 0;
+        // Slice 5: visual MCQ mode read from configOverride
+        const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
+        // Plan T v3+ Chunk 10: optional image-style hint. Empty preserves
+        // today's default behavior. Trimmed + length-clamped defensively.
+        const _imageStyleRaw = (configOverride && typeof configOverride.imageStyle === 'string') ? configOverride.imageStyle : '';
+        const _imageStyle = _imageStyleRaw.trim().slice(0, 120);
+        const _imageStyleSuffix = _imageStyle ? ' Style: ' + _imageStyle + '.' : '';
+        // Build item-type-specific instruction blocks dynamically
+        const _itemTypeBlocks = [];
+        if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
+        if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
+        if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
+        if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
+        if (_sequenceSenseCount > 0) _itemTypeBlocks.push(_sequenceSenseCount + ' Sequence Sense Question(s) (4-6 items where the student verifies order, diagnoses misplacement, and identifies the ordering principle)');
+        if (_relationMismatchCount > 0) _itemTypeBlocks.push(_relationMismatchCount + ' Relation Mismatch Question(s) (4-5 pre-paired items where ONE pair is wrong; student finds it and picks the correct partner)');
+        const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
+        if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
+        const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
+        // Plan S Slice 3e: misconception probe flag — when in pre-check or formative mode,
+        // tell the LLM to use distractors rooted in COMMON STUDENT MISCONCEPTIONS rather
+        // than random plausibly-wrong options. This catches predictable errors and gives
+        // teachers diagnostic data they couldn't get from random-distractor MCQs.
+        const _useMisconceptionDistractors = (_quizMode === 'pre-check' || _quizMode === 'formative') && _mcqCount > 0;
+        // JSON shape varies by what's requested
+        const _jsonShape = `{
+            "questions": [
+              { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
+              { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
+              { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}${_selfExplanationCount > 0 ? `,
+              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}${_sequenceSenseCount > 0 ? `,
+              { "type": "sequence-sense", "question": "Below is a sequence. Verify and explain.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"items": ["earliest/first/cause", "second", "third", "latest/last/effect"], "presentedOrder": [0, 2, 1, 3], "intentionallyWrongIndex": 1, "orderingPrinciple": "chronological", "principleOptions": ["chronological", "cause-effect", "process", "size", "hierarchy"] }` : ''}${_relationMismatchCount > 0 ? `,
+              { "type": "relation-mismatch", "question": "One of these pairs is wrong. Find it and fix it.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"pairs": [{ "left": "A", "right": "correct A match" }, { "left": "B", "right": "correct B match" }, { "left": "C", "right": "WRONG match for C" }, { "left": "D", "right": "correct D match" }], "wrongPairIndex": 2, "correctPartnerForWrong": "actual right answer for C", "candidatePartners": ["distractor 1", "actual right answer for C", "distractor 2", "distractor 3"] }` : ''}
+            ]${_includeReflections ? `,
+            "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
+          }`;
         const prompt = `
-          Create a short "Exit Ticket" quiz based on this text for ${gradeLevel} level students.
+          ${_modeFraming}
+          Quiz target: ${_modeQuestionTargets}.
+          Audience: ${gradeLevel} level students.
           ${dnaPromptBlock}
           Language: ${effectiveLanguage}.
           ${dokInstruction}
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
-          Include:
-          1. ${effectiveQuizCount} Multiple Choice Questions (with 4 options each).
-          2. ${quizReflectionCount} Open-Ended Reflection Question(s).
-          3. The correct answer for the MCQs.
+          Include the following item types:
+          ${_itemTypeInstructions}
+          ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
+          IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
+          ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
+          ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
+          ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
+          ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
+          ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
+          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see (with one item intentionally moved out of position). Provide "intentionallyWrongIndex" — the position in presentedOrder where the misplaced item appears (or null if you want the displayed order to actually be correct). Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click the misplaced item if any, (3) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
+          ${_relationMismatchCount > 0 ? 'For each Relation Mismatch Question: provide a "pairs" array of 4-5 {left, right} objects where ONE pair is intentionally WRONG. Provide "wrongPairIndex" pointing to that pair. Provide "correctPartnerForWrong" — the right column value that SHOULD have been paired with the wrong-pair\'s left item. Provide "candidatePartners" — an array of 4 strings that includes correctPartnerForWrong and 3 distractors. Choose content where genuine left-right relationships exist (term-definition, cause-effect, person-contribution, etc.) and the wrong pair encodes a believable confusion (not an obvious nonsense match).' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           ${effectiveLanguage !== 'English' ? 'For every question, option, and reflection, provide an English translation field (suffix _en).' : ''}
           ${dialectInstruction}
-          Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }], "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}] }
+          Return ONLY valid JSON: ${_jsonShape}
           ${differentiationContext}
-          Text: "${textToProcess}"
+          ${_quizMode === 'exit-ticket' ? `Text: "${textToProcess}"` : `Source text (for context only — do not directly quiz on it for ${_quizMode} mode):\n"${textToProcess}"`}
         `;
         setGenerationStep(t('status_steps.drafting_quiz'));
         const result = await callGemini(prompt, true);
@@ -950,14 +1907,66 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
             if (!content.questions || !Array.isArray(content.questions)) content.questions = [];
             if (!content.reflections || !Array.isArray(content.reflections)) content.reflections = [];
-            content.questions = content.questions.map(q => ({
-                ...q,
-                question: q.question || "Question text missing",
-                options: Array.isArray(q.options) ? q.options : ["True", "False"],
-                correctAnswer: q.correctAnswer || "",
-            }));
+            // Plan S Slice 2: type-aware normalization. MCQ keeps its options + correctAnswer
+            // shape; fill-blank requires expectedFill; short-answer requires expectedAnswer.
+            // Items missing a `type` field default to 'mcq' for back-compat.
+            content.questions = content.questions.map(q => {
+                const itemType = q.type || 'mcq';
+                // Plan T v3 + Chunk 5: stable conceptLabel for cross-session
+                // retention tracking. Use shared normalizer so generation,
+                // write, and read paths all agree on the canonical form.
+                // Falls back to trim+lowercase if module not loaded.
+                const _qla = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+                const _norm = (_qla && typeof _qla.normalizeConceptId === 'function')
+                    ? _qla.normalizeConceptId
+                    : (s => (typeof s === 'string' ? s.trim().toLowerCase() : ''));
+                const _rawConceptLabel = (typeof q.conceptLabel === 'string' && q.conceptLabel.trim())
+                    ? _norm(q.conceptLabel)
+                    : '';
+                const base = {
+                    ...q,
+                    type: itemType,
+                    question: q.question || "Question text missing",
+                    conceptLabel: _rawConceptLabel,
+                };
+                if (itemType === 'mcq') {
+                    base.options = Array.isArray(q.options) ? q.options : ["True", "False"];
+                    base.correctAnswer = q.correctAnswer || "";
+                } else if (itemType === 'fill-blank') {
+                    base.expectedFill = q.expectedFill || "";
+                    base.acceptableAlternatives = Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [];
+                } else if (itemType === 'short-answer') {
+                    base.expectedAnswer = q.expectedAnswer || "";
+                } else if (itemType === 'self-explanation') {
+                    // Self-explanation uses a rubric string for the grader instead of a key answer.
+                    base.rubric = q.rubric || q.expectedAnswer || "";
+                } else if (itemType === 'sequence-sense') {
+                    // Slice 5: 3-step diagnostic. items[] = canonical order; presentedOrder = display permutation;
+                    // intentionallyWrongIndex = which display position is misplaced (null = order is actually correct);
+                    // orderingPrinciple = canonical principle answer; principleOptions = 5 candidate principles.
+                    base.items = Array.isArray(q.items) ? q.items.filter(function (it) { return it && (typeof it === 'string' || it.text); }) : [];
+                    base.presentedOrder = Array.isArray(q.presentedOrder) ? q.presentedOrder.filter(function (n) { return typeof n === 'number'; }) : null;
+                    base.intentionallyWrongIndex = (typeof q.intentionallyWrongIndex === 'number') ? q.intentionallyWrongIndex : null;
+                    base.orderingPrinciple = q.orderingPrinciple || '';
+                    var defaultPrincipleOpts = ['chronological','cause-effect','process','size','hierarchy'];
+                    base.principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 3 ? q.principleOptions : defaultPrincipleOpts;
+                } else if (itemType === 'relation-mismatch') {
+                    // Slice 5: 2-step diagnostic. pairs[] = displayed pairs (one wrong);
+                    // wrongPairIndex = which pair is wrong; correctPartnerForWrong = right answer; candidatePartners = 4 options.
+                    base.pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && (pr.left || pr.left_text) && (pr.right || pr.right_text); }).map(function (pr) {
+                        return { left: pr.left || pr.left_text, right: pr.right || pr.right_text };
+                    }) : [];
+                    base.wrongPairIndex = (typeof q.wrongPairIndex === 'number') ? q.wrongPairIndex : 0;
+                    base.correctPartnerForWrong = q.correctPartnerForWrong || '';
+                    base.candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners.filter(function (s) { return typeof s === 'string' && s; }) : [];
+                }
+                return base;
+            });
             try {
                 const checkedQuestions = await Promise.all(content.questions.map(async (q, idx) => {
+                    // Only fact-check MCQ items — fill-blank and short-answer have their
+                    // own grader at student-response time, no pre-grading needed.
+                    if (q.type && q.type !== 'mcq') return q;
                     setGenerationStep(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})...`);
                     await new Promise(resolve => setTimeout(resolve, idx * 200));
                     const checkPrompt = `
@@ -1000,7 +2009,157 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              warnLog("Quiz Parse Error:", parseErr);
              throw new Error("Failed to parse Quiz JSON. The AI response was not valid.");
         }
-        metaInfo = `${gradeLevel} - Quiz (${effectiveQuizCount}MC/${quizReflectionCount}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}`;
+        // Plan S Slice 5: Visual MCQ image generation. Only runs when the
+        // teacher opted in via mcqVisualMode. Iterates MCQ items in parallel
+        // (Promise.all) so wall-clock scales with max single-image latency,
+        // not the sum. Question and option images each fire independently.
+        const _wantQuestionImages = _mcqVisualMode === 'question' || _mcqVisualMode === 'both';
+        const _wantOptionImages = _mcqVisualMode === 'options' || _mcqVisualMode === 'both';
+        if ((_wantQuestionImages || _wantOptionImages) && Array.isArray(content.questions) && typeof callImagen === 'function') {
+            try {
+                const _mcqItems = content.questions.filter(function (q) { return q && (q.type === 'mcq' || !q.type); });
+                if (_mcqItems.length > 0) {
+                    setGenerationStep && setGenerationStep('Generating MCQ visuals (' + _mcqItems.length + ' question' + (_mcqItems.length === 1 ? '' : 's') + ')...');
+                    // Build a flat list of image generation tasks
+                    const _imgTasks = [];
+                    _mcqItems.forEach(function (q) {
+                        if (_wantQuestionImages && q.imagePrompt) {
+                            _imgTasks.push({
+                                target: q,
+                                key: 'imageUrl',
+                                prompt: q.imagePrompt + _imageStyleSuffix,
+                            });
+                        }
+                        if (_wantOptionImages && Array.isArray(q.optionImagePrompts)) {
+                            q.optionImageUrls = q.optionImageUrls || new Array(q.options ? q.options.length : 4).fill(null);
+                            q.optionImagePrompts.slice(0, 4).forEach(function (prompt, optIdx) {
+                                if (prompt) _imgTasks.push({
+                                    target: q,
+                                    key: 'optionImageUrls',
+                                    optIdx: optIdx,
+                                    prompt: prompt + _imageStyleSuffix,
+                                });
+                            });
+                        }
+                    });
+                    // Run all image gens in parallel; any failure leaves the URL null and
+                    // the view falls back to text-only rendering. Never blocks the quiz.
+                    await Promise.all(_imgTasks.map(async function (task) {
+                        try {
+                            const url = await callImagen(task.prompt);
+                            if (task.key === 'imageUrl') {
+                                task.target.imageUrl = url || '';
+                            } else if (task.key === 'optionImageUrls') {
+                                task.target.optionImageUrls[task.optIdx] = url || '';
+                            }
+                        } catch (imgErr) {
+                            warnLog('[Quiz] Visual MCQ image generation failed for one item:', imgErr);
+                            // Leave the URL unset; render falls back to text-only
+                        }
+                    }));
+                }
+            } catch (visualErr) {
+                warnLog('[Quiz] Visual MCQ pipeline failed:', visualErr);
+                // Don't throw — quiz still works without visuals
+            }
+        }
+        // Plan T v3+ Chunk 7: misconception-distractor validation pass. When
+        // pre-check / formative MCQs were generated with the misconception flag,
+        // the LLM was *instructed* to encode common student errors as distractors —
+        // but there's no validation that it actually did. Run a single batched
+        // secondary LLM call that scores each distractor on whether it encodes
+        // a recognized misconception. Surfaces a "distractor review" summary so
+        // teachers know which MCQs to inspect / edit before deploying. Cheap
+        // (one Gemini call regardless of MCQ count) and never blocks: failures
+        // are silent and leave content.distractorReview undefined.
+        if (_useMisconceptionDistractors && Array.isArray(content.questions)) {
+            try {
+                const _mcqsForReview = content.questions
+                    .map((q, qIdx) => ({ q, qIdx }))
+                    .filter(entry => entry.q && (entry.q.type === 'mcq' || !entry.q.type) && Array.isArray(entry.q.options) && entry.q.correctAnswer != null);
+                if (_mcqsForReview.length > 0) {
+                    setGenerationStep && setGenerationStep('Reviewing distractor quality...');
+                    const _itemsBlock = _mcqsForReview.map(entry => {
+                        const distractors = entry.q.options.filter(o => o !== entry.q.correctAnswer);
+                        return `Q${entry.qIdx + 1}: "${entry.q.question}"\n  Correct: "${entry.q.correctAnswer}"\n  Distractors: ${distractors.map((d, di) => `(${di + 1}) "${d}"`).join(' / ')}`;
+                    }).join('\n\n');
+                    const reviewPrompt = `You are an assessment-design expert evaluating MCQ distractors for a ${gradeLevel} level quiz on this topic. For each MCQ below, evaluate whether each distractor encodes a REAL student misconception (a common, predictable error students make in their thinking) versus a random plausibly-wrong answer that doesn't reflect any specific misunderstanding.
+
+Return ONLY a single valid JSON object with this exact shape:
+{
+  "reviews": [
+    {
+      "qIdx": 0,
+      "distractorScores": [
+        { "distractor": "...", "encodesMisconception": true, "reason": "ONE sentence: what misconception this catches" }
+      ]
+    }
+  ]
+}
+
+Be strict: a distractor only encodes a misconception if a teacher could point to a specific wrong belief or reasoning error students hold. "Plausible-but-random" wrong answers should be marked encodesMisconception: false with a reason like "no specific misconception encoded".
+
+MCQs:
+
+${_itemsBlock}`;
+                    try {
+                        const reviewRaw = await callGemini(reviewPrompt, true);
+                        const reviewParsed = (typeof reviewRaw === 'string') ? JSON.parse(reviewRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()) : reviewRaw;
+                        if (reviewParsed && Array.isArray(reviewParsed.reviews)) {
+                            let totalDistractors = 0;
+                            let misconceptionCount = 0;
+                            const weakItems = [];
+                            reviewParsed.reviews.forEach(review => {
+                                if (typeof review.qIdx !== 'number' || !Array.isArray(review.distractorScores)) return;
+                                const target = content.questions[review.qIdx];
+                                if (!target) return;
+                                const scoresByDistractor = review.distractorScores.map(d => ({
+                                    distractor: String(d.distractor || ''),
+                                    encodesMisconception: !!d.encodesMisconception,
+                                    reason: String(d.reason || ''),
+                                }));
+                                target.distractorQuality = scoresByDistractor;
+                                const itemMisconceptionCount = scoresByDistractor.filter(s => s.encodesMisconception).length;
+                                totalDistractors += scoresByDistractor.length;
+                                misconceptionCount += itemMisconceptionCount;
+                                // Flag items where < half of distractors encode a misconception
+                                if (scoresByDistractor.length > 0 && itemMisconceptionCount * 2 < scoresByDistractor.length) {
+                                    weakItems.push(review.qIdx);
+                                }
+                            });
+                            content.distractorReview = {
+                                totalDistractors,
+                                misconceptionCount,
+                                weakItems,
+                                quality: totalDistractors > 0 ? Math.round((misconceptionCount / totalDistractors) * 100) : null,
+                            };
+                        }
+                    } catch (reviewErr) {
+                        warnLog('[Quiz] Distractor validation pass failed (non-fatal):', reviewErr);
+                    }
+                }
+            } catch (outerErr) {
+                warnLog('[Quiz] Distractor validation outer error:', outerErr);
+            }
+        }
+        // Plan S: stamp the mode onto the content so the view can render
+        // mode-aware behavior (intro banner, AI explainer, confidence rating).
+        if (content && typeof content === 'object') {
+            content.mode = _quizMode;
+            content.modeLabel = _modeStrategy ? _modeStrategy.label : 'Exit Ticket';
+            content.modeIcon = _modeStrategy ? _modeStrategy.icon : '📝';
+            content.mcqVisualMode = _mcqVisualMode;
+            // Plan T v3+ Chunk 10: persist style hint for the refine pipeline.
+            if (_imageStyle) content.imageStyle = _imageStyle;
+        }
+        const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
+        const _smartSkipSuffix = _smartSkips.length > 0 ? ` · skipped: ${_smartSkips.join(', ')}` : '';
+        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${_smartSkipSuffix}`;
+        // Stamp smart-skip info onto the quiz content so the view module can
+        // optionally surface it to teachers (future enhancement).
+        if (content && typeof content === 'object' && _smartSkips.length > 0) {
+            content.smartSkips = _smartSkips.slice();
+        }
       } else if (type === 'analysis') {
         let verificationContext = "";
         let collectedSources = [];
@@ -1362,9 +2521,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
          }
       } else if (type === 'alignment-report') {
-         if (targetStandards.length === 0) {
-             throw new Error("Please add at least one target standard in the settings before generating a report.");
-         }
+         // Plan O Step 1.5: ungated. The audit runs even without target standards
+         // — the standards-alignment LLM call is skipped (see line 1935 below)
+         // and the comprehensive dimensions still produce a meaningful report.
          const artifactsToAudit = history.filter(h =>
              h.type !== 'alignment-report' &&
              h.type !== 'udl-advice' &&
@@ -1504,22 +2663,416 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ]
             }
          `;
-         const result = await callGemini(prompt, true);
-         try {
-             content = JSON.parse(cleanJson(result));
-             metaInfo = `Standards: ${standardsPromptString}`;
-         } catch (parseErr) {
-             warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+         // ---- Standards alignment (LLM): only if standards are provided -----
+         if (targetStandards.length > 0) {
+             setGenerationStep && setGenerationStep('Auditing standards alignment...');
+             const result = await callGemini(prompt, true);
              try {
-                 await new Promise(r => setTimeout(r, 750));
-                 const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
-                 const retryResult = await callGemini(retryPrompt, true);
-                 content = JSON.parse(cleanJson(retryResult));
+                 content = JSON.parse(cleanJson(result));
                  metaInfo = `Standards: ${standardsPromptString}`;
-             } catch (retryErr) {
-                 warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
-                 throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             } catch (parseErr) {
+                 warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+                 try {
+                     await new Promise(r => setTimeout(r, 750));
+                     const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
+                     const retryResult = await callGemini(retryPrompt, true);
+                     content = JSON.parse(cleanJson(retryResult));
+                     metaInfo = `Standards: ${standardsPromptString}`;
+                 } catch (retryErr) {
+                     warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
+                     throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+                 }
              }
+         } else {
+             // No standards provided: skip the alignment LLM call but still
+             // produce a content object so the comprehensive dimensions can
+             // attach. The render handles empty reports[] gracefully.
+             content = { reports: [] };
+             metaInfo = `Comprehensive audit (no target standards)`;
+         }
+
+         // ---- Plan O Steps 1-5: Comprehensive dimensions (PARALLEL) ---------
+         // Deterministic computations run synchronously first (microseconds).
+         // The 5 LLM review calls then run in parallel via Promise.all, cutting
+         // wall-clock from ~30-60s sequential to ~10s.
+         const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
+         content.comprehensive = content.comprehensive || {};
+
+         // ---- Plan R+: Standards alignment as 6th dimension -----------------
+         // Fold the standards-alignment data (already produced by the LLM call
+         // above when targetStandards exist) into comprehensive.standards so it
+         // counts toward the readiness score and renders in the same dimension
+         // framework as the others. content.reports is kept as a back-compat
+         // alias but the canonical shape going forward is comprehensive.standards.
+         (function buildStandardsDimension() {
+             const reports = Array.isArray(content.reports) ? content.reports : [];
+             if (reports.length === 0) {
+                 // No standards entered → not applicable, exclude from score math.
+                 content.comprehensive.standards = {
+                     status: 'Not applicable',
+                     notApplicable: true,
+                     reason: 'No target standards entered. Add a standard in the settings panel to include standards alignment in the audit.',
+                     perStandard: [],
+                 };
+                 return;
+             }
+             let passCount = 0; let reviseCount = 0;
+             const recs = [];
+             reports.forEach(function (r) {
+                 if (r && r.overallDetermination === 'Pass') passCount++;
+                 else reviseCount++;
+                 if (r && r.adminRecommendation) recs.push(r.adminRecommendation);
+             });
+             let status;
+             if (reviseCount === 0) status = 'Aligned';
+             else if (passCount === 0) status = 'Not Aligned';
+             else status = 'Partially Aligned';
+             content.comprehensive.standards = {
+                 status,
+                 perStandard: reports,
+                 totalStandards: reports.length,
+                 passCount,
+                 reviseCount,
+                 recommendations: recs.slice(0, 5),
+                 notes: reports.length + ' standard' + (reports.length === 1 ? '' : 's') + ' audited via Holistic Lesson Plan Audit. Each standard evaluated for text-, activity-, and assessment-alignment + cognitive demand.',
+             };
+         })();
+
+         // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
+         // On compute failure, write a placeholder marker so the teacher sees
+         // "Couldn't compute" instead of the dimension silently disappearing.
+         const failedPlaceholder = (label, err) => ({
+             status: 'Compute failed',
+             computeFailed: true,
+             error: err && err.message ? String(err.message).slice(0, 240) : 'Unknown error',
+             notes: label + ' could not be computed for this audit. The error has been logged. Try regenerating the audit; if the problem persists, check the artifacts have the expected shape.',
+         });
+
+         let vocabFit = null;
+         try {
+             vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
+             vocabFit.readingLevels = auditHarvest.readingLevels;
+             content.comprehensive.vocabulary = vocabFit;
+         } catch (vocabErr) {
+             warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
+             content.comprehensive.vocabulary = failedPlaceholder('Vocabulary', vocabErr);
+         }
+
+         let engagement = null;
+         try {
+             engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
+             content.comprehensive.engagement = engagement;
+         } catch (engErr) {
+             warnLog('[Alignment] Engagement variety computation failed:', engErr);
+             content.comprehensive.engagement = failedPlaceholder('Engagement variety', engErr);
+         }
+
+         let accessibility = null;
+         try {
+             accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
+             content.comprehensive.accessibility = accessibility;
+         } catch (accErr) {
+             warnLog('[Alignment] Accessibility computation failed:', accErr);
+             content.comprehensive.accessibility = failedPlaceholder('Content accessibility', accErr);
+         }
+
+         let accuracy = null;
+         try {
+             accuracy = computeContentAccuracy(auditHarvest);
+             content.comprehensive.accuracy = accuracy;
+         } catch (accuracyErr) {
+             warnLog('[Alignment] Content accuracy computation failed:', accuracyErr);
+             content.comprehensive.accuracy = failedPlaceholder('Content accuracy', accuracyErr);
+         }
+
+         // ---- Plan R+ new dimensions: differentiation + cognitive load ----
+         let differentiation = null;
+         try {
+             differentiation = computeDifferentiationCoverage(artifactsToAudit, auditHarvest);
+             content.comprehensive.differentiation = differentiation;
+         } catch (diffErr) {
+             warnLog('[Alignment] Differentiation computation failed:', diffErr);
+             content.comprehensive.differentiation = failedPlaceholder('Differentiation coverage', diffErr);
+         }
+
+         let cognitiveLoad = null;
+         try {
+             const sourceWords = (vocabFit && typeof vocabFit.sourceWords === 'number') ? vocabFit.sourceWords : 0;
+             cognitiveLoad = computeCognitiveLoad(artifactsToAudit, sourceWords, gradeLevel);
+             content.comprehensive.cognitiveLoad = cognitiveLoad;
+         } catch (clErr) {
+             warnLog('[Alignment] Cognitive load computation failed:', clErr);
+             content.comprehensive.cognitiveLoad = failedPlaceholder('Cognitive load / pacing', clErr);
+         }
+
+         // Shared grade band derived once for all dimensions
+         const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || gradeLevel;
+
+         // ---- Async LLM reviews (parallel) ---------------------------------
+         setGenerationStep && setGenerationStep('Running 8 audit dimensions in parallel...');
+
+         // Each task is self-contained: build prompt → call → parse → apply.
+         // Tasks return null on any failure; failures are logged but don't
+         // block other dimensions or the overall audit.
+         const vocabTask = vocabFit ? (async () => {
+             const fp = 'vocab:' + _auditFingerprint(artifactsToAudit, gradeLevel);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.vocabulary.llmReview = cached; return; }
+             try {
+                 const contextSnippet = (comprehensiveContext || '').slice(0, 4000);
+                 const prompt = `You are a literacy coach reviewing a heuristic vocabulary classification.\n\nThe system classified words from a lesson as:\n- Tier 1 (everyday): ${vocabFit.tier1Count} unique words\n- Tier 2 (academic, cross-disciplinary): ${vocabFit.tier2Count} unique words. Examples flagged by the heuristic: ${(vocabFit.tier2Examples || []).join(', ') || '(none)'}\n- Tier 3 (domain-specific): ${vocabFit.tier3Count} unique words. Examples flagged: ${(vocabFit.tier3Examples || []).join(', ') || '(none)'}\n\nGrade band: ${vocabFit.expected.gradeBand}\nExpected per Beck/McKeown norms: ~${vocabFit.expected.tier2} Tier 2 + ~${vocabFit.expected.tier3} Tier 3 unique words.\n\nSource text excerpt (first 4000 chars):\n"""\n${contextSnippet}\n"""\n\nReview the heuristic classifications and provide:\n1. "corrections": array of words from the Tier 2 examples that the heuristic got WRONG (i.e., they're really Tier 1 everyday words). Common false positives to watch for: long-but-common words like "tomorrow", "remember", "different", "without", "morning".\n2. "missedTier2": array of 2-4 Tier 2 academic words that ARE in the source text but the heuristic likely missed (e.g., shorter words like "claim", "reveal", "trace", "frame" that appear academically).\n3. "recommendations": array of 2-3 specific Tier 2 academic words to ADD to this lesson, contextually appropriate to the topic and grade band. Each recommendation must be one to three words.\n4. "narrative": ONE paragraph (2-3 sentences) summarizing whether the lesson's vocabulary load is appropriate for the grade band, and what the most important next move is.\n\nReturn ONLY a single valid JSON object with exactly these four fields. No prose outside the JSON, no markdown fences.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
+                     missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
+                     recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                 };
+                 content.comprehensive.vocabulary.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Vocab LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         const engagementTask = engagement ? (async () => {
+             const fp = 'engagement:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.engagement.llmReview = cached; return; }
+             try {
+                 // DOK fallback: when engagement.dokTotal === 0 BUT a quiz exists in the
+                 // artifacts (i.e., the quiz generator didn't tag DOK levels), pass the
+                 // actual quiz questions to the LLM so it can estimate DOK rather than
+                 // falsely report "no quiz items." Verified bug from Solar System audit.
+                 const quizItem = artifactsToAudit.find(function (h) { return h && h.type === 'quiz' && h.data; });
+                 const hasQuiz = !!(quizItem && quizItem.data && Array.isArray(quizItem.data.questions) && quizItem.data.questions.length > 0);
+                 const needsDokFallback = hasQuiz && (engagement.dokTotal === 0 || !engagement.dokTotal);
+                 const quizSnippet = needsDokFallback
+                     ? quizItem.data.questions.slice(0, 12).map(function (q, i) {
+                         var qt = (q && (q.question || q.text)) ? String(q.question || q.text) : '';
+                         return (i + 1) + '. ' + qt.slice(0, 220);
+                       }).join('\n')
+                     : '';
+                 const dokFallbackBlock = needsDokFallback
+                     ? '\n\nDOK FALLBACK NEEDED: This quiz has ' + quizItem.data.questions.length + ' questions but no DOK metadata. Estimate DOK distribution from the question stems below. Return percentages summing to 100. Examples:\n' + quizSnippet
+                     : '';
+                 const dokInstruction = needsDokFallback
+                     ? '3. "dokAssessment": ONE sentence on the estimated DOK distribution from the questions above (e.g., "Estimated ~70% L1 recall, ~25% L2, ~5% L3; add 2-3 strategic-thinking items").\n4. "estimatedDokDistribution": object with percentage estimates {"L1": int, "L2": int, "L3": int, "L4": int} based on the questions above (must sum to 100).'
+                     : '3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ' + dimGradeBand + '"). If dokTotal is 0, say "No quiz items present to evaluate DOK."';
+                 const prompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${dimGradeBand}${dokFallbackBlock}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n${dokInstruction}\n\nReturn ONLY a single valid JSON object with exactly these fields.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
+                     dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
+                 };
+                 // If LLM estimated DOK distribution as fallback, attach it to engagement directly
+                 // so the render shows the bar chart instead of "no quiz items."
+                 if (needsDokFallback && review.estimatedDokDistribution && typeof review.estimatedDokDistribution === 'object') {
+                     const est = review.estimatedDokDistribution;
+                     const safeNum = function (v) { return typeof v === 'number' && v >= 0 ? Math.round(v) : 0; };
+                     content.comprehensive.engagement.dokDistribution = {
+                         L1: safeNum(est.L1),
+                         L2: safeNum(est.L2),
+                         L3: safeNum(est.L3),
+                         L4: safeNum(est.L4),
+                         unknown: 0,
+                     };
+                     content.comprehensive.engagement.dokTotal = quizItem.data.questions.length;
+                     content.comprehensive.engagement.dokSource = 'llm-estimated';
+                 }
+                 content.comprehensive.engagement.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Engagement LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         const accessTask = accessibility ? (async () => {
+             const fp = 'accessibility:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.accessibility.llmReview = cached; return; }
+             try {
+                 const prompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words\n- Grade band: ${dimGradeBand}\n\nSource text excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
+                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
+                 };
+                 content.comprehensive.accessibility.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Accessibility LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // UDL is pure-LLM (no deterministic stats; uses harvest priors)
+         const udlTask = (async () => {
+             const fp = 'udl:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.udl = cached; return; }
+             try {
+                 const modPresent = auditHarvest.multimodal || {};
+                 const scaffoldCounts = auditHarvest.scaffoldCounts || {};
+                 const distinctTypes = Array.from(auditHarvest.distinctTypes || []);
+                 const prompt = `You are a CAST-trained UDL specialist evaluating a curriculum against the three Universal Design for Learning principles (CAST UDL Guidelines v3.0). Each principle has its own pillar. Rate each pillar individually, not the curriculum as a whole.\n\nCurriculum profile (deterministic):\n- Distinct artifact types: ${distinctTypes.join(', ') || '(none)'}\n- Modalities: text=${!!modPresent.text}, image=${!!modPresent.image}, audio=${!!modPresent.audio}, interactive=${!!modPresent.interactive}\n- Scaffolds: ${scaffoldCounts.sentenceFrames || 0} sentence-frame sets, ${scaffoldCounts.simplifiedTexts || 0} simplified texts, ${scaffoldCounts.leveledGlossary || 0} leveled glossaries\n- Reading levels: ${(auditHarvest.readingLevels || []).map(r => r.range).join('; ') || '(none)'}\n- Grade band: ${dimGradeBand}\n\nSource excerpt (first 2500 chars):\n"""\n${(comprehensiveContext || '').slice(0, 2500)}\n"""\n\nFor EACH UDL pillar, evaluate using these prompts:\n\n1. REPRESENTATION (how is content presented?). Multiple ways to access the same content? Visual + auditory + text + interactive? Customizable display? Vocabulary support? Activate background knowledge? Highlight patterns?\n\n2. ENGAGEMENT (why do learners invest effort?). Choices/autonomy? Authenticity, relevance, cultural responsiveness? Optimal challenge with scaffolds? Sustained-effort supports (goal-setting, feedback, self-reflection)?\n\n3. ACTION & EXPRESSION (how do learners demonstrate what they know?). Multiple ways to respond (writing, speaking, drawing, building, performing)? Tools and assistive-tech support? Goal-setting and progress-monitoring scaffolds?\n\nReturn ONLY a single valid JSON object:\n{\n  "representation": { "status": "Aligned"|"Partially Aligned"|"Not Aligned", "evidence": "...", "gaps": "...", "recommendation": "ONE sentence" },\n  "engagement":     { "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "actionExpression":{ "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "overallNarrative": "ONE paragraph (2-3 sentences) summarizing UDL alignment and naming the most pressing pillar to strengthen",\n  "overallStatus": "Aligned"|"Partially Aligned"|"Not Aligned"\n}\n\nNo prose outside the JSON. No markdown fences. No trailing commas.`;
+                 const result = await callGemini(prompt, true);
+                 let udl;
+                 try {
+                     udl = JSON.parse(cleanJson(result));
+                 } catch (firstParseErr) {
+                     warnLog('[Alignment] UDL JSON parse failed (attempt 1), retrying:', firstParseErr);
+                     await new Promise(r => setTimeout(r, 750));
+                     const retryPrompt = prompt + '\n\nCRITICAL: Your previous response failed JSON.parse with: ' + String(firstParseErr.message || '').slice(0, 120) + '. Return ONLY a single valid JSON object. No prose, no markdown fences, no trailing commas.';
+                     const retryResult = await callGemini(retryPrompt, true);
+                     udl = JSON.parse(cleanJson(retryResult));
+                 }
+                 const pillarShape = function (p) {
+                     const safe = p && typeof p === 'object' ? p : {};
+                     return {
+                         status: typeof safe.status === 'string' ? safe.status : 'Partially Aligned',
+                         evidence: typeof safe.evidence === 'string' ? safe.evidence : '',
+                         gaps: typeof safe.gaps === 'string' ? safe.gaps : '',
+                         recommendation: typeof safe.recommendation === 'string' ? safe.recommendation : '',
+                     };
+                 };
+                 const udlShape = {
+                     status: typeof udl.overallStatus === 'string' ? udl.overallStatus : 'Partially Aligned',
+                     overallNarrative: typeof udl.overallNarrative === 'string' ? udl.overallNarrative : '',
+                     representation: pillarShape(udl.representation),
+                     engagement: pillarShape(udl.engagement),
+                     actionExpression: pillarShape(udl.actionExpression),
+                     priorsUsed: {
+                         distinctTypes: distinctTypes,
+                         modalitiesPresent: ['text','image','audio','interactive'].filter(function (m) { return !!modPresent[m]; }),
+                         scaffoldCounts: scaffoldCounts,
+                     },
+                     notes: 'Per CAST UDL Guidelines v3.0. Each pillar evaluated against the deterministic curriculum profile + LLM judgment of the source content.',
+                 };
+                 content.comprehensive.udl = udlShape;
+                 _auditLLMCache.set(fp, udlShape);
+             } catch (e) {
+                 warnLog('[Alignment] UDL evaluation failed:', e);
+                 if (!content.comprehensive.udl) {
+                     content.comprehensive.udl = {
+                         status: 'Compute failed',
+                         computeFailed: true,
+                         error: e && e.message ? String(e.message).slice(0, 240) : 'UDL LLM call failed or response could not be parsed.',
+                         notes: 'UDL principles evaluation could not complete. The error has been logged. Try regenerating the audit.',
+                     };
+                 }
+             }
+         })();
+
+         const accuracyTask = accuracy ? (async () => {
+             const fp = 'accuracy:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.accuracy.llmReview = cached; return; }
+             try {
+                 const prompt = `You are a fact-checking editor reviewing a curriculum's content accuracy. The lesson's source text was previously analyzed and AI-graded for accuracy.\n\nDeterministic harvest from analysis items:\n- Total analyses run: ${accuracy.totalAnalyses}\n- Accuracy ratings: ${accuracy.accuracyRatingCounts.high} High, ${accuracy.accuracyRatingCounts.medium} Medium, ${accuracy.accuracyRatingCounts.low} Low\n- Total verified facts: ${accuracy.totalVerifiedFacts}\n- Total discrepancies flagged: ${accuracy.totalDiscrepancies}\n- Grade band: ${dimGradeBand}\n\nSample analysis verifications (first 3):\n${accuracy.sampleVerifications.slice(0, 3).map((s, i) => `  ${i+1}. Rating: ${s.rating}, ${s.verifiedFactCount} verified, ${s.discrepancyCount} discrepancies. Reason: "${(s.reason || '').slice(0, 200)}"`).join('\n') || '(no analyses available)'}\n\nFull source excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accuracy. If no analyses have been run, explicitly suggest running "Analyze Source Text" before deploying this curriculum.\n2. "claimsToVerify": array of 1-4 specific factual claims in NON-analysis artifacts (quiz questions, glossary definitions, lesson-plan facts) that a teacher should double-check. Each entry should be the actual claim quoted or paraphrased. Focus on claims with measurable risk (specific dates, numbers, named people/places, scientific assertions).\n3. "fixes": array of 1-3 actionable suggestions for improving accuracy ("add citations to the quiz answers", "verify the dates in the timeline against a primary source", etc.).\n\nReturn ONLY a single valid JSON object with exactly these three fields. No prose outside the JSON.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
+                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
+                 };
+                 content.comprehensive.accuracy.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Accuracy LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // ---- Plan R+ Differentiation review (LLM grades the scaffold mix) ---
+         const differentiationTask = (differentiation && !differentiation.computeFailed) ? (async () => {
+             const fp = 'differentiation:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.differentiation.llmReview = cached; return; }
+             try {
+                 const flags = differentiation.flags || {};
+                 const present = Object.keys(flags).filter(function (k) { return flags[k]; });
+                 const missing = differentiation.missing || [];
+                 const prompt = 'You are a UDL specialist reviewing how a curriculum supports learner variability.\n\nDeterministic scaffold inventory (' + differentiation.coverage + '% coverage):\n- Present: ' + (present.join(', ') || '(none)') + '\n- Missing: ' + (missing.join(', ') || '(none)') + '\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 2000 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 2000) + '\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the scaffold mix realistically serves the range of learners typical at this grade band. Name the most impactful missing scaffold for THIS content (some content needs visuals more than text-leveling; some needs audio more than visuals).\n2. "priorityAdditions": array of 1-3 specific scaffold-add suggestions ranked by impact for the grade band and topic. Each entry one short sentence.\n3. "qualityFlags": array of 0-2 sentences flagging any present-but-likely-thin scaffolds (e.g., "glossary present but only 4 terms — consider expanding for ELL support").\n\nReturn ONLY a single valid JSON object with exactly these three fields.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     priorityAdditions: Array.isArray(review.priorityAdditions) ? review.priorityAdditions.slice(0, 5) : [],
+                     qualityFlags: Array.isArray(review.qualityFlags) ? review.qualityFlags.slice(0, 4) : [],
+                 };
+                 content.comprehensive.differentiation.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Differentiation LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // ---- Plan R+ Cognitive load review (LLM judges pacing realism) ------
+         const cognitiveLoadTask = (cognitiveLoad && !cognitiveLoad.notApplicable && !cognitiveLoad.computeFailed) ? (async () => {
+             const fp = 'cognitiveLoad:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.cognitiveLoad.llmReview = cached; return; }
+             try {
+                 const segs = (cognitiveLoad.perSegment || []).map(function (s) { return s.label + ': ' + (s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'); }).join('\n - ');
+                 const prompt = 'You are an experienced classroom teacher reviewing a lesson plan for realistic pacing.\n\nClaimed segment durations:\n - ' + (segs || '(none)') + '\nClaimed total: ' + cognitiveLoad.claimedTotalMinutes + ' min\n\nDeterministic estimate of actual time required: ' + cognitiveLoad.estimatedTotalMinutes + ' min\n  - Reading: ' + cognitiveLoad.breakdown.reading + ' min (assumes ' + cognitiveLoad.breakdown.wpmAssumption + ' wpm at this grade)\n  - Quiz: ' + cognitiveLoad.breakdown.quiz + ' min\n  - Activities: ' + cognitiveLoad.breakdown.activities + ' min\n\nClaimed-vs-estimated ratio: ' + (cognitiveLoad.ratio || 'n/a') + '\nGrade band: ' + dimGradeBand + '\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the pacing is realistic and what the most likely failure mode is (running out of time vs. dead time). Be specific about which segment is most likely the squeeze point.\n2. "specificAdjustments": array of 1-3 concrete adjustments ("trim source text to 800 words", "drop one quiz question", "split into 2 days"). Each entry one short sentence.\n\nReturn ONLY a single valid JSON object with exactly these two fields.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     specificAdjustments: Array.isArray(review.specificAdjustments) ? review.specificAdjustments.slice(0, 5) : [],
+                 };
+                 content.comprehensive.cognitiveLoad.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Cognitive load LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // ---- Plan R+ Cultural responsiveness (LLM-detected N/A) ---------------
+         // First gate: does this content have human contexts/examples/perspectives
+         // to evaluate? If not, dimension returns notApplicable and is excluded from
+         // the readiness math.
+         const culturalTask = (async () => {
+             const fp = 'culturalResponsiveness:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.culturalResponsiveness = cached; return; }
+             try {
+                 const prompt = 'You are an experienced equity-and-inclusion educator reviewing a curriculum for cultural responsiveness.\n\nFIRST decide whether this content has human contexts, examples, perspectives, or named people that representation considerations apply to. Pure mechanics (math equations, phonics drills, titration steps) often do NOT — for those, return { "notApplicable": true, "reason": "Brief explanation of why representation considerations do not apply." }\n\nIf the content DOES have human surface area, evaluate:\n- Diversity of names, examples, settings, and perspectives represented\n- Avoidance of stereotypes or single-story framing\n- Inclusion of underrepresented or non-dominant perspectives where relevant\n- Asset-based (not deficit-based) framing of communities discussed\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 3500 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 3500) + '\n"""\n\nReturn ONLY a single valid JSON object. EITHER:\n  { "notApplicable": true, "reason": "..." }\nOR (when applicable):\n  {\n    "notApplicable": false,\n    "status": "Aligned" | "Partially Aligned" | "Not Aligned",\n    "narrative": "ONE paragraph (2-3 sentences) honestly assessing the representation. Avoid both inflation and over-criticism — name what is present, what is missing, and what one specific addition would most strengthen the lesson.",\n    "strengths": array of 0-3 specific things this content does well (named, concrete),\n    "gaps": array of 0-3 specific gaps (named, concrete, not generic),\n    "additions": array of 1-3 concrete suggestions for adding underrepresented perspectives, examples, or framings\n  }\n\nNo prose outside the JSON. No markdown fences. Be honest, not performative.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 if (review && review.notApplicable === true) {
+                     content.comprehensive.culturalResponsiveness = {
+                         status: 'Not applicable',
+                         notApplicable: true,
+                         reason: typeof review.reason === 'string' ? review.reason : 'Content has no human surface area to evaluate.',
+                         notes: 'LLM judged this content does not have representation considerations to evaluate (e.g., pure mechanics, math equations, phonics drills).',
+                     };
+                 } else {
+                     content.comprehensive.culturalResponsiveness = {
+                         status: typeof review.status === 'string' ? review.status : 'Partially Aligned',
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                         strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 5) : [],
+                         gaps: Array.isArray(review.gaps) ? review.gaps.slice(0, 5) : [],
+                         additions: Array.isArray(review.additions) ? review.additions.slice(0, 5) : [],
+                         notes: 'LLM-graded representation review. Inherently judgment-laden — treat findings as a starting point for teacher reflection, not a verdict.',
+                     };
+                 }
+                 _auditLLMCache.set(fp, content.comprehensive.culturalResponsiveness);
+             } catch (e) {
+                 warnLog('[Alignment] Cultural responsiveness LLM call failed:', e);
+                 content.comprehensive.culturalResponsiveness = {
+                     status: 'Compute failed',
+                     computeFailed: true,
+                     error: e && e.message ? String(e.message).slice(0, 240) : 'Cultural responsiveness LLM call failed.',
+                     notes: 'Cultural responsiveness evaluation could not complete.',
+                 };
+             }
+         })();
+
+         await Promise.all([vocabTask, engagementTask, accessTask, udlTask, accuracyTask, differentiationTask, cognitiveLoadTask, culturalTask]);
+
+         // ---- Plan O Step 6: Curriculum Readiness Score (roll-up) -----------
+         setGenerationStep && setGenerationStep('Computing curriculum readiness score...');
+         try {
+             const readiness = computeReadinessScore(content.comprehensive);
+             if (readiness) {
+                 content.comprehensive.overall = readiness;
+             }
+         } catch (rollupErr) {
+             warnLog('[Alignment] Readiness score computation failed:', rollupErr);
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
@@ -2258,6 +3811,263 @@ Return ONLY JSON:
           } finally {
               setIsGeneratingPersona(false);
           }
+      } else if (type === 'note-taking') {
+          // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
+          // Generates a lesson-aware scaffolded template. Per architectural
+          // directive, the actual template rendering lives in
+          // note_taking_templates_module.js; this dispatcher just builds the
+          // initial data object with lesson-aware pre-population.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('note-taking');
+          const templateType = (configOverride && configOverride.templateType) || (deps.noteTakingTemplateType) || 'cornell-notes';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          if (templateType === 'cornell-notes') {
+              // Pre-fill cues column with 5-8 key terms / anticipated questions from source.
+              const prompt = `
+                  Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', cues: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Cornell Notes scaffold parse failed:', parseErr);
+              }
+              const cuesArr = Array.isArray(scaffolded.cues) ? scaffolded.cues : [];
+              content = {
+                  templateType: 'cornell-notes',
+                  title: scaffolded.title || sourceTopic || 'Cornell Notes',
+                  cues: cuesArr.slice(0, 8).map((text, i) => ({ id: `cue-${Date.now()}-${i}`, text: String(text || '') })),
+                  notes: cuesArr.slice(0, 8).map((_, i) => ({ id: `note-${Date.now()}-${i}`, text: '' })),
+                  summary: '',
+                  connections: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'lab-report') {
+              const prompt = `
+                  Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', question: '', materials: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Lab Report scaffold parse failed:', parseErr);
+              }
+              const matsArr = Array.isArray(scaffolded.materials) ? scaffolded.materials : [];
+              content = {
+                  templateType: 'lab-report',
+                  title: scaffolded.title || sourceTopic || 'Lab Report',
+                  question: scaffolded.question || '',
+                  hypothesis: '',
+                  materials: matsArr.map((text, i) => ({ id: `mat-${Date.now()}-${i}`, text: String(text || '') })),
+                  procedure: [],
+                  data: '',
+                  analysis: '',
+                  conclusion: '',
+                  connections: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'reading-response') {
+              const prompt = `
+                  Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author name or empty string" }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '' };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Reading Response scaffold parse failed:', parseErr);
+              }
+              content = {
+                  templateType: 'reading-response',
+                  title: scaffolded.title || sourceTopic || 'Reading Response',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  favoriteLine: '',
+                  thinkings: '',
+                  connection: { type: 'text-to-self', text: '' },
+                  question: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'double-entry') {
+              // Seed the LEFT column with salient quotes; the student writes responses.
+              const prompt = `
+                  Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '', quotes: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Double-Entry scaffold parse failed:', parseErr);
+              }
+              const quotesArr = Array.isArray(scaffolded.quotes) ? scaffolded.quotes : [];
+              const seeded = quotesArr.slice(0, 5).map((q, i) => ({ id: `de-${Date.now()}-${i}`, quote: String(q || ''), response: '' }));
+              content = {
+                  templateType: 'double-entry',
+                  title: scaffolded.title || sourceTopic || 'Double-Entry Journal',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  entries: seeded.length ? seeded : [{ id: `de-${Date.now()}-0`, quote: '', response: '' }],
+                  lessonRef,
+              };
+          } else if (templateType === 'guided-notes') {
+              // AI generates fill-in-the-blank statements with the key term as the answer.
+              const prompt = `
+                  Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', blanks: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Guided Notes scaffold parse failed:', parseErr);
+              }
+              const blanksArr = Array.isArray(scaffolded.blanks) ? scaffolded.blanks : [];
+              content = {
+                  templateType: 'guided-notes',
+                  title: scaffolded.title || sourceTopic || 'Guided Notes',
+                  blanks: blanksArr.slice(0, 12).map((b, i) => ({
+                      id: `gn-${Date.now()}-${i}`,
+                      before: String((b && b.before) || ''),
+                      answer: String((b && b.answer) || ''),
+                      after: String((b && b.after) || ''),
+                      studentAnswer: '',
+                  })).filter(b => b.answer),
+                  notesExtra: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'q-and-a') {
+              // Seed study questions + model answers; student edits/adds + self-quizzes.
+              const prompt = `
+                  Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
+              `;
+              let scaffolded = { title: sourceTopic || '', pairs: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Q&A scaffold parse failed:', parseErr);
+              }
+              const pairsArr = Array.isArray(scaffolded.pairs) ? scaffolded.pairs : [];
+              content = {
+                  templateType: 'q-and-a',
+                  title: scaffolded.title || sourceTopic || 'Q&A Study Notes',
+                  pairs: pairsArr.slice(0, 8).map((p, i) => ({
+                      id: `qa-${Date.now()}-${i}`,
+                      question: String((p && p.question) || ''),
+                      answer: String((p && p.answer) || ''),
+                  })).filter(p => p.question || p.answer),
+                  connections: '',
+                  lessonRef,
+              };
+          } else {
+              content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
+          }
+          metaInfo = `${effectiveGrade} - ${templateType}`;
+      } else if (type === 'anchor-chart') {
+          // Anchor Charts — classroom visual reference.
+          // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('anchor-chart');
+          const requestedChartType = (configOverride && configOverride.chartType) || (deps.anchorChartType) || 'auto';
+          const supportedChartTypes = ['reference', 'process', 'concept-map', 'comparison', 'strategy', 'vocabulary', 'routine', 'worked-example', 'criteria-success', 'misconception', 'question-guide'];
+          const chartType = requestedChartType === 'auto' || supportedChartTypes.includes(requestedChartType) ? requestedChartType : 'auto';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          const chartTypeGuide = {
+              auto: 'choose the strongest chart type for the source and topic. Prefer vocabulary for term-heavy content, process/routine for steps, comparison for contrasts, misconception for common mix-ups, criteria-success for rubrics, worked-example for procedures with a model, strategy for reusable academic moves, question-guide for discussion or analysis prompts, and concept-map for parts of a whole.',
+              process: 'a multi-step process (e.g., the writing process, the scientific method). Sections should be sequential steps. Use 4-6 sections.',
+              'concept-map': 'a concept and its components (e.g., parts of a cell, branches of government). Sections should be parallel sub-parts. Use 3-6 sections.',
+              reference: 'a reference list of features, conventions, or norms (e.g., features of a good argument, classroom norms). Sections should be parallel categories. Use 3-6 sections.',
+              comparison: 'a comparison across two or more categories (e.g., similes vs metaphors, mitosis vs meiosis). Sections should be the categories being compared. Use 2-4 sections.',
+              strategy: 'a reusable thinking or learning strategy students can apply across tasks. Sections should be practical moves such as Plan, Try, Check, Revise, or Explain. Use 4-6 sections.',
+              vocabulary: 'a vocabulary chart for key terms. Each section should be one important term with a student-friendly meaning, example, and visual clue in the bullets. Use 4-6 terms.',
+              routine: 'a classroom or academic routine students should follow consistently. Sections should be the ordered routine steps with brief reminders. Use 4-6 sections.',
+              'worked-example': 'a worked example or model. Sections should walk through the model from setup to reasoning to final check, showing why each move works. Use 4-6 sections.',
+              'criteria-success': 'success criteria for strong work. Sections should name what students should include or check before turning in work. Use 4-6 criteria.',
+              misconception: 'common misconceptions and fixes. Each section should name one likely mix-up and explain the correct idea with a quick fix or contrast. Use 3-6 sections.',
+              'question-guide': 'a question guide for discussion, close reading, inquiry, or analysis. Sections should be question categories with student-friendly prompts. Use 4-6 sections.',
+          };
+          const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
+          const prompt = `
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
+
+              An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
+
+              Supported chartType values: ${supportedChartTypes.join(', ')}. If the request is "auto", choose exactly one supported chartType and make the sections match that purpose. The chartType JSON value must be only the selected id, with no explanation.
+
+              Do NOT design a separate critique, sticky-note, peer-comment, or student-submission workflow. The app already has annotation tools and Interactive Mode. Focus this output on the poster content itself.
+
+              For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
+
+              Source text for context (may be empty): "${(textToProcess || '').substring(0, 2500)}"
+
+              Return ONLY a JSON object with this exact shape:
+              {
+                "chartType": "reference",
+                "title": "Short, memorable title (3-6 words, can be all-caps if punchy)",
+                "sections": [
+                  {
+                    "label": "SECTION LABEL (1-3 words, often a verb or category)",
+                    "bullets": ["Short bullet 1", "Short bullet 2", "Short bullet 3"],
+                    "iconPrompt": "simple object that represents this section"
+                  }
+                ]
+              }
+          `;
+          let scaffolded = { title: sourceTopic || 'Anchor Chart', sections: [] };
+          try {
+              const result = await callGemini(prompt, true);
+              scaffolded = JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Anchor chart scaffold parse failed:', parseErr);
+          }
+          const generatedChartType = String((scaffolded && scaffolded.chartType) || '').trim();
+          const resolvedChartType = supportedChartTypes.includes(chartType) ? chartType : (supportedChartTypes.includes(generatedChartType) ? generatedChartType : 'reference');
+          const rawSections = Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
+          const sections = rawSections.slice(0, 6).map((s, i) => ({
+              id: `sec-${Date.now()}-${i}`,
+              label: String((s && s.label) || `Section ${i + 1}`),
+              bullets: Array.isArray(s && s.bullets) ? s.bullets.map(b => String(b || '')) : [],
+              iconPrompt: String((s && s.iconPrompt) || ''),
+              iconUrl: '',
+          }));
+          content = {
+              title: scaffolded.title || sourceTopic || 'Anchor Chart',
+              chartType: resolvedChartType,
+              sections,
+              lessonRef,
+          };
+          metaInfo = `${effectiveGrade} - ${resolvedChartType}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {
