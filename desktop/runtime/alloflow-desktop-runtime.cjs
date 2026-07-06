@@ -2643,6 +2643,12 @@ async function probeUrl(url, timeoutMs = 1200) {
   if (typeof fetch !== 'function') {
     return { reachable: false, status: 'unsupported', error: 'This Node runtime does not expose fetch().' };
   }
+  // Node's fetch resolves `localhost` IPv6-first (::1); our managed servers
+  // (llama-server, whisper-server) bind IPv4 127.0.0.1 only — so probing the
+  // preset URLs reported a RUNNING engine as "offline" in the provider list
+  // while the engine panel (managed status) said running. Field-caught
+  // 2026-07-06. Normalize for the probe only; the stored config is untouched.
+  url = String(url).replace(/^(https?:\/\/)localhost([:/])/i, '$1127.0.0.1$2');
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -2683,11 +2689,14 @@ async function probeProvider(provider) {
     };
   }
 
-  const probe = await probeUrl(provider.baseUrl + provider.modelsPath);
+  // Same localhost→127.0.0.1 normalization as probeUrl (IPv6-first fetch vs
+  // IPv4-bound local servers) — the models list request must match the probe.
+  const modelsUrl = String(provider.baseUrl + provider.modelsPath).replace(/^(https?:\/\/)localhost([:/])/i, '$1127.0.0.1$2');
+  const probe = await probeUrl(modelsUrl);
   let models = [];
   if (probe.reachable && typeof fetch === 'function') {
     try {
-      const response = await fetch(provider.baseUrl + provider.modelsPath, { headers: { Accept: 'application/json' } });
+      const response = await fetch(modelsUrl, { headers: { Accept: 'application/json' } });
       const data = await response.json();
       if (provider.protocol === 'ollama-native') {
         models = (data.models || []).map((model) => model.name).filter(Boolean);

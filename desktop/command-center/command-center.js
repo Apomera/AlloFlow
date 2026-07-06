@@ -1164,6 +1164,66 @@
     }
   }
 
+  // ── Local Images (SD-Turbo) panel — AI tab twin of the Voice panel ──
+  async function _webGpuAdapterOk() {
+    try {
+      if (!(navigator.gpu && typeof navigator.gpu.requestAdapter === 'function')) return false;
+      return !!(await navigator.gpu.requestAdapter());
+    } catch (_) { return false; }
+  }
+
+  async function inspectSdTurbo() {
+    const adapterOk = await _webGpuAdapterOk();
+    setText('#sd-gpu', adapterOk ? 'WebGPU ready' : 'No WebGPU adapter');
+    const appWindow = getBundledAppWindow();
+    if (appWindow && appWindow._sdTurbo && appWindow._sdTurbo.ready) {
+      setText('#sd-status', 'ready');
+      $('#sd-result').textContent = 'SD-Turbo is loaded — images generate on this device.';
+      return;
+    }
+    let entries = 0;
+    try { entries = (await (await caches.open('allo-sd-turbo')).keys()).length; } catch (_) {}
+    if (!adapterOk) {
+      setText('#sd-status', 'not supported');
+      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter, so local image generation cannot run here. Cloud image AI still works with an API key.';
+    } else if (entries > 0) {
+      setText('#sd-status', 'downloaded');
+      $('#sd-result').textContent = 'Model files are cached on this device. The app loads them when image generation is first used.';
+    } else {
+      setText('#sd-status', 'not downloaded');
+    }
+  }
+
+  async function downloadSdTurbo() {
+    const appWindow = getBundledAppWindow();
+    if (!appWindow) {
+      $('#sd-result').textContent = 'Switch the app URL to the bundled /app/ address, then try again.';
+      return;
+    }
+    if (!(await _webGpuAdapterOk())) {
+      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter — local image generation is not available here.';
+      return;
+    }
+    if (typeof appWindow.__loadSdTurbo !== 'function') {
+      $('#sd-result').textContent = 'The app view has not finished loading yet — wait a few seconds and try again.';
+      return;
+    }
+    $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)…';
+    try {
+      const done = await appWindow.__loadSdTurbo((p) => {
+        const pct = p && p.pct != null ? Math.round(p.pct * 100) + '%' : '';
+        $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)… ' + pct;
+      });
+      $('#sd-result').textContent = done
+        ? 'SD-Turbo ready — images generate on this device.'
+        : 'The download did not complete — check the connection and try again.';
+    } catch (error) {
+      $('#sd-result').textContent = 'Download failed: ' + (error && error.message ? error.message : error);
+    }
+    inspectSdTurbo();
+    refreshSetupHealth().catch(() => {});
+  }
+
   // ── Setup Health card ──────────────────────────────────────────
   // One glance = live truth for the five capabilities field testing kept
   // tripping over. Rows only show an action button when the runtime can
@@ -1348,6 +1408,7 @@
     renderClassroomWizard();
     maybeShowApiKeySetup();
     refreshSetupHealth().catch(() => {});
+    inspectSdTurbo().catch(() => {});
   }
 
   function bindEvents() {
@@ -1360,6 +1421,8 @@
     $('#refresh-schoolbox').addEventListener('click', refresh);
     $('#check-voice').addEventListener('click', inspectKokoroVoice);
     $('#download-kokoro').addEventListener('click', downloadKokoroVoice);
+    $('#check-sd').addEventListener('click', inspectSdTurbo);
+    $('#download-sd').addEventListener('click', downloadSdTurbo);
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
     $('#engine-model-select').addEventListener('change', changeEngineModel);
