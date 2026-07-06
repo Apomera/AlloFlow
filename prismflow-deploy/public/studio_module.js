@@ -2444,6 +2444,11 @@
     var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
     var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
     var _shortcutsOpen = React.useState(false); var shortcutsOpen = _shortcutsOpen[0], setShortcutsOpen = _shortcutsOpen[1];
+    // Fullscreen editing surface (Aaron request). Preference persists so it sticks
+    // across opens; degrades silently if localStorage is unavailable.
+    var _fullscreen = React.useState(function () { try { return localStorage.getItem('alloStudioFullscreen_v1') === '1'; } catch (_) { return false; } });
+    var fullscreen = _fullscreen[0], setFullscreenState = _fullscreen[1];
+    var setFullscreen = function (v) { setFullscreenState(v); try { localStorage.setItem('alloStudioFullscreen_v1', v ? '1' : '0'); } catch (_) {} };
     var _templateFilter = React.useState('all'); var templateFilter = _templateFilter[0], setTemplateFilter = _templateFilter[1];
     var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
@@ -3198,6 +3203,13 @@
       var op = dispatch({ type: 'object.add', object: copy }, 'user');
       if (op && op.object && op.object.id) selectOnly(op.object.id);
     };
+    var removeSelectedObjects = function () {
+      var ids = selectionIds.length ? selectionIds.slice() : (selectedId ? [selectedId] : []);
+      if (!ids.length) return;
+      ids.forEach(function (id) { dispatch({ type: 'object.remove', target: id }, 'user'); });
+      clearSelection();
+      stAnnounce(TT('studio.a11y_removed', 'Object removed'));
+    };
     var alignSelectedGroup = function (mode) {
       if (selectedGroup.length < 2) return;
       stAlignFramesAsGroup(doc.objects, selectionIds, mode).forEach(function (p) {
@@ -3361,6 +3373,12 @@
       label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: C.muted, marginTop: '4px' },
       input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid ' + C.border, borderRadius: '6px', fontSize: '12px', background: C.inputBg, color: C.inputText },
     };
+    // Fullscreen: edge-to-edge shell (no overlay padding, no rounded corners). The
+    // template-picker card keeps its own compact size unless we're fullscreen.
+    if (fullscreen) {
+      S.overlay = Object.assign({}, S.overlay, { padding: 0 });
+      S.shell = Object.assign({}, S.shell, { width: '100vw', height: '100dvh', maxWidth: '100vw', maxHeight: '100dvh', borderRadius: 0 });
+    }
 
     var templateCategoryFor = function (tpl) {
       if (!tpl) return 'all';
@@ -3410,7 +3428,7 @@
       var shownTemplates = templateFilter === 'all' ? allTemplates : allTemplates.filter(function (tpl) { return templateCategoryFor(tpl) === templateFilter; });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
         onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
-        h('div', { ref: _shellRef, style: Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
+        h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
@@ -3614,6 +3632,23 @@
           onPointerUp: onCanvasPointerUp,
           style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: C.accent, border: '2px solid ' + C.panel, borderRadius: '4px', cursor: 'nwse-resize' },
         }) : null,
+        // Floating contextual quick-actions (Canva-style direct manipulation):
+        // a small bar hovering over the selected object with Duplicate/Delete, so
+        // the two most-common edits are one tap at the object instead of a trip to
+        // the side panel. Single-selection only; hidden while editing text or
+        // dragging; flips below the object when it hugs the top edge (the page
+        // clips overflow). Not part of the drag surface (pointerdown stops here).
+        (isSel && selectionIds.length <= 1 && !(editingText && editingText.id === o.id) && !(dragLive && dragLive.id === o.id)) ? hh('div', {
+          role: 'toolbar', 'aria-label': TT('studio.quick_actions', 'Quick actions'),
+          onPointerDown: function (e) { e.stopPropagation(); },
+          style: Object.assign({ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '2px', padding: '3px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '9px', boxShadow: '0 3px 12px rgba(15,23,42,0.4)', zIndex: 60, whiteSpace: 'nowrap' }, (f.y * scale > 42) ? { bottom: '100%', marginBottom: '6px' } : { top: '100%', marginTop: '6px' }) },
+          hh('button', { type: 'button', title: TT('studio.duplicate', 'Duplicate'), 'aria-label': TT('studio.duplicate', 'Duplicate'),
+            onPointerDown: function (e) { e.stopPropagation(); }, onClick: function (e) { e.stopPropagation(); duplicateSelected(); },
+            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, '⧉'),
+          hh('button', { type: 'button', title: TT('studio.delete', 'Delete'), 'aria-label': TT('studio.delete', 'Delete'),
+            onPointerDown: function (e) { e.stopPropagation(); }, onClick: function (e) { e.stopPropagation(); removeSelectedObjects(); },
+            style: { border: 'none', background: 'transparent', color: C.headerText, cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: '4px 7px', borderRadius: '6px' } }, '🗑')
+        ) : null,
         (editingText && editingText.id === o.id) ? hh('textarea', {
           autoFocus: true,
           defaultValue: editingText.value,
@@ -3925,6 +3960,7 @@
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
           h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'),
+          h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
           h('span', { style: S.headerSpacer }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
