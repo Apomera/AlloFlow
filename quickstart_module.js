@@ -115,9 +115,22 @@ function StorybookPicker(props) {
         var parts = [book.title || ''];
         (book.pages || []).forEach(function (p) { if (p.text) parts.push(p.text); });
         var credits = (book.authors || []).join(', ');
+        var attribution = (credits ? credits + ' · ' : '') + 'StoryWeaver, Pratham Books · CC BY 4.0';
+        // 3rd arg = compact book ref, shape-matched to the reader's
+        // save-to-lesson item so the host can add it to the resource pack.
         props.onPicked(parts.join('\n\n').trim(), {
           title: book.title,
-          description: (credits ? credits + ' · ' : '') + 'StoryWeaver, Pratham Books · CC BY 4.0',
+          description: attribution,
+        }, {
+          slug: book.slug,
+          title: book.title,
+          language: book.language,
+          langCode: book.langCode,
+          level: book.level,
+          cover: entry.cover || (book.cover && book.cover.card) || null,
+          hasAudio: !!book.audio,
+          description: book.description || '',
+          attribution: attribution,
         });
       })
       .catch(function () {
@@ -136,7 +149,6 @@ function StorybookPicker(props) {
     }
     return true;
   });
-  var shown = matches.slice(0, 30);
   return e('div', null,
     e('div', { className: 'flex flex-wrap gap-2 mb-2' },
       e('select', {
@@ -165,25 +177,27 @@ function StorybookPicker(props) {
     ),
     level && level === storybookGradeToLevel(props.grade) ? e('p', { className: 'text-[11px] text-amber-700 mb-2' },
       wt('wizard.storybook_grade_note', 'Showing books matched to your grade — choose “All levels” to see everything.')) : null,
-    shown.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No books match — try different filters.')) : null,
-    e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1' },
-      shown.map(function (b) {
+    e('p', { className: 'text-[11px] font-semibold text-slate-500 mb-1' },
+      matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'book') : wt('wizard.storybook_many', 'books'))),
+    matches.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No books match — try different filters.')) : null,
+    e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto pr-1' },
+      matches.map(function (b) {
         return e('button', {
           key: b.slug,
           onClick: function () { pick(b); },
           disabled: !!busy,
-          className: 'flex items-center gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all bg-white text-start disabled:opacity-60',
+          className: 'flex items-start gap-3 p-2 rounded-xl border-2 border-slate-100 hover:border-amber-400 hover:bg-amber-50 transition-all bg-white text-start disabled:opacity-60',
         },
-          b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-12 h-12 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
+          b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-14 h-14 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'w-14 h-14 rounded-lg bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
           e('span', { className: 'min-w-0' },
-            e('span', { className: 'block font-bold text-slate-700 text-sm truncate', dir: 'auto' }, (busy === b.slug ? '⏳ ' : '') + b.title),
-            e('span', { className: 'block text-[11px] text-slate-500' }, b.language + ' · L' + b.level + (b.hasAudio ? ' · 🔊' : ''))
+            e('span', { className: 'block font-bold text-slate-700 text-sm leading-snug', dir: 'auto' }, (busy === b.slug ? '⏳ ' : '') + b.title),
+            e('span', { className: 'block text-[11px] text-slate-500 mb-0.5' }, b.language + ' · L' + b.level + (b.hasAudio ? ' · 🔊' : '')),
+            b.description ? e('span', { className: 'block text-[11px] text-slate-500 line-clamp-2', dir: 'auto' }, b.description) : null
           )
         );
       })
     ),
     e('p', { className: 'text-[11px] text-slate-500 mt-2' },
-      (matches.length > shown.length ? wt('wizard.storybook_more', 'Showing the first 30 — filter by language or search to narrow down.') + ' · ' : '') +
       wt('wizard.storybook_credit', 'Books from StoryWeaver, an open library by Pratham Books (CC BY 4.0).'))
   );
 }
@@ -601,7 +615,7 @@ const QuickStartWizard = React.memo(({
     "aria-modal": "true",
     className: "fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]"
+    className: "bg-white w-full " + (localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl') + " rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
@@ -989,11 +1003,12 @@ const QuickStartWizard = React.memo(({
     t: t,
     grade: localData.grade,
     addToast: addToast,
-    onPicked: (text, meta) => setLocalData(prev => ({
+    onPicked: (text, meta, ref) => setLocalData(prev => ({
       ...prev,
       fetchedContent: text,
       resourceMeta: meta,
-      searchQuery: meta.title
+      searchQuery: meta.title,
+      storybookRef: ref
     }))
   }), typeof localData.fetchedContent === 'string' && localData.fetchedContent && /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 border border-green-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-2 shadow-sm"

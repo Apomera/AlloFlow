@@ -374,6 +374,21 @@ const handleWizardComplete = (data, deps) => {
       const topic = finalData.searchQuery || finalData.topic;
       if (topic) setSourceTopic(topic);
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
+      // A picked story book also becomes a resource-pack entry (same
+      // 'readingBook' item the reader's Save-to-lesson creates), so it rides
+      // along with the lesson and can be reopened from Resources — not just
+      // dumped into the source box.
+      if (finalData.sourceMode === 'storybook' && finalData.storybookRef && finalData.storybookRef.slug) {
+        const ref = finalData.storybookRef;
+        setHistory(prev => [...prev, {
+          id: 'readingbook-' + ref.slug + '-' + Date.now(),
+          type: 'readingBook',
+          title: ref.title,
+          timestamp: new Date(),
+          data: ref,
+          config: {},
+        }]);
+      }
     } else if (finalData.sourceMode === 'file' || finalData.materialType === 'file') {
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
       setTimeout(() => {

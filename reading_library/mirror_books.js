@@ -52,6 +52,13 @@ const PLAN = JSON.parse(fs.readFileSync(LANGUAGES_PATH, 'utf8')).plan;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Slugs to never curate/fetch: the search API surfaces them but their read
+// endpoint is broken server-side (permanent 500), so --plan would otherwise
+// keep re-adding them and --fetch keep failing. Add to this set, don't fight it.
+const SKIP_SLUGS = new Set([
+  '679680-zamin-ma-tab-kard-taghirat-e-aqlimi', // Dari: read endpoint 500s
+]);
+
 // Cloudflare fingerprints node/undici TLS and 403s it even with browser headers,
 // but plain curl passes — so all HTTP goes through curl.
 const { execFileSync } = require('child_process');
@@ -123,7 +130,7 @@ function rankAndPush(langPlan, level, data, want, have, picks, audioOnly) {
     p.language === langPlan.language && p.level === String(level) && (!audioOnly || p.isAudio)
   ).length;
   const ranked = (data.data || [])
-    .filter((b) => b.slug && b.title && !have.has(b.slug) && (!audioOnly || b.isAudio))
+    .filter((b) => b.slug && b.title && !have.has(b.slug) && !SKIP_SLUGS.has(b.slug) && (!audioOnly || b.isAudio))
     .sort((a, b) => scoreBook(b) - scoreBook(a))
     .slice(0, Math.max(0, Number(want) - already));
   for (const b of ranked) {
@@ -293,12 +300,17 @@ async function fetchBook(pick) {
 
   let audio = null;
   if (d.isAudio && d.audioPath) {
+    // Keep the mp3 even if the VTT cue file is unavailable. StoryWeaver serves
+    // the audio publicly but some stories' VTT objects 403 on their bucket
+    // (permission not set) — this is NOT a transient error and won't retry
+    // away. cues:null is a supported state: the reader plays the human
+    // narration without word-by-word highlighting (better than silent TTS).
     audio = { src: d.audioPath, cues: null };
     if (d.vttFilePath) {
       try {
         audio.cues = parseVtt(await getText(d.vttFilePath));
       } catch (err) {
-        console.warn('  vtt failed for', pick.slug, err.message);
+        console.warn('  no VTT cues for', pick.slug, '(audio still plays, no karaoke):', err.message);
       }
     }
   }
@@ -346,6 +358,7 @@ async function fetchAll(onlySlug) {
   const force = process.argv.includes('--force');
   for (const pick of picks) {
     if (onlySlug && pick.slug !== onlySlug) continue;
+    if (SKIP_SLUGS.has(pick.slug)) continue;
     try {
       const bookPath = path.join(BOOKS_DIR, pick.slug + '.json');
       let book;

@@ -19,8 +19,8 @@
   ],
   "plan": [
     { "language": "English", "code": "en", "perLevel": { "1": 10, "2": 10, "3": 10, "4": 10 }, "audioPerLevel": { "1": 12, "2": 12, "3": 8, "4": 6 } },
-    { "language": "Spanish", "code": "es", "perLevel": { "1": 6, "2": 6, "3": 6, "4": 6 } },
-    { "language": "French", "code": "fr", "perLevel": { "1": 4, "2": 4, "3": 4, "4": 4 } },
+    { "language": "Spanish", "code": "es", "perLevel": { "1": 9, "2": 9, "3": 8, "4": 7 } },
+    { "language": "French", "code": "fr", "perLevel": { "1": 6, "2": 6, "3": 5, "4": 5 } },
     { "language": "Arabic", "code": "ar", "perLevel": { "1": 4, "2": 4, "3": 3, "4": 3 }, "audioPerLevel": { "1": 6, "2": 6, "3": 4, "4": 3 } },
     { "language": "Hindi", "code": "hi", "perLevel": { "1": 3, "2": 3, "3": 3, "4": 3 }, "audioPerLevel": { "1": 8, "2": 8, "3": 6, "4": 4 } },
     { "language": "Portuguese", "code": "pt", "perLevel": { "1": 3, "2": 3, "3": 3, "4": 3 } },
@@ -57,6 +57,22 @@
     { "language": "Kinyarwanda", "code": "rw", "perLevel": { "1": 2, "2": 2, "3": 1 } },
     { "language": "Dari", "code": "prs", "perLevel": { "1": 2, "2": 2 } },
     { "language": "Sinhala", "code": "si", "perLevel": { "1": 2, "2": 2, "3": 1 } },
-    { "language": "Polish", "code": "pl", "perLevel": { "1": 2, "2": 2 } }
+    { "language": "Polish", "code": "pl", "perLevel": { "1": 2, "2": 2 } },
+
+    { "language": "Malay", "code": "ms", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Dutch", "code": "nl", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Romanian", "code": "ro", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Greek", "code": "el", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 1 } },
+    { "language": "Odia", "code": "or", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Assamese", "code": "as", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Konkani", "code": "kok", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Maithili", "code": "mai", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+
+    { "language": "Igbo", "code": "ig", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 2 } },
+    { "language": "Yoruba", "code": "yo", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 1 } },
+    { "language": "Luganda", "code": "lg", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 1 } },
+    { "language": "isiZulu", "code": "zu", "perLevel": { "1": 3, "2": 3, "3": 2, "4": 1 } },
+    { "language": "Ateso", "code": "teo", "perLevel": { "1": 2, "2": 2, "3": 2 } },
+    { "language": "Wolof", "code": "wo", "perLevel": { "1": 2, "2": 2 } }
   ]
 }

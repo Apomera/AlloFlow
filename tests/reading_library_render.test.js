@@ -202,3 +202,51 @@ describe('AI translation', () => {
     expect(textOf(host)).toContain(rtlBook.title);
   });
 });
+
+describe('narration playback — audio track vs cue timings', () => {
+  const baseBook = {
+    slug: 's', title: 'Narrated Book', language: 'Gujarati', langCode: 'gu',
+    isRtl: false, level: '2', authors: ['A. Author'], source: { url: 'https://storyweaver.org.in/s' },
+    pages: [{ n: 1, img: null, text: 'Page one.', words: null }, { n: 2, img: null, text: 'Page two.', words: null }],
+  };
+
+  async function mountReader(book) {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(ReadingLibrary.BookReader, {
+        book, onExit: () => {}, addToast: () => {},
+      }));
+    });
+    await flush();
+  }
+
+  it('plays the human narration mp3 even when the VTT cue file is missing', async () => {
+    // The real StoryWeaver failure mode: public mp3, but cues null (VTT 403s).
+    await mountReader({ ...baseBook, audio: { src: 'https://gcs/x.mp3', cues: null } });
+    const audio = host.querySelector('audio');
+    expect(audio).toBeTruthy();
+    expect(audio.getAttribute('src')).toContain('x.mp3');
+    // the narration toggle (not the TTS fallback) is offered...
+    const readBtn = Array.from(host.querySelectorAll('button')).find((b) => /Read to me/.test(textOf(b)));
+    expect(readBtn).toBeTruthy();
+    // ...and it's flagged as narration-without-word-highlighting
+    expect(readBtn.getAttribute('title')).toMatch(/no word-by-word|highlighting/i);
+  });
+
+  it('offers word-highlighting narration when cues are present (no caveat title)', async () => {
+    await mountReader({ ...baseBook, audio: { src: 'https://gcs/x.mp3', cues: [[1, 0, 1], [2, 1, 2]] } });
+    const readBtn = Array.from(host.querySelectorAll('button')).find((b) => /Read to me/.test(textOf(b)));
+    expect(readBtn).toBeTruthy();
+    expect(readBtn.getAttribute('title')).toBeFalsy();
+  });
+
+  it('falls back to per-page TTS only when there is no audio track at all', async () => {
+    await mountReader({ ...baseBook, audio: null });
+    expect(host.querySelector('audio')).toBeFalsy();
+    const labels = Array.from(host.querySelectorAll('button')).map(textOf);
+    expect(labels.some((l) => /Read this page/.test(l))).toBe(true);
+    expect(labels.some((l) => /Read to me/.test(l))).toBe(false);
+  });
+});

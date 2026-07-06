@@ -383,7 +383,13 @@
 
     var pages = book.pages || [];
     var page = pages[pageIdx] || null;
-    var hasNarration = !!(book.audio && book.audio.src && book.audio.cues && book.audio.cues.length);
+    // Two independent capabilities. A book can have the human-narration mp3
+    // but NO cue timings — StoryWeaver serves the audio publicly yet some VTT
+    // cue files 403 on their bucket. In that case we still play the real
+    // narration; we just can't word-highlight or auto-turn pages. Downgrading
+    // the whole feature to robotic TTS (the old behavior) threw away real audio.
+    var hasAudioTrack = !!(book.audio && book.audio.src);
+    var hasCues = !!(book.audio && book.audio.cues && book.audio.cues.length);
 
     // What's on screen: the original book, or its AI translation. Everything
     // downstream (TTS, popups, practice, generate, export) follows the
@@ -624,10 +630,11 @@
           onClick: function () { stopAll(); props.onExit && props.onExit(false); },
         }, '← ' + tr('readinglib_back', 'Library')),
         e('div', { className: 'font-bold text-slate-800 truncate flex-1 min-w-0', dir: 'auto', title: displayTitle }, displayTitle),
-        hasNarration && !txReady ? e('button', {
+        hasAudioTrack && !txReady ? e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
           onClick: toggleNarration,
           'aria-pressed': narrating,
+          title: hasCues ? undefined : tr('readinglib_audio_no_sync', 'Human narration (no word-by-word highlighting for this book)'),
         }, narrating ? '⏸ ' + tr('readinglib_pause', 'Pause') : '🔊 ' + tr('readinglib_read_to_me', 'Read to me')) : e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200',
           onClick: readPageTts,
@@ -711,7 +718,7 @@
           ) : null
         )
       ),
-      hasNarration ? e('audio', {
+      hasAudioTrack && !txReady ? e('audio', {
         ref: audioRef, src: book.audio.src, preload: 'none',
         onTimeUpdate: onTimeUpdate,
         onEnded: function () { setNarrating(false); setActiveCue(null); },

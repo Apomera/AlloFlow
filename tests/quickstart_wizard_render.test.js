@@ -27,6 +27,7 @@ const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8
 // key — which is exactly what exercises the wt() raw-key-echo fallbacks.
 const T = {
   'common.next': 'Next',
+  'common.finish': 'Finish',
   'wizard.content_loaded': 'Content loaded and ready',
 };
 
@@ -124,14 +125,43 @@ describe('story-books flow', () => {
     expect(host.textContent).toContain('matched to your grade');
     // language dropdown still carries every language
     expect(selects[1].querySelectorAll('option').length).toBe(index.languages.length + 1);
-    // pick the first LEVEL-3 book (guaranteed within the shown slice)
-    const lvl3 = index.books.filter((b) => String(b.level) === '3')[0];
-    clickByText(lvl3.title);
+    // the whole (uncapped) level-3 set is rendered — count line reflects it
+    const lvl3books = index.books.filter((b) => String(b.level) === '3');
+    expect(host.textContent).toContain(lvl3books.length + ' books');
+    const cards = host.querySelectorAll('.grid button');
+    expect(cards.length).toBe(lvl3books.length); // no 30-cap
+    // a book with a description renders it in the card
+    const described = lvl3books.find((b) => b.description && b.description.length > 12);
+    if (described) expect(host.textContent).toContain(described.description.slice(0, 12));
+    // pick a level-3 book
+    clickByText(lvl3books[0].title);
     await flush();
     const text = host.textContent || '';
     expect(text).toContain('Content loaded and ready');
-    expect(text).toContain(lvl3.title);
+    expect(text).toContain(lvl3books[0].title);
     expect(text).toContain('CC BY 4.0');
+  });
+
+  it('carries the picked book as a resource ref (storybookRef) through to completion', async () => {
+    const calls = await mountAtSourceStep();
+    clickByText('Story Books');
+    await flush();
+    const lvl3 = index.books.filter((b) => String(b.level) === '3')[0];
+    clickByText(lvl3.title);
+    await flush();
+    clickByText('Next');   // green confirm → step 4 (review)
+    await flush();
+    clickByText('Finish'); // → onComplete(localData)
+    await flush();
+    expect(calls.complete.length).toBe(1);
+    const done = calls.complete[0];
+    expect(done.sourceMode).toBe('storybook');
+    expect(done.storybookRef).toBeTruthy();
+    expect(done.storybookRef.slug).toBe(lvl3.slug);
+    expect(done.storybookRef.title).toBe(lvl3.title);
+    // the ref carries what the host needs to build a readingBook history item
+    expect(done.storybookRef.language).toBe(lvl3.language);
+    expect(String(done.storybookRef.level)).toBe(String(lvl3.level));
   });
 
   it('clearing the level filter to All levels widens the grid', async () => {
