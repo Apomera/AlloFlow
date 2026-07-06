@@ -1090,7 +1090,16 @@ Concept: ${bridgeSendText}`;
             if (c) c.scrollTop = c.scrollHeight;
           }, 50);
           try {
-            const translated = await callGemini("Translate the following " + fromLang + " text to " + toLang + ". Return ONLY the translation, no explanations or notes:\n\n" + text, false, false, 0.3);
+            let translated = null;
+            if (window.AlloTranslate && typeof window.AlloTranslate.supports === "function" && window.AlloTranslate.supports(fromLang, toLang)) {
+              try {
+                translated = await window.AlloTranslate.translate(text, fromLang, toLang);
+              } catch (_odErr) {
+              }
+            }
+            if (translated == null) {
+              translated = await callGemini("Translate the following " + fromLang + " text to " + toLang + ". Return ONLY the translation, no explanations or notes:\n\n" + text, false, false, 0.3);
+            }
             setBridgeChatMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, translated, translating: false } : m));
             setTimeout(() => {
               const c = document.getElementById("bridge-f2f-messages");
@@ -1448,7 +1457,39 @@ Concept: ${bridgeSendText}`;
             placeholder: t("roster.bridge_f2f_custom_placeholder") || "e.g. Yoruba, Tigrinya...",
             style: { width: "100%", boxSizing: "border-box", marginTop: "6px", background: typeof _bt !== "undefined" ? _bt.inputBg : "rgba(255,255,255,0.04)", border: typeof _bt !== "undefined" ? _bt.inputBorder : "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "8px 10px", color: typeof _bt !== "undefined" ? _bt.inputText : "#e2e8f0", fontSize: "12px", outline: "none" }
           }
-        ))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#64748b", marginBottom: "12px", textAlign: "center", fontStyle: "italic" } }, "\u{1F512} ", t("roster.bridge_f2f_ferpa") || "Private: never saved or synced. Translation is processed by a secure AI service.", " \u2022 ", t("roster.bridge_f2f_both_speak") || "Both sides speak or type in their own language"), _bridgePhrasesPanel(_stagePhrase, bridgeF2FTranslating, t, _bt, { phrases: bridgeGenPhrases, onGenerate: _generatePhrases, loading: bridgeGenLoading, activeCat: bridgePhraseCat, onCat: setBridgePhraseCat }), _bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t, _bt), /* @__PURE__ */ React.createElement("div", { id: "bridge-f2f-messages", role: "log", "aria-live": "polite", "aria-relevant": "additions text", "aria-atomic": "false", "aria-label": t("roster.bridge_f2f_thread_label") || "Conversation", style: {
+        ))), (() => {
+          const _odActive = !!(window.AlloTranslate && typeof window.AlloTranslate.supports === "function" && window.AlloTranslate.supports(_personALang, _personBLang));
+          const _odPossible = !!(_personALang && _personBLang);
+          return React.createElement(
+            "div",
+            { style: { marginBottom: "12px", textAlign: "center" } },
+            React.createElement(
+              "div",
+              { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#64748b", fontStyle: "italic", marginBottom: _odActive ? "0" : "6px" } },
+              _odActive ? "\u{1F512} " + (t("roster.bridge_f2f_ferpa_ondevice") || "Private: translated on this device \u2014 nothing is sent out.") + " \u2022 " + (t("roster.bridge_f2f_both_speak") || "Both sides speak or type in their own language") : "\u{1F512} " + (t("roster.bridge_f2f_ferpa") || "Private: never saved or synced. Translation is processed by a secure AI service.") + " \u2022 " + (t("roster.bridge_f2f_both_speak") || "Both sides speak or type in their own language")
+            ),
+            !_odActive && _odPossible ? React.createElement("button", {
+              onClick: async () => {
+                addToast(t("roster.bridge_ondevice_loading") || "Loading on-device translation\u2026", "info");
+                try {
+                  if (!window.AlloTranslate && window.__alloLoadPlugin) {
+                    await window.__alloLoadPlugin("translate_loader.js");
+                  }
+                  if (window.AlloTranslate && window.AlloTranslate.supports(_personALang, _personBLang)) {
+                    const ok = await window.AlloTranslate.preload(_personALang, _personBLang);
+                    addToast(ok ? t("roster.bridge_ondevice_ready") || "On-device translation on \u2014 this language pair now stays on your device." : t("roster.bridge_ondevice_pair_na") || "No on-device model for this pair yet; using the secure service.", ok ? "success" : "info");
+                  } else {
+                    addToast(t("roster.bridge_ondevice_pair_na") || "On-device translation isn't available for this language pair yet; using the secure service.", "info");
+                  }
+                } catch (_e) {
+                  addToast(t("roster.bridge_ondevice_failed") || "Could not load on-device translation; using the secure service.", "info");
+                }
+              },
+              title: t("roster.bridge_ondevice_hint") || "Download a small model so this language pair translates on your device, with nothing sent out",
+              style: { fontSize: "11px", fontWeight: 600, color: "#0e7490", background: "rgba(14,116,144,0.08)", border: "1px solid rgba(14,116,144,0.3)", borderRadius: "999px", padding: "3px 12px", cursor: "pointer" }
+            }, "\u{1F512} " + (t("roster.bridge_ondevice_enable") || "Translate on this device (private)")) : null
+          );
+        })(), _bridgePhrasesPanel(_stagePhrase, bridgeF2FTranslating, t, _bt, { phrases: bridgeGenPhrases, onGenerate: _generatePhrases, loading: bridgeGenLoading, activeCat: bridgePhraseCat, onCat: setBridgePhraseCat }), _bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t, _bt), /* @__PURE__ */ React.createElement("div", { id: "bridge-f2f-messages", role: "log", "aria-live": "polite", "aria-relevant": "additions text", "aria-atomic": "false", "aria-label": t("roster.bridge_f2f_thread_label") || "Conversation", style: {
           background: "rgba(0,0,0,0.15)",
           border: "1px solid rgba(255,255,255,0.04)",
           borderRadius: "16px",

@@ -231,7 +231,17 @@ const OSS_CREDITS = [
         blurb: "A dictionary-backed engine that breaks a word into its exact sounds (in IPA) for the phonics tools \u2014 deterministic and fully offline, in 100+ languages.",
         repo: "https://github.com/espeak-ng/espeak-ng"
       },
-      { name: "Transformers.js", use: "in-browser ML (Whisper transcription, image gen)", license: "Apache-2.0", url: "https://github.com/huggingface/transformers.js" },
+      { name: "Transformers.js", use: "in-browser ML (Whisper transcription, on-device translation, image gen)", license: "Apache-2.0", url: "https://github.com/huggingface/transformers.js" },
+      {
+        name: "Helsinki-NLP OPUS-MT",
+        use: "on-device translation models for Bridge private mode (nothing sent out) \u2014 University of Helsinki",
+        license: "CC BY-4.0",
+        url: "https://github.com/Helsinki-NLP/OPUS-MT",
+        featured: 14,
+        owner: "University of Helsinki / OPUS",
+        blurb: "Neural translation models that run fully on the device, so a teacher\u2194family Bridge conversation can be translated with nothing ever sent to the cloud \u2014 offline-capable in the School Box.",
+        repo: "https://github.com/Helsinki-NLP/OPUS-MT"
+      },
       {
         name: "whisper.cpp",
         use: "on-device speech-to-text for oral-reading-fluency practice (School Box) \u2014 Georgi Gerganov",

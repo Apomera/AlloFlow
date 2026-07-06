@@ -915,7 +915,18 @@ function BridgeSendModal(props) {
                   setBridgeF2FTranslating(true);
                   setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
                   try {
-                    const translated = await callGemini('Translate the following ' + fromLang + ' text to ' + toLang + '. Return ONLY the translation, no explanations or notes:\n\n' + text, false, false, 0.3);
+                    // On-device first (translate_loader.js → window.AlloTranslate): when a
+                    // local opus-mt model covers the pair, the text NEVER leaves the machine
+                    // (a real FERPA win + works offline). Falls back to the cloud translate
+                    // when the engine isn't loaded / the pair has no on-device model / it
+                    // fails — so this is never a regression.
+                    let translated = null;
+                    if (window.AlloTranslate && typeof window.AlloTranslate.supports === 'function' && window.AlloTranslate.supports(fromLang, toLang)) {
+                      try { translated = await window.AlloTranslate.translate(text, fromLang, toLang); } catch (_odErr) {}
+                    }
+                    if (translated == null) {
+                      translated = await callGemini('Translate the following ' + fromLang + ' text to ' + toLang + '. Return ONLY the translation, no explanations or notes:\n\n' + text, false, false, 0.3);
+                    }
                     setBridgeChatMessages(prev => prev.map(m => m.id === msgId ? {...m, translated, translating:false} : m));
                     setTimeout(() => { const c = document.getElementById('bridge-f2f-messages'); if(c) c.scrollTop = c.scrollHeight; }, 50);
                     try { await handleAudio(translated, toLang); } catch(e2) { warnLog('F2F TTS error', e2); }
@@ -1200,9 +1211,40 @@ function BridgeSendModal(props) {
                       )}
                     </div>
                   </div>
-                  <div style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#64748b',marginBottom:'12px',textAlign:'center',fontStyle:'italic'}}>
-                    🔒 {t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.'} • {t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'}
-                  </div>
+                  {(() => {
+                    // On-device translation: when the engine is loaded AND covers this
+                    // language pair, the FERPA note upgrades from "secure AI service" to
+                    // "stays on this device", and the enable button disappears. Stateless
+                    // by design (reads window.AlloTranslate) so there's no cross-scope
+                    // coupling in this large module.
+                    const _odActive = !!(window.AlloTranslate && typeof window.AlloTranslate.supports === 'function' && window.AlloTranslate.supports(_personALang, _personBLang));
+                    const _odPossible = !!(_personALang && _personBLang);
+                    return React.createElement('div', { style: { marginBottom: '12px', textAlign: 'center' } },
+                      React.createElement('div', { style: { fontSize: '11px', color: typeof _bt !== 'undefined' ? _bt.textMuted : '#64748b', fontStyle: 'italic', marginBottom: _odActive ? '0' : '6px' } },
+                        _odActive
+                          ? ('🔒 ' + (t('roster.bridge_f2f_ferpa_ondevice') || 'Private: translated on this device — nothing is sent out.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
+                          : ('🔒 ' + (t('roster.bridge_f2f_ferpa') || 'Private: never saved or synced. Translation is processed by a secure AI service.') + ' • ' + (t('roster.bridge_f2f_both_speak') || 'Both sides speak or type in their own language'))
+                      ),
+                      (!_odActive && _odPossible) ? React.createElement('button', {
+                        onClick: async () => {
+                          addToast(t('roster.bridge_ondevice_loading') || 'Loading on-device translation…', 'info');
+                          try {
+                            if (!window.AlloTranslate && window.__alloLoadPlugin) { await window.__alloLoadPlugin('translate_loader.js'); }
+                            if (window.AlloTranslate && window.AlloTranslate.supports(_personALang, _personBLang)) {
+                              const ok = await window.AlloTranslate.preload(_personALang, _personBLang);
+                              addToast(ok ? (t('roster.bridge_ondevice_ready') || 'On-device translation on — this language pair now stays on your device.') : (t('roster.bridge_ondevice_pair_na') || 'No on-device model for this pair yet; using the secure service.'), ok ? 'success' : 'info');
+                            } else {
+                              addToast(t('roster.bridge_ondevice_pair_na') || 'On-device translation isn\'t available for this language pair yet; using the secure service.', 'info');
+                            }
+                          } catch (_e) {
+                            addToast(t('roster.bridge_ondevice_failed') || 'Could not load on-device translation; using the secure service.', 'info');
+                          }
+                        },
+                        title: t('roster.bridge_ondevice_hint') || 'Download a small model so this language pair translates on your device, with nothing sent out',
+                        style: { fontSize: '11px', fontWeight: 600, color: '#0e7490', background: 'rgba(14,116,144,0.08)', border: '1px solid rgba(14,116,144,0.3)', borderRadius: '999px', padding: '3px 12px', cursor: 'pointer' }
+                      }, '🔒 ' + (t('roster.bridge_ondevice_enable') || 'Translate on this device (private)')) : null
+                    );
+                  })()}
                   {_bridgePhrasesPanel(_stagePhrase, bridgeF2FTranslating, t, _bt, { phrases: bridgeGenPhrases, onGenerate: _generatePhrases, loading: bridgeGenLoading, activeCat: bridgePhraseCat, onCat: setBridgePhraseCat })}
                   {_bridgeAiBar((q) => _askAI(q), _exportTranscript, bridgeF2FTranslating, t, _bt)}
                   <div id="bridge-f2f-messages" role="log" aria-live="polite" aria-relevant="additions text" aria-atomic="false" aria-label={t('roster.bridge_f2f_thread_label') || 'Conversation'} style={{
