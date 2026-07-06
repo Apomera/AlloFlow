@@ -104,14 +104,6 @@ function buildAlloCommands(ctx) {
       c.openSymbolStudio();
       return t("cmd.open_symbol_studio_done", "Symbol Studio opened.");
     } },
-    { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open the Video Studio"), aliases: ["video studio", "screen record", "screen recording", "record my screen", "record a video", "video demo", "screencast", "caption a video", "add captions", "edit a video", "import a video", "trim a video"], hint: t("cmd.open_video_studio_hint", "Record, import, trim & caption videos"), run: (c) => {
-      c.openVideoStudio();
-      return t("cmd.open_video_studio_done", "Video Studio opened.");
-    } },
-    { id: "open_allo_studio", opensPanel: "alloStudio", icon: "\u{1F3A8}", roles: "teacher", label: t("cmd.open_allo_studio", "Open AlloStudio (flyers & worksheets)"), aliases: ["allostudio", "allo studio", "studio", "flyer", "make a flyer", "poster", "make a poster", "worksheet designer", "design a worksheet", "canva", "design tool"], hint: t("cmd.open_allo_studio_hint", "Design accessible flyers, worksheets & posters"), run: (c) => {
-      c.openAlloStudio();
-      return t("cmd.open_allo_studio_done", "AlloStudio opened.");
-    } },
     { id: "open_accessibility_lab", opensPanel: "accessibilityLab", icon: "\u267F", roles: "teacher", label: t("cmd.open_accessibility_lab", "Open the Accessibility Lab"), aliases: ["accessibility lab", "a11y lab", "accessibility checker", "wcag", "contrast checker"], hint: t("cmd.open_accessibility_lab_hint", "Check & improve accessibility"), run: (c) => {
       c.openAccessibilityLab();
       return t("cmd.open_accessibility_lab_done", "Accessibility Lab opened.");
@@ -127,6 +119,10 @@ function buildAlloCommands(ctx) {
     { id: "open_dynamic_assessment", opensPanel: "dynamicAssessment", icon: "\u{1F4CA}", roles: "teacher", label: t("cmd.open_dynamic_assessment", "Open Dynamic Assessment"), aliases: ["dynamic assessment", "progress monitoring", "probe", "cbm", "assessment"], hint: t("cmd.open_dynamic_assessment_hint", "Run a dynamic assessment"), run: (c) => {
       c.openDynamicAssessment();
       return t("cmd.open_dynamic_assessment_done", "Dynamic Assessment opened.");
+    } },
+    { id: "open_reading_library", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.open_reading_library", "Open the Reading Library"), aliases: ["reading library", "library", "books", "picture books", "storyweaver", "read a book"], hint: t("cmd.open_reading_library_hint", "Browse open picture books in 10 languages"), run: (c) => {
+      c.openReadingLibrary();
+      return t("cmd.open_reading_library_done", "Reading Library opened.");
     } },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
     { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
@@ -615,6 +611,7 @@ const CMD_GROUP = {
   open_lumen: "tools",
   open_community_catalog: "tools",
   open_dynamic_assessment: "tools",
+  open_reading_library: "tools",
   stop_reading: "accessibility",
   toggle_mute: "accessibility",
   line_spacing_more: "accessibility",

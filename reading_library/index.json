@@ -1,0 +1,1173 @@
+{
+ "schema": "allo-reading-library-index@1",
+ "generatedAt": "2026-07-06T02:33:20.185Z",
+ "attribution": {
+  "text": "Books from StoryWeaver, an open library by Pratham Books. Licensed CC BY 4.0.",
+  "url": "https://storyweaver.org.in",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+ },
+ "languages": [
+  {
+   "name": "English",
+   "code": "en",
+   "count": 16
+  },
+  {
+   "name": "Spanish",
+   "code": "es",
+   "count": 8
+  },
+  {
+   "name": "French",
+   "code": "fr",
+   "count": 6
+  },
+  {
+   "name": "Arabic",
+   "code": "ar",
+   "count": 5
+  },
+  {
+   "name": "Hindi",
+   "code": "hi",
+   "count": 4
+  },
+  {
+   "name": "Portuguese",
+   "code": "pt",
+   "count": 4
+  },
+  {
+   "name": "Vietnamese",
+   "code": "vi",
+   "count": 3
+  },
+  {
+   "name": "Russian",
+   "code": "ru",
+   "count": 2
+  },
+  {
+   "name": "German",
+   "code": "de",
+   "count": 2
+  },
+  {
+   "name": "Haitian Creole",
+   "code": "ht",
+   "count": 2
+  }
+ ],
+ "books": [
+  {
+   "slug": "16411-too-big-too-small",
+   "title": "Too Big! Too Small!",
+   "description": "Shanu is too big for Ammi to carry. And too small to go to school alone. Are you too small to read this story on your own? Or are you too big to have someone read it aloud with you? Open it and find out!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/42852/size3/0a1060a113ec19cf656ea8d7ef5b0ad9.jpg",
+   "authors": [
+    "Lavanya Karthik"
+   ],
+   "illustrators": [
+    "Lavanya Karthik"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 193,
+   "file": "books/16411-too-big-too-small.json"
+  },
+  {
+   "slug": "48016-gappu-can-t-dance",
+   "title": "Gappu Can't Dance",
+   "description": "Everyone in Class 1A knows Gappu can’t dance. When the students raise their left hand, she raises her right! Can Komal Ma’am get Gappu to dance? A story about the joy of dancing, using the concept of opposites.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/87073/size3/68a0d3d182c04e01576caea671cc33bf.jpg",
+   "authors": [
+    "Menaka Raman"
+   ],
+   "illustrators": [
+    "Krishna Chandran"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 146,
+   "file": "books/48016-gappu-can-t-dance.json"
+  },
+  {
+   "slug": "356-lost-and-found",
+   "title": "Lost and Found",
+   "description": "A little boy looks for something he has lost and guess what happens when he finds it? Read on to find out for yourself.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/709189/size3/097ef1a9bc1497c04e9ec0987d19adac.jpg",
+   "authors": [
+    "Sukhada Rahalkar"
+   ],
+   "illustrators": [
+    "Sukhada Rahalkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 149,
+   "file": "books/356-lost-and-found.json"
+  },
+  {
+   "slug": "11537-the-mango-tree",
+   "title": "The Mango Tree",
+   "description": "A little girl loves to hide in a big mango tree. Guess who finds her in the end?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/33304/size3/23a920a3cbb156501ad40ddc9e72c040.jpg",
+   "authors": [
+    "Kanchan Bannerjee"
+   ],
+   "illustrators": [
+    "Kavya Singh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 6,
+   "wordCount": 73,
+   "file": "books/11537-the-mango-tree.json"
+  },
+  {
+   "slug": "10118-ammachi-s-amazing-machines",
+   "title": "Ammachi's Amazing Machines",
+   "description": "Sooraj and his grandma LOVE inventing! Join them on their latest adventure: using simple machines to make coconut barfi!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712718/size3/9afb2c00f7a211ff4c8699e66ca7db0b.jpg",
+   "authors": [
+    "Rajiv Eipe"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 187,
+   "file": "books/10118-ammachi-s-amazing-machines.json"
+  },
+  {
+   "slug": "12433-angry-akku",
+   "title": "Angry Akku",
+   "description": "Akku is having an awful day and it’s making her very, VERY angry. Read this book to find out how Akku's anger melts away, and get ideas on what to do when YOU are very, VERY angry. \r\n\r\n",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724106/size3/155d8763546a35c51598f2685d431da9.jpg",
+   "authors": [
+    "Vinayak Varma"
+   ],
+   "illustrators": [
+    "Vinayak Varma"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 16,
+   "wordCount": 582,
+   "file": "books/12433-angry-akku.json"
+  },
+  {
+   "slug": "27121-when-will-amma-be-back",
+   "title": "When Will Amma Be Back?",
+   "description": "Roja’s mother leaves for work early in the day. She promises to be back by bedtime. What will Roja do all day without Amma?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/524572/size3/86f5aa351b9a396b64694cb8b5f0a555.jpg",
+   "authors": [
+    "Prathiba Swaminathan"
+   ],
+   "illustrators": [
+    "Alankrita Amaya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 443,
+   "file": "books/27121-when-will-amma-be-back.json"
+  },
+  {
+   "slug": "61394-get-down-rocky",
+   "title": "Get Down, Rocky!",
+   "description": "When Rocky gets stuck on the roof of a church, Rose’s family and neighbours try to bring him down. Will they be able to rescue Rocky?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/715409/size3/357ef96463dde52d13f40e061e9e5bd2.jpg",
+   "authors": [
+    "Annie Besant"
+   ],
+   "illustrators": [
+    "Sandhya Prabhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 169,
+   "file": "books/61394-get-down-rocky.json"
+  },
+  {
+   "slug": "26727-welcome-to-the-forest",
+   "title": "Welcome to the Forest",
+   "description": "Tulsa is off to Kanha Tiger Reserve with her school friends. Along with the forest officials, the students experience the jungle in a unique and exciting way.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/56725/size3/0951a30ed615604061a6cdd18c4778f6.jpg",
+   "authors": [
+    "Bhavna Menon"
+   ],
+   "illustrators": [
+    "Kavita Singh Kale"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 20,
+   "wordCount": 830,
+   "file": "books/26727-welcome-to-the-forest.json"
+  },
+  {
+   "slug": "59108-the-girl-who-could-not-stop-laughing",
+   "title": "The Girl Who Could Not Stop Laughing",
+   "description": "Every day T. Sundari gets into trouble because most things make her laugh. She just cannot keep her mouth sealed. T. Sundari wants to know if something is wrong with her. Because if there isn't, she can laugh all the time!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/718145/size3/8f27fe5f72c50232be4f992cd4a2eaea.jpg",
+   "authors": [
+    "Meera Ganapathi"
+   ],
+   "illustrators": [
+    "ROSH"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 21,
+   "wordCount": 911,
+   "file": "books/59108-the-girl-who-could-not-stop-laughing.json"
+  },
+  {
+   "slug": "11627-a-butterfly-smile",
+   "title": "A Butterfly Smile",
+   "description": "Kavya’s family has just moved from her village to Bengaluru and she is the newest girl in her class. Go along with Kavya as she visits a butterfly park where she discovers a special connection with butterflies and also makes a new friend. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+   "authors": [
+    "Mathangi  Subramanian "
+   ],
+   "illustrators": [
+    "Lavanya  Naidu"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 807,
+   "file": "books/11627-a-butterfly-smile.json"
+  },
+  {
+   "slug": "355071-sweet-sunday",
+   "title": "Sweet Sunday",
+   "description": "Simran, Jeet and Veer go to Manjit Paaji’s sweet shop to buy their favourite goodies. Watch Manjit Paaji weigh the treats and find out how much each of them buys at the shop.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/446383/size3/1fe4f6c5ed6cb8dd64f42353919bef98.jpg",
+   "authors": [
+    "Geetha Rao"
+   ],
+   "illustrators": [
+    "Sanika Phawde"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 240,
+   "file": "books/355071-sweet-sunday.json"
+  },
+  {
+   "slug": "34911-the-case-of-the-missing-water",
+   "title": "The Case of the Missing Water",
+   "description": "When the tank in Ranj’s village dries up, she sets out on a mission to find the missing water. Join Detective Ranj on the case.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/724112/size3/1c190e70406411ab7431038cc2aaea88.jpg",
+   "authors": [
+    "Shalini  Srinivasan "
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 1053,
+   "file": "books/34911-the-case-of-the-missing-water.json"
+  },
+  {
+   "slug": "95649-who-stole-bhaiya-s-smile",
+   "title": "Who Stole Bhaiya's Smile?",
+   "description": "Bhaiya doesn’t feel like playing these days. Could it be because of his new monster friend Dukduk, who is always hanging around him? No one in the family takes Bhaiya seriously. But Chiru knows there’s more than what meets the eye. A story about the lingering effects of depression.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/524480/size3/06c407a5aec36554f78c7d6dbddfbb88.jpg",
+   "authors": [
+    "Sanjana  Kapur"
+   ],
+   "illustrators": [
+    "Sunaina  Coelho"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 727,
+   "file": "books/95649-who-stole-bhaiya-s-smile.json"
+  },
+  {
+   "slug": "50898-there-s-a-hole-in-my-galaxy",
+   "title": "There's a Hole in my Galaxy",
+   "description": "Three friends blast off from Earth in a rocket to explore the Solar System. Suddenly, they find themselves being pulled by a black hole. Do they manage to escape? Find out what happens on this space odyssey.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717893/size3/fd72155d5f986ecb1b1e0afa27f5da77.jpg",
+   "authors": [
+    "Ananya Dasgupta"
+   ],
+   "illustrators": [
+    "Chaaya Prabhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 1202,
+   "file": "books/50898-there-s-a-hole-in-my-galaxy.json"
+  },
+  {
+   "slug": "50835-the-mystery-of-the-cyber-friend",
+   "title": "The Mystery of the Cyber Friend",
+   "description": "Shree loves learning new things on the computer. It has games and it has social media sites! She is thrilled to make a new friend on one such site. But is this friend lying to her? Find out for yourself in this cyber thriller.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717889/size3/8ee1bc5bd72569dbc8976fffc65deeb0.jpg",
+   "authors": [
+    "Zac  O'Yeah"
+   ],
+   "illustrators": [
+    "Niloufer Wadia"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 25,
+   "wordCount": 1450,
+   "file": "books/50835-the-mystery-of-the-cyber-friend.json"
+  },
+  {
+   "slug": "423522-all-jumbled-up",
+   "title": "¡Todo revuelto!",
+   "description": "Ammu está lista para salir al escenario pero no puede recordar sus líneas. Mucha diversión a la par que va mezclando sus líneas.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727060/size3/c9b0c085cabd2aea8920ddfc909b90f4.jpg",
+   "authors": [
+    "Némesis Zerga"
+   ],
+   "illustrators": [
+    "Sheena Deviah"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 152,
+   "file": "books/423522-all-jumbled-up.json"
+  },
+  {
+   "slug": "594896-hello-sun",
+   "title": "¡Hola, Sol!",
+   "description": "Saluda a las maravillas. Dí '¡Hola!' a los milpiés, ranas, barbets y todo lo que bajo el sol llama a la Tierra, su hogar. Y esto te incluye a ti.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726226/size3/0ff44e83f3466f1771fe9684c2689aea.jpg",
+   "authors": [
+    "Némesis Zerga"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 145,
+   "file": "books/594896-hello-sun.json"
+  },
+  {
+   "slug": "448563-with-you-ma",
+   "title": "¡Contigo, Ma!",
+   "description": "Aady se rehúsa a hacer algo sin su 'Ma', ya sea si están haciendo las maletas para su fin de semana en Assam o si juegan en el río. ¿Este viaje hará a Aadya más independiente?",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/727165/size3/4732117263204c3711957aac53a0efbe.jpg",
+   "authors": [
+    "Némesis Zerga"
+   ],
+   "illustrators": [
+    "Amalendu Kaushik"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 296,
+   "file": "books/448563-with-you-ma.json"
+  },
+  {
+   "slug": "432039-tara-s-treetop-adventure",
+   "title": "Tara de aventura en las copas de los árboles",
+   "description": "Un cuento de altura sobre la increíble aventura de una joven con hojas risueñas, ardillas chirriantes y aviones morados.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725181/size3/1eecde11730d4c7871996ca387dfe6bd.jpg",
+   "authors": [
+    "Susana Ramírez"
+   ],
+   "illustrators": [
+    "Sarthak Sinha"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 164,
+   "file": "books/432039-tara-s-treetop-adventure.json"
+  },
+  {
+   "slug": "396205-a-dog-called-shoo",
+   "title": "Un perro llamado 'Shu'",
+   "description": "'¡Shuu!', dicen todos los que ven a la perrita marrón. Lo oye tan a menudo que empieza a pensar que es su nombre. Hasta que un niño que toma un atajo para volver a casa, decide compartir su almuerzo con ella...",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723776/size3/3c4685534dd86b57918f11d2c9c9e01b.jpg",
+   "authors": [
+    "Susana Ramírez"
+   ],
+   "illustrators": [
+    "Sarthak Sinha"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 406,
+   "file": "books/396205-a-dog-called-shoo.json"
+  },
+  {
+   "slug": "425356-maya-the-warrior",
+   "title": "Maya la guerrera",
+   "description": "Maya siente que no está perteneciendo. Siente que no encaja con las chicas y chicos de su clase. Síguela en su viaje de autoconocimiento. Un libro ilustrado sobre aprender a amarse a uno mismo.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/716362/size3/8fcefdc21a57b30da3233cf571ec89f8.jpg",
+   "authors": [
+    "Helena Arami"
+   ],
+   "illustrators": [
+    "Priya Dali"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 18,
+   "file": "books/425356-maya-the-warrior.json"
+  },
+  {
+   "slug": "424089-you-won-t-believe-me",
+   "title": "No me creerás",
+   "description": "Este es un niño al que le encanta el colegio, pero quizás a la inversa no. Sus compañeros le molestan. Sus profesores le gritan. Pero hay un estanque lleno de peces donde descubre que no ha estado solo.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/779402/size3/042eb258adf24d4467bf65854d88621c.jpg",
+   "authors": [
+    "Némesis Zerga"
+   ],
+   "illustrators": [
+    "Bhargavi Rudraraju"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 776,
+   "file": "books/424089-you-won-t-believe-me.json"
+  },
+  {
+   "slug": "432310-a-stitch-in-time",
+   "title": "Un arreglo a tiempo",
+   "description": "Primero, una camisa rasgada y luego, una plancha defectuosa. El día acaba de empezar para Shyam. Como todo va mal, uno tras otro, Shrisha le lleva a Reparación Mela donde se puede arreglar casi todo.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717377/size3/de7ac270e794445be00068049e544ed0.jpg",
+   "authors": [
+    "Susana Ramírez"
+   ],
+   "illustrators": [
+    "Ankitha Kini"
+   ],
+   "publisher": "CuenTale Cuentoteca digital",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 985,
+   "file": "books/432310-a-stitch-in-time.json"
+  },
+  {
+   "slug": "14413-lara-the-yellow-ladybird",
+   "title": "Lara, la coccinelle jaune",
+   "description": "Un insecte jaune dans un monde rouge, Lara, la coccinelle, veut seulement être en harmonie avec les autres.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/527552/size3/0e134808094d26d5824406a78f24b74f.jpg",
+   "authors": [
+    "Cyrille Largillier"
+   ],
+   "illustrators": [
+    "Catherine Holtzhausen"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 261,
+   "file": "books/14413-lara-the-yellow-ladybird.json"
+  },
+  {
+   "slug": "4176-i-want-that-one",
+   "title": "Je veux celui-là!",
+   "description": "'Pas celui-là,' dit la maman d'Anil lorsque celui-ci réclame quelque chose. 'Pas celui-là', lui répondent également tous les marchands. Tout cela met forcément le petit garçon très en colère! ",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697280/size3/aba9bf37b8d832ad403892121fde5991.jpg",
+   "authors": [
+    "Sak Untala"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 322,
+   "file": "books/4176-i-want-that-one.json"
+  },
+  {
+   "slug": "4196-it-is-all-the-cats-fault",
+   "title": "C'est de la faute du chat!",
+   "description": "Dans cette histoire, le petit garçon n'a pas pu faire ses devoirs à cause d'un chat espiègle. Cette excuse ne te semble pas très valable? Eh bien, découvre ce qui est arrivé au petit garçon et tu comprendras qu'une chose peut en entraîner une autre, puis une autre, puis encore une autre...",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+   "authors": [
+    "Sak Untala"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 208,
+   "file": "books/4196-it-is-all-the-cats-fault.json"
+  },
+  {
+   "slug": "62975-le-bebe-elephant-est-tres-curieux",
+   "title": "Le Bébé Éléphant Est Très Curieux",
+   "description": "Did you know that an elephant's trunk was really short? But then how did it become so long?",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/126984/size3/3aa2f0a919d25e463ac0ec847afc5a80.jpg",
+   "authors": [
+    "Isabelle  Duston",
+    "Veronique Biddau"
+   ],
+   "illustrators": [
+    "Wiehan de Jager"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 20,
+   "wordCount": 339,
+   "file": "books/62975-le-bebe-elephant-est-tres-curieux.json"
+  },
+  {
+   "slug": "43262-how-heavy-is-heavy",
+   "title": "C'est lourd comment ?",
+   "description": "Un caillou est plus lourd qu'une plume, mais plus léger qu'une pierre. Du coup, est-il lourd ou léger ? Peut-on savoir précisément à quel point un caillou est lourd ou léger ? Viens découvrir les réponses fascinantes à ces questions dans ce livre amusant sur le poids.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/714192/size3/f84b89b4e29caf6ef8a5b8b5e542bf4c.jpg",
+   "authors": [
+    "Sak Untala"
+   ],
+   "illustrators": [
+    "Hari Kumar Nair"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 1097,
+   "file": "books/43262-how-heavy-is-heavy.json"
+  },
+  {
+   "slug": "98302-anansi-la-faineante",
+   "title": "Anansi, La Fainéante",
+   "description": "The reason why spiders have long thin legs.\r\n",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/141916/size3/8c5af656393928f97fa73d07f95af337.jpg",
+   "authors": [
+    "Isabelle Barth",
+    "Translators withoutBorders"
+   ],
+   "illustrators": [
+    "Wiehan de Jager"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 456,
+   "file": "books/98302-anansi-la-faineante.json"
+  },
+  {
+   "slug": "226623-alnahla-wa-alfeel",
+   "title": "النَّحْلَةُ والفِيلُ",
+   "description": "يُحَاوِلُ الْفِيلُ أَنْ يُسَاعِدَ نَحْلَةً صَغِيرَةً تَائِهَةً لِتَجِدَ بَيْتَهَا. هَلْ هُوَ الْعُشُّ؟ أَمِ الْكَهْفُ؟ أَيْنَ تَعِيشُ النَّحْلَةُ؟",
+   "language": "Arabic",
+   "langCode": "ar",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101349/size3/39f8b81749a713480835e9f715fadc44.jpg",
+   "authors": [
+    "Dana Thabet "
+   ],
+   "illustrators": [
+    "Try Samphos"
+   ],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": true,
+   "pageCount": 9,
+   "wordCount": 69,
+   "file": "books/226623-alnahla-wa-alfeel.json"
+  },
+  {
+   "slug": "237670-alu-malu-kalu",
+   "title": "آلُو-مَالُو-كَالُو",
+   "description": "ذَاتَ يَوْمٍ، كَانَ يَجِبُ عَلَى مَالُو أَنْ يَحْصُدَ بَعْضَ الْبَطَاطَا مِنْ حَدِيقَةِ مَطْبَخِ جَدَّتِهِ، لَكِنَّهُ لَمْ يَسْتَطِعِ الْعُثُورَ عَلَى أَيٍّ مِنْهَا. وَعِنْدَهَا سَاعَدَهُ كَالُو فِي كَشْفِ الْبَطَاطَا الْمَخْفِيَّةِ.",
+   "language": "Arabic",
+   "langCode": "ar",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703824/size3/e58cf9e6698ff1d6a72c150d34efe53e.jpg",
+   "authors": [
+    "Nouda Nasser"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 118,
+   "file": "books/237670-alu-malu-kalu.json"
+  },
+  {
+   "slug": "228795-alat-jadati-almud-hisha",
+   "title": "آلَاتُ جَدَّتِي الْمُدْهِشَةُ",
+   "description": "الْفَتَى سُورَاجُ وَجَدَّتُهُ يُحِبَّانِ الِاخْتِرَاعَاتِ! انْضَمُّوا إِلَيْهِمَا فِي أَحْدَثِ مُغَامَرَاتِهِمَا: اسْتِخْدَامُ آلَاتٍ بَسِيطَةٍ لِصُنْعِ بَارْفِيهِ بِجَوْزِ الْهِنْدِ!",
+   "language": "Arabic",
+   "langCode": "ar",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712718/size3/9afb2c00f7a211ff4c8699e66ca7db0b.jpg",
+   "authors": [
+    "Faten Ashour"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 176,
+   "file": "books/228795-alat-jadati-almud-hisha.json"
+  },
+  {
+   "slug": "228311-ma-hathih-alraayiha",
+   "title": "ما هذه الرائحة؟",
+   "description": "هناك أحدٌ ما يأكل كل طعام ماداف وتارا. مخلوقات غريبة، أم وحوش غامضة، أم شيء مخفي؟ من قد يكون؟",
+   "language": "Arabic",
+   "langCode": "ar",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/714317/size3/943de6f6a8d5ef43d1bb7b9147b1ca58.jpg",
+   "authors": [
+    "Ayesha  Negm"
+   ],
+   "illustrators": [
+    "Tarique Aziz"
+   ],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 572,
+   "file": "books/228311-ma-hathih-alraayiha.json"
+  },
+  {
+   "slug": "230330-urid-an-arkab-daraja-nariya",
+   "title": "أريد أن أركب دراجة نارية",
+   "description": "ضياء مفتونة بالدراجات النارية، وتنتظر بفارغ الصبر بلوغ السادسة عشرة حتى تتمكن من قيادة واحدة، خاصة بعدما اكتشفت أن خالتها راكبة دراجات نارية! قصة شائقة تتحدث عن الهوية وحرية الاختيار.",
+   "language": "Arabic",
+   "langCode": "ar",
+   "isRtl": true,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495468/size3/3b0b9d1cb17d8f956ae21aa3c83c2e18.jpg",
+   "authors": [
+    "Nouda Nasser"
+   ],
+   "illustrators": [
+    "Rai"
+   ],
+   "publisher": "Education Above All (EAA)",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 1085,
+   "file": "books/230330-urid-an-arkab-daraja-nariya.json"
+  },
+  {
+   "slug": "16139-sair-sapata",
+   "title": "सैर सपाटा",
+   "description": "पाँच दोस्त जब सैर सपाटा करने जाते हैं तो बड़ा मज़ा आता है।\r\nऔर नए चटपटे खाने के तो क्या कहने!\r\n",
+   "language": "Hindi",
+   "langCode": "hi",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721729/size3/5342c4c88d17f024b62f9c5f7701fd3f.jpg",
+   "authors": [
+    "Amar  Goswami"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 119,
+   "file": "books/16139-sair-sapata.json"
+  },
+  {
+   "slug": "10558-chooha-sikandar-ghar-ke-andar",
+   "title": "चूहा सिकंदर, घर के अंदर",
+   "description": "एक चूहा घर में दाखिल होता है। फिर वहाँ अफरातफरी मच जाती है। पेश है बच्चों के लिए जोश से भरी यह कहानी। ",
+   "language": "Hindi",
+   "langCode": "hi",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/699239/size3/64aac1468dabc0be40ef455f26448dd6.jpg",
+   "authors": [
+    "Poonam S. Kudesia"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 300,
+   "file": "books/10558-chooha-sikandar-ghar-ke-andar.json"
+  },
+  {
+   "slug": "987-tak-tak",
+   "title": "टक टक",
+   "description": "सोनापुर के भोजनभट्ट राजा अपने कक्ष में आती रहस्यमयी आवाज़ के कारण सो नहीं पाए। यह रहस्यमयी आवाज़ किस की थी?",
+   "language": "Hindi",
+   "langCode": "hi",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/706157/size3/93c759f49808e92b7f9cefb99d3989f4.jpg",
+   "authors": [
+    "Madhu B. Joshi"
+   ],
+   "illustrators": [
+    "Reshma Barve"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 969,
+   "file": "books/987-tak-tak.json"
+  },
+  {
+   "slug": "10160-chipko-chipko-vriksh-bachao",
+   "title": "चिपको चिपको वृक्ष बचाओ",
+   "description": "ऊँचे पहाड़ों की यह कहानी बतलाती है कि हौंसला हो तो क्या कुछ नहीं हो सकता। एक भोटिया लड़की दिची, अपने प्यारे पेड़ों को बचाने के लिए चिपको आंदोलन का सहारा लेती है। उनके गाँव में हर कोई जानता है कि जीवन की सब ज़रूरी चीज़ें पेड़ों से आती हैं। अलकनन्दा नदी के हिमालय क्षेत्र में पेड़ों के भारी कटाव से १९७० के दशक में बहुत बा़ढ आई। इसने पेड़ों से लिपट कर उन्हें काटने से बचाने के आंदोलन को जन्म दिया। इस दिल को छू लेने वाली कहानी को पढ़िए और देखिए कि एकता की ताकत क्या होती है।",
+   "language": "Hindi",
+   "langCode": "hi",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/29172/size3/d13859ef173ca4ad6a2462e70e5d344a.jpg",
+   "authors": [
+    "Rishi Mathur"
+   ],
+   "illustrators": [
+    "Jeyanthi Manokaran"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 3288,
+   "file": "books/10160-chipko-chipko-vriksh-bachao.json"
+  },
+  {
+   "slug": "97809-papa",
+   "title": "Papa",
+   "description": "Mom is away and Dad is making the morning porridge.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/151769/size3/773091332b87122b8e66a39000540408.jpg",
+   "authors": [
+    "Rossana  Lima",
+    "Translators withoutBorders"
+   ],
+   "illustrators": [
+    "Catherine Groenewald"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 112,
+   "file": "books/97809-papa.json"
+  },
+  {
+   "slug": "66545-grande-autocarro-azul",
+   "title": "Grande Autocarro Azul",
+   "description": "Ebei and his mother are waiting for the big blue bus. Where is it?",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/107452/size3/331fa967ec1b9549aeaa595d8752f713.jpg",
+   "authors": [
+    "Andréa Marroquim",
+    "Translators withoutBorders"
+   ],
+   "illustrators": [
+    "Mango  Tree"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 291,
+   "file": "books/66545-grande-autocarro-azul.json"
+  },
+  {
+   "slug": "65579-o-frango-e-o-gongolo",
+   "title": "O Frango E O Gongolo",
+   "description": "An adorable tale on why chicken and millipedes are enemies.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/126966/size3/00f41c902b3ca2a809716cc279a695ab.jpg",
+   "authors": [
+    "Andréa Marroquim",
+    "Translators withoutBorders"
+   ],
+   "illustrators": [
+    "Magriet Brink"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 291,
+   "file": "books/65579-o-frango-e-o-gongolo.json"
+  },
+  {
+   "slug": "95902-anansi-da-as-historias-as-pessoas",
+   "title": "Anansi Dá As Histórias Às Pessoas",
+   "description": "Long ago, the sky kept all stories locked up in a wooden box. People asked clever Anansi to ask the sky god for the stories. The sky god agreed, but only if Anansi performed three seemingly impossible tasks.\r\nRead Story",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/137799/size3/63c23317d8a03be42e4ee2b01f280188.jpg",
+   "authors": [
+    "Nadia Morais",
+    "Translators withoutBorders"
+   ],
+   "illustrators": [
+    "Wiehan de Jager"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 588,
+   "file": "books/95902-anansi-da-as-historias-as-pessoas.json"
+  },
+  {
+   "slug": "105422-to-di-hoc",
+   "title": "Tớ đi học",
+   "description": "Tớ đi học, và trong 12 tháng, tớ học được rất nhiều điều.",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/150109/size3/8b9fc37e8dc8bfbd96ed887cd2bfc731.jpg",
+   "authors": [
+    "Do tien Duc",
+    "Hien Nguyen",
+    "Nga Vu Hong",
+    "Ngoc Phuong Luong",
+    "Nguyen Thuy Loan"
+   ],
+   "illustrators": [
+    "Imphir",
+    "San srei nou ch nou ch"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 108,
+   "file": "books/105422-to-di-hoc.json"
+  },
+  {
+   "slug": "36213-xanh-that-la-xanh",
+   "title": "Xanh thật là xanh",
+   "description": "Cô bé Xanh nghịch ngợm hôm nay biến thành một cái cây để trốn ngủ trưa, mặc cho bố tìm kiếm. Rong chơi mãi dưới ánh nắng chói chang, Xanh thấm mệt và muốn về nhà với bố, nhưng cô bé lạc đường mất rồi! Không biết phải làm thế nào, Xanh khóc mãi làm nước sông dâng cao, ngập lụt cả thành phố. Bất chợt, Xanh nghĩ ra một cách để tìm bố!",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128573/size3/1c8f6b19b30f9b21d2e8056d18a04ab7.jpg",
+   "authors": [
+    "Phạm Thu  Thùy "
+   ],
+   "illustrators": [
+    "Phạm  Thu Thùy"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 27,
+   "wordCount": 304,
+   "file": "books/36213-xanh-that-la-xanh.json"
+  },
+  {
+   "slug": "35233-cai-hat-di-lac",
+   "title": "Cái Hạt Đi Lạc",
+   "description": "Trên đường đi học về, bé tìm được một cái hạt gì lạ lắm. Bé tò mò không biết đây là hạt cây gì nhỉ. Cả nhà cũng chẳng ai biết đây là hạt gì. Thế cái hạt này từ đâu đến nhỉ?",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/120473/size3/04d2660515398946bc265fe20280ed66.jpg",
+   "authors": [
+    "Nguyễn Phạm  Tú Trinh"
+   ],
+   "illustrators": [
+    "Phan Thành  Đạt"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 407,
+   "file": "books/35233-cai-hat-di-lac.json"
+  },
+  {
+   "slug": "7498-malenkie-maljary",
+   "title": "Маленькие маляры",
+   "description": "Красить дом очень весело! Но в какой же цвет покрасить ворота?",
+   "language": "Russian",
+   "langCode": "ru",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697317/size3/fae553c96cec531f760c79641f63a924.jpg",
+   "authors": [
+    "Sonya Alexandrova"
+   ],
+   "illustrators": [
+    "Tanvi Bhat"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 156,
+   "file": "books/7498-malenkie-maljary.json"
+  },
+  {
+   "slug": "7753-den-ezhegodnoj-strizhki",
+   "title": "День Ежегодной Стрижки",
+   "description": "У Ивана Ивановича были очень длинные волосы. В День Ежегодной Стрижки он хотел их постричь. Но все были заняты. Вы никогда не угадаете, кто в итоге ему помог!",
+   "language": "Russian",
+   "langCode": "ru",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703826/size3/83b5807867d46878c98536f0356abdc2.jpg",
+   "authors": [
+    "Sonya Alexandrova"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 189,
+   "file": "books/7753-den-ezhegodnoj-strizhki.json"
+  },
+  {
+   "slug": "23786-what-will-you-find-in-my-kitchen",
+   "title": "Was findest du in meiner Küche?",
+   "description": "Töpfe, Pfannen, Löffel, Gemüse und Gas helfen uns leckeres Essen in der Küche zu zubereiten. \r\nGibt es noch etwas anderes in deiner Küche?",
+   "language": "German",
+   "langCode": "de",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/43965/size3/11274df8077741c549aa2aa11af5aa79.jpg",
+   "authors": [
+    "W.J. K"
+   ],
+   "illustrators": [
+    "Bhavana  Vyas Vipparthi",
+    "Kabini  Amin",
+    "Priya Kuriyan",
+    "Rajiv Eipe",
+    "Rijuta Ghate",
+    "Sonal Goyal",
+    "Sonal Gupta Vaswani",
+    "Sumit Sakhuja"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 16,
+   "file": "books/23786-what-will-you-find-in-my-kitchen.json"
+  },
+  {
+   "slug": "3892-german",
+   "title": "Unter dem Bett",
+   "description": "Manchmal lauern komische Dinge unter meinem Bett. Willst du wissen, was ich neulich gefunden habe?",
+   "language": "German",
+   "langCode": "de",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704859/size3/5213e3c314261561008ed455eb6d0fe7.jpg",
+   "authors": [
+    "Martina Endlein Monteiro"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 137,
+   "file": "books/3892-german.json"
+  },
+  {
+   "slug": "19572-haitian-creole",
+   "title": "Bheema, tèt la Sleepy",
+   "description": "\r\nBheema gen yon pwoblèm ke anpil nan nou gen chak maten. Li jis pa ka reveye sou tan! Yon zanmi ti ede l. Èske ou ta renmen konnen ki jan?",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+   "authors": [
+    "Francine Marquis"
+   ],
+   "illustrators": [
+    "Shweta Mohapatra"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 309,
+   "file": "books/19572-haitian-creole.json"
+  },
+  {
+   "slug": "276469-it-s-all-the-cat-s-fault",
+   "title": "Tout Sa Se Fòt Chat la!",
+   "description": "Ti gason nan istwa sa a pa t kapab fin fè devwa l poutèt yon vye chat malfezan. Sa sanble ak yon eskiz raz, pa vre? Ebyen, li pou konnen kisa ki te pase l, epi w ap wè kijan yon sèl bagay ka mennen nan yon lòt, epi nan yon lòt, epi nan yon lòt...",
+   "language": "Haitian Creole",
+   "langCode": "ht",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+   "authors": [
+    "Danielle M. Josyle"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 161,
+   "file": "books/276469-it-s-all-the-cat-s-fault.json"
+  }
+ ]
+}

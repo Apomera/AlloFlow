@@ -19,6 +19,9 @@ function LearningHubModal(props) {
     // (default false) to avoid a dead button for student/family entry points.
     setBridgeSendOpen = (() => {}),
     isTeacherMode = false,
+    // Reading Library (2026-07-05): StoryWeaver open picture books. Optional —
+    // card only renders when the host wires the setter.
+    setIsReadingLibraryOpen,
     t,
   } = props;
   return (
@@ -64,6 +67,15 @@ function LearningHubModal(props) {
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
+              {typeof setIsReadingLibraryOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsReadingLibraryOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'📚'}</span>
+                  <div>
+                    <h3 className="font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</h3>
+                    <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Real picture books in 10 languages — read along, listen, and practice'}</p>
+                  </div>
+                </button>
+              )}
               <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>

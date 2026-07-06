@@ -4757,6 +4757,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
   }, []);
   const [isCommunityCatalogOpen, setIsCommunityCatalogOpen] = useState(false);
+  // Reading Library (2026-07-05): StoryWeaver CC-BY picture books, browse + read + practice.
+  const [isReadingLibraryOpen, setIsReadingLibraryOpen] = useState(false);
   const [isAccessibilityLabOpen, setIsAccessibilityLabOpen] = useState(false);
   const [isAuditRemediatorOpen, setIsAuditRemediatorOpen] = useState(false);
   // Plan S: Quiz mode (exit-ticket | pre-check | formative | review).
@@ -5140,6 +5142,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=36c706760');
     loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=36c706760');
     loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=36c706760');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=36c706760');
     loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=36c706760');
     loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=36c706760');
     loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=36c706760');
@@ -21640,6 +21643,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           alloStudio: () => setIsAlloStudioOpen(false),
           accessibilityLab: () => setIsAccessibilityLabOpen(false),
           communityCatalog: () => setIsCommunityCatalogOpen(false),
+          readingLibrary: () => setIsReadingLibraryOpen(false),
           dynamicAssessment: () => setIsDynamicAssessmentOpen(false),
           stemLab: () => setShowStemLab(false),
           storyForge: () => setShowStoryForge(false),
@@ -21675,6 +21679,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
+      openReadingLibrary: () => setIsReadingLibraryOpen(true),
       openDynamicAssessment: () => setIsDynamicAssessmentOpen(true),
       // ── More command-coverage capabilities (2026-06-13, discovery w59vf8skj) ── each maps to ONE
       // existing host handler (verified by symbol in this file). Cycle/spacing read current state
@@ -30484,7 +30489,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             })}
         </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -31171,6 +31176,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 onClose: () => setIsCommunityCatalogOpen(false),
                 addToast,
                 loadProjectFromJson,
+            })}
+        </CDNModuleGate>
+
+        <CDNModuleGate moduleKey="ReadingLibrary" isOpen={isReadingLibraryOpen} onClose={() => setIsReadingLibraryOpen(false)} icon="📚" displayName="Reading Library" t={t}>
+            {(RL) => React.createElement(RL, {
+                isOpen: true,
+                onClose: () => setIsReadingLibraryOpen(false),
+                addToast,
+                t,
+                callGemini,
+                handleGenerate,
+                setInputText,
+                isTeacherMode,
             })}
         </CDNModuleGate>
 

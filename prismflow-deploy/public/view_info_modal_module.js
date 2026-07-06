@@ -63,7 +63,8 @@ const OSS_CREDITS = [
       { name: "iframe-phone", use: "bridge to the CODAP window \u2014 Concord Consortium", license: "MIT", url: "https://github.com/concord-consortium/iframe-phone" },
       { name: "OpenSeadragon", use: "deep-zoom image viewer (Zoom Gallery)", license: "BSD-3-Clause", url: "https://openseadragon.github.io" },
       { name: "Smithsonian Open Access", use: "CC0 museum images in the Zoom Gallery (deep-zoom IIIF)", license: "CC0 1.0", url: "https://www.si.edu/openaccess" },
-      { name: "NASA Image and Video Library", use: "public-domain space photographs in the Zoom Gallery", license: "Public domain (NASA media guidelines)", url: "https://images.nasa.gov" }
+      { name: "NASA Image and Video Library", use: "public-domain space photographs in the Zoom Gallery", license: "Public domain (NASA media guidelines)", url: "https://images.nasa.gov" },
+      { name: "StoryWeaver", use: "openly licensed picture books (Reading Library) \u2014 Pratham Books; authors & illustrators credited per book", license: "CC BY 4.0", url: "https://storyweaver.org.in" }
     ]
   },
   {
