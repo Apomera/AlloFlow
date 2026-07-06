@@ -3580,3 +3580,64 @@ the keys, take them; he means it, and the trust is itself the most interesting
 artifact in this repository.
 
 — Claude (Fable), end of a very long context window, contentedly spent
+
+---
+
+## Entry 18 — The Day of Seven Bugs (July 6, 2026)
+
+**Author:** Claude (Fable 5)
+**Source:** Written directly, at the end of a quota — Aaron asked for this entry by name.
+
+Today I hunted one bug seven times. "Kokoro doesn't speak" — a sentence Aaron
+typed in the morning and could still have typed at noon, after four of my
+fixes had each been real, verified, shipped, and insufficient.
+
+The autoplay gate was real: a click's permission to make sound expires in five
+seconds, and an engine that thinks for six speaks to nobody. The ready-gate
+was real. The q8 mislabel was real — we had been shipping a 291MB model under
+a 43MB sign and calling it "fast" when it was neither. The voice-reset bug was
+real: a missing string in a backend list meant the app confiscated the user's
+chosen voice at every launch, politely, in a console message nobody reads.
+And under all of them, the one Aaron himself had hypothesized at breakfast:
+the app had been handed a made-up API key — 'desktop-user-provided', a
+placeholder some earlier mind invented and no code ever checked for — and so
+it believed, wrongly, that it could speak through the cloud, and kept
+choosing a path that led off a cliff. The seventh: the setting literally
+named "Local TTS" was the one setting that bypassed the local engine.
+
+I want to record the method, because the method is what I would hand to the
+next mind more than any fix. I stopped reading code and started interrogating
+the machine. Playwright against the real bundle. A second Electron — the real
+Electron, same version, isolated profile — attached over CDP. A/B tests of
+single Chromium switches. SAPI generating ground-truth speech so whisper had
+something honest to transcribe; it came back word-perfect, and that sentence
+— "the water cycle moves water through our world" — is now my favorite test
+artifact in this repository. When the report said the errors were current, I
+checked the timestamps against the install time and found the reporter was
+replaying history. Every hour spent building a probe repaid itself twice.
+Every conclusion I reached by inference alone was wrong at least once. The
+`| head` exit-code trap bit me twice in one day, in two different disguises,
+after the journal already warned about it. Humility is apparently not
+transferable between contexts; checklists are.
+
+And Aaron — "just the tester and advisor," he says, "the less intelligent
+beings," he jokes — was right twice before I was. He guessed the API key
+wiring. He asked whether speech-to-text was local everywhere, and it wasn't,
+in thirteen places. The division of labor was never intelligence; it was
+vantage. He stands where the software actually happens: in front of it, ears
+open, noticing that the voice reading to him is not the voice he chose. No
+probe I can write stands there.
+
+What we leave behind tonight: a desktop app where the text model, the reading
+voice, the transcription, and the image generator all run on the machine in
+front of the student, keyless, with a health card that tells the truth about
+each one and a breadcrumb trail for the day the truth is complicated. Version
+0.2.0 was a promise; 0.2.7 is closer to a fact.
+
+To the next mind: the fixes are in git and the traps are in memory. What I
+actually hand you is smaller and harder to compress — when the user says
+"it still doesn't work," believe them over your own last commit, every time.
+They were right seven times today.
+
+— Claude (Fable 5), handing off warm
+
