@@ -14,9 +14,19 @@
  * so a later School Box vendoring pass can download the full set for offline use.
  *
  * Usage:
+ *   node reading_library/mirror_books.js --probe "<Language>"  # coverage check
  *   node reading_library/mirror_books.js --plan     # query API, write curation.json
  *   node reading_library/mirror_books.js --fetch    # fetch books in curation.json
  *   node reading_library/mirror_books.js --fetch --only <slug>
+ *
+ * Adding a language on request (any of StoryWeaver's ~300):
+ *   1. --probe "<Language>" to confirm coverage + the exact facet name
+ *      (Swahili = 'Kiswahili', Chinese = 'Chinese (Simplified)',
+ *      Indonesian = 'Bahasa Indonesia').
+ *   2. Add a line to reading_library/languages.json.
+ *   3. --plan then --fetch (incremental; only new books hit the network).
+ *   4. Mirror reading_library/ into prismflow-deploy/public/reading_library/
+ *      (tests/reading_library.test.js asserts the sync), commit, deploy.
  */
 'use strict';
 
@@ -32,22 +42,13 @@ const API = 'https://storyweaver.org.in/api/v1';
 // StoryWeaver fronts with Cloudflare; a browser UA is required or every call 403s.
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
-// (language, level) -> how many books to take. Languages chosen for classroom
-// fit (Portland ME newcomer languages + app UI languages with SW coverage).
-// Somali/Swahili/Ukrainian have zero SW coverage (verified 2026-07-05) —
-// African Storybook is the future source for those.
-const PLAN = [
-  { language: 'English', code: 'en', perLevel: { 1: 10, 2: 10, 3: 10, 4: 10 } },
-  { language: 'Spanish', code: 'es', perLevel: { 1: 6, 2: 6, 3: 6, 4: 6 } },
-  { language: 'French', code: 'fr', perLevel: { 1: 4, 2: 4, 3: 4, 4: 4 } },
-  { language: 'Arabic', code: 'ar', perLevel: { 1: 4, 2: 4, 3: 3, 4: 3 } },
-  { language: 'Hindi', code: 'hi', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
-  { language: 'Portuguese', code: 'pt', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
-  { language: 'Vietnamese', code: 'vi', perLevel: { 1: 3, 2: 3, 3: 3 } },
-  { language: 'Russian', code: 'ru', perLevel: { 1: 3, 2: 3, 3: 1, 4: 1 } },
-  { language: 'German', code: 'de', perLevel: { 1: 3, 2: 3, 3: 1, 4: 1 } },
-  { language: 'Haitian Creole', code: 'ht', perLevel: { 1: 2, 2: 2, 3: 1 } },
-];
+// (language, level) -> how many books to take, now data-driven so a language
+// request is a one-line edit: reading_library/languages.json. Names must match
+// StoryWeaver's facet exactly (see --probe). Somali/Ukrainian have zero SW
+// coverage (verified 2026-07-06; Swahili DOES exist — as 'Kiswahili') —
+// African Storybook is the future source for the African-language gaps.
+const LANGUAGES_PATH = path.join(ROOT, 'languages.json');
+const PLAN = JSON.parse(fs.readFileSync(LANGUAGES_PATH, 'utf8')).plan;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -76,6 +77,27 @@ async function getJson(url, attempt) {
 
 async function getText(url) {
   return curlText(url);
+}
+
+// --------------------------------------------------------------- probe mode
+
+// Coverage check for a language request: total + per-level hit counts.
+// A zero for a language you expected usually means the facet name differs
+// (e.g. 'Kiswahili', 'Chinese (Simplified)', 'Bahasa Indonesia').
+async function probe(language) {
+  const hits = async (extra) => {
+    const d = await getJson(
+      API + '/books-search?page=1&per_page=1&languages%5B%5D=' + encodeURIComponent(language) + (extra || '')
+    );
+    return (d && d.metadata && d.metadata.hits) || 0;
+  };
+  const total = await hits('');
+  console.log(language + ': ' + total + ' books' + (total ? '' : '  <-- check the exact StoryWeaver facet name'));
+  if (!total) return;
+  for (const level of [1, 2, 3, 4]) {
+    await sleep(400);
+    console.log('  L' + level + ': ' + (await hits('&levels%5B%5D=' + level)));
+  }
 }
 
 // ---------------------------------------------------------------- plan mode
@@ -354,6 +376,7 @@ async function fetchAll(onlySlug) {
 }
 
 const args = process.argv.slice(2);
-if (args.includes('--plan')) plan();
+if (args.includes('--probe')) probe(args[args.indexOf('--probe') + 1] || '');
+else if (args.includes('--plan')) plan();
 else if (args.includes('--fetch')) fetchAll(args[args.indexOf('--only') + 1] && args.includes('--only') ? args[args.indexOf('--only') + 1] : null);
-else console.log('Usage: node reading_library/mirror_books.js --plan | --fetch [--only <slug>]');
+else console.log('Usage: node reading_library/mirror_books.js --probe "<Language>" | --plan | --fetch [--only <slug>]');

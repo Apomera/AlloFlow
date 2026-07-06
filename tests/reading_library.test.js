@@ -145,6 +145,35 @@ describe('textLayoutClass — picture-book text layout', () => {
   });
 });
 
+describe('language plan (reading_library/languages.json)', () => {
+  const plan = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'languages.json'), 'utf8')).plan;
+
+  it('every entry has a language, a BCP47-ish code, and per-level counts', () => {
+    expect(plan.length).toBeGreaterThanOrEqual(30);
+    plan.forEach((p) => {
+      expect(p.language.length).toBeGreaterThan(1);
+      expect(p.code).toMatch(/^[a-z]{2,3}(-[A-Za-z0-9]+)?$/);
+      const counts = Object.entries(p.perLevel);
+      expect(counts.length).toBeGreaterThan(0);
+      counts.forEach(([lvl, n]) => {
+        expect(['1', '2', '3', '4']).toContain(lvl);
+        expect(n).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  it('language names and codes are unique', () => {
+    expect(new Set(plan.map((p) => p.language)).size).toBe(plan.length);
+    expect(new Set(plan.map((p) => p.code)).size).toBe(plan.length);
+  });
+
+  it('every curated pick belongs to a planned language', () => {
+    const planned = new Set(plan.map((p) => p.language));
+    const curation = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'curation.json'), 'utf8'));
+    curation.picks.forEach((p) => expect(planned.has(p.language)).toBe(true));
+  });
+});
+
 describe('mirrored data contract (reading_library/)', () => {
   const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8'));
 
@@ -152,8 +181,8 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(index.schema).toBe('allo-reading-library-index@1');
     expect(index.attribution.text).toMatch(/StoryWeaver/);
     expect(index.attribution.licenseUrl).toMatch(/creativecommons/);
-    expect(index.books.length).toBeGreaterThanOrEqual(40);
-    expect(index.languages.length).toBeGreaterThanOrEqual(8);
+    expect(index.books.length).toBeGreaterThanOrEqual(250);
+    expect(index.languages.length).toBeGreaterThanOrEqual(30);
   });
 
   it('language counts in the index add up', () => {

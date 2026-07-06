@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-06T04:10:57.370Z",
+ "generatedAt": "2026-07-06T14:30:50.023Z",
  "attribution": {
   "text": "Books from StoryWeaver, an open library by Pratham Books. Licensed CC BY 4.0.",
   "url": "https://storyweaver.org.in",
@@ -28,6 +28,11 @@
    "count": 14
   },
   {
+   "name": "Vietnamese",
+   "code": "vi",
+   "count": 13
+  },
+  {
    "name": "Hindi",
    "code": "hi",
    "count": 12
@@ -38,8 +43,93 @@
    "count": 12
   },
   {
-   "name": "Vietnamese",
-   "code": "vi",
+   "name": "Kiswahili",
+   "code": "sw",
+   "count": 10
+  },
+  {
+   "name": "Chinese (Simplified)",
+   "code": "zh",
+   "count": 10
+  },
+  {
+   "name": "Urdu",
+   "code": "ur",
+   "count": 10
+  },
+  {
+   "name": "Bengali",
+   "code": "bn",
+   "count": 10
+  },
+  {
+   "name": "Farsi",
+   "code": "fa",
+   "count": 10
+  },
+  {
+   "name": "Nepali",
+   "code": "ne",
+   "count": 10
+  },
+  {
+   "name": "Turkish",
+   "code": "tr",
+   "count": 10
+  },
+  {
+   "name": "Tamil",
+   "code": "ta",
+   "count": 10
+  },
+  {
+   "name": "Telugu",
+   "code": "te",
+   "count": 10
+  },
+  {
+   "name": "Marathi",
+   "code": "mr",
+   "count": 10
+  },
+  {
+   "name": "Kannada",
+   "code": "kn",
+   "count": 10
+  },
+  {
+   "name": "Gujarati",
+   "code": "gu",
+   "count": 10
+  },
+  {
+   "name": "Punjabi",
+   "code": "pa",
+   "count": 10
+  },
+  {
+   "name": "Japanese",
+   "code": "ja",
+   "count": 10
+  },
+  {
+   "name": "Korean",
+   "code": "ko",
+   "count": 10
+  },
+  {
+   "name": "Italian",
+   "code": "it",
+   "count": 10
+  },
+  {
+   "name": "Bahasa Indonesia",
+   "code": "id",
+   "count": 10
+  },
+  {
+   "name": "Filipino",
+   "code": "fil",
    "count": 9
   },
   {
@@ -53,8 +143,58 @@
    "count": 8
   },
   {
+   "name": "Thai",
+   "code": "th",
+   "count": 8
+  },
+  {
+   "name": "Khmer",
+   "code": "km",
+   "count": 8
+  },
+  {
+   "name": "Amharic",
+   "code": "am",
+   "count": 7
+  },
+  {
+   "name": "Pashto",
+   "code": "ps",
+   "count": 7
+  },
+  {
+   "name": "Burmese",
+   "code": "my",
+   "count": 5
+  },
+  {
+   "name": "Kinyarwanda",
+   "code": "rw",
+   "count": 5
+  },
+  {
+   "name": "Sinhala",
+   "code": "si",
+   "count": 5
+  },
+  {
+   "name": "Lao",
+   "code": "lo",
+   "count": 4
+  },
+  {
+   "name": "Polish",
+   "code": "pl",
+   "count": 4
+  },
+  {
    "name": "Haitian Creole",
    "code": "ht",
+   "count": 3
+  },
+  {
+   "name": "Dari",
+   "code": "prs",
    "count": 3
   }
  ],
@@ -3165,6 +3305,5077 @@
    "pageCount": 20,
    "wordCount": 943,
    "file": "books/155014-tine-und-der-aufruf-des-fernen-berges.json"
+  },
+  {
+   "slug": "96528-to-khong-muon",
+   "title": "Tớ không muốn...",
+   "description": "Một bạn nhỏ không muốn thức dậy đến trường buổi sáng, và bạn ấy cũng chẳng muốn làm gì, kể cả việc ăn sáng. Nhưng hôm nay thì khác: bạn ấy bật dậy, làm tất cả những việc cần làm rồi lao như tên bắn tới trường. Điều gì đang chờ đợi ở trường?",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704667/size3/8c71055ce1d056e9c4ed3d8ddf07d0f5.jpg",
+   "authors": [
+    "Nguyen Thanh Huong",
+    "Nguyen Kim Dung",
+    "Thuy Bui"
+   ],
+   "illustrators": [
+    "Ruchi Shah"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 112,
+   "file": "books/96528-to-khong-muon.json"
+  },
+  {
+   "slug": "32700-tiem-banh-cua-ho",
+   "title": "TIỆM BÁNH CỦA HỔ",
+   "description": "Hổ mê làm bánh lắm. Mỗi ngày Hổ đều làm bao nhiêu là bánh ngon ơi là ngon nhưng kỳ lạ chưa, chẳng có ai trong rừng đến mua bánh cả. Một ngày kia, Hổ quyết định phải đi tìm hiểu một phen. Các em cùng giúp Hổ tìm xem vì sao chẳng ai đến mua bánh nhé.",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/119967/size3/e7b56d43732fd3ca27dff8cce431db58.jpg",
+   "authors": [
+    "Nguyễn Trần  Thiên Lộc "
+   ],
+   "illustrators": [
+    "Lê Thị  Anh Thư"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 32,
+   "wordCount": 513,
+   "file": "books/32700-tiem-banh-cua-ho.json"
+  },
+  {
+   "slug": "19690-chuyen-bay-dau-tien-cua-raju",
+   "title": "Chuyến bay đầu tiên của Raju",
+   "description": "Đó là một ngày trọng đại đối với Raju. Hãy xem cậu ấy chuẩn bị cho chuyến bay đặc biệt này như thế nào nhé.",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713806/size3/2625fe2f51bccee02b4391276a85eca7.jpg",
+   "authors": [
+    "Huong Phan"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 611,
+   "file": "books/19690-chuyen-bay-dau-tien-cua-raju.json"
+  },
+  {
+   "slug": "20708-manikantan-da-ngan",
+   "title": "Ma-ni-kan-tan Đã Ngán",
+   "description": "Cái bùa của Ma-ni-kan-tan có thể biết cậu ấy đang vui hay buồn, khỏe mạnh hay bị bịnh.  Nó có thể cho cậu ấy biết khi nào ăn, khi nào ngủ, nhắc nhở cậu ấy làm bài tập về nhà, và cho mẹ cậu ấy biết khi cậu ấy không khỏe.  Đó là phép mầu hay khoa học?  Hãy xem chuyện gì xảy ra khi Ma-ni-kan-tan và mẹ rời ngôi làng của họ đến sống ở thành phố Thông Minh.",
+   "language": "Vietnamese",
+   "langCode": "vi",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712349/size3/80baf01ee305956f7dc6a39548938ed4.jpg",
+   "authors": [
+    "Chi Ho"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 20,
+   "wordCount": 1645,
+   "file": "books/20708-manikantan-da-ngan.json"
+  },
+  {
+   "slug": "253796-kupika",
+   "title": "Kupika",
+   "description": "This story 'Kupika' has been published on StoryWeaver by African Storybook Initiative.",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/337764/size3/aeca1ac31486525d1175d2a35e733b23.jpg",
+   "authors": [
+    "Ursula Nafula"
+   ],
+   "illustrators": [
+    "Kathy   Arbuckle"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 22,
+   "file": "books/253796-kupika.json"
+  },
+  {
+   "slug": "56283-my-best-friend",
+   "title": "Rafiki Yangu Mpendwa",
+   "description": "Ungependa kuwa na rafiki wa dhati? Angalia kitabu hiki na unaweza kupata kwamba tayari unaye rafiki wa dhati!",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704882/size3/b1586d957cd76fc5ad2d07442f85401c.jpg",
+   "authors": [
+    "Michael Cheserek"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "AfLIA",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 70,
+   "file": "books/56283-my-best-friend.json"
+  },
+  {
+   "slug": "1212-niambie-sasa-rangi",
+   "title": "Niambie … sasa! – Rangi",
+   "description": "Tunawauliza mama na baba sababu ya vitu kuwa na rangi tofauti.",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700102/size3/610c0cae5d16405f1f342e373837d71f.jpg",
+   "authors": [
+    "Mutugi Kamundi"
+   ],
+   "illustrators": [
+    "Rijuta Ghate"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 71,
+   "file": "books/1212-niambie-sasa-rangi.json"
+  },
+  {
+   "slug": "218405-chura-mpweke",
+   "title": "Chura Mpweke",
+   "description": "Zakia anaishi ndani ya bwawa la ajabu, pamoja na jamii yake ya vyura wa ajabu. Anaamini kuwa kila chura ana karama ya kipekee isipokuwa yeye. Wenziwe wanamsimanga na kumuonea. Anakosa furaha na anajitenga nao. Lakini anaifahamu siri ambayo binadamu wanaweza wakaitumia kuliangamiza bwawa na viumbe waliomo. Je, atafanya nini? Je, atakigundua kipaji chake?",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/296154/size3/480507c9f9a963d9c86de0d58efb9059.jpg",
+   "authors": [
+    "Demere Kitunga",
+    "Godfrey Mishomari"
+   ],
+   "illustrators": [
+    "Marco Tibasima"
+   ],
+   "publisher": "Readership for Learning and Development -- Soma",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 733,
+   "file": "books/218405-chura-mpweke.json"
+  },
+  {
+   "slug": "162857-clever-cat",
+   "title": "Paka mwerevu",
+   "description": "Safi is a clever cat! Find out more!",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/253186/size3/12d218fb4d4baa7c1463938230643b3c.jpg",
+   "authors": [
+    "Ursula Nafula"
+   ],
+   "illustrators": [
+    "Catherine Groenewald"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 109,
+   "file": "books/162857-clever-cat.json"
+  },
+  {
+   "slug": "39945-where-is-my-friend",
+   "title": "Yuko Wapi Rafiki Yangu?",
+   "description": "Nia anamtafuta rafiki yake. Kila mara rafiki yake anafanikiwa kujificha na kumpa Nia wakati mgumu kumtafuta. Alimpaka rangi tofautitofauti ili aweze kumuona kwa urahisi, lakini bado alifanikiwa kujificha. Mwishowe Nia aligundua mbimu za kujificha rafiki yake. Je, Nia aligundua nini?",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101397/size3/14639f531b6a18cf75cdd0320a178dca.jpg",
+   "authors": [
+    "Tebogo Maganye"
+   ],
+   "illustrators": [
+    "Michael  Sagikwa"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 132,
+   "file": "books/39945-where-is-my-friend.json"
+  },
+  {
+   "slug": "41034-my-birthday",
+   "title": "Siku Yangu ya Kuzaliwa",
+   "description": "Neema anapenda siku yake kuzaliwa. Ila huchukua muda mrefu mpaka kufikia siku hiyo. Alidhani kuwa wazazi wake hawamwambii ukweli kuhusu siku hiyo. Neema aliamua kuchunguza mwenyewe. Je, Neema aligundua nini?",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101403/size3/3b32b1a5599bdea05a05cffdf393c2aa.jpg",
+   "authors": [
+    " Godfrey  Mishomari "
+   ],
+   "illustrators": [
+    "Khalifa R.  Khalifa"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 225,
+   "file": "books/41034-my-birthday.json"
+  },
+  {
+   "slug": "43647-siku-yangu-ya-kwanza-shuleni",
+   "title": "Siku Yangu ya Kwanza Shuleni",
+   "description": "Sesi ana umri wa miaka sita anaishi na wazazi wake huko Turiani. Baada ya siku yake ya kwanza ya kuanza shule alirudi nyumbani na kuwasimulia wazazi wake yaliyotokea. Wazazi wake walicheka sana. Je unafikiri nini kilitokea huko shuleni?",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101668/size3/f3ebb6a2a0fde3404ddc015d3599db76.jpg",
+   "authors": [
+    "Rehema  Egbert"
+   ],
+   "illustrators": [
+    "Godwin  Chipenya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 304,
+   "file": "books/43647-siku-yangu-ya-kwanza-shuleni.json"
+  },
+  {
+   "slug": "43838-kisa-cha-sungura",
+   "title": "Kisa cha Sungura",
+   "description": "Kulitokea tatizo la maji katika nchi ya wanyama. Mfalme wa wanyama akaitisha mkutano wa kujadili njia za kutatua tatizo. Wanyama wote walikusanyika isipokuwa\r\nSungura. Wanyama waliamua kuchimba kisima na Sungura asiruhusiwe kuyatumia maji hayo. Lakini Sungura alikuwa na mpango wake wa kutumia maji hayo. Je alifanikiwa?",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128606/size3/db2b89f3bc5f703c55556122ec4c6fbb.jpg",
+   "authors": [
+    "Lydia  Kimaryo"
+   ],
+   "illustrators": [
+    "Godwin  Chipenya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 1116,
+   "file": "books/43838-kisa-cha-sungura.json"
+  },
+  {
+   "slug": "113246-khalai-anapenda-mimea",
+   "title": "Khalai anapenda mimea",
+   "description": "Khalai is a little girl who talks to different plants. ",
+   "language": "Kiswahili",
+   "langCode": "sw",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/235335/size3/01c6bf1eb33fda92149a539c6f0f9fea.jpg",
+   "authors": [
+    "Ursula Nafula"
+   ],
+   "illustrators": [
+    "Jesse Pietersen"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 135,
+   "file": "books/113246-khalai-anapenda-mimea.json"
+  },
+  {
+   "slug": "577905-ta-la-he-mofa-fangdajing",
+   "title": "塔拉和魔法放大镜",
+   "description": "塔拉的好朋友太神奇了！它能让塔拉用一种全新的方式看世界。快和他们一起踏上超乎想象的奇妙之旅吧。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/642527/size3/e092fb2ebff6d08acf307b1e14f0f799.jpg",
+   "authors": [
+    "Jenny Lu"
+   ],
+   "illustrators": [
+    "Mehak Hooda"
+   ],
+   "publisher": "Singapore Book Council Limited",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 10,
+   "file": "books/577905-ta-la-he-mofa-fangdajing.json"
+  },
+  {
+   "slug": "577904-zhong-xingxing",
+   "title": "种星星",
+   "description": "地球上能种星星吗？小乔迫不及待想要找出答案。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/642415/size3/2fafdf32008513e30427985979964220.jpg",
+   "authors": [
+    "Jenny Lu"
+   ],
+   "illustrators": [
+    "Moses Sia"
+   ],
+   "publisher": "Singapore Book Council Limited",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 7,
+   "file": "books/577904-zhong-xingxing.json"
+  },
+  {
+   "slug": "577900-yi-tuan-mianhua-tang",
+   "title": "一团棉花糖",
+   "description": "一团粉红色的棉花糖给孟买的街头带来了一丝希望和欢乐。\r\n",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/642430/size3/6221fdfb5794f5ad0980342ee1549e35.jpg",
+   "authors": [
+    "Jenny Lu"
+   ],
+   "illustrators": [
+    "Swarnavo Datta"
+   ],
+   "publisher": "Singapore Book Council Limited",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 6,
+   "file": "books/577900-yi-tuan-mianhua-tang.json"
+  },
+  {
+   "slug": "92448-huihua-youxi",
+   "title": "绘画游戏",
+   "description": "吉努和她的奶奶画了圆形、三角形和正方形， 然后把它们变成各种各样的东西。这个简单的故事向儿童介绍形状的概念，并鼓励他们运用他们的想象力。 这个简单的故事向儿童介绍形状的概念，并鼓励他们运用他们的想象力。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/716431/size3/6bc9c1887a5230a7f0d6708d14a9982d.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Ajanta Guhathakurta"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 47,
+   "file": "books/92448-huihua-youxi.json"
+  },
+  {
+   "slug": "99720-yiqi-zhizuo-qing-ning-zhi-ba",
+   "title": "一起制作青柠汁吧！",
+   "description": "八个孩子在烈日下玩耍。他们想从拉竹叔叔给他们的食谱中作一壶青柠汁。他们如何量成分？他们如何平均分饮料？让我们使用美味食谱介绍分数的概念吧！",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/716367/size3/e97da48c8cd10ab3eb5854216b62b4a7.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Niloufer Wadia"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 40,
+   "file": "books/99720-yiqi-zhizuo-qing-ning-zhi-ba.json"
+  },
+  {
+   "slug": "99794-shen-chu-ni-de-shetou",
+   "title": "伸出你的舌头！",
+   "description": "你认为所有的舌头都像你的一样柔软和粉红色吗？ 动物有各种形状，大小和颜色的舌头。 他们以不同的方式使用他们的舌头，但不像人类那样，使用舌头来说话。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724139/size3/a690782932e9a84bf87b3e0184a17cfc.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Sandhya Prabhat"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 30,
+   "file": "books/99794-shen-chu-ni-de-shetou.json"
+  },
+  {
+   "slug": "99798-na-shi-shenme-weidao",
+   "title": "那是什么味道？",
+   "description": "有人把马达夫和塔拉的食物全部吃掉了。 是奇怪的生物，还是毛毛的怪物，还是看不见的东西？ 到底是谁呢？",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/714317/size3/943de6f6a8d5ef43d1bb7b9147b1ca58.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Tarique Aziz"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 80,
+   "file": "books/99798-na-shi-shenme-weidao.json"
+  },
+  {
+   "slug": "99715-juzhong-gongzhu",
+   "title": "举重公主",
+   "description": "尼拉公主渴望赢得苏里亚锦标赛，她王国着名的举重比赛。 但要克服的障碍很多。 至少要面对一位英俊的王子和她父母的期望。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128169/size3/f54d978ae723b040027c6084b41e2e86.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Debasmita Dasgupta"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 78,
+   "file": "books/99715-juzhong-gongzhu.json"
+  },
+  {
+   "slug": "92446-mu-ta-ji-ji-suile",
+   "title": "穆塔吉几岁了？",
+   "description": "普塔和普蒂知道穆塔吉真的很老了。 但她到底有多老呀？ 欢迎和这一对精灵双胞胎侦探一起用数学来搜索穆塔吉的记忆和印度的历史，来解答这个大问题。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723800/size3/30b6242b35da965c70816bf0f26308c3.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 227,
+   "file": "books/92446-mu-ta-ji-ji-suile.json"
+  },
+  {
+   "slug": "99743-yishi-shui-de-anli",
+   "title": "遗失水的案例",
+   "description": "当Ranj村的水缸干涸时，她开始寻找失踪的水。 加入侦探Ranj来解决这案子吧。",
+   "language": "Chinese (Simplified)",
+   "langCode": "zh",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/724112/size3/1c190e70406411ab7431038cc2aaea88.jpg",
+   "authors": [
+    "Jala Community"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "Jala",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 135,
+   "file": "books/99743-yishi-shui-de-anli.json"
+  },
+  {
+   "slug": "15844-school-mein-rani-ka-pehla-din",
+   "title": "اسکول میں رانی کا پہلا دن",
+   "description": "پہلے دن رانی نے اسکول میں کیا کیا دیکھا؟ اسے کیسا محسوس ہوا پہلے دن؟",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697425/size3/c45f1e0842588b2a698606d451ae1ee1.jpg",
+   "authors": [
+    "Shahid Anwar"
+   ],
+   "illustrators": [
+    "Mayur Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 6,
+   "wordCount": 244,
+   "file": "books/15844-school-mein-rani-ka-pehla-din.json"
+  },
+  {
+   "slug": "553877-what-s-ameena-up-to",
+   "title": "آمنہ کہاں ہے؟",
+   "description": "سبھی لوگ سوچ رہے تھے کہ اتوار کی دوپہر کو آخر امینہ کیا کر رہی ہے- \r\nآخر کار ، ناریل کا خول ، رنگ ، بٹن اور اخبار کہاں گئَے؟",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/495580/size3/bce292876fe0cffa390e460a5b5e0b88.jpg",
+   "authors": [
+    "Farisa Jabeen"
+   ],
+   "illustrators": [
+    "Preetam Dhar"
+   ],
+   "publisher": "SCERT, Maharashtra",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 119,
+   "file": "books/553877-what-s-ameena-up-to.json"
+  },
+  {
+   "slug": "15755-mujhe-wo-chahiye",
+   "title": "مجھے وہ چاہئے",
+   "description": "'وہ والا نہیں،' عامر کی امّاں نے کہا جب اس نے کسی چیز کے لیے کہا ۔ 'وہ والا نہیں!' بازار میں دکانداروں نے بھی یہی کہا۔ اس کی وجہ سے ننھا عامر سچ مچ غصّہ ہوگیا۔",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697280/size3/aba9bf37b8d832ad403892121fde5991.jpg",
+   "authors": [
+    "Reyazuddin"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 312,
+   "file": "books/15755-mujhe-wo-chahiye.json"
+  },
+  {
+   "slug": "318960-neeche-utar-jao-rocky",
+   "title": "نیچے اتر جاؤ، راکی!",
+   "description": "خلاصہ: راکی نام کا ایک بکرا چرچ کی چھت پر پھنس جاتا ہے تو روز کا خاندان اور اس کے پڑوسی راکی کو نیچے لانے کی کوشش کرتے ہیں۔ لیکن کیا وہ لوگ راکی کو صحیح سلامت نیچے لانے میں کامیاب ہوں گے؟",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/715409/size3/357ef96463dde52d13f40e061e9e5bd2.jpg",
+   "authors": [
+    "Md Abdur Rahman Arshad"
+   ],
+   "illustrators": [
+    "Sandhya Prabhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 207,
+   "file": "books/318960-neeche-utar-jao-rocky.json"
+  },
+  {
+   "slug": "442527-pooklam-ki-saakht",
+   "title": "پوکلم کی ساخت",
+   "description": "نِکو اور اس کی چیچی اونم کا تہوار منا رہے ہیں۔ نِکو مختلف قسم کے پھولوں سے ایک پیارا سا پوکلم بنانے میں چیچی کا ہاتھ بٹاتا ہے۔ \r\nمعلوم کریں کہ انھوں نے اسے بنانے میں کن کن شکلوں کا استعمال کیا ہے۔\r\n",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/480203/size3/c4c3e54f9eb1af4be5e0035b26927543.jpg",
+   "authors": [
+    "Md Sajid Nadvi"
+   ],
+   "illustrators": [
+    "Saksham Arora"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 178,
+   "file": "books/442527-pooklam-ki-saakht.json"
+  },
+  {
+   "slug": "446439-avi-kee-masroofiyat",
+   "title": "اَوی کی مصروفیت",
+   "description": "اَوی نے پورے ہفتے یوم شجرکاری، یومِ موسیقی اور یومِ مصوری کے مزے لیے اور خود کو مصروف رکھا۔ آؤ اَوی کے ساتھ گھر کے اندر چہل قدمی کرتے ہوئے الگ الگ ضابطوں کو دیکھتے اور پہچانتے ہیں۔ ",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/472786/size3/c73d494d112953afae92ffe68d3d5f6f.jpg",
+   "authors": [
+    "Tanveer Afaqui"
+   ],
+   "illustrators": [
+    "Debasmita Dasgupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 338,
+   "file": "books/446439-avi-kee-masroofiyat.json"
+  },
+  {
+   "slug": "362954-titli-ki-muskurahat",
+   "title": "تتلی کی  مسکراہٹ",
+   "description": "کاویہ کا خاندان حال ہی میں گاؤں سے بنگلور آیا ہے اور وہ اپنی جماعت کی سب سے نئی لڑکی ہے۔ کاویہ کے ساتھ تتلی پارک جاؤ جہاں اس نے تتلیوں سے ایک رشتہ قائم کیا ہے اور ایک نئی سہیلی بھی بنائی ہے۔ ",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+   "authors": [
+    "Shakeel Ahmad Salafi"
+   ],
+   "illustrators": [
+    "Lavanya  Naidu"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1095,
+   "file": "books/362954-titli-ki-muskurahat.json"
+  },
+  {
+   "slug": "55270-ek-kitaab-puchku-ke-liye",
+   "title": "ایک کتاب پچکو کے لئے",
+   "description": "پچکو ساری کتابیں پڑھ چکی ہے۔ کیا کتب خانہ میں اسے پڑھنے کے لئے کوئی نئی کتاب ملے گی؟",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117108/size3/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg",
+   "authors": [
+    "Saima Aman"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "REHMA",
+   "hasAudio": true,
+   "pageCount": 21,
+   "wordCount": 671,
+   "file": "books/55270-ek-kitaab-puchku-ke-liye.json"
+  },
+  {
+   "slug": "11190-mirch-ke-saath-duniya-ki-sair",
+   "title": "مرچ کے ساتھ دنیا کی سیر",
+   "description": "\r\nیہ کہانی صرف خاکسار مرچ کے بارے میں ہی نہیں ہے بلکہ بہادر جانبازوں اور کاروباریوں کے خطروں سے بھرے کارناموں کے علاوہ خطرناک طوفانی سمندروں اور اجنبی علاقوں کے بارے میں بھی ہے۔ ماہر گلو بلائزیشن کے قلم سے لکھی اِس دلچسپ کہانی کا لطف اٹھائیں۔\r\n",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117134/size3/cb13bf0e835750df1be0f46c51b8881d.jpg",
+   "authors": [
+    "Anis Azmi"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 31,
+   "wordCount": 6276,
+   "file": "books/11190-mirch-ke-saath-duniya-ki-sair.json"
+  },
+  {
+   "slug": "566645-kali-wants-to-dance",
+   "title": "کالی ناچنا چاہتا ہے",
+   "description": "  کالی کو صرف اور صرف ناچنا پسند تھا۔  لیکن یہ کیسے ہو سکتا ہے؟  اس کے گاؤں کے لڑکے ڈانس نہیں کرتے تھے، اور وہ بھی بھرتناٹیم ؟  خواب دیکھنے، ان پر یقین کرنے اور انہیں حقیقت میں بدلنے کے بارے میں ایک مختصر کہانی۔",
+   "language": "Urdu",
+   "langCode": "ur",
+   "isRtl": true,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722803/size3/279e3b0b11f71cddf1a84d019cdd0cb8.jpg",
+   "authors": [
+    "RASHEEDUNNISA WASIQ"
+   ],
+   "illustrators": [
+    "Somesh Kumar"
+   ],
+   "publisher": "SCERT, Maharashtra",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 1257,
+   "file": "books/566645-kali-wants-to-dance.json"
+  },
+  {
+   "slug": "101470-moutushir-gaan",
+   "title": "মৌটুসির গান",
+   "description": "মৌটুসি একটি ছোট্ট, মিষ্টি পাখি। সে রঙিন রঙিন ফুল খুব ভালবাসে। দিদিমার বারান্দার বাগানে, টবে, অনেক সুন্দর সুন্দর ফুল ফুটেছে।  সব ফুল মধু তে ভরা। মৌটুসির ফুলের মধু খেতে খুব ভাল লাগে। সেই মধু খেয়ে মৌটুসি দিদিমা কে একটা সুন্দর উপহার দিল। সেই উপহার কি হতে পারে?",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/727152/size3/b9fdf12f3422f5e91081a4a304273b2d.jpg",
+   "authors": [
+    " Maitreyi Shome"
+   ],
+   "illustrators": [
+    "Supriya Tirkey"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 168,
+   "file": "books/101470-moutushir-gaan.json"
+  },
+  {
+   "slug": "13-mota-rajaar-kukur",
+   "title": "মোটা রাজার কুকুর",
+   "description": "চলো, মোটা রাজা আর রোগা কুকুরের সঙ্গে দৌডানো যাক।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721909/size3/578f72502f01ea8298384a08257557b2.jpg",
+   "authors": [
+    "Kanika Bandopadhyay"
+   ],
+   "illustrators": [
+    "Parismita"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 54,
+   "file": "books/13-mota-rajaar-kukur.json"
+  },
+  {
+   "slug": "17876-lobhi-indur",
+   "title": "লোভী ইঁদুর",
+   "description": "ইঁদুর লোভের কুফল কি জানল? গল্পটিতে সুন্দর চিত্রব্যাখ্যা আছে।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/118175/size3/74a688ee10cc7264d20523334bd5c41c.jpg",
+   "authors": [
+    "Kanika Bandopadhyay"
+   ],
+   "illustrators": [
+    "Herminder Ohri"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 226,
+   "file": "books/17876-lobhi-indur.json"
+  },
+  {
+   "slug": "75-shob-chak-chake-natun",
+   "title": "সব চকচকে নতুন",
+   "description": "ঋতুচক্র হলো ঋতুদের চক্র। আমাদের দেশের আলাদা-আলাদা প্রদেশে প্রত্যেকটা ঋতু র আগমন বিভিন্ন ভাবে পালন করা হয়। প্রকৃতি র বিশেষ উপহার আর ভারতবর্ষের রং, উতসব আর ধরন-ধরণের আনন্দ নিন এই ঋতুচক্র  শৃঙ্খলাতে।\r\n\r\nমীনুর চারিদিকে কত ফু ল, কতগুলো রঙ, কত পাখি আর কাঠবিড়ালি কিচির-মিচির করে লাফা-লাফি করছে! প্রকৃতির সব চাইতে সুন্দর সময় মীনু কে মুগ্ধ করে দিয়েছে। বসন্ত এসেছে করছে। ",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/702434/size3/ba622e2c893a49e15653341c6057331a.jpg",
+   "authors": [
+    "Swagata Sen Pillai"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 282,
+   "file": "books/75-shob-chak-chake-natun.json"
+  },
+  {
+   "slug": "541-baadi-phera",
+   "title": "বাড়ি ফেরা",
+   "description": "শিশুরা যা কিছু দেখে বা শোনে সেটা  সবার সঙ্গে ভাগ করে নিতে ভালোবাসে। বাড়ি ফেরা বইটি পড়লে বোঝা যায় সেই ভাগ করে নেওয়াটি কত আনন্দের হতে পারে। ",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/705046/size3/51bc3c5169f9b12d348f9a806a2a6ef1.jpg",
+   "authors": [
+    "Kanika Bandopadhyay"
+   ],
+   "illustrators": [
+    "Ketan Raut",
+    "Santosh Pujari"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 261,
+   "file": "books/541-baadi-phera.json"
+  },
+  {
+   "slug": "17898-singho-boley-miaow",
+   "title": "সিংহ বলে মিয়াঁও",
+   "description": "এই মজার গল্পটা পড়লে জানতে পারবে বেদিকা আর করণ তাদের দাদুর দোলনা চেয়ারে বসে তাদের দুই বন্ধু বিড়াল আর সিংহের সঙ্গে কি রকম দুঃসাহসিক অভিযান করল।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/40018/size3/d1e5bc76d62394c2859fdc1920374e28.jpg",
+   "authors": [
+    "Kanika Bandopadhyay"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 417,
+   "file": "books/17898-singho-boley-miaow.json"
+  },
+  {
+   "slug": "5246-oporer-prithibi-neecher-prithibi",
+   "title": "ওপরের পৃথিবী , নীচের পৃথিবী",
+   "description": "ভারতের এক গাছের-পাতা-ছাওয়া শামিয়ানার মত জঙ্গলে ওপরের পৃথিবী আর নীচের পৃথিবী সবসময়ে একে অন্যকে সন্দেহের চোখে দেখে। কিন্তু এইসবকিছু বদলে যায়, যখন ছোট্ট ইঁদুর গোপা তার হাতের বইটা আকস্মিক ভাবে ছোট্ট মেয়ে ফতিমার মাথায় ফেলে দেয়। এটি একটি সেই শামিয়ানার মত জঙ্গলের জীব বৈচিত্র্য আর সেইসঙ্গে এই দুই পৃথিবীর বন্ধুত্বের গল্প।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723877/size3/512e37faaf23415856672bb730140ee1.jpg",
+   "authors": [
+    "Sanghamitra Ghosh"
+   ],
+   "illustrators": [
+    "Sunaina  Coelho"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1387,
+   "file": "books/5246-oporer-prithibi-neecher-prithibi.json"
+  },
+  {
+   "slug": "5035-reeti-aar-mithu",
+   "title": "রীতি আর মিঠু",
+   "description": "রীতির ছুটি সবেমাত্র শুরু হয়েছে কিন্তু তার মনে আনন্দ নেই।  ছুটি তার ভালো লাগে না কারণ সে তার বন্ধুদের দেখতে পায় না।  একদিন সে কথাবলা টিয়াপাখি মিঠুকে পোষ্য হিসেবে পেল।  মিঠু কি তার প্রিয় বন্ধু হতে পারলো? তা জানতে এই মন খুশি করা গল্পটি পড়।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712362/size3/6e9dd62bad3d039fcb159c653b045aae.jpg",
+   "authors": [
+    "Sanghamitra Ghosh"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1057,
+   "file": "books/5035-reeti-aar-mithu.json"
+  },
+  {
+   "slug": "5667-nutan-sahare-manikantan",
+   "title": "নুতন শহরে মনিকন্ঠন",
+   "description": "মণিকন্ঠন এর গলায় এক আজব তাবিজ কন্ঠি করে বাঁধা। অদ্ভুত সেই তাবিজের কেরামতি। তাবিজ বলে দিতে পারে কখন সে খুশী বা কখন দুখী , কখনই বা সে সুস্থ কিংবা কখন সে অসুস্থ। সে তাকে মনে করিয়ে দেয় কখন খেতে হবে, কখন ঘুমোতে হবে, এমনকি হোম ওয়ার্ক করতেও সাহায্য করে।  যখন তার শরীর ভালো থাকেনা তখন মণির মাকে সেই খবরটা জানিয়ে দেয় ঐ কন্ঠি। এটা কি ম্যাজিক না বিজ্ঞান? মণিকন্ঠন আর তার মা  চালাক-চতুর একটা নুতন শহরে চলে আসার পর কি হলো তা জানার জন্যে গল্পটি পড়।",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712349/size3/80baf01ee305956f7dc6a39548938ed4.jpg",
+   "authors": [
+    "Tapas Kumar Sen"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1654,
+   "file": "books/5667-nutan-sahare-manikantan.json"
+  },
+  {
+   "slug": "17915-kallur-jagot-ghor-pyanch-ar-gondogol",
+   "title": "কল্লু'র জগত - ঘোর প্যাঁচ আর গণ্ডগোল",
+   "description": "﻿খজুরিয়ায় আপনাদের স্বাগত জানাই -যে গ্রামে কল্লু আর তার দল প্রায় দিনই নিজেদের মজার কীর্তি করে থাকে। কখনো তারা গ্রামের পরম্পরা নিয়ে প্রশ্ন তোলে, কখনো উত্পীড়ক ছেলেদের সামনে উঠে দাঁড়ায় বা শুধুমাত্র নিজেদের রোজকার কাজে ব্যস্ত থাকে, কিন্তু কল্লু আর তার দল সবকিছুর জন্য তৈরী। ওদের সাথে থেকে দেখুন ওরা কেমন বড়ো হয়, বুদ্ধি গজায়, আর আনন্দে গ্রামে ঘুরে বেড়ায় নতুন কর্মের খোঁজে, আর দেখুন ওরা কী কী খুঁজে পায়।\r\n\r\n\r\nকল্লু আবার ইস্কুলের জন্য লেট হয়ে গেছে। ছাগলটাকে এবার কোথায় পালাতে বলেছে? কার শরীর খারাপ হলো এবার? অম্মী না ওর ভাই? ওর ভীষণ ভাবে একটা গল্পের দরকার..একটা ভালো গল্প..বিশ্বাস্য গল্প...ওর কাছে আছে নাকি এমন একটা?\r\n",
+   "language": "Bengali",
+   "langCode": "bn",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703474/size3/aebdec85f3efee3cc067e575ca2d0d42.jpg",
+   "authors": [
+    "Swagata Sen Pillai"
+   ],
+   "illustrators": [
+    "Tapas Guha"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1823,
+   "file": "books/17915-kallur-jagot-ghor-pyanch-ar-gondogol.json"
+  },
+  {
+   "slug": "112037-movazeb-bash-yek-babr-injast",
+   "title": "مواظب باش! یک ببر اینجاست",
+   "description": "وقتی یک ببر در جنگل حرکت میکند، همه ی پرنده ها و حیوانات خبردار میشوند! به صداهای حیوانات مختلف که به بقیه هشدار میدهند ببر اینجاست گوش کن",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/495589/size3/0ffeaffc8b06617aca654bbe2fa9542b.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Rohan Chakravarty"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 117,
+   "file": "books/112037-movazeb-bash-yek-babr-injast.json"
+  },
+  {
+   "slug": "105467-rani-s-first-day-at-school",
+   "title": "رانی به مدرسه می رود ",
+   "description": "اگر می خواهید با رانی در اولین روز مدرسه اش همراه شوید این داستان را از دست ندهید بچه ها! ",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697425/size3/c45f1e0842588b2a698606d451ae1ee1.jpg",
+   "authors": [
+    "nazanin karimimakhsous"
+   ],
+   "illustrators": [
+    "Mayur Mistry"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 257,
+   "file": "books/105467-rani-s-first-day-at-school.json"
+  },
+  {
+   "slug": "112009-man-uno-mikham",
+   "title": "من اونو می خوام!",
+   "description": "مادر آنیل با صدای بلند گفت «نه! اونو برندار!» همه ی مغازه دارها هم همین را به آنیل گفتند. آنیل خیلی از این موضوع عصبانی است",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697280/size3/aba9bf37b8d832ad403892121fde5991.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 290,
+   "file": "books/112009-man-uno-mikham.json"
+  },
+  {
+   "slug": "106449-mesvak-zadan-aslan-ba-hal-nist",
+   "title": "مسواک زدن اصلا با حال نیست!",
+   "description": "روهان دوست ندارد مسواک بزند، ولی خواهرش رایا، رازی را به او می گوید که از مسواک زدن خوشش بیاید!",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/527487/size3/3b22d4a144943a8e5648a8ff9a4364de.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Anupama Ajinkya Apte"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 838,
+   "file": "books/106449-mesvak-zadan-aslan-ba-hal-nist.json"
+  },
+  {
+   "slug": "116021-babak-movazeb-bash",
+   "title": "بابک، مواظب باش!",
+   "description": "با بابک بپرید و بجهید و بدوید و به مزرعه ای که مادرش در آن کار می کند بروید",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724002/size3/2ec570b512dfcbf96a9b0bea170cb39b.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Vishnu  M Nair"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 20,
+   "wordCount": 566,
+   "file": "books/116021-babak-movazeb-bash.json"
+  },
+  {
+   "slug": "105749-angry-akku",
+   "title": "آکوی خشمگین",
+   "description": "آکو روز بدی را در مدرسه گذرانده است وبسیار عصبانی است. باهم بخوانیم که آکو چطور عصبانیتش را فراموش می کند ",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724106/size3/155d8763546a35c51598f2685d431da9.jpg",
+   "authors": [
+    "nazanin karimimakhsous"
+   ],
+   "illustrators": [
+    "Vinayak Varma"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 743,
+   "file": "books/105749-angry-akku.json"
+  },
+  {
+   "slug": "107971-pransese-vaznebardar",
+   "title": "پرنسس وزنه بردار",
+   "description": "پرنسس نیلا می خواهد در مهمترین مسابقه ی وزنه برداری پادشاهی که مسابقات سوریا نام دارد شرکت کند و قهرمان شود. ولی موانع بسیاری سر راهش قرار دارند. یکی از این موانع پرنسی خوش قد و بالا و قرار ازدواج با اوست.",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128169/size3/f54d978ae723b040027c6084b41e2e86.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Debasmita Dasgupta"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 591,
+   "file": "books/107971-pransese-vaznebardar.json"
+  },
+  {
+   "slug": "107729-danesh-amuze-jadid",
+   "title": "دانش آموز جدید",
+   "description": "دانش آموز جدیدی به کلاس میرا اضافه شده است. او با بقیه ی بچه ها فرق دارد و به همین دلیل بچه ها او را مسخره می کنند. ولی مگر همه باید مثل هم باشند؟",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/84108/size3/36834ed5f0b9321df6c0e7edc523889d.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Sayan  Mukherjee"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 762,
+   "file": "books/107729-danesh-amuze-jadid.json"
+  },
+  {
+   "slug": "115927-safar-be-merikh",
+   "title": "سفر به مریخ",
+   "description": "سوار سفینه ی مانگالیان شوید. مقصد ما مریخ است. ما از ماه عبور می کنیم و به آن طرف خورشید می رویم. ",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720045/size3/2d5d71e713132473aa21890cddff485e.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Nikhil Gulati"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 28,
+   "wordCount": 1091,
+   "file": "books/115927-safar-be-merikh.json"
+  },
+  {
+   "slug": "112712-arya-dar-kabni-khalaban",
+   "title": "آریا در کابین خلبان",
+   "description": "آریا همیشه آرزوی پرواز داشت. پس کمربندهای خود را ببندید تا او شما را به یک سفر هوایی خیلی خاص ببرد",
+   "language": "Farsi",
+   "langCode": "fa",
+   "isRtl": true,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713815/size3/86bf40b3b913d9d94bc04157998a8257.jpg",
+   "authors": [
+    "Marzieh Nezakat"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 563,
+   "file": "books/112712-arya-dar-kabni-khalaban.json"
+  },
+  {
+   "slug": "41203-kobhanda-ka-chito",
+   "title": "कोभन्दा को छिटो ?",
+   "description": " भाइबहिनीहरू ! सबैभन्दा छिटो दौडने जनावर कुन हो ? तिमीहरूलाई थाहा छ ? जंगलका जनावरहरूले पनि एकपल्ट को सबैभन्दा छिटो दौडन्छ पत्ता लगाउने विचार गरेछन् । यसका लागि उनीहरूले दौड प्रतियोगिता गरेछन् । सबैभन्दा छिटो दौडने को होला त ? थाहा पाउन यो कथा पढौँ ।",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101398/size3/20ce9555025b846ccb27ae94345a490a.jpg",
+   "authors": [
+    "Shilpi  Pradhan"
+   ],
+   "illustrators": [
+    "Kishor Joshi"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 111,
+   "file": "books/41203-kobhanda-ka-chito.json"
+  },
+  {
+   "slug": "108817-mera-sathi",
+   "title": "मेरा साथी",
+   "description": "मेरा धेरै साथी छन् । मलाई ती सबै प्यारा छन् तर तीमध्ये एउटा चाहिँलाई म औधी माया गर्छु । काे हाेला त त्याे ?",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Anbika Giri"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Sangrila Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 73,
+   "file": "books/108817-mera-sathi.json"
+  },
+  {
+   "slug": "55297-sani-aur-suri",
+   "title": "सानी र सुरी",
+   "description": "‘सानी र सुरी’मा सानी नाम गरेकी बालिकाको बिरालो हराउँछ । बिरालो खोज्दै जाँदा उनी धेरै ठाउँ पुग्छिन्‌ । उनले थरीथरीका बिरालो भेटि्‌छन्‌ । के उनले आफूले पालेको सुरीलाई पनि भेट्‌छिन्‌ त ? जान्नका लागि पुरै किताप पढौ ।",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/103110/size3/32981091dab9134242141be719361d16.jpg",
+   "authors": [
+    "Shilpi  Pradhan"
+   ],
+   "illustrators": [
+    "Yuvaka  Srestha"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 28,
+   "wordCount": 187,
+   "file": "books/55297-sani-aur-suri.json"
+  },
+  {
+   "slug": "108823-hajuramako-gajjabko-mesin",
+   "title": "हजुरआमाको गज्जबको मेसिन",
+   "description": "सुरज र उसकी हजुरआमालाई नयाँ-नयाँ कुरा आविष्कार गर्न मन पर्छ । उनीहरुले नरिवलकाे बर्फि बनाउन सरल यन्त्रकाे प्रयाेग कसरी गरे, पढाैं है !",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712718/size3/9afb2c00f7a211ff4c8699e66ca7db0b.jpg",
+   "authors": [
+    "Anbika Giri"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Sangrila Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 189,
+   "file": "books/108823-hajuramako-gajjabko-mesin.json"
+  },
+  {
+   "slug": "118980-sittaima-paeko-kulfi",
+   "title": "सित्तैमा पाएको कुल्फी",
+   "description": "भँवरीसँग कुल्फी खाँदै दिनहुँ तरकारी वा अन्य सामान किन्दा कसरी हिसाब गर्ने भनेर जानाैं है । ",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/759773/size3/2c3b88f999925756ed57948852ae104a.jpg",
+   "authors": [
+    "Anbika Giri"
+   ],
+   "illustrators": [
+    "Alankrita Amaya"
+   ],
+   "publisher": "Sangrila Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 199,
+   "file": "books/118980-sittaima-paeko-kulfi.json"
+  },
+  {
+   "slug": "43886-sinha-ra-kharayo",
+   "title": "सिंह र खरायो",
+   "description": "यो किताप भर्खर सावाँअक्षर मात्र पढ्‌न सक्ने भएका साना साना नानीहरूका लागि सरल भाषामा पुनर्लेखन गरिएको हो । यस किताबमा चतुर खरायोले जङ्गलको राजा सिंहलाई छक्याएको रमाइलो कथा छ ।",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/99630/size3/e4e0b6c0f880dd0b5a8ee9ac904202f2.jpg",
+   "authors": [
+    "Room to Read Literacy Program"
+   ],
+   "illustrators": [
+    "Promina Shreshtha"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 111,
+   "file": "books/43886-sinha-ra-kharayo.json"
+  },
+  {
+   "slug": "54746-janavaraharuko-sabha",
+   "title": "जनावरहरूको सभा",
+   "description": "यो कितापमा जनावर, मानिस र वातावरणसितको सम्बन्धको कथा छ । वसन्त याममा सबै जनावर र पन्छीहरूले आफूहरूले वातावरणका लागि गरेको योगदानका बारेमा छलफल गर्न सभा गर्ने निधो गरे । तिनीहरूले मानिसहरूलाई पनि निम्त्याए । सभामा के के भयो त ? जान्नका लागि कथा पढौ ।",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/130492/size3/136762bc922f12c95c3032f6c22566df.jpg",
+   "authors": [
+    "Gyananistha Gnawali"
+   ],
+   "illustrators": [
+    "Raju Babu Shakya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 24,
+   "wordCount": 494,
+   "file": "books/54746-janavaraharuko-sabha.json"
+  },
+  {
+   "slug": "41055-arti-ra-bud-dhi",
+   "title": "अर्ती र बुद्धि",
+   "description": "बुद्‌धिले अर्तीसित फूलबारीका फूलहरू जोगाउन सल्लाह माग्यो । अर्तीले बुद्‌धिलाई के–कसो गर्ने भनेर अनेक सल्लाह दियो । बुद्‌धिले आँखा चिम्लेर सल्लाह मान्दै गयो । तर उसमाथि अनेक नयाँ समस्या आइलागे । अरू कुरा जा",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/99516/size3/5717eeb81f7e16ed04c71d00881764bb.jpg",
+   "authors": [
+    "Shiva Hari Adhikari"
+   ],
+   "illustrators": [
+    "Raju Babu Shakya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 523,
+   "file": "books/41055-arti-ra-bud-dhi.json"
+  },
+  {
+   "slug": "448552-hamro-sundar-sansar",
+   "title": "हाम्रो सुन्दर संसार",
+   "description": "मानिस करिब २,००,००० वर्षदेखि पृथ्वीमा बस्दै आइरहेको छ। तर विगत २५० वर्षमा हामीले एउटा समस्या सिर्जना गरेका छौं: जलवायु परिवर्तन। यो समस्याले पृथ्वीलाई तातो बनाउँदैछ, र हामीले हामीसँग यो पृथ्वी ग्रह बाड्ने गरेकाहरूको अन्य जीवनलाई पनि खतरामा पारीरहेका छौँ। हामी यहाँसम्म कसरी आइपुग्यौं? अनि अर्को के आउँछ? यस गैर-काल्पनिक पुस्तकले हामीलाई जलवायु संकटलाई हाम्रो अधिनमा राख्न र हाम्रो अनुकुल बनाउनु पर्ने बारेमा बताउछ।",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/621795/size3/bf212bf61e522b6f4d6d83b07ad4934f.jpg",
+   "authors": [
+    "Katha4Nepal Team"
+   ],
+   "illustrators": [
+    "Joanna Davala"
+   ],
+   "publisher": "Katha4Nepal",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 1024,
+   "file": "books/448552-hamro-sundar-sansar.json"
+  },
+  {
+   "slug": "538921-sima-ra-siza",
+   "title": "सिमा र सिजा",
+   "description": "सिमा भविश्यमा नर्स बन्न चाहन्छन् । उसको मनपर्ने खेल अस्पताल-अस्पताल हो। तर बाबा र उसका साथीहरूले भने उसको यो कुरा मन पराउदैनन्। तिनीहरूको मन के गरेर परिवर्तन हुनेछ?",
+   "language": "Nepali",
+   "langCode": "ne",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/202481/size3/4f58982f8f7e46262c13e59cf59e84b9.jpg",
+   "authors": [
+    "Katha4Nepal Team"
+   ],
+   "illustrators": [
+    "CClaire Ingram"
+   ],
+   "publisher": "Katha4Nepal",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 282,
+   "file": "books/538921-sima-ra-siza.json"
+  },
+  {
+   "slug": "11037-isda-ko-hindi-isda-ko",
+   "title": "'Isda ko!' 'Hindi, isda ko!'",
+   "description": "Isang nakakatuwang istorya tungkol sa tatlong magkakaibigan at tatlong matatalinong isda!\r\n",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721012/size3/1db7298d5b01da68f1fd305946c8895a.jpg",
+   "authors": [
+    "C A L M"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "The Rosetta Foundation",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 203,
+   "file": "books/11037-isda-ko-hindi-isda-ko.json"
+  },
+  {
+   "slug": "105405-si-navy-at-si-bora",
+   "title": "Si Navy at si Bora",
+   "description": "Nagagawa ni Bora ang kayang gawin ni Navy. Pareho nilang nagagawa ang maraming bagay.",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/191966/size3/9242ec477b75ce8d6c53ec9ca7103f99.jpg",
+   "authors": [
+    "Reynald Ocampo"
+   ],
+   "illustrators": [
+    "Sain Thuokna"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 46,
+   "file": "books/105405-si-navy-at-si-bora.json"
+  },
+  {
+   "slug": "17396-mga-kulay-ng-kalikasan",
+   "title": "Mga Kulay ng Kalikasan",
+   "description": "Pinaglaruan ng isang kilalang artist ang mga kulay ng kalikasan. Isang magandang alok para sa mga maaagang nagbasa.\r\n",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721742/size3/e6cd378a92a264ce09409ce1aa323988.jpg",
+   "authors": [
+    "Joceli Becker"
+   ],
+   "illustrators": [
+    "Bulbul Sharma"
+   ],
+   "publisher": "The Rosetta Foundation",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 194,
+   "file": "books/17396-mga-kulay-ng-kalikasan.json"
+  },
+  {
+   "slug": "56638-good-night-tinku",
+   "title": "Magandang Gabi, Tinku!",
+   "description": "Hindi makatulog ang tutang si Tinku sa bukid ni Mang Tomas. Napagpasyahan niyang lumabas at maglakad-lakad muna. Dito niya nakilala ang mga kawili-wiling hayop sa kagubatan.",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720891/size3/170e9090f77038f09c412e3f74f4d3ee.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "Sonal Goyal",
+    "Sumit Sakhuja"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 436,
+   "file": "books/56638-good-night-tinku.json"
+  },
+  {
+   "slug": "57748-the-lion-who-wouldn-t-try",
+   "title": "Ang Leon na Ayaw Makipaglaro",
+   "description": "Ang lahat ng mga hayop sa kagubatan ay naglalaro maliban kay Leon. Bakit kaya ayaw sumali ni Leon sa kanila?",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/85543/size3/46443cde45a48f6ee3068cadc1a3900e.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "André Kieswetter"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 250,
+   "file": "books/57748-the-lion-who-wouldn-t-try.json"
+  },
+  {
+   "slug": "56567-grandma-s-glasses",
+   "title": "Ang Salamin ni Lola",
+   "description": "Laging nawawala ni Lola ang kaniyang salamin. Minsan, kailangan lang niya ng bibong detektib para mahanap ito!",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700894/size3/0b3a679b1d24e2b4e223307bff56b880.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 315,
+   "file": "books/56567-grandma-s-glasses.json"
+  },
+  {
+   "slug": "57346-a-book-for-puchku",
+   "title": "Ang Aklat para kay Peewee",
+   "description": "Naubusan na si Peewee ng mga aklat na mababasa nang matuklasan niya na marami pang mga aklat na nasa itaas ng istante sa silid-aklatan. Subalit maliit lamang si Peewee, at ang istante naman ay mataas. Paano kaya niya maaabot ang pinakamamahal niyang mga aklat?",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117108/size3/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 607,
+   "file": "books/57346-a-book-for-puchku.json"
+  },
+  {
+   "slug": "58079-fly-in-space",
+   "title": "Ang Langaw sa Kalawakan",
+   "description": "Dalawang mga langaw-prutas ang ipinanganak sa planetang Earth at lumaki sa kalawakan.",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724110/size3/b2d320b4b71aac07a42a43edacc77861.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "Fahad Faizal"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 628,
+   "file": "books/58079-fly-in-space.json"
+  },
+  {
+   "slug": "58068-friends",
+   "title": "Magkakaibigan",
+   "description": "Pagtatanim ng galit sa isa't isa. Pandaraya sa isa't isa. Lahat ng ito ay bahagi ng ating pagtanda. Basahin ang kuwentong ito upang malaman kung paano nilutas ng dalawang bata ang kanilang problema na bahagi ng kanilang pagtanda.",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/130405/size3/3a49b77ff4edee9909179986805ccf70.jpg",
+   "authors": [
+    "Kaye Sucgang"
+   ],
+   "illustrators": [
+    "Fahad Faizal",
+    "Ouk  Ratha"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 346,
+   "file": "books/58068-friends.json"
+  },
+  {
+   "slug": "587076-phb-kan-pen-khrang-raek",
+   "title": "พบกันเป็นครั้งแรก",
+   "description": "เด็กหญิงแยงจีพบกับลักกี้ เด็กหญิงที่แสนจะขี้อายเป็นครั้งแรก ทั้งคู่จะเป็นเพื่อนกันได้อย่างไรนะ",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/637477/size3/be183e0dcabeba25a9bd13cfd42c7f74.jpg",
+   "authors": [
+    "Oh Naam",
+    "Ratawan Sripichian"
+   ],
+   "illustrators": [
+    "अनमारी  तामाङ"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 61,
+   "file": "books/587076-phb-kan-pen-khrang-raek.json"
+  },
+  {
+   "slug": "17401-bheema-jhew-la-khee-sow",
+   "title": "บีม่า เจ้าลาขี้เซา",
+   "description": "เจ้าลาบีม่า มีปัญหาทุกเช้าเหมือนเราทุกคน มันตื่นเช้าไม่ไหว แต่เพื่อนๆของมันช่วยบีม่าได้ อยากรู้มั้ยว่าทำยังไง",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+   "authors": [
+    "S. Brown"
+   ],
+   "illustrators": [
+    "Shweta Mohapatra"
+   ],
+   "publisher": "The Rosetta Foundation",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 81,
+   "file": "books/17401-bheema-jhew-la-khee-sow.json"
+  },
+  {
+   "slug": "95685-cea-xika-seiyng-dang",
+   "title": "เจ้าอีกาเสียงดัง",
+   "description": "กา! กา ! อีกาในหนังสือร้องเรียกเด็กๆ ให้มาอ่านหนังสือเล่มนี้",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704907/size3/13f658c3851393d29582f887eedc6f06.jpg",
+   "authors": [
+    "Arp aporn"
+   ],
+   "illustrators": [
+    "Deepa Balsavar"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 37,
+   "file": "books/95685-cea-xika-seiyng-dang.json"
+  },
+  {
+   "slug": "95363-ratri-swasdii-thing-khu",
+   "title": "ราตรีสวัสดิ์ ทิงคุ!",
+   "description": "เจ้าลูกสุนัขทิงกูที่ฟาร์มของแมนกูยังไม่ง่วงนอน มันจึงเดินออกไปกลางดึกและพบกับสัตว์อื่นๆ ที่น่าสนใจมากมาย",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720891/size3/170e9090f77038f09c412e3f74f4d3ee.jpg",
+   "authors": [
+    "Kyle Barker"
+   ],
+   "illustrators": [
+    "Sonal Goyal",
+    "Sumit Sakhuja"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 104,
+   "file": "books/95363-ratri-swasdii-thing-khu.json"
+  },
+  {
+   "slug": "95695-rea-t-ang-k-pen-satw-lok",
+   "title": "เราต่างก็เป็นสัตว์โลก",
+   "description": "การสื่อสารที่สวยงามระหว่างเหล่าสัตว์นานาชนิดและเด็กๆ และความสามารถของพวกเรา!",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722264/size3/dea133672cf8f0bfe601479dc135e764.jpg",
+   "authors": [
+    "Kyle Barker"
+   ],
+   "illustrators": [
+    "Santosh Pujari"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 28,
+   "wordCount": 84,
+   "file": "books/95695-rea-t-ang-k-pen-satw-lok.json"
+  },
+  {
+   "slug": "95412-koko-pi-hin",
+   "title": "โกโก้ไปไหน?",
+   "description": "เมื่อทูทูเห็นว่ากรงอันว่างเปล่าของโกโก เขารู้เลยว่าเขาแย่แน่ คุณจะช่วยทูทูหาโกโกไหม?",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722400/size3/03af4ace340bf149dc2cee14949f59ba.jpg",
+   "authors": [
+    "Kyle Barker"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 169,
+   "file": "books/95412-koko-pi-hin.json"
+  },
+  {
+   "slug": "95396-xika-cikwang",
+   "title": "อีกาใจกว้าง",
+   "description": "อีกาเป็นสัตว์ที่ไม่สวยงาม มันร้องเพลงไม่ไพเราะเหมือนอย่างนกกาเหว่า มันเต้นรำไม่สง่างามเหมือนอย่างนกยูง แต่มันมีคุณสมบัติเป็นเอกลักษณ์ที่พวกเราสามารถเรียนรู้ได้จากอีกา ลองค้นหาด้วยการอ่านเรื่องนี้กันเถอะ!",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722324/size3/899ce10997cf17e28b15c545ee954d63.jpg",
+   "authors": [
+    "Kyle Barker"
+   ],
+   "illustrators": [
+    "Padmanabh"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 146,
+   "file": "books/95396-xika-cikwang.json"
+  },
+  {
+   "slug": "95648-da-na",
+   "title": "ดำน้ำ!",
+   "description": "มาดำน้ำกับเราสู่โลกที่แสนประทับใจของแนวปะการัง และแว่บดูสัตว์ที่ทั้งสวยและแปลก!",
+   "language": "Thai",
+   "langCode": "th",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723793/size3/cbace915f1070d1f46291c016afd4b5d.jpg",
+   "authors": [
+    "Kyle Barker"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 121,
+   "file": "books/95648-da-na.json"
+  },
+  {
+   "slug": "17130-saaf-billi",
+   "title": "Temiz Kedicik Tırmık",
+   "description": "Kediler hiç yıkanmazlar ama gene de tertemizdirler.",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704876/size3/64305c3dcc61674c119e049ed04c6f3f.jpg",
+   "authors": [
+    "Alevrin İpek"
+   ],
+   "illustrators": [
+    "Deepa Balsavar"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 120,
+   "file": "books/17130-saaf-billi.json"
+  },
+  {
+   "slug": "17219-gadha-bhima",
+   "title": "Eşeğin Uykusu Var",
+   "description": "Sabahları uyanmakta zorlanan bir tek siz değilsiniz. Arkadaşımız Mima da bir türlü uyanamıyor. Ama neyse ki ona yardım edecek dostları var. ",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+   "authors": [
+    "Alevrin İpek"
+   ],
+   "illustrators": [
+    "Shweta Mohapatra"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 202,
+   "file": "books/17219-gadha-bhima.json"
+  },
+  {
+   "slug": "130897-bunty-ve-bubbly",
+   "title": "Bunty ve Bubbly",
+   "description": "Bunty sabunları sevmez. Bu yüzden temizlenmeyi reddeder. Sonra bir gece bir rüya görür. Bundan sonra onu neler beklemektedir?",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720260/size3/bfaca307e321a40d4fce0bf9bade9047.jpg",
+   "authors": [
+    "Aysenur Cinar"
+   ],
+   "illustrators": [
+    "Sorit Gupto"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 83,
+   "file": "books/130897-bunty-ve-bubbly.json"
+  },
+  {
+   "slug": "17248-baadal-chalaa-dhuumne",
+   "title": "Gezmeye Giden Bulut",
+   "description": "Bulut bir gün gezmeye gitmiş. Yolda kimlerle kimlerle karşılaşmış?",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/43560/size3/94a17f5bd47f25ab86a70b58d7194a89.jpg",
+   "authors": [
+    "Alevrin İpek"
+   ],
+   "illustrators": [
+    "Ajit Narayan",
+    "Sangeetha Kadur"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 95,
+   "file": "books/17248-baadal-chalaa-dhuumne.json"
+  },
+  {
+   "slug": "66052-bookworm",
+   "title": "KİTAP KURDU LOLİ",
+   "description": "Loli a little girl. She likes books. She goes to library. ",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/107948/size3/fa5cf1c9e463dffad1b2a33991e7bd13.jpg",
+   "authors": [
+    "Fatma Günbey"
+   ],
+   "illustrators": [
+    "Rajiv Eipe",
+    "Yusuf Ali Noton"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 603,
+   "file": "books/66052-bookworm.json"
+  },
+  {
+   "slug": "28260-an-evening-at-the-spice-market",
+   "title": "Baharat Çarşısı'nda bir akşam",
+   "description": "Bir akşam üstü kalabalık bir baharat çarşısının, arnavut kaldırımlı yolunda yürürken adımlarınıza dikkat edin; gürültülü satıcıların, sürekli sizi çekiştirerek rahatsız etmelerine izin vermeyin ve yankesicilere dikkat edin! Ayrıca, yol boyunca ne bulabileceğinize bakın...",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/28773/size3/c214f635203a86fa98e9f0ba0ee9c0b7.jpg",
+   "authors": [
+    "Emin DEDE"
+   ],
+   "illustrators": [
+    "Megha Vishwanath"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 2,
+   "wordCount": 103,
+   "file": "books/28260-an-evening-at-the-spice-market.json"
+  },
+  {
+   "slug": "45040-jadav-ve-onun-agac-dolu-yeri",
+   "title": "Jadav ve Onun Ağaç Dolu Yeri",
+   "description": "Jadav dünyadaki en muhteşem işte çalışıyor: orman ekiyor! Peki nasıl oluyor da Jadav orman oluşturabiliyor? Hikayeyi oku ve keşfet!",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712342/size3/d8de7d5aebdf7754bbf81fd93c25dba0.jpg",
+   "authors": [
+    "Meltem Erdogan"
+   ],
+   "illustrators": [
+    "Vinayak Varma"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1268,
+   "file": "books/45040-jadav-ve-onun-agac-dolu-yeri.json"
+  },
+  {
+   "slug": "68231-writing-flowers",
+   "title": "Yazı Çiçekleri",
+   "description": "Bağlaçlar konusunun pekiştirilmesi için yazılmış bir hikâyedir.",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/129776/size3/15ca8743f519eea1804771c2a1ca8879.jpg",
+   "authors": [
+    "Ecenur Tatar"
+   ],
+   "illustrators": [
+    "Maya  Ramaswamy",
+    "Sou  Kimsan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 1012,
+   "file": "books/68231-writing-flowers.json"
+  },
+  {
+   "slug": "67434-mum-and-daughter",
+   "title": "Ben Hasta mıyım?",
+   "description": "Elif iğneden çok korkan bir kız. Hasta olunca yaşadıklarını anlatılıyor.",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/114087/size3/04fd2e88d5c25a608c53cf9fe9d0d558.jpg",
+   "authors": [
+    "firdevs coskun"
+   ],
+   "illustrators": [
+    "Offei Tettey  Eugene",
+    "Tanvee Nabar",
+    "Vinayak Varma"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 947,
+   "file": "books/67434-mum-and-daughter.json"
+  },
+  {
+   "slug": "68308-nursing-home",
+   "title": "Huzur Evi",
+   "description": "Sıfatların Anlam Özelliklerini öğretmen öğrenci zerinden anlatımı",
+   "language": "Turkish",
+   "langCode": "tr",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/111375/size3/68cbccdc5b1fd60c1cc087fdf5b2eda1.jpg",
+   "authors": [
+    "Ilyas Yigittekin"
+   ],
+   "illustrators": [
+    "Jesse  Breytenbach",
+    "Khushbu Vala",
+    "Priyanka Agarwal",
+    "Rajeev Verma 'Banjara'",
+    "Swapnil Kapoor",
+    "Vusi  Malindi",
+    "Wiehan de Jager"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 424,
+   "file": "books/68308-nursing-home.json"
+  },
+  {
+   "slug": "378-en-nanbargal",
+   "title": "என் நண்பர்கள்",
+   "description": "எனக்கு  பல நண்பர்கள் உள்ளனர். அவர்கள் அனைவரையும் விரும்புகிறேன். ஆனால் அவருள் ஒருவர் மட்டும் மிகவும் சிறந்தவர் ஆவார்.",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Praba Ram",
+    "Sheela Preuitt"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 46,
+   "file": "books/378-en-nanbargal.json"
+  },
+  {
+   "slug": "59-susheelaavin-kolangal",
+   "title": "சுசீலாவின் கோலங்கள்",
+   "description": "நீங்கள் வீட்டிலும் பள்ளிகூடங்களிலும் கோலங்களைப் பார்த்திருப்பீர்கள், ஆனால் வானத்தில் கோலத்தைப் பார்த்திருக்கிறீர்களா? படித்துப் பாருங்கள் சுசீலா எப்படி இதை சாதித்தாள் என்று!",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721007/size3/d555da2445138f0ad43899fed6f643b9.jpg",
+   "authors": [
+    "Praba Ram",
+    "Sheela Preuitt"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 140,
+   "file": "books/59-susheelaavin-kolangal.json"
+  },
+  {
+   "slug": "22929-kaattu-poonai-kaattu-poonai",
+   "title": "காட்டுப் பூனை! காட்டுப் பூனை!",
+   "description": "இந்தியாவின் வனங்களிலிருக்கும் பலவகைப் பூனைகளை சந்திக்கலாம், வாருங்கள்!",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722383/size3/b67b65b0b4e07eecc3cd0aa184e1548c.jpg",
+   "authors": [
+    "Bhuvana Shiv"
+   ],
+   "illustrators": [
+    "Rohan Chakravarty"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 175,
+   "file": "books/22929-kaattu-poonai-kaattu-poonai.json"
+  },
+  {
+   "slug": "34899-vaanavil-saambaar",
+   "title": "வானவில் சாம்பார்",
+   "description": "பாட்டியும், பவ்யாவும் இன்று மதிய உணவிற்கு என்ன சாப்பிடப் போகிறார்கள்? வேறென்ன? பவ்யாவிற்குப் பிடித்த வானவில் சாம்பார்தான்! அவர்களின் வண்ணமயமான சமையலை நீங்களும் ரசித்து மகிழுங்கள்.",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/56684/size3/b9155fef4902fd82e8b9529dcf1c6ce3.jpg",
+   "authors": [
+    "Rajam Anand"
+   ],
+   "illustrators": [
+    "Antra Khurana"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 109,
+   "file": "books/34899-vaanavil-saambaar.json"
+  },
+  {
+   "slug": "24881-umaavum-uppumaavum",
+   "title": "உமாவும், உப்புமாவும்",
+   "description": "உமா,  காலைச் சிற்றுண்டியை ஒருபோதும் சாப்பிட மாட்டாள். அதற்கு பதிலாக அதோடு விளையாடுவாள். அவள் சாப்பாட்டுடன் விளையாடுவதைத் தடுக்க ஏதேனும் வழி இருக்கிறதா?",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/91617/size3/7665b5719e56df1b97c01a18608f9f09.jpg",
+   "authors": [
+    "Uma Sekhar"
+   ],
+   "illustrators": [
+    "Renuka Rajiv"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 396,
+   "file": "books/24881-umaavum-uppumaavum.json"
+  },
+  {
+   "slug": "12366-erumbum-pachchai-ppayarum",
+   "title": "எறும்பும் பச்சைப் பயறும்",
+   "description": "ஒரு சிறு எறும்பு, ஒரு பெரிய பச்சைப்பயற்றை காண்கிறது. அதை வீட்டிற்கு எடுத்துச் செல்ல விரும்புகிறது. செல்லும் வழியில் பல பிரச்சினைகள். வீட்டிற்கு எடுத்துச் சென்றதா? எறும்பின் பின்னால் சென்று இதனை தெரிந்து கொள்ளுங்கள்.",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/791032/size3/2b86d6bf6d72bbd4a047de4522e7bc1b.jpg",
+   "authors": [
+    "S. Jayaraman"
+   ],
+   "illustrators": [
+    "Shubhshree  Mathur"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 340,
+   "file": "books/12366-erumbum-pachchai-ppayarum.json"
+  },
+  {
+   "slug": "989-tok-tok",
+   "title": "டொக் டொக்!",
+   "description": "இரவு நேரம். ஆனால், சோனாப்பூர் ராஜாவால் தூங்கமுடியவில்லை. காரணம், எங்கிருந்தோ வருகிற மர்மச் சத்தம்தான்!என்ன  ஆயிற்று? ராஜா தூங்கினாரா இல்லையா? இந்தக் கதையைப் படித்துத் தெரிந்துகொள்ளுங்கள்.",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/706157/size3/93c759f49808e92b7f9cefb99d3989f4.jpg",
+   "authors": [
+    "N. Chokkan"
+   ],
+   "illustrators": [
+    "Reshma Barve"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 627,
+   "file": "books/989-tok-tok.json"
+  },
+  {
+   "slug": "11879-punnagaikum-pattampoochi",
+   "title": "புன்னகைக்கும் பட்டாம்பூச்சி!",
+   "description": "காவ்யாவின் குடும்பம் கிராமத்திலிருந்து பெங்களூருக்குக் குடிபெயர்கிறது. அவள் புதிதாக சேர்ந்திருக்கும் பள்ளியில் அவளுக்குத் தோழிகள் யாருமே இல்லை. ஒருநாள், அவள் பட்டாம்பூச்சிப் பூங்காவுக்குச் செல்கிறாள், பட்டாம்பூச்சிகளுடன் தனக்கிருக்கும் சிறப்புப் பிணைப்பைப் புரிந்துகொள்கிறாள், அங்கே அவளுக்கொரு புதிய தோழியும் கிடைக்கிறாள்.\r\n\r\n",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+   "authors": [
+    "N. Chokkan"
+   ],
+   "illustrators": [
+    "Lavanya  Naidu"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 766,
+   "file": "books/11879-punnagaikum-pattampoochi.json"
+  },
+  {
+   "slug": "14796-kokku-karpitha-paadam",
+   "title": "கொக்கு கற்பித்த பாடம்",
+   "description": "கிராமங்களில் வளரும் குழந்தைகள், பிற உயிரினங்களின் அருகாமையில் நெருங்கி வளர்கிறார்கள். வாழ்க்கையின் சில முக்கியப் பாடங்களை, குழந்தைகள் எப்படிக் கற்றுக் கொள்கிறார்கள் என்பதை மனதைத் தொடும் \r\nஇந்தக் கதையில் படியுங்கள்!",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722857/size3/6fb60231ce2aa30ab7722953f3d0c925.jpg",
+   "authors": [
+    "Sudha  Thilak"
+   ],
+   "illustrators": [
+    "Kanika  Nair"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 542,
+   "file": "books/14796-kokku-karpitha-paadam.json"
+  },
+  {
+   "slug": "13252-captain-arya",
+   "title": "கேப்டன் ஆர்யா",
+   "description": "ஆர்யா எப்போதும் பறப்பதைப் பற்றியே கனவு கண்டுகொண்டு இருந்தாள். ஆர்யா தன்னுடைய கனவுகளைப் பின்பற்றியதைப்  பற்றிப் படித்து, அவள் முதல்முறையாக விமானம் ஓட்டும்போது அவளோடு நீங்களும் விமான ஓட்டுநர் அறையில் சேர்ந்துகொள்ளுங்கள். இது உண்மையிலேயே ரொம்ப விசேஷமான நாள்தான்!",
+   "language": "Tamil",
+   "langCode": "ta",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713815/size3/86bf40b3b913d9d94bc04157998a8257.jpg",
+   "authors": [
+    "Violet வயலட்"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 415,
+   "file": "books/13252-captain-arya.json"
+  },
+  {
+   "slug": "221-chinnarula-chetipani",
+   "title": "చిన్నారుల చేతిపని",
+   "description": "ఇంటికి రంగులు వెయ్యడం ఎంత సరదా అయిన పనో! కానీ గేటు ఏ రంగులో ఉండాలి ?\r\n",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697317/size3/fae553c96cec531f760c79641f63a924.jpg",
+   "authors": [
+    "Janaki Rani Turaga"
+   ],
+   "illustrators": [
+    "Tanvi Bhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 150,
+   "file": "books/221-chinnarula-chetipani.json"
+  },
+  {
+   "slug": "424-poyindi-dorikindi",
+   "title": "పోయింది!! దొరికింది!!",
+   "description": "ఒక చిన్న పిల్లవాడు తాను పోగొట్టుకున్న దానికోసం వెతుకుతూ ఉంటాడు. తీరా అది దొరికేసరికి ఏమయ్యిందో తెలుసా? ఈ పుస్తకం చదవండి, మీకే తెలుస్తుంది.",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/709189/size3/097ef1a9bc1497c04e9ec0987d19adac.jpg",
+   "authors": [
+    "K. Suresh"
+   ],
+   "illustrators": [
+    "Sukhada Rahalkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 100,
+   "file": "books/424-poyindi-dorikindi.json"
+  },
+  {
+   "slug": "52-naa-chepa-kaadu-naa-chepa",
+   "title": "'నా చేప!' 'కాదు, నా చేప!'",
+   "description": "ముగ్గురు స్నేహితులూ, మూడు తెలివైన చేపల తమాషా కథ! ",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721012/size3/1db7298d5b01da68f1fd305946c8895a.jpg",
+   "authors": [
+    "Janaki Rani Turaga"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 176,
+   "file": "books/52-naa-chepa-kaadu-naa-chepa.json"
+  },
+  {
+   "slug": "688-amma-skooluki-vellinappudu",
+   "title": "అమ్మ స్కూలుకి వెళ్ళినప్పుడు",
+   "description": "మీరా వాళ్ళ అమ్మ ఒక రోజు మీరా వాళ్ళ స్కూలుకి వెళ్లింది. కాని అక్కడ ఎవ్వరూ లేరు - మీరా, మీరా స్నేహితులు, టీచర్లు, ఆఖరికి ప్రిన్సిపాలు కూడా. వాళ్ళందరూ \r\nమరి ఎక్కడకి మాయం అయినట్లు?\r\n",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723634/size3/30d13d0b8c4072a4032ab2309f586a32.jpg",
+   "authors": [
+    "Jayashree Rao"
+   ],
+   "illustrators": [
+    "Ruchi Shah"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 168,
+   "file": "books/688-amma-skooluki-vellinappudu.json"
+  },
+  {
+   "slug": "878-intilo-yeluka",
+   "title": "ఇంటిలో ఎలుక",
+   "description": "ఒక ఇంట్లోకి ఎలుక దూరుతుంది. దానితో అంతా గందరగోళం. పిల్లలకు ఒక చిన్నపాటి తమాషా కథ.",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/699239/size3/64aac1468dabc0be40ef455f26448dd6.jpg",
+   "authors": [
+    "K. Suresh"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 176,
+   "file": "books/878-intilo-yeluka.json"
+  },
+  {
+   "slug": "39142-melaalo-lekkalu",
+   "title": "మేళాలో లెక్కలు",
+   "description": "లీలా తన తరగతిలోని 36 మంది విద్యార్థులతో కలిసి మేళాకు వెళ్ళింది. పిల్లలను లెక్కించటం, వారికి ఎన్ని టికెట్లు కొనాలో చూడటం, ఎవరూ  తప్పిపోకుండా చూడటం లాంటి పనులు మాష్టారు చేయవలసి వచ్చింది. 1, 2, 3 అని కాకుండా '36' మందిని లెక్కించటానికి సులభమైన పద్ధతి ఏమైనా ఉందా? సమూహాలలో లెక్కించే కథ ద్వారా ఎక్కాలు పరిచయం చేశారు.",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/716368/size3/ee43a59b4f099703679c055db6a7e43e.jpg",
+   "authors": [
+    "Ananthalakshmi Popuri"
+   ],
+   "illustrators": [
+    "Nirzara Verulkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 265,
+   "file": "books/39142-melaalo-lekkalu.json"
+  },
+  {
+   "slug": "11168-rasavattaramaina-potee",
+   "title": "రసవత్తరమైన పోటీ",
+   "description": "హల్వాలు, జిలేబీలు ప్రత్యర్ధులుగా హాకీ పోటీలో పాల్గొన్నప్పుడు అది ఒక హాకీ మ్యాచ్లానే జరిగింది. ఈ ఆట రోమాంచిత గగుర్పాటు కొలిపే ఆట. ఇందులో ప్రతిభ, బృంద ప్రదర్శన, బృంద నిర్వహణ మొదలైనవన్నీ పరిపూర్ణంగా ప్రదర్శితమౌతాయి. అకస్మాత్గా ‘ఢీ’కొని ఆడడంవలన ఇది నిజంగా రసవత్తరమైన పోటీయే!",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/27212/size3/ddee2141a9ce35fcaae82ac5424d57c1.jpg",
+   "authors": [
+    "Nagaraju Nichenametla"
+   ],
+   "illustrators": [
+    "Niloufer Wadia"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 974,
+   "file": "books/11168-rasavattaramaina-potee.json"
+  },
+  {
+   "slug": "39148-anthariksha-nowkalo-paanipoori",
+   "title": "అంతరిక్ష నౌకలో పానీపూరి",
+   "description": "చిక్కీ ఎప్పుడు తిండి విషయంలో పేచీలు పెడుతుంది. ముల్లంగి పరోటాలు వాసన వస్తాయని వాటిని ఇష్టపడదు. అంతరిక్షాన్ని పరిశోధించాలని ఆమె కోరిక. కానీ అంతరిక్ష నౌకలో తనకు పిజ్జా, పానీపూరి, ఐస్ క్రీంలు దొరుకుతాయో లేదో అని అనుకుంటూ ఉంటుంది.\r\nవ్యోమగాములు అంతరిక్షంలోకి వెళ్ళినప్పుడు ఏమి తింటారో, ఎందుకు తింటారో చర్చించుకుంటూ భోజనం చేస్తున్న చిక్కీ, నీనులతో మీరు కూడా కలవండి.",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117466/size3/793fd168869667b621ba74334920c6f7.jpg",
+   "authors": [
+    "Bharathi kode"
+   ],
+   "illustrators": [
+    "Arpita Bhattacharjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 818,
+   "file": "books/39148-anthariksha-nowkalo-paanipoori.json"
+  },
+  {
+   "slug": "15107-manu-matti-bommalu",
+   "title": "మను - మట్టి బొమ్మలు",
+   "description": "మను వాళ్ళ నాన్న, తాత కుండలు చేస్తారు. మను కూడా ఆ కళని నేర్చుకుంటున్నాడు. ఒండ్రు మట్టి తీసుకురావటంతో మొదలుపెట్టి, కుండలు చేసి, వాటిని బజారులో అమ్మడం వరకు ఉండే పనులలోని చిన్న చిన్న ఆనందాలను, కష్టాలను ఈ కథ వివరిస్తుంది.\r\nబుల్ బుల్ శర్మ ఆసక్తికరమైన కథకి మధుబని శైలిలో శాంతిదేవి బొమ్మలు వేశారు. దస్తకారీ హాట్ సమితి ఈ సిరీస్‌లో రూపొందించిన నాలుగు పుస్తకాలు భారతదేశ వివిధ ప్రాంతాలలోని గ్రామీణ హస్తకళల కుటుంబంలోని పిల్లల జీవితాన్ని వివరిస్తాయి. భిన్న సంస్కృతులను పిల్లలు తెలుసుకుని, ఆనందించటానికి ఈ కథలకు బొమ్మలు వెయ్యటానికి భిన్న పెయింటింగ్, కళారూపాలను ఎంచుకున్నారు.\r\n",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/118161/size3/d1e55131fcfd9ea433134f57104b2ee2.jpg",
+   "authors": [
+    "K. Suresh"
+   ],
+   "illustrators": [
+    "Shanti Devi"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 27,
+   "wordCount": 2278,
+   "file": "books/15107-manu-matti-bommalu.json"
+  },
+  {
+   "slug": "39162-mayam-chese-kotu",
+   "title": "మాయం చేసే కోటు",
+   "description": "మాయం చేసే కోటు మీకు దొరికితే మీరేం చేస్తారు? అది వేసుకొని దాగుడుమూతలు ఆడితే భలేగా ఉంటుంది. కానీ ఎవరైనా వాటిని తయారు చేస్తున్నారా? లేక అవి కేవలం సైన్సు ఫిక్షన్లోనో, కల్పిత కథల్లోనో ఉంటాయా? ఇది తెలుసుకోవడానికే అర్ణవ్, తనీష గ్రంథాలయం వైపు బయలుదేరారు. మనం కూడా నిశ్శబ్దంగా వెళదాం పదండి - వాళ్ళు మనని చూడలేరు, మనం వాళ్ళ ప్రపంచంలో కనబడం కదా!",
+   "language": "Telugu",
+   "langCode": "te",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117560/size3/aea0af0ba611e75850bc4dd4c24a7c54.jpg",
+   "authors": [
+    "Deepu"
+   ],
+   "illustrators": [
+    "Radhika Tipnis"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 784,
+   "file": "books/39162-mayam-chese-kotu.json"
+  },
+  {
+   "slug": "22999-raanmaanjar-raanmaanjar",
+   "title": "रानमांजर! रानमांजर!",
+   "description": "भेटूया भारतातल्या तऱ्हतऱ्हेच्या रानमांजरांना!",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722383/size3/b67b65b0b4e07eecc3cd0aa184e1548c.jpg",
+   "authors": [
+    "Mrinalinee  Vanarase"
+   ],
+   "illustrators": [
+    "Rohan Chakravarty"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 110,
+   "file": "books/22999-raanmaanjar-raanmaanjar.json"
+  },
+  {
+   "slug": "333-zhopalu-bheema",
+   "title": "झोपाळू भीमा",
+   "description": "भीमा गाढवाला काही केल्या पहाटे जाग येत नसे. त्याच्या मदतीला आली त्याची एक चिंटुकली मैत्रीण. भीमा पहाटे लवकर कसा उठायला लागला?\r\n",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+   "authors": [
+    "Mukund Taksale"
+   ],
+   "illustrators": [
+    "Shweta Mohapatra"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 270,
+   "file": "books/333-zhopalu-bheema.json"
+  },
+  {
+   "slug": "343-maajhe-mitra",
+   "title": "माझे मित्र",
+   "description": "मला खूप मित्र आहेत. मला ते सर्व आवडतात. \r\nपण त्यांच्यातला एक मला सर्वात जास्त आवडतो.\r\n",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Pratham Mumbai Team"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 63,
+   "file": "books/343-maajhe-mitra.json"
+  },
+  {
+   "slug": "131-babachya-mishya",
+   "title": "बाबाच्या मिश्या",
+   "description": "अनूला बाबाचं सगळ्यात जास्त काय आवडतं, तर त्याच्या मिश्या.\r\nखरं म्हणजे तिला मिश्यावाली सगळीच माणसं आवडतात.\r\nमिश्या बघितल्या की तिला काय काय भन्नाट कल्पना सुचतात.\r\n",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721686/size3/0eaa2e9b2d4d4c465ba2c5e05a6f092c.jpg",
+   "authors": [
+    "Madhuri Purandare"
+   ],
+   "illustrators": [
+    "Madhuri Purandare"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 310,
+   "file": "books/131-babachya-mishya.json"
+  },
+  {
+   "slug": "44730-aatya-aani-mee",
+   "title": "आत्या आणि मी",
+   "description": "चुटकू त्याच्या आत्याबरोबर चालायला जाऊन येतो. परत आल्यावर त्याच्या खिशांमध्ये तऱ्हतऱ्हेच्या वस्तूंचा खजिना जमा झालेला असतो...शिवाय इकडच्या-तिकडच्या कहाण्यासुद्धा. एक आत्या आणि तिचा भाचा यांच्यातले भावबंध कसे उलगडतात, त्याची एका लहान मुलाच्या दृष्टिकोनातून सांगितलेली ही हृद्य गोष्ट. ",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117615/size3/2b5f77b28bb196dfb73d2b136890b5b0.jpg",
+   "authors": [
+    "Meera Joshi"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 147,
+   "file": "books/44730-aatya-aani-mee.json"
+  },
+  {
+   "slug": "30030-guru-aani-pichucha-bhatkanticha-divas",
+   "title": "गुरू आणि पिचूचा भटकंतीचा दिवस",
+   "description": "गुरू आणि पिचूकडे खेळायला जागाच नाहीये. ती दोघं त्यांच्या शहरात खेळायला नवनवीन जागा कशा शोधतात, ते बघूया.",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722963/size3/a8ebe3620e8f0c4efe7a4021ea268154.jpg",
+   "authors": [
+    "Jui Kulkarni"
+   ],
+   "illustrators": [
+    "Sayan Mukherjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 270,
+   "file": "books/30030-guru-aani-pichucha-bhatkanticha-divas.json"
+  },
+  {
+   "slug": "13727-sagdyaat-uttam-ghar",
+   "title": "सगळ्यात उत्तम घर",
+   "description": "मोठं, छोटं, गोलगोल, चौकोनी, जड, हलकं - घरं खूप प्रकारची असतात... ती वेगवेगळ्या प्रकारची का असतात, ते समजून घेऊ या. स्वतःचं घर बनवू या. घर कसं बांधतात, ते आमची छोटी आर्किटेक्ट दाखवेल ना तुम्हाला!",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724108/size3/44fe170ad046b14664899d1727befc14.jpg",
+   "authors": [
+    "Jui Kulkarni"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 465,
+   "file": "books/13727-sagdyaat-uttam-ghar.json"
+  },
+  {
+   "slug": "40324-jadoochee-durbeen",
+   "title": "जादूची दुर्बीण",
+   "description": "मरियम आणि तेजसकडे एक जादूची दुर्बीण आहे. या दुर्बीणीतून ते जगातल्या विशिष्ट भागात आढळणारे ७ प्राणी आणि पक्षी बघतात. चला तर मग, पाहूया आपणही त्यांच्याबरोबर...",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/726794/size3/cff02b8fce687b1661207ff8aaf460c1.jpg",
+   "authors": [
+    "Meera Joshi"
+   ],
+   "illustrators": [
+    "Sayan Mukherjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 684,
+   "file": "books/40324-jadoochee-durbeen.json"
+  },
+  {
+   "slug": "14235-don-numberchi-gosht",
+   "title": "'दोन नंबर’ची गोष्ट",
+   "description": "नंबर एक की नंबर दोन? दोन्हीही मोठीच कामं आहेत गड्या! पण जुन्या काळात स्वच्छतागृहं कशी दिसायची, ते ठाऊक आहे तुम्हाला? शिवाय वेगवेगळ्या देशांत ती वेगवेगळी होती का? जगातली वेगवेगळी ठिकाणं आणि काळ यांमधल्या स्वच्छतागृहात डोकावून पहायला तयार व्हा पाहू!",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713648/size3/f87ae90aebe1b0d710b7ac350157e072.jpg",
+   "authors": [
+    "Mrinalinee  Vanarase"
+   ],
+   "illustrators": [
+    "Greystroke"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1104,
+   "file": "books/14235-don-numberchi-gosht.json"
+  },
+  {
+   "slug": "13804-bijune-winli-jadu",
+   "title": "बिजूने विणली जादू",
+   "description": "बिजूचं विणकर कुटुंब ओरिसातल्या एका खेड्यात राहतं. हातमागावर ते सुंदर साड्या आणि कापड विणतात आणि शहरांमध्ये किंवा परदेशातही ते विकलं जातं. ही कथा आहे बिजूच्या करामतीची. तो वडिलांबरोबर साड्या विकायला दिल्लीला जातो आणि आपल्या कौशल्यानं एका शहरी मुलाला  चकित करतो.\r\nजया जेटली यांच्या या मजेदार गोष्टीला भ्रमर नायक यांनी पारंपरिक ‘पटचित्र’ शैलीत चित्रं काढली आहेत.",
+   "language": "Marathi",
+   "langCode": "mr",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/524535/size3/2d6162e002a3bf3ad6834ac1a6050a54.jpg",
+   "authors": [
+    "Sandhya Taksale"
+   ],
+   "illustrators": [
+    "Bhramara  Nayak"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 2313,
+   "file": "books/13804-bijune-winli-jadu.json"
+  },
+  {
+   "slug": "12782-amma-heluva-kathegalu",
+   "title": "ಅಮ್ಮ ಹೇಳುವ ಕಥೆಗಳು",
+   "description": "ಎಲ್ಲರೂ ಹೊದಿಕೆಗಳ ಒಳಗೆ ಹುದುಗಿಕೊಳ್ಳೋಣ! ಇದು ಅಮ್ಮನಿಂದ ಕತೆ ಕೇಳುವ ಸಮಯ.",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/34952/size3/cd9982004d7e6ea392ebe738a42cb276.jpg",
+   "authors": [
+    "Bhavya"
+   ],
+   "illustrators": [
+    "Harshvardhan Gantha"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 50,
+   "file": "books/12782-amma-heluva-kathegalu.json"
+  },
+  {
+   "slug": "12785-kannamuchale",
+   "title": "ಕಣ್ಣಾಮುಚ್ಚಾಲೆ",
+   "description": "ನೀವು ನಿಮ್ಮ ಗೆಳೆಯ ಗೆಳತಿಯರೊಂದಿಗೆ ಕಣ್ಣಾಮುಚ್ಚಾಲೆ ಆಡುವಾಗ ಎಲ್ಲಿ ಅಡಗಿಕೊಳ್ಳಲು ಬಯಸುತ್ತೀರಿ? ಈ ಬಗ್ಗೆ ನೀವು ತಿಳಿಬೇಕಿದೆಯಾ? ಈ ಕಥೆ ಓದೋಣ...",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/34964/size3/b444d20af25d0c9bafa9a14a0c23ba2a.jpg",
+   "authors": [
+    "Bhavya"
+   ],
+   "illustrators": [
+    "Harshvardhan Gantha"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 10,
+   "wordCount": 53,
+   "file": "books/12785-kannamuchale.json"
+  },
+  {
+   "slug": "12996-naanu-naanakka",
+   "title": "ನಾನು, ನನ್ನಕ್ಕ",
+   "description": "ಮಾತು ಮಾತಲ್ಲೇ ಕಿತ್ತಾಡಿದರೂ, ಅಷ್ಟೇ ಇಷ್ಟಪಡುವ ಅಕ್ಕ-ತಂಗಿಯರ ಪುಟ್ಟ ಕಥೆ ಇದು. ",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/158923/size3/e8fd0c651b76e9650d49231a3e0f3435.jpg",
+   "authors": [
+    "Bhavya"
+   ],
+   "illustrators": [
+    "Saloni Chopra"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 6,
+   "wordCount": 60,
+   "file": "books/12996-naanu-naanakka.json"
+  },
+  {
+   "slug": "27656-nillada-beelada-ee-hallu",
+   "title": "ನಿಲ್ಲದ, ಬೀಳದ ಈ ಹಲ್ಲು!",
+   "description": "ಬುನುಳ ಹಾಲು ಹಲ್ಲು ಅಲ್ಲಾಡುತ್ತಿದೆ. ಆದರೆ, ಅದೇಕೋ ಬೀಳುತ್ತಲೇ ಇಲ್ಲ. ಹಿಮಾಲಯದ ಜನಪದ ಕತೆಯೊಂದು ಅವಳಿಗೆ ಸಹಾಯ ಮಾಡಿದ್ದು ಹೇಗೆ? ಓದಿ ತಿಳಿಯಿರಿ.",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/55586/size3/40838dac3ea07f5046062e3785fa72f9.jpg",
+   "authors": [
+    "Meera Tushar Punarvasu"
+   ],
+   "illustrators": [
+    "Canato Jimo"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 244,
+   "file": "books/27656-nillada-beelada-ee-hallu.json"
+  },
+  {
+   "slug": "13692-aakshi-haa-aaaaaaaaa-kshi",
+   "title": "ಆಕ್ಷಿ! ಹಾ... ಆಆಆ... ಕ್ಷಿ!",
+   "description": "ಆಕ್ಷಿರಾಮನು ಮಾಡುವ ಯಾವುದೋ ಒಂದು ಕೆಲಸ ಇಡೀ ಪಟ್ಟಣವೇ ತಲೆ ಕೆಳಗಾಗುವಂತೆ ಮಾಡುತ್ತದೆ. ಅದೇನೆಂದು ತಿಳಿಯಲು ಬಯಸುವಿರಾ?",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/116907/size3/bb5846057dd49f676de244368d2eca67.jpg",
+   "authors": [
+    "Janhavi Lakshminarayanan"
+   ],
+   "illustrators": [
+    "Lavanya Karthik"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 202,
+   "file": "books/13692-aakshi-haa-aaaaaaaaa-kshi.json"
+  },
+  {
+   "slug": "697-maleraya",
+   "title": "ಮಳೆರಾಯ",
+   "description": "ಮೋಡದೊಂದಿಗೆ ಸಾಗಿರಿ. ಅದು ಮಳೆ ಮತ್ತು ಹರುಷ ಹರಿಸುವುದನ್ನು ಕಾಣಿರಿ!",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/790870/size3/6cce451176ed21d91d7cbf567d30f1c0.jpg",
+   "authors": [
+    "A.S. Chandra Mouli"
+   ],
+   "illustrators": [
+    "Ajit Narayan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 96,
+   "file": "books/697-maleraya.json"
+  },
+  {
+   "slug": "797-mola-mattu-aame",
+   "title": "ಮೊಲ ಮತ್ತು ಆಮೆ",
+   "description": "ಮೊಲ ಮತ್ತು ಆಮೆ ನಡುವೆ ಓಟದ ಪಂದ್ಯದ ಹಳೆಯ ಕಥೆ ನೆನಪಿದೆಯಾ? ಇದು ಅಂತಹುದೇ ಪಂದ್ಯದ ಹೊಸ ಕಥೆ. ಪೈಪೋಟಿಯಲ್ಲ, ಸಹಯೋಗದ ಸ್ಪರ್ಧೆ ಏನಾಯಿತೆಂದು ಮೊಲ ಮತ್ತು ಆಮೆ ಕತೆ ಓದಿ ತಿಳಿಯಿರಿ.",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722326/size3/7f723423c6a3adfa5f807c1262f5a731.jpg",
+   "authors": [
+    "Venkatramana Gowda"
+   ],
+   "illustrators": [
+    "Padmanabh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 270,
+   "file": "books/797-mola-mattu-aame.json"
+  },
+  {
+   "slug": "68067-nagu-thadeyada-sundari",
+   "title": "ನಗು ತಡೆಯದ ಸುಂದರಿ",
+   "description": "ಟಿ. ಸುಂದರಿಗೆ ಪ್ರತಿಯೊಂದಕ್ಕೂ ನಗು ಬರುತ್ತದೆ. ಹಾಗೆ ನಗು ಬಂದಾಗಲೆಲ್ಲ ಅವಳಿಗೆ ಬಾಯಿ ಮುಚ್ಚಿಕೊಂಡಿರುವುದು ಸಾಧ್ಯವೇ ಇಲ್ಲ. ಹಾಗಾದರೆ ಟಿ. ಸುಂದರಿಗೆ ನಗುವುದೊಂದು ಸಮಸ್ಯೆಯೇ?. ಏಕೆಂದರೆ, ಸಮಸ್ಯೆ ಇಲ್ಲ ಎಂದರೆ ಯಾವಾಗಲೂ ಅವಳು ನಗುತ್ತಲೇ ಇರಬಹುದಲ್ಲ!",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/718145/size3/8f27fe5f72c50232be4f992cd4a2eaea.jpg",
+   "authors": [
+    "Smitha sathyaprakash"
+   ],
+   "illustrators": [
+    "ROSH"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 21,
+   "wordCount": 655,
+   "file": "books/68067-nagu-thadeyada-sundari.json"
+  },
+  {
+   "slug": "5768-muttajjiya-vayasseshtu",
+   "title": "ಮುತ್ತಜ್ಜಿಯ ವಯಸ್ಸೆಷ್ಟು?",
+   "description": "ಮುತ್ತಜ್ಜಿಗೆ ತುಂಬಾ ವಯಸ್ಸಾಗಿದೆ ಎಂಬುದು ಪುಟ್ಟ ಮತ್ತು ಪುಟ್ಟಿಗೆ ಗೊತ್ತು. ಆದರೆ ನಿಖರವಾಗಿ ಅವರ ವಯಸ್ಸು ಎಷ್ಟು? ಅದರ ಅನ್ವೇಷಣೆಗೆ ಮುಂದಾದ ಪುಟ್ಟ, ಪುಟ್ಟಿ ಮುತ್ತಜ್ಜಿಯ ನೆನಪುಗಳು ಹಾಗೂ ದೇಶದ ಇತಿಹಾಸವನ್ನು ತಿಳಿದುಕೊಳ್ಳುತ್ತಾ ಲೆಕ್ಕಾಚಾರಕ್ಕೆ ಮುಂದಾದರು. ಬನ್ನಿ, ಈ ಜೋಡಿ ಪತ್ತೇದಾರಿಗಳೊಂದಿಗೆ ನೀವೂ ಜತೆಗೂಡಿ..\r\n",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723800/size3/30b6242b35da965c70816bf0f26308c3.jpg",
+   "authors": [
+    "Manjunatha Varadaraju"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 25,
+   "wordCount": 1269,
+   "file": "books/5768-muttajjiya-vayasseshtu.json"
+  },
+  {
+   "slug": "569-maragala-naduve-ondu-vihaara",
+   "title": "ಮರಗಳ ನಡುವೆ ಒಂದು ವಿಹಾರ",
+   "description": "ಮನುಷ್ಯನ ಆಗಮನಕ್ಕಿಂತಲೂ ಮುಂಚಿತವಾಗಿಯೇ ಮರಗಳು ಭೂಮಿಯ ಮೇಲೆ ಇದ್ದವು. ಇವುಗಳ ತಂಪಾದ ನೆರಳು, ರುಚಿಯಾದ ಹಣ್ಣುಗಳು ಇಲ್ಲದಿದ್ದರೆ ಈ ಭೂಮಿ ನಿಜವಾಗಿಯೂ ಬರಡಾಗುತ್ತಿತ್ತು. ನಿಮಗಿದು ಗೊತ್ತಾ? ಒಂದು ಪರಂಗಿ ಹಣ್ಣಿನ ಬೀಜಗಳಿಂದ ಸುಮಾರು ಐನೂರು ಮರಗಳು ಬೆಳೆಯಬಹುದು! ಹುಣಸೆ ಮರದ ರೆಂಬೆಗಳ ಮೇಲೆ ದೆವ್ವಗಳಿರುತ್ತವೆ ಎನ್ನುವ ನಂಬಿಕೆ ಇರುವುದರಿಂದ ಜನರು ರಾತ್ರಿಯ ಹೊತ್ತು ಅದರ ಅಡಿಯಲ್ಲಿ ಮಲಗುವುದಿಲ್ಲ! ಬನ್ನಿ, ರಾಜನ ತೋಟದ ಮರಗಳ ನಡುವೆ ವಿಹರಿಸುತ್ತ ಭಾರತದ ಅದ್ಭುತವಾದ ಹಣ್ಣಿನ ಮರಗಳ ರುಚಿ. ಪರಿಮಳ ಹಾಗೂ ಅದರ ಜತೆಗೆ ಬೆಸೆದುಕೊಂಡಿರುವ ಐತಿಹ್ಯಗಳನ್ನು ತಿಳಿದುಕೊಳ್ಳೋಣ. ಈ ಕಲಿಕೆ ನಿಮ್ಮಲ್ಲಿ ಖಂಡಿತವಾಗಿ ಉಲ್ಲಾಸ ಮತ್ತು ಉತ್ಸಾಹ ತುಂಬುತ್ತದೆ.",
+   "language": "Kannada",
+   "langCode": "kn",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/422995/size3/5bc4beb5c0db0f72368346a63702e768.jpg",
+   "authors": [
+    "Bhavya"
+   ],
+   "illustrators": [
+    "Nimret Handa"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 29,
+   "wordCount": 2547,
+   "file": "books/569-maragala-naduve-ondu-vihaara.json"
+  },
+  {
+   "slug": "251758-kachbo-ane-saslu",
+   "title": "કાચબો અને સસલું",
+   "description": "કાચબા અને સસલાએ દોડની હરીફાઈ કરી. રસ્તામાં સસલું સુઈ ગયું કાચબો આગળ નીકળી ગયો. ત્યાં કાચબાને સિંહ મળી ગયો. હવે આગળ શું થશે? ",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/282978/size3/f0f4bc971ee80853a0691be353e006a1.jpg",
+   "authors": [
+    "Aryan Makwana"
+   ],
+   "illustrators": [
+    "Padmanabh"
+   ],
+   "publisher": "Pratham Education Foundation",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 93,
+   "file": "books/251758-kachbo-ane-saslu.json"
+  },
+  {
+   "slug": "322-aavo-aavo",
+   "title": "આવો, આવો!",
+   "description": "મા૨ા ઘ૨મ તમારું સ્વાગત છે!",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721927/size3/1ca18189954b1b018db5336dc0be3018.jpg",
+   "authors": [
+    "Kalpana Palkhiwala"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 108,
+   "file": "books/322-aavo-aavo.json"
+  },
+  {
+   "slug": "17933-maro-parivaar",
+   "title": "મારો પરિવાર",
+   "description": "મારો પરિવાર ખૂબ મોટો છે. તમે એ સૌને મળશો?",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/534571/size3/9c37e0f0dfbdd4fbb5a4aada16598c88.jpg",
+   "authors": [
+    "Kalpana Palkhiwala"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 115,
+   "file": "books/17933-maro-parivaar.json"
+  },
+  {
+   "slug": "598-kelan-ja-kelan-ghanan-badhan-kelan",
+   "title": "કેળાં જ કેળાં, ઘણાં બધાં કેળાં",
+   "description": "શ્રીંગેરી શ્રીનિવાસના ખેતરમાં ઊગતાં મીઠાં મજાનાં કેળાં કોઈ ખરીદવા નહોતા માગતા. આ સરસ વાર્તા વાંચીને શોધો કે શ્રીંગેરીએ આ કેળાંનું શું કર્યું.",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703951/size3/f7817aa88cb268daaa68075155cd66a0.jpg",
+   "authors": [
+    "Ragini Chhaya"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 26,
+   "wordCount": 476,
+   "file": "books/598-kelan-ja-kelan-ghanan-badhan-kelan.json"
+  },
+  {
+   "slug": "491-gullino-ptaro",
+   "title": "ગુલ્લીનો પટારો",
+   "description": "ગુલ્લી પાસે એક નાનો કથ્થાઇ પટારો છે જેમાં એ ચાવી અને બટન જેવી ઘણી બધી વસ્તુઓ રાખે છે. પણ એ એ બધી વસ્તુઓનું કરે છે શું? તમે જ જુઓ! કદાચ તમને પણ પોતાનો એક ખાસ પટારો રાખવાનું મન થઈ જાય!",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696949/size3/95a90e9213ad825d4119cacb0d9f24bf.jpg",
+   "authors": [
+    "Minakshi Chandrana"
+   ],
+   "illustrators": [
+    "Anupama Ajinkya Apte"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 329,
+   "file": "books/491-gullino-ptaro.json"
+  },
+  {
+   "slug": "38928-tametani-chatani-kone-banavi",
+   "title": "ટમેટાંની ચટણી કોણે બનાવી?",
+   "description": "તારા અને રવિ ફળફળાદિ અને શાકભાજી ખરીદવા બજારે જાય છે. પણ દર વખતે એવું બને કે કોઇને કોઇ ફળ ચેપાઇ જાય! હળવી અને વજનદાર વસ્તુઓને જુદી પાડવાની સમજ અહીં કેળવાય છે. સાચવીને ભેગા કરેલા — નહીં કે ગાદલા હેઠળ દબાઇને પડ્યા રહેલા — કાગળના ટુકડા વડે આ પુસ્તિકાનાં ચિત્રોનું સર્જન થયું છે.",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717010/size3/0bef1395055c740659b27b823aeea0ac.jpg",
+   "authors": [
+    "Sonal Maniar"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 459,
+   "file": "books/38928-tametani-chatani-kone-banavi.json"
+  },
+  {
+   "slug": "244192-bhootani-chopdi",
+   "title": "ભૂતની ચોપડી",
+   "description": "કાlળી અંધારી અમાસની રાત્રે હવામાં તમારું નામ કોણ બોલે છે? કદાચ કોઈ જ નહીં. કદાચ કશુક.  આ ચોપડીના પાનાં ફેરવો, કદાચ તમને તે સંભળાય. જો તમને સંભળાય તો તમે પાછા નહીં જઈ શકો.",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723696/size3/e0ce37ed7c3c01ca31cf9fd159adcc8b.jpg",
+   "authors": [
+    "Prajakta"
+   ],
+   "illustrators": [
+    "Ruchi  Bakshi"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 421,
+   "file": "books/244192-bhootani-chopdi.json"
+  },
+  {
+   "slug": "4395-vimano-ude-chhe-kai-reete",
+   "title": "વિમાનો ઊડે છે કઇ રીતે?",
+   "description": "સરલા નામને છોકરીને થયું કે એ પણ પંખીની જેમ કે વિમાન માફક ઊડી શકે તો કેવું સારું! તેનાં શિક્ષિકાએ કહ્યું, ‘જરૂર’. સરલાએ પછી વિમાન-ઉડ્ડયન વિશે જે જાણ્યું તેની વાતો આ ચોપડીમાં કહી છે.",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/711239/size3/76fe943740d2496ae267805d81599763.jpg",
+   "authors": [
+    "Jayant Meghani"
+   ],
+   "illustrators": [
+    "Lavanya Karthik"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 840,
+   "file": "books/4395-vimano-ude-chhe-kai-reete.json"
+  },
+  {
+   "slug": "608426-avakashaman-kesargit-kesarbai-kerkar",
+   "title": "અવકાશમાં કેસરગીત: કેસરબાઈ કેરકર",
+   "description": "નાનકડી કેસરને ગાવું બહુ ગમતું. એણે તો કલ્પના પણ નહોતી કરી કે એક દિવસ એનો સૂર દૂરસુદૂરના બ્રહ્માંડમાં ગૂંજશે. મહાન ગાયિકા કેસરબાઈ કેરકરની અદભુત સંગીતયાત્રા જાણવા માટે વાંચો આ પુસ્તક.",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/727643/size3/cabddb8b05a4b92bfac968bdfb43ad47.jpg",
+   "authors": [
+    "Aarsh Chotalia"
+   ],
+   "illustrators": [
+    "Shubhshree Mathur"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 660,
+   "file": "books/608426-avakashaman-kesargit-kesarbai-kerkar.json"
+  },
+  {
+   "slug": "38930-hauparloopni-swari",
+   "title": "હાઇપરલૂપની સવારી!",
+   "description": "વિષ્ણુને નવી-નવી જગ્યાઓ જોવી બહુ ગમે. પણ લાંબી મુસાફરીનો કંટાળો. તેને નવાઈ લાગે છે કે આપણી પાસે આથી વધારે ઝડપી વાહનવ્યવહાર કેમ નથી. માટે જ્યારે તે હાઈપરલૂપ વિશે વાંચે છે ત્યારે તેનો આનંદ સમાતો નથી. \r\nવાહ...! આ અત્યાનુધિક પરિવહન યોજના શું છે?",
+   "language": "Gujarati",
+   "langCode": "gu",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/787044/size3/9a3f1178d22008239d483702bce270a8.jpg",
+   "authors": [
+    "Nihar Meghani"
+   ],
+   "illustrators": [
+    "Satya  Krishna Prakash"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 675,
+   "file": "books/38930-hauparloopni-swari.json"
+  },
+  {
+   "slug": "12-mota-raja-patla-kutta",
+   "title": "ਮੋਟਾ  ਰਾਜਾ ਪਤਲਾ ਕੁੱਤਾ",
+   "description": "ਮੋਟੇ ਰਾਜੇ ਦੇ ਨਾਲ਼ ਪਤਲੇ ਕੁੱਤੇ ਪਿੱਛੇ ਭੱਜੋ!",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721909/size3/578f72502f01ea8298384a08257557b2.jpg",
+   "authors": [
+    "S. Waqeel"
+   ],
+   "illustrators": [
+    "Parismita"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 55,
+   "file": "books/12-mota-raja-patla-kutta.json"
+  },
+  {
+   "slug": "405564-rani-da-school-wich-pahila-din",
+   "title": "ਰਾਣੀ ਦਾ ਸਕੂਲ ਵਿੱਚ ਪਹਿਲਾ ਦਿਨ",
+   "description": "ਰਾਣੀ ਨੇ ਸਕੂਲ ਦੇ ਪਹਿਲੇ ਦਿਨ ਕੀ-ਕੀ- ਦੇਖਿਆ? ਉਸ ਨੂੰ ਕਿਸ ਤਰ੍ਹਾਂ ਦਾ ਲੱਗਿਆ?",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697425/size3/c45f1e0842588b2a698606d451ae1ee1.jpg",
+   "authors": [
+    "Amandeep Kaur"
+   ],
+   "illustrators": [
+    "Mayur Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 230,
+   "file": "books/405564-rani-da-school-wich-pahila-din.json"
+  },
+  {
+   "slug": "418891-ajj-main-haan",
+   "title": "ਅੱਜ ਮੈਂ ਹਾਂ",
+   "description": "ਅੱਜ ਮੇਘਾ ਕੀ ਬਣੇਗੀ? ਇੱਕ ਖੋਜਕਰਤਾ, ਇੱਕ ਪੁਲਾੜ ਯਾਤਰੀ ਜਾਂ ਫਿਰ ਇੱਕ ਚਿੱਤਰਕਾਰ?",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/524542/size3/c273da52c55bd7e5d79cd98401ab3ab2.jpg",
+   "authors": [
+    "Amandeep Kaur"
+   ],
+   "illustrators": [
+    "Sandhya Prabhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 105,
+   "file": "books/418891-ajj-main-haan.json"
+  },
+  {
+   "slug": "1118-asin-sare-jeev",
+   "title": "ਅਸੀਂ ਸਾਰੇ ਜੀਵ",
+   "description": "ਮਨੁੱਖ ਆਪਣੇ ਆਪ ਨੂੰ ਬਹੁਤ ਮਹਾਨ ਸਮਝਦਾ ਹੈ। ਉਸਦਾ ਨਮੂਨਾ ਕਹਾਣੀ ਦੀ ਛੋਟੀ ਜਿਹੀ ਲੜਕੀ ਵਿਚ ਦਿਖਾਈ ਦਿੰਦਾ ਹੈ। ਇਸ ਕਿਤਾਬ ਵਿਚ ਬਹੁਤ ਹੀ ਸੁੰਦਰਤਾ ਨਾਲ ਜਾਨਵਰ ਉਸਦਾ ਵਹਿਮ ਦੂਰ ਕਰਦੇ ਹਨ।",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722264/size3/dea133672cf8f0bfe601479dc135e764.jpg",
+   "authors": [
+    "S. Waqeel"
+   ],
+   "illustrators": [
+    "Santosh Pujari"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 28,
+   "wordCount": 320,
+   "file": "books/1118-asin-sare-jeev.json"
+  },
+  {
+   "slug": "115-thoda-jeha-hor",
+   "title": "ਥੋੜ੍ਹਾ ਜਿਹਾ ਹੋਰ",
+   "description": "ਬਹਾਦਰ ਖ਼ਰਗੋਸ਼ਾਂ ਨੇ ਬਦਮਾਸ਼ ਬਘਿਆਡ਼ਾਂ ਨੂੰ ਕਿਵੇਂ ਸਬਕ ਸਿਖਾਇਆ? ਪੜ੍ਹੋ ਇਹ \r\nਰੋਮਾਂਚਕ ਕਹਾਣੀ!",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700035/size3/404357a2d58fabc3af755d06b71f1125.jpg",
+   "authors": [
+    "S. Waqeel"
+   ],
+   "illustrators": [
+    "Ajit Narayan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 511,
+   "file": "books/115-thoda-jeha-hor.json"
+  },
+  {
+   "slug": "18017-asin-bazar-gaye",
+   "title": "ਅਸੀਂ ਬਾਜ਼ਾਰ ਗਏ",
+   "description": "ਅਸੀਂ ਕੀ ਕੀਤਾ, ਕਿੱਥੇ ਗਏ ਸੀ, ਕਿਉਂ ਵਗੈਰਾ ਦੱਸਣ ਵਿੱਚ ਬੱਚਿਆਂ ਨੂੰ ਬਹੁਤ ਮਜ਼ਾ ਆਉਂਦਾ ਹੈ। ਇਹ ਬੱਚਾ ਵੀ ਕਾਹਲਾ ਹੈ ਬਾਜ਼ਾਰ ਜਾਣ ਬਾਰੇ ਦੱਸਣ ਲਈ।\r\n",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722697/size3/70f63c77cc485a7dc8880d6fe0eb2958.jpg",
+   "authors": [
+    "S. Waqeel"
+   ],
+   "illustrators": [
+    "Rijuta Ghate",
+    "Santosh Pujari"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 316,
+   "file": "books/18017-asin-bazar-gaye.json"
+  },
+  {
+   "slug": "17621-kahaniyaan-da-shahar",
+   "title": "ਕਹਾਣੀਆਂ ਦਾ ਸ਼ਹਿਰ",
+   "description": "ਉਸ ਸ਼ਹਿਰ ਵਿੱਚ ਕਿਸੇ ਨੂੰ ਕਹਾਣੀਆਂ ਸੁਣਾਉਨ ਦੀ ਵਿਹਲ ਨਹੀਂ ਸੀ ਤਦ ਤਕ ਦੀਦੀ ਅਤੇ ਨਿੱਕੀ ਦੇ ਕਾਰਣ ਆਏ ਕਹਾਣੀਆਂ ਦੇ ਹੜ ਨੇ ਸਭ ਨੂੰ ਭਿਉਂ ਨਹੀਂ ਲਿਆ। ਆਓ, ਇਸ ਰੋਚਕ ਕਥਾ ਨੂੰ ਪੜੀਏ, ਤੋ ਕਿ ਉਸ ਸ਼ਹਿਰ ਦੀ ਪੂਰੀ ਕਾਇਆ ਪਬਟ ਦਿੰਦੀ ਹੈ ਅਤੇ ਉਹਨੂੰ ਕਹਾਣੀਆਂ ਦਾ ਸ਼ਹਿਰ ਬਣਾ ਦਿੰਦੀ ਹੈ।",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/696863/size3/c637010f3ab1b8255033925b14a2a69c.jpg",
+   "authors": [
+    "Hina  Nandrajog"
+   ],
+   "illustrators": [
+    "Bindia  Thapar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 30,
+   "wordCount": 1347,
+   "file": "books/17621-kahaniyaan-da-shahar.json"
+  },
+  {
+   "slug": "428292-samtol-di-shah-aswar-deepa-karmakar",
+   "title": "ਸਮਤੋਲ ਦੀ ਸ਼ਾਹ ਅਸਵਾਰ - ਦੀਪਾ ਕਰਮਾਕਰ",
+   "description": "ਦੀਪਾ ਕਰਮਾਕਰ ਓਲੰਪਿਕ ਖੇਡ ਮੁਕਾਬਲੇ ਵਿੱਚ ਭਾਗ ਲੈਣ ਵਾਲੀ ਪਹਿਲੀ ਭਾਰਤੀ ਮਹਿਲਾ ਜਿਮਨਾਸਟ ਸੀ। 2016 ਦੀਆਂ, ਰੀਓ ਖੇਡਾਂ ਵਿੱਚ ਆਯੋਜਿਤ ਸਮਾਗਮ ਵਿੱਚ ਉਹ ਚੌਥੇ ਸਥਾਨ ’ਤੇ ਰਹੀ। ਉਹ ਤ੍ਰਿਪੁਰਾ ਵਿੱਚ ਵੱਡੀ ਹੋਈ ਅਤੇ ਪੰਜ ਸਾਲਾਂ ਦੀ ਉਮਰ ਵਿੱਚ ਜਿਮਨਾਸਟਿਕ ਸਿੱਖਣੀ ਸ਼ੁਰੂ ਕੀਤੀ। ਅਗਰਤਲਾ ਤੋਂ ਰੀਓ ਤੱਕ ਉਸ ਦੀ ਯਾਤਰਾ ਬਾਰੇ ਪੜ੍ਹੋ।",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/179748/size3/c76e52ff448184126696ea3475f7f43b.jpg",
+   "authors": [
+    "Gurpreet Singh Roopra"
+   ],
+   "illustrators": [
+    "Sonal Gupta Vaswani"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 29,
+   "wordCount": 1050,
+   "file": "books/428292-samtol-di-shah-aswar-deepa-karmakar.json"
+  },
+  {
+   "slug": "427265-tine-ate-door-pahad",
+   "title": "ਟਾਈਨ ਅਤੇ ਦੂਰ ਪਹਾੜ",
+   "description": "ਵੂਸ਼ੂ! ਵੂਸ਼ੂ! ਪਹਾੜੀ ਨਗਰ ਏਚਲੀ ਵਿੱਚ, ਟਾਈਨ ਫੁਸਫੁਸਾਹਟ ਸੁਣਦੀ ਏ। ਇਹ ਪਹਾੜ ਉਸ ਨੂੰ ਬੁਲਾ ਰਿਹਾ ਹੈ। ਜਿਵੇਂ-ਜਿਵੇਂ ਟਾਈਨ ਵੱਡੀ ਹੁੰਦੀ ਹੈ, ਉਹ ਆਪਣੇ ਪਿਆਰੇ ਪਹਾੜਾਂ ਦੇ ਨੇੜੇ ਜਾਣ ਦੇ ਸੁਪਨੇ ਦੇਖਦੀ ਹੈ। ਪਰ ਕੀ ਉਹ ਦੁਨੀਆ ਦੇ ਸਭ ਤੋਂ ਉੱਚੇ ਪਹਾੜ ਦੀ ਚੋਟੀ ਫ਼ਤਿਹ ਕਰ ਸਕਦੀ ਹੈ? ਅਰੁਣਾਚਲ ਪ੍ਰਦੇਸ਼ ਦੀ ਇੱਕ ਪਰਬਤਾਰੋਹੀ ਦੇ ਜੀਵਨ ’ਤੇ ਆਧਾਰਿਤ, ਇਹ ਕਿਤਾਬ ਸੁਪਨਿਆਂ ਦੀ ਸ਼ਕਤੀ ਅਤੇ ਆਪਣੇ-ਆਪ ਵਿੱਚ ਵਿਸ਼ਵਾਸ ਕਰਨ ਦਾ ਜਸ਼ਨ ਮਨਾਉਂਦੀ ਹੈ।",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/83442/size3/2499ede9af5c09c5a97f7cea234d4a65.jpg",
+   "authors": [
+    "Gurpreet Singh Roopra"
+   ],
+   "illustrators": [
+    "Ogin Nayam"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1026,
+   "file": "books/427265-tine-ate-door-pahad.json"
+  },
+  {
+   "slug": "430465-watavaran-di-jarh-chipko",
+   "title": "ਵਾਤਾਵਰਨ ਦੀ ਜੜ੍ਹ - ਚਿਪਕੋ",
+   "description": "ਇੱਥੇ ਪਹਾੜੀਆਂ ਵਿੱਚ ਤਿਆਰ ਕੀਤੀ ਗਈ ਇੱਕ ਕਹਾਣੀ ਹੈ ਜੋ ਦਰਸਾਉਂਦੀ ਹੈ ਕਿ ਬਹਾਦਰੀ ਅਤੇ ਸੰਜਮ ਕੀ ਕਰ ਸਕਦੇ ਹਨ। ਡਿੱਚੀ, ਇੱਕ ਬਹਾਦਰ ਭੋਟੀਆ ਕੁੜੀ, ਆਪਣੇ ਪਿਆਰੇ ਰੁੱਖਾਂ ਨੂੰ ਬਚਾਉਣ ਲਈ ਚਿਪਕੋ ਅੰਦੋਲਨ ਵਿੱਚ ਹਿੱਸਾ ਲੈਂਦੀ ਹੈ। ਉਸ ਦੇ ਪਿੰਡ ਦਾ ਹਰ ਕੋਈ ਜਾਣਦਾ ਹੈ ਕਿ ਦਰਖ਼ਤ ਉਹਨਾਂ ਨੂੰ ਉਹਨਾਂ ਦੇ ਜੀਵਨ ਦੀਆਂ ਸਾਰੀਆਂ ਮਹੱਤਵਪੂਰਨ ਚੀਜ਼ਾਂ ਦਿੰਦੇ ਹਨ। ਅਲਕਨੰਦਾ ਨਦੀ ਦੇ ਹਿਮਾਲਿਆ ਖੇਤਰ ਵਿੱਚ ਤੇਜ਼ੀ ਨਾਲ ਜੰਗਲਾਂ ਦੀ ਕਟਾਈ ਕਾਰਨ 1970 ਦੇ ਦਹਾਕੇ ਵਿੱਚ ਹੜ੍ਹ ਆਏ ਅਤੇ ਇਸ ਨੇ ਰੁੱਖਾਂ ਨੂੰ ਜੱਫੀ ਪਾ ਕੇ ਬਚਾਉਣ ਵਾਲ਼ੇ ਇੱਕ ਅੰਦੋਲਨ ਨੂੰ ਜਨਮ ਦਿੱਤਾ। ਨੌਜਵਾਨ ਡਿੱਚੀ ਦੀਆਂ ਅੱਖਾਂ ਦੁਆਰਾ ਵੇਖੀ ਗਈ ਸਮੁਹਿਕ ਕਾਰਵਾਈ ਦੀ ਸ਼ਕਤੀ ਬਾਰੇ ਸਿੱਖਣ ਲਈ ਇਹ ਦਿਲ ਨੂੰ ਛੂਹਣ ਵਾਲ਼ੀ ਕਹਾਣੀ ਪੜ੍ਹੋ।",
+   "language": "Punjabi",
+   "langCode": "pa",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/29172/size3/d13859ef173ca4ad6a2462e70e5d344a.jpg",
+   "authors": [
+    "Gurpreet Singh Roopra"
+   ],
+   "illustrators": [
+    "Jeyanthi Manokaran"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 2840,
+   "file": "books/430465-watavaran-di-jarh-chipko.json"
+  },
+  {
+   "slug": "33345-minna-tabechatta",
+   "title": "みんな たべちゃった！",
+   "description": "ジャングルが いつも きれいなのは、なぜ？\r\nそこでは ムダにすてられるものなんて、なにひとつ ないからだよ！",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/188968/size3/715cc0ac513fbf98008ab8be6fa089d2.jpg",
+   "authors": [
+    "Sakura Mashio"
+   ],
+   "illustrators": [
+    "Rohan Chakravarty"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 56,
+   "file": "books/33345-minna-tabechatta.json"
+  },
+  {
+   "slug": "44563-home",
+   "title": "いえ",
+   "description": "きみはどこにすんでいますか？そこはどんなばしょですか？きみはどんないえをつくりますか？",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/745301/size3/96f9cdd7d6cc2fe95a43b2936a28957f.jpg",
+   "authors": [
+    "Book Crabs"
+   ],
+   "illustrators": [
+    "Bindia  Thapar",
+    "Delwyn Remedios",
+    "Dhasa",
+    "Phidi Pulu",
+    "Priya Kuriyan",
+    "Rajeev Verma 'Banjara'",
+    "ROGPA NGO",
+    "Sonal Goyal",
+    "Sumit Sakhuja",
+    "Sunaina  Coelho",
+    "Tanaya Vyas"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 15,
+   "file": "books/44563-home.json"
+  },
+  {
+   "slug": "20573-bokuno-tomodachi",
+   "title": "ぼくのともだち",
+   "description": "ぼくにはたくさんともだちがいる。みんなすきだけどひとりだけとくべつなともだちがいるんだ！",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Haruka Matsumoto"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 13,
+   "file": "books/20573-bokuno-tomodachi.json"
+  },
+  {
+   "slug": "20578-torino-ousama",
+   "title": "とりのおうさま",
+   "description": "とりたちはおうさまえらびをしていますがなかなかえらべません。そこでいちばんたかくとべたとりがおうさまになることにきめました。はげたかはじぶんがかったとおもっていますが、ちいさなとりはたくらみをもっています。だれがおうさまになるのでしょう？",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/87349/size3/7ee8947a117ae52cdc670a64310dac46.jpg",
+   "authors": [
+    "Haruka Matsumoto"
+   ],
+   "illustrators": [
+    "Wiehan de  Jager"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 27,
+   "file": "books/20578-torino-ousama.json"
+  },
+  {
+   "slug": "7682-sono-toki-kyoushitsu-de",
+   "title": "そのとき教室で……",
+   "description": "ミーラのお母さんが、用事で学校へ行ったときのこと。門番さんがいないのに門はあけっぱなし、教室にも誰もいない。どうもようすがおかしいよ。いったいぜんたい、学校で何があったのかな⁉︎",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723634/size3/30d13d0b8c4072a4032ab2309f586a32.jpg",
+   "authors": [
+    "Sakura Mashio"
+   ],
+   "illustrators": [
+    "Ruchi Shah"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 27,
+   "file": "books/7682-sono-toki-kyoushitsu-de.json"
+  },
+  {
+   "slug": "7680-minna-neko-no-sei",
+   "title": "みんなネコのせい",
+   "description": "宿題を忘れたわけは、たった一匹のネコのせい⁉︎　一匹のネコから始まった言い訳が、読む人をどんどん遠くへ連れていきます。",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+   "authors": [
+    "Sakura Mashio"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 56,
+   "file": "books/7680-minna-neko-no-sei.json"
+  },
+  {
+   "slug": "7453-douyatte-chuub-ni-ireru-hamigakiko-no-ohanashi",
+   "title": "どうやってチューブに入れる？ 〜歯みがき粉のおはなし〜",
+   "description": "昔の人はどうやって歯をみがいていたか、あなたは知っていますか？ 歯みがき粉をチューブにどうやって入れたのか、考えてみたことがありますか？ 古くからインドに伝わる歯みがきのヒントもためになる、楽しいお話です。",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/711270/size3/a842e8651f5514894aa0750d1ef205aa.jpg",
+   "authors": [
+    "Sakura Mashio"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 46,
+   "file": "books/7453-douyatte-chuub-ni-ireru-hamigakiko-no-ohanashi.json"
+  },
+  {
+   "slug": "7554-ohto-rikshaa-sorao-tobu",
+   "title": "オートリクシャー、空を飛ぶ",
+   "description": "アルジュンはとっても働き者の、幸せなオートリクシャー。でもアルジュンには秘密の夢がありました。空を飛ぶことです。ある日、魔法の水がアルジュンの夢を叶えますが……？",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721008/size3/ff25bb40f46b3cc1d01ce26448db417a.jpg",
+   "authors": [
+    "Sakura Mashio"
+   ],
+   "illustrators": [
+    "Ajanta Guhathakurta"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 54,
+   "file": "books/7554-ohto-rikshaa-sorao-tobu.json"
+  },
+  {
+   "slug": "261645-there-s-a-hole-in-my-galaxy",
+   "title": "私の銀河には穴がある!",
+   "description": "3人の仲間が、太陽系を探索するためにロケットで地球を飛び立ちます。ところが突然、ブラックホールに引っ張られていることに気づきます。果たして彼らは脱出できるのか？この宇宙の旅で何が起こるのかを確かめましょう。",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717893/size3/fd72155d5f986ecb1b1e0afa27f5da77.jpg",
+   "authors": [
+    "Natsuko Ohno"
+   ],
+   "illustrators": [
+    "Chaaya Prabhat"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 155,
+   "file": "books/261645-there-s-a-hole-in-my-galaxy.json"
+  },
+  {
+   "slug": "282271-internet-de-maigo",
+   "title": "インターネットで迷子",
+   "description": "クナルはインターネットで迷子になり出て行き方がわかりません。インターネットでのSFの旅を一緒にして、家に帰る方法を見つけてください。",
+   "language": "Japanese",
+   "langCode": "ja",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/181775/size3/f1f3e98219874cda59f16f00331eea98.jpg",
+   "authors": [
+    "Yoshitaka Mihoichi"
+   ],
+   "illustrators": [
+    "Gaurav Wakankar"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 66,
+   "file": "books/282271-internet-de-maigo.json"
+  },
+  {
+   "slug": "21153-maaloo-wa-kaaloo-gurigo-ddo",
+   "title": "말루와 칼루... 그리고 또?",
+   "description": "말루와 칼루가 돌아왔어요! 이번에는 언덕 위에 있는 할머니 집에서 탐정 놀이를 한다고 해요.",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722825/size3/a8f6d625f16864f8d814762e38c0e384.jpg",
+   "authors": [
+    "Yunie Kim"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 166,
+   "file": "books/21153-maaloo-wa-kaaloo-gurigo-ddo.json"
+  },
+  {
+   "slug": "19547-bbalgan-yeon",
+   "title": "빨간 연",
+   "description": "책을 열어 연을 찾아 보아요. 빨간 연에 대해 읽어보고, 왈리 그림체도 즐겨 보아요.",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117638/size3/ac6a77ff9d0dd2a0a61098ad0557ff0c.jpg",
+   "authors": [
+    "Sunny Hsiao"
+   ],
+   "illustrators": [
+    "Jeyanthi Manokaran"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 69,
+   "file": "books/19547-bbalgan-yeon.json"
+  },
+  {
+   "slug": "264087-gaemidul",
+   "title": "개미들",
+   "description": "개미가 집을 짓는 곳과 먹는 음식을 알고 있습니까? 자세히 알아 보려면 더 읽어보세요.",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/283168/size3/e3c7076c903ab9f82ec702f514a18a25.jpg",
+   "authors": [
+    "Joseph Park"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 58,
+   "file": "books/264087-gaemidul.json"
+  },
+  {
+   "slug": "102547-a-gi-won-sung-i-ui-ireobeorin-ba-na-na",
+   "title": "아기 원숭이가 잃어버린 바나나",
+   "description": "아기 원숭이의 집은 항상 지저분해요. 어느 날, 아기 원숭이가 배가 고픈데 집이 지저분해서 먹을 바나나들을 못 찾아요. 아기 원숭이가 숲에 있는 다른 동물에게 바나나를 봤는지 물어요. 다른 동물들이 아기 원숭이의 잃어버린 바나나들을 찾도록 도와 줄 수 있을까요?",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101346/size3/c57a183a1cd9b82e2046d7aa671560ac.jpg",
+   "authors": [
+    "Samantha Figueroa"
+   ],
+   "illustrators": [
+    "Youm Kosal"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 222,
+   "file": "books/102547-a-gi-won-sung-i-ui-ireobeorin-ba-na-na.json"
+  },
+  {
+   "slug": "18802-keun-sung-nyang-sang-ja",
+   "title": "큰 성냥 상자",
+   "description": "프램과 친구들은 조그마한 성냥 상자로 중요한 할 일이 있었습니다. 여러분도 집에서 한번 해보세요, 굉장히 재미 있을거에요!",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/43610/size3/37b27665c10faf1bd7e8637da3d93033.jpg",
+   "authors": [
+    "Wonhee Lee"
+   ],
+   "illustrators": [
+    "Meenal Singh"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 278,
+   "file": "books/18802-keun-sung-nyang-sang-ja.json"
+  },
+  {
+   "slug": "195152-chulbal",
+   "title": "출발!",
+   "description": "니나는 가족하고 캘커타에서 뉴델리로 이사하는데 기쁘지가 않아요. 부모님은 기차 여행 중 니나 기분을 좋게 해 줄 수 있을까요?",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/527558/size3/d2ca9b60f3812f6cfe8931703ea209ee.jpg",
+   "authors": [
+    "Keirra Dane"
+   ],
+   "illustrators": [
+    "Sahitya Rani"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 266,
+   "file": "books/195152-chulbal.json"
+  },
+  {
+   "slug": "156108-dali-sarajin-baam",
+   "title": "달이 사라진 밤",
+   "description": "달이 떠오르지 않은 밤, 사라진 달을 찾는 건 마이샤와 그녀의 친구 우칠리에게 맡겨졌습니다. 하지만 깜깜한 밤 빛도 없이 어떻게 달을 찾을 수 있을까요?",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/85034/size3/3d21e461e24f11386172abfe1e74d4b4.jpg",
+   "authors": [
+    "Jiyea Seo"
+   ],
+   "illustrators": [
+    "Sunaina  Coelho"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 644,
+   "file": "books/156108-dali-sarajin-baam.json"
+  },
+  {
+   "slug": "245109-ddokateulka-dareulka",
+   "title": "똑같을까? 다를까?",
+   "description": "꼭 같은 사람하고만 친구가 될 수 있나요? 다른 사람과 가장 친한 친구가 되는 것은 잘못된 건가요? ",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713551/size3/e4d629c39bd8feb1be0de5a47991ae6b.jpg",
+   "authors": [
+    "Tony George"
+   ],
+   "illustrators": [
+    "Rohit Kelkar"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 728,
+   "file": "books/245109-ddokateulka-dareulka.json"
+  },
+  {
+   "slug": "59784-mool-ee-daechae-eodiro-sarajingeollkka",
+   "title": "물이 대체 어디로 사라진걸까?",
+   "description": "란즈네 마을 저수지가 바싹 말랐을때, 란즈는 사라진 물을 찾으러 나섰어요. 우리의 물탐정, 란즈와 함께 사건을 해결해볼까요?",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724112/size3/1c190e70406411ab7431038cc2aaea88.jpg",
+   "authors": [
+    "J.D K"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 955,
+   "file": "books/59784-mool-ee-daechae-eodiro-sarajingeollkka.json"
+  },
+  {
+   "slug": "242809-nuga-bhaiyaeui-misoreul-humcheosseo",
+   "title": "누가 바이야의 미소를 훔쳤어?",
+   "description": "Bhaiya doesn’t feel like playing these days. Could it be because of his new monster friend Dukduk, who is always hanging around him? No one in the family takes Bhaiya seriously. But Chiru knows there’s more than what meets the eye. A story about the lingering effects of depression.",
+   "language": "Korean",
+   "langCode": "ko",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/524480/size3/06c407a5aec36554f78c7d6dbddfbb88.jpg",
+   "authors": [
+    "Riley Marshall"
+   ],
+   "illustrators": [
+    "Sunaina  Coelho"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 485,
+   "file": "books/242809-nuga-bhaiyaeui-misoreul-humcheosseo.json"
+  },
+  {
+   "slug": "7686-la-luna-e-il-cappello",
+   "title": "LA LUNA E IL CAPPELLO",
+   "description": "TI PIACE INDOSSARE UN CAPPELLO NELLE GIORNATE DI SOLE?\r\nIN QUESTA STORIELLA SCOPRIRAI CHI ALTRO AMA INDOSSARE UN CAPPELLO...",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700911/size3/a7997747b4c2afe36ad258eb24979534.jpg",
+   "authors": [
+    "Silvia Lucchin"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 354,
+   "file": "books/7686-la-luna-e-il-cappello.json"
+  },
+  {
+   "slug": "49750-gappu-non-sa-ballare",
+   "title": "Gappu non sa ballare",
+   "description": "Nella classe I A tutti sanno che Gappu non sa ballare. Quando gli altri alzano la mano sinistra, lei alza la destra. La maestra Komal riuscirà a far ballare Gappu? Una storia sulla gioia di ballare usando il concetto di opposti.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/87073/size3/68a0d3d182c04e01576caea671cc33bf.jpg",
+   "authors": [
+    "Roberto Marcolin"
+   ],
+   "illustrators": [
+    "Krishna Chandran"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 177,
+   "file": "books/49750-gappu-non-sa-ballare.json"
+  },
+  {
+   "slug": "7829-sorridi-per-favore",
+   "title": "SORRIDI, PER FAVORE!",
+   "description": "SEGUI IL GIOVANE CERBIATTO MENTRE CORRE CON I SUOI AMICI.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721917/size3/548c488c38612955cf9c42fe6894c5f1.jpg",
+   "authors": [
+    "Silvia Lucchin"
+   ],
+   "illustrators": [
+    "Ajit Narayan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 97,
+   "file": "books/7829-sorridi-per-favore.json"
+  },
+  {
+   "slug": "7794-okkiali-della-nonna",
+   "title": "Gli occhiali della nonna",
+   "description": "La nonna perde sempre i suoi occhiali.\r\nQualche volta ha bisogno di un bravo detective che glieli ritrovi!",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700894/size3/0b3a679b1d24e2b4e223307bff56b880.jpg",
+   "authors": [
+    "Silvia Lucchin"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 305,
+   "file": "books/7794-okkiali-della-nonna.json"
+  },
+  {
+   "slug": "16873-didi-and-the-colourful-treasure",
+   "title": "Didi e il tesoro colorato",
+   "description": "Questi bambini vivono vicino a una discarica,  girano tutto il giorno tra la spazzatura e non vanno a scuola. Ma un bel giorno Didi entra nella discarica e cambia le loro vite per sempre. Vieni a conoscere Didi e i suoi giovani amici in questa magnifica storia che celebra la gioia di leggere.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721709/size3/55afba6173fec2f775fdf425b7609188.jpg",
+   "authors": [
+    "Roberto Marcolin"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 395,
+   "file": "books/16873-didi-and-the-colourful-treasure.json"
+  },
+  {
+   "slug": "28319-the-dragonfly-and-the-frog",
+   "title": "La libellula e la rana",
+   "description": "A dragonfly meets an animal that sings wonderfully after the rain. A friendship is born between enemy animals.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/57005/size3/9e6f82f2d409f70a8dc3680465381286.jpg",
+   "authors": [
+    "lidia pantaleo"
+   ],
+   "illustrators": [
+    "Malvika Tewari"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 158,
+   "file": "books/28319-the-dragonfly-and-the-frog.json"
+  },
+  {
+   "slug": "107956-knox-the-wily-fox",
+   "title": "Fiammetta, volpe furbetta",
+   "description": "The story of Knox, the wily fox, who tried to make some money by triking the other animals.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/155233/size3/253b6213df17c507446f18a729ca3da6.jpg",
+   "authors": [
+    "Mariagiovanna Andrigo"
+   ],
+   "illustrators": [
+    "Hayley  Alonzo",
+    "Kaveri Gopalakrishnan",
+    "Mdu Ntuli",
+    "ROSH"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 20,
+   "wordCount": 467,
+   "file": "books/107956-knox-the-wily-fox.json"
+  },
+  {
+   "slug": "109347-il-vaso-di-caramelle-di-chuchu-manthu",
+   "title": "Il vaso di caramelle di Chuchu Manthu",
+   "description": "Chuchu Manthu è la persona più gentile che Preet conosca. Dopo la sua scomparsa Preet si chiede se la sua gentilezza sia sparita con lui. Una storia sulla perdita di una persona cara, il dolore e la gentilezza nella vita di tutti i giorni..",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/626163/size3/005493b833ecfdd4e4d5d8fcb4b69545.jpg",
+   "authors": [
+    "Roberto Marcolin"
+   ],
+   "illustrators": [
+    "Krishna Bala Shenoi"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 506,
+   "file": "books/109347-il-vaso-di-caramelle-di-chuchu-manthu.json"
+  },
+  {
+   "slug": "19307-gli-affascinanti-numeri-di-fibonacci",
+   "title": "Gli affascinanti numeri di Fibonacci",
+   "description": "Quasi mille anni fa, uno studioso indiano chiamato Hemachandra scoprì un'affascinante sequenza di numeri. Un secolo dopo la stessa sequenza di numeri attirò l'attenzione del matematico italiano Fibonacci che se ne occupò. La successione di Fibonacci, come cominciò ad essere chiamata, era abbastanza semplice, quello che la rese affascinante fu il fatto che questa particolare successione di numeri era ripetuta moltissime volte in natura: nei fiori, nelle conchiglie, nelle uova, nei semi, nelle stelle. Scopri delle altre informazioni in questo libro.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712400/size3/10f094938687f1ee29a48d028eca1101.jpg",
+   "authors": [
+    "Roberto Marcolin"
+   ],
+   "illustrators": [
+    "Hari Kumar Nair"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 1250,
+   "file": "books/19307-gli-affascinanti-numeri-di-fibonacci.json"
+  },
+  {
+   "slug": "61726-clotilde-the-ring-girl",
+   "title": "Clotilde, la ragazza dell'anello",
+   "description": "Un racconto fantasy per parlare ai bambini del problema del bullismo ed offrire alcuni semplici strumenti per affrontare e risolvere situazioni di isolamento ed esclusione.",
+   "language": "Italian",
+   "langCode": "it",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101157/size3/1af233fa90a56723d1b94a2cdcb71e47.jpg",
+   "authors": [
+    "alex molea"
+   ],
+   "illustrators": [
+    "alex molea",
+    "Karen  Vermeulen"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 2519,
+   "file": "books/61726-clotilde-the-ring-girl.json"
+  },
+  {
+   "slug": "40290-busy-ants",
+   "title": "Semut yang Sibuk",
+   "description": "Ikuti semut-semut di cerita ini. Mereka akan membuat pembaca kecil sibuk.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704670/size3/241eb27666dc624a6d0b5f5b2871e868.jpg",
+   "authors": [
+    "Nasema Zeerak"
+   ],
+   "illustrators": [
+    "Deepa Balsavar"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 148,
+   "file": "books/40290-busy-ants.json"
+  },
+  {
+   "slug": "39803-the-red-raincoat",
+   "title": "Jas Hujan Merah",
+   "description": "Manu punya sebuah jas hujan baru. Dia sudah tidak sabar untuk memakainya, tapi sang hujan membuatnya menunggu… menunggu… dan menunggu.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721019/size3/beedc107df0b5447c6735b02a11b27ef.jpg",
+   "authors": [
+    "Nasema Zeerak"
+   ],
+   "illustrators": [
+    "Zainab Tambawalla"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 207,
+   "file": "books/39803-the-red-raincoat.json"
+  },
+  {
+   "slug": "39442-what-if",
+   "title": "Bagaimana Jika?",
+   "description": "Ketika Shyam mengantuk, dia kesulitan untuk menggosok gigi. Namun bermimpi besar sama sekali bukan masalah.\r\n",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723050/size3/9093d145b12c1371d8ae9d976bfeb4ca.jpg",
+   "authors": [
+    "Nasema Zeerak"
+   ],
+   "illustrators": [
+    "Hari Kumar Nair"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 151,
+   "file": "books/39442-what-if.json"
+  },
+  {
+   "slug": "540166-kawan-pohon",
+   "title": "Kawan-Pohon",
+   "description": "Kita tahu bahwa pepohonan adalah kawan kita. Namun, apakah kawan juga bisa menjadi pohon? Seperti aneka buah di pohon Ammoomma, teman pun bisa manis, masam, atau kedua-duanya!",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/54917/size3/ffaa0a6211913d76a018f79a94f4d151.jpg",
+   "authors": [
+    "Ahmad Husni"
+   ],
+   "illustrators": [
+    "Rae  Zachariah"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 280,
+   "file": "books/540166-kawan-pohon.json"
+  },
+  {
+   "slug": "366119-my-inside-weather",
+   "title": "Cuaca dalam Diriku",
+   "description": "Semua orang tahu bagaimana keadaan cuaca di luar, tetapi terkadang, suasana hati kita sulit dijelaskan.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/85534/size3/6e8e6e5ebe8a509c6cac6b397e0ad36a.jpg",
+   "authors": [
+    "Adani Nur Sabrina"
+   ],
+   "illustrators": [
+    "Lara Berge"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 26,
+   "wordCount": 198,
+   "file": "books/366119-my-inside-weather.json"
+  },
+  {
+   "slug": "540479-colouring-pencils",
+   "title": "Pensil Warna",
+   "description": "Para pensil warna baru merasa ketakutan saat akan digunakan oleh pemiliknya, To To. Mungkin saja To To akan menggunakan mereka dengan kasar. Mereka tidak ingin merasa kesakitan. Kemudian, apa yang akan terjadi selanjutnya?",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101333/size3/530a44385b26b13c888d32b5a86c2236.jpg",
+   "authors": [
+    "Fathu Rakhman Marangka"
+   ],
+   "illustrators": [
+    "Youm Kosal"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 240,
+   "file": "books/540479-colouring-pencils.json"
+  },
+  {
+   "slug": "361743-a-butterfly-smile",
+   "title": "Senyuman Kupu-Kupu",
+   "description": "Kavya dan keluarganya baru saja pindah dari pedesaan ke kota Bengaluru, dan dia adalah murid baru di kelas. Ikuti perjalanan Kavya saat dia mengunjungi taman kupu-kupu. Di sana, dia menemukan ikatan batin antara dirinya dengan para kupu-kupu sekaligus mendapatkan beberapa teman baru.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+   "authors": [
+    "Faiz Akbar Leksananda"
+   ],
+   "illustrators": [
+    "Lavanya  Naidu"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 823,
+   "file": "books/361743-a-butterfly-smile.json"
+  },
+  {
+   "slug": "40297-inside-the-world-wide-web",
+   "title": "Di Dalam World Wide Web",
+   "description": "Tahukah kau cara mengirimkan email? TENTU SAJA! Kalau begitu, kau pasti tahu apa itu internet, bukan? Hmm ... begitulah. Kau juga tahu apa arti www, bukan? Yahhh ... kurang lebih. Sekarang kau merasa agak malu, kan? Hmmm. Jangan takut, ada Nettikuti! Mari kita dengarkan teman kita yang cerdas ini bercerita tentang keajaiban dan misteri otak raksasa bernama yang disebut world wide web.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712338/size3/78e325d28576a52fd9d7edc40163b740.jpg",
+   "authors": [
+    "Nasema Zeerak"
+   ],
+   "illustrators": [
+    "Delwyn Remedios"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1348,
+   "file": "books/40297-inside-the-world-wide-web.json"
+  },
+  {
+   "slug": "540507-the-body-builders",
+   "title": "Penyusun Tubuh Manusia",
+   "description": "Vava merasa takjub melihat adik perempuannya bisa menumbuhkan rambut, paru-paru, dan kakinya di dalam perut ibunya. Ayo, gabung dengannya untuk melihat bagaimana jutaan sel tumbuh dan membangun tubuh kita.",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/146763/size3/cd20c6624ef8ec0ffae3fcba78318c40.jpg",
+   "authors": [
+    "Fathu Rakhman Marangka"
+   ],
+   "illustrators": [
+    "Shivam Thapliyal"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 737,
+   "file": "books/540507-the-body-builders.json"
+  },
+  {
+   "slug": "364162-only-fools-go-to-school",
+   "title": "Hanya Orang Bodoh yang Bersekolah",
+   "description": "Sambha tidak pernah mau pergi ke sekolah. Menurutnya, sekolah hanya untuk orang-orang bodoh. Suatu hari, guru membawanya ke sekolah. Diam-diam, Sambha menikmati pelajaran di kelas, tetapi akankah dia kembali ke sekolah keesokan harinya?",
+   "language": "Bahasa Indonesia",
+   "langCode": "id",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/495472/size3/49f2e662fe988adbe41d7411b2b7585f.jpg",
+   "authors": [
+    "Adani Nur Sabrina"
+   ],
+   "illustrators": [
+    "Proiti Roy"
+   ],
+   "publisher": "Badan Pengembangan dan Pembinaan Bahasa",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 911,
+   "file": "books/364162-only-fools-go-to-school.json"
+  },
+  {
+   "slug": "105506-tae-nih-chea-saamleng-norna",
+   "title": "តើនេះជាសំឡេងនរណា?",
+   "description": "តើសំឡេងអ្វីខ្លះហ្នឹង?​ ហើយវាជាសំឡេងអ្នកណា?",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/150995/size3/62605d4d6831166e2605823b426debcc.jpg",
+   "authors": [
+    "Let's Read"
+   ],
+   "illustrators": [
+    "Hin Kimyean"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 24,
+   "file": "books/105506-tae-nih-chea-saamleng-norna.json"
+  },
+  {
+   "slug": "8892-pel-leng-komsan",
+   "title": "ពេលលេងកម្សាន្ត",
+   "description": "ហ្គូលូ​ និង ឈូទូ ជាដៃគូ ដែលគួរអោយចង់សើចមួយ។ សូមអាន ពីអាកប្បកិរិយាដ៏ក្រមិុចក្រមើម របស់ មិត្តភក្ដិមួយគូនេះ!",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721916/size3/906e74898bf061f7abefb75c6319ad63.jpg",
+   "authors": [
+    "Khuob  Sopheak"
+   ],
+   "illustrators": [
+    "Ajit Narayan"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 47,
+   "file": "books/8892-pel-leng-komsan.json"
+  },
+  {
+   "slug": "36392-khmum-ning-domrei",
+   "title": "ឃ្មុំនិងដំរី",
+   "description": "កូនដំរីមួយក្បាល បានជួយកូនឃ្មុំតូចមួយដែលកំពុងវង្វេង រកផ្លូវទៅផ្ទះមិនឃើញ។ តើផ្ទះរបស់កូនឃ្មុំជាសំបុក ឬជារូងភ្នំ?​ តើកូនឃ្មុំរស់នៅឯណា?",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101349/size3/39f8b81749a713480835e9f715fadc44.jpg",
+   "authors": [
+    "Long Ravy"
+   ],
+   "illustrators": [
+    "Try Samphos"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 12,
+   "file": "books/36392-khmum-ning-domrei.json"
+  },
+  {
+   "slug": "8843-reatrey-sousdei-tinku",
+   "title": "រាត្រីសួស្ដី ទីងគូ!",
+   "description": "ទីងគូ ជាកូនឆ្កែនៅចំការម៉ាង់គូ។​ វាគេងមិនលក់សោះ។ វាសម្រេចចិត្តថាចេញទៅលេងខាងក្រៅ នៅពេលយប់ ហើយបានជួបនឹងសត្វដ៏គួរអោយចាប់អារម្មណ៍ជាច្រើន។ ",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720891/size3/170e9090f77038f09c412e3f74f4d3ee.jpg",
+   "authors": [
+    "Khuob  Sopheak"
+   ],
+   "illustrators": [
+    "Sonal Goyal",
+    "Sumit Sakhuja"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 132,
+   "file": "books/8843-reatrey-sousdei-tinku.json"
+  },
+  {
+   "slug": "8895-koshik-nak-serb-angket-jet-thor",
+   "title": "កូស៊ីក អ្នកស៊ើបអង្កេតចិត្តធម៌",
+   "description": "ជាមួយនឹងពិល ព្រមទាំងកែវពង្រីកថ្មី កូសុីកមានអារម្មណ៍ថាវាដូចជា អ្នកសុើបអង្កេតមែនទែនចឹង! សូមចូលរួមជាមួយកូសុីក ក្នុងការរុករកដ៏អស្ចារ្យមួយ នៅក្នុងព្រៃ។",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721717/size3/eb5a572c2dc1b8583ea321e7209afa20.jpg",
+   "authors": [
+    "Khuob  Sopheak"
+   ],
+   "illustrators": [
+    "Megha Vishwanath"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 85,
+   "file": "books/8895-koshik-nak-serb-angket-jet-thor.json"
+  },
+  {
+   "slug": "37686-trei-touch-plek-plok",
+   "title": "ត្រីតូចប្លិកប្លក់",
+   "description": "មេត្រីកំពុងបង្រៀនត្រីតូចប្លិកប្លក់ ឱ្យចេះហែលទឹកនៅកន្លែងដែលមានទឹករាក់។ ដោយការអន្ទះសារនិងឃើញត្រីធំៗជាច្រើនកំពុងហែលលេងនៅកន្លែងទឹកជ្រៅ ត្រីតូចប្លិកប្លក់ក៏គេចពីមេវាហែលទៅកន្លែងទឹកជ្រៅតែម្នាក់ឯង។ តើនឹងមានអ្វីកើតឡើងចំពោះត្រីតូចប្លិកប្លក់?",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101350/size3/fe581f9e83d861b2dc322c9f507026ae.jpg",
+   "authors": [
+    "Nguon Sakal"
+   ],
+   "illustrators": [
+    "Seng Visal"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 87,
+   "file": "books/37686-trei-touch-plek-plok.json"
+  },
+  {
+   "slug": "37820-kanhjork-tep",
+   "title": "កញ្ចក់ទិព្វ",
+   "description": "ភាពស្រេកឃ្លាននិងការគិតពុំបានលិ្អតល្អន់ បានបណ្តាលឱ្យកុមារមួយចំនួននៅក្នុងភូមិ ក្លាយទៅជាសត្វចម្លែក។ ដោយឡែក មានតែកុមារពីរនាក់ប៉ុណ្ណោះដែលបានគេចផុតពីបណ្តាសានេះ គឺកុមារាសំនិងកុមារីសយ។ តើវាសនារបស់កុមារទាំងនោះនឹងទៅជាយ៉ាងណា? តើពួកគេនឹងក្លាយទៅជាសត្វចម្លែកអស់មួយជីវិត ឬយ៉ាងណា?",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101351/size3/f5105b39b5e56da9625b42d59e079231.jpg",
+   "authors": [
+    "Nin Monthakondeaklin"
+   ],
+   "illustrators": [
+    "UK Nhal"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 24,
+   "wordCount": 424,
+   "file": "books/37820-kanhjork-tep.json"
+  },
+  {
+   "slug": "94544-sievphow-samreab-pha-kou",
+   "title": "សៀវភៅសម្រាប់ ផាគូ",
+   "description": "ផាគូ អស់សៀវភៅសម្រាប់អាន។ ក្រោយមក នាងរកឃើញសៀវភៅជាច្រើនក្បាលនៅលើធ្នើរខ្ពស់ក្នុងបណ្ណាល័យ។ ប៉ុន្តែ ផាគូ តូចណាស់ ហើយសៀវភៅទាំងនោះនៅលើធ្នើរខ្ពស់។ តើនាងអាចយកសៀវភៅគួរឱ្យស្រឡាញ់ទាំងនោះដោយវិធីណា?",
+   "language": "Khmer",
+   "langCode": "km",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117108/size3/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg",
+   "authors": [
+    "Nhean  Socheat"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 192,
+   "file": "books/94544-sievphow-samreab-pha-kou.json"
+  },
+  {
+   "slug": "112763-bihonis",
+   "title": "ቢሆንስ?",
+   "description": "ሽያም እንቅልፍ ሲጫጫነው ጥርሱን ለመቦረሽ ይቸጋገራል፡፡ ይሁን እንጂ ትልልቅ ሕልሞችን ማለም ፈጽሞ አያስቸግረውም፡፡",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723050/size3/9093d145b12c1371d8ae9d976bfeb4ca.jpg",
+   "authors": [
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Hari Kumar Nair"
+   ],
+   "publisher": "Ras Abebe Aregay Library",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 138,
+   "file": "books/112763-bihonis.json"
+  },
+  {
+   "slug": "97779-genifo",
+   "title": "ገንፎ",
+   "description": "Mom is away and Dad is making the morning porridge.",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/151769/size3/773091332b87122b8e66a39000540408.jpg",
+   "authors": [
+    "Hiruti .",
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Catherine Groenewald"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 71,
+   "file": "books/97779-genifo.json"
+  },
+  {
+   "slug": "91058-inik-uraritina-ibabi",
+   "title": "እንቁራሪትና እባብ",
+   "description": "Some friendships always have their limits. Find out how?",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/130945/size3/91093dc169fc9136c4c9af1a76bc4bbf.jpg",
+   "authors": [
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Jane Taylor"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 87,
+   "file": "books/91058-inik-uraritina-ibabi.json"
+  },
+  {
+   "slug": "151579-irigimani-weyisi-mirikani",
+   "title": "እርግማን ወይስ ምርቃን?",
+   "description": "What happens when it rains on a dry land after a really long period?",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/202073/size3/92a6f08eb53b4808fed60e2115904137.jpg",
+   "authors": [
+    "Kebede Yimer"
+   ],
+   "illustrators": [
+    "Marleen  Visser",
+    "Natalie  Propa",
+    "Silva Afonso"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 190,
+   "file": "books/151579-irigimani-weyisi-mirikani.json"
+  },
+  {
+   "slug": "68085-petirosina-wishawi",
+   "title": "ጴጥሮስና ውሻው",
+   "description": "A sweet friendship between a boy and a dog.",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/93404/size3/981dcc9370b1b978094af5d8b2617db5.jpg",
+   "authors": [
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Brian Wambi"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 294,
+   "file": "books/68085-petirosina-wishawi.json"
+  },
+  {
+   "slug": "68443-yediyabilosi-ye-anigeti-libisi",
+   "title": "የዲያብሎስ የአንገት ልብስ",
+   "description": "A couple promises a gift to the devil on the birth of their child. How will they get out it?",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/93403/size3/fdd9fa2236b0754c488ccfe23e462189.jpg",
+   "authors": [
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Jacob Kono"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 224,
+   "file": "books/68443-yediyabilosi-ye-anigeti-libisi.json"
+  },
+  {
+   "slug": "67680-wisane",
+   "title": "ውሣኔ",
+   "description": "A village takes a decision together to change their lives for the better.",
+   "language": "Amharic",
+   "langCode": "am",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/106408/size3/1810d196f828b94b51312fbbe19e1392.jpg",
+   "authors": [
+    "Mezemir Girma"
+   ],
+   "illustrators": [
+    "Vusi  Malindi"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 147,
+   "file": "books/67680-wisane.json"
+  },
+  {
+   "slug": "147035-aloo-maloo-kaloo",
+   "title": "آلو – مالو – کالو",
+   "description": "یوه ورځ مالو غواړي چې د خپلې انا د پخلنځي د باغ څخه یو څو کچالو واخلي او هغه هیڅ نشي موندلای. مګر بیا کالو له هغه سره مرسته کوي تر څو پټ کچالو وموندي.",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703824/size3/e58cf9e6698ff1d6a72c150d34efe53e.jpg",
+   "authors": [
+    "Muhammad Muninr Ibrahimi"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 157,
+   "file": "books/147035-aloo-maloo-kaloo.json"
+  },
+  {
+   "slug": "110697-zama-malgari",
+   "title": "زما ملګرې",
+   "description": "زما ډیر ملګرې دې. هغه ټول پر ما ډېر ګران دی خو په هغو کې یې یو ډېر خاص دي!",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Darakht-e Danesh Library"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 74,
+   "file": "books/110697-zama-malgari.json"
+  },
+  {
+   "slug": "109196-da-amm-wana",
+   "title": "د ام ونه",
+   "description": "یوه کوچنۍ انجلۍ دا خوښیږې چې خپل ځان د ام د یوې لویې ونې کې پټ کړي.\r\nفکر وکړئ آخر به هغه څوک پیدا کوي.\r\n",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/33304/size3/23a920a3cbb156501ad40ddc9e72c040.jpg",
+   "authors": [
+    "Darakht-e Danesh Library"
+   ],
+   "illustrators": [
+    "Kavya Singh"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 103,
+   "file": "books/109196-da-amm-wana.json"
+  },
+  {
+   "slug": "148945-taso-ma-nashai-paida-kawalai",
+   "title": "تاسو ما نه شئ پیدا کولای!",
+   "description": "مایا په نړۍ کې په پټیدینه کې عالې ده. ایا تاسو هغه موندلای شئ؟ د پټيدلو او موندلو په اړه یو کتاب چې تاسو په کې باید مایا وموندئ او هغه شیان چې د هغې د مور د خریدارۍ په لیست کې دي.",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/116826/size3/426af0a182efe12d8719ad2b2404bdee.jpg",
+   "authors": [
+    "Muhammad Muninr Ibrahimi"
+   ],
+   "illustrators": [
+    "Jemma Jose"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 27,
+   "wordCount": 404,
+   "file": "books/148945-taso-ma-nashai-paida-kawalai.json"
+  },
+  {
+   "slug": "59043-zema-de-kat-landi",
+   "title": "زما د کټ لاندې",
+   "description": "زه د شپې له خوبه راویښ شوم او د تندي احساس\r\nمی کوو. زه غواړم لږې اوبه ترلاسه کړم. ما د خپل کټ\r\nلاندې خپل بوټانو د په کتو شوم.\r\n\r\n\r\n\r\n\r\n",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704859/size3/5213e3c314261561008ed455eb6d0fe7.jpg",
+   "authors": [
+    "Darakht-e Danesh Library"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 168,
+   "file": "books/59043-zema-de-kat-landi.json"
+  },
+  {
+   "slug": "150900-hagha-jalai-che-khandal-ye-nasho-bandawale",
+   "title": "هغه نجلۍ چې خندل یې نشو بندولی؟",
+   "description": "هره ورځ ټی سونډري ستونزې سره مخ کیږی او زیاتره شیان خندا ورولی نو ځکه ټی سنډری غواری چې پوهه شي چې ایا د هغې سره څه ستونزه ده",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/718145/size3/8f27fe5f72c50232be4f992cd4a2eaea.jpg",
+   "authors": [
+    "Muhammad Muninr Ibrahimi"
+   ],
+   "illustrators": [
+    "ROSH"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 930,
+   "file": "books/150900-hagha-jalai-che-khandal-ye-nasho-bandawale.json"
+  },
+  {
+   "slug": "57301-yawa-woraz-sabzijan-khovanzai-ta-raghlel",
+   "title": "یوه ورځ سبزیجات ښوونځي ته راغلل",
+   "description": "ګل احمد په خپلو سترګو باور نه راتلو چې دا څه ګوري. هغه ښوونځي ته روان وو چې سبزیجات يې ولیدل چې ښوونځي ته روان ول او د ښوونځي بکسې او اوبو بوتلونه هم ورسره ول! هیڅوک نه پوهیدل چې څه روان دي، ښوونکی هم حیران و. اخر څه روان دي؟",
+   "language": "Pashto",
+   "langCode": "ps",
+   "isRtl": true,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722318/size3/17abcfb72df4343564c63356594732e8.jpg",
+   "authors": [
+    "Darakht-e Danesh Library"
+   ],
+   "illustrators": [
+    "Padmanabh"
+   ],
+   "publisher": "Darakht-e Danesh Library",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 406,
+   "file": "books/57301-yawa-woraz-sabzijan-khovanzai-ta-raghlel.json"
+  },
+  {
+   "slug": "105616-pyaansaann-kyahchoet",
+   "title": "ပျံသန်းကြစို့",
+   "description": "ဘယ်သူတွေက ပျံနိုင်ပြီး ဘယ်သူတွေက မပျံနိုင်ဘူးလဲ",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/149132/size3/19fa25350a31caecbdd1262dbd32d7e3.jpg",
+   "authors": [
+    "Kyaw Htet Minn",
+    "Mi Ki Kyaw Myint",
+    "Thein Lwin"
+   ],
+   "illustrators": [
+    "San srei nou ch nou ch"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 35,
+   "file": "books/105616-pyaansaann-kyahchoet.json"
+  },
+  {
+   "slug": "105512-naybe-nae-bho-rar",
+   "title": "နေဗီ နဲ့ဘိုရာ",
+   "description": "နေဗီတတ်သလောက် ဘိုရာလည်းတတ်တယ်။ သူတို့နှစ်ယောက်စလုံးလုပ်တတ်တာ အတူတူဘဲ။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/191966/size3/9242ec477b75ce8d6c53ec9ca7103f99.jpg",
+   "authors": [
+    "Kyaw Htet Minn",
+    "Mi Ki Kyaw Myint",
+    "Ni Win Zaw"
+   ],
+   "illustrators": [
+    "Sain Thuokna"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 21,
+   "file": "books/105512-naybe-nae-bho-rar.json"
+  },
+  {
+   "slug": "316872-barking-deer-and-indian-gooseberries",
+   "title": "ချေနဲ့ဆီးဖြူသီး",
+   "description": "ဗိုက်ဆာတဲ့ချေက ဆီးဖြူသီး စားလိုက်တော့ သူကိုတခါတည်းမိုးကြိုးပစ်လိုက်တယ်။ ",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/406806/size3/ccfe4fa3e01e61fbe49c91a289fabf90.jpg",
+   "authors": [
+    "Keita Kurabe"
+   ],
+   "illustrators": [
+    "Sr Shawanang"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 54,
+   "file": "books/316872-barking-deer-and-indian-gooseberries.json"
+  },
+  {
+   "slug": "676308-angry-akku",
+   "title": "ဒေါသအိုး အားကူး",
+   "description": "အားကူးဟာ အရမ်းဒေါသထွက်နေပါတယ်။ အဲဒီဒေါသတွေကို ကွယ်ပျောက်သွားအောင် အားကူးဘယ်လိုလုပ်ခဲ့သလဲဆိုတာကတော့...",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724106/size3/155d8763546a35c51598f2685d431da9.jpg",
+   "authors": [
+    "Zaw Thurein Tun"
+   ],
+   "illustrators": [
+    "Vinayak Varma"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 409,
+   "file": "books/676308-angry-akku.json"
+  },
+  {
+   "slug": "254393-happy-fishing-in-river",
+   "title": "ငါးဖမ်းထွက်ကြမယ် ...",
+   "description": "မြန်မာ ကလေးငယ်များ မြန်မာ့ကျေးလက်သဘာဝကို သိရှိနားလည်တတ်စေရန် ၊ သဘာဝတရားကို အရှိအတိုင်း ခံစားတတ်စေရန် နှင့် ဗဟုသုတရစေရန် ရည်ရွယ်ပါသည် ။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/344320/size3/bbdc80b3b99a5f881fa6518db1489c88.jpg",
+   "authors": [
+    "Khin Zar Chi Oo"
+   ],
+   "illustrators": [
+    "Nivong  Sengsakoun",
+    "Prabha  Mallya",
+    "Shivam Choudhary"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 339,
+   "file": "books/254393-happy-fishing-in-river.json"
+  },
+  {
+   "slug": "35054-i-love-my-mom",
+   "title": "ຂ້ອຍຮັກແມ່ຂອງຂ້ອຍ",
+   "description": "ທຸກມື້ນາງນ້ອຍຈະຮຽນຮູ້ສິ່ງຕ່າງໆຈາກແມ່ຂອງລາວ. ລາວຮຽນ ຫົດສວນດອກໄມ້, ລາວຂີ່ລົດຖີບ, ລາວຮັກແມ່ຂອງລາວຫຼາຍ.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/93898/size3/5514f498477b51945a0f2ac63b7fae8b.jpg",
+   "authors": [
+    "Fongsamay  Phommaxay"
+   ],
+   "illustrators": [
+    "Nivong  Sengsakoun"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 28,
+   "file": "books/35054-i-love-my-mom.json"
+  },
+  {
+   "slug": "34989-kan-hapa-yuban-khony",
+   "title": "ການຫາປາຢູ່ບ້ານຂ້ອຍ",
+   "description": "ປຶ້ມກາບກອນສຳລັບຜູ້ເລີ່ມຕົ້ນອ່ານຫົວນີ້ໄດພ້ັນລະນາວິທີຕ່າງໆ ຂອງການຫາປາ ນັບແຕ່ການໃຊ້ເບັດຈົນຮອດການໃຊ້ມອງໃຊ້ແຫ. ມັນເປັນປຶ້ມທີ່ນຳໃຊ້ຄຳເວົ້າຄຳງ່າຍໆຊ່ວຍໃຫ້ເດັກສາມາດຮຽນຮູ້ ແລະ ຈື່ຈຳຄຳສັບໄດ້.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/93896/size3/94d5619b2dd7478c430b5dc5f669a763.jpg",
+   "authors": [
+    "Phoxay  Chanthavongsa"
+   ],
+   "illustrators": [
+    "Nivong  Sengsakoun"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 26,
+   "file": "books/34989-kan-hapa-yuban-khony.json"
+  },
+  {
+   "slug": "586676-aem-duang-tauaen",
+   "title": "ແມ່ດວງຕາເວັນ",
+   "description": "ໃນຊວງລະດູໜາວ, ໂດໂມ, ປາໂມ ແລະ ຝູງສັດທັງໝົດແມ່ນໜາວສັ່ນກັບຄວາມເຢັນທີ່ມາເຢືອນ. ແມ່ດວງຕາເວັນຈະໄດ້ຍິນຄໍາອ້ອນວອນຂອງພວກເຂົາເຈົ້າຫຼືບໍ?",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/637601/size3/64673c0e48caffa0e1cdc8d8ec0c58d6.jpg",
+   "authors": [
+    "Mookda Phengphongsavan",
+    " Vilaiphone PHONGSILA",
+    "Vilar Phoummavone"
+   ],
+   "illustrators": [
+    "लक्ष्मी  तामाङ"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 223,
+   "file": "books/586676-aem-duang-tauaen.json"
+  },
+  {
+   "slug": "586690-chao-non-aenuadai",
+   "title": "ເຈົ້ານອນແນວໃດ?",
+   "description": "ເຈົ້າສາມາດນອນຫຼັບດ້ວຍຕາຂ້າງໜື່ງຫຼັບຂ້າງໜື່ງມືນບໍ? ເຈົ້າສາມາດນອນຫຼັບຢູ່ເທິ່ງຕົ້ນໄມ້ບໍ? ປູລາມີຕຽງນອນ, ແຕ່ລາວຢາກຮູ້ວ່າສິ່ງທີ່ມີຊີວິດອື່ນໆນອນແນວໃດ?",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/655698/size3/77f7a8a015fd40eaf3126e2b5f19f654.jpg",
+   "authors": [
+    "Kedsavanh Dalathib",
+    "Koulab Yangchaki",
+    "Mookda Phengphongsavan",
+    "Poukky Vongsena"
+   ],
+   "illustrators": [
+    "Alex  Latimer"
+   ],
+   "publisher": "The Asia Foundation",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 35,
+   "file": "books/586690-chao-non-aenuadai.json"
+  },
+  {
+   "slug": "58313-i-shuu-ti-ya-ng-ye-ma-ga-ra",
+   "title": "INSHUTI YANJYE MAGARA",
+   "description": "Wifuza kubona inshuti yawe magara? Reba muri iki gitabo urasanga usanzwe ufite inshuti idasanzwe!",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704882/size3/b1586d957cd76fc5ad2d07442f85401c.jpg",
+   "authors": [
+    "Fred HIRWA"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Right To Play",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 68,
+   "file": "books/58313-i-shuu-ti-ya-ng-ye-ma-ga-ra.json"
+  },
+  {
+   "slug": "14801-pupi-maxi-arashaka-gukina",
+   "title": "Pupi Maxi Arashaka Gukina ",
+   "description": "Pupi Maxi arashka gukina . Ariko burimunu wese nakanya afite. ",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/24424/size3/b82be367d5613409547265644c8a85fe.jpg",
+   "authors": [
+    "Noel Abaho"
+   ],
+   "illustrators": [
+    "Sonal Goyal",
+    "Sumit Sakhuja"
+   ],
+   "publisher": "Uganda Christian University",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 163,
+   "file": "books/14801-pupi-maxi-arashaka-gukina.json"
+  },
+  {
+   "slug": "14550-ramu-yagiye-kuroba",
+   "title": "Ramu yagiye kuroba",
+   "description": "Abashuti batatu baja kuroba : soma ibikurikira.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721012/size3/1db7298d5b01da68f1fd305946c8895a.jpg",
+   "authors": [
+    "Noel Abaho"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Uganda Christian University",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 91,
+   "file": "books/14550-ramu-yagiye-kuroba.json"
+  },
+  {
+   "slug": "15198-what-shall-i-wear-today",
+   "title": "Nzambara Ichi Uyumunsi?",
+   "description": "Iminsi imwe , kirakomeye kubona ikyokwambara . Umukobwa muto yagyeragyeje mu kanzu nyinsi ataraboona ikyokwambara.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/2289/size3/466aacc8ac4a2d255bdf88b7bf413bee.jpg",
+   "authors": [
+    "Noel Abaho"
+   ],
+   "illustrators": [
+    "Tanvi Bhat"
+   ],
+   "publisher": "Uganda Christian University",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 101,
+   "file": "books/15198-what-shall-i-wear-today.json"
+  },
+  {
+   "slug": "141946-cyusa-n-abahungu-b-abongereza",
+   "title": "Cyusa n' abahungu b' Abongereza",
+   "description": "Abebe was a boy who loved learning languages.",
+   "language": "Kinyarwanda",
+   "langCode": "rw",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/191220/size3/19b7cc957915a1f2a288b634aa661821.jpg",
+   "authors": [
+    "Jean Paul Harelimana"
+   ],
+   "illustrators": [
+    "Adonay Gebru"
+   ],
+   "publisher": "African Storybook Initiative",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 328,
+   "file": "books/141946-cyusa-n-abahungu-b-abongereza.json"
+  },
+  {
+   "slug": "459185-lebasi-surkhi-barani",
+   "title": "لباس سرخ بارانی",
+   "description": "مانو یک لباس جدید بارانی دارد.او صبر برای پوشیدن آن ندارد، اما  \r\n    باران او را منتظر....و منتظر....و منتظر نگه میدارد.                             ",
+   "language": "Dari",
+   "langCode": "prs",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721019/size3/beedc107df0b5447c6735b02a11b27ef.jpg",
+   "authors": [
+    "Faryal Azimi"
+   ],
+   "illustrators": [
+    "Zainab Tambawalla"
+   ],
+   "publisher": "The Community Library Project",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 248,
+   "file": "books/459185-lebasi-surkhi-barani.json"
+  },
+  {
+   "slug": "456245-man-komak-karda-metawanam",
+   "title": "من کمک کرده میتوانم!",
+   "description": "یک دختر و یا یک پسر بزرگ دیگران را در راه های مختلف کمک کرده میتواند.\r\nکمک کردن به دیگران لذت بخش است! این کتاب از جمله چهار کتابی است که در ادامه  'بزرگ شدن' است. ",
+   "language": "Dari",
+   "langCode": "prs",
+   "isRtl": true,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/705491/size3/f2ecd62b4dc76be8fa891bf361c2b379.jpg",
+   "authors": [
+    "Ghezal azimi"
+   ],
+   "illustrators": [
+    "Aman Randhawa"
+   ],
+   "publisher": "The Community Library Project",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 132,
+   "file": "books/456245-man-komak-karda-metawanam.json"
+  },
+  {
+   "slug": "455655-aynak-hai-mother-kalanem",
+   "title": "عینک های مادر کلانم",
+   "description": "مادرکلانم همیشه عینک های خود را گم میکند. برای پیدا کردن عینک های شان به یک پولیس هوشیار نیاز است.",
+   "language": "Dari",
+   "langCode": "prs",
+   "isRtl": true,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700894/size3/0b3a679b1d24e2b4e223307bff56b880.jpg",
+   "authors": [
+    "Ghezal azimi"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 319,
+   "file": "books/455655-aynak-hai-mother-kalanem.json"
+  },
+  {
+   "slug": "39688-the-lost-duckling",
+   "title": "මග වැරදුණු ඩකී",
+   "description": "තරුල් තුවාල වෙලා හිටිය තාර පැටියෙක් ගෙදර ගෙනාවා. එයාට හැමදාම තාරා පැටියා ළඟ තියාගන්න පුළුවන් වේවි ද? ඔයාලා මොකද හිතන්නේ?",
+   "language": "Sinhala",
+   "langCode": "si",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128592/size3/4ef227a8f05082e1644d04de78e9aa6c.jpg",
+   "authors": [
+    "Egambaram Kumudini"
+   ],
+   "illustrators": [
+    "Thanuja Dilhani"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 58,
+   "file": "books/39688-the-lost-duckling.json"
+  },
+  {
+   "slug": "260757-ottui-amba-gahe",
+   "title": "ඔට්ටුයි! අඹ ගහේ",
+   "description": "කුඩා ගැහැණු ළමයෙක් අඹ ගසක සැඟවී සිටීමට කැමතියි. අවසානයේදී ඇයව සොයාගත්තේ කවුදැයි අනුමාන කරන්න? අත්තම්මා දෙන අවවාදය අපි හැමෝටම වටිනවා.",
+   "language": "Sinhala",
+   "langCode": "si",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/33304/size3/23a920a3cbb156501ad40ddc9e72c040.jpg",
+   "authors": [
+    "Shakila Manage"
+   ],
+   "illustrators": [
+    "Kavya Singh"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 101,
+   "file": "books/260757-ottui-amba-gahe.json"
+  },
+  {
+   "slug": "39538-heda-weda-pencho",
+   "title": "හැඩ වැඩ පැංචෝ",
+   "description": "උත්සාහවන්ත ගෙතුමිට එයාගේ ජීවිතේ අමාරුම ඇඳුම මහන්න වුණ දවසක් ආවා. ගෙතුමි උත්සාහවන්ත ව මේ අමාරු ඇඳුම මැහුවා. ඔයාලා කැමතිද දැනගන්න මොකද්ද මේ ඇඳුම කියලා. ඒ වගේම කොහොමද ගෙතුමි මේ ඇඳුම මැහුවේ කියලා දැනගන්න? ",
+   "language": "Sinhala",
+   "langCode": "si",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/128596/size3/07263fc4f1cc2f1d1151a56bf7129c7f.jpg",
+   "authors": [
+    "Chammi Iresha"
+   ],
+   "illustrators": [
+    "Chathurika Jayasooriya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 88,
+   "file": "books/39538-heda-weda-pencho.json"
+  },
+  {
+   "slug": "9795-warusaawe-gee-gayamin",
+   "title": "වරුසාවේ ගී ගයමින්",
+   "description": "සුකියා සීයා ගායකයෙකු ලෙස බොහොම ජනප්‍රියයි. ඔහුට තම ලොකුම රසිකයා බවට පත්ව සිටින දිනූ හමු විය. ඔවුන්ගේ එකතුවීම හොඳ සම්භන්දයක ඇරඹුම වුණා!",
+   "language": "Sinhala",
+   "langCode": "si",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722389/size3/d05540af9b5524776541f85d6f0d63d4.jpg",
+   "authors": [
+    "Gnanaharsha Beligatamulla"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 337,
+   "file": "books/9795-warusaawe-gee-gayamin.json"
+  },
+  {
+   "slug": "16916-kottavi-raju-saha-nidinethi-rajadhaniya",
+   "title": "කොට්ටවි රජු සහ නිදිනැති රාජධානිය",
+   "description": "කොට්ටවි රජුට නිදාගැනීම ගැටලුවක් විය. ඒ ප්‍රශ්නෙ තියෙන්නෙ රෑට විතරයි. එදිනෙදා ඔහුගේ ඇමතිවරුන් සංකීර්ණ ගැටළු ගැන කතා කරන විට, ඔහු කිරා වැටුණා. ඔහු සියලු දෙනාගෙන්ම විසඳුම් ඇහුවා. කිසි දෙයක් හරියටම හරි ගියේ නෑ. නමුත් එක් දිනක් ... ... මෙම පොත හරහා කොට්ටවි රජුගේ රාජධානියට සංචාරය කර ඊළඟට සිදුවූ දේ බලන්න.",
+   "language": "Sinhala",
+   "langCode": "si",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/118231/size3/9734b4374359de228b2b2badb59750a9.jpg",
+   "authors": [
+    "Gnanaharsha Beligatamulla"
+   ],
+   "illustrators": [
+    "Henu"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1111,
+   "file": "books/16916-kottavi-raju-saha-nidinethi-rajadhaniya.json"
+  },
+  {
+   "slug": "18565-drzewo-mango",
+   "title": "Drzewo mango",
+   "description": "Dziewczynka lubi wchodzić na drzewo mango, żeby się schować. Czy zgadniesz kto ją znajdzie?",
+   "language": "Polish",
+   "langCode": "pl",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/33304/size3/23a920a3cbb156501ad40ddc9e72c040.jpg",
+   "authors": [
+    "Łukasz Siewierski"
+   ],
+   "illustrators": [
+    "Kavya Singh"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 6,
+   "wordCount": 60,
+   "file": "books/18565-drzewo-mango.json"
+  },
+  {
+   "slug": "19931-bed-time-stories",
+   "title": "Bajki na dobranoc",
+   "description": "Zwińmy się wszyscy w koce. To jest historia o bajkach, które mama opowiada synowi na dobranoc. ",
+   "language": "Polish",
+   "langCode": "pl",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/34952/size3/cd9982004d7e6ea392ebe738a42cb276.jpg",
+   "authors": [
+    "Malgorzata Naporowska"
+   ],
+   "illustrators": [
+    "Harshvardhan Gantha"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 51,
+   "file": "books/19931-bed-time-stories.json"
+  },
+  {
+   "slug": "30762-to-wszystko-wina-kota",
+   "title": "To wszystko wina kota!",
+   "description": "Pewien chłopiec nie mógł skończyć swojego zadania domowego z powodu złośliwego kota. Brzmi jak głupia wymówka? Cóż, przeczytaj o tym co mu się stało i zobacz jak jedna rzecz może prowadzić do kolejnej, i kolejnej, i kolejnej...",
+   "language": "Polish",
+   "langCode": "pl",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+   "authors": [
+    "Kuba Kołodziej"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 142,
+   "file": "books/30762-to-wszystko-wina-kota.json"
+  },
+  {
+   "slug": "38532-bawelniany-doktor",
+   "title": "Bawełniany doktor",
+   "description": "Margaret była bystra i ciekawa świata. Miała wielkie marzenia i chciała zostać lekarzem. Jednak 200 lat dziewczynkom nie było wolno być lekarzami. Margaret ścięła więc włosy i założyła męski strój, aby nikt nie mógł jej rozpoznać. Przybrała też nowe imię: James Barry.",
+   "language": "Polish",
+   "langCode": "pl",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/118253/size3/2899ec66a21efab3448e856395d6b01f.jpg",
+   "authors": [
+    "Maciej Kur"
+   ],
+   "illustrators": [
+    "Jean de Wet"
+   ],
+   "publisher": "StoryWeaver Community",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 615,
+   "file": "books/38532-bawelniany-doktor.json"
   }
  ]
 }

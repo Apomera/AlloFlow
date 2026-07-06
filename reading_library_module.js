@@ -436,6 +436,12 @@
       }
     };
 
+    // Hand the book text to the main generation pipeline. Passing the book's
+    // language as langOverride keeps the material in the language the student
+    // is actually reading (default leveledTextLanguage is usually English —
+    // an English quiz on an Arabic book would surprise everyone). Teachers
+    // who want cross-language material use "Use as source text" + the normal
+    // language picker instead.
     var generate = function (type, label) {
       setGenOpen(false);
       if (typeof props.handleGenerate !== 'function') {
@@ -443,8 +449,9 @@
         return;
       }
       var text = bookPlainText(book);
+      var langOverride = book.language && book.language !== 'English' ? book.language : null;
       try {
-        props.handleGenerate(type, null, false, text);
+        props.handleGenerate(type, langOverride, false, text);
         props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' — "' + book.title + '"', 'success');
         props.onExit && props.onExit(true);
       } catch (err) {
@@ -452,6 +459,9 @@
       }
     };
 
+    // Load the full book text as the app's source text (the host wraps
+    // setInputText to also reveal the Source panel), so every pipeline tool —
+    // not just the four in this menu — can work from the book.
     var openAsDocument = function () {
       setGenOpen(false);
       if (typeof props.setInputText !== 'function') {
@@ -459,7 +469,7 @@
         return;
       }
       props.setInputText(bookPlainText(book));
-      props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_loaded_doc', 'is now the working document.'), 'success');
+      props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_loaded_doc', 'is loaded as your source text — all the create tools can use it now.'), 'success');
       props.onExit && props.onExit(true);
     };
 
@@ -544,8 +554,9 @@
             e('button', {
               role: 'menuitem',
               className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
+              title: tr('readinglib_open_as_doc_hint', 'Loads the book text into the Source panel so any tool can use it'),
               onClick: openAsDocument,
-            }, tr('readinglib_open_as_doc', 'Open as document'))
+            }, tr('readinglib_open_as_doc', 'Use as source text…'))
           ) : null
         )
       ),
@@ -555,13 +566,18 @@
         onEnded: function () { setNarrating(false); setActiveCue(null); },
       }) : null,
       showPractice ? e(PracticePanel, { book: book, onClose: function () { setShowPractice(false); } }) : null,
-      // page spread
-      page ? e('div', { className: 'flex-1 min-h-0 overflow-y-auto py-3' },
-        e('div', { className: 'max-w-3xl mx-auto' },
+      // page spread — the flex column + m-auto child centers short spreads
+      // vertically in the leftover space (justify-center would clip the top
+      // of tall pages inside overflow-y-auto; auto margins collapse to 0 and
+      // keep them scrollable). The artwork shrink-wraps and centers itself so
+      // the rounded frame hugs the picture — no grey letterbox bars on
+      // portrait art.
+      page ? e('div', { className: 'flex-1 min-h-0 overflow-y-auto py-3 flex flex-col' },
+        e('div', { className: 'w-full max-w-3xl m-auto' },
           page.img ? e('img', {
             src: page.img,
             alt: tr('readinglib_page_illustration', 'Illustration from') + ' "' + book.title + '", ' + tr('readinglib_page', 'page') + ' ' + page.n,
-            className: 'w-full max-h-[48vh] object-contain rounded-xl bg-slate-100',
+            className: 'block mx-auto w-auto max-w-full max-h-[48vh] rounded-xl',
             loading: 'lazy',
           }) : null,
           e('div', {
@@ -783,7 +799,8 @@
         index.data && index.data.attribution ? e('p', { className: 'text-[11px] text-slate-500 pt-2 border-t border-slate-200' },
           index.data.attribution.text + ' ',
           e('a', { href: index.data.attribution.url, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
-            'storyweaver.org.in')
+            'storyweaver.org.in'),
+          ' · ' + tr('readinglib_request_language', 'Missing a language? StoryWeaver publishes in 300+ — more can be added to this library on request.')
         ) : null
       );
     }

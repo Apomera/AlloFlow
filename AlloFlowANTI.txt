@@ -31308,7 +31308,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 t,
                 callGemini,
                 handleGenerate,
-                setInputText,
+                // "Use as source text" must land the user somewhere visible:
+                // set the text AND reveal the Source panel (same steps as the
+                // video-transcript restore path) — a bare setInputText changes
+                // a panel the user may not even have on screen.
+                setInputText: (text) => {
+                    setInputText(text);
+                    setActiveSidebarTab('create');
+                    setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+                    setActiveView('input');
+                },
                 isTeacherMode,
                 initialBookSlug: pendingReadingBookSlug,
                 onInitialBookConsumed: () => setPendingReadingBookSlug(null),
