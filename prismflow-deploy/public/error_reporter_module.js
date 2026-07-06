@@ -52,9 +52,35 @@
   var STORAGE_PREFS = 'alloflow_error_log_prefs';
   var MAX_BUFFERED = 50;
 
+  // App build tag: on desktop the UA carries alloflow-desktop/<version>; on
+  // the web there is no stable equivalent, so entries tag as 'web'.
+  var APP_BUILD_TAG = (function () {
+    try {
+      var m = navigator.userAgent.match(/alloflow-desktop\/([\d.]+)/);
+      return m ? 'desktop-' + m[1] : 'web';
+    } catch (e) { return 'web'; }
+  })();
+
   // ── Initial state (rehydrated from localStorage) ──
+  // Rehydration honesty (field-caught 2026-07-06): a report filed from 0.2.4
+  // opened with a wall of 0.2.2-era entries — every timestamp PREDATED the
+  // install — because the buffer persists across app upgrades. Stale entries
+  // make fixed bugs look alive, so on load we drop (a) entries captured by a
+  // DIFFERENT desktop build, and (b) entries matching the ignore list (they
+  // were captured before the pattern was added).
   var buffer = (function () {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    try {
+      var stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (!Array.isArray(stored)) return [];
+      return stored.filter(function (entry) {
+        if (!entry || typeof entry !== 'object') return false;
+        if (entry.v && entry.v !== APP_BUILD_TAG) return false;
+        // shouldIgnore's pattern list initializes later in this module scope;
+        // a throw here must skip the CHECK, not wipe the whole buffer.
+        try { if (shouldIgnore(entry.message)) return false; } catch (e) {}
+        return true;
+      });
+    }
     catch (e) { return []; }
   })();
   var prefs = (function () {
@@ -124,7 +150,8 @@
       line: line || 0,
       column: column || 0,
       url: window.location.href.slice(0, 300),
-      count: 1
+      count: 1,
+      v: APP_BUILD_TAG   // which app build captured this — stale-entry pruning key
     };
     buffer.push(entry);
     while (buffer.length > MAX_BUFFERED) buffer.shift();
