@@ -46,18 +46,34 @@ const OSS_CREDITS = [
       { name: 'pdf-lib', use: 'building accessible PDFs', license: 'MIT', url: 'https://pdf-lib.js.org' },
       { name: 'fontkit', use: 'embedding fonts in PDFs', license: 'MIT', url: 'https://github.com/foliojs/fontkit' },
       { name: 'Tesseract.js', use: 'OCR of scanned handouts', license: 'Apache-2.0', url: 'https://tesseract.projectnaptha.com' },
-      { name: 'veraPDF', use: 'PDF/UA & PDF/A conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org' },
+      { name: 'veraPDF', use: 'PDF/UA & PDF/A conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org',
+        featured: 8,
+        blurb: 'Checks every accessible PDF we build against the PDF/UA and PDF/A standards — the same conformance engine trusted by national libraries and archives.',
+        site: 'https://verapdf.org', repo: 'https://github.com/veraPDF/veraPDF-library' },
       { name: 'Apache PDFBox', use: 'PDF parsing inside veraPDF', license: 'Apache-2.0', url: 'https://pdfbox.apache.org' },
       { name: 'CheerpJ', use: 'runs the veraPDF engine in the browser', license: 'free for this use (LeaningTech)', url: 'https://leaningtech.com/cheerpj/' },
       { name: 'axe-core', use: 'accessibility rule checks', license: 'MPL-2.0', url: 'https://github.com/dequelabs/axe-core' },
       { name: 'IBM Equal Access (accessibility-checker-engine)', use: 'second accessibility checker', license: 'Apache-2.0', url: 'https://github.com/IBMa/equal-access' },
       { name: 'DOMPurify', use: 'HTML sanitizing (safety)', license: 'Apache-2.0 / MPL-2.0', url: 'https://github.com/cure53/DOMPurify' },
       { name: 'Harper', use: 'grammar & spelling checks', license: 'Apache-2.0', url: 'https://writewithharper.com' },
-      { name: 'liblouis', use: 'UEB Grade 2 braille (.brf) translation', license: 'GPLv3 (engine) / LGPL-2.1+ (tables)', url: 'https://liblouis.io' },
-      { name: 'Open Board Format (OBF/OBZ)', use: 'AAC board interchange with Cboard & other AAC apps (Symbol Studio import/export) — Open AAC / CoughDrop', license: 'open specification', url: 'https://www.openboardformat.org' },
+      { name: 'liblouis', use: 'UEB Grade 2 braille (.brf) translation', license: 'GPLv3 (engine) / LGPL-2.1+ (tables)', url: 'https://liblouis.io',
+        featured: 9,
+        blurb: 'Translates text into contracted UEB Grade-2 braille for .brf export, drawing on its library of 200+ language tables.',
+        site: 'https://liblouis.io', repo: 'https://github.com/liblouis/liblouis' },
+      { name: 'Open Board Format (OBF/OBZ)', use: 'AAC board interchange with Cboard & other AAC apps (Symbol Studio import/export) — Open AAC / CoughDrop', license: 'open specification', url: 'https://www.openboardformat.org',
+        featured: 7, owner: 'Open AAC',
+        blurb: 'The open standard that lets Symbol Studio communication boards move in and out of Cboard and other AAC apps — so a board built here is never locked to one device.',
+        site: 'https://www.openboardformat.org', repo: 'https://github.com/open-aac/openboardformat' },
       { name: 'KaTeX', use: 'math typesetting', license: 'MIT', url: 'https://katex.org' },
       { name: 'Temml', use: 'LaTeX → MathML', license: 'MIT', url: 'https://temml.org' },
-      { name: 'Speech Rule Engine', use: 'spoken math (read-aloud, equation alt text, export captions) — Volker Sorge / MathJax', license: 'Apache-2.0', url: 'https://github.com/Speech-Rule-Engine/speech-rule-engine' },
+      { name: 'Speech Rule Engine', use: 'spoken math (read-aloud, equation alt text, export captions) — Volker Sorge / MathJax', license: 'Apache-2.0', url: 'https://github.com/Speech-Rule-Engine/speech-rule-engine',
+        featured: 6, owner: 'Volker Sorge / MathJax',
+        blurb: 'Reads mathematics aloud — turning equations into clear spoken English for read-aloud, screen-reader alt text, and export captions, in several languages.',
+        site: 'https://speechruleengine.org', repo: 'https://github.com/Speech-Rule-Engine/speech-rule-engine' },
+      { name: 'MathLive', use: 'accessible equation editor (author math with a virtual keyboard; exports MathML/LaTeX/spoken) — Arno Gourdol', license: 'MIT', url: 'https://mathlive.io',
+        featured: 6, owner: 'Arno Gourdol',
+        blurb: 'A WYSIWYG equation editor so teachers and students can type math with an on-screen keyboard — inserted as accessible MathML that the same engines read aloud and turn into braille.',
+        site: 'https://mathlive.io', repo: 'https://github.com/arnog/mathlive' },
       { name: 'Prism', use: 'code syntax highlighting', license: 'MIT', url: 'https://prismjs.com' },
       { name: 'mammoth.js', use: 'importing Word documents', license: 'BSD-2-Clause', url: 'https://github.com/mwilliamson/mammoth.js' },
       { name: 'docx', use: 'Word (.docx) export', license: 'MIT', url: 'https://docx.js.org' },
@@ -72,15 +88,33 @@ const OSS_CREDITS = [
       { name: 'math.js', use: 'math engine', license: 'Apache-2.0', url: 'https://mathjs.org' },
       { name: 'jStat', use: 'statistics library', license: 'MIT', url: 'https://github.com/jstat/jstat' },
       { name: 'Acorn', use: 'JavaScript parser (code sandbox)', license: 'MIT', url: 'https://github.com/acornjs/acorn' },
-      { name: 'CircuitJS1', use: 'electronic-circuit simulator (Circuit Shelf) — Paul Falstad & Iain Sharp', license: 'GPLv2', url: 'https://github.com/pfalstad/circuitjs1' },
-      { name: 'Mol*', use: '3D molecular-structure viewer (Molecule Shelf) — RCSB PDB & PDBe', license: 'MIT', url: 'https://molstar.org' },
-      { name: 'CODAP', use: 'data-science workspace (Data Lab) — Concord Consortium', license: 'MIT', url: 'https://codap.concord.org' },
-      { name: 'PhET Interactive Simulations', use: 'science & math sims (Sim Shelf) — Univ. of Colorado Boulder', license: 'GPLv3 (code) / CC-BY (content)', url: 'https://phet.colorado.edu' },
+      { name: 'CircuitJS1', use: 'electronic-circuit simulator (Circuit Shelf) — Paul Falstad & Iain Sharp', license: 'GPLv2', url: 'https://github.com/pfalstad/circuitjs1',
+        featured: 4, owner: 'Paul Falstad & Iain Sharp',
+        blurb: 'The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict–Observe–Explain challenges.',
+        site: 'https://www.falstad.com/circuit/', repo: 'https://github.com/pfalstad/circuitjs1' },
+      { name: 'Mol*', use: '3D molecular-structure viewer (Molecule Shelf) — RCSB PDB & PDBe', license: 'MIT', url: 'https://molstar.org',
+        featured: 3, owner: 'RCSB PDB & PDBe',
+        blurb: 'Renders the interactive 3-D molecules in the Molecule Shelf — from crambin to hemoglobin — paired with a Notice-and-Wonder coach.',
+        site: 'https://molstar.org', repo: 'https://github.com/molstar/molstar' },
+      { name: 'CODAP', use: 'data-science workspace (Data Lab) — Concord Consortium', license: 'MIT', url: 'https://codap.concord.org',
+        featured: 1, owner: 'Concord Consortium',
+        blurb: 'The engine behind the Data Lab. Students explore real datasets by dragging, graphing, and filtering — while a Socratic tutor asks guiding questions instead of handing over the answer.',
+        site: 'https://codap.concord.org', repo: 'https://github.com/concord-consortium/codap' },
+      { name: 'PhET Interactive Simulations', use: 'science & math sims (Sim Shelf) — Univ. of Colorado Boulder', license: 'GPLv3 (code) / CC-BY (content)', url: 'https://phet.colorado.edu',
+        featured: 2, owner: 'University of Colorado Boulder',
+        blurb: 'Powers the Sim Shelf. Students lock in a prediction, explore an interactive science or math simulation, then an AI coach debriefs what they actually observed.',
+        site: 'https://phet.colorado.edu', repo: 'https://github.com/phetsims' },
       { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
-      { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io' },
+      { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io',
+        featured: 5,
+        blurb: 'Drives the deep-zoom Zoom Gallery, letting students pan and magnify gigapixel NASA and Smithsonian images down to the finest detail.',
+        site: 'https://openseadragon.github.io', repo: 'https://github.com/openseadragon/openseadragon' },
       { name: 'Smithsonian Open Access', use: 'CC0 museum images in the Zoom Gallery (deep-zoom IIIF)', license: 'CC0 1.0', url: 'https://www.si.edu/openaccess' },
       { name: 'NASA Image and Video Library', use: 'public-domain space photographs in the Zoom Gallery', license: 'Public domain (NASA media guidelines)', url: 'https://images.nasa.gov' },
-      { name: 'StoryWeaver', use: 'openly licensed picture books (Reading Library) — Pratham Books; authors & illustrators credited per book', license: 'CC BY 4.0', url: 'https://storyweaver.org.in' },
+      { name: 'StoryWeaver', use: 'openly licensed picture books (Reading Library) — Pratham Books; authors & illustrators credited per book', license: 'CC BY 4.0', url: 'https://storyweaver.org.in',
+        featured: 6, owner: 'Pratham Books',
+        blurb: 'Supplies the openly licensed picture books in the Reading Library — hundreds of titles across dozens of languages — which double as oral-reading-fluency passages.',
+        site: 'https://storyweaver.org.in', repo: 'https://github.com/PrathamBooks/StoryWeaverOpen' },
     ],
   },
   {
@@ -99,10 +133,19 @@ const OSS_CREDITS = [
   {
     group: 'On-device speech & AI',
     items: [
-      { name: 'Kokoro', use: 'neural text-to-speech (primary)', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro' },
-      { name: 'Piper', use: 'neural text-to-speech (40+ languages)', license: 'MIT (engine now GPLv3 fork)', url: 'https://github.com/OHF-Voice/piper1-gpl' },
+      { name: 'Kokoro', use: 'neural text-to-speech (primary)', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro',
+        featured: 11,
+        blurb: 'The primary neural text-to-speech voice — natural narration that runs right in the browser, with no cloud round-trip.',
+        repo: 'https://github.com/hexgrad/kokoro' },
+      { name: 'Piper', use: 'neural text-to-speech (40+ languages)', license: 'MIT (engine now GPLv3 fork)', url: 'https://github.com/OHF-Voice/piper1-gpl',
+        featured: 12,
+        blurb: 'Fast neural text-to-speech across 40+ languages, used for on-device narration in the School Box.',
+        repo: 'https://github.com/OHF-Voice/piper1-gpl' },
       { name: 'Transformers.js', use: 'in-browser ML (Whisper transcription, image gen)', license: 'Apache-2.0', url: 'https://github.com/huggingface/transformers.js' },
-      { name: 'whisper.cpp', use: 'on-device speech-to-text for oral-reading-fluency practice (School Box) — Georgi Gerganov', license: 'MIT', url: 'https://github.com/ggml-org/whisper.cpp' },
+      { name: 'whisper.cpp', use: 'on-device speech-to-text for oral-reading-fluency practice (School Box) — Georgi Gerganov', license: 'MIT', url: 'https://github.com/ggml-org/whisper.cpp',
+        featured: 10, owner: 'Georgi Gerganov',
+        blurb: 'Runs speech-to-text fully on-device in the School Box desktop app, so oral-reading-fluency practice works offline with no student audio ever leaving the machine.',
+        repo: 'https://github.com/ggml-org/whisper.cpp' },
       { name: 'ONNX Runtime Web', use: 'machine-learning inference', license: 'MIT', url: 'https://onnxruntime.ai' },
       { name: 'Pyodide', use: 'Python in the browser', license: 'MPL-2.0', url: 'https://pyodide.org' },
     ],
@@ -137,50 +180,114 @@ const OSS_CREDITS = [
   },
 ];
 
-function OssCredits({ t }) {
+// Projects a user actually experiences as a distinct tool get a rich card at
+// the top of the Open Source tab; ordered by the `featured` number.
+const FEATURED_OSS = OSS_CREDITS
+  .flatMap((section) => section.items)
+  .filter((item) => item.featured)
+  .sort((a, b) => a.featured - b.featured);
+
+// Total bundled libraries — used in the "show all" label so it never drifts.
+const OSS_TOTAL = OSS_CREDITS.reduce((n, section) => n + section.items.length, 0);
+
+// A featured project: name, license badge, owner, a plain-language blurb, and
+// separate Website / Source links (each rendered only if it exists).
+function FeaturedCard({ item }) {
+  const noop = () => null;
+  const ExternalLink = window.ExternalLink || noop;
+  const Code = window.Code || noop;
   return (
-    <details className="bg-slate-50 rounded-xl border border-slate-200 mt-4 group">
-      <summary className="cursor-pointer select-none px-4 py-3 font-bold text-slate-800 text-sm flex items-center gap-2 hover:text-indigo-700">
-        <span aria-hidden="true">💛</span>
-        {t('about.oss_credits_title') || 'Open-source software we build on'}
-      </summary>
-      <div className="px-4 pb-4 pt-1 space-y-4">
-        <p className="text-xs text-slate-600 leading-relaxed">
-          {t('about.oss_credits_intro') || 'AlloFlow is free and open source (AGPL-3.0), and it is built on the generous work of the projects below. Thank you to their authors and communities. Each link goes to the project’s home or source.'}
-        </p>
-        {OSS_CREDITS.map((section) => (
-          <div key={section.group}>
-            <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h5>
-            <ul className="space-y-1.5 list-none">
-              {section.items.map((item) => (
-                <li key={item.name} className="text-xs text-slate-700 leading-snug flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
-                  >
-                    {item.name}
-                  </a>
-                  <span className="text-slate-600">
-                    — {item.use} <span className="text-slate-400">·</span> <span className="font-medium text-slate-500">{item.license}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-          {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know.'}
+    <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <h5 className="font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
+        <span className="shrink-0 text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">{item.license}</span>
+      </div>
+      {item.owner && <p className="text-[11px] text-slate-400 font-medium mb-2">{item.owner}</p>}
+      <p className="text-xs text-slate-600 leading-relaxed flex-1">{item.blurb}</p>
+      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
+        {item.site && (
+          <a href={item.site} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-2.5 py-1 transition-colors">
+            <ExternalLink size={12} /> Website
+          </a>
+        )}
+        {item.repo && (
+          <a href={item.repo} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg px-2.5 py-1 transition-colors">
+            <Code size={12} /> Source
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// The full Open Source tab: intro, featured cards, and the complete dependency
+// list (collapsed) that is also our license-attribution surface.
+function OpenSourceTab({ t }) {
+  return (
+    <div className="space-y-5 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <span aria-hidden="true">💛</span>
+          {t('about.oss_credits_title') || 'Built on open source'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.oss_credits_intro') || 'AlloFlow is free and open source (AGPL-3.0), built on the generous work of the projects below. Thank you to their authors and communities. The projects highlighted first are ones you can explore directly inside AlloFlow.'}
         </p>
       </div>
-    </details>
+
+      <div>
+        <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-2">
+          {t('about.oss_featured_header') || 'Learning tools we integrate'}
+        </h5>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {FEATURED_OSS.map((item) => (
+            <FeaturedCard key={item.name} item={item} />
+          ))}
+        </div>
+      </div>
+
+      <details className="bg-slate-50 rounded-xl border border-slate-200 group">
+        <summary className="cursor-pointer select-none px-4 py-3 font-bold text-slate-700 text-sm flex items-center gap-2 hover:text-indigo-700">
+          <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform">▸</span>
+          {t('about.oss_full_list_header') || 'Every library we bundle'} ({OSS_TOTAL})
+        </summary>
+        <div className="px-4 pb-4 pt-1 space-y-4">
+          {OSS_CREDITS.map((section) => (
+            <div key={section.group}>
+              <h5 className="font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5">{section.group}</h5>
+              <ul className="space-y-1.5 list-none">
+                {section.items.map((item) => (
+                  <li key={item.name} className="text-xs text-slate-700 leading-snug flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+                    <a
+                      href={item.site || item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
+                    >
+                      {item.name}
+                    </a>
+                    <span className="text-slate-600">
+                      — {item.use} <span className="text-slate-400">·</span> <span className="font-medium text-slate-500">{item.license}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
+
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know.'}
+      </p>
+    </div>
   );
 }
 
 function InfoModal({
   handleSetInfoModalTabToAbout,
   handleSetInfoModalTabToFeatures,
+  handleSetInfoModalTabToOpenSource,
   handleSetShowInfoModalToFalse,
   infoModalTab,
   safeRemoveItem,
@@ -272,6 +379,12 @@ function InfoModal({
             className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_features')}
+          </button>
+          <button
+            onClick={handleSetInfoModalTabToOpenSource}
+            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_opensource') || 'Open Source'}
           </button>
         </div>
         <div className="p-6 overflow-y-auto custom-scrollbar">
@@ -469,8 +582,9 @@ function InfoModal({
                   </button>
                 </div>
               </div>
-              <OssCredits t={t} />
             </div>
+          ) : infoModalTab === 'opensource' ? (
+            <OpenSourceTab t={t} />
           ) : selectedFeature ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700">
               {/* Back Button */}

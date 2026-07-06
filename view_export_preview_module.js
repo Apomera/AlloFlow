@@ -1292,7 +1292,47 @@ function ExportPreviewView(props) {
         title: "Insert link"
       },
       "\u{1F517}"
-    ), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: async () => {
+          const doc = exportPreviewRef.current?.contentDocument;
+          if (!doc) return;
+          try {
+            if (!(window.AlloMathInput && window.AlloMathInput.ready && window.AlloMathInput.ready()) && window.__alloLoadPlugin) {
+              addToast("Opening the equation editor\u2026", "info");
+              await window.__alloLoadPlugin("mathlive_loader.js");
+            }
+            if (!(window.AlloMathInput && typeof window.AlloMathInput.promptEquation === "function")) {
+              addToast("The equation editor could not load. Check your connection and try again.", "error");
+              return;
+            }
+            const eq = await window.AlloMathInput.promptEquation({ title: "\u2211  Insert an equation" });
+            if (!eq || !eq.mathml) return;
+            let spoken = eq.spoken || "";
+            try {
+              if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === "function") {
+                const s = await window.AlloMathSpeech.toSpeech(eq.mathml, { timeoutMs: 4e3 });
+                if (s && s.trim()) spoken = s.trim();
+              }
+            } catch (_) {
+            }
+            const escAttr = (s) => String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+            let mathHtml = String(eq.mathml).trim();
+            const attrs = ' data-allo-latex="' + escAttr(eq.latex) + '"' + (spoken ? ' aria-label="' + escAttr(spoken) + '"' : "") + ' class="allo-math-authored"';
+            mathHtml = /^<math[\s>]/i.test(mathHtml) ? mathHtml.replace(/^<math\b/i, "<math" + attrs) : "<math" + attrs + ">" + mathHtml + "</math>";
+            doc.execCommand("insertHTML", false, mathHtml + "\u200B");
+            addToast("Equation inserted", "success");
+          } catch (e) {
+            addToast("Could not insert the equation.", "error");
+          }
+        },
+        className: "px-1.5 h-7 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+        "aria-label": "Insert an equation (accessible math)",
+        title: "Insert an equation (accessible math)"
+      },
+      "\u2211"
+    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {

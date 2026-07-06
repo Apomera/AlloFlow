@@ -1,4 +1,4 @@
-// view_export_preview_source.jsx — Export Preview & Customization Modal (Round 5 Tier A)
+﻿// view_export_preview_source.jsx — Export Preview & Customization Modal (Round 5 Tier A)
 //
 // Extracted from AlloFlowANTI.txt L31652-L32469 (817 lines, ~50 props).
 //
@@ -1379,6 +1379,52 @@ function ExportPreviewView(props) {
                     if (!_okScheme) { alert('Only web (http/https), mailto:, tel:, and internal links are allowed.'); return; }
                     doc.execCommand('createLink', false, _u); }}
                     className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
+                  <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
+                  <button onClick={async () => {
+                    // Insert accessible math authored in MathLive (mathlive_loader.js →
+                    // window.AlloMathInput). The equation goes in as a native <math> MathML
+                    // element carrying data-allo-latex (round-trip) + an aria-label spoken
+                    // form — the SAME shape the doc pipeline's temml path makes, so it flows
+                    // through the accessibility chain (SRE reads it, the .md/.brf exports
+                    // already special-case <math>). Fail-soft: loader missing / cancel = no-op.
+                    const doc = exportPreviewRef.current?.contentDocument;
+                    if (!doc) return;
+                    try {
+                      if (!(window.AlloMathInput && window.AlloMathInput.ready && window.AlloMathInput.ready()) && window.__alloLoadPlugin) {
+                        addToast('Opening the equation editor…', 'info');
+                        await window.__alloLoadPlugin('mathlive_loader.js');
+                      }
+                      if (!(window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function')) {
+                        addToast('The equation editor could not load. Check your connection and try again.', 'error');
+                        return;
+                      }
+                      const eq = await window.AlloMathInput.promptEquation({ title: '∑  Insert an equation' });
+                      if (!eq || !eq.mathml) return;
+                      // Prefer SRE's spoken form for the alt when it's available (one spoken-
+                      // math voice across the app); fall back to MathLive's own.
+                      let spoken = eq.spoken || '';
+                      try {
+                        if (window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') {
+                          const s = await window.AlloMathSpeech.toSpeech(eq.mathml, { timeoutMs: 4000 });
+                          if (s && s.trim()) spoken = s.trim();
+                        }
+                      } catch (_) { /* keep MathLive's spoken */ }
+                      // Stamp data-allo-latex + aria-label onto the <math> root, wrap so the
+                      // caret lands after it. execCommand keeps it in the editor's undo stack.
+                      const escAttr = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                      let mathHtml = String(eq.mathml).trim();
+                      const attrs = ' data-allo-latex="' + escAttr(eq.latex) + '"'
+                        + (spoken ? ' aria-label="' + escAttr(spoken) + '"' : '')
+                        + ' class="allo-math-authored"';
+                      mathHtml = /^<math[\s>]/i.test(mathHtml) ? mathHtml.replace(/^<math\b/i, '<math' + attrs) : ('<math' + attrs + '>' + mathHtml + '</math>');
+                      doc.execCommand('insertHTML', false, mathHtml + '\u200B'); // trailing ZWSP so the caret lands after the equation
+                      addToast('Equation inserted', 'success');
+                    } catch (e) {
+                      addToast('Could not insert the equation.', 'error');
+                    }
+                  }}
+                    className="px-1.5 h-7 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600" aria-label="Insert an equation (accessible math)" title="Insert an equation (accessible math)">∑</button>
+                  <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
                     className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
