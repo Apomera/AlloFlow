@@ -767,7 +767,16 @@ function AIBackendModal(props) {
     try {
       const engineStatus = await fetch('/api/engine/status').then((response) => response.json());
       if (engineStatus.running) {
-        setLine('✓ ' + (t('ai_backend.engine_running') || 'Engine running') + (engineStatus.model && engineStatus.model.name ? ' — ' + engineStatus.model.name : '') + '. ' + (t('ai_backend.engine_reload_note') || 'Reload the app to start using it.'),
+        // Tell the truth about CONNECTION, not just process state: the bridge
+        // stamps window.__alloActiveAIBackend when this app's callGemini is
+        // actually routed to the local engine. Before this, the strip said
+        // "Reload the app to start using it" forever — even when the app WAS
+        // using it — which read as a failure during field testing.
+        const _bridgeActive = typeof window !== 'undefined' && window.__alloActiveAIBackend && window.__alloActiveAIBackend.backend === 'alloflow-local';
+        const _tail = _bridgeActive
+          ? (t('ai_backend.engine_connected') || 'Connected — this app is using it right now.')
+          : (t('ai_backend.engine_reload_note') || 'Reload the app to start using it.');
+        setLine('✓ ' + (t('ai_backend.engine_running') || 'Engine running') + (engineStatus.model && engineStatus.model.name ? ' — ' + engineStatus.model.name : '') + '. ' + _tail,
           'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100');
         startBtn.hidden = true;
         stopEngineStripPoll();

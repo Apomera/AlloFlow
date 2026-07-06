@@ -637,8 +637,10 @@ function AIBackendModal(props) {
     try {
       const engineStatus = await fetch("/api/engine/status").then((response) => response.json());
       if (engineStatus.running) {
+        const _bridgeActive = typeof window !== "undefined" && window.__alloActiveAIBackend && window.__alloActiveAIBackend.backend === "alloflow-local";
+        const _tail = _bridgeActive ? t("ai_backend.engine_connected") || "Connected \u2014 this app is using it right now." : t("ai_backend.engine_reload_note") || "Reload the app to start using it.";
         setLine(
-          "\u2713 " + (t("ai_backend.engine_running") || "Engine running") + (engineStatus.model && engineStatus.model.name ? " \u2014 " + engineStatus.model.name : "") + ". " + (t("ai_backend.engine_reload_note") || "Reload the app to start using it."),
+          "\u2713 " + (t("ai_backend.engine_running") || "Engine running") + (engineStatus.model && engineStatus.model.name ? " \u2014 " + engineStatus.model.name : "") + ". " + _tail,
           "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100"
         );
         startBtn.hidden = true;
