@@ -1164,6 +1164,152 @@
     }
   }
 
+  // ── Setup Health card ──────────────────────────────────────────
+  // One glance = live truth for the five capabilities field testing kept
+  // tripping over. Rows only show an action button when the runtime can
+  // actually do something about the state from here.
+  let healthPollTimer = null;
+
+  function setHealthRow(id, cls, text, actLabel, actFn) {
+    const row = $(id);
+    if (!row) return;
+    row.classList.remove('ok', 'warn', 'err', 'busy');
+    if (cls) row.classList.add(cls);
+    const textEl = row.querySelector('[data-text]');
+    if (textEl && textEl.textContent !== text) textEl.textContent = text;
+    const btn = row.querySelector('[data-act]');
+    if (!btn) return;
+    if (actLabel && actFn) {
+      btn.textContent = actLabel;
+      btn.hidden = false;
+      btn.disabled = false;
+      btn.onclick = async () => {
+        btn.disabled = true;
+        try { await actFn(); } catch (_) {}
+        ensureHealthPolling();
+        refreshSetupHealth();
+      };
+    } else {
+      btn.hidden = true;
+      btn.onclick = null;
+    }
+  }
+
+  async function refreshSetupHealth() {
+    // 1. AI Engine (text generation)
+    try {
+      const eng = await api('/api/engine/status');
+      if (eng.running) {
+        const model = eng.model && eng.model.name ? eng.model.name.replace(/\.gguf$/i, '') : 'local model';
+        setHealthRow('#health-engine', 'ok', 'Running — ' + model);
+      } else if (eng.download && eng.download.totalBytes) {
+        setHealthRow('#health-engine', 'busy', 'Downloading model — ' + Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100) + '%');
+      } else if (eng.phase && eng.phase !== 'stopped') {
+        setHealthRow('#health-engine', 'busy', eng.phase.replace(/-/g, ' ') + '…');
+      } else {
+        setHealthRow('#health-engine', 'warn', 'Not running', 'Start', () => api('/api/engine/start', { method: 'POST' }));
+      }
+    } catch (_) {
+      setHealthRow('#health-engine', 'err', 'Runtime unreachable');
+    }
+
+    // 2. Reading voice (Kokoro) — live in-app truth when the bundled app is
+    // loaded; otherwise the shared same-origin cache tells us if the model
+    // is on disk.
+    try {
+      const w = getBundledAppWindow();
+      if (w && w._kokoroTTS && w._kokoroTTS.ready) {
+        setHealthRow('#health-voice', 'ok', 'Ready — reads aloud on this device');
+      } else if (w && w.__kokoroTTSDownloading) {
+        setHealthRow('#health-voice', 'busy', 'Preparing voice model…');
+      } else {
+        let cached = false;
+        try {
+          const cache = await caches.open('transformers-cache');
+          const keys = await cache.keys();
+          cached = keys.some((r) => String(r.url).includes('Kokoro-82M') && String(r.url).includes('model_quantized'));
+        } catch (_) {}
+        if (cached) {
+          setHealthRow('#health-voice', 'ok', 'Downloaded — loads shortly after the app opens');
+        } else if (w && typeof w.__loadKokoroTTS === 'function') {
+          setHealthRow('#health-voice', 'warn', 'Not downloaded yet (~88 MB, one time)', 'Download', () => downloadKokoroVoice());
+        } else {
+          setHealthRow('#health-voice', 'warn', 'Downloads on first app launch (~88 MB)');
+        }
+      }
+    } catch (_) {
+      setHealthRow('#health-voice', 'warn', 'Downloads on first app launch (~88 MB)');
+    }
+
+    // 3. Local images (SD-Turbo) — needs a REAL WebGPU adapter, not just the API.
+    try {
+      let adapter = null;
+      if (navigator.gpu && typeof navigator.gpu.requestAdapter === 'function') {
+        try { adapter = await navigator.gpu.requestAdapter(); } catch (_) { adapter = null; }
+      }
+      if (!adapter) {
+        setHealthRow('#health-images', 'err', 'Not supported on this computer (no WebGPU)');
+      } else {
+        let entries = 0;
+        try {
+          const cache = await caches.open('allo-sd-turbo');
+          entries = (await cache.keys()).length;
+        } catch (_) {}
+        if (entries > 0) {
+          setHealthRow('#health-images', 'ok', 'Downloaded — images generate on this device');
+        } else {
+          setHealthRow('#health-images', 'warn', 'Available — enable in the app’s AI Settings (~2 GB once)');
+        }
+      }
+    } catch (_) {
+      setHealthRow('#health-images', 'warn', 'Could not check');
+    }
+
+    // 4. Speech-to-text (whisper.cpp) — the one-click opt-in lives HERE.
+    try {
+      const asr = await api('/api/asr/status');
+      if (asr.running) {
+        setHealthRow('#health-asr', 'ok', 'On — student audio stays on this device', 'Turn off', () => api('/api/asr/stop', { method: 'POST' }));
+      } else if (asr.phase && /download|starting|extract/i.test(asr.phase)) {
+        const pct = asr.download && asr.download.totalBytes
+          ? ' — ' + Math.round((asr.download.receivedBytes / asr.download.totalBytes) * 100) + '%'
+          : '…';
+        setHealthRow('#health-asr', 'busy', asr.phase.replace(/-/g, ' ') + pct);
+      } else if (asr.lastError) {
+        setHealthRow('#health-asr', 'err', String(asr.lastError).slice(0, 80), 'Retry', () => api('/api/asr/start', { method: 'POST' }));
+      } else if (asr.modelBytes) {
+        setHealthRow('#health-asr', 'warn', 'Downloaded but off', 'Start', () => api('/api/asr/start', { method: 'POST' }));
+      } else {
+        setHealthRow('#health-asr', 'warn', 'Off — reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
+      }
+    } catch (_) {
+      setHealthRow('#health-asr', 'err', 'Runtime unreachable');
+    }
+
+    // 5. Microphone permission (never triggers the prompt from here).
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const st = await navigator.permissions.query({ name: 'microphone' });
+        if (st.state === 'granted') setHealthRow('#health-mic', 'ok', 'Allowed');
+        else if (st.state === 'denied') setHealthRow('#health-mic', 'err', 'Blocked — allow the app in Windows microphone settings');
+        else setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
+      } else {
+        setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
+      }
+    } catch (_) {
+      setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
+    }
+
+    // Keep polling only while something is mid-flight.
+    const anyBusy = $$('#setup-health .health-item.busy').length > 0;
+    if (!anyBusy && healthPollTimer) { clearInterval(healthPollTimer); healthPollTimer = null; }
+  }
+
+  function ensureHealthPolling() {
+    if (healthPollTimer) return;
+    healthPollTimer = setInterval(refreshSetupHealth, 4000);
+  }
+
   async function refresh() {
     const [health, config, providerResponse, appResponse, logsResponse, schoolBoxResponse, schoolBoxLogsResponse, liveSessionResponse] = await Promise.all([
       api('/api/health'),
@@ -1201,6 +1347,7 @@
     renderLanClassroom();
     renderClassroomWizard();
     maybeShowApiKeySetup();
+    refreshSetupHealth().catch(() => {});
   }
 
   function bindEvents() {

@@ -42,6 +42,38 @@
             <button id="toggle-app-focus" type="button" aria-pressed="false">Full Screen</button>
           </div>
         </header>
+        <!-- Setup Health: one glance answers "is this machine actually ready?"
+             Field-test lesson (0.2.0–0.2.2): every failure so far LOOKED like
+             silence — engine unused, voice falling back, images impossible —
+             and testers had to infer state from an error chip. Each row shows
+             live truth and, where the runtime can act, a one-click fix. -->
+        <section class="panel health-card" id="setup-health" aria-label="Setup health">
+          <div class="health-item" id="health-engine">
+            <span class="health-dot" data-dot>·</span>
+            <div class="health-body"><strong>AI Engine</strong><span data-text>Checking…</span></div>
+            <button type="button" data-act hidden></button>
+          </div>
+          <div class="health-item" id="health-voice">
+            <span class="health-dot" data-dot>·</span>
+            <div class="health-body"><strong>Reading voice</strong><span data-text>Checking…</span></div>
+            <button type="button" data-act hidden></button>
+          </div>
+          <div class="health-item" id="health-images">
+            <span class="health-dot" data-dot>·</span>
+            <div class="health-body"><strong>Local images</strong><span data-text>Checking…</span></div>
+            <button type="button" data-act hidden></button>
+          </div>
+          <div class="health-item" id="health-asr">
+            <span class="health-dot" data-dot>·</span>
+            <div class="health-body"><strong>Speech-to-text</strong><span data-text>Checking…</span></div>
+            <button type="button" data-act hidden></button>
+          </div>
+          <div class="health-item" id="health-mic">
+            <span class="health-dot" data-dot>·</span>
+            <div class="health-body"><strong>Microphone</strong><span data-text>Checking…</span></div>
+            <button type="button" data-act hidden></button>
+          </div>
+        </section>
         <div class="app-grid">
           <div class="app-frame-wrap">
             <!-- Explicit permissions: same-origin iframes usually inherit, but

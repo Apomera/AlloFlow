@@ -2459,6 +2459,10 @@ async function getLocalAsrStatus(config = readConfig()) {
     port: asr.port,
     baseUrl: 'http://127.0.0.1:' + asr.port,
     inferenceUrl: 'http://127.0.0.1:' + asr.port + '/inference',
+    // Same-origin transcription proxy (POST /api/asr/transcribe). Clients
+    // prefer this over inferenceUrl so cross-port CORS never enters the
+    // picture; its presence in status is the capability signal.
+    proxyUrl: '/api/asr/transcribe',
     asrDir: dir,
     binaryPresent,
     model: { url: asr.modelUrl, name: modelFile ? path.basename(modelFile) : '', present: Boolean(modelBytes), bytes: modelBytes },
@@ -2540,6 +2544,17 @@ async function startLocalAsr(config = readConfig()) {
       // whisper.cpp ships only x64 on Windows; arm64 runs it under emulation.
       const attempt = await launchAsrProcess(config, PRIMARY_ASR_ARCH);
       if (attempt.loaderFailure) {
+        // 0xC0000135 = STATUS_DLL_NOT_FOUND. whisper.cpp release builds link
+        // the VC++ CRT DYNAMICALLY (unlike llama.cpp's static builds), so a
+        // machine without the x64 VC++ redistributable — common on clean
+        // installs and on ARM64 Windows, where x64 System32 copies only
+        // arrive via the x64 redist — fails exactly here. Diagnosed by PE
+        // import parse on 2026-07-06 (imports MSVCP140/VCRUNTIME140/_1).
+        // Policy: never silent-install the redist; say precisely what to do.
+        if (attempt.exitCode === 3221225781) {
+          throw new Error('Windows is missing the free Microsoft VC++ x64 runtime the speech engine needs. '
+            + 'Install it once from https://aka.ms/vs/17/release/vc_redist.x64.exe (about 25 MB), then press Retry.');
+        }
         throw new Error('The whisper-server binary could not be loaded by Windows (exit ' + attempt.exitCode + ') — see /api/asr/logs.');
       }
     } catch (error) {
@@ -2976,6 +2991,35 @@ async function handleApi(req, res, url) {
     const stopped = await stopLocalAsr(config);
     try { writeConfig(deepMerge(readConfig(), { localAsr: { enabled: false } })); } catch (_) {}
     jsonResponse(res, 200, stopped);
+    return;
+  }
+
+  // Same-origin transcription proxy: the app page (this origin) streams the
+  // recorded WAV here; we forward it verbatim to the managed whisper-server's
+  // /inference on its private port. Keeps the browser out of cross-port CORS
+  // territory entirely — whisper-server's own header behavior stops mattering.
+  if (req.method === 'POST' && url.pathname === '/api/asr/transcribe') {
+    const status = await getLocalAsrStatus(config);
+    if (!status.running) {
+      jsonResponse(res, 409, { error: 'The speech engine is not running. Start it from the Setup Health card.' });
+      return;
+    }
+    const asr = getAsrConfig(config);
+    const upstream = http.request({
+      host: '127.0.0.1',
+      port: asr.port,
+      path: '/inference',
+      method: 'POST',
+      headers: { 'content-type': req.headers['content-type'] || 'application/octet-stream' },
+    }, (up) => {
+      res.writeHead(up.statusCode || 502, { 'Content-Type': up.headers['content-type'] || 'application/json' });
+      up.pipe(res);
+    });
+    upstream.on('error', (error) => {
+      if (!res.headersSent) jsonResponse(res, 502, { error: 'whisper-server did not answer: ' + error.message });
+      else { try { res.end(); } catch (_) {} }
+    });
+    req.pipe(upstream);
     return;
   }
 

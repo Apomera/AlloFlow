@@ -282,7 +282,12 @@
       var res = await fetch('/api/asr/status', { method: 'GET' });
       if (!res.ok) return null;
       var st = await res.json();
-      if (st && st.running && st.inferenceUrl) return st.inferenceUrl;
+      // Prefer the runtime's SAME-ORIGIN proxy over whisper-server's own
+      // port: the direct URL is cross-origin from the app page, which makes
+      // the whole feature hostage to whisper-server's CORS headers. Runtimes
+      // from 2026-07-06 advertise proxyUrl; older ones fall back to the
+      // direct inferenceUrl (pre-existing behavior, unchanged).
+      if (st && st.running && (st.proxyUrl || st.inferenceUrl)) return st.proxyUrl || st.inferenceUrl;
       return null;
     } catch (_) { return null; }
   }
