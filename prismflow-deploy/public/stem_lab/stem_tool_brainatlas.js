@@ -1491,514 +1491,237 @@ var d = labToolData.brainAtlas || {};
 
 
 
-              // Helper: draw gyri convolutions on a brain surface
+              // ── Realistic cortical tissue helpers ──
+              // Seeded RNG so the folds stay identical across animation frames.
+              function foldRng(seed){ var s=(seed>>>0)||1; return function(){ s=(s*16807)%2147483647; return (s&0x7fffffff)/2147483647; }; }
 
-              function drawGyri(cx, cy, radius, count, spread) {
+              // Paint embossed cortical convolutions inside the current clip.
+              // Ridges are concentric wavy arcs around a distant flow-centre so gyri
+              // gently bow over the hemisphere. Light source is top-left.
+              function paintCortexFolds(fcx, fcy, r0, r1, seed, o){
+                o = o || {};
+                var r = foldRng(seed);
+                var gap = o.gap || 11;
+                var hi = o.crest || 'rgba(255,250,254,0.55)';
+                var sh = o.shadow || 'rgba(72,44,96,0.5)';
+                var ridge = o.ridge || '#e7d6e4';
+                var a0 = o.a0 !== undefined ? o.a0 : -2.05;
+                var a1 = o.a1 !== undefined ? o.a1 : -1.05;
+                var ampMul = o.ampMul || 1, freqMul = o.freqMul || 1;
+                ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
+                for (var rad=r0; rad<=r1; rad+=gap){
+                  var a = a0 + r()*0.3;
+                  while (a < a1){
+                    var span = 0.5 + r()*1.4;
+                    var segEnd = Math.min(a1, a + span);
+                    var amp1 = gap*(0.45+r()*0.8)*ampMul, amp2 = gap*(0.22+r()*0.5)*ampMul;
+                    var f1 = (3+r()*5)*freqMul, f2 = (7+r()*8)*freqMul;
+                    var p1 = r()*6.28, p2 = r()*6.28;
+                    var jitter = (r()-0.5)*gap*0.7;
+                    var tone = 0.86 + r()*0.14;
+                    (function(a, segEnd, amp1, amp2, f1, f2, p1, p2, jitter, tone){
+                      function rAt(x){ return rad+jitter+Math.sin(x*f1+p1)*amp1+Math.sin(x*f2+p2)*amp2; }
+                      function stroke(dr, color, wd){ ctx.beginPath(); var first=true; for(var x=a; x<=segEnd; x+=0.035){ var rr=rAt(x)+dr, xx=fcx+Math.cos(x)*rr, yy=fcy+Math.sin(x)*rr; if(first){ctx.moveTo(xx,yy);first=false;}else ctx.lineTo(xx,yy);} ctx.strokeStyle=color; ctx.lineWidth=wd; ctx.stroke(); }
+                      stroke(gap*0.16, sh, gap*0.95);
+                      ctx.globalAlpha=tone; stroke(-gap*0.04, ridge, gap*0.60); ctx.globalAlpha=1;
+                      stroke(-gap*0.24, hi, gap*0.15);
+                    })(a, segEnd, amp1, amp2, f1, f2, p1, p2, jitter, tone);
+                    a = segEnd - 0.15 + r()*0.4;
+                  }
+                }
+                ctx.restore();
+              }
 
-                ctx.save();
-
-                ctx.globalAlpha = 0.22;
-
-                ctx.strokeStyle = '#9b7fb8';
-
-                ctx.lineWidth = 0.8;
-
-                // Seeded deterministic pseudo-random for stable gyri across frames
-                var _gyriSeed = Math.round(cx * 100 + cy * 7 + count * 13);
-                function gyriRand() { _gyriSeed = (_gyriSeed * 16807 + 0) % 2147483647; return (_gyriSeed & 0x7fffffff) / 2147483647; }
-
-                for (var gi = 0; gi < count; gi++) {
-
-                  var angle = (gi / count) * Math.PI * 2;
-
-                  var r1 = radius * (0.3 + gyriRand() * 0.5);
-
-                  var gx = cx + Math.cos(angle) * r1;
-
-                  var gy = cy + Math.sin(angle) * r1;
-
-                  // Primary sulcus curve
-                  var arcLen = spread * (0.6 + gyriRand() * 0.4);
-                  ctx.beginPath();
-                  ctx.arc(gx, gy, arcLen, angle, angle + Math.PI * (0.5 + gyriRand() * 0.8));
+              // Faint branching pial vasculature (living-tissue cue).
+              function drawVasculature(seeds, seed, o){
+                o=o||{}; var r=foldRng(seed);
+                ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=o.color||'rgba(150,72,98,0.15)';
+                function vessel(x,y,ang,len,wd,depth){
+                  if(depth>4||len<6) return;
+                  var steps=Math.max(3,Math.round(len/8)), cx=x, cy=y, ca=ang;
+                  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineWidth=wd;
+                  for(var i=0;i<steps;i++){ ca+=(r()-0.5)*0.5; cx+=Math.cos(ca)*(len/steps); cy+=Math.sin(ca)*(len/steps); ctx.lineTo(cx,cy);
+                    if(i===Math.round(steps*0.55)&&depth<3&&r()<0.8) vessel(cx,cy,ca+(r()<0.5?1:-1)*(0.5+r()*0.5),len*(0.5+r()*0.25),wd*0.66,depth+1); }
                   ctx.stroke();
-
-                  // Secondary micro-ridges branching off primary
-                  if (gi % 2 === 0) {
-                    var brAngle = angle + gyriRand() * Math.PI * 0.6;
-                    var brLen = spread * 0.4;
-                    ctx.globalAlpha = 0.14;
-                    ctx.lineWidth = 0.5;
-                    ctx.beginPath();
-                    ctx.moveTo(gx, gy);
-                    ctx.quadraticCurveTo(gx + Math.cos(brAngle) * brLen * 0.5, gy + Math.sin(brAngle) * brLen * 0.5 + 2, gx + Math.cos(brAngle) * brLen, gy + Math.sin(brAngle) * brLen);
-                    ctx.stroke();
-                    ctx.globalAlpha = 0.22;
-                    ctx.lineWidth = 0.8;
-                  }
-
+                  if(depth<2) vessel(cx,cy,ca+(r()-0.5)*0.6,len*0.55,wd*0.7,depth+1);
                 }
-
+                seeds.forEach(function(s){ vessel(s[0],s[1],s[2],s[3],s[4]||1.4,0); });
                 ctx.restore();
-
               }
 
+              // A sulcus/fissure: a soft dark valley with a bright upper lip.
+              function drawSulcus(pts, o){
+                o=o||{};
+                ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
+                function trace(){ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(var i=1;i<pts.length;i++){ var p=pts[i]; if(p.length===4) ctx.quadraticCurveTo(p[0],p[1],p[2],p[3]); else ctx.lineTo(p[0],p[1]); } }
+                var wide=o.wide||6;
+                ctx.save(); ctx.translate(0,-wide*0.34); trace(); ctx.strokeStyle=o.lip||'rgba(255,252,255,0.5)'; ctx.lineWidth=wide*0.34; ctx.stroke(); ctx.restore();
+                trace(); ctx.strokeStyle=o.shadow||'rgba(74,46,104,0.34)'; ctx.lineWidth=wide; ctx.stroke();
+                trace(); ctx.strokeStyle=o.core||'rgba(58,36,86,0.6)'; ctx.lineWidth=o.core_w||2.2; ctx.stroke();
+                ctx.restore();
+              }
 
+              // Medium tissue base inside the current clip (so gyri gaps read as darker sulci).
+              function paintTissueBase(hx, hy){
+                var sub = ctx.createRadialGradient(hx,hy,W*0.05,W*0.5,H*0.44,W*0.52);
+                sub.addColorStop(0,'#dcc6d6'); sub.addColorStop(0.6,'#cbb0c4'); sub.addColorStop(1,'#b998ae');
+                ctx.fillStyle=sub; ctx.fillRect(0,0,W,H);
+              }
+              // Rounded-form shading: edge ambient-occlusion + top-left sheen.
+              function paintTissueShade(hx, hy){
+                var ao = ctx.createRadialGradient(W*0.48,H*0.42,W*0.24,W*0.48,H*0.44,W*0.52);
+                ao.addColorStop(0,'rgba(0,0,0,0)'); ao.addColorStop(0.72,'rgba(0,0,0,0)'); ao.addColorStop(1,'rgba(74,47,104,0.28)');
+                ctx.fillStyle=ao; ctx.fillRect(0,0,W,H);
+                var sheen = ctx.createRadialGradient(hx,hy,W*0.02,hx,hy,W*0.34);
+                sheen.addColorStop(0,'rgba(255,252,255,0.30)'); sheen.addColorStop(1,'rgba(255,252,255,0)');
+                ctx.fillStyle=sheen; ctx.fillRect(0,0,W,H);
+              }
 
-              // Helper: draw cerebellum with foliation
+              // A feathered lobe tint (educational colour that fades out — no hard seams).
+              // Caller sets ctx.globalAlpha for overall strength; hex must be 6-digit.
+              function softTint(cx, cy, rad, hex){
+                var g = ctx.createRadialGradient(cx,cy,rad*0.12,cx,cy,rad);
+                g.addColorStop(0, hex); g.addColorStop(0.68, hex+'59'); g.addColorStop(1, hex+'00');
+                ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+              }
 
+              // Realistic foliated cerebellum.
               function drawCerebellum(cx, cy, rx, ry) {
-
-                // Gradient fill
-
-                var cbGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, rx);
-
-                cbGrad.addColorStop(0, '#f0e9ff');
-
-                cbGrad.addColorStop(1, '#ddd0f0');
-
-                ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = cbGrad; ctx.fill();
-
-                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Foliation lines
-
-                ctx.save();
-
-                ctx.globalAlpha = 0.25;
-
-                ctx.strokeStyle = '#8b6fc0';
-
-                ctx.lineWidth = 0.6;
-
-                for (var fi = 0; fi < 7; fi++) {
-
-                  var fy = cy - ry * 0.7 + fi * (ry * 1.4 / 7);
-
-                  var fxSpread = rx * Math.sqrt(1 - Math.pow((fy - cy) / ry, 2)) * 0.85;
-
-                  if (fxSpread > 2) {
-
-                    ctx.beginPath();
-
-                    ctx.moveTo(cx - fxSpread, fy);
-
-                    ctx.quadraticCurveTo(cx, fy + (fi % 2 === 0 ? 2 : -2), cx + fxSpread, fy);
-
-                    ctx.stroke();
-
-                  }
-
-                }
-
+                ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
+                ctx.save(); ctx.shadowColor='rgba(70,45,110,0.26)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+                ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+                var body = ctx.createRadialGradient(cx-rx*0.3,cy-ry*0.4,rx*0.1,cx,cy,rx*1.05);
+                body.addColorStop(0,'#d9c6d6'); body.addColorStop(0.6,'#c6aec2'); body.addColorStop(1,'#a98ba6');
+                ctx.fillStyle=body; ctx.fill();
                 ctx.restore();
-
+                ctx.save();
+                ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ctx.clip();
+                var n = Math.max(6, Math.round(ry*2/3.2));
+                for (var i=0;i<=n;i++){
+                  var fy = cy - ry + (i/n)*ry*2;
+                  var tt = (fy-cy)/ry;
+                  var span = rx*Math.sqrt(Math.max(0,1-tt*tt));
+                  ctx.beginPath(); ctx.moveTo(cx-span, fy); ctx.quadraticCurveTo(cx, fy+(i%2?1.6:-1.6), cx+span, fy);
+                  ctx.strokeStyle='rgba(70,44,96,0.34)'; ctx.lineWidth=1.4; ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(cx-span, fy-1.3); ctx.quadraticCurveTo(cx, fy-1.3+(i%2?1.6:-1.6), cx+span, fy-1.3);
+                  ctx.strokeStyle='rgba(255,250,254,0.4)'; ctx.lineWidth=0.7; ctx.stroke();
+                }
+                var vg = ctx.createLinearGradient(cx-rx*0.16,0,cx+rx*0.16,0);
+                vg.addColorStop(0,'rgba(70,44,96,0)'); vg.addColorStop(0.5,'rgba(70,44,96,0.15)'); vg.addColorStop(1,'rgba(70,44,96,0)');
+                ctx.fillStyle=vg; ctx.fillRect(cx-rx*0.16,cy-ry,rx*0.32,ry*2);
+                ctx.restore();
+                ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+                ctx.strokeStyle='#7c5c9a'; ctx.lineWidth=1.6; ctx.stroke();
+                ctx.restore();
               }
 
-
-
-              // Helper: draw brainstem with gradient
-
+              // Realistic tapered brainstem (midbrain -> pons bulge -> medulla). Keeps 4-corner signature.
               function drawBrainstem(x1, y1, x2, y2, x3, y3, x4, y4) {
-
-                var bsGrad = ctx.createLinearGradient(x1, y1, x2, y2);
-
-                bsGrad.addColorStop(0, '#e8ddf5');
-
-                bsGrad.addColorStop(0.5, '#dcd0ea');
-
-                bsGrad.addColorStop(1, '#d2c4e0');
-
-                ctx.beginPath();
-
-                ctx.moveTo(x1, y1);
-
-                ctx.quadraticCurveTo((x1 + x2) * 0.5 + 3, (y1 + y2) * 0.5, x2, y2);
-
-                ctx.lineTo(x3, y3);
-
-                ctx.quadraticCurveTo((x4 + x3) * 0.5 - 3, (y4 + y3) * 0.5, x4, y4);
-
-                ctx.closePath();
-
-                ctx.fillStyle = bsGrad; ctx.fill();
-
-                ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                // Medulla segments
-
-                ctx.save();
-
-                ctx.globalAlpha = 0.15;
-
-                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 0.5;
-
-                for (var si = 1; si < 4; si++) {
-
-                  var t = si / 4;
-
-                  var sx1 = x1 + (x2 - x1) * t, sy1 = y1 + (y2 - y1) * t;
-
-                  var sx2 = x4 + (x3 - x4) * t, sy2 = y4 + (y3 - y4) * t;
-
-                  ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
-
-                }
-
+                var topX=(x1+x4)/2, topY=(y1+y4)/2, topW=Math.abs(x4-x1);
+                var botX=(x2+x3)/2, botY=(y2+y3)/2, botW=Math.abs(x3-x2);
+                var len=botY-topY;
+                var midW=topW*1.3, medW=Math.max(botW, topW*0.68);
+                function stemPath(){ ctx.beginPath(); ctx.moveTo(topX-topW/2, topY); ctx.quadraticCurveTo(topX-midW/2, topY+len*0.42, botX-medW/2, botY); ctx.lineTo(botX+medW/2, botY); ctx.quadraticCurveTo(topX+midW/2, topY+len*0.42, topX+topW/2, topY); ctx.closePath(); }
+                ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round';
+                stemPath();
+                var g=ctx.createLinearGradient(topX-midW/2,0,topX+midW/2,0);
+                g.addColorStop(0,'#b193ae'); g.addColorStop(0.5,'#d6c0d2'); g.addColorStop(1,'#a98ba6');
+                ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle='#7c5c9a'; ctx.lineWidth=1.5; ctx.stroke();
+                ctx.save(); stemPath(); ctx.clip();
+                ctx.globalAlpha=0.16; ctx.strokeStyle='#5a3a7e'; ctx.lineWidth=0.7;
+                for(var i=1;i<7;i++){ var yy=topY+len*(i/7); ctx.beginPath(); ctx.moveTo(topX-midW/2,yy); ctx.quadraticCurveTo(topX,yy+2,topX+midW/2,yy); ctx.stroke(); }
                 ctx.restore();
-
+                ctx.restore();
               }
 
-
+              
 
               if (viewKey === 'lateral') {
 
-                // ── Lateral View ──
+                var outline = function(){ ctx.beginPath();
+                  ctx.moveTo(W*0.15,H*0.45);
+                  ctx.quadraticCurveTo(W*0.12,H*0.20,W*0.35,H*0.12);
+                  ctx.quadraticCurveTo(W*0.55,H*0.08,W*0.72,H*0.15);
+                  ctx.quadraticCurveTo(W*0.88,H*0.25,W*0.90,H*0.42);
+                  ctx.quadraticCurveTo(W*0.88,H*0.55,W*0.78,H*0.60);
+                  ctx.quadraticCurveTo(W*0.70,H*0.72,W*0.62,H*0.76);
+                  ctx.quadraticCurveTo(W*0.50,H*0.78,W*0.42,H*0.72);
+                  ctx.quadraticCurveTo(W*0.30,H*0.62,W*0.20,H*0.55);
+                  ctx.quadraticCurveTo(W*0.14,H*0.50,W*0.15,H*0.45);
+                };
 
-                // Main brain shape with shadow
-
+                // Silhouette with soft drop shadow
                 ctx.save();
-
-                ctx.shadowColor = 'rgba(80,50,120,0.22)';
-
-                ctx.shadowBlur = 14;
-
-                ctx.shadowOffsetX = 4;
-
-                ctx.shadowOffsetY = 5;
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.15, H * 0.45);
-
-                ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
-
-                ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
-
-                ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
-
-                ctx.fillStyle = brainGrad; ctx.fill();
-
+                ctx.shadowColor='rgba(70,45,110,0.28)'; ctx.shadowBlur=15; ctx.shadowOffsetX=4; ctx.shadowOffsetY=6;
+                outline(); ctx.fillStyle=brainGrad; ctx.fill();
                 ctx.restore();
 
-                // Gray/white matter inner border
+                // Realistic cortical surface, clipped to the silhouette
                 ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(W * 0.15, H * 0.45);
-                ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
-                ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
-                ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
-                ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
-                ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
-                ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
-                ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
-                ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
-                ctx.clip();
-                // Inner white-matter glow (lighter center)
-                var wmGrad = ctx.createRadialGradient(W * 0.48, H * 0.42, W * 0.06, W * 0.48, H * 0.42, W * 0.32);
-                wmGrad.addColorStop(0, '#f8f4ffb0');
-                wmGrad.addColorStop(0.4, '#f0eaf800');
-                wmGrad.addColorStop(1, '#00000000');
-                ctx.fillStyle = wmGrad;
-                ctx.fillRect(0, 0, W, H);
-                // Cortical rim (darker outer ring = gray matter)
-                var gmGrad = ctx.createRadialGradient(W * 0.48, H * 0.42, W * 0.25, W * 0.48, H * 0.42, W * 0.45);
-                gmGrad.addColorStop(0, '#00000000');
-                gmGrad.addColorStop(0.6, '#00000000');
-                gmGrad.addColorStop(1, '#c8b8dc30');
-                ctx.fillStyle = gmGrad;
-                ctx.fillRect(0, 0, W, H);
+                outline(); ctx.clip();
+                paintTissueBase(W*0.40, H*0.30);
+                paintCortexFolds(W*0.50, H*1.35, H*0.55, H*1.30, 4021, {gap:11, a0:-2.05, a1:-1.05});
+                drawVasculature([[W*0.30,H*0.24,0.9,70],[W*0.62,H*0.20,1.6,80],[W*0.44,H*0.16,1.2,60],[W*0.24,H*0.44,0.3,64],[W*0.72,H*0.34,2.2,70],[W*0.52,H*0.60,1.5,58]], 7788);
+                paintTissueShade(W*0.36, H*0.26);
+                // Soft, feathered lobe tints (educational colour over the real texture)
+                ctx.globalAlpha=0.17;
+                softTint(W*0.28, H*0.30, W*0.19, '#3b82f6');  // frontal
+                softTint(W*0.63, H*0.26, W*0.17, '#22c55e');  // parietal
+                softTint(W*0.39, H*0.62, W*0.15, '#eab308');  // temporal
+                softTint(W*0.81, H*0.46, W*0.13, '#ef4444');  // occipital
+                ctx.globalAlpha=1;
+                // Major fissures as grooves
+                drawSulcus([[W*0.20,H*0.53],[W*0.35,H*0.50,W*0.50,H*0.475],[W*0.60,H*0.445,W*0.67,H*0.425]], {wide:14, core:'rgba(52,30,78,0.7)', core_w:2.6, shadow:'rgba(66,40,96,0.4)'});
+                drawSulcus([[W*0.50,H*0.11],[W*0.47,H*0.28,W*0.44,H*0.38],[W*0.42,H*0.48,W*0.40,H*0.55]], {wide:8});
+                drawSulcus([[W*0.78,H*0.15],[W*0.75,H*0.28,W*0.72,H*0.40]], {wide:6});
                 ctx.restore();
 
+                // Outline
+                outline(); ctx.strokeStyle='#6d4a8e'; ctx.lineWidth=2.4; ctx.stroke();
 
+                // Cerebellum + brainstem
+                drawCerebellum(W*0.80, H*0.65, W*0.10, H*0.08);
+                drawBrainstem(W*0.62,H*0.62, W*0.65,H*0.80, W*0.58,H*0.80, W*0.55,H*0.62);
 
-                // Lobe coloring (Frontal – blue, Parietal – green, Temporal – yellow, Occipital – red)
-
-                ctx.save(); ctx.globalAlpha = 0.16;
-
-                // Frontal lobe region
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.15, H * 0.45);
-
-                ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.43, H * 0.10, W * 0.48, H * 0.12);
-
-                ctx.lineTo(W * 0.40, H * 0.55);
-
-                ctx.quadraticCurveTo(W * 0.30, H * 0.52, W * 0.20, H * 0.50);
-
-                ctx.closePath();
-
-                ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                // Parietal lobe region
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.48, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.60, H * 0.09, W * 0.72, H * 0.15);
-
-                ctx.quadraticCurveTo(W * 0.82, H * 0.22, W * 0.85, H * 0.35);
-
-                ctx.lineTo(W * 0.65, H * 0.42);
-
-                ctx.lineTo(W * 0.40, H * 0.50);
-
-                ctx.closePath();
-
-                ctx.fillStyle = '#22c55e'; ctx.fill();
-
-                // Temporal lobe region
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.20, H * 0.52);
-
-                ctx.quadraticCurveTo(W * 0.35, H * 0.50, W * 0.50, H * 0.48);
-
-                ctx.lineTo(W * 0.62, H * 0.76);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
-
-                ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
-
-                ctx.closePath();
-
-                ctx.fillStyle = '#eab308'; ctx.fill();
-
-                // Occipital lobe region
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.85, H * 0.35);
-
-                ctx.quadraticCurveTo(W * 0.90, H * 0.42, W * 0.88, H * 0.55);
-
-                ctx.quadraticCurveTo(W * 0.85, H * 0.58, W * 0.78, H * 0.60);
-
-                ctx.lineTo(W * 0.65, H * 0.42);
-
-                ctx.closePath();
-
-                ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                ctx.restore();
-
-
-
-                // Brain outline
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.15, H * 0.45);
-
-                ctx.quadraticCurveTo(W * 0.12, H * 0.20, W * 0.35, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.55, H * 0.08, W * 0.72, H * 0.15);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.25, W * 0.90, H * 0.42);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.55, W * 0.78, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.70, H * 0.72, W * 0.62, H * 0.76);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.78, W * 0.42, H * 0.72);
-
-                ctx.quadraticCurveTo(W * 0.30, H * 0.62, W * 0.20, H * 0.55);
-
-                ctx.quadraticCurveTo(W * 0.14, H * 0.50, W * 0.15, H * 0.45);
-
-                ctx.strokeStyle = '#7c5eaf'; ctx.lineWidth = 2.5; ctx.stroke();
-
-
-
-                // Gyri convolutions
-
-                drawGyri(W * 0.35, H * 0.30, W * 0.15, 12, 8);
-
-                drawGyri(W * 0.60, H * 0.30, W * 0.12, 10, 7);
-
-                drawGyri(W * 0.45, H * 0.60, W * 0.10, 8, 6);
-
-
-
-                // Central sulcus (bold, anatomical curve)
-
-                ctx.beginPath(); ctx.setLineDash([5, 3]);
-
-                ctx.moveTo(W * 0.50, H * 0.11);
-
-                ctx.quadraticCurveTo(W * 0.47, H * 0.28, W * 0.44, H * 0.38);
-
-                ctx.quadraticCurveTo(W * 0.42, H * 0.48, W * 0.40, H * 0.55);
-
-                ctx.strokeStyle = '#5a4580'; ctx.lineWidth = 1.6; ctx.stroke();
-
-                // Lateral sulcus (Sylvian fissure — deeper curve)
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.22, H * 0.52);
-
-                ctx.quadraticCurveTo(W * 0.35, H * 0.50, W * 0.50, H * 0.47);
-
-                ctx.quadraticCurveTo(W * 0.58, H * 0.44, W * 0.65, H * 0.42);
-
-                ctx.strokeStyle = '#5a4580'; ctx.lineWidth = 1.6; ctx.stroke();
-
-                // Parieto-occipital sulcus
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.78, H * 0.15);
-
-                ctx.quadraticCurveTo(W * 0.75, H * 0.28, W * 0.72, H * 0.38);
-
-                ctx.strokeStyle = '#7b6fa0'; ctx.lineWidth = 1.2; ctx.stroke();
-
-                ctx.setLineDash([]); ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
-
-
-
-                // Additional sulci (precentral, postcentral)
-
-                ctx.save(); ctx.globalAlpha = 0.20; ctx.strokeStyle = '#8b72b0'; ctx.lineWidth = 0.7;
-
-                // Precentral sulcus
-
-                ctx.beginPath(); ctx.moveTo(W * 0.43, H * 0.14); ctx.quadraticCurveTo(W * 0.40, H * 0.30, W * 0.38, H * 0.48); ctx.stroke();
-
-                // Postcentral sulcus
-
-                ctx.beginPath(); ctx.moveTo(W * 0.55, H * 0.13); ctx.quadraticCurveTo(W * 0.52, H * 0.28, W * 0.48, H * 0.46); ctx.stroke();
-
-                // Superior temporal sulcus
-
-                ctx.beginPath(); ctx.moveTo(W * 0.28, H * 0.56); ctx.quadraticCurveTo(W * 0.40, H * 0.58, W * 0.55, H * 0.55); ctx.stroke();
-
-                ctx.restore();
-
-
-
-                // Cerebellum with foliation
-
-                drawCerebellum(W * 0.80, H * 0.65, W * 0.10, H * 0.08);
-
-                // Brainstem with gradient
-
-                drawBrainstem(W * 0.62, H * 0.62, W * 0.65, H * 0.80, W * 0.58, H * 0.80, W * 0.55, H * 0.62);
-
-
+              
 
               } else if (viewKey === 'medial') {
 
-                // ── Medial (Sagittal) View ──
+                var outlineM = function(){ ctx.beginPath();
+                  ctx.moveTo(W*0.20,H*0.50);
+                  ctx.quadraticCurveTo(W*0.15,H*0.22,W*0.40,H*0.12);
+                  ctx.quadraticCurveTo(W*0.60,H*0.08,W*0.78,H*0.18);
+                  ctx.quadraticCurveTo(W*0.88,H*0.32,W*0.85,H*0.50);
+                  ctx.quadraticCurveTo(W*0.82,H*0.60,W*0.72,H*0.62);
+                  ctx.lineTo(W*0.60,H*0.60);
+                  ctx.quadraticCurveTo(W*0.50,H*0.58,W*0.40,H*0.60);
+                  ctx.quadraticCurveTo(W*0.25,H*0.58,W*0.20,H*0.50);
+                };
 
-                // Main brain shape with shadow
-
+                // Silhouette with soft drop shadow
                 ctx.save();
-
-                ctx.shadowColor = 'rgba(100,70,130,0.15)';
-
-                ctx.shadowBlur = 10;
-
-                ctx.shadowOffsetX = 3;
-
-                ctx.shadowOffsetY = 4;
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.20, H * 0.50);
-
-                ctx.quadraticCurveTo(W * 0.15, H * 0.22, W * 0.40, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.60, H * 0.08, W * 0.78, H * 0.18);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.32, W * 0.85, H * 0.50);
-
-                ctx.quadraticCurveTo(W * 0.82, H * 0.60, W * 0.72, H * 0.62);
-
-                ctx.lineTo(W * 0.60, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.58, W * 0.40, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.25, H * 0.58, W * 0.20, H * 0.50);
-
-                ctx.fillStyle = brainGrad; ctx.fill();
-
+                ctx.shadowColor='rgba(70,45,110,0.24)'; ctx.shadowBlur=12; ctx.shadowOffsetX=3; ctx.shadowOffsetY=5;
+                outlineM(); ctx.fillStyle=brainGrad; ctx.fill();
                 ctx.restore();
 
-
-
-                // Medial lobe coloring
-
-                ctx.save(); ctx.globalAlpha = 0.10;
-
-                // Cingulate gyrus (above corpus callosum)
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.30, H * 0.32);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.22, W * 0.72, H * 0.30);
-
-                ctx.quadraticCurveTo(W * 0.72, H * 0.38, W * 0.50, H * 0.34);
-
-                ctx.quadraticCurveTo(W * 0.35, H * 0.36, W * 0.30, H * 0.38);
-
-                ctx.closePath();
-
-                ctx.fillStyle = '#8b5cf6'; ctx.fill();
-
+                // Realistic cortical surface, clipped
+                ctx.save();
+                outlineM(); ctx.clip();
+                paintTissueBase(W*0.42, H*0.26);
+                paintCortexFolds(W*0.52, H*1.5, H*0.90, H*1.45, 5310, {gap:11, a0:-1.95, a1:-1.15});
+                drawVasculature([[W*0.34,H*0.22,1.0,66],[W*0.60,H*0.18,1.8,72],[W*0.48,H*0.15,1.3,54]], 4471);
+                paintTissueShade(W*0.40, H*0.24);
+                // Soft, feathered cingulate tint
+                ctx.globalAlpha=0.16;
+                softTint(W*0.50, H*0.30, W*0.22, '#8b5cf6');
+                ctx.globalAlpha=1;
+                // Cingulate + calcarine sulci as grooves
+                drawSulcus([[W*0.25,H*0.30],[W*0.45,H*0.18,W*0.68,H*0.22]], {wide:5});
+                drawSulcus([[W*0.72,H*0.42],[W*0.80,H*0.48,W*0.84,H*0.50]], {wide:5});
                 ctx.restore();
 
-
-
-                // Brain outline
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.20, H * 0.50);
-
-                ctx.quadraticCurveTo(W * 0.15, H * 0.22, W * 0.40, H * 0.12);
-
-                ctx.quadraticCurveTo(W * 0.60, H * 0.08, W * 0.78, H * 0.18);
-
-                ctx.quadraticCurveTo(W * 0.88, H * 0.32, W * 0.85, H * 0.50);
-
-                ctx.quadraticCurveTo(W * 0.82, H * 0.60, W * 0.72, H * 0.62);
-
-                ctx.lineTo(W * 0.60, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.50, H * 0.58, W * 0.40, H * 0.60);
-
-                ctx.quadraticCurveTo(W * 0.25, H * 0.58, W * 0.20, H * 0.50);
-
-                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
-
-
-
-                // Gyri on medial surface
-
-                drawGyri(W * 0.45, H * 0.25, W * 0.18, 10, 7);
-
-
+                // Outline
+                outlineM(); ctx.strokeStyle='#7c5c9a'; ctx.lineWidth=2; ctx.stroke();
 
                 // Corpus callosum (thick C-shaped band with gradient)
 
@@ -2067,258 +1790,86 @@ var d = labToolData.brainAtlas || {};
                 ctx.fillStyle = '#fecaca40'; ctx.fill();
 
                 ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 0.8; ctx.stroke();
-
-
-
-                // Medial sulci
-
-                ctx.save(); ctx.globalAlpha = 0.15; ctx.strokeStyle = '#9b87c0'; ctx.lineWidth = 0.6;
-
-                ctx.setLineDash([3, 2]);
-
-                // Calcarine sulcus
-
-                ctx.beginPath(); ctx.moveTo(W * 0.72, H * 0.42); ctx.quadraticCurveTo(W * 0.80, H * 0.48, W * 0.84, H * 0.50); ctx.stroke();
-
-                // Cingulate sulcus
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.25, H * 0.30);
-
-                ctx.quadraticCurveTo(W * 0.45, H * 0.18, W * 0.68, H * 0.22);
-
-                ctx.stroke();
-
-                ctx.setLineDash([]);
-
-                ctx.restore();
-
-
-
                 // Cerebellum with foliation
+                drawCerebellum(W*0.78, H*0.68, W*0.09, H*0.08);
+                // Brainstem
+                drawBrainstem(W*0.58,H*0.58, W*0.62,H*0.80, W*0.55,H*0.80, W*0.50,H*0.58);
 
-                drawCerebellum(W * 0.78, H * 0.68, W * 0.09, H * 0.08);
-
-                // Brainstem with gradient
-
-                drawBrainstem(W * 0.58, H * 0.58, W * 0.62, H * 0.80, W * 0.55, H * 0.80, W * 0.50, H * 0.58);
-
-
+              
 
               } else if (viewKey === 'superior') {
 
-                // ── Superior (Top-Down) View ──
+                var hemis = function(){ ctx.beginPath(); ctx.ellipse(W*0.38,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); ctx.ellipse(W*0.62,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); };
 
-                // Left hemisphere with shadow
-
+                // Both hemispheres with soft drop shadow
                 ctx.save();
-
-                ctx.shadowColor = 'rgba(100,70,130,0.12)';
-
-                ctx.shadowBlur = 8;
-
-                ctx.beginPath();
-
-                ctx.ellipse(W * 0.38, H * 0.50, W * 0.18, H * 0.38, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = brainGrad; ctx.fill();
-
+                ctx.shadowColor='rgba(70,45,110,0.20)'; ctx.shadowBlur=10; ctx.shadowOffsetY=4;
+                ctx.beginPath(); ctx.ellipse(W*0.38,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); ctx.fillStyle=brainGrad; ctx.fill();
+                ctx.beginPath(); ctx.ellipse(W*0.62,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); ctx.fillStyle=brainGrad; ctx.fill();
                 ctx.restore();
 
-                // Right hemisphere
-
+                // Realistic cortical surface (gyri run front-to-back), clipped to both hemispheres
                 ctx.save();
-
-                ctx.shadowColor = 'rgba(100,70,130,0.12)';
-
-                ctx.shadowBlur = 8;
-
-                ctx.beginPath();
-
-                ctx.ellipse(W * 0.62, H * 0.50, W * 0.18, H * 0.38, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = brainGrad; ctx.fill();
-
+                hemis(); ctx.clip();
+                paintTissueBase(W*0.42, H*0.30);
+                // flow-centre far to the left -> near-vertical (antero-posterior) ridges
+                paintCortexFolds(W*(-1.15), H*0.50, W*1.28, W*2.05, 6120, {gap:11, a0:-0.30, a1:0.30, ampMul:1.7, freqMul:2.1});
+                drawVasculature([[W*0.34,H*0.30,1.4,74],[W*0.66,H*0.32,1.7,74],[W*0.40,H*0.66,1.5,64],[W*0.60,H*0.64,1.6,64]], 3390);
+                paintTissueShade(W*0.42, H*0.30);
+                // Soft, feathered lobe tints (frontal / occipital, both hemispheres)
+                ctx.globalAlpha=0.14;
+                softTint(W*0.38, H*0.34, W*0.16, '#3b82f6'); softTint(W*0.62, H*0.34, W*0.16, '#3b82f6');
+                softTint(W*0.38, H*0.72, W*0.11, '#ef4444'); softTint(W*0.62, H*0.72, W*0.11, '#ef4444');
+                ctx.globalAlpha=1;
+                // Central sulcus as a groove
+                drawSulcus([[W*0.20,H*0.38],[W*0.35,H*0.35,W*0.50,H*0.36],[W*0.65,H*0.35,W*0.80,H*0.38]], {wide:6});
                 ctx.restore();
 
-
-
-                // Lobe coloring top-down
-
-                ctx.save(); ctx.globalAlpha = 0.10;
-
-                // Frontal (anterior half)
-
-                ctx.beginPath(); ctx.ellipse(W * 0.38, H * 0.35, W * 0.16, H * 0.22, 0, 0, Math.PI * 2); ctx.fillStyle = '#3b82f6'; ctx.fill();
-
-                ctx.beginPath(); ctx.ellipse(W * 0.62, H * 0.35, W * 0.16, H * 0.22, 0, 0, Math.PI * 2); ctx.fill();
-
-                // Occipital (posterior)
-
-                ctx.beginPath(); ctx.ellipse(W * 0.38, H * 0.72, W * 0.10, H * 0.14, 0, 0, Math.PI * 2); ctx.fillStyle = '#ef4444'; ctx.fill();
-
-                ctx.beginPath(); ctx.ellipse(W * 0.62, H * 0.72, W * 0.10, H * 0.14, 0, 0, Math.PI * 2); ctx.fill();
-
-                ctx.restore();
-
-
+                // Longitudinal fissure (deep midline groove)
+                drawSulcus([[W*0.50,H*0.11],[W*0.50,H*0.90]], {wide:9, core:'rgba(48,28,72,0.72)', core_w:2.8, shadow:'rgba(60,38,90,0.4)'});
 
                 // Hemisphere outlines
+                ctx.beginPath(); ctx.ellipse(W*0.38,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); ctx.strokeStyle='#7c5c9a'; ctx.lineWidth=2; ctx.stroke();
+                ctx.beginPath(); ctx.ellipse(W*0.62,H*0.50,W*0.18,H*0.38,0,0,Math.PI*2); ctx.stroke();
 
-                ctx.beginPath(); ctx.ellipse(W * 0.38, H * 0.50, W * 0.18, H * 0.38, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
-
-                ctx.beginPath(); ctx.ellipse(W * 0.62, H * 0.50, W * 0.18, H * 0.38, 0, 0, Math.PI * 2);
-
-                ctx.stroke();
-
-
-
-                // Gyri on top surface
-
-                drawGyri(W * 0.38, H * 0.45, W * 0.12, 14, 6);
-
-                drawGyri(W * 0.62, H * 0.45, W * 0.12, 14, 6);
-
-
-
-                // Longitudinal fissure (deep shadow line)
-
-                ctx.save();
-
-                ctx.shadowColor = 'rgba(80,50,120,0.2)';
-
-                ctx.shadowBlur = 4;
-
-                ctx.beginPath(); ctx.setLineDash([6, 3]);
-
-                ctx.moveTo(W * 0.50, H * 0.10); ctx.lineTo(W * 0.50, H * 0.90);
-
-                ctx.strokeStyle = '#6d4a8e'; ctx.lineWidth = 2.5; ctx.stroke();
-
-                ctx.restore();
-
-                // Central sulcus (curved)
-
-                ctx.beginPath();
-
-                ctx.moveTo(W * 0.20, H * 0.38);
-
-                ctx.quadraticCurveTo(W * 0.35, H * 0.35, W * 0.50, H * 0.36);
-
-                ctx.quadraticCurveTo(W * 0.65, H * 0.35, W * 0.80, H * 0.38);
-
-                ctx.strokeStyle = '#8b7faa'; ctx.lineWidth = 1; ctx.stroke();
-
-                ctx.setLineDash([]);
-
-
-
-                // Additional sulci
-
-                ctx.save(); ctx.globalAlpha = 0.12; ctx.strokeStyle = '#9b87c0'; ctx.lineWidth = 0.5;
-
-                for (var tsi = 0; tsi < 6; tsi++) {
-
-                  var tsAngle = (tsi / 6) * Math.PI * 0.6 + 0.3;
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(W * 0.38 + Math.cos(tsAngle) * W * 0.04, H * 0.50 + Math.sin(tsAngle) * H * 0.08);
-
-                  ctx.lineTo(W * 0.38 + Math.cos(tsAngle) * W * 0.16, H * 0.50 + Math.sin(tsAngle) * H * 0.34);
-
-                  ctx.stroke();
-
-                  ctx.beginPath();
-
-                  ctx.moveTo(W * 0.62 + Math.cos(Math.PI - tsAngle) * W * 0.04, H * 0.50 + Math.sin(tsAngle) * H * 0.08);
-
-                  ctx.lineTo(W * 0.62 + Math.cos(Math.PI - tsAngle) * W * 0.16, H * 0.50 + Math.sin(tsAngle) * H * 0.34);
-
-                  ctx.stroke();
-
-                }
-
-                ctx.restore();
-
-
+              
 
               } else if (viewKey === 'inferior') {
 
-                // ── Inferior (Bottom) View ──
+                var outlineI = function(){ ctx.beginPath(); ctx.ellipse(W*0.50,H*0.38,W*0.30,H*0.28,0,0,Math.PI*2); };
 
-                // Main cerebral base with shadow
-
+                // Cerebral base with soft drop shadow
                 ctx.save();
-
-                ctx.shadowColor = 'rgba(100,70,130,0.15)';
-
-                ctx.shadowBlur = 10;
-
-                ctx.beginPath();
-
-                ctx.ellipse(W * 0.50, H * 0.38, W * 0.30, H * 0.28, 0, 0, Math.PI * 2);
-
-                ctx.fillStyle = brainGrad; ctx.fill();
-
+                ctx.shadowColor='rgba(70,45,110,0.22)'; ctx.shadowBlur=11; ctx.shadowOffsetY=4;
+                outlineI(); ctx.fillStyle=brainGrad; ctx.fill();
                 ctx.restore();
 
-                ctx.beginPath();
-
-                ctx.ellipse(W * 0.50, H * 0.38, W * 0.30, H * 0.28, 0, 0, Math.PI * 2);
-
-                ctx.strokeStyle = '#8b6fc0'; ctx.lineWidth = 2; ctx.stroke();
-
-
-
-                // Temporal lobe regions
-
-                ctx.save(); ctx.globalAlpha = 0.10;
-
-                ctx.beginPath(); ctx.ellipse(W * 0.35, H * 0.35, W * 0.12, H * 0.18, 0.2, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#eab308'; ctx.fill();
-
-                ctx.beginPath(); ctx.ellipse(W * 0.65, H * 0.35, W * 0.12, H * 0.18, -0.2, 0, Math.PI * 2);
-
-                ctx.fill();
-
+                // Realistic cortical surface, clipped
+                ctx.save();
+                outlineI(); ctx.clip();
+                paintTissueBase(W*0.42, H*0.24);
+                // flow-centre far left -> antero-posterior ridges on the ventral surface
+                paintCortexFolds(W*(-1.0), H*0.38, W*1.15, W*1.75, 8842, {gap:11, a0:-0.34, a1:0.34, ampMul:1.7, freqMul:2.1});
+                drawVasculature([[W*0.30,H*0.30,1.3,70],[W*0.70,H*0.30,1.8,70],[W*0.50,H*0.20,1.5,56]], 9021);
+                paintTissueShade(W*0.42, H*0.22);
+                // Soft, feathered temporal-lobe tints
+                ctx.globalAlpha=0.15;
+                softTint(W*0.35, H*0.36, W*0.14, '#eab308'); softTint(W*0.65, H*0.36, W*0.14, '#eab308');
+                ctx.globalAlpha=1;
                 ctx.restore();
 
+                // Longitudinal fissure (ventral midline groove)
+                ctx.save(); outlineI(); ctx.clip();
+                drawSulcus([[W*0.50,H*0.12],[W*0.50,H*0.64]], {wide:7, core:'rgba(52,30,78,0.66)', core_w:2.4});
+                ctx.restore();
 
-
-                // Gyri on inferior surface
-
-                drawGyri(W * 0.40, H * 0.35, W * 0.12, 8, 5);
-
-                drawGyri(W * 0.60, H * 0.35, W * 0.12, 8, 5);
-
-
-
-                // Longitudinal fissure (ventral)
-
-                ctx.beginPath(); ctx.setLineDash([4, 3]);
-
-                ctx.moveTo(W * 0.50, H * 0.12); ctx.lineTo(W * 0.50, H * 0.64);
-
-                ctx.strokeStyle = '#6d4a8e'; ctx.lineWidth = 1.5; ctx.stroke();
-
-                ctx.setLineDash([]);
-
-
+                // Outline
+                outlineI(); ctx.strokeStyle='#7c5c9a'; ctx.lineWidth=2; ctx.stroke();
 
                 // Cerebellum with foliation
-
-                drawCerebellum(W * 0.50, H * 0.72, W * 0.22, H * 0.12);
-
+                drawCerebellum(W*0.50, H*0.72, W*0.22, H*0.12);
                 // Brainstem
-
-                drawBrainstem(W * 0.46, H * 0.55, W * 0.48, H * 0.68, W * 0.52, H * 0.68, W * 0.54, H * 0.55);
-
-
+                drawBrainstem(W*0.46,H*0.55, W*0.48,H*0.68, W*0.52,H*0.68, W*0.54,H*0.55);
 
                 // Optic chiasm (X shape with nerve paths)
 
@@ -2395,6 +1946,7 @@ var d = labToolData.brainAtlas || {};
                 });
 
                 ctx.restore();
+              
 
               } else if (currentView.isNeuron) {
 
