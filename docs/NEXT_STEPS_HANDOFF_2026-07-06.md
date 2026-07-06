@@ -111,3 +111,33 @@ Audio already synthesized.
      instant enough that re-synth per device is often the simplest right answer.
   My recommendation: ship tier 1 with the LAN classroom work; leave tier 2
   behind an explicit toggle; never make either the default.
+
+#### 8b. Read-aloud: teacher-vettable per-sentence audio (FOUNDATION SHIPPED @fd6d8d9b6)
+Aaron's refinement: the teacher should PRE-VET the audio students hear and
+REGENERATE a single off sentence (human-in-the-loop — the app's posture toward
+all AI output). The per-sentence design makes this natural: regenerating one
+sentence replaces one map entry, leaving every vetted sentence untouched.
+- **SHIPPED + TESTED**: `karaoke_audio_store_module.js` — `createStore()` →
+  { get, has, put(sentence,b64,mime) [=regenerate-one], remove, missing(list),
+  serialize()→{format:'mp3',sentences:{key:b64}}, hydrate(obj)→count,
+  estimateBytes }, plus shared `keyFor` + `splitSentences` (single source of
+  truth). Karaoke reads `KaraokeAudioStore.current` before synthesizing and uses
+  the shared splitter (anti-drift). All invariants unit-tested incl. the
+  regenerate-one and serialize↔hydrate round-trip.
+- **REMAINING (the teacher-facing increment; needs ANTI + deploy + browser
+  smoke)**:
+  1. `loadModule('KaraokeAudioStoreModule', '<cdn>/karaoke_audio_store_module.js?v=<hash>')` in the ANTI boot list (bundle it WITH the below so it's one ANTI touch + one deploy).
+  2. HYDRATE on resource activate: when generatedContent with `.karaokeAudio`
+     becomes active, `const st = KaraokeAudioStore.createStore(); st.hydrate(gc.karaokeAudio); KaraokeAudioStore.current = st;` (clear/replace on resource switch).
+  3. REGENERATE global (ANTI has fetchTTSBytes + pcmToMp3 via AudioHelpers):
+     `window.__alloRegenerateSentenceAudio = async (sentence) => { const {bytes}=await fetchTTSBytes(sentence, selectedVoice); const mp3 = pcmToMp3(bytes); const b64 = arrayBufferToBase64(mp3); KaraokeAudioStore.current.put(sentence, b64, 'audio/mpeg'); setGeneratedContent(gc => ({...gc, karaokeAudio: KaraokeAudioStore.current.serialize()})); }` — then karaoke re-plays the sentence (now a store hit).
+  4. TEACHER UI in KaraokeReaderOverlay (role==='teacher'): a per-sentence
+     "🔄 Regenerate" button (calls the global) + a "💾 Prepare/Save read-aloud for
+     students" action that generates `store.missing(sentences)` then saves. Show
+     `estimateBytes()` (~1.9 MB/3-min MP3) so the size is honest.
+  5. SAVE: `karaokeAudio` rides the existing generatedContent→JSON serialization
+     (it's just a field). Guard the resource-pack size; keep it opt-in (teacher
+     action), never auto — honors the size concern.
+  6. SMOKE (Canvas/desktop, can't be done headless): teacher generates → hears
+     each sentence → regenerates one → saves → reload/other device → student
+     opens karaoke → hears the VETTED set with zero latency, no re-synth.
