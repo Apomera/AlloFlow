@@ -269,7 +269,26 @@ const managedEngine = {
   modelPath: null,
   arch: null,
   advisory: null,
+  // Stop-during-start support: a user Stop must cancel in-flight downloads
+  // and pre-spawn work, not just kill a live child.
+  stopRequested: false,
+  abortController: null,
+  // Cheap /api/engine/status: binary presence + disk-free are memoized so the
+  // 2s UI polls don't run a synchronous directory walk + statfs on the event
+  // loop that is simultaneously serving classroom SSE.
+  binaryCheckCache: null,
+  diskFreeCache: null,
 };
+
+function engineUserStopError() {
+  const error = new Error('Engine start cancelled by Stop.');
+  error.isUserStop = true;
+  return error;
+}
+
+function throwIfEngineStopRequested() {
+  if (managedEngine.stopRequested) throw engineUserStopError();
+}
 
 let secretStorage = {
   id: 'local-config',
@@ -1931,7 +1950,8 @@ function findFileRecursive(dir, name) {
 }
 
 async function downloadEngineFile(url, destination, label) {
-  const response = await fetch(url, { redirect: 'follow' });
+  const signal = managedEngine.abortController ? managedEngine.abortController.signal : undefined;
+  const response = await fetch(url, { redirect: 'follow', signal });
   if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
   const totalBytes = Number(response.headers.get('content-length')) || 0;
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -1980,21 +2000,45 @@ const ENGINE_ARM64_ADVISORY = 'The native ARM64 engine could not start (this usu
   'ARM64 runtime is not installed). Using the compatible x64 engine instead — it works but is slower. For full speed, ' +
   'install https://aka.ms/vs/17/release/vc_redist.arm64.exe once, then restart the engine.';
 
+const PRIMARY_ENGINE_ARCH = process.arch === 'arm64' ? 'arm64' : 'x64';
+
+function engineBinarySourceMarker(archDir) {
+  return path.join(archDir, 'binary-source.txt');
+}
+
 async function ensureEngineBinary(config, arch) {
   const engine = getEngineConfig(config);
   const dir = getEngineDir(config);
   const binaryName = process.platform === 'win32' ? 'llama-server.exe' : 'llama-server';
   const archDir = path.join(dir, 'bin', arch);
+  // A custom binaryUrl (the documented CUDA/Vulkan "better computer" swap)
+  // applies only to the machine's native arch, never the x64 fallback build.
+  const url = (arch === PRIMARY_ENGINE_ARCH && engine.binaryUrl) || ENGINE_BINARY_URLS[arch];
   let binary = findFileRecursive(archDir, binaryName);
+  if (binary) {
+    // The swap must actually take effect: a binary extracted from a different
+    // URL than the one now configured gets refreshed instead of reused.
+    let extractedFrom = '';
+    try { extractedFrom = fs.readFileSync(engineBinarySourceMarker(archDir), 'utf8').trim(); } catch (_) {}
+    if (extractedFrom && url && extractedFrom !== url) {
+      appendEngineLog('Engine binary URL changed — refreshing the ' + arch + ' binary from ' + url);
+      try { fs.rmSync(archDir, { recursive: true, force: true }); } catch (_) {}
+      managedEngine.binaryCheckCache = null;
+      binary = null;
+    }
+  }
   if (!binary) {
-    const url = (arch === (process.arch === 'arm64' ? 'arm64' : 'x64') && engine.binaryUrl) || ENGINE_BINARY_URLS[arch];
     if (!url) throw new Error('No engine binary is published for this platform (' + process.platform + '/' + arch + ').');
+    throwIfEngineStopRequested();
     managedEngine.phase = 'downloading-binary';
     appendEngineLog('Downloading engine binary (' + arch + '): ' + url);
     const zipPath = path.join(archDir, 'llama-server-download.zip');
     await downloadEngineFile(url, zipPath, 'engine program');
+    throwIfEngineStopRequested();
     await expandEngineZip(zipPath, archDir);
     try { fs.unlinkSync(zipPath); } catch (_) {}
+    try { fs.writeFileSync(engineBinarySourceMarker(archDir), url + '\n', 'utf8'); } catch (_) {}
+    managedEngine.binaryCheckCache = null;
     binary = findFileRecursive(archDir, binaryName);
     if (!binary) throw new Error('llama-server was not found inside the downloaded engine archive.');
   }
@@ -2014,10 +2058,12 @@ async function ensureEngineAssets(config, arch) {
   }
   const binary = await ensureEngineBinary(config, arch);
   if (!fs.existsSync(modelFile)) {
+    throwIfEngineStopRequested();
     managedEngine.phase = 'downloading-model';
     appendEngineLog('Downloading AI model: ' + engine.modelUrl);
     await downloadEngineFile(engine.modelUrl, modelFile, 'AI model');
   }
+  throwIfEngineStopRequested();
   managedEngine.binaryPath = binary;
   managedEngine.modelPath = modelFile;
   return { binary, modelFile };
@@ -2027,20 +2073,32 @@ async function getLocalEngineStatus(config = readConfig()) {
   const engine = getEngineConfig(config);
   const dir = getEngineDir(config);
   const binaryName = process.platform === 'win32' ? 'llama-server.exe' : 'llama-server';
-  const binary = managedEngine.binaryPath || findFileRecursive(path.join(dir, 'bin'), binaryName);
+  const now = Date.now();
+  let binaryPresent;
+  if (managedEngine.binaryPath) {
+    binaryPresent = true;
+  } else if (managedEngine.binaryCheckCache && now - managedEngine.binaryCheckCache.at < 15000) {
+    binaryPresent = managedEngine.binaryCheckCache.present;
+  } else {
+    binaryPresent = Boolean(findFileRecursive(path.join(dir, 'bin'), binaryName));
+    managedEngine.binaryCheckCache = { present: binaryPresent, at: now };
+  }
   const modelFile = engineModelFilePath(config);
   let modelBytes = null;
   try { modelBytes = fs.statSync(modelFile).size; } catch (_) {}
   const running = isEngineRunning();
+  // Normalize once: the child's exit handler is the phase's single writer,
+  // but a crash between polls can leave 'running' with no child.
+  const phase = (!running && managedEngine.phase === 'running') ? 'stopped' : managedEngine.phase;
   return {
     implemented: true,
-    phase: running ? managedEngine.phase : (managedEngine.phase === 'running' ? 'stopped' : managedEngine.phase),
-    running: running && managedEngine.phase === 'running',
+    phase,
+    running: phase === 'running',
     pid: running ? managedEngine.child.pid : null,
     port: engine.port,
     baseUrl: 'http://127.0.0.1:' + engine.port,
     engineDir: dir,
-    binaryPresent: Boolean(binary),
+    binaryPresent,
     model: {
       url: engine.modelUrl,
       name: modelFile ? path.basename(modelFile) : '',
@@ -2048,7 +2106,12 @@ async function getLocalEngineStatus(config = readConfig()) {
       bytes: modelBytes,
     },
     download: managedEngine.download,
-    diskFreeBytes: await getFreeDiskBytes(getDataDir()),
+    diskFreeBytes: await (async () => {
+      if (managedEngine.diskFreeCache && now - managedEngine.diskFreeCache.at < 15000) return managedEngine.diskFreeCache.bytes;
+      const bytes = await getFreeDiskBytes(getDataDir());
+      managedEngine.diskFreeCache = { bytes, at: now };
+      return bytes;
+    })(),
     startedAt: managedEngine.startedAt,
     stoppedAt: managedEngine.stoppedAt,
     lastError: managedEngine.lastError,
@@ -2060,6 +2123,20 @@ async function getLocalEngineStatus(config = readConfig()) {
 async function launchEngineProcess(config, arch) {
   const engine = getEngineConfig(config);
   const { binary, modelFile } = await ensureEngineAssets(config, arch);
+  // Port preflight: if something already answers /health here (an orphaned
+  // llama-server from a crash, or another app), our child would die on bind
+  // while the health poll below happily got 200 from the impostor — the
+  // status would claim success for a process that is not ours.
+  try {
+    const squatter = await fetch('http://127.0.0.1:' + engine.port + '/health');
+    if (squatter.ok) {
+      throw Object.assign(new Error('Port ' + engine.port + ' is already in use — probably an engine left over from an earlier session. ' +
+        'Close it (Task Manager: llama-server.exe) or change localEngine.port, then start again.'), { isPortSquatter: true });
+    }
+  } catch (error) {
+    if (error.isPortSquatter) throw error;
+    /* nothing listening — good */
+  }
   managedEngine.phase = 'starting';
   managedEngine.arch = arch;
   appendEngineLog('Starting llama-server (' + arch + ') on 127.0.0.1:' + engine.port + ' with ' + path.basename(modelFile));
@@ -2087,6 +2164,10 @@ async function launchEngineProcess(config, arch) {
   // Model load is mmap-backed but can still take a while on first touch.
   const deadline = Date.now() + 120000;
   while (Date.now() < deadline) {
+    if (managedEngine.stopRequested) {
+      try { child.kill(); } catch (_) {}
+      throw engineUserStopError();
+    }
     if (!isEngineRunning()) {
       if (exitCode !== null && ENGINE_LOADER_EXIT_CODES.has(exitCode >>> 0)) return { loaderFailure: true, exitCode };
       throw new Error(managedEngine.lastError || 'The engine process exited during startup — see /api/engine/logs.');
@@ -2108,6 +2189,8 @@ async function startLocalEngine(config = readConfig()) {
   if (isEngineRunning() || managedEngine.startPromise) return managedEngine.startPromise || Promise.resolve();
   managedEngine.lastError = null;
   managedEngine.advisory = null;
+  managedEngine.stopRequested = false;
+  managedEngine.abortController = new AbortController();
   managedEngine.startPromise = (async () => {
     try {
       const primaryArch = process.arch === 'arm64' ? 'arm64' : 'x64';
@@ -2123,22 +2206,37 @@ async function startLocalEngine(config = readConfig()) {
         throw new Error('The engine binary could not be loaded by Windows (exit ' + attempt.exitCode + ') — see /api/engine/logs.');
       }
     } catch (error) {
+      managedEngine.download = null;
+      const userStop = error.isUserStop || managedEngine.stopRequested || error.name === 'AbortError';
+      if (userStop) {
+        // A user-requested Stop is a clean outcome, never an error state.
+        managedEngine.phase = 'stopped';
+        managedEngine.lastError = null;
+        appendEngineLog('Start cancelled by Stop.');
+        if (isEngineRunning()) { try { managedEngine.child.kill(); } catch (_) {} }
+        return;
+      }
       managedEngine.lastError = error.message;
       managedEngine.phase = 'error';
-      managedEngine.download = null;
       appendEngineLog('ERROR: ' + error.message);
       if (isEngineRunning()) { try { managedEngine.child.kill(); } catch (_) {} }
       throw error;
     } finally {
       managedEngine.startPromise = null;
+      managedEngine.abortController = null;
     }
   })();
   return managedEngine.startPromise;
 }
 
 async function stopLocalEngine(config = readConfig()) {
+  // Cancel any in-flight start first: abort active downloads and flag the
+  // pre-spawn steps + health wait to bail out quietly.
+  managedEngine.stopRequested = true;
+  if (managedEngine.abortController) { try { managedEngine.abortController.abort(); } catch (_) {} }
   if (!isEngineRunning()) {
-    managedEngine.phase = 'stopped';
+    if (!managedEngine.startPromise) managedEngine.phase = 'stopped';
+    managedEngine.download = null;
     return getLocalEngineStatus(config);
   }
   const child = managedEngine.child;
@@ -2492,13 +2590,20 @@ async function handleApi(req, res, url) {
     // snapshot immediately — the command center polls /api/engine/status.
     if (!isEngineRunning() && !managedEngine.startPromise) {
       startLocalEngine(config).catch(() => { /* surfaced via status.lastError */ });
+      // Starting IS the opt-in: remember it so the engine autostarts with the
+      // desktop from now on (single writer — the UIs no longer need to).
+      try { writeConfig(deepMerge(config, { localEngine: { enabled: true } })); } catch (_) {}
     }
     jsonResponse(res, 200, await getLocalEngineStatus(config));
     return;
   }
 
   if (req.method === 'POST' && url.pathname === '/api/engine/stop') {
-    jsonResponse(res, 200, await stopLocalEngine(config));
+    const stopped = await stopLocalEngine(config);
+    // An explicit Stop is the opt-out: without this, enabled:true was a
+    // one-way door and autostart resurrected the engine every boot forever.
+    try { writeConfig(deepMerge(readConfig(), { localEngine: { enabled: false } })); } catch (_) {}
+    jsonResponse(res, 200, stopped);
     return;
   }
 
@@ -2993,16 +3098,29 @@ async function main() {
     const address = server.address();
     console.log('[AlloFlow Desktop] Runtime listening on http://' + args.host + ':' + address.port);
     console.log('[AlloFlow Desktop] AlloFlow app URL: ' + getAppUrl(readConfig(), `http://${args.host}:${address.port}`));
-    // Built-in engine autostart: once a teacher has chosen the engine
-    // (localEngine.enabled, set by the app's AI Backend modal or the command
-    // center) AND its model is already on disk, warm it with the desktop so
-    // local AI is simply "on" — never on a fresh config, never mid-download.
-    const bootConfig = readConfig();
-    if (getEngineConfig(bootConfig).enabled && fs.existsSync(engineModelFilePath(bootConfig))) {
-      console.log('[AlloFlow Desktop] Built-in engine enabled and model present — starting it.');
-      startLocalEngine(bootConfig).catch((error) => console.warn('[AlloFlow Desktop] Engine autostart failed:', error.message));
-    }
+    maybeAutostartEngine();
   });
+  // CLI runs own their engine child: never orphan a 2GB llama-server on
+  // Ctrl+C. The packaged Electron shell has its own before-quit teardown.
+  ['SIGINT', 'SIGTERM'].forEach((signal) => {
+    process.on(signal, () => {
+      stopLocalEngine().catch(() => {}).finally(() => process.exit(0));
+    });
+  });
+}
+
+// Built-in engine autostart: once a teacher has chosen the engine
+// (localEngine.enabled — persisted by POST /api/engine/start) AND its model
+// is already on disk, warm it with the desktop so local AI is simply "on" —
+// never on a fresh config, never mid-download. Called by BOTH entrypoints:
+// main() for CLI runs and desktop/electron/main.cjs after its own listen —
+// main() is unreachable there (require.main !== module).
+function maybeAutostartEngine(config = readConfig()) {
+  if (getEngineConfig(config).enabled && fs.existsSync(engineModelFilePath(config))) {
+    console.log('[AlloFlow Desktop] Built-in engine enabled and model present — starting it.');
+    return startLocalEngine(config).catch((error) => console.warn('[AlloFlow Desktop] Engine autostart failed:', error.message));
+  }
+  return Promise.resolve();
 }
 
 module.exports = {
@@ -3011,6 +3129,9 @@ module.exports = {
   DEFAULT_CONFIG,
   createLanShareServer,
   createServer,
+  maybeAutostartEngine,
+  stopLocalEngine,
+  getLocalEngineStatus,
   getConfigPath,
   getDataDir,
   getAppUrl,
