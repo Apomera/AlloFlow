@@ -67,6 +67,18 @@ const OSS_CREDITS = [
         site: "https://www.openboardformat.org",
         repo: "https://github.com/open-aac/openboardformat"
       },
+      {
+        name: "Mulberry Symbols",
+        use: 'validated AAC symbol set \u2014 Symbol Studio\u2019s "Find validated symbol" (an alternative to AI-generated symbols) \u2014 Steve Lee / Open AAC',
+        license: "CC BY-SA",
+        url: "https://mulberrysymbols.org",
+        featured: 8,
+        owner: "Open AAC",
+        blurb: "A hand-designed, validated library of communication symbols \u2014 searchable inside Symbol Studio as a trustworthy alternative to AI-generated ones, free to use with credit.",
+        site: "https://mulberrysymbols.org",
+        repo: "https://github.com/mulberrysymbols/mulberry-symbols"
+      },
+      { name: "Global Symbols", use: "open symbol-search service that serves Mulberry to Symbol Studio", license: "platform free; symbols under their own open licenses", url: "https://globalsymbols.com" },
       { name: "KaTeX", use: "math typesetting", license: "MIT", url: "https://katex.org" },
       { name: "Temml", use: "LaTeX \u2192 MathML", license: "MIT", url: "https://temml.org" },
       {

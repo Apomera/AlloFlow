@@ -32,6 +32,56 @@
   // breakout but NOT a hostile scheme (javascript:, data:text/html). Permit only http(s),
   // blob:, and data:image/* (legitimate generated/uploaded symbols); blank anything else.
   var safeImgUrl = function (u) { u = String(u == null ? '' : u).trim(); return /^(https?:|blob:|data:image\/)/i.test(u) ? u : ''; };
+
+  // ── Mulberry Symbols (validated AAC set) via the Global Symbols API ──
+  // Symbol Studio's own symbols are AI-generated (see the disclaimer in the
+  // Symbols tab); Mulberry (Open AAC / Global Symbols, CC BY-SA) is a hand-
+  // designed, VALIDATED AAC symbol set — the same open ecosystem as the OBF/
+  // Cboard interop. The Global Symbols API sends CORS `*`, so we search it and
+  // fetch the SVGs directly in the browser (no proxy). Language is ISO 639-3.
+  var MULBERRY_LANG3 = { en: 'eng', es: 'spa', fr: 'fra', de: 'deu', it: 'ita', pt: 'por', nl: 'nld', ar: 'ara', zh: 'zho', hi: 'hin', ru: 'rus', pl: 'pol', uk: 'ukr', ro: 'ron', so: 'som' };
+  var MULBERRY_LANG_NAME = { english: 'eng', spanish: 'spa', french: 'fra', german: 'deu', italian: 'ita', portuguese: 'por', dutch: 'nld', arabic: 'ara', chinese: 'zho', hindi: 'hin' };
+  function mulberryLangCode(lang) {
+    if (!lang) return 'eng';
+    var s = String(lang).toLowerCase().trim();
+    if (MULBERRY_LANG_NAME[s]) return MULBERRY_LANG_NAME[s];
+    if (/^[a-z]{3}$/.test(s)) return s;
+    var two = s.slice(0, 2);
+    return MULBERRY_LANG3[two] || 'eng';
+  }
+  // Search Mulberry by keyword → [{id, label, svgUrl}]. Fallback-safe: [] on any
+  // failure (offline, API change) so the caller degrades to AI generation.
+  function searchMulberrySymbols(query, lang) {
+    var q = String(query == null ? '' : query).trim();
+    if (!q) return Promise.resolve([]);
+    var url = 'https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q)
+      + '&symbolset=mulberry&language=' + mulberryLangCode(lang) + '&language_iso_format=639-3&limit=30';
+    return fetch(url).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+      if (!Array.isArray(rows)) return [];
+      var seen = {};
+      return rows.map(function (row) {
+        var pic = row && row.picto;
+        var img = pic && pic.image_url;
+        if (!img || !/^https:\/\//i.test(img)) return null;
+        if (seen[img]) return null; seen[img] = 1;
+        return { id: (pic && pic.id) || (row && row.id) || img, label: (row && row.text) || q, svgUrl: img };
+      }).filter(Boolean);
+    }).catch(function () { return []; });
+  }
+  // Fetch an SVG (CORS `*`) → data: URI so the board stays portable + offline-
+  // safe and embeds in .obf/.obz exports. Falls back to the URL if fetch fails.
+  function fetchSymbolAsDataUri(url) {
+    if (!/^https:\/\//i.test(String(url || ''))) return Promise.resolve(url);
+    return fetch(url).then(function (r) { return r.ok ? r.blob() : null; }).then(function (blob) {
+      if (!blob || blob.size > 512000) return url; // guard against anything unexpectedly large
+      return new Promise(function (resolve) {
+        var fr = new FileReader();
+        fr.onload = function () { resolve(fr.result || url); };
+        fr.onerror = function () { resolve(url); };
+        fr.readAsDataURL(blob);
+      });
+    }).catch(function () { return url; });
+  }
   // CSV cell: escape quotes AND neutralize spreadsheet formula injection. A field
   // beginning with = + - @ (or tab/CR) becomes a live formula in Excel/Sheets — IEP
   // goal text, notes, and labels are user/AI-authored, so prefix a single quote.
@@ -572,6 +622,48 @@
     var _symCatFilter = useState(''); var symCatFilter = _symCatFilter[0]; var setSymCatFilter = _symCatFilter[1];
     var _symCategory = useState(''); var symCategory = _symCategory[0]; var setSymCategory = _symCategory[1];
     var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
+    // Mulberry validated-symbol picker (Global Symbols API)
+    var _mulOpen = useState(false); var mulberryOpen = _mulOpen[0]; var setMulberryOpen = _mulOpen[1];
+    var _mulQuery = useState(''); var mulberryQuery = _mulQuery[0]; var setMulberryQuery = _mulQuery[1];
+    var _mulResults = useState([]); var mulberryResults = _mulResults[0]; var setMulberryResults = _mulResults[1];
+    var _mulLoading = useState(false); var mulberryLoading = _mulLoading[0]; var setMulberryLoading = _mulLoading[1];
+    var _mulAdding = useState(null); var mulberryAdding = _mulAdding[0]; var setMulberryAdding = _mulAdding[1];
+    var _mulSearched = useState(false); var mulberrySearched = _mulSearched[0]; var setMulberrySearched = _mulSearched[1];
+    var openMulberryPicker = function () {
+      setMulberryQuery(symLabel || '');
+      setMulberryResults([]); setMulberrySearched(false); setMulberryOpen(true);
+    };
+    var runMulberrySearch = function (q) {
+      var query = ((q != null ? q : mulberryQuery) || '').trim();
+      if (!query) return;
+      setMulberryLoading(true); setMulberrySearched(true);
+      searchMulberrySymbols(query, boardLang).then(function (results) {
+        setMulberryResults(results); setMulberryLoading(false);
+      }).catch(function () { setMulberryResults([]); setMulberryLoading(false); });
+    };
+    // Add a picked Mulberry symbol to the gallery — same shape as an AI-generated
+    // entry (so boards/export work identically), tagged source:'mulberry' with
+    // CC BY-SA attribution. The SVG is embedded as a data: URI for portability.
+    var addMulberryToGallery = function (result) {
+      if (!result || mulberryAdding) return;
+      setMulberryAdding(result.id);
+      fetchSymbolAsDataUri(result.svgUrl).then(function (img) {
+        var label = ((mulberryQuery || result.label || '').trim()) || result.label || 'symbol';
+        var entry = {
+          id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
+          style: 'mulberry', category: symCategory || 'other', isFavorite: false, createdAt: Date.now(),
+          source: 'mulberry', validated: true,
+          attribution: { set: 'Mulberry Symbols', license: 'CC BY-SA', via: 'Global Symbols', url: 'https://globalsymbols.com' }
+        };
+        var updated = [entry].concat(gallery);
+        setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+        setSelectedId(entry.id); setMulberryAdding(null);
+        addToast && addToast('Added validated symbol "' + label + '" (Mulberry)', 'success');
+      }).catch(function () {
+        setMulberryAdding(null);
+        addToast && addToast('Could not add that symbol — try another.', 'error');
+      });
+    };
 
     // Board Builder state
     var _boardTopic = useState(''); var boardTopic = _boardTopic[0]; var setBoardTopic = _boardTopic[1];
@@ -6751,6 +6843,70 @@
     }
 
     // ── Symbol Gallery tab ─────────────────────────────────────────────────
+    // Mulberry validated-symbol picker (modal overlay). Search the Global
+    // Symbols API for the current label, show matching hand-designed SVGs, and
+    // add the chosen one to the gallery. CC BY-SA attribution shown + carried.
+    function renderMulberryPicker() {
+      return e('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Find a validated Mulberry symbol',
+        onClick: function () { setMulberryOpen(false); },
+        style: { position: 'fixed', inset: 0, zIndex: 2147483000, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }
+      },
+        e('div', {
+          onClick: function (ev) { ev.stopPropagation(); },
+          style: { background: '#fff', borderRadius: '14px', width: 'min(620px, 100%)', maxHeight: '86vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.35)' }
+        },
+          // Header
+          e('div', { style: { padding: '14px 16px 8px', display: 'flex', alignItems: 'center', gap: '10px' } },
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontWeight: 800, fontSize: '16px', color: '#0e7490' } }, '🔎 Find a validated symbol'),
+              e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, 'Mulberry — hand-designed AAC symbols, free to use with credit (CC BY-SA)')
+            ),
+            e('button', { onClick: function () { setMulberryOpen(false); }, 'aria-label': 'Close', style: { border: 'none', background: '#f3f4f6', borderRadius: '8px', width: '30px', height: '30px', cursor: 'pointer', fontSize: '15px', color: '#374151' } }, '✕')
+          ),
+          // Search bar
+          e('div', { style: { padding: '0 16px 10px', display: 'flex', gap: '6px' } },
+            e('input', {
+              type: 'text', value: mulberryQuery, autoFocus: true,
+              onChange: function (ev) { setMulberryQuery(ev.target.value); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') runMulberrySearch(); },
+              placeholder: 'Search a word, e.g. happy, bathroom, more', 'aria-label': 'Search Mulberry symbols',
+              style: Object.assign({}, S.input, { flex: 1 })
+            }),
+            e('button', { onClick: function () { runMulberrySearch(); }, disabled: !mulberryQuery.trim() || mulberryLoading, 'aria-label': 'Search', style: S.btn('#0e7490', '#fff', !mulberryQuery.trim() || mulberryLoading) }, mulberryLoading ? '…' : 'Search')
+          ),
+          // Results
+          e('div', { style: { flex: 1, overflowY: 'auto', padding: '0 16px 8px', minHeight: '160px' } },
+            mulberryLoading
+              ? e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: '#6b7280' } }, spinner(28))
+              : (mulberryResults.length > 0
+                  ? e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' } },
+                      mulberryResults.map(function (r) {
+                        var adding = mulberryAdding === r.id;
+                        return e('button', {
+                          key: String(r.id), onClick: function () { addMulberryToGallery(r); }, disabled: !!mulberryAdding,
+                          title: 'Add "' + r.label + '"', 'aria-label': 'Add validated symbol ' + r.label,
+                          style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '8px 6px', border: '1px solid #e5e7eb', borderRadius: '10px', background: adding ? '#ecfeff' : '#fff', cursor: mulberryAdding ? 'default' : 'pointer' }
+                        },
+                          e('img', { src: r.svgUrl, alt: r.label, loading: 'lazy', style: { width: '64px', height: '64px', objectFit: 'contain' } }),
+                          e('span', { style: { fontSize: '10px', color: '#374151', textAlign: 'center', lineHeight: 1.2, maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, r.label),
+                          adding ? e('span', { style: { fontSize: '9px', color: '#0e7490' } }, 'adding…') : null
+                        );
+                      })
+                    )
+                  : (mulberrySearched
+                      ? e('div', { style: { textAlign: 'center', color: '#6b7280', padding: '40px 16px', fontSize: '13px' } }, 'No Mulberry symbols found for that word. Try a simpler or more common word — or generate one with AI.')
+                      : e('div', { style: { textAlign: 'center', color: '#9ca3af', padding: '40px 16px', fontSize: '13px' } }, 'Type a word and press Search to find hand-designed symbols.')))
+          ),
+          // Footer / attribution
+          e('div', { style: { padding: '8px 16px 14px', borderTop: '1px solid #f1f5f9', fontSize: '10px', color: '#9ca3af', lineHeight: 1.4 } },
+            'Symbols: Mulberry Symbols (Open AAC) via Global Symbols, licensed ',
+            e('a', { href: 'https://creativecommons.org/licenses/by-sa/2.0/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#0e7490' } }, 'CC BY-SA'),
+            '. Added symbols carry this credit. Needs an internet connection.'
+          )
+        )
+      );
+    }
     function renderSymbolsTab() {
       var selectedItem = gallery.find(function (i) { return i.id === selectedId; }) || null;
       var filtered = gallery.filter(function (i) {
@@ -6819,7 +6975,10 @@
           e('button', { onClick: symMode === 'single' ? genSingle : genBatch, disabled: isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim()), 'aria-label': isLoading ? 'Generating symbols' : 'Generate symbol' + (symMode === 'batch' ? ' batch' : ''), style: S.btn(PURPLE, '#fff', isLoading || (symMode === 'single' ? !symLabel.trim() : !symBatch.trim())) },
             isLoading ? '⏳ Generating...' : '✨ Generate' + (symMode === 'batch' ? ' Batch' : '')
           ),
-          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols — not a validated symbol set (e.g. PCS / SymbolStix). Review each for accuracy and consistency before classroom or clinical use.'),
+          // Validated alternative to AI generation: search the Mulberry set (a
+          // hand-designed, CC BY-SA AAC symbol library) for the current label.
+          e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': 'Find a validated Mulberry symbol', title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
+          e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
           gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from gallery', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
@@ -8246,7 +8405,8 @@
             tab === 'search' && renderSearchTab(),
             tab === 'garden' && renderGardenTab()
           )
-        )
+        ),
+        mulberryOpen && renderMulberryPicker()
       )
     );
   });
