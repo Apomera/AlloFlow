@@ -113,6 +113,39 @@ function scoreBook(b) {
   return s;
 }
 
+// Rank the search hits by quality, take the best ones not already curated up
+// to the per-level target, and push them onto `picks`. `already` is counted
+// from `picks` (existing + this-run additions) so re-runs are idempotent and
+// the audio pass sees narrated books the regular pass just added. audioOnly
+// counts/keeps only narrated titles so the target is "narrated at this level".
+function rankAndPush(langPlan, level, data, want, have, picks, audioOnly) {
+  const already = picks.filter((p) =>
+    p.language === langPlan.language && p.level === String(level) && (!audioOnly || p.isAudio)
+  ).length;
+  const ranked = (data.data || [])
+    .filter((b) => b.slug && b.title && !have.has(b.slug) && (!audioOnly || b.isAudio))
+    .sort((a, b) => scoreBook(b) - scoreBook(a))
+    .slice(0, Math.max(0, Number(want) - already));
+  for (const b of ranked) {
+    have.add(b.slug);
+    picks.push({
+      slug: b.slug,
+      title: b.title,
+      language: langPlan.language,
+      langCode: langPlan.code,
+      level: String(b.level || level),
+      description: b.description || '',
+      authors: (b.authors || []).map((a) => a.name).filter(Boolean),
+      illustrators: (b.illustrators || []).map((a) => a.name).filter(Boolean),
+      originalAuthors: (b.original_authors || []).map((a) => a.name).filter(Boolean),
+      publisher: (b.publisher && b.publisher.name) || null,
+      isAudio: !!b.isAudio,
+      cover: pickCover(b.coverImage),
+    });
+  }
+  return ranked;
+}
+
 async function plan() {
   // Merge-not-replace: books already in curation.json stay in the library
   // forever (students may have them assigned in saved lessons); planning only
@@ -122,44 +155,41 @@ async function plan() {
     : [];
   const have = new Set(existing.map((p) => p.slug));
   const picks = existing.slice();
+  const baseUrl = (language, level, extra) =>
+    API + '/books-search?page=1&per_page=24&sort=Relevance' +
+    '&languages%5B%5D=' + encodeURIComponent(language) + '&levels%5B%5D=' + level + (extra || '');
   for (const langPlan of PLAN) {
     for (const [level, want] of Object.entries(langPlan.perLevel)) {
-      const url =
-        API +
-        '/books-search?page=1&per_page=24&sort=Relevance' +
-        '&languages%5B%5D=' + encodeURIComponent(langPlan.language) +
-        '&levels%5B%5D=' + level;
       let data;
       try {
-        data = await getJson(url);
+        data = await getJson(baseUrl(langPlan.language, level));
       } catch (err) {
         console.warn('SKIP search', langPlan.language, 'L' + level, err.message);
         continue;
       }
-      const already = existing.filter((p) => p.language === langPlan.language && p.level === String(level)).length;
-      const ranked = (data.data || [])
-        .filter((b) => b.slug && b.title && !have.has(b.slug))
-        .sort((a, b) => scoreBook(b) - scoreBook(a))
-        .slice(0, Math.max(0, Number(want) - already));
-      for (const b of ranked) {
-        have.add(b.slug);
-        picks.push({
-          slug: b.slug,
-          title: b.title,
-          language: langPlan.language,
-          langCode: langPlan.code,
-          level: String(b.level || level),
-          description: b.description || '',
-          authors: (b.authors || []).map((a) => a.name).filter(Boolean),
-          illustrators: (b.illustrators || []).map((a) => a.name).filter(Boolean),
-          originalAuthors: (b.original_authors || []).map((a) => a.name).filter(Boolean),
-          publisher: (b.publisher && b.publisher.name) || null,
-          isAudio: !!b.isAudio,
-          cover: pickCover(b.coverImage),
-        });
-      }
+      const ranked = rankAndPush(langPlan, level, data, want, have, picks, false);
       console.log(langPlan.language, 'L' + level + ':', ranked.map((b) => b.title).join(' | '));
       await sleep(600);
+    }
+    // Narration-first top-up. Languages with a deep StoryWeaver audio pool
+    // (English/Hindi/Urdu/Arabic — most others have zero) get extra NARRATED
+    // books: the word-by-word karaoke is the library's highest-value feature,
+    // and the base pull barely scratches what's available. story_type=audio
+    // filters to titles that actually ship narration + VTT cues. audioPerLevel
+    // is the TARGET narrated count per level, so re-running adds nothing once met.
+    if (langPlan.audioPerLevel) {
+      for (const [level, want] of Object.entries(langPlan.audioPerLevel)) {
+        let data;
+        try {
+          data = await getJson(baseUrl(langPlan.language, level, '&story_type%5B%5D=audio'));
+        } catch (err) {
+          console.warn('SKIP audio', langPlan.language, 'L' + level, err.message);
+          continue;
+        }
+        const ranked = rankAndPush(langPlan, level, data, want, have, picks, true);
+        console.log('🔊 ' + langPlan.language, 'L' + level + ':', ranked.map((b) => b.title).join(' | '));
+        await sleep(600);
+      }
     }
   }
   fs.writeFileSync(CURATION_PATH, JSON.stringify({ generatedAt: new Date().toISOString(), picks }, null, 2));

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T14:22:07.885Z",
+  "generatedAt": "2026-07-06T15:56:42.950Z",
   "picks": [
     {
       "slug": "16411-too-big-too-small",
@@ -8177,6 +8177,699 @@
       "cover": {
         "card": "https://static.storyweaver.org.in/illustration_crops/118253/size3/2899ec66a21efab3448e856395d6b01f.jpg",
         "large": "https://static.storyweaver.org.in/illustration_crops/118253/size6/2899ec66a21efab3448e856395d6b01f.jpg"
+      }
+    },
+    {
+      "slug": "24828-scratch-scratch-scratch",
+      "title": "Scratch! Scratch! Scratch!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Manu loves jumping and counting. But trouble starts when she gets the itchy and scratchy\r\nchickenpox.",
+      "authors": [
+        "Dawa  Lahmu Yolmo"
+      ],
+      "illustrators": [
+        "Samidha Gunjal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/726298/size3/a8d3613af0c68801c935157ee52533a0.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/726298/size6/a8d3613af0c68801c935157ee52533a0.jpg"
+      }
+    },
+    {
+      "slug": "15458-ting-tong",
+      "title": "Ting Tong",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "How can the baby sleep with so many sounds around him? Find out what disturbs our little one.",
+      "authors": [
+        "Lubaina Bandukwala"
+      ],
+      "illustrators": [
+        "Zainab Tambawalla"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/123536/size3/4715c5ce5d3320cc4921d64fde8272ef.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/123536/size6/4715c5ce5d3320cc4921d64fde8272ef.jpg"
+      }
+    },
+    {
+      "slug": "21618-wild-cat-wild-cat",
+      "title": "Wild Cat! Wild Cat!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Meet the different wild cats of India.",
+      "authors": [
+        "Sejal Mehta"
+      ],
+      "illustrators": [
+        "Rohan Chakravarty"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722383/size3/b67b65b0b4e07eecc3cd0aa184e1548c.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722383/size6/b67b65b0b4e07eecc3cd0aa184e1548c.jpg"
+      }
+    },
+    {
+      "slug": "369-the-red-raincoat",
+      "title": "The Red Raincoat",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Manu has a new raincoat. He can't wait to wear it, but the rain makes him wait... and wait... and wait.",
+      "authors": [
+        "Kiran Kasturia"
+      ],
+      "illustrators": [
+        "Zainab Tambawalla"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721019/size3/beedc107df0b5447c6735b02a11b27ef.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721019/size6/beedc107df0b5447c6735b02a11b27ef.jpg"
+      }
+    },
+    {
+      "slug": "1034-grandma-s-glasses",
+      "title": "Grandma's Glasses",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Grandma loses her glasses all the time. Sometimes she needs a smart detective to find them for her!",
+      "authors": [
+        "Rohini Nilekani"
+      ],
+      "illustrators": [
+        "Tanaya Vyas"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700894/size3/0b3a679b1d24e2b4e223307bff56b880.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700894/size6/0b3a679b1d24e2b4e223307bff56b880.jpg"
+      }
+    },
+    {
+      "slug": "36960-all-aboard",
+      "title": "All Aboard",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Nina and her family are moving from Kolkata to Delhi, and she is not happy about it. Will\r\nher parents be able to cheer her up on the train journey?",
+      "authors": [
+        "Rohini Kejriwal"
+      ],
+      "illustrators": [
+        "Sahitya Rani"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/527558/size3/d2ca9b60f3812f6cfe8931703ea209ee.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/527558/size6/d2ca9b60f3812f6cfe8931703ea209ee.jpg"
+      }
+    },
+    {
+      "slug": "47980-shoecat-thoocat",
+      "title": "Shoecat Thoocat",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Kamala’s new shoecat attacks whoever it meets! Tomatoes, thathas, friends, teachers, goats… everyone hates it. What will they do now? ",
+      "authors": [
+        "Shalini  Srinivasan "
+      ],
+      "illustrators": [
+        "Aindri C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/158527/size3/3980efa22d78c2250c1298435f56e840.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/158527/size6/3980efa22d78c2250c1298435f56e840.jpg"
+      }
+    },
+    {
+      "slug": "24620-a-book-for-puchku",
+      "title": "A Book for Puchku",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Puchku has run out of books to read. Then she discovers more books in the top shelf of\r\nthe library bookcase. But Puchku is small, and the bookcase tall. How will she ever get to her\r\nbeloved books?",
+      "authors": [
+        "Deepanjana Pal"
+      ],
+      "illustrators": [
+        "Rajiv Eipe"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117108/size3/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117108/size6/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg"
+      }
+    },
+    {
+      "slug": "252670-ma-allathy-tukhatit-lah-ameena",
+      "title": "مَا الَّذِي تُخَطِّطُ لَهُ أَمِينَةُ؟",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "1",
+      "description": "الْجَمِيعُ يَتَسَاءَلُ: مَا الَّذِي تُخَطِّطُ لَهُ أَمِينَةُ فِي ظَهِيرَةِ يَوْمِ الْأَحَدِ؟! وَعَلَى كُلِّ حَالٍ، أَيْنَ اخْتَفَتْ قِشْرَةُ جَوْزِ الْهِنْدِ وَالطِّلَاءُ وَالْأَزْرَارُ وَالصَّحِيفَةُ؟!",
+      "authors": [
+        "Alyaa Alhetmi"
+      ],
+      "illustrators": [
+        "Preetam Dhar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495580/size3/bce292876fe0cffa390e460a5b5e0b88.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495580/size6/bce292876fe0cffa390e460a5b5e0b88.jpg"
+      }
+    },
+    {
+      "slug": "224338-al-naml-alnasheet",
+      "title": "النَّمْلُ النَّشِيطُ",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "1",
+      "description": "اتْبَعْ جَمَاعَةَ النَّمْلِ فِي هَذَا الْكِتَابِ؛ فَمِنَ الْمُؤَكَّدِ أَنَّهَا سَوْفَ تَشْغَلُ الْقُرَّاءَ الصِّغَارَ. هَذَا الْكِتَابُ وَاحِدٌ مِنَ الْكُتُبِ الْأَرْبَعَةِ فِي سِلْسِلَةِ 'الْحَيَوَانَاتُ مِنْ حَوْلِنَا'.",
+      "authors": [
+        "Nihal Bishr"
+      ],
+      "illustrators": [
+        "Deepa Balsavar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/704670/size3/241eb27666dc624a6d0b5f5b2871e868.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/704670/size6/241eb27666dc624a6d0b5f5b2871e868.jpg"
+      }
+    },
+    {
+      "slug": "223766-aliastimae-iilaa-jasadi",
+      "title": "أَسْتَمِعُ إِلَى جَسَدِي",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "2",
+      "description": "كُلٌّ مِنَّا لَدَيْهِ جَسَدٌ رَائِعٌ، وَلَكِنْ هَلْ سَبَقَ لَكَ أَنِ اسْتَمَعْتَ إِلَى مَا يُخْبِرُكَ بِهِ جَسَدُكَ؟",
+      "authors": [
+        "Yasmeen Kafina"
+      ],
+      "illustrators": [
+        "Angie & Upesh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700895/size3/19ca6ebcfc082bc86d63cf3227d13b74.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700895/size6/19ca6ebcfc082bc86d63cf3227d13b74.jpg"
+      }
+    },
+    {
+      "slug": "252669-shay-ma-taht-sariri",
+      "title": "شَيْءٌ مَا تَحْتَ سَرِيرِي",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "2",
+      "description": "تَخْتَبِئُ أَشْيَاءُ غَرِيبَةٌ تَحْتَ سَرِيرِي أَحْيَانًا. هَلْ تُحِبُّ أَنْ تَعْرِفَ مَاذَا وَجَدْتُ اللَّيْلَةَ الْمَاضِيَةَ؟",
+      "authors": [
+        "Alyaa Alhetmi"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/704859/size3/5213e3c314261561008ed455eb6d0fe7.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/704859/size6/5213e3c314261561008ed455eb6d0fe7.jpg"
+      }
+    },
+    {
+      "slug": "238512-madha-taraa-aan",
+      "title": "مَاذَا تَرَى نادية؟",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "2",
+      "description": "تَرَى نادية الْعَدِيدَ مِنَ الْأَشْيَاءِ الْجَمِيلَةِ حَوْلَهَا، هَلْ تَرَاهَا أَنْتَ كَذَلِكَ؟",
+      "authors": [
+        "Arwa Nahia"
+      ],
+      "illustrators": [
+        "Lavanya Karthik"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/709418/size3/22151a159d215e955b9c33345d9ea352.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/709418/size6/22151a159d215e955b9c33345d9ea352.jpg"
+      }
+    },
+    {
+      "slug": "12664-aam-ka-ped",
+      "title": "आम का पेड़",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "इस नन्ही लड़की को बड़े से आम के पेड़ पर छुपने में बहुत आनंद आता है।  ज़रा सोचिये कि उसे आख़िर में कौन ढूँढ़ लाता है?  \r\n",
+      "authors": [
+        "Rajesh Khar"
+      ],
+      "illustrators": [
+        "Kavya Singh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/33304/size3/23a920a3cbb156501ad40ddc9e72c040.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/33304/size6/23a920a3cbb156501ad40ddc9e72c040.jpg"
+      }
+    },
+    {
+      "slug": "331-bheema-gadha",
+      "title": "भीमा गधा",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "भीमा की एक समस्या है। सुबह-सुबह उसकी नींद नहीं खुलती। एक नन्ही दोस्त उसकी मदद करती है। क्या आप जानना चाहेंगे कि भीमा की नींद कैसे खुली?\r\n",
+      "authors": [
+        "Kiran Kasturia"
+      ],
+      "illustrators": [
+        "Shweta Mohapatra"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/719515/size6/0c5a8a69dc7efb78dc43f43a4384daf8.jpg"
+      }
+    },
+    {
+      "slug": "370-laal-barsaati",
+      "title": "लाल बरसाती",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "मनु के पास नई बरसाती है। वह उसे पहनने के लिए मचल रहा है, लेकिन बारिश है कि आती ही नहीं है!",
+      "authors": [
+        "Arti Smit"
+      ],
+      "illustrators": [
+        "Zainab Tambawalla"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721019/size3/beedc107df0b5447c6735b02a11b27ef.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721019/size6/beedc107df0b5447c6735b02a11b27ef.jpg"
+      }
+    },
+    {
+      "slug": "16077-lalachi-chuhe-ji",
+      "title": "लालची चूहे जी",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "लालच बुरी बला है पर यह चूहे जी को कौन समझाए?\r\n",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Herminder Ohri"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/118175/size3/74a688ee10cc7264d20523334bd5c41c.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/118175/size6/74a688ee10cc7264d20523334bd5c41c.jpg"
+      }
+    },
+    {
+      "slug": "444-nanhe-madadgaar",
+      "title": "नन्हे मददगार",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "घर को रंगना है बेहद मज़ेदार! पर फाटक को कौन-सा रंग दें?\r\n",
+      "authors": [
+        "Mamta Naini"
+      ],
+      "illustrators": [
+        "Tanvi Bhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/697317/size3/fae553c96cec531f760c79641f63a924.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/697317/size6/fae553c96cec531f760c79641f63a924.jpg"
+      }
+    },
+    {
+      "slug": "33448-upar-dekho",
+      "title": "ऊपर देखो!",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "चिड़ियाँ और चमगादड़! पतंग और जहाज़! आप इस अनोखी दुनिया की कितनी खोज कर सकते हैं? तो तैयार हो जाइए, इस निराली पुस्तक के साथ कुछ निराली बातों का पता लगाने के लिए!",
+      "authors": [
+        "Arti Smit"
+      ],
+      "illustrators": [
+        "Aditi Dilip"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/714197/size3/b769676c4189b596ea7f2c7e00825ca4.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/714197/size6/b769676c4189b596ea7f2c7e00825ca4.jpg"
+      }
+    },
+    {
+      "slug": "11947-sona-ki-naak-badi-tez",
+      "title": "सोना की नाक बड़ी तेज़",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "हमारी नन्ही सोना की तो आदत है हर किसी की मदद करने की। याद है न उसने पिछली बार अपनी माँ की सहायता की थी, उससे पहले अपने बाबा की मदद की थी। आज वह चाचा के यहाँ गयी है, वही जो चुस्की बनाते हैं। चलिये देखते हैं, सोना वहाँ क्या करती है?",
+      "authors": [
+        "Vinita Krishna"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723047/size3/42dc8a8bb83bcf9b876f6c277e54cb6d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723047/size6/42dc8a8bb83bcf9b876f6c277e54cb6d.jpg"
+      }
+    },
+    {
+      "slug": "1910-didi-ka-rang-biranga-khazaana",
+      "title": "दीदी का रंग बिरंगा खज़ाना",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "कचरे के ढ़ेर से घिरे हुए बच्चे मौज मस्ती कैसे करें? लेकिन एक दिन कहीं से दीदी आईं और बच्चों के जीवन में रंग लाई।किताबें जो उनकी दोस्त हो गईं।",
+      "authors": [
+        "Rukmini Banerji"
+      ],
+      "illustrators": [
+        "Kaveri Gopalakrishnan"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721709/size3/55afba6173fec2f775fdf425b7609188.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721709/size6/55afba6173fec2f775fdf425b7609188.jpg"
+      }
+    },
+    {
+      "slug": "393-kahani-kelon-ki",
+      "title": "कहानी केलों की!",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "श्रींगेरी श्रीनिवास के खेतों में बढ़िया मीठे केले उगते थे। \r\nपर कोई भी उन्हें खाना नहीं चाहता था। \r\nइस मीठी कहानी को पढ़ कर पता लगाइये कि श्रींगेरी ने केलों का क्या किया।",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Angie & Upesh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703951/size3/f7817aa88cb268daaa68075155cd66a0.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703951/size6/f7817aa88cb268daaa68075155cd66a0.jpg"
+      }
+    },
+    {
+      "slug": "487-gulli-ka-gazab-pitara",
+      "title": "गुल्ली का ग़ज़ब पिटारा",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "गुल्ली के पास है एक ग़ज़ब का बक्सा, जिसमें से निकल कर आती हैं, तरह-तरह की चीज़ें। पर गुल्ली इन सब चीज़ों का क्या करता है? चलो, पता लगाएँ! और फिर शायद तुम भी बनाना चाहो अपना ऐसा ही ख़ास बक्सा।",
+      "authors": [
+        "Mamta Naini"
+      ],
+      "illustrators": [
+        "Anupama Ajinkya Apte"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/696949/size3/95a90e9213ad825d4119cacb0d9f24bf.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/696949/size6/95a90e9213ad825d4119cacb0d9f24bf.jpg"
+      }
+    },
+    {
+      "slug": "30063-kissa-kheer-ka",
+      "title": "किस्सा खीर का",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "3",
+      "description": "मीरा के पापा किशमिश लेने के लिये बाज़ार गये थे। घर लौटे तो पकी हुर्इ खीर ग़ायब थी। खीर किसने खार्इ?",
+      "authors": [
+        "Nirmala Shukla"
+      ],
+      "illustrators": [
+        "Kruttika Susarla"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/725166/size3/9535ca6dbe1a0b67362b66129050c97f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/725166/size6/9535ca6dbe1a0b67362b66129050c97f.jpg"
+      }
+    },
+    {
+      "slug": "48300-shookait-thookait",
+      "title": "शूकैट थूकैट",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "3",
+      "description": "कमला की नई शूकैट जिससे भी मिलती है, उस पर हमला कर देती है! दोस्त, दादा, शिक्षक, बकरियाँ... हर कोई उससे नफरत करते हैं। अब वो क्या करेंगे?",
+      "authors": [
+        "Deepa Tripathi"
+      ],
+      "illustrators": [
+        "Aindri C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/158527/size3/3980efa22d78c2250c1298435f56e840.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/158527/size6/3980efa22d78c2250c1298435f56e840.jpg"
+      }
+    },
+    {
+      "slug": "15645-aaloo-maaloo-kaaloo",
+      "title": "آلو، مالو، کالو",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "1",
+      "description": "ایک دن مالو باغیچے سے آلو لانے گیا۔ اس کام میں اس کی کس نے مدد کی؟ یقینا، کالو! پڑھئے مالو اور کالو کے بارے میں جب انہیں ایک صبح کچھ آلو ملے!",
+      "authors": [
+        "Faiyaz  Ahmed"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/703824/size3/e58cf9e6698ff1d6a72c150d34efe53e.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/703824/size6/e58cf9e6698ff1d6a72c150d34efe53e.jpg"
+      }
+    },
+    {
+      "slug": "63946-kuchh-gadbad-hai",
+      "title": "کچھ گڑ بڑ ہے",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "1",
+      "description": "امّو اسٹیج پر جانے سے پہلے اپنی لائینیں کس طرح یاد کرتی ہے۔ آپ بھی سنئے اور مسکرائے۔سب گڑبڑ ہے۔ ",
+      "authors": [
+        "Sheen Bano"
+      ],
+      "illustrators": [
+        "Sheena Deviah"
+      ],
+      "originalAuthors": [],
+      "publisher": "REHMA",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/727060/size3/c9b0c085cabd2aea8920ddfc909b90f4.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/727060/size6/c9b0c085cabd2aea8920ddfc909b90f4.jpg"
+      }
+    },
+    {
+      "slug": "15640-mera-balla-kahan-hai",
+      "title": "میرا بلّہ کہاں ہے؟",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "1",
+      "description": "کچھ چیزیں سامنے ہوتی ہیں لیکن دکھائی نہیں دیتیں۔ میرا بلّہ کہاں ہے؟ اس کہانی میں شاید اس بچّے کے ساتھ کچھ ایسا ہی ہوا۔",
+      "authors": [
+        "Pratham Books Team"
+      ],
+      "illustrators": [
+        "Rijuta Ghate"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722289/size3/c16c84713d1b61a71cddff825f43daca.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722289/size6/c16c84713d1b61a71cddff825f43daca.jpg"
+      }
+    },
+    {
+      "slug": "553882-gulli-ka-khas-baksa",
+      "title": "گُلّی کا خاص بکسہ",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "2",
+      "description": "گُلّی کے پاس ایک غضب کا بکسہ ہے۔ جس میں سے نکل آتی ہیں طرح طرح کی چیزیں۔ لیکن گُلی ان سب چیزوں کا کیا کرتا ہے؟ چلیے پتہ لگائیں۔ اور پھر شاید آپ بھی بنانا چاہو اپنا ایسا ہی خاص بکسہ۔",
+      "authors": [
+        "Sameena Abdul Kareem Shaikh"
+      ],
+      "illustrators": [
+        "Anupama Ajinkya Apte"
+      ],
+      "originalAuthors": [],
+      "publisher": "SCERT, Maharashtra",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/696949/size3/95a90e9213ad825d4119cacb0d9f24bf.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/696949/size6/95a90e9213ad825d4119cacb0d9f24bf.jpg"
+      }
+    },
+    {
+      "slug": "11963-aiman-ka-basta",
+      "title": "ایمن کا بستہ",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "2",
+      "description": "\r\nمیں پیاری سی ایمن کا ساتھی ہوں۔ ہر دم اس کے ساتھ نظر آتا ہوں۔\r\nوقت کے ساتھ ساتھ ہم دونوں بڑے ہورہے ہیں۔ میری اور ایمن کی دوستی کی یہ پیاری سی کہانی پڑھیے۔\r\n",
+      "authors": [
+        "Mazhar Ahmad"
+      ],
+      "illustrators": [
+        "211 Studio"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722842/size3/fb8bc7e117714118000e689caafd0660.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722842/size6/fb8bc7e117714118000e689caafd0660.jpg"
+      }
+    },
+    {
+      "slug": "58915-hisaab-aur-mela",
+      "title": "حساب  اور میلا",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "2",
+      "description": "لالی  اپنی پوری کلاس کےساتھ میلے گئی۔ بچوں نے حساب کیسے دوہرایا ،کیا آپ بتا سکتے ہیں؟",
+      "authors": [
+        "Sheen Bano"
+      ],
+      "illustrators": [
+        "Nirzara Verulkar"
+      ],
+      "originalAuthors": [],
+      "publisher": "REHMA",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/716368/size3/ee43a59b4f099703679c055db6a7e43e.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/716368/size6/ee43a59b4f099703679c055db6a7e43e.jpg"
+      }
+    },
+    {
+      "slug": "556519-angry-akku",
+      "title": "غصیلی اکّو",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "2",
+      "description": "اکّو کا دن کافی خراب رہا جس کی وجہ سے اُسے بہت، بہت ہی زیادہ غصّہ آیا. اس کتاب کو پڑھیے اور جانیے کہ اس نے اپنے غصّے پر کس طرح قابو پایا. اورساتھ ہی یہ معلومات بھی حاصل کریں کہ جب آپ کو بہت، بہت ہی زیادہ غصّہ آئے تو آپ کو کیا کرنا چاہیے. \r\n\r\n",
+      "authors": [
+        "Khaja Moinoddin  Shaikh "
+      ],
+      "illustrators": [
+        "Vinayak Varma"
+      ],
+      "originalAuthors": [],
+      "publisher": "SCERT, Maharashtra",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/724106/size3/155d8763546a35c51598f2685d431da9.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/724106/size6/155d8763546a35c51598f2685d431da9.jpg"
+      }
+    },
+    {
+      "slug": "304481-ammi-kab-ayengi",
+      "title": "امی کب آئیں گی ؟",
+      "language": "Urdu",
+      "langCode": "ur",
+      "level": "2",
+      "description": "روجا کی ماں صبح سویرے کام پر چلی گئی۔ انھوں نے روجا سے رات کو سونے سے پہلے آنے کا وعدہ کیا ہے۔ روجا امی کے بغیر سارا دن کیا کرے گی؟",
+      "authors": [
+        "Syed Tanveer Ahmed"
+      ],
+      "illustrators": [
+        "Alankrita Amaya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/524572/size3/86f5aa351b9a396b64694cb8b5f0a555.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/524572/size6/86f5aa351b9a396b64694cb8b5f0a555.jpg"
       }
     }
   ]
