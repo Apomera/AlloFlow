@@ -427,10 +427,18 @@ const createTTS = (deps) => {
         var _cfgTtsEarly = getAiUserConfig();
         var _provTtsEarly = (_cfgTtsEarly && _cfgTtsEarly.ttsProvider) || 'auto';
         var _provIsLocalAI = !!(_cfgTtsEarly && (_cfgTtsEarly.backend === 'ollama' || _cfgTtsEarly.backend === 'localai'));
-        var _providerHandlesTts = _provTtsEarly === 'local' || _provTtsEarly === 'browser' || _provTtsEarly === 'off' || (_provTtsEarly === 'auto' && _provIsLocalAI);
+        // 'local' does NOT block Kokoro (field-caught 2026-07-06, the last bug
+        // of the batch): the "Local TTS" setting predates the in-browser
+        // engine and pointed only at self-hosted Kokoro-FastAPI (:8880) /
+        // Edge-TTS (:5500) servers a desktop install doesn't run — picking
+        // "Local TTS" ironically skipped the REAL local voice and landed on
+        // the browser fallback. The in-browser engine is now the FIRST leg of
+        // that cascade; the provider servers stay second for setups that run them.
+        var _providerHandlesTts = _provTtsEarly === 'browser' || _provTtsEarly === 'off' || (_provTtsEarly === 'auto' && _provIsLocalAI);
         var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
+        var _localTtsChosen = _provTtsEarly === 'local' && typeof voiceName === 'string' && voiceName !== 'browser';
         var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
-        if (_kokoroPreferred || _kokoroKeyless) {
+        if (_kokoroPreferred || _localTtsChosen || _kokoroKeyless) {
             if (!_isEnglish) {
                 console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
                 _routeNote('kokoro-skip', 'non-English content: ' + _language);
@@ -596,8 +604,11 @@ const createTTS = (deps) => {
         var _botCfgTts = getAiUserConfig();
         var _botProvTts = (_botCfgTts && _botCfgTts.ttsProvider) || 'auto';
         var _botProvLocalAI = !!(_botCfgTts && (_botCfgTts.backend === 'ollama' || _botCfgTts.backend === 'localai'));
-        var _botProviderHandles = _botProvTts === 'local' || _botProvTts === 'browser' || _botProvTts === 'off' || (_botProvTts === 'auto' && _botProvLocalAI);
+        // Same as callTTS: ttsProvider 'local' PREFERS the in-browser engine
+        // (first cascade leg), never blocks it.
+        var _botProviderHandles = _botProvTts === 'browser' || _botProvTts === 'off' || (_botProvTts === 'auto' && _botProvLocalAI);
         var _botKokoroEligible = (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName))
+            || (_botProvTts === 'local' && typeof voiceName === 'string' && voiceName !== 'browser')
             || (!_isCanvasEnv && !_cloudKeyUsable() && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
         if (_botKokoroEligible) {
             const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
