@@ -1827,6 +1827,88 @@
       addToast && addToast('"' + (board.title || 'Board') + '" exported!', 'success');
     }, [addToast]);
 
+    // ── Open Board Format (.obf) export — interop with Cboard & other AAC apps ──
+    // OBF is the open standard (openboardformat.org) that Cboard (UNICEF, GPL-3)
+    // and many AAC apps import. Exporting Symbol Studio boards as .obf lets a
+    // teacher build a personalized board here (real classroom photos, the
+    // student's own vocabulary) and run it as a live speaking board in Cboard.
+    // Single-board .obf; a multi-page board exports its FIRST page (an .obz set
+    // export is a future add). Colors → rgb(); images kept as their data:/URL.
+    var exportBoardOBF = useCallback(function (board) {
+      var _hexToRgb = function (hex) {
+        if (!hex) return null;
+        var h = String(hex).trim().replace(/^#/, '');
+        if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+        if (!/^[0-9a-f]{6}$/i.test(h)) return (/^rgba?\(/i.test(hex) ? hex : null);
+        var n = parseInt(h, 16);
+        return 'rgb(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ')';
+      };
+      var page = (board.pages && board.pages.length) ? board.pages[0] : { title: board.title, words: board.words || [], cols: board.cols || 4 };
+      var cells = (page.words || []).filter(function (w) { return w && (w.label || w.image); });
+      if (!cells.length) { addToast && addToast('This board has no symbols to export yet.', 'info'); return; }
+      var cols = page.cols || board.cols || 4;
+      var rows = Math.max(1, Math.ceil(cells.length / cols));
+      var buttons = [];
+      var images = [];
+      var order = [];
+      var idx = 0;
+      for (var r = 0; r < rows; r++) {
+        var rowArr = [];
+        for (var c = 0; c < cols; c++) {
+          if (idx < cells.length) {
+            var w = cells[idx];
+            var bid = 'btn_' + idx;
+            var label = w.translatedLabel || w.label || '';
+            var btn = {
+              id: bid,
+              label: label,
+              vocalization: w.label || label,
+              border_color: _hexToRgb(CAT_BORDER[w.category]) || 'rgb(229, 231, 235)',
+              background_color: _hexToRgb(CAT_COLORS[w.category]) || 'rgb(249, 250, 251)'
+            };
+            var img = safeImgUrl(w.image);
+            if (img) {
+              var iid = 'img_' + idx;
+              var ctMatch = /^data:([^;,]+)[;,]/.exec(img);
+              var imgObj = { id: iid, width: 300, height: 300, content_type: ctMatch ? ctMatch[1] : 'image/png' };
+              if (/^data:/i.test(img)) imgObj.data = img; else imgObj.url = img;
+              images.push(imgObj);
+              btn.image_id = iid;
+            }
+            buttons.push(btn);
+            rowArr.push(bid);
+            idx++;
+          } else {
+            rowArr.push(null);
+          }
+        }
+        order.push(rowArr);
+      }
+      var obf = {
+        format: 'open-board-0.1',
+        id: 'alloflow_' + Date.now().toString(36),
+        locale: (boardLang || 'en'),
+        name: board.title || 'AlloFlow Board',
+        description_html: 'Created with AlloFlow Symbol Studio.',
+        buttons: buttons,
+        grid: { rows: rows, columns: cols, order: order },
+        images: images,
+        sounds: [],
+        license: { type: 'CC By' }
+      };
+      var json = JSON.stringify(obf, null, 2);
+      var blob = new Blob([json], { type: 'application/obf' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      var safeName = (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = safeName + '.obf';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      var multi = board.pages && board.pages.length > 1;
+      addToast && addToast('Exported "' + (board.title || 'Board') + '" as Open Board Format (.obf)' + (multi ? ' — first page only; import into Cboard or another AAC app.' : ' — import into Cboard or another AAC app.'), 'success');
+    }, [addToast, boardLang]);
+
     // ── HTML board export (WCAG 2.1 AA accessible) ─────────────────────────
     var exportBoardHTML = useCallback(function (board) {
       var pages = board.pages && board.pages.length ? board.pages : [{ title: board.title, words: board.words || [], cols: board.cols || 4 }];
@@ -6810,6 +6892,7 @@
                     }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': '⬇️', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
                     b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': '🌐', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
                       onClick: function () {
