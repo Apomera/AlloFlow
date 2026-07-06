@@ -12365,25 +12365,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [isDictationMode]);
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    // No early return when SR is missing (2026-07-06): Electron ships NO
+    // working SpeechRecognition (needs Google's speech service), which made
+    // dictation silently DEAD on desktop. A dummy keeps the handler wiring
+    // harmless; the local-whisper facade below carries desktop dictation.
     let recognition;
     try {
-        recognition = new SpeechRecognition();
+        recognition = SpeechRecognition ? new SpeechRecognition() : null;
     } catch (e) {
         warnLog("SpeechRecognition constructor failed", e);
-        return;
+        recognition = null;
     }
+    if (!recognition) recognition = { start() { throw new Error('SpeechRecognition unavailable'); }, stop() {}, abort() {} };
     recognition.continuous = true;
     recognition.interimResults = false;
     recognition.lang = getSpeechLangCode(currentUiLanguage);
-    recognition.onresult = (event) => {
-        if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current) return;
-        if (Date.now() - lastAudioEndTimeRef.current < 1000) return;
-        const resultsLength = event.results?.length;
-        if (!resultsLength) return;
-        const lastResult = event.results[resultsLength - 1];
-        if (!lastResult || !lastResult[0]) return;
-        const transcript = lastResult[0].transcript;
+    // Shared delivery: SR results and local-whisper transcripts land through
+    // the SAME insertion logic (focused input / UDL chat / honest toast).
+    const _deliverDictationTranscript = (transcript) => {
         if (isConversationModeRef.current) {
             setUdlInput(prev => {
                 const spacer = prev.length > 0 && !prev.endsWith(' ') ? ' ' : '';
@@ -12423,6 +12422,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                 addToastRef.current(t('toasts.click_textbox'), "info");
             }
         }
+    };
+    recognition.onresult = (event) => { // slim: guards here, delivery shared above
+        if (isBotSpeakingRef.current || isPlayingRef.current || isSystemAudioActiveRef.current) return;
+        if (Date.now() - lastAudioEndTimeRef.current < 1000) return;
+        const resultsLength = event.results?.length;
+        if (!resultsLength) return;
+        const lastResult = event.results[resultsLength - 1];
+        if (!lastResult || !lastResult[0]) return;
+        _deliverDictationTranscript(lastResult[0].transcript);
     };
     recognition.onerror = (event) => {
         if (event.error === 'no-speech') return;
@@ -12466,7 +12474,72 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
             }, 200);
         }
     };
-    recognitionRef.current = recognition;
+    // ── Local-first dictation (2026-07-06): when the managed whisper server
+    // is ON, record on-device and transcribe via the same-origin proxy when
+    // dictation toggles OFF (push-to-talk semantics — no fake interim text).
+    // Browser SR stays the fallback where it exists; on desktop Electron it
+    // never did, so this is the first working dictation there. The 12
+    // remaining module surfaces migrate with this exact pattern — see
+    // docs/NEXT_STEPS_HANDOFF_2026-07-06.md ("Dictation unification").
+    const _localDict = { rec: null, stream: null };
+    const _localDictStop = (discard) => {
+        try { if (_localDict.rec && _localDict.rec.state !== 'inactive') { if (discard) _localDict.rec.ondataavailable = null; _localDict.rec.stop(); } } catch (_) {}
+        try { if (discard && _localDict.stream) _localDict.stream.getTracks().forEach(tr => tr.stop()); } catch (_) {}
+        _localDict.rec = null; _localDict.stream = null;
+    };
+    const _localDictStart = async () => {
+        let st = null;
+        try { const r = await fetch('/api/asr/status'); if (r.ok) st = await r.json(); } catch (_) {}
+        if (!(st && st.running)) return false;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const rec = new MediaRecorder(stream);
+            const chunks = [];
+            rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+            rec.onstop = async () => {
+                try {
+                    stream.getTracks().forEach(tr => tr.stop());
+                    if (!chunks.length) return;
+                    const form = new FormData();
+                    form.append('file', new Blob(chunks, { type: rec.mimeType || 'audio/webm' }), 'dictation.webm');
+                    form.append('response_format', 'json');
+                    form.append('temperature', '0');
+                    const res = await fetch(st.proxyUrl || '/api/asr/transcribe', { method: 'POST', body: form });
+                    if (!res.ok) { warnLog('[Dictation] local transcription HTTP ' + res.status); return; }
+                    const data = await res.json();
+                    // whisper emits bracket tokens ([BLANK_AUDIO], [MUSIC]) — never dictate those.
+                    const text = String((data && (data.text || data.transcription)) || '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
+                    if (text) _deliverDictationTranscript(text);
+                    else if (addToastRef.current) addToastRef.current(t('toasts.dictation_no_speech') || 'No speech detected in that recording.', 'info');
+                } catch (e) { warnLog('[Dictation] local transcription failed:', e?.message); }
+            };
+            rec.start();
+            _localDict.rec = rec; _localDict.stream = stream;
+            if (addToastRef.current) addToastRef.current(t('toasts.dictation_local_on') || '🎙️ Listening on this device — your words appear when you turn dictation off.', 'info');
+            return true;
+        } catch (e) {
+            warnLog('[Dictation] local start failed:', e?.message);
+            return false;
+        }
+    };
+    // Facade keeps the start/stop contract the toggle effect already uses.
+    recognitionRef.current = {
+        start: () => {
+            _localDictStart().then((ok) => {
+                if (!ok) {
+                    try { lastDictationStartRef.current = Date.now(); recognition.start(); }
+                    catch (e) {
+                        warnLog('[Dictation] no speech recognition available:', e?.message);
+                        isDictationActiveRef.current = false;
+                        setIsDictationMode(false);
+                        if (addToastRef.current) addToastRef.current(t('toasts.dictation_unavailable') || 'Speech-to-text is not available — turn it on from the desktop Setup Health card.', 'info');
+                    }
+                }
+            });
+        },
+        stop: () => { if (_localDict.rec) { _localDictStop(false); } else { try { recognition.stop(); } catch (_) {} } },
+        abort: () => { if (_localDict.rec) { _localDictStop(true); } else { try { recognition.abort(); } catch (_) {} } }
+    };
     return () => {
         if (recognitionRef.current) recognitionRef.current.abort();
     };
@@ -21708,7 +21781,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // Voice loop (opt-in only; singleton lives on window so an old
       // session can never leave a hidden live mic)
       voiceActive: alloVoiceActive,
-      voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+      voiceAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition) || _isDesktopBundledApp,
       setVoiceActive: setAlloVoiceActive,
       voiceLang: 'en-US',
       startVoiceLoop: () => {
