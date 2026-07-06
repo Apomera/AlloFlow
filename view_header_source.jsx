@@ -409,7 +409,7 @@ function HeaderBar(props) {
                                                       setSelectedVoice(voice);
                                                       if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
                                                         window.__kokoroTTSDownloading = true;
-                                                        addToast('Downloading Kokoro voice model (~40MB)...', 'info');
+                                                        addToast('Downloading Kokoro voice model (~88MB, one time)...', 'info');
                                                         window.__loadKokoroTTS().then(ok => {
                                                           window.__kokoroTTSDownloading = false;
                                                           if (ok) addToast('Kokoro voice ready!', 'success');
@@ -427,7 +427,7 @@ function HeaderBar(props) {
                                                                     <option key={v.id} value={v.id}>{v.label || v.id}</option>
                                                                 ))}
                                                             </optgroup>
-                                                            <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (tap to download ~40MB)"}>
+                                                            <optgroup label={window._kokoroTTS?.ready ? "🎤 Kokoro (Ready)" : "🎤 Kokoro (tap to download ~88MB)"}>
                                                                 {KOKORO_VOICES.map(v => (
                                                                     <option key={v.id} value={v.id}>{v.label}{!window._kokoroTTS?.ready ? ' ⬇' : ''}</option>
                                                                 ))}
@@ -460,33 +460,18 @@ function HeaderBar(props) {
                                                         ))
                                                     )}
                                                 </select>
-                                                {/* ── Kokoro Quality Toggle (only visible for Kokoro voices) ── */}
+                                                {/* ── Kokoro model info (2026-07-06): the old Fast(q4)/High(q8)
+                                                    toggle was retired — the q4 file is really ~291MB (not 43MB),
+                                                    sounds worse, and benched no faster on wasm CPU. One honest
+                                                    tier now: q8, ~88MB, downloaded once + cached on device. ── */}
                                                 {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && window._kokoroTTS && (
                                                     <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600">
-                                                        <label className={`text-[11px] uppercase font-bold ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} block mb-1.5`}>{t('header.voice_quality_label') || 'Voice Quality'}</label>
-                                                        <div className="flex gap-1">
-                                                            <button
-                                                                onClick={() => { window._kokoroTTS.setQuality('fast'); }}
-                                                                className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
-                                                                    !window._kokoroTTS.quality || window._kokoroTTS.quality === 'fast'
-                                                                        ? 'bg-indigo-500 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300'
-                                                                }`}
-                                                            >
-                                                                ⚡ Fast (~43MB)
-                                                            </button>
-                                                            <button
-                                                                onClick={() => { window._kokoroTTS.setQuality('high'); }}
-                                                                className={`flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${
-                                                                    window._kokoroTTS.quality === 'high'
-                                                                        ? 'bg-emerald-700 text-white shadow-sm'
-                                                                        : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300'
-                                                                }`}
-                                                            >
-                                                                🎵 High Quality (~86MB)
-                                                            </button>
-                                                        </div>
-                                                        <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-1`}>{t('header.voice_quality_desc') || 'Fast uses a smaller model for quicker response. High Quality is richer but slower.'}</p>
+                                                        <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} m-0`}>
+                                                            <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
+                                                            {window._kokoroTTS.ready
+                                                                ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
+                                                                : (t('header.voice_model_preparing') || 'Kokoro (~88MB) — preparing… a temporary voice reads aloud until it finishes.')}
+                                                        </p>
                                                     </div>
                                                 )}
                                                 {/* ── Browser-TTS Fallback Toggle ──

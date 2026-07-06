@@ -434,7 +434,7 @@ function HeaderBar(props) {
         setSelectedVoice(voice);
         if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
           window.__kokoroTTSDownloading = true;
-          addToast("Downloading Kokoro voice model (~40MB)...", "info");
+          addToast("Downloading Kokoro voice model (~88MB, one time)...", "info");
           window.__loadKokoroTTS().then((ok) => {
             window.__kokoroTTSDownloading = false;
             if (ok) addToast("Kokoro voice ready!", "success");
@@ -445,26 +445,8 @@ function HeaderBar(props) {
       "data-help-key": "header_settings_voice_select",
       className: "w-full text-xs p-2 rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
     },
-    _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 Gemini TTS (Cloud)" }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (tap to download ~40MB)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, !window._kokoroTTS?.ready ? " \u2B07" : ""))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F310} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, isDesktopBundledApp && /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (loading/local)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F507} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))
-  ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${theme === "light" ? "text-slate-600" : "text-slate-300"} block mb-1.5` }, t("header.voice_quality_label") || "Voice Quality"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        window._kokoroTTS.setQuality("fast");
-      },
-      className: `flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${!window._kokoroTTS.quality || window._kokoroTTS.quality === "fast" ? "bg-indigo-500 text-white shadow-sm" : "bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300"}`
-    },
-    "\u26A1 Fast (~43MB)"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        window._kokoroTTS.setQuality("high");
-      },
-      className: `flex-1 text-[11px] font-bold px-2 py-1.5 rounded-md transition-all ${window._kokoroTTS.quality === "high" ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-300"}`
-    },
-    "\u{1F3B5} High Quality (~86MB)"
-  )), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mt-1` }, t("header.voice_quality_desc") || "Fast uses a smaller model for quicker response. High Quality is richer but slower.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 Gemini TTS (Cloud)" }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (tap to download ~88MB)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, !window._kokoroTTS?.ready ? " \u2B07" : ""))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F310} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, isDesktopBundledApp && /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (loading/local)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F507} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))
+  ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} m-0` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",

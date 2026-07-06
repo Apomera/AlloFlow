@@ -35,13 +35,22 @@
 
     // ─── Constants ──────────────────────────────────────────────────────
     const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
-    let _currentDtype = 'q4';   // Default to q4 for faster inference; user can toggle to q8
+    // q8 (model_quantized) is the ONLY sane wasm-CPU choice — measured
+    // 2026-07-06 (repo file sizes + same-machine bench, first cold run):
+    //   q4  = 291 MiB download (the old "~43MB" label was fiction — that
+    //         export only quantizes MatMuls, everything else ships fp32),
+    //         WORSE audio, and NOT faster (TTFA 88s vs 58s under load).
+    //   q8  = 88 MiB, better audio, equal-or-faster inference.
+    // q4 is retired: bigger AND slower AND worse. setQuality() kept for API
+    // compat but both modes resolve to q8.
+    let _currentDtype = 'q8';
     const CDN_BASE = 'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm';
     const CACHE_MAX = 100;
     const CHUNK_THRESHOLD = 120; // characters — chunk earlier for faster first-audio
 
-    // Model sizes for progress display
-    const DTYPE_SIZES = { 'q4': '~43MB', 'q4f16': '~54MB', 'q8': '~86MB', 'fp16': '~164MB', 'fp32': '~326MB' };
+    // Model sizes for progress display — REAL Hugging Face content-lengths
+    // (2026-07-06), not aspirational: q4 is genuinely ~291MB.
+    const DTYPE_SIZES = { 'q4': '~291MB', 'q4f16': '~147MB', 'q8': '~88MB', 'fp16': '~155MB', 'fp32': '~310MB' };
 
     // Available Kokoro voices (id → label mapping for UI)
     // Must match voices actually supported by the Kokoro CDN worker.
@@ -189,7 +198,7 @@
                     self.postMessage({ type: 'progress', stage: 'Loading Kokoro TTS library', pct: 0.05 });
                     const mod = await import(data.cdn);
                     const KokoroTTS = mod.KokoroTTS;
-                    const sizeLabel = data.sizeLabel || '~43MB';
+                    const sizeLabel = data.sizeLabel || '~88MB';
                     self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + sizeLabel + ', cached after first load)', pct: 0.1 });
                     _tts = await KokoroTTS.from_pretrained(data.modelId, {
                         dtype: data.dtype,
@@ -198,7 +207,7 @@
                             if (typeof p.progress === 'number') {
                                 self.postMessage({ type: 'progress', stage: 'Downloading voice model', pct: 0.1 + (p.progress / 100) * 0.85 });
                             } else if (p.status === 'initiate') {
-                                self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + (data.sizeLabel || '~43MB') + ')', pct: 0.1 });
+                                self.postMessage({ type: 'progress', stage: 'Downloading voice model (' + (data.sizeLabel || '~88MB') + ')', pct: 0.1 });
                             } else if (p.status === 'done') {
                                 self.postMessage({ type: 'progress', stage: 'Loading voice model into memory', pct: 0.95 });
                             }
@@ -345,6 +354,7 @@
                     console.log('[Kokoro TTS] ✅ Worker initialized (dtype: ' + _currentDtype + ')');
                     const p = _pendingMessages.get('__init__');
                     if (p) { p.resolve(true); _pendingMessages.delete('__init__'); }
+                    _purgeStaleModelCache();
                     break;
                 }
 
@@ -446,6 +456,31 @@
         });
     }
 
+    // ─── Stale-model cache reclaim ──────────────────────────────────────
+    // Installs that booted before the q8 default carry the 291MB q4 blob in
+    // the Cache API (per origin!). After a SUCCESSFUL init, delete cached
+    // Kokoro model files for every dtype except the active one. Never runs
+    // on failure, so a broken init can't strand the user with no model at
+    // all. Fire-and-forget; transformers.js uses the 'transformers-cache'.
+    const DTYPE_FILES = { 'fp32': 'model.onnx', 'fp16': 'model_fp16.onnx', 'q8': 'model_quantized.onnx', 'q4': 'model_q4.onnx', 'q4f16': 'model_q4f16.onnx' };
+    function _purgeStaleModelCache() {
+        try {
+            if (typeof caches === 'undefined' || !caches.open) return;
+            const keep = DTYPE_FILES[_currentDtype] || 'model_quantized.onnx';
+            caches.open('transformers-cache').then(async (cache) => {
+                const entries = await cache.keys();
+                let freed = 0;
+                for (const req of entries) {
+                    const url = String(req.url || '');
+                    if (url.indexOf('Kokoro-82M') < 0 || url.indexOf('/onnx/model') < 0) continue;
+                    if (url.indexOf('/' + keep) >= 0) continue;
+                    try { if (await cache.delete(req)) freed++; } catch (_) {}
+                }
+                if (freed) console.log('[Kokoro TTS] 🧹 Reclaimed ' + freed + ' stale model file(s) from cache (kept ' + keep + ')');
+            }).catch(() => {});
+        } catch (_) {}
+    }
+
     // ─── Initialize ─────────────────────────────────────────────────────
     async function init(onProgress) {
         if (onProgress) _onProgress = onProgress; // Always update callback before early returns
@@ -465,7 +500,7 @@
                     modelId: MODEL_ID,
                     dtype: _currentDtype,
                     cdn: CDN_BASE,
-                    sizeLabel: DTYPE_SIZES[_currentDtype] || '~43MB',
+                    sizeLabel: DTYPE_SIZES[_currentDtype] || '~88MB',
                 });
 
                 await initDone;
@@ -632,11 +667,13 @@
         return _streamQueue.length > 0 || _streamActive;
     }
 
-    // ─── Quality Toggle ─────────────────────────────────────────────────
-    // Switches between q4 (fast, smaller) and q8 (high quality, larger).
-    // Requires re-init — model is re-downloaded (but cached by browser).
+    // ─── Quality Toggle (API compat) ────────────────────────────────────
+    // q4 retired 2026-07-06: its file is 291MB (3.3x q8), audio is worse,
+    // and same-machine benching showed no speed win on wasm CPU. Every mode
+    // resolves to q8 so old callers keep working without re-downloading
+    // anything they shouldn't.
     async function setQuality(mode, onProgress) {
-        const newDtype = mode === 'high' ? 'q8' : 'q4';
+        const newDtype = 'q8';
         if (newDtype === _currentDtype && _ready) {
             console.log('[Kokoro TTS] Quality already set to', mode);
             return _currentDtype;
