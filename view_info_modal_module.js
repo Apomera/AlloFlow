@@ -32,11 +32,11 @@ const OSS_CREDITS = [
       { name: "Tesseract.js", use: "OCR of scanned handouts", license: "Apache-2.0", url: "https://tesseract.projectnaptha.com" },
       {
         name: "veraPDF",
-        use: "PDF/UA & PDF/A conformance checks",
+        use: "PDF/UA-1 conformance checks",
         license: "GPLv3+ / MPLv2",
         url: "https://verapdf.org",
         featured: 8,
-        blurb: "Checks every accessible PDF we build against the PDF/UA and PDF/A standards \u2014 the same conformance engine trusted by national libraries and archives.",
+        blurb: "Independently validates every accessible PDF we build against the PDF/UA-1 (ISO 14289-1) standard \u2014 the same conformance engine trusted by national libraries and archives.",
         site: "https://verapdf.org",
         repo: "https://github.com/veraPDF/veraPDF-library"
       },
@@ -135,7 +135,7 @@ const OSS_CREDITS = [
         url: "https://github.com/pfalstad/circuitjs1",
         featured: 4,
         owner: "Paul Falstad & Iain Sharp",
-        blurb: "The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict\u2013Observe\u2013Explain challenges.",
+        blurb: "The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict\u2013Explore\u2013Explain challenges.",
         site: "https://www.falstad.com/circuit/",
         repo: "https://github.com/pfalstad/circuitjs1"
       },
@@ -179,7 +179,7 @@ const OSS_CREDITS = [
         license: "BSD-3-Clause",
         url: "https://openseadragon.github.io",
         featured: 5,
-        blurb: "Drives the deep-zoom Zoom Gallery, letting students pan and magnify gigapixel NASA and Smithsonian images down to the finest detail.",
+        blurb: "Drives the Zoom Gallery, letting students pan and magnify high-resolution NASA and Smithsonian images \u2014 including true deep-zoom on the tiled museum scans.",
         site: "https://openseadragon.github.io",
         repo: "https://github.com/openseadragon/openseadragon"
       },
@@ -221,7 +221,7 @@ const OSS_CREDITS = [
         license: "Apache-2.0",
         url: "https://github.com/hexgrad/kokoro",
         featured: 11,
-        blurb: "The primary neural text-to-speech voice \u2014 natural narration that runs right in the browser, with no cloud round-trip.",
+        blurb: "The primary on-device neural text-to-speech voice \u2014 natural narration that runs right in the browser with no cloud round-trip, and the offline fallback in the School Box.",
         repo: "https://github.com/hexgrad/kokoro"
       },
       {
@@ -317,9 +317,89 @@ function OpenSourceTab({ t }) {
     item.name
   ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014 ", item.use, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-slate-500" }, item.license))))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.oss_credits_footer") || "AI features also use Google\u2019s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know."));
 }
+const ATLAS_DOMAINS = [
+  {
+    icon: "\u{1F4C4}",
+    name: "Documents & Literacy",
+    blurb: "Turn any handout into leveled, translated, read-aloud, accessible learning.",
+    tools: ["Leveled Texts", "Immersive Reader", "Side-by-side Translation", "Reading Library", "Reading Fluency", "Vocabulary Games", "Accessible PDF export"]
+  },
+  {
+    icon: "\u{1F522}",
+    name: "Math",
+    blurb: "Manipulatives and solvers from number sense through calculus.",
+    tools: ["Fraction Lab", "Algebra Solver", "Geometry Sandbox", "3D Volume Explorer", "Calculus Visualizer", "Graphing Calculator", "Function Grapher", "Probability", "Statistics Lab", "Unit Converter"]
+  },
+  {
+    icon: "\u{1F9EC}",
+    name: "Life & Earth Science",
+    blurb: "Explore cells, genetics, the brain, ecosystems, and the changing Earth.",
+    tools: ["Cell Simulator", "DNA Lab", "Brain Atlas", "Human Anatomy", "Dissection Lab", "Punnett Square", "Microbiology Lab", "Ecosystem", "Evolution Lab", "Dino Lab", "Plate Tectonics", "Rock Cycle", "Water Cycle", "Climate Explorer", "Geology Explorer"]
+  },
+  {
+    icon: "\u{1F30C}",
+    name: "Space & Physics",
+    blurb: "From the solar system to circuits, optics, and waves.",
+    tools: ["Solar System", "Galaxy Explorer", "Universe Timelapse", "Moon Mission", "Night Sky", "Wave Simulator", "Optics Lab", "Circuit Builder", "Physics Simulator", "Semiconductor Lab"]
+  },
+  {
+    icon: "\u2697\uFE0F",
+    name: "Chemistry",
+    blurb: "Build molecules, balance equations, and run virtual titrations.",
+    tools: ["Molecule Builder", "Titration Lab", "Equation Balancer"]
+  },
+  {
+    icon: "\u{1F4BB}",
+    name: "Computer Science & Technology",
+    blurb: "Write and run code, build apps, and explore digital safety.",
+    tools: ["Coding Playground", "AppLab (AI App Generator)", "Cellular Automaton Lab", "Logic Lab", "Cyber Defense Lab", "Digital Accessibility Lab", "Access Lens"]
+  },
+  {
+    icon: "\u{1F3A8}",
+    name: "Arts, Music & Expression",
+    blurb: "Design, compose, perform, and tell stories.",
+    tools: ["Symbol Studio", "Music Synthesizer", "Art & Design Studio", "Architecture Studio", "Oratory & Speech Lab", "Voice & Singing Lab", "Story Forge", "Memory Palace"]
+  },
+  {
+    icon: "\u{1F6E0}\uFE0F",
+    name: "Life Skills & Careers",
+    blurb: "Hands-on simulations for real-world and career-technical skills.",
+    tools: ["Life Skills Lab", "Driver's Ed", "BikeLab", "Auto Repair Shop", "WeldLab", "Kitchen Lab", "NutritionLab", "Typing Practice", "First Response Lab", "Bridge Engineering Lab"]
+  },
+  {
+    icon: "\u{1F30D}",
+    name: "Social Studies & Strategy",
+    blurb: "Geography, economics, behavior, world-building, and strategy games.",
+    tools: ["Geography Quiz", "Economics Lab", "Behavior Shaping Lab", "WriteCraft", "Arc City", "Kepler Colony", "Game Studio"]
+  },
+  {
+    icon: "\u{1F52C}",
+    name: "Labs & Shelves",
+    blurb: "Best-in-class open-source tools wrapped with an AI coach \u2014 see the Open Source tab for credits.",
+    tools: ["Data Lab (CODAP)", "Sim Shelf (PhET)", "Circuit Shelf", "Molecule Shelf (Mol*)", "Zoom Gallery", "Timeline Studio", "Lumen research canvas"]
+  }
+];
+function AtlasCard({ domain }) {
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl leading-none", "aria-hidden": "true" }, domain.icon), /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm" }, domain.name)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-3" }, domain.blurb), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, domain.tools.map((tool) => /* @__PURE__ */ React.createElement("span", { key: tool, className: "text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5" }, tool))));
+}
+function AtlasTab({ t }) {
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-5 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5FA}\uFE0F"), t("about.atlas_title") || "The AlloFlow Atlas"), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("about.atlas_intro") || "A map of everything inside AlloFlow, grouped by subject. Open the tool menu or the STEM Lab to launch any of these \u2014 this page is just to help you see the whole landscape at a glance.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" }, ATLAS_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement(AtlasCard, { key: domain.name, domain }))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.atlas_footer") || "New tools ship regularly \u2014 this map highlights the main ones in each area rather than listing every single tool."));
+}
+function PrivacyTab({ t }) {
+  const noop = () => null;
+  const ShieldCheck = window.ShieldCheck || noop;
+  const Wifi = window.Wifi || noop;
+  const Cloud = window.Cloud || noop;
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-4 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 18 }), t("about.privacy_title") || "Privacy & student data"), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("about.privacy_intro") || "AlloFlow is built to support FERPA-conscious classrooms. Here is where data goes so your school can make its own determination.")), /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50/60 p-4 rounded-xl border border-emerald-100" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: "text-emerald-600" }), " Stays on your device by default"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Student work \u2014 documents, saved activities, and progress \u2014 is stored locally on your device (in your browser), not on an AlloFlow server. Two features are the exception, and both are opt-in: a teacher can turn on ", /* @__PURE__ */ React.createElement("strong", null, "cloud sync"), " to back up their own history to Google Firebase, and ", /* @__PURE__ */ React.createElement("strong", null, "live class sessions"), " sync session state to Firebase while a session is running. No AlloFlow account or student login is required to use the tools.")), /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50/60 p-4 rounded-xl border border-emerald-100" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 16, className: "text-emerald-600" }), " Fully on-device: the School Box"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "The offline ", /* @__PURE__ */ React.createElement("strong", null, "School Box"), " desktop app runs text-to-speech, speech-to-text, and its AI model entirely on the machine \u2014 so nothing has to leave the building. (The models download once during setup, then work offline.)")), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50/60 p-4 rounded-xl border border-amber-100" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement(Cloud, { size: 16, className: "text-amber-600" }), " When you use online AI: Google's Gemini"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-3" }, "AlloFlow has no AI server of its own. When you use an online AI feature (leveling, translation, tutors, or image/audio analysis), the request goes to ", /* @__PURE__ */ React.createElement("strong", null, "Google's Gemini"), " to generate the result. AI runs only when you choose it \u2014 never silently \u2014 and what's sent is the relevant text, plus an image (e.g. a scanned page) or a short audio clip for a few features. ", /* @__PURE__ */ React.createElement("strong", null, "How that data is governed depends on how you're running AlloFlow:")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/70 rounded-lg border border-amber-100 p-3 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-800 mb-1" }, "Inside Gemini Canvas (the usual way)"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-1.5" }, "Google's Canvas environment supplies the key automatically \u2014 you never enter one \u2014 and the request runs under your signed-in Google account, so the data is governed by ", /* @__PURE__ */ React.createElement("strong", null, "your account type"), ":"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-600 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, "A ", /* @__PURE__ */ React.createElement("strong", null, "Google Workspace for Education"), " account whose institution has enabled Gemini as a core service (under its Google Workspace terms / DPA): the Gemini app \u2014 Canvas included \u2014 carries enterprise protections. Prompts and files ", /* @__PURE__ */ React.createElement("strong", null, "aren't used to train Google's models and aren't reviewed by humans"), ", and Google acts as a FERPA \u201CSchool Official.\u201D Confirm your edition and coverage with your Workspace admin.")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, "A ", /* @__PURE__ */ React.createElement("strong", null, "personal"), " Google account: consumer Gemini terms apply and data may be retained or reviewed per those terms \u2014 ", /* @__PURE__ */ React.createElement("strong", null, "not appropriate for student data"), ".")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white/70 rounded-lg border border-amber-100 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-slate-800 mb-1" }, "Self-hosted web app or the Desktop School Box (your own key)"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-1.5" }, "The Desktop School Box runs AI on-device by default. If instead you add your own Gemini API key for cloud features (also how a self-hosted web copy works), the data is governed by the ", /* @__PURE__ */ React.createElement("strong", null, "key's tier"), ":"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-600 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 font-bold shrink-0" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, "A ", /* @__PURE__ */ React.createElement("strong", null, "paid"), " key (billed Google Cloud project): prompts and responses are ", /* @__PURE__ */ React.createElement("strong", null, "not"), " used to improve Google's products; enterprise protections, with optional zero-data-retention.")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold shrink-0" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, "A ", /* @__PURE__ */ React.createElement("strong", null, "free / unpaid"), " key: Google may use the data to improve its products and human reviewers may read it; its terms say don't submit personal info \u2014 ", /* @__PURE__ */ React.createElement("strong", null, "not appropriate for student data"), ".")))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mt-2" }, /* @__PURE__ */ React.createElement("strong", null, "Either way, avoid typing student names or identifying details into prompts you don't need to."))), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-xl border border-indigo-100" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2705"), " Before using online AI with student data, check with your IT / district"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-700 list-none mb-2.5" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "1."), /* @__PURE__ */ React.createElement("span", null, "Have staff sign in with ", /* @__PURE__ */ React.createElement("strong", null, "Google Workspace for Education"), " accounts \u2014 not personal Google accounts \u2014 when using AI in Canvas.")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "2."), /* @__PURE__ */ React.createElement("span", null, "Confirm your district has ", /* @__PURE__ */ React.createElement("strong", null, "enabled Gemini as a core service"), " and accepted the Google Workspace terms / ", /* @__PURE__ */ React.createElement("strong", null, "DPA"), " that cover it (your Workspace admin can verify Canvas is included).")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "3."), /* @__PURE__ */ React.createElement("span", null, "For the self-hosted web or Desktop version, use a ", /* @__PURE__ */ React.createElement("strong", null, "paid, billed Gemini API key"), " under that agreement \u2014 not a personal free-tier key."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium" }, /* @__PURE__ */ React.createElement("a", { href: "https://ai.google.dev/gemini-api/terms", target: "_blank", rel: "noopener noreferrer", className: "text-indigo-600 hover:text-indigo-800 underline" }, "Gemini API terms & data use \u2197"), /* @__PURE__ */ React.createElement("a", { href: "https://cloud.google.com/security/compliance/ferpa", target: "_blank", rel: "noopener noreferrer", className: "text-indigo-600 hover:text-indigo-800 underline" }, "Google Cloud & FERPA \u2197"), /* @__PURE__ */ React.createElement("a", { href: "https://edu.google.com/intl/ALL_us/ai/gemini-for-education/", target: "_blank", rel: "noopener noreferrer", className: "text-indigo-600 hover:text-indigo-800 underline" }, "Gemini for Education \u2197"))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-4 rounded-xl border border-slate-200" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm mb-1.5" }, "Our commitments"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5 text-xs text-slate-700 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "AlloFlow itself doesn't sell data, show ads, or build advertising profiles, and adds no analytics or tracking scripts.")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "No AlloFlow account or student login is required to use the tools.")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-500 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "For fully in-building data handling, use the offline School Box.")))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.privacy_footer") || "This is a plain-language summary, not legal advice, and does not describe Google\u2019s services on Google\u2019s behalf. Your district remains responsible for its own FERPA determination and any agreements with Google. Questions? Get in touch."));
+}
+function AccessibilityNote({ t }) {
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 p-4 rounded-xl border border-teal-100 mt-4" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), t("about.a11y_title") || "Accessibility"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, t("about.a11y_intro") || "Accessibility isn\u2019t a feature here \u2014 it\u2019s the whole point. AlloFlow is designed toward WCAG 2.1 AA (a target, not a certification). We run automated accessibility checks with axe-core on the interface, and axe-core plus IBM Equal Access on the documents we generate, then independently validate the exported PDFs against PDF/UA-1 (ISO 14289-1) with veraPDF."), /* @__PURE__ */ React.createElement("ul", { className: "grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "Dyslexia-friendly & low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "Text-to-speech and read-aloud throughout")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "Keyboard navigation and screen-reader labels")), /* @__PURE__ */ React.createElement("li", { className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-teal-600 font-bold shrink-0" }, "\u2713"), /* @__PURE__ */ React.createElement("span", null, "Braille (.brf) export \u2014 Grade 1, with contracted UEB Grade 2 where available \u2014 plus tagged PDF/UA export"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed mt-2" }, t("about.a11y_footer") || "Found a barrier? Tell us \u2014 accessibility bugs jump the queue."));
+}
 function InfoModal({
   handleSetInfoModalTabToAbout,
+  handleSetInfoModalTabToAtlas,
   handleSetInfoModalTabToFeatures,
+  handleSetInfoModalTabToPrivacy,
   handleSetInfoModalTabToOpenSource,
   handleSetShowInfoModalToFalse,
   infoModalTab,
@@ -388,25 +468,39 @@ function InfoModal({
   };
   return /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowInfoModalToFalse, "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20 }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowInfoModalToFalse, className: "p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 shrink-0" }, /* @__PURE__ */ React.createElement(
+  }, className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowInfoModalToFalse, "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]", role: "dialog", "aria-modal": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 20 }), " ", t("about.title")), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowInfoModalToFalse, className: "p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSetInfoModalTabToAbout,
-      className: `flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "about" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
+      className: `flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "about" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
     },
     t("about.tab_about")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      onClick: handleSetInfoModalTabToAtlas,
+      className: `flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "atlas" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
+    },
+    t("about.tab_atlas") || "Atlas"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
       onClick: handleSetInfoModalTabToFeatures,
-      className: `flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "features" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
+      className: `flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "features" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
     },
     t("about.tab_features")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      onClick: handleSetInfoModalTabToPrivacy,
+      className: `flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "privacy" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
+    },
+    t("about.tab_privacy") || "Privacy"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
       onClick: handleSetInfoModalTabToOpenSource,
-      className: `flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "opensource" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
+      className: `flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === "opensource" ? "border-indigo-600 text-indigo-700 bg-white" : "border-transparent text-slate-600 hover:text-slate-700"}`
     },
     t("about.tab_opensource") || "Open Source"
   )), /* @__PURE__ */ React.createElement("div", { className: "p-6 overflow-y-auto custom-scrollbar" }, infoModalTab === "about" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-4 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-2" }, t("about.approach_header")), /* @__PURE__ */ React.createElement("ul", { className: "text-sm space-y-2 ml-2 list-none" }, /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.allo_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.allo_acronym_def"))), /* @__PURE__ */ React.createElement("li", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-700 w-16 shrink-0" }, t("about.flow_acronym_label")), /* @__PURE__ */ React.createElement("span", null, t("about.flow_acronym_def"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 rounded-xl p-4 border border-slate-700 text-white mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Video, { size: 16, className: "text-indigo-400 shrink-0" }), " Video Walkthroughs"), /* @__PURE__ */ React.createElement("div", { className: "flex bg-slate-800 rounded-lg p-0.5 text-xs self-stretch sm:self-auto" }, /* @__PURE__ */ React.createElement(
@@ -446,7 +540,7 @@ function InfoModal({
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }),
     " ",
     t("about.reset_wizard")
-  )))) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement(AccessibilityNote, { t })) : infoModalTab === "atlas" ? /* @__PURE__ */ React.createElement(AtlasTab, { t }) : infoModalTab === "privacy" ? /* @__PURE__ */ React.createElement(PrivacyTab, { t }) : infoModalTab === "opensource" ? /* @__PURE__ */ React.createElement(OpenSourceTab, { t }) : selectedFeature ? /* @__PURE__ */ React.createElement("div", { className: "space-y-6 animate-in fade-in slide-in-from-left duration-200 text-slate-700" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setSelectedFeature(null),

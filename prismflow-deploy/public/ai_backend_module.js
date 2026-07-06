@@ -830,25 +830,6 @@ if (typeof window !== 'undefined') {
 
 // ─── END WEB SEARCH PROVIDER ───────────────────────────────────────────────
 
-// ─── Local-backend allowlist (Phase 0) ─────────────────────────────────────
-// Canonical predicate for GENUINE local text backends — the ONLY backends
-// eligible for the additive streaming/chunking enhancements below. It
-// deliberately EXCLUDES the two cloud OpenAI-compatible providers that also
-// route through _openaiGenerateText:
-//     'openai' → https://api.openai.com     'claude' → https://api.anthropic.com
-// Every output-shape-changing local enhancement must gate on THIS, never on
-// `backend !== 'gemini'` (which is true for those cloud providers too).
-const LOCAL_BACKENDS = ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom'];
-function isLocalTextBackend(backend) {
-    return LOCAL_BACKENDS.indexOf(backend) !== -1;
-}
-// Terminal-marker sentinel for OpenAI SSE ("data: [DONE]"); a Symbol can never
-// collide with real streamed content.
-const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
-if (typeof window !== 'undefined') {
-    window.AIBackendLocal = { LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend };
-}
-
 class AIProvider {
 
     /**
@@ -939,7 +920,7 @@ class AIProvider {
      * @param {number} [opts.maxTokens=8192] - Max output tokens
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
-    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null } = {}) {
+    async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192 } = {}) {
         if (!prompt) return json ? '{}' : '';
         this._debugLog(`[AIProvider] generateText: backend=${this.backend}, json=${json}, search=${search}`);
 
@@ -955,7 +936,7 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens });
         }
     }
 
@@ -1047,30 +1028,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress } = {}) {
-        // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
-        // Cloud is untouched: gemini/claude use their own methods, and hosted
-        // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
-        // when a progress sink is registered AND the backend is a genuine local
-        // server. It returns the SAME concatenated string the non-stream path
-        // would; ANY failure (or a buffered, non-streamable response) transparently
-        // falls through to the unchanged non-stream request below. With no sink
-        // registered, behavior is byte-identical to before.
-        const _sink = (typeof onProgress === 'function')
-            ? onProgress
-            : ((typeof window !== 'undefined' && typeof window.__alloLocalTextProgress === 'function')
-                ? window.__alloLocalTextProgress
-                : null);
-        if (_sink && !search && isLocalTextBackend(this.backend)) {
-            try {
-                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens }, _sink);
-                if (typeof streamed === 'string') return streamed;
-            } catch (streamErr) {
-                this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
-                // fall through to the unchanged non-stream path
-            }
-        }
-
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens }) {
         // OpenAI-compatible format (works with LocalAI, LM Studio, OpenAI, AlloFlow Local, custom endpoints)
         const url = this.backend === 'ollama'
             ? `${this.baseUrl}/api/chat`
@@ -1122,117 +1080,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return { text, groundingMetadata: this._lastSearchMetadata || null };
         }
         return text;
-    }
-
-    // ── Additive local-only streaming helper (Phase 1) ────────────────────────
-    // Streams an OpenAI-compatible (SSE) or Ollama (NDJSON) local completion,
-    // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
-    // arrive, and returns the SAME final string the non-stream path produces.
-    // Throws on any transport/parse problem so the caller falls back cleanly.
-    async _openaiStreamText(prompt, { json, temperature, maxTokens }, sink) {
-        const isOllama = this.backend === 'ollama';
-        const url = isOllama
-            ? `${this.baseUrl}/api/chat`
-            : `${this.baseUrl}/v1/chat/completions`;
-
-        const payload = isOllama
-            ? {
-                model: this.models.default,
-                messages: [{ role: 'user', content: prompt }],
-                stream: true,
-                ...(json ? { format: 'json' } : {}),
-                options: {
-                    num_predict: maxTokens,
-                    ...(temperature != null ? { temperature } : {}),
-                },
-            }
-            : {
-                model: this.models.default,
-                messages: [{ role: 'user', content: prompt }],
-                max_tokens: maxTokens,
-                stream: true,
-                ...(json ? { response_format: { type: 'json_object' } } : {}),
-                ...(temperature != null ? { temperature } : {}),
-            };
-
-        const headers = { 'Content-Type': 'application/json' };
-        if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
-
-        const response = await this._fetchWithRetry(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload),
-        });
-
-        const body = response && response.body;
-        if (!body || typeof body.getReader !== 'function') {
-            // An injected fetchWithRetry may buffer/clone the response, so the
-            // stream is gone — bail to the non-stream path.
-            throw new Error('response body is not a readable stream');
-        }
-
-        const reader = body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let acc = '';
-        let chunks = 0;
-        const emit = (done) => {
-            try {
-                sink({ phase: 'stream', backend: this.backend, receivedChars: acc.length, chunks, done: Boolean(done) });
-            } catch (_) { /* a broken sink must never break generation */ }
-        };
-        const consume = (line) => {
-            const piece = isOllama ? this._parseOllamaStreamLine(line) : this._parseOpenAiStreamLine(line);
-            if (piece === STREAM_DONE || !piece) return;
-            acc += piece;
-            chunks++;
-            emit(false);
-        };
-
-        try {
-            for (;;) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                let nl;
-                while ((nl = buffer.indexOf('\n')) >= 0) {
-                    const line = buffer.slice(0, nl).trim();
-                    buffer = buffer.slice(nl + 1);
-                    if (line) consume(line);
-                }
-            }
-            const tail = buffer.trim();
-            if (tail) consume(tail);
-        } finally {
-            try { if (typeof reader.releaseLock === 'function') reader.releaseLock(); } catch (_) { /* ignore */ }
-        }
-
-        emit(true);
-        return acc;
-    }
-
-    // Parse one line of an Ollama /api/chat streaming response (NDJSON).
-    // Returns the incremental content string ('' when the line carries none).
-    _parseOllamaStreamLine(line) {
-        try {
-            const obj = JSON.parse(line);
-            if (obj && obj.message && typeof obj.message.content === 'string') return obj.message.content;
-        } catch (_) { /* keep-alive / partial line — skip */ }
-        return '';
-    }
-
-    // Parse one line of an OpenAI-compatible SSE stream.
-    // Returns incremental content, STREAM_DONE for the terminal marker, or ''.
-    _parseOpenAiStreamLine(line) {
-        if (line.indexOf('data:') === 0) line = line.slice(5).trim();
-        if (!line) return '';
-        if (line === '[DONE]') return STREAM_DONE;
-        try {
-            const obj = JSON.parse(line);
-            const delta = obj && obj.choices && obj.choices[0] && obj.choices[0].delta;
-            if (delta && typeof delta.content === 'string') return delta.content;
-        } catch (_) { /* comment / partial line — skip */ }
-        return '';
     }
 
     /**
@@ -2048,12 +1895,6 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 // Make available globally (for inline usage in AlloFlowANTI.txt)
 if (typeof window !== 'undefined') {
     window.AIProvider = AIProvider;
-}
-
-// Node/CommonJS export — test harness only. Guarded so the browser <script>
-// load is unaffected (`module` is undefined there). Purely additive.
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AIProvider, LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend };
 }
 
     console.log('[AI Backend Module] Loaded: WebSearchProvider + AIProvider + Firebase Shim Factory');

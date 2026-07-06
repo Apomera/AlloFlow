@@ -46,9 +46,9 @@ const OSS_CREDITS = [
       { name: 'pdf-lib', use: 'building accessible PDFs', license: 'MIT', url: 'https://pdf-lib.js.org' },
       { name: 'fontkit', use: 'embedding fonts in PDFs', license: 'MIT', url: 'https://github.com/foliojs/fontkit' },
       { name: 'Tesseract.js', use: 'OCR of scanned handouts', license: 'Apache-2.0', url: 'https://tesseract.projectnaptha.com' },
-      { name: 'veraPDF', use: 'PDF/UA & PDF/A conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org',
+      { name: 'veraPDF', use: 'PDF/UA-1 conformance checks', license: 'GPLv3+ / MPLv2', url: 'https://verapdf.org',
         featured: 8,
-        blurb: 'Checks every accessible PDF we build against the PDF/UA and PDF/A standards — the same conformance engine trusted by national libraries and archives.',
+        blurb: 'Independently validates every accessible PDF we build against the PDF/UA-1 (ISO 14289-1) standard — the same conformance engine trusted by national libraries and archives.',
         site: 'https://verapdf.org', repo: 'https://github.com/veraPDF/veraPDF-library' },
       { name: 'Apache PDFBox', use: 'PDF parsing inside veraPDF', license: 'Apache-2.0', url: 'https://pdfbox.apache.org' },
       { name: 'CheerpJ', use: 'runs the veraPDF engine in the browser', license: 'free for this use (LeaningTech)', url: 'https://leaningtech.com/cheerpj/' },
@@ -99,7 +99,7 @@ const OSS_CREDITS = [
       { name: 'Acorn', use: 'JavaScript parser (code sandbox)', license: 'MIT', url: 'https://github.com/acornjs/acorn' },
       { name: 'CircuitJS1', use: 'electronic-circuit simulator (Circuit Shelf) — Paul Falstad & Iain Sharp', license: 'GPLv2', url: 'https://github.com/pfalstad/circuitjs1',
         featured: 4, owner: 'Paul Falstad & Iain Sharp',
-        blurb: 'The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict–Observe–Explain challenges.',
+        blurb: 'The circuit simulator in the Circuit Shelf, where students build and test working electronic circuits against Predict–Explore–Explain challenges.',
         site: 'https://www.falstad.com/circuit/', repo: 'https://github.com/pfalstad/circuitjs1' },
       { name: 'Mol*', use: '3D molecular-structure viewer (Molecule Shelf) — RCSB PDB & PDBe', license: 'MIT', url: 'https://molstar.org',
         featured: 3, owner: 'RCSB PDB & PDBe',
@@ -116,7 +116,7 @@ const OSS_CREDITS = [
       { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
       { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io',
         featured: 5,
-        blurb: 'Drives the deep-zoom Zoom Gallery, letting students pan and magnify gigapixel NASA and Smithsonian images down to the finest detail.',
+        blurb: 'Drives the Zoom Gallery, letting students pan and magnify high-resolution NASA and Smithsonian images — including true deep-zoom on the tiled museum scans.',
         site: 'https://openseadragon.github.io', repo: 'https://github.com/openseadragon/openseadragon' },
       { name: 'Smithsonian Open Access', use: 'CC0 museum images in the Zoom Gallery (deep-zoom IIIF)', license: 'CC0 1.0', url: 'https://www.si.edu/openaccess' },
       { name: 'NASA Image and Video Library', use: 'public-domain space photographs in the Zoom Gallery', license: 'Public domain (NASA media guidelines)', url: 'https://images.nasa.gov' },
@@ -145,7 +145,7 @@ const OSS_CREDITS = [
     items: [
       { name: 'Kokoro', use: 'neural text-to-speech (primary)', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro',
         featured: 11,
-        blurb: 'The primary neural text-to-speech voice — natural narration that runs right in the browser, with no cloud round-trip.',
+        blurb: 'The primary on-device neural text-to-speech voice — natural narration that runs right in the browser with no cloud round-trip, and the offline fallback in the School Box.',
         repo: 'https://github.com/hexgrad/kokoro' },
       { name: 'Piper', use: 'neural text-to-speech (40+ languages)', license: 'MIT (engine now GPLv3 fork)', url: 'https://github.com/OHF-Voice/piper1-gpl',
         featured: 12,
@@ -301,9 +301,243 @@ function OpenSourceTab({ t }) {
   );
 }
 
+// A hand-curated map of everything AlloFlow contains, grouped by domain. This
+// mirrors the STEM Lab categories plus the document/reading surfaces and the
+// open-source-powered shelves. Curated (not a live mirror of the ~100+ tool
+// tiles) so it stays readable; review when a whole new domain or shelf ships.
+const ATLAS_DOMAINS = [
+  {
+    icon: '📄', name: 'Documents & Literacy',
+    blurb: 'Turn any handout into leveled, translated, read-aloud, accessible learning.',
+    tools: ['Leveled Texts', 'Immersive Reader', 'Side-by-side Translation', 'Reading Library', 'Reading Fluency', 'Vocabulary Games', 'Accessible PDF export'],
+  },
+  {
+    icon: '🔢', name: 'Math',
+    blurb: 'Manipulatives and solvers from number sense through calculus.',
+    tools: ['Fraction Lab', 'Algebra Solver', 'Geometry Sandbox', '3D Volume Explorer', 'Calculus Visualizer', 'Graphing Calculator', 'Function Grapher', 'Probability', 'Statistics Lab', 'Unit Converter'],
+  },
+  {
+    icon: '🧬', name: 'Life & Earth Science',
+    blurb: 'Explore cells, genetics, the brain, ecosystems, and the changing Earth.',
+    tools: ['Cell Simulator', 'DNA Lab', 'Brain Atlas', 'Human Anatomy', 'Dissection Lab', 'Punnett Square', 'Microbiology Lab', 'Ecosystem', 'Evolution Lab', 'Dino Lab', 'Plate Tectonics', 'Rock Cycle', 'Water Cycle', 'Climate Explorer', 'Geology Explorer'],
+  },
+  {
+    icon: '🌌', name: 'Space & Physics',
+    blurb: 'From the solar system to circuits, optics, and waves.',
+    tools: ['Solar System', 'Galaxy Explorer', 'Universe Timelapse', 'Moon Mission', 'Night Sky', 'Wave Simulator', 'Optics Lab', 'Circuit Builder', 'Physics Simulator', 'Semiconductor Lab'],
+  },
+  {
+    icon: '⚗️', name: 'Chemistry',
+    blurb: 'Build molecules, balance equations, and run virtual titrations.',
+    tools: ['Molecule Builder', 'Titration Lab', 'Equation Balancer'],
+  },
+  {
+    icon: '💻', name: 'Computer Science & Technology',
+    blurb: 'Write and run code, build apps, and explore digital safety.',
+    tools: ['Coding Playground', 'AppLab (AI App Generator)', 'Cellular Automaton Lab', 'Logic Lab', 'Cyber Defense Lab', 'Digital Accessibility Lab', 'Access Lens'],
+  },
+  {
+    icon: '🎨', name: 'Arts, Music & Expression',
+    blurb: 'Design, compose, perform, and tell stories.',
+    tools: ['Symbol Studio', 'Music Synthesizer', 'Art & Design Studio', 'Architecture Studio', 'Oratory & Speech Lab', 'Voice & Singing Lab', 'Story Forge', 'Memory Palace'],
+  },
+  {
+    icon: '🛠️', name: 'Life Skills & Careers',
+    blurb: 'Hands-on simulations for real-world and career-technical skills.',
+    tools: ['Life Skills Lab', "Driver's Ed", 'BikeLab', 'Auto Repair Shop', 'WeldLab', 'Kitchen Lab', 'NutritionLab', 'Typing Practice', 'First Response Lab', 'Bridge Engineering Lab'],
+  },
+  {
+    icon: '🌍', name: 'Social Studies & Strategy',
+    blurb: 'Geography, economics, behavior, world-building, and strategy games.',
+    tools: ['Geography Quiz', 'Economics Lab', 'Behavior Shaping Lab', 'WriteCraft', 'Arc City', 'Kepler Colony', 'Game Studio'],
+  },
+  {
+    icon: '🔬', name: 'Labs & Shelves',
+    blurb: 'Best-in-class open-source tools wrapped with an AI coach — see the Open Source tab for credits.',
+    tools: ['Data Lab (CODAP)', 'Sim Shelf (PhET)', 'Circuit Shelf', 'Molecule Shelf (Mol*)', 'Zoom Gallery', 'Timeline Studio', 'Lumen research canvas'],
+  },
+];
+
+// One domain card: icon + name, a short blurb, and the tools inside it as chips.
+function AtlasCard({ domain }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="text-xl leading-none" aria-hidden="true">{domain.icon}</span>
+        <h5 className="font-bold text-slate-800 text-sm">{domain.name}</h5>
+      </div>
+      <p className="text-xs text-slate-600 leading-relaxed mb-3">{domain.blurb}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {domain.tools.map((tool) => (
+          <span key={tool} className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+            {tool}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// The Atlas tab: a browsable directory of the whole app, by domain.
+function AtlasTab({ t }) {
+  return (
+    <div className="space-y-5 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <span aria-hidden="true">🗺️</span>
+          {t('about.atlas_title') || 'The AlloFlow Atlas'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.atlas_intro') || 'A map of everything inside AlloFlow, grouped by subject. Open the tool menu or the STEM Lab to launch any of these — this page is just to help you see the whole landscape at a glance.'}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {ATLAS_DOMAINS.map((domain) => (
+          <AtlasCard key={domain.name} domain={domain} />
+        ))}
+      </div>
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.atlas_footer') || 'New tools ship regularly — this map highlights the main ones in each area rather than listing every single tool.'}
+      </p>
+    </div>
+  );
+}
+
+// Privacy & FERPA. Wording is deliberately measured: it describes how AlloFlow
+// is designed, and does NOT claim certified FERPA compliance (that is the
+// district's determination). Review before deploy.
+function PrivacyTab({ t }) {
+  const noop = () => null;
+  const ShieldCheck = window.ShieldCheck || noop;
+  const Wifi = window.Wifi || noop;
+  const Cloud = window.Cloud || noop;
+  return (
+    <div className="space-y-4 text-slate-700">
+      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+        <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+          <ShieldCheck size={18} />
+          {t('about.privacy_title') || 'Privacy & student data'}
+        </h4>
+        <p className="text-sm leading-relaxed text-slate-700">
+          {t('about.privacy_intro') || 'AlloFlow is built to support FERPA-conscious classrooms. Here is where data goes so your school can make its own determination.'}
+        </p>
+      </div>
+
+      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <Wifi size={16} className="text-emerald-600" /> Stays on your device by default
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          Student work — documents, saved activities, and progress — is stored locally on your device (in your browser), not on an AlloFlow server. Two features are the exception, and both are opt-in: a teacher can turn on <strong>cloud sync</strong> to back up their own history to Google Firebase, and <strong>live class sessions</strong> sync session state to Firebase while a session is running. No AlloFlow account or student login is required to use the tools.
+        </p>
+      </div>
+
+      <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <ShieldCheck size={16} className="text-emerald-600" /> Fully on-device: the School Box
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          The offline <strong>School Box</strong> desktop app runs text-to-speech, speech-to-text, and its AI model entirely on the machine — so nothing has to leave the building. (The models download once during setup, then work offline.)
+        </p>
+      </div>
+
+      <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-100">
+        <h5 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1.5">
+          <Cloud size={16} className="text-amber-600" /> When you use online AI: Google&apos;s Gemini
+        </h5>
+        <p className="text-xs text-slate-600 leading-relaxed mb-3">
+          AlloFlow has no AI server of its own. When you use an online AI feature (leveling, translation, tutors, or image/audio analysis), the request goes to <strong>Google&apos;s Gemini</strong> to generate the result. AI runs only when you choose it — never silently — and what&apos;s sent is the relevant text, plus an image (e.g. a scanned page) or a short audio clip for a few features. <strong>How that data is governed depends on how you&apos;re running AlloFlow:</strong>
+        </p>
+
+        <div className="bg-white/70 rounded-lg border border-amber-100 p-3 mb-2">
+          <p className="text-xs font-bold text-slate-800 mb-1">Inside Gemini Canvas (the usual way)</p>
+          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
+            Google&apos;s Canvas environment supplies the key automatically — you never enter one — and the request runs under your signed-in Google account, so the data is governed by <strong>your account type</strong>:
+          </p>
+          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
+            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>Google Workspace for Education</strong> account whose institution has enabled Gemini as a core service (under its Google Workspace terms / DPA): the Gemini app — Canvas included — carries enterprise protections. Prompts and files <strong>aren&apos;t used to train Google&apos;s models and aren&apos;t reviewed by humans</strong>, and Google acts as a FERPA &ldquo;School Official.&rdquo; Confirm your edition and coverage with your Workspace admin.</span></li>
+            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>personal</strong> Google account: consumer Gemini terms apply and data may be retained or reviewed per those terms — <strong>not appropriate for student data</strong>.</span></li>
+          </ul>
+        </div>
+
+        <div className="bg-white/70 rounded-lg border border-amber-100 p-3">
+          <p className="text-xs font-bold text-slate-800 mb-1">Self-hosted web app or the Desktop School Box (your own key)</p>
+          <p className="text-xs text-slate-600 leading-relaxed mb-1.5">
+            The Desktop School Box runs AI on-device by default. If instead you add your own Gemini API key for cloud features (also how a self-hosted web copy works), the data is governed by the <strong>key&apos;s tier</strong>:
+          </p>
+          <ul className="space-y-1.5 text-xs text-slate-600 list-none">
+            <li className="flex items-start gap-2"><span className="text-emerald-600 font-bold shrink-0">•</span><span>A <strong>paid</strong> key (billed Google Cloud project): prompts and responses are <strong>not</strong> used to improve Google&apos;s products; enterprise protections, with optional zero-data-retention.</span></li>
+            <li className="flex items-start gap-2"><span className="text-amber-600 font-bold shrink-0">•</span><span>A <strong>free / unpaid</strong> key: Google may use the data to improve its products and human reviewers may read it; its terms say don&apos;t submit personal info — <strong>not appropriate for student data</strong>.</span></li>
+          </ul>
+        </div>
+
+        <p className="text-xs text-slate-600 leading-relaxed mt-2">
+          <strong>Either way, avoid typing student names or identifying details into prompts you don&apos;t need to.</strong>
+        </p>
+      </div>
+
+      <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+        <h5 className="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
+          <span aria-hidden="true">✅</span> Before using online AI with student data, check with your IT / district
+        </h5>
+        <ul className="space-y-1.5 text-xs text-slate-700 list-none mb-2.5">
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">1.</span><span>Have staff sign in with <strong>Google Workspace for Education</strong> accounts — not personal Google accounts — when using AI in Canvas.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">2.</span><span>Confirm your district has <strong>enabled Gemini as a core service</strong> and accepted the Google Workspace terms / <strong>DPA</strong> that cover it (your Workspace admin can verify Canvas is included).</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">3.</span><span>For the self-hosted web or Desktop version, use a <strong>paid, billed Gemini API key</strong> under that agreement — not a personal free-tier key.</span></li>
+        </ul>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium">
+          <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini API terms &amp; data use ↗</a>
+          <a href="https://cloud.google.com/security/compliance/ferpa" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Google Cloud &amp; FERPA ↗</a>
+          <a href="https://edu.google.com/intl/ALL_us/ai/gemini-for-education/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 underline">Gemini for Education ↗</a>
+        </div>
+      </div>
+
+      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <h5 className="font-bold text-slate-800 text-sm mb-1.5">Our commitments</h5>
+        <ul className="space-y-1.5 text-xs text-slate-700 list-none">
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>AlloFlow itself doesn&apos;t sell data, show ads, or build advertising profiles, and adds no analytics or tracking scripts.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>No AlloFlow account or student login is required to use the tools.</span></li>
+          <li className="flex items-start gap-2"><span className="text-indigo-500 font-bold shrink-0">✓</span><span>For fully in-building data handling, use the offline School Box.</span></li>
+        </ul>
+      </div>
+
+      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+        {t('about.privacy_footer') || 'This is a plain-language summary, not legal advice, and does not describe Google’s services on Google’s behalf. Your district remains responsible for its own FERPA determination and any agreements with Google. Questions? Get in touch.'}
+      </p>
+    </div>
+  );
+}
+
+// Accessibility statement — rendered inside the About tab (part of the UDL
+// mission story). States design intent toward WCAG, not certified conformance.
+function AccessibilityNote({ t }) {
+  return (
+    <div className="bg-teal-50/60 p-4 rounded-xl border border-teal-100 mt-4">
+      <h5 className="font-bold text-slate-800 text-sm mb-1.5 flex items-center gap-2">
+        <span aria-hidden="true">♿</span>
+        {t('about.a11y_title') || 'Accessibility'}
+      </h5>
+      <p className="text-xs text-slate-600 leading-relaxed mb-2">
+        {t('about.a11y_intro') || 'Accessibility isn’t a feature here — it’s the whole point. AlloFlow is designed toward WCAG 2.1 AA (a target, not a certification). We run automated accessibility checks with axe-core on the interface, and axe-core plus IBM Equal Access on the documents we generate, then independently validate the exported PDFs against PDF/UA-1 (ISO 14289-1) with veraPDF.'}
+      </p>
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 list-none">
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Dyslexia-friendly &amp; low-vision font options (OpenDyslexic, Atkinson Hyperlegible, Lexend)</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Text-to-speech and read-aloud throughout</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
+        <li className="flex items-start gap-1.5"><span className="text-teal-600 font-bold shrink-0">✓</span><span>Braille (.brf) export — Grade 1, with contracted UEB Grade 2 where available — plus tagged PDF/UA export</span></li>
+      </ul>
+      <p className="text-[10px] text-slate-400 leading-relaxed mt-2">
+        {t('about.a11y_footer') || 'Found a barrier? Tell us — accessibility bugs jump the queue.'}
+      </p>
+    </div>
+  );
+}
+
 function InfoModal({
   handleSetInfoModalTabToAbout,
+  handleSetInfoModalTabToAtlas,
   handleSetInfoModalTabToFeatures,
+  handleSetInfoModalTabToPrivacy,
   handleSetInfoModalTabToOpenSource,
   handleSetShowInfoModalToFalse,
   infoModalTab,
@@ -384,22 +618,34 @@ function InfoModal({
           <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
           <button onClick={handleSetShowInfoModalToFalse} className="p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
         </div>
-        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0">
+        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto">
           <button
             onClick={handleSetInfoModalTabToAbout}
-            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_about')}
           </button>
           <button
+            onClick={handleSetInfoModalTabToAtlas}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'atlas' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_atlas') || 'Atlas'}
+          </button>
+          <button
             onClick={handleSetInfoModalTabToFeatures}
-            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_features')}
           </button>
           <button
+            onClick={handleSetInfoModalTabToPrivacy}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'privacy' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+          >
+            {t('about.tab_privacy') || 'Privacy'}
+          </button>
+          <button
             onClick={handleSetInfoModalTabToOpenSource}
-            className={`flex-1 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
+            className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_opensource') || 'Open Source'}
           </button>
@@ -599,7 +845,12 @@ function InfoModal({
                   </button>
                 </div>
               </div>
+              <AccessibilityNote t={t} />
             </div>
+          ) : infoModalTab === 'atlas' ? (
+            <AtlasTab t={t} />
+          ) : infoModalTab === 'privacy' ? (
+            <PrivacyTab t={t} />
           ) : infoModalTab === 'opensource' ? (
             <OpenSourceTab t={t} />
           ) : selectedFeature ? (

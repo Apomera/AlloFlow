@@ -13026,6 +13026,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const socraticLivePos = useRef({ x: null, y: null });
   const [leftWidth, setLeftWidth] = useState(35);
   const [isResizing, setIsResizing] = useState(false);
+  // Reactive twin of the CSS `md:` (768px) breakpoint the workspace row uses.
+  // The aside/output split must be driven by the SAME signal that flips
+  // flex-col→flex-row; a one-shot window.innerWidth read at render can go
+  // stale in a Canvas iframe and leave the panel narrower than the row,
+  // opening the gap on the right. matchMedia keeps this in lockstep.
+  const [isWide, setIsWide] = useState(() => (typeof window !== 'undefined' && !!window.innerWidth && window.innerWidth >= 768));
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isOutputHeaderCollapsed, setIsOutputHeaderCollapsed] = useState(false);
@@ -13636,6 +13642,19 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       window.removeEventListener("mouseup", stopResizing);
     };
   }, [resize, stopResizing]);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => setIsWide(mq.matches);
+    sync();
+    // addEventListener is the modern API; addListener is the Safari<14 fallback.
+    if (mq.addEventListener) { mq.addEventListener('change', sync); }
+    else if (mq.addListener) { mq.addListener(sync); }
+    return () => {
+      if (mq.removeEventListener) { mq.removeEventListener('change', sync); }
+      else if (mq.removeListener) { mq.removeListener(sync); }
+    };
+  }, []);
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDraggingBank) return;
@@ -27606,7 +27625,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         <aside
             aria-label={t('sidebar.tools_header')}
             className={`flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 ${(isFullscreen || isZenMode) ? 'hidden' : 'block'} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}
-            style={{ width: window.innerWidth >= 768 ? `${leftWidth}%` : '100%', height: '100%' }}
+            style={{ width: isWide ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
           {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedRect={guidedRect} guidedEngaged={guidedEngaged} wizardOpen={showWizard && hasSelectedRole && isTeacherMode} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} />}
@@ -28350,14 +28369,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         <div
             className={`bg-white shadow-xl shadow-indigo-500/10 border border-slate-400 flex flex-col overflow-hidden h-full transition-all duration-200 relative ${isZenMode ? 'w-full rounded-none border-0' : (isFullscreen ? 'w-full rounded-3xl' : 'rounded-3xl')}`}
             style={{
-                // flexBasis + flexGrow (not exact width): the panel takes its
-                // share of the split but ALWAYS absorbs trailing slack, so no
-                // white gutter can open at the right edge when the row's
-                // children come up short (sidebar clamps, odd iframe widths,
-                // stale innerWidth reads). minWidth:0 keeps inner scrollers
-                // able to shrink instead of blowing the row out.
-                flexBasis: (window.innerWidth >= 768 && !isFullscreen && !isZenMode) ? `${100 - leftWidth}%` : '100%',
-                flexGrow: 1,
+                // Can't-fail fill: `flex: 1 1 0%` (basis 0, grow) makes the
+                // panel consume EXACTLY the row's remaining space after the
+                // aside + divider — never a percentage that has to add up to
+                // 100% with them. So no white gutter can open at the right
+                // edge no matter what leftWidth is or how the iframe reads its
+                // width. Mobile/fullscreen/zen keep full-width (`1 1 100%`).
+                // minWidth:0 keeps inner scrollers able to shrink.
+                flex: (isWide && !isFullscreen && !isZenMode) ? '1 1 0%' : '1 1 100%',
                 minWidth: 0
             }}
         >
