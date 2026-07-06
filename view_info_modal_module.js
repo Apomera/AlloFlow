@@ -37,6 +37,7 @@ const OSS_CREDITS = [
       { name: "IBM Equal Access (accessibility-checker-engine)", use: "second accessibility checker", license: "Apache-2.0", url: "https://github.com/IBMa/equal-access" },
       { name: "DOMPurify", use: "HTML sanitizing (safety)", license: "Apache-2.0 / MPL-2.0", url: "https://github.com/cure53/DOMPurify" },
       { name: "Harper", use: "grammar & spelling checks", license: "Apache-2.0", url: "https://writewithharper.com" },
+      { name: "liblouis", use: "UEB Grade 2 braille (.brf) translation", license: "GPLv3 (engine) / LGPL-2.1+ (tables)", url: "https://liblouis.io" },
       { name: "KaTeX", use: "math typesetting", license: "MIT", url: "https://katex.org" },
       { name: "Temml", use: "LaTeX \u2192 MathML", license: "MIT", url: "https://temml.org" },
       { name: "Prism", use: "code syntax highlighting", license: "MIT", url: "https://prismjs.com" },

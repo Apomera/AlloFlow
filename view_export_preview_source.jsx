@@ -1258,7 +1258,13 @@ function ExportPreviewView(props) {
                           const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
                           const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '7', ')': '7', '"': '7', "'": "'", '-': '-', '/': '/', '*': '9', '&': '&', '@': '@', '#': '#' };
                           const _toBRF = (src) => {
-                            const lines = src.replace(/\r\n?/g, '\n').split('\n');
+                            // Preserve non-ASCII Latin text (é, ñ, ü…): NFD-normalize and drop
+                            // combining marks so accented letters transliterate to their base
+                            // letter instead of vanishing (the old code silently dropped any
+                            // char > 0x7e — Spanish/Somali/accented handouts lost content).
+                            let norm = src;
+                            try { norm = src.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) {}
+                            const lines = norm.replace(/\r\n?/g, '\n').split('\n');
                             const out = [];
                             for (const line of lines) {
                               let bl = ''; let numMode = false;
@@ -1276,10 +1282,32 @@ function ExportPreviewView(props) {
                             }
                             return out.join('\r\n');
                           };
-                          const brf = _toBRF(text);
-                          const blob = new Blob([brf], { type: 'application/x-brf' });
-                          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
-                          addToast('Electronic Braille (BRF) downloaded', 'success');
+                          const _downloadBRF = (brf) => {
+                            const blob = new Blob([brf], { type: 'application/x-brf' });
+                            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'document.brf'; a.click(); URL.revokeObjectURL(a.href);
+                          };
+                          const _grade1 = _toBRF(text);
+                          // Prefer UEB Grade 2 (contracted) via liblouis when it's available;
+                          // fall back to the Grade-1 converter on ANY failure so the export
+                          // is never worse than before (offline, load error, empty result).
+                          if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
+                            addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                            Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
+                              if (ueb && ueb.replace(/\s/g, '').length) {
+                                _downloadBRF(ueb);
+                                addToast('Electronic Braille (UEB Grade 2) downloaded', 'success');
+                              } else {
+                                _downloadBRF(_grade1);
+                                addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                              }
+                            }).catch(() => {
+                              _downloadBRF(_grade1);
+                              addToast('Electronic Braille (Grade 1) downloaded', 'success');
+                            });
+                          } else {
+                            _downloadBRF(_grade1);
+                            addToast('Electronic Braille (BRF) downloaded', 'success');
+                          }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">⠿ Electronic Braille (.brf)</button>
                       </div>
                     </details>

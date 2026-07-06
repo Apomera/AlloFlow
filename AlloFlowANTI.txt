@@ -5435,6 +5435,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
         'stem_lab/stem_tool_moleculeshelf.js',
+        // Jul 2026: Timeline Studio — TimelineJS (Knight Lab, MPL) companion
+        // window + AI document→timeline; launcher + data bridge in the tool.
+        'stem_lab/stem_tool_timeline.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
@@ -14954,13 +14957,21 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     } catch (e) { console.warn('[Imagen] Local SD-Turbo generation failed:', e?.message); }
     return null;
   };
+  // SAFETY GATE: the local generator is an AVAILABILITY fallback, never a
+  // policy bypass. A cloud refusal that smells like a safety/content block
+  // must stay refused — only quota, rate-limit, and key-configuration
+  // failures are eligible for local generation or the download offer.
+  const _sdTurboEligibleError = (err) => {
+    if (!err) return false;
+    const msg = String(err.message || '');
+    if (/Safety|Block/i.test(msg)) return false;
+    return Boolean(err.isConfigState || err.isRateLimited || /429|quota|RESOURCE_EXHAUSTED|Rate limited/i.test(msg));
+  };
   const _sdTurboMaybeOffer = (err) => {
     if (sdTurboOfferedRef.current || window.__sdTurboOfferDeclined || window.__sdTurboDownloading) return;
     if (window._sdTurbo?.ready) return;
     if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU: never offer what can't run
-    const msg = String(err?.message || '');
-    const eligible = err?.isConfigState || err?.isRateLimited || /429|quota|RESOURCE_EXHAUSTED|Rate limited/i.test(msg);
-    if (!eligible) return;
+    if (!_sdTurboEligibleError(err)) return;
     sdTurboOfferedRef.current = true;
     setShowSdTurboOfferModal(true);
   };
@@ -15038,9 +15049,10 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       try {
         return await runner();
       } catch (err) {
+        if (!_sdTurboEligibleError(err)) throw err; // safety/content refusals stay refused
         const local = await _sdTurboTryLocal(prompt, width, qual);
         if (local) {
-          console.warn('[Imagen] Cloud image generation failed (' + (err?.message || 'error') + ') — used the local image generator instead.');
+          console.warn('[Imagen] Cloud image generation unavailable (' + (err?.message || 'error') + ') — used the local image generator instead.');
           return local;
         }
         _sdTurboMaybeOffer(err);
@@ -15048,7 +15060,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       }
     };
     if (imagenRateLimitedRef.current) {
-      const queuedRequest = imagenQueueRef.current.then(() => runWithLocalFallback(executeWithRetry), () => runWithLocalFallback(executeWithRetry));
+      // imagenQueueRef.current never rejects (it is always assigned with a
+      // trailing .catch(() => {})), so a single fulfillment handler suffices.
+      const queuedRequest = imagenQueueRef.current.then(() => runWithLocalFallback(executeWithRetry));
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
