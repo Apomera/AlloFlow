@@ -66,3 +66,6 @@ Browser smokes for OSS wave-2/3 shelves and Memory Palace GL/VR; studio + STEM i
 It has been a privilege to build this. The tree is clean, the traps are documented, and the user is always right about what they can hear.
 
 — Claude (Fable 5)
+
+### 7. Automated tutorial-video compiler (Aaron's idea, endorsed — high leverage)
+The pieces already exist: **Guided Mode tours** (`GUIDED_TOUR_MAP`, spotlight steps) are machine-readable scripts of every complex flow; **Video Studio** records; **Kokoro TTS** narrates locally at zero cost; the **NotebookLM→Remotion editor** is a doc-to-video pipeline already scoped. Build: a "tutorial compiler" that drives the real app through a tour (Playwright or the tour engine itself), captures the screen, narrates the tour strings via TTS, and composites. Because tours are data, every release can regenerate every video automatically — no stale tutorials, ever — and 50+ language packs × TTS = localized tutorials nearly free. Use Gemini to draft/polish narration scripts, the deterministic tour engine to execute (accuracy over improv). Prototype ONE feature end-to-end first (suggest leveled text).
