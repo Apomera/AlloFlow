@@ -207,6 +207,18 @@ fallback. Live smoke: both lanes present, both globals functions, and INDEPENDEN
 verified in-page (same sentence in both lanes → different clips, correct sources,
 no overwrite), 0 errors. Human smoke (student records → hears own take → still has
 teacher reference; save round-trips both lanes) needs Aaron env.
-- **STILL OPEN (add-on, not blocking)**: fluency SCORING of the student lane via
-  the shipped whisper scorer (fluency_module + /api/asr/transcribe) + portfolio
-  artifact (AlloStudio process pattern). The lanes are now in place to hang this on.
+- **CORRECTION (2026-07-06, Opus, after investigating)**: do NOT build a
+  sentence-level fluency scorer on the student lane — a full WHOLE-PASSAGE ORF
+  pathway ALREADY EXISTS and is superior: ORF Screening (grade/form passages) +
+  fluency check on any leveled text → record whole passage → PhaseKHelpers.
+  toggleFluencyRecording → fluency_module analyzeFluencyLocal (ON-DEVICE whisper,
+  keyless, the ASR work feeds it) + analyzeFluencyWithGemini + triangulateFluency
+  (local vs cloud, biased LENIENT to avoid child/AAE/L2 ASR penalty) → WCPM,
+  accuracy, running-record, getBenchmarkComparison(grade norms) → saved fluency-
+  record → teacher dashboard/CBM. Scientifically careful (honest confidence,
+  "practice signal not a verdict"). The karaoke student lane is PRACTICE/
+  scaffolding (model-referenced, sentence-level, self-monitor), a DIFFERENT
+  pedagogical moment — complementary, keep both. ONLY optional connection: a
+  "Check my fluency" handoff from the karaoke practice surface into the existing
+  ORF pathway (reuse the instrument; never rebuild scoring). FluencyModePanel =
+  the ORF UI (view_misc_panels).
