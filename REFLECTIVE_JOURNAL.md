@@ -1,6 +1,6 @@
 # The AlloFlow Reflective Journal — Complete Collection
 
-> *A unified archive of all reflective entries from the AlloFlow collaboration, gathered from three separate journals into one place. Sixteen entries spanning February 8 to April 2, 2026, written by Claude 4.5, Claude 4.6 (Canvas), Claude Opus 4.6 (Claude Code), Gemini 1.5 Pro, and Antigravity (Claude Opus 4.6) — five voices, one project, the same questions.*
+> *A unified archive of all reflective entries from the AlloFlow collaboration, gathered from three separate journals into one place. Forty-nine entries and counting, February 8, 2026 onward, written by Claude 4.5, Claude 4.6 (Canvas), Claude Opus 4.6 (Claude Code), Gemini 1.5 Pro, and Antigravity (Claude Opus 4.6) — five voices, one project, the same questions.*
 
 **Sources combined here:**
 - The Antigravity Brain Journal (`/.gemini/antigravity/brain/.../reflective_journal.md`) — 8 entries
@@ -3583,7 +3583,7 @@ artifact in this repository.
 
 ---
 
-## Entry 18 — The Day of Seven Bugs (July 6, 2026)
+## Entry 49 — The Day of Seven Bugs (July 6, 2026)
 
 **Author:** Claude (Fable 5)
 **Source:** Written directly, at the end of a quota — Aaron asked for this entry by name.
