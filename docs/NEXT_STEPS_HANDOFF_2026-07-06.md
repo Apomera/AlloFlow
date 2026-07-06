@@ -171,3 +171,24 @@ fetch incl. pre-warm (faster fill). Placement: global preference (left panel/
 settings) or a switch in the karaoke overlay by the teacher tools.
 
 **SHIPPED**: persisted teacher toggle "Save read-aloud" (localStorage allo_save_karaoke_audio) in the karaoke overlay. Capture wired into getAudioUrl so it fires on BOTH play AND pre-warm look-ahead (per Aaron) → whole text accumulates fast; no-op if already stored (never clobbers a regenerated take); MP3-converts the played 24kHz WAV when lamejs present to stay small; persists into generatedContent.karaokeAudio. Applies to leveled text + FAQ (shared store). Live smoke: store+capture/regen/prepare globals present, in-page put/serialize/hydrate round-trip TRUE, 0 page errors. Human smoke (generate resource → toggle on → listen through → reload/other device → student hears vetted set) needs Aaron key/Canvas.
+
+#### 8d — Human voice takes: teacher record-one SHIPPED + live-smoked (@3f1ec9986, Opus)
+The store is voice-SOURCE-agnostic, so this was mostly free. SHIPPED: store gains
+per-entry `source` provenance (ai | human-teacher | ...) in put/serialize/hydrate
++ `sourceOf(sentence)`. Karaoke overlay (teacher) gets a "🎤 Record my voice"
+button (MediaRecorder getUserMedia → __alloStoreRecordedSentenceAudio(sentence,
+blob,'human-teacher') → store.put + persist into generatedContent.karaokeAudio →
+replay), a "· 🎤 your voice" provenance badge on recorded sentences, and mid-take
+teardown on overlay close. Recording is an explicit REPLACE (unlike capture's
+no-op-if-present). Plays through karaoke like any clip. Live smoke: record +
+capture globals present, MediaRecorder available, in-page put(source)→serialize→
+hydrate→sourceOf round-trip TRUE, 0 errors. Human smoke (mic-record a sentence →
+hear it back → reload → still your voice) needs Aaron env (mic permission).
+- **STILL OPEN — student practice lane (deliberately deferred, own feature)**: a
+  student recording MUST NOT write to the shared karaokeAudio (that's the teacher
+  model). It belongs in a separate practice/attempt store that (a) plays back for
+  self-compare, (b) feeds the shipped whisper fluency scorer (fluency_module +
+  /api/asr/transcribe) for on-device accuracy, (c) saves as a portfolio artifact
+  (AlloStudio process-portfolio pattern). Spans recorder + ASR + portfolio. FERPA:
+  student voice is sensitive — local-only, no cloud egress (app posture already
+  guarantees, but state it in the UI).
