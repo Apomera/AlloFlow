@@ -126,3 +126,49 @@ describe('surface area + Cavalieri oblique stretch (geoPrismSurfaceArea, slant)'
     expect(P.geoStretchMeasure(a).oblique).toBe(false);
   });
 });
+
+describe('missions ladder (GEO_MISSIONS, geoEvalMission)', () => {
+  it('exposes an ordered mission list with declarative tests', () => {
+    expect(Array.isArray(P.GEO_MISSIONS)).toBe(true);
+    expect(P.GEO_MISSIONS.length).toBeGreaterThanOrEqual(5);
+    P.GEO_MISSIONS.forEach(function(mn) { expect(mn.id && mn.title && mn.test).toBeTruthy(); });
+  });
+  it('checks measure / cube / oblique / cavalieri missions', () => {
+    const box = { type: 'prism', position: [0,0,0], u: [3,0,0], v: [0,3,0], w: [0,0,3] };  // cube 3^3
+    const rectM = P.GEO_MISSIONS.find(function(m){ return m.id === 'rect'; });
+    const cubeM = P.GEO_MISSIONS.find(function(m){ return m.id === 'cube'; });
+    expect(P.geoEvalMission(cubeM, [box]).solved).toBe(true);
+    expect(P.geoEvalMission(cubeM, [{ type:'prism', position:[0,0,0], u:[2,0,0], v:[0,3,0], w:[0,0,4] }]).solved).toBe(false);
+    const rect = { type: 'rect', position:[0,0,0], u:[3,0,0], v:[0,4,0] };  // area 12
+    expect(P.geoEvalMission(rectM, [rect]).solved).toBe(true);
+    // oblique + cavalieri
+    const r = { type:'rect', position:[0,0,0], u:[3,0,0], v:[0,4,0] };
+    const straight = P.stretchRect(r, 'z', 5, 0);
+    const slanted = P.stretchRect(r, 'z', 5, 0.8);
+    const obM = P.GEO_MISSIONS.find(function(m){ return m.id === 'oblique'; });
+    const cavM = P.GEO_MISSIONS.find(function(m){ return m.id === 'cavalieri'; });
+    expect(P.geoEvalMission(obM, [slanted]).solved).toBe(true);
+    expect(P.geoEvalMission(obM, [straight]).solved).toBe(false);
+    expect(P.geoEvalMission(cavM, [straight, slanted]).solved).toBe(true);  // same volume, one straight one slanted
+    expect(P.geoEvalMission(cavM, [straight]).solved).toBe(false);
+  });
+});
+
+describe('prism net (geoPrismNet)', () => {
+  it('unfolds a right prism into 6 faces whose areas sum to the surface area', () => {
+    const box = { type: 'prism', position:[0,0,0], u:[2,0,0], v:[0,3,0], w:[0,0,4] };
+    const net = P.geoPrismNet(box);
+    expect(net).toBeTruthy();
+    expect(net.faces.length).toBe(6);
+    const sum = net.faces.reduce(function(s, f){ return s + f.w * f.h; }, 0);
+    expect(sum).toBeCloseTo(P.geoPrismSurfaceArea(box), 5);
+    expect(net.width).toBeGreaterThan(0);
+    expect(net.height).toBeGreaterThan(0);
+  });
+  it('returns null for an oblique prism (non-rectangular flaps)', () => {
+    const r = { type:'rect', position:[0,0,0], u:[3,0,0], v:[0,4,0] };
+    const slanted = P.stretchRect(r, 'z', 5, 0.8);
+    expect(P.geoPrismNet(slanted)).toBe(null);
+    expect(P.geoPrismNet({ type: 'rect', position:[0,0,0], u:[1,0,0], v:[0,1,0] })).toBe(null);
+  });
+});

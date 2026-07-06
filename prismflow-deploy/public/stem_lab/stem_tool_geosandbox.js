@@ -958,6 +958,68 @@ window.StemLab = window.StemLab || {
     return { solved: solved, closest: best, deltaPct: best == null ? null : bestDelta, message: message };
   }
 
+  // ── Missions ladder (PURE) — a structured progression from a segment up to a
+  //    Cavalieri twin, checked against the construction. Declarative tests so the
+  //    checker is one small dispatch and fully unit-testable. ──
+  var GEO_MISSIONS = [
+    { id: 'seg', icon: '⎯', title: 'First length', desc: 'Build a segment 5 units long.', test: { type: 'measure', kind: 'length', target: 5 } },
+    { id: 'rect', icon: '▭', title: 'A rectangle', desc: 'Build a rectangle with area 12 (e.g. 3 × 4).', test: { type: 'measure', kind: 'area', target: 12 } },
+    { id: 'cube', icon: '⬛', title: 'A perfect cube', desc: 'Build a cube — all three edges equal (e.g. 3 × 3 × 3).', test: { type: 'cube' } },
+    { id: 'vol', icon: '📦', title: 'Target volume', desc: 'Build a prism with volume 24.', test: { type: 'measure', kind: 'volume', target: 24 } },
+    { id: 'oblique', icon: '◣', title: 'Lean it over', desc: 'Build an oblique (slanted) prism — turn on Oblique first.', test: { type: 'oblique' } },
+    { id: 'cavalieri', icon: '⚖', title: 'Cavalieri twins', desc: 'Build a straight prism and a slanted prism with the SAME volume.', test: { type: 'cavalieri' } }
+  ];
+  function _geoIsCube(o, tol) {
+    if (!o || o.type !== 'prism') return false;
+    var a = vec3Mag(o.u), b = vec3Mag(o.v), c = vec3Mag(o.w);
+    var mm = geoStretchMeasure(o);
+    if (mm && mm.oblique) return false;   // a cube is a right prism
+    var t = tol || 0.02;
+    return Math.abs(a - b) / a <= t && Math.abs(b - c) / b <= t && a > 0.01;
+  }
+  function geoEvalMission(mission, objects) {
+    if (!mission || !mission.test) return { solved: false };
+    var objs = objects || [], test = mission.test;
+    if (test.type === 'measure') {
+      var tol = test.tolerance || 0.05;
+      return { solved: objs.some(function (o) {
+        var mm = geoStretchMeasure(o);
+        return mm && mm.kind === test.kind && Math.abs(mm.value - test.target) / (test.target || 1) <= tol;
+      }) };
+    }
+    if (test.type === 'cube')    return { solved: objs.some(function (o) { return _geoIsCube(o); }) };
+    if (test.type === 'oblique') return { solved: objs.some(function (o) { var mm = geoStretchMeasure(o); return mm && mm.oblique; }) };
+    if (test.type === 'cavalieri') {
+      var prisms = objs.filter(function (o) { return o.type === 'prism'; }).map(function (o) { return geoStretchMeasure(o); });
+      var straights = prisms.filter(function (m) { return m && !m.oblique; });
+      var obliques = prisms.filter(function (m) { return m && m.oblique; });
+      var solved = straights.some(function (s) { return obliques.some(function (ob) { return Math.abs(s.value - ob.value) / (s.value || 1) <= 0.05; }); });
+      return { solved: solved };
+    }
+    return { solved: false };
+  }
+
+  // ── Prism net (PURE) — unfold a RIGHT rectangular prism into a 2D cross net of
+  //    6 face rectangles (x,y,w,h,label in net units). Returns null for oblique
+  //    prisms (their true net has non-rectangular flaps) so the UI can prompt the
+  //    student to un-slant. Face areas sum to the surface area. ──
+  function geoPrismNet(o) {
+    if (!o || o.type !== 'prism') return null;
+    var mm = geoStretchMeasure(o);
+    if (mm && mm.oblique) return null;
+    var a = vec3Mag(o.u), b = vec3Mag(o.v), c = vec3Mag(o.w);
+    if (!(a > 0.001 && b > 0.001 && c > 0.001)) return null;
+    var faces = [
+      { label: 'back',   x: c,     y: 0,       w: a, h: c },
+      { label: 'left',   x: 0,     y: c,       w: c, h: b },
+      { label: 'bottom', x: c,     y: c,       w: a, h: b },
+      { label: 'right',  x: c + a, y: c,       w: c, h: b },
+      { label: 'front',  x: c,     y: c + b,   w: a, h: c },
+      { label: 'top',    x: c,     y: c + b + c, w: a, h: b }
+    ];
+    return { faces: faces, width: a + 2 * c, height: 2 * b + 2 * c, dims: { a: a, b: b, c: c } };
+  }
+
   // Render construction objects into a Three.js scene group, returns the group.
   function buildConstructionGroup(THREE, objects, selectedId) {
     var group = new THREE.Group();
@@ -1070,7 +1132,10 @@ window.StemLab = window.StemLab || {
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       geoStretchMeasure: geoStretchMeasure,
       geoMakeBuildChallenge: geoMakeBuildChallenge,
-      geoEvalBuildChallenge: geoEvalBuildChallenge
+      geoEvalBuildChallenge: geoEvalBuildChallenge,
+      GEO_MISSIONS: GEO_MISSIONS,
+      geoEvalMission: geoEvalMission,
+      geoPrismNet: geoPrismNet
     };
   } catch (e) {}
 
@@ -1687,6 +1752,27 @@ window.StemLab = window.StemLab || {
         }
       // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [construction, buildChallenge, mode]);
+
+      // ── Missions: persist a mission's star the first time the construction
+      //    satisfies it (stays earned even after the shape is cleared). ──
+      React.useEffect(function() {
+        if (mode !== 'stretch') return;
+        var solvedSet = gd.missionsSolved || [];
+        var newly = GEO_MISSIONS.filter(function(mn) {
+          return solvedSet.indexOf(mn.id) < 0 && geoEvalMission(mn, construction.objects).solved;
+        });
+        if (!newly.length) return;
+        geoSound('correct');
+        newly.forEach(function(mn) { if (addToast) addToast('🗺 ' + t('stem.geosandbox.mission_done', 'Mission complete: ') + mn.title, 'success'); });
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          var cur = g.missionsSolved || [];
+          var merged = cur.slice();
+          newly.forEach(function(mn) { if (merged.indexOf(mn.id) < 0) merged.push(mn.id); });
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { missionsSolved: merged }) });
+        });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [construction, mode]);
 
       // ── VR controller bridges (reliable, NOT speech-dependent) — this is what
       //    makes immersive mode a hands-on builder: the trigger stretches, the
@@ -2369,6 +2455,83 @@ window.StemLab = window.StemLab || {
                 }, t('stem.geosandbox.clear_all', '× Clear all'))
               )
             ),
+
+            // ═══ MISSIONS LADDER — structured progression with persistent stars ═══
+            mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-slate-900/30 rounded-xl p-3 border border-indigo-500/40 space-y-2' },
+              (function() {
+                var solvedSet = gd.missionsSolved || [];
+                var doneCount = GEO_MISSIONS.filter(function(mn) { return solvedSet.indexOf(mn.id) >= 0; }).length;
+                return h('div', { className: 'flex items-center justify-between' },
+                  h('div', { className: 'text-xs font-bold text-indigo-200 uppercase tracking-wider' }, t('stem.geosandbox.missions', '🗺 Missions')),
+                  h('div', { className: 'text-[10px] text-indigo-300/80 font-mono' }, doneCount + '/' + GEO_MISSIONS.length + ' ★')
+                );
+              })(),
+              h('div', { className: 'space-y-1' },
+                GEO_MISSIONS.map(function(mn) {
+                  var everSolved = (gd.missionsSolved || []).indexOf(mn.id) >= 0;
+                  var liveSolved = geoEvalMission(mn, construction.objects).solved;
+                  var done = everSolved || liveSolved;
+                  return h('div', {
+                    key: 'mn-' + mn.id,
+                    className: 'flex items-start gap-2 px-2 py-1.5 rounded-lg ' + (liveSolved ? 'bg-emerald-800/40 border border-emerald-500/40' : done ? 'bg-slate-800/40' : 'bg-slate-900/40')
+                  },
+                    h('span', { className: 'text-base leading-none pt-0.5', 'aria-hidden': 'true' }, done ? '✅' : mn.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-[11px] font-bold ' + (done ? 'text-emerald-200' : 'text-slate-200') }, mn.title),
+                      h('div', { className: 'text-[10px] text-slate-400 leading-snug' }, mn.desc)
+                    ),
+                    liveSolved && !everSolved && h('span', { className: 'text-[9px] text-emerald-300 font-bold self-center' }, t('stem.geosandbox.mission_now', 'now!'))
+                  );
+                })
+              )
+            ),
+
+            // ═══ NET UNFOLD — flatten a right prism into its printable 2D net ═══
+            mode === 'stretch' && (function() {
+              var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+              if (!sel || sel.type !== 'prism') return null;
+              var net = geoPrismNet(sel);
+              var netOpen = !!(gd._geoExt && gd._geoExt._netOpen);
+              return h('div', { className: 'bg-slate-900/40 rounded-xl p-3 border border-sky-500/40 space-y-2' },
+                h('div', { className: 'flex items-center justify-between' },
+                  h('div', { className: 'text-xs font-bold text-sky-200 uppercase tracking-wider' }, t('stem.geosandbox.net_unfold', '📦 Unfold net')),
+                  h('button', {
+                    onClick: function() { updExt({ _netOpen: !netOpen }); },
+                    'aria-expanded': netOpen,
+                    className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-sky-700/70 text-white hover:bg-sky-600'
+                  }, netOpen ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
+                ),
+                !net && h('p', { className: 'text-[10.5px] text-amber-300/90' }, t('stem.geosandbox.net_oblique', 'Turn off Oblique to unfold this prism — a slanted prism has non-rectangular flaps.')),
+                netOpen && net && (function() {
+                  var pad = 6, scale = Math.min(240 / net.width, 150 / net.height);
+                  var W = net.width * scale + pad * 2, H = net.height * scale + pad * 2;
+                  var faceColors = { top: '#38bdf8', bottom: '#0ea5e9', front: '#22d3ee', back: '#06b6d4', left: '#818cf8', right: '#6366f1' };
+                  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W.toFixed(0) + '" height="' + H.toFixed(0) + '" viewBox="0 0 ' + W.toFixed(0) + ' ' + H.toFixed(0) + '">' +
+                    net.faces.map(function(f) {
+                      var x = (f.x * scale + pad).toFixed(1), y = (f.y * scale + pad).toFixed(1), w = (f.w * scale).toFixed(1), h2 = (f.h * scale).toFixed(1);
+                      return '<g><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h2 + '" fill="' + (faceColors[f.label] || '#38bdf8') + '" fill-opacity="0.5" stroke="#0f172a" stroke-width="1.5"/>' +
+                        '<text x="' + (f.x * scale + pad + f.w * scale / 2).toFixed(1) + '" y="' + (f.y * scale + pad + f.h * scale / 2).toFixed(1) + '" font-size="9" fill="#0f172a" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif">' + f.label + '</text></g>';
+                    }).join('') + '</svg>';
+                  return h('div', { className: 'space-y-2' },
+                    h('div', { className: 'bg-white rounded-lg p-2 flex justify-center', dangerouslySetInnerHTML: { __html: svg } }),
+                    h('div', { className: 'text-[10px] text-sky-200/80' }, t('stem.geosandbox.net_faces', '6 faces · edges {a}×{b}×{c}')
+                      .replace('{a}', net.dims.a.toFixed(1)).replace('{b}', net.dims.b.toFixed(1)).replace('{c}', net.dims.c.toFixed(1))),
+                    h('button', {
+                      onClick: function() {
+                        try {
+                          var win = window.open('', '_blank');
+                          if (!win) { addToast(t('stem.geosandbox.net_popup', 'Allow pop-ups to print the net.'), 'info'); return; }
+                          win.document.write('<!doctype html><title>' + t('stem.geosandbox.net_title', 'Prism net') + '</title><style>body{margin:24px;font-family:sans-serif}svg{width:100%;max-width:640px;height:auto}button{margin-bottom:16px;padding:8px 16px;font-weight:bold}@media print{button{display:none}}</style>' +
+                            '<button onclick="window.print()">' + t('common.print', 'Print') + '</button><h3>' + t('stem.geosandbox.net_title', 'Prism net') + '</h3>' + svg.replace('width="' + W.toFixed(0) + '" height="' + H.toFixed(0) + '"', 'width="640"'));
+                          win.document.close();
+                        } catch (e) {}
+                      },
+                      className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-sky-700/70 text-white hover:bg-sky-600'
+                    }, '🖨 ' + t('stem.geosandbox.net_print', 'Print / cut-out net'))
+                  );
+                })()
+              );
+            })(),
 
             // ═══ STRETCH ANALYZER inquiry widget (H7b'') ═══
             mode === 'stretch' && construction.objects.length > 0 && (function() {
