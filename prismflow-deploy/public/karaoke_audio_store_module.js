@@ -63,15 +63,20 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       // Playable URL for a sentence, or null if not vetted/stored.
       get: function (sentence) { var e = map.get(keyFor(sentence)); return e ? e.url : null; },
       has: function (sentence) { return map.has(keyFor(sentence)); },
-      // Store (or replace) one sentence's audio. Returns the new blob URL.
-      put: function (sentence, b64, mime) {
+      // Store (or replace) one sentence's audio. `source` records provenance
+      // by construction — 'ai' (default), 'human-teacher', 'human-student', etc.
+      // — so the UI can honestly show whose voice a student hears. Returns the
+      // new blob URL.
+      put: function (sentence, b64, mime, source) {
         var k = keyFor(sentence);
         _revoke(map.get(k)); // replacing a bad take frees the old blob
         var url = b64ToUrl(b64, mime);
         if (!url) { map.delete(k); return null; }
-        map.set(k, { b64: String(b64 || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, ''), mime: mime || 'audio/mpeg', url: url });
+        map.set(k, { b64: String(b64 || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, ''), mime: mime || 'audio/mpeg', url: url, source: source || 'ai' });
         return url;
       },
+      // Provenance of a stored sentence ('ai' | 'human-teacher' | ...) or null.
+      sourceOf: function (sentence) { var e = map.get(keyFor(sentence)); return e ? (e.source || 'ai') : null; },
       remove: function (sentence) { var k = keyFor(sentence); _revoke(map.get(k)); map.delete(k); },
       size: function () { return map.size; },
       clear: function () { map.forEach(_revoke); map.clear(); },
@@ -80,22 +85,29 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         var self = this;
         return (Array.isArray(sentences) ? sentences : []).filter(function (s) { return !self.has(s); });
       },
-      // → resource JSON. Keyed by normalized sentence so hydrate is exact.
+      // → resource JSON. Per-entry mime (v2) so a resource can mix cloud-MP3
+      // and keyless-WAV takes and still hydrate each correctly. v1 payloads
+      // (single top-level format, no mimes) still hydrate via the fallback.
       serialize: function () {
         var sentences = {};
-        map.forEach(function (e, k) { sentences[k] = e.b64; });
-        return { format: 'mp3', version: 1, sentences: sentences };
+        var mimes = {};
+        var sources = {};
+        map.forEach(function (e, k) { sentences[k] = e.b64; mimes[k] = e.mime || 'audio/mpeg'; sources[k] = e.source || 'ai'; });
+        return { format: 'per-entry', version: 2, sentences: sentences, mimes: mimes, sources: sources };
       },
       // resource JSON → memory. Returns count hydrated.
       hydrate: function (obj) {
         if (!obj || !obj.sentences || typeof obj.sentences !== 'object') return 0;
         var n = 0;
-        var mime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
+        var mimes = (obj.mimes && typeof obj.mimes === 'object') ? obj.mimes : {};
+        var sources = (obj.sources && typeof obj.sources === 'object') ? obj.sources : {};
+        var fallbackMime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
         for (var k in obj.sentences) {
           if (!Object.prototype.hasOwnProperty.call(obj.sentences, k)) continue;
           try {
+            var mime = mimes[k] || fallbackMime;
             var url = b64ToUrl(obj.sentences[k], mime);
-            if (url) { _revoke(map.get(k)); map.set(k, { b64: String(obj.sentences[k] || ''), mime: mime, url: url }); n++; }
+            if (url) { _revoke(map.get(k)); map.set(k, { b64: String(obj.sentences[k] || ''), mime: mime, url: url, source: sources[k] || 'ai' }); n++; }
           } catch (_) {}
         }
         return n;

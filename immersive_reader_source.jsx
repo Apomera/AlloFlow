@@ -974,6 +974,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const [regenBusy, setRegenBusy] = useState(false);
     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
     const [captureOn, setCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') === '1'; } catch (_) { return false; } });
+    const [recording, setRecording] = useState(false);
+    const _recRef = useRef(null);
     const [sweepPct, setSweepPct] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [autoAdvance, setAutoAdvance] = useState(true);
@@ -1229,6 +1231,44 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             setPrepState({ busy: false, done: (res && res.generated) || 0, total: (res && res.total) || 0, bytes: (res && res.bytes) || 0 });
         } catch (e) { setPrepState(null); }
     }, [prepState, sentences]);
+    // Record the teacher’s own voice for the CURRENT sentence, sentence by
+    // sentence. The store is voice-source-agnostic, so the recording plays
+    // through karaoke like any clip; tagged human-teacher for honest
+    // provenance. Click to start, click to stop → stores + replays the take.
+    const recordCurrent = useCallback(async () => {
+        const sentence = sentences[sentenceIdx];
+        if (!sentence) return;
+        if (recording) {
+            try { const r = _recRef.current; if (r && r.rec && r.rec.state !== 'inactive') r.rec.stop(); } catch (e) {}
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const rec = new MediaRecorder(stream);
+            const chunks = [];
+            rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+            rec.onstop = async () => {
+                try { stream.getTracks().forEach(tr => tr.stop()); } catch (e) {}
+                setRecording(false);
+                if (!chunks.length) return;
+                const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+                if (typeof window.__alloStoreRecordedSentenceAudio === 'function') {
+                    const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, 'human-teacher');
+                    if (ok) { warmedRef.current.delete(sentenceIdx); setSweepPct(0); playSentence(sentenceIdx); }
+                }
+            };
+            _recRef.current = { rec: rec, stream: stream };
+            rec.start();
+            setRecording(true);
+        } catch (e) { setRecording(false); }
+    }, [recording, sentences, sentenceIdx, playSentence]);
+    // Stop any active recording if the overlay closes mid-take.
+    useEffect(() => {
+        if (!isOpen) {
+            try { const r = _recRef.current; if (r && r.rec && r.rec.state !== 'inactive') r.rec.stop(); if (r && r.stream) r.stream.getTracks().forEach(tr => tr.stop()); } catch (e) {}
+            setRecording(false);
+        }
+    }, [isOpen]);
 
     // Start / restart playback when sentenceIdx changes while playing, or when play toggles on
     useEffect(() => {
@@ -1327,7 +1367,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     </button>
                     <div className="flex flex-col">
                         <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
-                        <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep</span>
+                        <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
@@ -1345,6 +1385,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                                 style={{ background: 'transparent', color: c.ink, border: `1px solid ${c.dim}55`, opacity: regenBusy ? 0.6 : 1 }}
                             >
                                 {regenBusy ? '…' : '🔄'} {safeT(t, 'immersive.regenerate_sentence', 'Regenerate this sentence')}
+                            </button>
+                            <button
+                                onClick={recordCurrent}
+                                title={safeT(t, 'immersive.record_sentence_tip', 'Record your own voice for this sentence. Students hear your recording instead of the computer voice.')}
+                                className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+                                style={{ background: recording ? '#dc2626' : 'transparent', color: recording ? '#fff' : c.ink, border: `1px solid ${recording ? '#dc2626' : c.dim + '55'}` }}
+                            >
+                                {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_sentence', 'Record my voice')}`}
                             </button>
                             <button
                                 onClick={prepareAll}

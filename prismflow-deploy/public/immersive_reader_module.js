@@ -793,6 +793,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       return false;
     }
   });
+  const [recording, setRecording] = useState(false);
+  const _recRef = useRef(null);
   const [sweepPct, setSweepPct] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -1055,6 +1057,59 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       setPrepState(null);
     }
   }, [prepState, sentences]);
+  const recordCurrent = useCallback(async () => {
+    const sentence = sentences[sentenceIdx];
+    if (!sentence) return;
+    if (recording) {
+      try {
+        const r = _recRef.current;
+        if (r && r.rec && r.rec.state !== "inactive") r.rec.stop();
+      } catch (e) {
+      }
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      const chunks = [];
+      rec.ondataavailable = (e) => {
+        if (e.data && e.data.size) chunks.push(e.data);
+      };
+      rec.onstop = async () => {
+        try {
+          stream.getTracks().forEach((tr) => tr.stop());
+        } catch (e) {
+        }
+        setRecording(false);
+        if (!chunks.length) return;
+        const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+        if (typeof window.__alloStoreRecordedSentenceAudio === "function") {
+          const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, "human-teacher");
+          if (ok) {
+            warmedRef.current.delete(sentenceIdx);
+            setSweepPct(0);
+            playSentence(sentenceIdx);
+          }
+        }
+      };
+      _recRef.current = { rec, stream };
+      rec.start();
+      setRecording(true);
+    } catch (e) {
+      setRecording(false);
+    }
+  }, [recording, sentences, sentenceIdx, playSentence]);
+  useEffect(() => {
+    if (!isOpen) {
+      try {
+        const r = _recRef.current;
+        if (r && r.rec && r.rec.state !== "inactive") r.rec.stop();
+        if (r && r.stream) r.stream.getTracks().forEach((tr) => tr.stop());
+      } catch (e) {
+      }
+      setRecording(false);
+    }
+  }, [isOpen]);
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
     playSentence(sentenceIdx);
@@ -1179,7 +1234,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     hardStop();
     onClose();
-  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence as you listen (and the ones read ahead) into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => {
+  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", (() => {
+    try {
+      const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+      return _st && _st.sourceOf(sentences[sentenceIdx]) === "human-teacher";
+    } catch (e) {
+      return false;
+    }
+  })() ? " \xB7 \u{1F3A4} your voice" : ""))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence as you listen (and the ones read ahead) into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => {
     const v = e.target.checked;
     setCaptureOn(v);
     try {
@@ -1198,6 +1260,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     regenBusy ? "\u2026" : "\u{1F504}",
     " ",
     safeT(t, "immersive.regenerate_sentence", "Regenerate this sentence")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: recordCurrent,
+      title: safeT(t, "immersive.record_sentence_tip", "Record your own voice for this sentence. Students hear your recording instead of the computer voice."),
+      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      style: { background: recording ? "#dc2626" : "transparent", color: recording ? "#fff" : c.ink, border: `1px solid ${recording ? "#dc2626" : c.dim + "55"}` }
+    },
+    recording ? `\u23F9 ${safeT(t, "immersive.stop_recording", "Stop recording")}` : `\u{1F3A4} ${safeT(t, "immersive.record_sentence", "Record my voice")}`
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
