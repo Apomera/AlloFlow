@@ -282,7 +282,26 @@ function _upgradeAIBackend() {
         console.log("[AI Backend] Shim functions upgraded from CDN module");
     }
     if (window.WebSearchProvider) WebSearchProvider = window.WebSearchProvider;
-    if (window.AIProvider) AIProvider = window.AIProvider;
+    if (window.AIProvider) {
+        AIProvider = window.AIProvider;
+        // Late-arrival retry: gemini_api_module (~41KB) usually EXECUTES before
+        // this module (~84KB) — dynamically-injected scripts run in arrival
+        // order, not insertion order — so _upgradeGeminiAPI() ran while
+        // AIProvider was still null and _installLocalTextBridgeFromStorage()
+        // silently skipped. Without this retry the desktop Built-in Engine /
+        // Ollama / LM Studio bridge never installs: callGemini stays on cloud
+        // Gemini with no key and every generation fails despite a healthy
+        // local engine. (Function declarations below hoist — safe to call.)
+        try {
+            const _lateCfg = _readAlloAiUserConfig();
+            if (_usesLocalTextBackend(_lateCfg) && !(typeof window !== 'undefined' && window.callGemini && window.callGemini._alloflowBackend)) {
+                _installLocalTextBridgeFromStorage();
+            }
+        } catch (_) {}
+        // Let React recompute the memoized `ai` instance (it may have cached
+        // the plain-config fallback if it rendered before this module landed).
+        try { window.dispatchEvent(new CustomEvent('alloflow:ai-backend-ready')); } catch (_) {}
+    }
 }
 _upgradeAIBackend(); // Immediate call — no-op in Canvas (CDN not loaded yet), works in deploy (blocking script)
 
@@ -14378,7 +14397,22 @@ const parseTaggedContent = (text) => {
   // log lines + the per-instance TTS cache / rate-limit state thrown away each time. Key on the inputs
   // that actually change behavior; the injected helper fns are behavior-stable so they're excluded
   // from deps. (2026-06-19)
-  const _aiConfigKey = _isCanvasEnv ? ('canvas|' + (apiKey || '')) : ('local|' + (apiKey || '') + '|' + JSON.stringify(_aiUserConfig || null));
+  // AIProvider arrives via an async script; if it lands AFTER the first
+  // render, the memo below would cache the plain-config fallback for the
+  // whole session (no .generateText/.textToSpeech → provider TTS dead and
+  // the effect-side bridge install silently skipped until a settings tweak).
+  // _upgradeAIBackend dispatches this event once the class is available.
+  const [_aiProviderTick, _setAiProviderTick] = React.useState(0);
+  React.useEffect(() => {
+    const _bumpAiProvider = () => _setAiProviderTick((n) => n + 1);
+    window.addEventListener('alloflow:ai-backend-ready', _bumpAiProvider);
+    // It may also have landed BETWEEN the memo's first run and this effect
+    // registering — recompute once if the memo captured the fallback object.
+    if (AIProvider && !(ai && typeof ai.generateText === 'function')) _bumpAiProvider();
+    return () => window.removeEventListener('alloflow:ai-backend-ready', _bumpAiProvider);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const _aiConfigKey = _isCanvasEnv ? ('canvas|' + (apiKey || '')) : ('local|' + (apiKey || '') + '|' + JSON.stringify(_aiUserConfig || null) + '|' + (AIProvider ? 'P' : 'noP') + _aiProviderTick);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ai = React.useMemo(() => AIProvider ? new AIProvider(_aiConfig) : _aiConfig, [_aiConfigKey]);
   React.useEffect(() => {

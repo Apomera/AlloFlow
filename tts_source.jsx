@@ -399,7 +399,7 @@ const createTTS = (deps) => {
             if (!_isEnglish) {
                 console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
                 _kokoroDeferredToGemini = true;
-            } else if (window._kokoroTTS) {
+            } else if (window._kokoroTTS && window._kokoroTTS.ready) {
                 try {
                     const kokoroUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
                     if (kokoroUrl) return kokoroUrl;
@@ -410,11 +410,16 @@ const createTTS = (deps) => {
                     _kokoroDeferredToGemini = true;
                 }
             } else {
-                // Engine missing (download declined/failed/blocked): kick a background
-                // (re)load for future calls. The configured provider still sees the
-                // ORIGINAL voice — OpenAI-compatible local TTS servers (for example
-                // Kokoro-FastAPI) accept af_* names natively; only the Gemini leg
-                // below needs a valid Gemini voice.
+                // Engine missing OR loaded-but-never-ready: kick a background
+                // (re)load for future calls. The ready gate matters — a failed
+                // first init (e.g. the ~86MB voice download racing a multi-GB
+                // LLM download on first desktop boot, or a truncated cache)
+                // leaves window._kokoroTTS PRESENT with ready=false forever;
+                // without re-init here every call silently lands on the
+                // browser voice. __loadKokoroTTS re-runs init when not ready.
+                // The configured provider still sees the ORIGINAL voice —
+                // OpenAI-compatible local TTS servers (Kokoro-FastAPI) accept
+                // af_* natively; only the Gemini leg needs a Gemini voice.
                 if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
                     window.__kokoroTTSDownloading = true;
                     Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
@@ -534,11 +539,19 @@ const createTTS = (deps) => {
         // ─── Desktop/Firebase: selected Kokoro voice → local engine (same fix as callTTS) ───
         if (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName)) {
             const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
-            if (botKokoroLang === 'en' && window._kokoroTTS) {
+            if (botKokoroLang === 'en' && window._kokoroTTS && window._kokoroTTS.ready) {
                 try {
                     const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
                     if (kokoroBotUrl) return kokoroBotUrl;
                 } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); }
+            } else if (botKokoroLang === 'en') {
+                // Missing or never-ready engine: background (re)init, same as
+                // callTTS — a failed first init otherwise pins every bot line
+                // to the browser voice with no path back to Kokoro.
+                if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
+                    window.__kokoroTTSDownloading = true;
+                    Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
+                }
             }
             // No rewrite here: the configured provider accepts af_* names
             // (Kokoro-FastAPI); the safeVoice guard below already maps any
