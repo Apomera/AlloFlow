@@ -212,6 +212,17 @@ function EducatorHubModal(props) {
                   <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
                 </div>
               </button>
+              {/* Whiteboard (2026-07-06): a freehand sketch/diagram canvas (Excalidraw, MIT)
+                  in its own window — the escape-hatch popup pattern, so it works inside the
+                  Gemini Canvas sandbox. A general, cross-subject "multiple means of
+                  expression" tool, so it lives here in the Educator Hub, not the STEM grid. */}
+              <button data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { const _w = window.open('https://alloflow-cdn.pages.dev/whiteboard/whiteboard.html?v=1', 'alloflow-whiteboard', 'width=1280,height=860'); if (!_w && typeof window !== 'undefined') { try { window.alert('Allow pop-ups for this page, then open the Whiteboard again.'); } catch (_a) {} } } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+                <span className="text-3xl mt-1">✏️</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking — with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export.'}</p>
+                </div>
+              </button>
               <button data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🔬</span>
                 <div>

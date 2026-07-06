@@ -191,6 +191,7 @@ const OSS_CREDITS = [
     group: "3D, graphics, maps & media",
     items: [
       { name: "three.js", use: "3D graphics (Memory Palace, STEM tools)", license: "MIT", url: "https://threejs.org" },
+      { name: "Excalidraw", use: "the Whiteboard \u2014 freehand sketch & diagram canvas with graphic-organizer templates", license: "MIT", url: "https://excalidraw.com" },
       { name: "KayKit Dungeon Remastered", use: "3D decoration models (Memory Palace collectibles) \u2014 Kay Lousberg", license: "CC0 (credit appreciated, not required)", url: "https://kaylousberg.itch.io/kaykit-dungeon-remastered" },
       { name: "globe.gl", use: "interactive 3D globe", license: "MIT", url: "https://github.com/vasturiano/globe.gl" },
       { name: "Leaflet", use: "interactive maps", license: "BSD-2-Clause", url: "https://leafletjs.com" },
