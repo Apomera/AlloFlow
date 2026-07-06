@@ -153,7 +153,7 @@ karaokeAudio and rides the save cross-device. FULL human smoke (generate a
 resource → open karaoke → regenerate a take → prepare/save → reload/other device
 → student hears vetted set) needs a key/Canvas — Aaron's env.
 
-#### 8c — Save-as-you-play toggle (Aaron's idea, RECOMMENDED next; Opus assessed)
+#### 8c — Save-as-you-play toggle — SHIPPED + LIVE-SMOKED (@fd70b279b, Opus)
 Two options weighed. Option A (synthesize during the generation flow) REJECTED
 as default: text isn't final at generation time (teachers adjust complexity/
 regenerate → audio stale), and it bloats an already multi-step flow with
@@ -169,3 +169,5 @@ into generatedContent.karaokeAudio. Applies to leveled text AND FAQ (same store)
 Sub-choice for Aaron: capture on ACTUAL play (strict vet-by-listening) vs on any
 fetch incl. pre-warm (faster fill). Placement: global preference (left panel/
 settings) or a switch in the karaoke overlay by the teacher tools.
+
+**SHIPPED**: persisted teacher toggle "Save read-aloud" (localStorage allo_save_karaoke_audio) in the karaoke overlay. Capture wired into getAudioUrl so it fires on BOTH play AND pre-warm look-ahead (per Aaron) → whole text accumulates fast; no-op if already stored (never clobbers a regenerated take); MP3-converts the played 24kHz WAV when lamejs present to stay small; persists into generatedContent.karaokeAudio. Applies to leveled text + FAQ (shared store). Live smoke: store+capture/regen/prepare globals present, in-page put/serialize/hydrate round-trip TRUE, 0 page errors. Human smoke (generate resource → toggle on → listen through → reload/other device → student hears vetted set) needs Aaron key/Canvas.
